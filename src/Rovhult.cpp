@@ -70,8 +70,8 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    attach (staple, 3, 4, 2, 7);
 
    Check3 (cards.numberOfCards ());
-   unsigned int width (cards.getCard (0).getImageWidth ());
-   unsigned int height (cards.getCard (0).getImageHeight ());
+   int width, height;
+   cards.getCard (0).getImageSize (width, height);
 
    // Show and attach card-piles
    changeNames (names);
@@ -86,7 +86,7 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
          TRACE9 ("Rovhult::Rovhult () - Set at: "
                  << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
 
-         players[i].reserve[j].set_size_request (width, height + 5);
+         players[i].reserve[j].set_size_request (width, height + 7);
       }
 
       players[i].name.show ();
@@ -147,29 +147,25 @@ void Rovhult::start () {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after finishing card-exchange
+//Parameters: iCard: Offset of card in hand
 /*--------------------------------------------------------------------------*/
-void Rovhult::finishedExchange () {
+void Rovhult::finishedExchange (unsigned int iCard) {
    played.show ();
 
    exchangeAutoplayerCards ();
-   sortReserve (0);
-
-
-   // Remove drag´n´drop abilities and compress cards
-   for (int i (0); i < NUM_PLAYERS; ++i)
-      players[i].hand.sortByNumber ();
 
    unregisterDND ();
+   disableHuman ();
+
+   setGameStatus (PLAYING);
+   handSelected (iCard);
+
+   // Sort the cards of the players
+   for (int i (0); i < NUM_PLAYERS; ++i)
+      players[i].hand.sortByNumber ();
+   sortReserve (0);
 
    players[0].hand.setStyle (ICardPile::COMPRESSED);
-   enableHuman ();
-   staple.getTopCard ().remove_accelerator
-      (dynamic_cast<Gtk::Window*> (get_toplevel ())->get_accel_group (), ' ',
-       Gdk::ModifierType (0));
-   pileTop.disconnect ();
-
-   displayTurn (0);
-   setGameStatus (PLAYING);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -388,16 +384,19 @@ int Rovhult::doPileSelected (unsigned int player, unsigned int pile) {
 //Returns   : bool: True, if card can be played
 /*--------------------------------------------------------------------------*/
 bool Rovhult::cardValid (CardWidget::NUMBERS nr, bool silent) const {
+   TRACE5 ("Rovhult::cardValid (CardWidget::NUMBERS, bool) const - Checking "
+           << nr << " in " << played.numberOfCards () << " cards");
+
    switch (nr) {
    case CardWidget::TEN:
    case CardWidget::TWO:
       break;
 
    default:
-      std::string error;
       if (played.numberOfCards ()) {
-         CardWidget& lastPlayed (played.getTopCard ());
+         std::string error;
 
+         CardWidget& lastPlayed (played.getTopCard ());
          if (lastPlayed.number () == CardWidget::SEVEN) {
             if (nr > CardWidget::SEVEN)
                error = _("After a 7, the played card must be equal or smaller!");
@@ -422,7 +421,7 @@ bool Rovhult::cardValid (CardWidget::NUMBERS nr, bool silent) const {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card in hand
-//Parameters: iCard: Offset of card in hand
+//Parameters: pos: Offset of card in hand
 /*--------------------------------------------------------------------------*/
 void Rovhult::handSelected (unsigned int pos) {
    TRACE3 ("Rovhult::handSelected (unsinged int) - Checking card at " << pos);
@@ -726,6 +725,7 @@ void Rovhult::clean () {
 //            pile: Number of pile on reserve holding card
 /*--------------------------------------------------------------------------*/
 void Rovhult::registerTableDND (CardWidget& card, unsigned int pile) {
+   Check1 (pile < 3);
    Check3 (gameStatus () == PREPLAYING);
 
    static Glib::RefPtr<Gdk::Bitmap> bitmap;
@@ -733,12 +733,11 @@ void Rovhult::registerTableDND (CardWidget& card, unsigned int pile) {
    // Card accepts drops from hand and drags from table
    card.drag_dest_set (dndTypeHand, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
    card.drag_source_set
-      (dndTypeTable,
-       Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK));
+      (dndTypeTable, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK));
 
    card.drag_source_set_icon (get_colormap (), card.getImage (), bitmap);
-   card.signal_drag_data_received ().connect
-      (bind (slot (*this, &Rovhult::cardDroppedOnTable), pile));
+   aTableDND.push_back (card.signal_drag_data_received ().connect
+                        (bind (slot (*this, &Rovhult::cardDroppedOnTable), pile)));
    card.signal_drag_data_get ().connect
       (bind (slot (*this, &Rovhult::getDropData), pile));
 }
@@ -758,13 +757,17 @@ void Rovhult::registerHandDND (CardWidget& card,  unsigned int iCard) {
    card.drag_dest_set (dndTypeTable, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
    card.drag_source_set
       (dndTypeHand,
-       Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK));
+       Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK));
 
    card.drag_source_set_icon (get_colormap (), card.getImage (), bitmap);
-   card.signal_drag_data_received ().connect
-      (bind (slot (*this, &Rovhult::cardDroppedOnHand), iCard));
+   aHandDND.push_back (card.signal_drag_data_received ().connect
+                       (bind (slot (*this, &Rovhult::cardDroppedOnHand), iCard)));
    card.signal_drag_data_get ().connect
       (bind (slot (*this, &Rovhult::getDropData), iCard));
+
+   Check1 (activeCards.capacity () > iCard);
+   activeCards[iCard] = card.signal_clicked ().connect
+                           (bind (slot (*this, &Rovhult::finishedExchange), iCard));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -780,7 +783,7 @@ void Rovhult::unregisterDND (CardWidget& card) const {
 //Purpose   : Stops the drag´n´drop abilities of the cards of player 0
 //Parameters: card: Card to unregister of dnd
 /*--------------------------------------------------------------------------*/
-void Rovhult::unregisterDND () const {
+void Rovhult::unregisterDND () {
    TRACE9 ("Rovhult::unregisterDND () - Status: " << gameStatus ());
    Check3 (gameStatus () == PREPLAYING);
 
@@ -789,7 +792,13 @@ void Rovhult::unregisterDND () const {
       unregisterDND (card);
       Check3 (players[0].reserve[i].numberOfCards () == 2);
       unregisterDND (players[0].reserve[i].getTopCard ());
+      activeCards[i].disconnect ();
+      aHandDND[i].disconnect ();
+      aTableDND[i].disconnect ();
    }
+   activeCards.clear ();
+   aHandDND.clear ();
+   aTableDND.clear ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -815,6 +824,7 @@ void Rovhult::dealCards () {
       }
 
    // Enable drag-and-drop for cards in hand (of human player)
+   activeCards.reserve (3);
    for (unsigned int i (0); i < players[i].hand.numberOfCards (); ++i) {
       registerHandDND (players[0].hand.at (i), i);
       registerTableDND (players[0].reserve[i].getTopCard (), i);
@@ -824,15 +834,10 @@ void Rovhult::dealCards () {
 
    Check3 (staple.numberOfCards ());
    CardWidget& card (staple.getTopCard ());
-   pileTop = card.signal_clicked ().connect (slot (*this, &Rovhult::finishedExchange));
-   card.add_accelerator
-      ("clicked", dynamic_cast<Gtk::Window*> (get_toplevel ())->get_accel_group (),
-      ' ', Gdk::ModifierType (0), Gtk::AccelFlags (0));
 
    status.pop ();
    status.push (_("Exchange the cards in your hand with the one on the "
-                  "table (with drag and drop) - press space (or click on the"
-                  " staple) if finished"));
+                  "table (with drag and drop) - click on one card to play it"));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -852,7 +857,7 @@ void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       return;
 
    Check3 (pData);
-   Check3 (context->get_is_source ());
+   Check3 (!context->get_is_source ());
    Check3 (pData->length == sizeof (int));
    Check3 (pData->format == 8);
 
@@ -874,6 +879,9 @@ void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
    // End old dnd
    context->drag_finish (true, false, time);
 
+   activeCards[*pValue].disconnect ();
+   aHandDND[*pValue].disconnect ();
+   aTableDND[*pValue].disconnect ();
    unregisterDND (cardHand);
    unregisterDND (cardTable);
 
@@ -902,7 +910,7 @@ void Rovhult::cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
 
    Check3 (pData);
    Check3 (!context->get_is_source ());
-   Check3 (pData->length == (sizeof (int) << 1));
+   Check3 (pData->length == sizeof (int));
    Check3 (pData->format == 8);
 
    Check3 (card < players[0].hand.numberOfCards ());
@@ -921,6 +929,9 @@ void Rovhult::cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
 
    // End old DND
    context->drag_finish (true, false, time);
+   activeCards[card].disconnect ();
+   aHandDND[card].disconnect ();
+   aTableDND[card].disconnect ();
    unregisterDND (cardHand);
    unregisterDND (cardTable);
 

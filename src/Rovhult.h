@@ -46,7 +46,7 @@ class Rovhult : public Game {
 
  private:
    enum { PREPLAYING = Game::LAST };
-   enum { HAND, TABLE };
+   enum { HAND = 0, TABLE = 1 };
 
    // Protected manager functions
    Rovhult (const Rovhult&);
@@ -66,12 +66,12 @@ class Rovhult : public Game {
    void registerHandDND (CardWidget& card, unsigned int card);
    void registerTableDND (CardWidget& card, unsigned int pile);
    void unregisterDND (CardWidget& card) const;
-   void unregisterDND () const;
+   void unregisterDND ();
  
    // Event-handling
    void pileSelected (unsigned int pile);
-   void handSelected (unsigned int iCard);
-   void finishedExchange ();
+   void handSelected (unsigned int pos);
+   void finishedExchange (unsigned int iCard);
    void takeCards ();
 
    bool playFromPile (unsigned int pile);
@@ -132,10 +132,11 @@ class Rovhult : public Game {
       Gtk::Label name;
    } players[NUM_PLAYERS];
 
-   SigC::Connection pileTop;
-
    static std::vector<Gtk::TargetEntry> dndTypeHand;
    static std::vector<Gtk::TargetEntry> dndTypeTable;
+
+   std::vector<SigC::Connection> aTableDND;
+   std::vector<SigC::Connection> aHandDND;
 
    unsigned int pos2Play;
    unsigned int pos1Play;
