@@ -1,3 +1,12 @@
+Overview of changes in version 0.5.05:
+
+  - Fixed positionating the joker in colour series (again)
+  - Fixed/improved playing of jokers
+  - Improved navigation in help files
+  - Prohibiting resorting of cards after picking up pile (til pile is put down)
+  - Fixed check if player has fitting pair (without joker) when picking up pile
+  - Fixed translations of the game
+
 Overview of changes in version 0.5.04:
 
   - Loading the cardimages in the main thread (no extra thread)
@@ -23,7 +32,7 @@ Overview of changes in version 0.5.02:
   - Fixed bug in replacing the joker in colour series
   - Fixed warning message about not installed libpthread, though it is installed
   - Updated INSTALL (installation from CVS)
-  - Updated version info in po files (which holds the translated messages)
+  - Updated version info in po files (which hold the translated messages)
 
 Overview of changes in version 0.5.01:
 

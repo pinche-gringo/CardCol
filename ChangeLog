@@ -1,3 +1,28 @@
+2003-11-03  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.5.05 commented
+
+	* po/de.po, po/en.po, po/es.po: New messages translated; actualized
+
+	* src/BuracoPile.cpp:
+	  Fixed playing of joker (the neverending story ...)
+
+	* src/Buraco.cpp:
+	  Prohibit sorting in hand after taking dumped pile; Improved playing joker
+
+	* src/CardCol.cpp: Translating forgotten INI-file explaination header
+
+	* doc/Buraco.html.de, doc/Buraco.html.en, doc/Buraco.html.es, doc/Hearts.html.de, doc/Hearts.html.en, doc/Hearts.html.es, doc/Røvhult.html.de, doc/Røvhult.html.en, doc/Røvhult.html.es, doc/Twopart.html.de, doc/Twopart.html.en, doc/Twopart.html.es:
+	  Link to other games and to overview
+
+	* doc/CardCol.shtml.de, doc/CardCol.shtml.en, doc/CardCol.shtml.es, doc/index.shtml:
+	  Usage added
+
+	* configure.in:
+	  Version to 0.5.05; Only searching for carddecks, if no --with-carddeck-dir
+
+	* README: Added configuring for the card decks
+
 2003-10-26  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.5.04 commented
