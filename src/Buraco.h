@@ -1,5 +1,5 @@
-#ifndef BURAZNO_H
-#define BURAZNO_H
+#ifndef BURACO_H
+#define BURACO_H
 
 //$Id$
 
@@ -32,20 +32,20 @@
 #include <Game.h>
 
 
-class Burazno : public Game {
+class Buraco : public Game {
  public:
-   Burazno (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
+   Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             const std::vector<std::string>& names);
-   virtual ~Burazno ();
+   virtual ~Buraco ();
 
    virtual void start ();
    virtual void clean ();
-   virtual const char* name () { return "Burazno"; }
+   virtual const char* name () { return "Buraco"; }
    virtual void playOpen (bool);
 
  private:
-   Burazno (const Burazno& other);
-   const Burazno& operator= (const Burazno& other);
+   Buraco (const Buraco& other);
+   const Buraco& operator= (const Buraco& other);
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
@@ -75,7 +75,7 @@ class Burazno : public Game {
    CardVPile& makeNewPile (unsigned int team);
    unsigned int cardFitsOnPlayedPile (unsigned int player, unsigned int card);
    int  cardFitsOnPile (ICardPile& pile, CardWidget& card) const;
-   void removeBurazno (unsigned int player, CardVPile& pile);
+   void removeBuraco (unsigned int player, CardVPile& pile);
    void updateInfo ();
    bool humanPilesOK (unsigned int except = -1U) const;
 
@@ -100,7 +100,7 @@ class Burazno : public Game {
    CardHPile hands[NUM_PLAYERS - 1];     // For computer players: Cards in hand
    std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];      // Piles on table
    std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
-   unsigned int buraznos[NUM_PLAYERS >> 1];          // Number of buraznos/team
+   unsigned int buracos[NUM_PLAYERS >> 1];            // Number of buracos/team
 
    unsigned int startPlayer;
 
