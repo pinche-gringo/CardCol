@@ -75,7 +75,7 @@ void CardImages::loadDecks (const std::string& path, bool thread) throw (std::st
 
    std::string err;
 
-   for (int i = 1; i <= size (); ++i) {
+   for (int i = 1; i <= 52; ++i) {
       std::ostringstream out;
       out << file << i << ".png";
       TRACE9 ("CardImages::loadDecks (const Gdk::Window&, const char*) - File "

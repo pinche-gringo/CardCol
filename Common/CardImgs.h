@@ -26,7 +26,7 @@
 // Class to load & store the images of the used cards
 class CardImages {
  public:
-   CardImages (unsigned int cards) : cards_ (cards) { }
+   CardImages () : cards_ (52) { }
    ~CardImages ();
 
    unsigned int addImage (const char* const* data) {
