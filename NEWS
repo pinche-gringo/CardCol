@@ -1,3 +1,13 @@
+Overview of changes in version 0.5.04:
+
+  - Loading the cardimages in the main thread (no extra thread)
+  - Fixed applying new cardimages closing the selection dialog
+  - Fixed and enhanced test for KDE carddecks
+  - Fixed positionating the joker in colour series
+  - After picking up dumped pile only allow to play the cards already in hand
+  - Fixed making first "cerrado" with last cards - hopefully; hard to test ;)
+  - Fixed computer player not playing pile of 7 joker in some cases
+
 Overview of changes in version 0.5.03:
 
   - Displaying the cards of all Buraco players
