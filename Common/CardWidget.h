@@ -25,7 +25,7 @@
 // Class to display a card on the screen
 class CardWidget : public Gtk::Button {
  public:
-   CardWidget (const std::string& filename) throw (std::string);
+   CardWidget (const Gdk_Window& parent, const std::string& filename) throw (std::string);
    ~CardWidget ();
 
  private:

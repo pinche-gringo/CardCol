@@ -32,7 +32,7 @@
 #include <gdk--/bitmap.h>
 #include <gdk--/pixmap.h>
 
-#define DEBUG 0
+#define DEBUG 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -41,15 +41,17 @@
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Constructor; adds all controls to the dialog
-//Parameters: filename: Name of bitmap-file (actually png-file)
+//Parameters: parent: Parent-window
+//            filename: Name of bitmap-file (actually xpm-file)
 /*--------------------------------------------------------------------------*/
-CardWidget::CardWidget (const std::string& filename) throw (std::string) {
+CardWidget::CardWidget (const Gdk_Window& parent, const std::string& filename)
+   throw (std::string) {
    TRACE3 ("CardWidget::CardWidget (const std::string&) - " << filename);
    Check3 (!filename.empty ());
 
    Gdk_Color color (&Widget::gtkobj ()->style->bg[GTK_STATE_NORMAL]);
    Gdk_Pixmap pixmap;
-   pixmap.create_from_xpm (pixmap, color, filename);
+   pixmap.create_from_xpm (parent, color, filename);
    if (errno) {
       std::string error ("Can't create picture from file '" + filename
                          + "!\nReson: ");
@@ -66,6 +68,6 @@ CardWidget::CardWidget (const std::string& filename) throw (std::string) {
 //Purpose   : Destructor
 /*--------------------------------------------------------------------------*/
 CardWidget::~CardWidget () {
-   TRACE9 ("CardWidget::~CardWidget");
+   TRACE9 ("CardWidget::~CardWidget ()");
    hide ();
 }
