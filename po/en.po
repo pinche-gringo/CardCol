@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.6 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2004-10-07 18:22-0400\n"
+"POT-Creation-Date: 2004-11-25 13:16-0400\n"
 "PO-Revision-Date: 2004-04-18 20:53-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -39,7 +39,7 @@ msgstr ""
 msgid "Played card must be equal or bigger!"
 msgstr ""
 
-#: src/Rovhult.cpp:616 src/Twopart.cpp:425 src/Machiavelli.cpp:1487
+#: src/Rovhult.cpp:616 src/Twopart.cpp:425 src/Machiavelli.cpp:1484
 msgid "%1 lost"
 msgstr ""
 
@@ -500,7 +500,7 @@ msgstr ""
 msgid "Select 3 cards to exchange with %1"
 msgstr ""
 
-#: src/Hearts.cpp:435 src/Buraco.cpp:1671
+#: src/Hearts.cpp:435 src/Buraco.cpp:1675
 msgid "Round ended"
 msgstr ""
 
@@ -583,25 +583,25 @@ msgstr ""
 msgid "%1 picked up the burraco"
 msgstr ""
 
-#: src/Buraco.cpp:1499
+#: src/Buraco.cpp:1503
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr ""
 
-#: src/Buraco.cpp:1501 src/Buraco.cpp:1503
+#: src/Buraco.cpp:1505 src/Buraco.cpp:1507
 msgid "N"
 msgstr ""
 
-#: src/Buraco.cpp:1501 src/Buraco.cpp:1503
+#: src/Buraco.cpp:1505 src/Buraco.cpp:1507
 msgid "Y"
 msgstr ""
 
-#: src/Buraco.cpp:1616
+#: src/Buraco.cpp:1620
 msgid ""
 "Team %1\n"
 "%2/%3"
 msgstr ""
 
-#: src/Buraco.cpp:1677
+#: src/Buraco.cpp:1681
 msgid "Game ended; Team %1 won"
 msgstr ""
 
@@ -615,7 +615,7 @@ msgid ""
 "table - click the staple to end turn"
 msgstr ""
 
-#: src/Machiavelli.cpp:435 src/Machiavelli.cpp:1456
+#: src/Machiavelli.cpp:435 src/Machiavelli.cpp:1453
 msgid "Can't end turn: The piles are not valid!"
 msgstr ""
 
@@ -631,31 +631,31 @@ msgstr ""
 msgid "Card is not on the edge of the origen - try splitting the origin first!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1353
+#: src/Machiavelli.cpp:1350
 msgid "Taking last card! Solve the game (somehow) ..."
 msgstr ""
 
-#: src/Machiavelli.cpp:1355
+#: src/Machiavelli.cpp:1352
 msgid "Game over"
 msgstr ""
 
-#: src/Machiavelli.cpp:1380
+#: src/Machiavelli.cpp:1377
 msgid "Pile %1: %2\n"
 msgstr ""
 
-#: src/Machiavelli.cpp:1458
+#: src/Machiavelli.cpp:1455
 msgid "Could end turn: The piles are OK!"
 msgstr ""
 
-#: src/MachiPile.cpp:221
+#: src/MachiPile.cpp:224
 msgid "Not enough cards (must be at least 3)!"
 msgstr ""
 
-#: src/MachiPile.cpp:224
+#: src/MachiPile.cpp:227
 msgid "Invalid type!"
 msgstr ""
 
-#: src/MachiPile.cpp:232
+#: src/MachiPile.cpp:235
 msgid "Card %1 does not fit!"
 msgstr ""
 
