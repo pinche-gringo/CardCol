@@ -33,8 +33,6 @@
 
 #include <cardgames-cfg.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 #include <Socket.h>
@@ -46,6 +44,8 @@
 
 #include "PlayerConnDlg.h"
 
+
+#define STRING(NUMBER) #NUMBER
 
 //-----------------------------------------------------------------------------
 /// Default constructor
@@ -107,8 +107,8 @@ void PlayerConnectDlg::perform (std::vector<Player*>& player, const Glib::ustrin
 }
 
 //----------------------------------------------------------------------------
-/// Connects this application to the server
-/// \param target: Name or IP address of the target
+/// Connects this application to a server
+/// \param target: Name or IP address of the server
 /// \param port: Port the server is listening at
 //----------------------------------------------------------------------------
 void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) {
@@ -117,7 +117,8 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) 
    ConnectDlg::connect (target, port);
    Check1 (cmgr.getSocket ());
 
-   Glib::ustring data ("Version=" PROTOCOLL ";Variant=" VARIANT ";Name=\""
+   Glib::ustring error;
+   Glib::ustring data ("Version=" STRPROTOCOLL ";Variant=" STRVARIANT ";Name=\""
                        + aPlayer[0]->getName () + '"');
    try {
       cmgr.getSocket ()->write (data);
@@ -126,10 +127,41 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) 
       cmgr.getSocket ()->read (input);
       TRACE8 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - "
               "Received: " << input);
+
+      unsigned int player (0);
+      Glib::ustring names;
+      AttributeParse ap;
+      ATTRIBUTE (ap, unsigned int, player, "Number");
+      ATTRIBUTE (ap, Glib::ustring, names, "Names");
+      ap.assignValues (input);
+
+      if (!player)
+         throw std::string (_("Invalid player number!"));
+
+      Tokenize split (names);
+      unsigned int i (1);
+      while (split.getNextNode ('\n').size ()) {
+         delete aPlayer[i];
+         aPlayer[i++] = new RemotePlayer (cmgr.getSocket (), split.getActNode ());
+      }
+      TRACE9 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - Players: "
+              << i);
+      if ((i - 1) != aPlayer.size ())
+         throw std::string (_("Wrong number of players!"));
+
+      delete aPlayer[player];
+      aPlayer[player] = aPlayer[0];
+      aPlayer.erase (aPlayer.begin ());
    }
    catch (std::domain_error& err) {
-      Glib::ustring error (_("Error sending player name!\n\nReason: %1"));
+      error = _("Error sending player name!\n\nReason: %1");
       error.replace (error.find ("%1"), 2, err.what ()); 
+   }
+   catch (std::string& err) {
+      error = _("Invalid response from server!\n\nReason: %1");
+      error.replace (error.find ("%1"), 2, err);
+   }
+   if (error.size ()) {
       Gtk::MessageDialog dlg (error, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dlg.set_title (PACKAGE);
       dlg.run ();
@@ -152,12 +184,17 @@ Socket* PlayerConnectDlg::addClient (int socket) {
       TRACE8 ("PlayerConnectDlg::addClient (int) - Received: " << input);
 
       Glib::ustring name;
-      unsigned int protocoll, variant;
+      unsigned int protocoll (0), variant (0);
       AttributeParse ap;
       ATTRIBUTE (ap, Glib::ustring, name, "Name");
       ATTRIBUTE (ap, unsigned int, protocoll, "Version");
       ATTRIBUTE (ap, unsigned int, variant, "Variant");
       ap.assignValues (input);
+
+      if (protocoll < PROTOCOLL) {
+          error = _("Protocoll version %1 needed!");
+          error.replace (error.find ("%1"), 2, STRPROTOCOLL);
+      }
 
       TRACE8 ("PlayerConnectDlg::addClient (int) - Connected: " << name);
       Check3 (aPlayer.size () > cmgr.getClients ().size ());
@@ -166,11 +203,12 @@ Socket* PlayerConnectDlg::addClient (int socket) {
       connected->set_text (connected->get_text () + name + '\n');
 
       Check3 (aPlayer.size () < 10);
-      input = "";
+      input = "Number=";
+      input += '0' + cmgr.getClients ().size ();
+      input += ";Names=";
       for (std::vector<Player*>::iterator i (aPlayer.begin ());
            i != aPlayer.end (); ++i)
-         input += (std::string (1, static_cast<char> (i - aPlayer.begin () + '0'))
-                   + "=\"" + (*i)->getName () + "\";");
+         input += (*i)->getName () + std::string (1, '\n');
 
       TRACE8 ("PlayerConnectDlg::addClient (int) - Sending players: " << input);
       sock->write (input);
@@ -180,6 +218,9 @@ Socket* PlayerConnectDlg::addClient (int socket) {
       error.replace (error.find ("%1"), 2, err.what ()); 
    }
    catch (std::string& err) {
+      sock->write ("Error=99;Msg=\"");
+      sock->write (err);
+      sock->write ("\"");
       error = _("Error analyzing input from client!\n\nReason: %1");
       error.replace (error.find ("%1"), 2, err); 
    }
