@@ -44,7 +44,7 @@ std::vector<Gtk::TargetEntry> Buraco::dndType;
 
 
 unsigned int Buraco::ENDPOINTS (2000);
-static unsigned int CARDS_AT_START (137);
+static unsigned int CARDS_AT_START (141);
 
 
 /*--------------------------------------------------------------------------*/
@@ -57,7 +57,8 @@ static unsigned int CARDS_AT_START (137);
                 unsigned int posPlayer, YGP::Mutex& mxSerialize)
                   CardSet& cardset, const std::vector<std::string>& names)
    : Game (parent, statusbar, cardset, names, 3, 10), startPlayer (0)
-     , staple (ICardPile::SHOWBACK), dumped (ICardPile::SHOWFACE)
+     , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
+   TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
      , newPile (_("New pile")), startTurn (true), target (-1U)
      , pos1 (0), pos2 (0) {
 
@@ -428,12 +429,24 @@ static unsigned int CARDS_AT_START (137);
 //-----------------------------------------------------------------------------
 /// Enables the cards the human can pick up.
 /*--------------------------------------------------------------------------*/
-//Purpose   : Enables the cards of the human player
+//Purpose   : Enables the cards the human can pick up.
 //Returns   : 0
-//Remarks   : Depending of the status of the game (PLAYING2) also the top
-//            card of the played pile is enabled
 /*--------------------------------------------------------------------------*/
    Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
+   Check3 (staple.size ());
+   Check3 (dumped.size ());
+   dumpedTop = dumped.getTopCard ().signal_clicked ().connect
+      (slot (*this, (&Buraco::stapleSelected)));
+
+      (slot (*this, (&Buraco::dumpedSelected)));
+}
+
+//-----------------------------------------------------------------------------
+/// Enables the cards in the hand of the human player
+/*--------------------------------------------------------------------------*/
+//Purpose   : Enables the cards in the hand of the human player
+/*--------------------------------------------------------------------------*/
+   Check1 (gameStatus () == PLAYING);
 
    Check3 (hands[0].size ());
    for (unsigned int i (0); i < hands[0].size (); ++i) {
@@ -448,13 +461,6 @@ static unsigned int CARDS_AT_START (137);
    for (unsigned int i (0); i < hands[0].size (); ++i)
       enableCard (i);
 
-   Check3 (staple.size ());
-   Check3 (dumped.size ());
-   stapleTop = staple.signal_clicked ().connect
-      (slot (*this, (&Buraco::stapleSelected)));
-   dumpedTop = dumped.signal_clicked ().connect
-      (slot (*this, (&Buraco::dumpedSelected)));
-
       (bind (mem_fun (*this, &Buraco::cardDroppedOnTable), -1U));
 
       (bind (slot (*this, &Buraco::cardDroppedOnTable), -1U));
@@ -464,8 +470,6 @@ static unsigned int CARDS_AT_START (137);
    }
 
    menuSort->set_sensitive ();
-
-   return Game::enableHuman ();
 //-----------------------------------------------------------------------------
 /// Disables the cards the human player can select
 /*--------------------------------------------------------------------------*/
@@ -542,9 +546,22 @@ static unsigned int CARDS_AT_START (137);
 
    // Move top card to human and enable the cards in his hand, when idle
    // (means: *after* this signalhandler termintes)
+   Glib::signal_idle ().connect
+      (bind_return (mem_fun (*this, &Buraco::doStapleSelected), false));
+}
+       (bind_return (slot (*this, &Buraco::doStapleSelected), false));
+//-----------------------------------------------------------------------------
+/// Delayed callback after clicking on the staple
+/*--------------------------------------------------------------------------*/
+//Purpose   : Delayed callback after clicking on the staple
+/*--------------------------------------------------------------------------*/
+   Check1 (gameStatus () == PLAYING);
+   Check2 (staple.size ());
+   Check2 (dumped.size ());
+   Check3 (staple.size ());
+   unsigned int player (currentPlayer ());
    hands[0].append (staple.removeTopCard ());
-   enableCard (hands[0].size () - 1);
-   registerHandDND (hands[0].size () - 1);
+   enableHumanHand ();
 //-----------------------------------------------------------------------------
 /// Callback after clicking on the dumped staple
 /*--------------------------------------------------------------------------*/
@@ -555,24 +572,36 @@ static unsigned int CARDS_AT_START (137);
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
 
       try {
+
+   // Special handling of player starting the game and can choose one of the
+   // first two cards
+   // Move top card to human and enable the cards in his hand, when idle
+   // (means: *after* this signalhandler termintes)
+}
+       (bind_return (slot (*this, &Buraco::doDumpedSelected), false));
+//-----------------------------------------------------------------------------
+/// Action after picking up the card from the dumped staple
+/*--------------------------------------------------------------------------*/
+//Purpose   : Delayed callback after clicking on the dumped staple
+/*--------------------------------------------------------------------------*/
+   Check1 (gameStatus () == PLAYING);
+   TRACE5 ("Buraco::doDumpedSelected ()");
+   unsigned int player (currentPlayer ());
+
+
    // Special handling of human starts the game and can choose one of the
    // first two cards
    if (staple.size () == CARDS_AT_START) {
+      Check3 (dumped.size () == 1);
       hands[0].append (dumped.removeTopCard ());
-      enableCard (hands[0].size () - 1);
-      registerHandDND (hands[0].size () - 1);
    }
    else {
       if (pileHasFittingPair (hands[0], dumped.getTopCard ())) {
          CardVPile& pile (makeNewPile (0));                  // Create new pile
          pile.setTopCard (dumped.removeTopCard ());      // with picked up card
-         registerTableDND (pile.getTopCard (), (tablePiles[0].size () - 1) << 8);
 
-         while (dumped.size ()) {
+         while (dumped.size ())
              hands[0].append (dumped.removeTopCard ());
-             enableCard (hands[0].size () - 1);
-             registerHandDND (hands[0].size () - 1);
-         }
       }
       else {
           Gtk::MessageDialog dlg (_("You need a fitting pair to pick up the"
@@ -584,8 +613,7 @@ static unsigned int CARDS_AT_START (137);
       }
    }
 
-   dumpedTop.disconnect ();
-   stapleTop.disconnect ();
+   enableHumanHand ();
 //-----------------------------------------------------------------------------
 /// Enables a card in the hand of the player
 /*--------------------------------------------------------------------------*/

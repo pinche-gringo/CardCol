@@ -57,9 +57,12 @@ class Buraco : public Game {
    //@Section Event handling
    void cardSelected (unsigned int iCard);
    void dumpedSelected ();
+   void doDumpedSelected ();
    void stapleSelected ();
+   void doStapleSelected ();
 
    //@Section helper methods
+   void enableHumanHand ();
    void enableCard (unsigned int pos);
    static bool containsOnlyJoker (const std::vector<CardWidget*>& pile);
    static bool containsNoJoker (const std::vector<CardWidget*>& pile);
@@ -113,8 +116,8 @@ class Buraco : public Game {
    Gtk::HBox      boxTeam[2];
 
    Gtk::Label     newPile;
-   PseudoInfoPile staple;
-   PseudoInfoPile dumped;
+   CardVInfoPile staple;
+   CardVInfoPile dumped;
    SigC::Connection dumpedTop;
    SigC::Connection stapleTop;
 
