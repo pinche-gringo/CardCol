@@ -33,6 +33,8 @@
 
 #include <glib.h>
 
+#define CHECK 8
+#define TRACELEVEL 8
 #include <Check.h>
 #include <Trace_.h>
 
@@ -368,7 +370,7 @@ Twopart::Twopart ()
 
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.setShowOption (ICardPile::SHOWBACK);
-      players[i].hand.setShowOption (ICardPile::SHOWFACE);
+      players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
    }
 }
 
@@ -466,13 +468,21 @@ void Twopart::userWants2End (unsigned int input) {
          status.pop (1);
          status.push (1, _("User canceled"));
 
-         statGame = (statGame == AUTOPLAYING) ? TOSTOP : STOPPED;
+         statGame = actPlayer ? TOSTOP : STOPPED;
          if (restart)
             startGame ();
          else
             cleanTable ();
       }
    }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Enables the cards of the actual player
+/*--------------------------------------------------------------------------*/
+int Twopart::enableActPlayer () {
+   enablePlayer (actPlayer);
+   return 0;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -554,7 +564,7 @@ void Twopart::playedSelected (unsigned int player) {
    TRACE7 ("Twopart::playedSelected (unsigned int) - Continuing with player "
            << actPlayer);
 
-   makeComputerMoves ();
+   makeNextMoves ();
    disableLastPlayer ();
 }
 
@@ -569,6 +579,8 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player, unsigned int pos) {
    Check3 (pos <= players[player].hand.numberOfCards ());
    TRACE5 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsigned int) - Player: "
            << player << " at position " << pos);
+
+   Check3 ((statGame == PLAYING) || (statGame == PLAYING2));
 
    if (statGame == PLAYING) {
       CardWidget& card (players[player].hand.remove (pos));
@@ -594,6 +606,7 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player, unsigned int pos) {
       
       // Perform validity-check in part 2: Card must have the same color and be
       // bigger than the last played card or be a (bigger) trump
+      Check3 (pTrump);
       if (played.numberOfCards ()
           && ((color == pTrump->color ())
               ? ((played.getTopCard ().color () == pTrump->color ())
@@ -644,12 +657,28 @@ void Twopart::cardSelected (unsigned int player, unsigned int pos) {
    Check3 (pos <= players[player].hand.numberOfCards ());
    Check3 ((statGame == PLAYING) || (statGame == PLAYING2));
 
+   executeMove (player, pos);
+   makeNextMoves ();
+   disableLastPlayer ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback after clicking on a card in hand
+//Parameters: player: ID of player
+//            iCard: Offset of card in hand
+/*--------------------------------------------------------------------------*/
+void Twopart::executeMove (unsigned int player, unsigned int pos) {
+   TRACE5 ("Twopart::executeMove (unsigned int, unsigned int) - Player: "
+           << player << " at position " << pos);
+   Check3 (player <= NUM_PLAYERS);
+   Check3 (pos <= players[player].hand.numberOfCards ());
+
    if (!moveSelectedCardToPlayed (player, pos))
       return;
 
    // Check if every player still in game or has already played; end round if so
    // or calculate next player if not
-   TRACE7 ("Twopart::cardSelected (unsigned int, unsigned int) - Players: "
+   TRACE7 ("Twopart::executeMove (unsigned int, unsigned int) - Players: "
            << hex << bfPlayers << dec);
    removePlayer (actPlayer = player);
    int newPlayer (actPlayer);
@@ -678,37 +707,47 @@ void Twopart::cardSelected (unsigned int player, unsigned int pos) {
       status.pop (1);
       status.push (1, str);
 
-      disableLastPlayer ();
       if (statGame == PLAYING)
          startPartTwo (actPlayer);
       else
          statGame = STOPPED;
    }
-   else {
+   else
       actPlayer = newPlayer;
-      makeComputerMoves ();
-      disableLastPlayer ();
-   }
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Makes the move for a computer player.
+//Purpose   : Makes the move for the next player.
 //Returns   : int: Flag for timer, if it should continue (0: no; else: yes)
 /*--------------------------------------------------------------------------*/
-int Twopart::makeComputerMove () {
+int Twopart::makeNextMove () {
    if (statGame == TOSTOP) {
-      TRACE8 ("Twopart::makeComputerMove () - End game ");
+      TRACE8 ("Twopart::makeNextMove () - End game ");
       statGame = STOPPED;
       if (restart)
          startGame ();
       return 0;
    }
 
-   TRACE5 ("Twopart::makeComputerMove () - Turn of player " << actPlayer);
-   Check3 ((statGame == AUTOPLAYING) || (statGame == AUTOPLAYING2));
-   statGame = (statGame == AUTOPLAYING) ? PLAYING : PLAYING2;
-   enablePlayer (actPlayer);
-   return 0;
+
+   TRACE5 ("Twopart::makeNextMove () - Turn of player " << actPlayer);
+   Check3 (actPlayer);
+   Check3 ((statGame == PLAYING) || (statGame == PLAYING2));
+   if (pos2Play == -1) {
+      pos2Play = 0;
+      players[actPlayer].hand.at (pos2Play).showFace ();
+      return 1;
+   }
+
+   executeMove (actPlayer, pos2Play);
+   pos2Play = -1;
+
+   // If turn of human player: Stop computer playing
+   if (!actPlayer) {
+      TRACE5 ("Twopart::makeNextMove () - Enable human");
+      enablePlayer (0);
+   }
+   return actPlayer;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -985,7 +1024,7 @@ void Twopart::cleanTable () {
    staple.clear ();                                             // Clear staple
    for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
       players[i].hand.clear ();
-      players[i].hand.setStyle (ICardPile::NORMAL);
+      players[i].hand.setStyle (i ? ICardPile::COMPRESSED : ICardPile::NORMAL);
       players[i].won.clear ();
    }
    played.clear ();
@@ -996,6 +1035,8 @@ void Twopart::cleanTable () {
       delete pTrump;
       pTrump = NULL;
    }
+
+   pos2Play = -1;
 }
 
 /*--------------------------------------------------------------------------*/

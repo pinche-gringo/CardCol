@@ -45,8 +45,8 @@ class Twopart : public XApplication {
    enum { NEW, END, EXIT, DEBUG, ABOUT };
 
    // Status of game
-   enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, PLAYING2, AUTOPLAYING,
-          AUTOPLAYING2 } statGame;
+   enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, PLAYING2 };
+   int statGame;
 
    // Protected manager functions
    Twopart (const Twopart&);
@@ -58,8 +58,10 @@ class Twopart : public XApplication {
    void playedSelected (unsigned int player);
 
    // Helper functions
+   void executeMove (unsigned int player, unsigned int iCard);
    void movePlayedCardsToPlayer (unsigned int nrPlayer, unsigned int start = 0);
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int iCard);
+   int  enableActPlayer ();
    void enablePlayer (unsigned int player);
    void disableLastPlayer ();
    int  findNextPlayer (unsigned int player);
@@ -81,12 +83,14 @@ class Twopart : public XApplication {
       actPlayer = player;
       Gtk::Main::timeout.connect (slot (this, &Twopart::startPartTwoTimerFnc), 100); }
 
-   int makeComputerMove ();
-   void makeComputerMoves () {
+   int makeNextMove ();
+   void makeNextMoves () {
       TRACE9 ("Twopart::makeComputerMoves () - *** Start timer ***");
       Check3 ((statGame == PLAYING) || (statGame == PLAYING2));
-      statGame = (statGame == PLAYING) ? AUTOPLAYING : AUTOPLAYING2;
-      Gtk::Main::timeout.connect (slot (this, &Twopart::makeComputerMove), 100); }
+      Gtk::Main::timeout.connect (slot (this, actPlayer
+                                        ? &Twopart::makeNextMove
+                                        : &Twopart::enableActPlayer),
+                                  actPlayer ? 700 : 50); }
 
    int endRound ();
 
@@ -109,6 +113,7 @@ class Twopart : public XApplication {
    unsigned int bfOldPlayers;  // Array indicating players while starting round
 
    bool restart;
+   int  pos2Play;
 
    // Columns and rows for the cards of the players
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
