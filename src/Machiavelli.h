@@ -87,6 +87,7 @@ class Machiavelli : public Game {
    void setStartPlayer ();
    unsigned int findNextPlayer (unsigned int player) const;
    MachiPile& makeNewPile ();
+   MachiPile& makeNewPile (unsigned int pos);
    void removePile (unsigned int pile);
    unsigned int showCardsToPlay (unsigned int player);
    void dealCard (unsigned int player);
