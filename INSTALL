@@ -44,7 +44,7 @@ Inside the directory containing the source code type
   mv Makefile.am~ Makefile.am
   mv configure.in~ configure.in
   libtoolize
-  aclocal && automake -a && autoconf && autoheader
+  aclocal && autoheader && automake -a && autoconf
   ./configure [configure-options]
   make [make-options]
 
