@@ -69,8 +69,7 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
      , dumped (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWFACE)
      , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
-     , target (-1U)
-     , pScoreDlg (NULL) {
+           "std::vector<Glib::ustring>&)");
 
    for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
        scrlTable[i] = new Gtk::ScrolledWindow ();
@@ -741,16 +740,15 @@ void Buraco::enableHumanHand () {
    Check3 (hands[0].size ());
    for (unsigned int i (0); i < hands[0].size (); ++i) {
       registerHandDND (i);
-   for (unsigned int i (0); i < hands[0].size (); ++i)
+      enableCard (i);
    }
+   Check3 (aDNDHand.size () == hands[0].size ());
+
    TRACE2 ("Buraco::enableHuman () - Human has " << hands[0].size ()
            << " cards");
 
    newPile.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    aDNDTable[NULL] = newPile.signal_drag_data_received ().connect
-   for (unsigned int i (0); i < hands[0].size (); ++i)
-      enableCard (i);
-
       (bind (mem_fun (*this, &Buraco::cardDroppedOnTable), -1U));
 
       (bind (slot (*this, &Buraco::cardDroppedOnTable), -1U));
@@ -945,12 +943,13 @@ void Buraco::dumpedSelected () {
 
       acceptCards = hands[0].size ();;
       if (dumped.size ())
+         movePile (hands[0], dumped);
    }
 
    // Enable the cards in humans hand, when idle (means: *after* this
    // signalhandler terminates)
    Glib::signal_idle ().connect
-   // signalhandler termintes)
+       (bind_return (mem_fun (*this, &Buraco::enableHumanHand), false));
 }
        (bind_return (slot (*this, &Buraco::enableHumanHand), false));
 //-----------------------------------------------------------------------------
@@ -1177,6 +1176,16 @@ bool Buraco::humanPilesOK (unsigned int except) const {
 
    if ((acceptCards != -1U)
        && isJoker (moved) || (*pValue >= acceptCards)) {
+      context->drag_finish (false, false, time);
+      Gtk::MessageDialog dlg (_("You must play your cards (without \"monos\"), when you picked up the pile!"),
+                              Gtk::MESSAGE_ERROR);
+      dlg.set_title (_("Invalid move"));
+      dlg.run ();
+      return;
+   }
+
+   // Move dropped card to a (new) pile on the table
+   unsigned int iPile;
    if (iCard == -1U) {    // If card was dropped on the new label: Create pile
       // Only allow dropping on new pile while having < 5 cards, if the game
       // can be ended, or there is still the reserve
@@ -1285,7 +1294,11 @@ bool Buraco::humanPilesOK (unsigned int except) const {
 
    // Re-register the cards in the hand of the human for DND
    if (*pValue < hands[0].size ())
-  // Re-register the cards in the hand for DND
+   // Re-register the cards in the hand of the human for DND; accept again the
+   // jokers, if the pile has has now three cards (jokers are disabled, if the
+   // human picked up the dumped pile.
+   if (pile->size () == 3)
+      acceptCards = -1U;
    Check3 (aDNDHand.size () == hands[0].size ());
 }
 

@@ -172,6 +172,8 @@ class Buraco : public Game {
    std::map<CardWidget*, CONNECTIONS> aDNDHand;
    std::map<CardWidget*, SigC::Connection> aDNDTable;
 
+   unsigned int acceptCards;
+
    static std::vector<Gtk::TargetEntry> dndType;
 
    struct {
