@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.2 ($Revision$)\n"
-"POT-Creation-Date: 2002-09-28 22:06-0500\n"
+"POT-Creation-Date: 2002-11-11 22:07-0500\n"
 "PO-Revision-Date: 2002-04-28 00:15-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -14,43 +14,43 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: bin/Rovhult.cpp:376
+#: bin/Rovhult.cpp:383
 msgid "After a 7, the played card must be equal or smaller!"
 msgstr "¡Despues de un 7, the proxima carta tiene que ser igual o menor!"
 
-#: bin/Rovhult.cpp:380
+#: bin/Rovhult.cpp:387
 msgid "Played card must be equal or bigger!"
 msgstr "¡La carta juegodo tiene que ser mejor!"
 
-#: bin/Rovhult.cpp:384
+#: bin/Rovhult.cpp:391
 msgid "Invalid move"
 msgstr "Tocado invalido"
 
-#: bin/Rovhult.cpp:468 bin/Twopart.cpp:338
+#: bin/Rovhult.cpp:480 bin/Twopart.cpp:350
 #, ycp-format
 msgid "Player %1 lost"
 msgstr "Juegador %1 perdió"
 
-#: bin/Rovhult.cpp:476
+#: bin/Rovhult.cpp:488
 #, ycp-format
 msgid "Skipping player %1; "
 msgstr "Ignora juegador %1; "
 
-#: bin/Rovhult.cpp:484
-#, ycp-format
-msgid "Player %1 can't continue -> Getting whole pile. "
-msgstr "Juegador %1 no puede continuar -> Consegue todo del staple. "
-
-#: bin/Rovhult.cpp:493
+#: bin/Rovhult.cpp:494
 msgid "Pile cleared; "
 msgstr "Staple borrado; "
+
+#: bin/Rovhult.cpp:654
+#, ycp-format
+msgid "Player %1 can't continue -> Taking whole pile. "
+msgstr "Juegador %1 no puede continuar -> Consegue todo del staple. "
 
 #: bin/Rovhult.cpp:814
 msgid ""
 "Exchange the cards in your hand with the one on the table (with drag and "
 "drop) - press space (or click on staple) if finished"
 msgstr ""
-"Cambia las cartas en la mano con las encima de la mesa (- con ???) - despues "
+"Cambia las cartas en la mano con las encima de la mesa (con ???) - despues "
 "empuja la tecla espacio (o hace click en el estaple)"
 
 #: Common/CardImgs.cpp:92 Common/CardImgs.cpp:119
@@ -62,26 +62,26 @@ msgstr ""
 "Fichero \"%1\" no contiene una imagen!\n"
 "Causa: %2"
 
-#: Common/CardPile.h:273
+#: Common/CardPile.h:271
 #, ycp-format
 msgid "%1 card"
 msgid_plural "%1 cards"
 msgstr[0] "%1 carta"
 msgstr[1] "%1 cartas"
 
-#: bin/Twopart.cpp:256
+#: bin/Twopart.cpp:268
 msgid ""
 "Played card(s) must have the same color and must be bigger (or be a trump)!"
 msgstr ""
 "¡Cartas juegoadas tienen que tener el mismo color y estar meyor (o estar "
 "un ???)!"
 
-#: bin/Twopart.cpp:337
+#: bin/Twopart.cpp:349
 #, c-format, ycp-format
 msgid "First part ended; Part 2 starts player %1"
 msgstr "Primero parte terminó; juegador %2 comienza el parte 2"
 
-#: bin/Twopart.cpp:374
+#: bin/Twopart.cpp:386
 #, ycp-format
 msgid "Player %1 can't continue -> Picking up last cards; "
 msgstr ""
@@ -151,7 +151,7 @@ msgstr "<ctl>C"
 
 #: bin/CardCol.cpp:298
 msgid "_Options"
-msgstr "_Opciones"
+msgstr "_Opciónes"
 
 #: bin/CardCol.cpp:298
 msgid "<alt>O"
@@ -159,7 +159,7 @@ msgstr "<alt>O"
 
 #: bin/CardCol.cpp:299
 msgid "_Change game"
-msgstr "_Cambiar juego"
+msgstr "Cambiar _juego"
 
 #: bin/CardCol.cpp:299
 msgid "<alt>C"
@@ -183,11 +183,11 @@ msgstr ""
 
 #: bin/CardCol.cpp:303
 msgid "_Change decks ..."
-msgstr "Cambiar cartas ..."
+msgstr "Cambiar _cartas ..."
 
 #: bin/CardCol.cpp:303
 msgid "<ctl>C"
-msgstr "<ctl>T"
+msgstr ""
 
 #: bin/CardCol.cpp:304
 msgid "_Save settings"
@@ -196,14 +196,6 @@ msgstr "Guardar opciónes"
 #: bin/CardCol.cpp:304
 msgid "<ctl>S"
 msgstr "<ctl>G"
-
-#: bin/CardCol.cpp:306
-msgid "_Debug"
-msgstr ""
-
-#: bin/CardCol.cpp:306
-msgid "<ctl>D"
-msgstr ""
 
 #: bin/CardCol.cpp:308
 msgid "_Help"
@@ -219,19 +211,19 @@ msgstr "_Sobre ..."
 
 #: bin/CardCol.cpp:309
 msgid "<ctl>A"
-msgstr "<ctl>s"
+msgstr "<ctl>S"
 
-#: bin/CardCol.cpp:394
+#: bin/CardCol.cpp:392
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
-"Un juego está activo. ¿Seguro que quieres terminarlo y comencer de nuevo?"
+"Un juego ya está activo. ¿Seguro que quieres terminarlo y comencer de nuevo?"
 
-#: bin/CardCol.cpp:407
+#: bin/CardCol.cpp:405
 msgid "Do you really want to end the game?"
 msgstr "¿Seguro que quieres terminar el juego activo?"
 
-#: bin/CardCol.cpp:435
+#: bin/CardCol.cpp:433
 #, ycp-format
 msgid ""
 "Anticopyright (A) 2002 Markus Schwab\n"
@@ -244,18 +236,18 @@ msgstr ""
 "\n"
 "Compilado al %1 al %2"
 
-#: bin/CardCol.cpp:447
+#: bin/CardCol.cpp:445
 msgid "A game is running. Do you really want to quit?"
-msgstr "Un juego está activo. ¿Seguro que quieres terminarlo y comencer de nuevo?"
+msgstr "Un juego está activo. ¿Seguro que quieres cerrar?"
 
-#: bin/CardCol.cpp:540
+#: bin/CardCol.cpp:538
 msgid "User canceled"
 msgstr "Usario terminó"
 
-#: bin/CardCol.cpp:567
+#: bin/CardCol.cpp:565
 msgid "Loading cardimages ..."
 msgstr "Abriendo las imagenes de las cartas ..."
 
-#: bin/CardCol.cpp:594
+#: bin/CardCol.cpp:596
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Comienca un juego nuevo con Ctrl+N (o Juego -> Nuevo)"

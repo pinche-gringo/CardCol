@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.2 ($Revision$)\n"
-"POT-Creation-Date: 2002-09-28 22:06-0500\n"
+"POT-Creation-Date: 2002-11-11 22:07-0500\n"
 "PO-Revision-Date: 2002-05-20 00:15-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -14,36 +14,36 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: bin/Rovhult.cpp:376
+#: bin/Rovhult.cpp:383
 msgid "After a 7, the played card must be equal or smaller!"
 msgstr "Nach einer 7 muß die nächste Karte kleiner oder gleich sein!"
 
-#: bin/Rovhult.cpp:380
+#: bin/Rovhult.cpp:387
 msgid "Played card must be equal or bigger!"
 msgstr "Die Karte muß größer oder gleich der letzten gespielten Karte sein!"
 
-#: bin/Rovhult.cpp:384
+#: bin/Rovhult.cpp:391
 msgid "Invalid move"
 msgstr "Ungültiger Zug"
 
-#: bin/Rovhult.cpp:468 bin/Twopart.cpp:338
+#: bin/Rovhult.cpp:480 bin/Twopart.cpp:350
 #, ycp-format
 msgid "Player %1 lost"
 msgstr "Spieler %1 hat verloren"
 
-#: bin/Rovhult.cpp:476
+#: bin/Rovhult.cpp:488
 #, ycp-format
 msgid "Skipping player %1; "
 msgstr "Überspringe Spieler %1; "
 
-#: bin/Rovhult.cpp:484
-#, ycp-format
-msgid "Player %1 can't continue -> Getting whole pile. "
-msgstr "Spieler %1 kann nicht fortsetzen und bekommt daher den ganzen Stapel. "
-
-#: bin/Rovhult.cpp:493
+#: bin/Rovhult.cpp:494
 msgid "Pile cleared; "
 msgstr "Stapel geleert; "
+
+#: bin/Rovhult.cpp:654
+#, ycp-format
+msgid "Player %1 can't continue -> Taking whole pile. "
+msgstr "Spieler %1 kann nicht fortsetzen und bekommt daher den ganzen Stapel. "
 
 #: bin/Rovhult.cpp:814
 msgid ""
@@ -62,26 +62,26 @@ msgstr ""
 "Kann kein Bild aus der Datei '%1' laden!\n"
 "Ursache: %2"
 
-#: Common/CardPile.h:273
+#: Common/CardPile.h:271
 #, ycp-format
 msgid "%1 card"
 msgid_plural "%1 cards"
 msgstr[0] "%1 Karte"
 msgstr[1] "%1 Karten"
 
-#: bin/Twopart.cpp:256
+#: bin/Twopart.cpp:268
 msgid ""
 "Played card(s) must have the same color and must be bigger (or be a trump)!"
 msgstr ""
 "Die gespielten Karten müssen the gleiche Farbe haben und größer\n"
 "(oder eine Trumpfkarte) sein!"
 
-#: bin/Twopart.cpp:337
+#: bin/Twopart.cpp:349
 #, c-format, ycp-format
 msgid "First part ended; Part 2 starts player %1"
 msgstr "Erster Teil beendet; Spieler %1 startet den 2. Teil"
 
-#: bin/Twopart.cpp:374
+#: bin/Twopart.cpp:386
 #, ycp-format
 msgid "Player %1 can't continue -> Picking up last cards; "
 msgstr ""
@@ -197,14 +197,6 @@ msgstr "_Speichere Einstellungen"
 msgid "<ctl>S"
 msgstr ""
 
-#: bin/CardCol.cpp:306
-msgid "_Debug"
-msgstr ""
-
-#: bin/CardCol.cpp:306
-msgid "<ctl>D"
-msgstr ""
-
 #: bin/CardCol.cpp:308
 msgid "_Help"
 msgstr "_Hilfe"
@@ -221,17 +213,17 @@ msgstr "_Über"
 msgid "<ctl>A"
 msgstr ""
 
-#: bin/CardCol.cpp:394
+#: bin/CardCol.cpp:392
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 "Ein Spiel läuft bereits. Soll wirklich abgebrochen und neu gestartet werden?"
 
-#: bin/CardCol.cpp:407
+#: bin/CardCol.cpp:405
 msgid "Do you really want to end the game?"
 msgstr "Soll das Spiel wirklich beendet werden?"
 
-#: bin/CardCol.cpp:435
+#: bin/CardCol.cpp:433
 #, ycp-format
 msgid ""
 "Anticopyright (A) 2002 Markus Schwab\n"
@@ -244,19 +236,19 @@ msgstr ""
 "\n"
 "Übersetzt am %1 um %2"
 
-#: bin/CardCol.cpp:447
+#: bin/CardCol.cpp:445
 msgid "A game is running. Do you really want to quit?"
 msgstr ""
 "Ein Spiel läuft bereits. Soll wirklich abgebrochen und neu gestartet werden?"
 
-#: bin/CardCol.cpp:540
+#: bin/CardCol.cpp:538
 msgid "User canceled"
 msgstr "Benutzer hat abgebrochen"
 
-#: bin/CardCol.cpp:567
+#: bin/CardCol.cpp:565
 msgid "Loading cardimages ..."
 msgstr "Lade Kartenbilder ..."
 
-#: bin/CardCol.cpp:594
+#: bin/CardCol.cpp:596
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Starte ein neues Spiel mit Strg+N (oder Spiel -> Neu)"
