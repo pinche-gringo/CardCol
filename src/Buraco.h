@@ -23,6 +23,7 @@
 #include <vector>
 
 #include <gtkmm/label.h>
+#include <gtkmm/statusbar.h>
 
 #include <CardSet.h>
 #include <CardPile.h>
@@ -40,7 +41,6 @@ class Burazno : public Game {
    virtual void start ();
    virtual void clean ();
    virtual const char* name () { return "Burazno"; }
-   virtual void updateCards ();
 
  private:
    Burazno (const Burazno& other);
@@ -59,7 +59,21 @@ class Burazno : public Game {
    void stapleSelected ();
 
    //@Section helper methods
-   void randomizeClonedCardsToPile (ICardPile& pile);
+   void enableCard (unsigned int pos);
+   bool containsOnlyJoker (std::vector<CardWidget*>& pile) const;
+   bool containsNoJoker (std::vector<CardWidget*>& pile) const;
+   void addReserve (ICardPile& pile, unsigned int player);
+   bool isJoker (CardWidget& card) const;
+   int  executeMove (unsigned int player);
+
+   //@Section to handle piles on table
+   CardVPile& makeNewPile (unsigned int team);
+   bool cardFitsOnPlayedPile (unsigned int player, unsigned int card);
+   int  cardFitsOnPile (CardVPile& pile, CardWidget& card) const;
+   void playCardOnPile (CardVPile& pile, unsigned int player, unsigned int card,
+                        unsigned int pos = 0);
+   void removeBurazno (unsigned int player, CardVPile& pile);
+   void updateInfo ();
 
    //@Section DND
    void registerTableDND (unsigned int pile, unsigned int start, unsigned int end);
@@ -78,15 +92,16 @@ class Burazno : public Game {
                             gint, GtkSelectionData* pData, guint, guint32 time,
                             unsigned int cardPile);
 
-   void enableCard (unsigned int pos);
-
    CardHPile handHuman;
    ICardPile hands[NUM_PLAYERS - 1]; // For computer players: Cards in the hand
-   std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];
+   std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];      // Piles on table
+   std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
+   unsigned int buraznos[NUM_PLAYERS >> 1];          // Number of buraznos/team
 
    unsigned int startPlayer;
 
-   Gtk::HBox boxTeam[2];
+   Gtk::Statusbar info;
+   Gtk::HBox      boxTeam[2];
 
    Gtk::Label     newPile;
    PseudoInfoPile staple;
@@ -97,10 +112,10 @@ class Burazno : public Game {
    std::map<CardWidget*, SigC::Connection> aDNDHand;
    std::map<CardWidget*, SigC::Connection> aDNDTable;
 
-   std::vector<CardVPile*>  aPiles;
-   std::vector<CardWidget*> deck;
 
    static std::vector<Gtk::TargetEntry> dndType;
+
+   bool startTurn;
 };
 
 #endif
