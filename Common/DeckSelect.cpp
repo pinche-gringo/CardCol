@@ -3,7 +3,7 @@
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Common/DeckSelect
 //REFERENCES  :
-//TODO        : - Use button labels from General-lib
+//TODO        :
 //BUGS        :
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
@@ -158,7 +158,6 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
       if ((aFiles[0] + dir->name ()) == back)
          backSelect (offset);
 
-
       backs.resize (((offset - offsetBack) >> 2) + 1, 4);
       backs.attach (*temp, (offset - offsetBack) & 0x3, ((offset - offsetBack) & 0x3) + 1,
                     (offset - offsetBack) >> 2, ((offset - offsetBack) >> 2) + 1,
@@ -207,7 +206,8 @@ void ICarddeckSelectDlg::deckSelect (unsigned int offset) {
    TRACE3 ("ICarddeckSelectDlg::deckSelect (const std::string&) - Selected "
            << aFiles[0] << aFiles[offset]);
 
-   setButtonImage (selDeck, aFiles[0] + aFiles[offDeck = offset]);
+   setButtonImage (selDeck, aFiles[0] + aFiles[offDeck = offset]
+                   + '/' + DEFAULTFILE);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -239,6 +239,7 @@ void ICarddeckSelectDlg::command (int action) {
 //Parameters: file: File containing the image
 /*--------------------------------------------------------------------------*/
 Gtk::Button* ICarddeckSelectDlg::createButton (const std::string& file) {
+   TRACE9 ("ICarddeckSelectDlg::createButton (const std::string&) - " << file);
    Gtk::Button* temp (new Gtk::Button ());
 
    setButtonImage (*temp, file);
@@ -252,12 +253,19 @@ Gtk::Button* ICarddeckSelectDlg::createButton (const std::string& file) {
 //            file: File containing the image
 /*--------------------------------------------------------------------------*/
 void ICarddeckSelectDlg::setButtonImage (Gtk::Button& button, const std::string& file) {
+   TRACE9 ("ICarddeckSelectDlg::setButtonImage (Gtk::Button&, const std::string&) - "
+           << file);
    Gdk::Color color;
    Glib::RefPtr<Gdk::Pixmap> img;
 
    button.remove ();
-   img->create_from_xpm (get_window (), color, file);
+   img = Gdk::Pixmap::create_from_xpm (get_window (), color, file); Check3 (img);
+
+   int x, y;
    button.add_pixmap (img, Glib::RefPtr<Gdk::Bitmap> (NULL));
+   img->get_size (x, y);
+   button.set_size_request (x + 6, y + 6);
+
    button.set_relief (Gtk::RELIEF_NONE);
-   dynamic_cast <Gtk::Image*> (selBack.get_child ())->set_alignment (0.0, 0.0);
+   dynamic_cast <Gtk::Image*> (button.get_child ())->set_alignment (0.0, 0.0);
 }
