@@ -73,10 +73,10 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    get_vbox ()->pack_start (boxBack, true, true, 5);
 
    std::string cardDirs (path ? path : CARDDECKS_DIR);
-   aFiles.push_back (cardDirs);
    if (cardDirs.size ()
        && (cardDirs[cardDirs.size () - 1] != YGP::File::DIRSEPARATOR))
       cardDirs += YGP::File::DIRSEPARATOR;
+   aFiles.push_back (cardDirs);
    cardDirs += "cards-*";
    YGP::DirectorySearch ds (cardDirs);
 
@@ -173,6 +173,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
       apply.signal_clicked ().connect
 	 (bind (mem_fun (*this, &ICarddeckSelectDlg::command), Gtk::RESPONSE_APPLY));
       get_action_area ()->pack_end (apply, false, false, 5);
+      apply.show ();
    }
    else
       ok->set_sensitive (false);
