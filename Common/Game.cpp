@@ -613,7 +613,7 @@ void Game::writeMessage (Socket& socket, const std::string& msg) {
 //----------------------------------------------------------------------------
 void Game::writeError (Socket& socket, unsigned int rc, const std::string& msg) {
    std::ostringstream error;
-   error << "Error=" << rc << ";Msg=\"" + msg << '"';
+   error << "Error=" << rc << ";Msg=\"" + msg << "\"\0";
    writeMessage (socket, error.str ());
 }
 
