@@ -1,0 +1,116 @@
+ <!-- -*-HTML-*- -->
+<!-- $Id$ -->
+
+<!--
+  Anti-Copyright (A) 2003 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//DE"
+        "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <title>Machiavelli - Sortiere Karten bis der Kopf raucht</title>
+    <meta name="description" content="Dokumentation des Machiavelli Kartenspiels">
+    <meta name="keywords" content="Dokumentation, Doku, Buraco, Spiel, Karten, Kartenspiel">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2003-11-29">
+    <meta name="DC.Rights" content="Anticopyright (A) 2003, distributed under the GNU Free Documentation License">
+  </head>
+
+  <body>
+    <h1 align="center">Machiavelli</h1>
+    <hr size=2>
+
+    <p>Machiavelli lernte ich von einem Schweizer, der es seinerseits von
+      Italienern gelernt hat. Und genausowenig, wie ich die Herkunft (exakt)
+      kenne, bin ich mir beim Namen sicher ...</p>
+
+    <p>Wie auch immer - die Spielregeln:</p>
+
+    <p>Es geht darum, Stapel von "zusammenpassenden" Karten abzulegen und und
+      so alle seine Karten loszuwerden.  Zusammenpassend bedeutet, da&szlig;
+      entweder die Nummer gleich ist (unabh&auml;ngig von der Farbe, wobei
+      aber jede Farbe lediglich einmal vorkommen darf) oder die Farbe gleich,
+      und die Nummern in einer fortlaufenden Serie sind (As als Eins, Zwei,
+      Drei, ..., Zehn, Bube, Dame, K&ouml;nig, As).</p>
+
+    <p>Jeder Stapel am Tisch mu&szlig; dabei mindestens 3 Karten aufweisen.</p>
+
+    <p>Jeder Spieler startet seinen Zug mit der Aufnahme einer Karte (diese
+      wird automatisch zugeteilt). Danach kann er entweder Karten an
+      bestehende Stapel anlegen, diese beliebig umsortieren, neue Stapel
+      bilden - kurz machen, was er will, solange am Ende des Zuges alle Stapel
+      den obigen Regeln entsprechen.</p>
+
+    <p>Abgelegt und/oder sortiert werden die Karten mit Ziehen und Ablegen -
+      drag and drop<a href="Machiavelli.html.de#Note1"><sup>1</sup></a>.
+
+    <p>Kann/will der Spieler keine Karten ablegen, setzt der n&auml;chste
+      Spieler setzt (im Uhrzeigersinn) fort. Dies wird durch Anklicken des
+      Reservestapels angezeigt. Sollten dabei Stapel in einem ung&uuml;tigen
+      Zustand sein, erscheint ein Fenster mit einer Fehlerinformation. Dieses
+      Fenster erm&ouml;glicht auch ein Undo des letzten (oder aller)
+      Z&uuml;ge.</p>
+
+    <p>Der letzte Spieler, der noch Karten &uuml;brig hat, hat verloren.</p>
+
+    <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
+
+    <h2>Anmerkungen zum Layout</h2>
+    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+      unten):</p>
+
+    <ul>
+      <li>Den Reservestapel: Ein Haufen von (verdeckten) Karten, von dem
+        neue Karten aufgenommen werden. Wird die Mauszeiger darauf
+        positioniert, erscheint ein kleines Fenster, das &uuml;ber die
+        Anzahl der &uuml;brigen Karten informiert.</li>
+      <li>Die Karten des Spielers. Anfangs sortiert nach Farber, aber mit
+        Ziehen und Ablegen (drag und drop)<a
+        href="Machiavelli.html.de#Note1"><sup>1</sup></a> sortierbar.</li>
+      <li>Die Stapel am Tisch. Zu diesen Karten k&ouml;nnen mit Ziehen
+        und Ablegen (drag und drop)<a
+        href="Machiavelli.html.de#Note1"><sup>1</sup></a> weitere Karten
+        hinzugef&uuml;gt werden, beziehungsweise k&ouml;nnen diese an andere
+        Stapel angef&uuml;gt werden.</li>
+      <li>In der letzten Reihe sind die Karten der weiteren Computer-Spieler.</li>
+    </ul>
+    
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      Ziehen und Ablegen bedeutet, eine Karte mit der <em>rechten</em> (oder
+      mittleren) Maustaste anzuklicken, diese Taste festzuhalten un dann das
+      Objekt (die Karte, in unserem Fall) zu seinem Ziel zu ziehen. Das Ende
+      dieser Aktion wird durch Loslassen der Maustaste signalisiert.</p>
+
+    <hr size=3 noshade>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td><a href="Hearts.html.de">Vorherige</a><br>(Hearts)</td>
+        <td><a href="CardCol.html.de">&Uuml;berblick</a></td>
+        <td><a href="Røvhult.html.de">N&auml;chste</a><br>(Røvhult)</td>
+      </tr>
+    </table>
+  </body>
+</html>
