@@ -131,13 +131,13 @@ int Hearts::makeMove (unsigned int player) {
    Check3 (pos2Play == pos1Play);
 
    if (pos2Play == -1U) {
-      pos2Play = pos1Play = findPos2Play (correctPlayer (player));
+      pos2Play = pos1Play = findPos2Play (player);
       TRACE8 ("Hearts::makeMove (unsigned int) - Going to play card at pos " << pos2Play);
-      flipCards2Play (players[correctPlayer (player)].hand, pos1Play, pos2Play);
+      flipCards2Play (players[player].hand, pos1Play, pos2Play);
    }
    else {
       TRACE9 ("Hearts::makeMove (unsigned int) - Playing card at pos " << pos2Play);
-      ICardPile& pile (players[correctPlayer (player)].hand);
+      ICardPile& pile (players[player].hand);
       Check3 (pos2Play < pile.size ());
       aPlayed[pile[pos2Play]->colour ()]++;
       if ((pile[pos2Play]->colour () == CardWidget::SPADES)
@@ -169,7 +169,7 @@ void Hearts::start () {
    if (randomizeCardsToPile (pile)) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          for (unsigned int j (0); j < (cards.size () / NUM_PLAYERS); ++j)
-            players[correctPlayer (i)].hand.insertColourSorted (pile.removeTopCard ());
+            players[(i - posServer) & 0x3].hand.insertColourSorted (pile.removeTopCard ());
 
       if (pScoreDlg) {
          unsigned int player;
@@ -184,12 +184,13 @@ void Hearts::start () {
       if (player2Exchange) {
          Glib::ustring stat (_("Select 3 cards to exchange with %1"));
          Check3 (actPlayers.size () > player2Exchange);
-         Check3 (actPlayers[(player2Exchange + posServer) & 0x3]);
+         Check3 (actPlayers[player2Exchange & 0x3]);
          stat.replace (stat.find ("%1"), 2,
-                       actPlayers[(player2Exchange + posServer) & 0x3]->getName ());
+                       actPlayers[player2Exchange]->getName ());
          status.pop ();
          status.push (stat);
          setGameStatus (EXCHANGE);
+         setNextPlayer (0);
          enableHuman ();
       }
       else
@@ -350,7 +351,7 @@ void Hearts::startPlaying () {
        }
    Check3 (nextPlayer < NUM_PLAYERS);
 
-   setNextPlayer ((nextPlayer + posServer) & 0x3);
+   setNextPlayer (nextPlayer);
    ConnectionMgr& cmgr (getConnectionMgr ());
    if ((cmgr.getMode () == ConnectionMgr::NONE)
        || ((cmgr.getMode () == ConnectionMgr::SERVER)
@@ -395,19 +396,19 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       // Everyone played its card: Search for winner of played pile;
       // clear it and continue with winner
       player = (player - NUM_PLAYERS + check4Winner () + 1) & 0x3;
-      movePile (players[correctPlayer (player)].won, played);
+      movePile (players[player].won, played);
    }
    else
       player = ((player + 1) & 0x3);
 
-   if (!players[correctPlayer (player)].hand.size ()) {
+   if (!players[player].hand.size ()) {
       player = -1U;
       setGameStatus (STOPPED);
       if (!pScoreDlg) {
          // Resort player for score dialogue
          std::vector<Player*> player;
          for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-            player.push_back (actPlayers[(i + posServer) & 0x3]);
+            player.push_back (actPlayers[i]);
          
          pScoreDlg = ScoreDlg::create (player);
          pScoreDlg->get_window ()->set_transient_for (get_window ());
@@ -547,7 +548,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
 ///    - Get rid of high cards
 //-----------------------------------------------------------------------------
 void Hearts::exchangeCards () {
-   TRACE8 ("Hearts::exchangeCards () - with " << ((player2Exchange + posServer) & 0x3));
+   TRACE8 ("Hearts::exchangeCards () - with " << player2Exchange);
    Check3 (played.size () == 3);
 
    movePile (aExchange[0], played); Check9 (aExchange[0].size () == 3);
@@ -924,11 +925,14 @@ unsigned int Hearts::pointsOfPile (ICardPile& pile) {
 void Hearts::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
 
-   for (int i (0); i < NUM_PLAYERS; ++i)
-      players[correctPlayer (i)].name.set_text (actPlayers[i]->getName ());
+   std::vector<Player*> player;
+   for (int i (0); i < NUM_PLAYERS; ++i) {
+      player.push_back (actPlayers[(i + posServer) & 0x3]);
+      players[i].name.set_text (actPlayers[i]->getName ());
+   }
 
    if (pScoreDlg)
-      pScoreDlg->update (newPlayer);
+      pScoreDlg->update (player);
 }
 
 //----------------------------------------------------------------------------
