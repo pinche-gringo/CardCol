@@ -291,7 +291,7 @@ unsigned int Buraco::showCardsToPlay (unsigned int player) {
                  || reserve[player & 1].size ()
                  || (dumped.size () + playerPile.size () > 4)))) {
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-                 || (dumped.size () + playerPile.size () > 3)))) {
+            // Send played card to all clients (if any)
             std::ostringstream msg;
             msg << "Play=" << dumpedCard.id () << ";Target=3";
 
