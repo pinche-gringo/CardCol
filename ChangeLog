@@ -1,3 +1,84 @@
+2003-10-12  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.5.02 commented
+
+	* configure.in: Fixed test for libpthread
+
+	* po/de.po, po/en.po, po/es.po: Updated version number
+
+2003-10-10  Markus Schwab  <g17m0@lycos.com>
+
+	* INSTALL: Fixed install from CVS
+
+	* src/BuracoPile.cpp: Fixed bug replacing the joker in colour serie
+
+2003-10-09  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.5.01 commented
+
+	* po/de.po, po/en.po, po/es.po: Actualized
+
+	* src/BuracoPile.cpp: Fixed warnings when compiling with -Wall
+
+	* src/Buraco.cpp:
+	  Fixed handling colour series with aces; Fixed substracting unfinished monopiles
+
+	* src/CardCol.cpp:
+	  Disabling threads and communication part, if pthreads are not defined
+
+	* Common/Game.cpp: Fixed -Wall warnings in checks
+
+	* Common/Game.h: actPlayer delcared (again) as unsigned int
+
+	* Common/CardPile.cpp: Disabled traces
+
+	* configure.in: Version to 0.5.01; Testing explicitely for libpthread
+
+2003-10-05  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Rovhult.cpp, src/Twopart.cpp, src/Twopart.h, src/Buraco.cpp, src/Buraco.h, src/BuracoPile.h, src/CardCol.cpp, src/Hearts.cpp:
+	  Removed warnings when compiling with -Wall
+
+	* src/Makefile.am:
+	  Compiling with -Wall; added libintl-libraries to used libs
+
+	* Common/CardPile.cpp, Common/CardPile.h, Common/CardSet.cpp, Common/DeckSelect.cpp, Common/Game.cpp, Common/Game.h, Common/PlayerConnDlg.cpp:
+	  Fixed warnings when compiling with -Wall
+
+	* Common/Makefile.am:
+	  Added libintl-libraries to needed libs; Compiling with -Wall
+
+2003-10-04  Markus Schwab  <g17m0@lycos.com>
+
+	* src/BuracoPile.cpp:
+	  Fixed remove-methods; Removed isValid-check at insert; Fixed getPos4Card
+
+	* src/Buraco.cpp:
+	  Fixed posibility for player to play invalid sequences; minor other fixes
+
+2003-09-30  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Moved pile methods to BuracoPile; searching for best pile for cards
+
+	* src/Makefile.am: Added BuracoPile
+
+	* src/BuracoPile.h, src/BuracoPile.cpp:
+	  Added remove methods; Added couting; Fixes
+
+2003-09-29  Markus Schwab  <g17m0@lycos.com>
+
+	* src/BuracoPile.cpp, src/BuracoPile.h: New file.
+
+2003-09-18  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/ScoreDlg.cpp, src/HeartsScore.cpp:
+	  Changed playerNames (in a Check) to player
+
+	* configure.in: Removed (deprecatd) AC_PROG_RANLIB
+
+	* po/Makevars: New file.
+
 2003-09-08  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Latest changes added

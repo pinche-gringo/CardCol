@@ -1,3 +1,10 @@
+Overview of changes in version 0.5.02:
+
+  - Fixed bug in replacing the joker in colour series
+  - Fixed warning message about not installed libpthread, though it is installed
+  - Updated INSTALL (installation from CVS)
+  - Updated version info in po files (which holds the translated messages)
+
 Overview of changes in version 0.5.01:
 
   - Changed manual sorting of cards in hand of human players in Buraco
