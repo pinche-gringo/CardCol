@@ -457,13 +457,18 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
 //-----------------------------------------------------------------------------
 /// Shows or hides the won cards
 /// \param show: Flag if to show or to hide the cards
+/// \param style: Style how pile should be displayed; must be a value understood
+///     by ICardPile::setStyle
 //-----------------------------------------------------------------------------
-void Game::showWonCards (bool show) {
+void Game::showWonCards (bool show, unsigned int style) {
    if (pWonPile) {
+      if (style == -1U)
+	 style = show ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED;
+      Check3 (style < ICardPile::LAST);
+
       pWonPile->setShowOption (show ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
-      pWonPile->setStyle (show ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
-      Glib::signal_timeout ().connect
-         (mem_fun (*this, &Game::enableActWonCards), 50);
+      pWonPile->setStyle ((ICardPile::PileStyle)style);
+      Glib::signal_idle ().connect (mem_fun (*this, &Game::enableActWonCards));
       disableWonCards ();
    }
 }

@@ -152,7 +152,7 @@ class Game : public Gtk::Table {
 
    // Handling of won cards (if any)
    bool wonCardsSelected (GdkEvent *event);
-   void showWonCards (bool show = true);
+   virtual void showWonCards (bool show = true, unsigned int style = -1U);
    int  enableWonCards (ICardPile& pile) {
       pWonPile = &pile;
       return enableActWonCards (); }
