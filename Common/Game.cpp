@@ -712,7 +712,7 @@ bool Game::performCommand (unsigned int player, const char* msg) throw (std::str
       std::string playTo (command.getNextNode ('='));
       std::string strTarget (command.getNextNode (';'));
 
-      unsigned long target (-1U);
+      unsigned long target (-1UL);
       if (stringToNumber (target, strTarget.c_str ())
           || (playTo != "Target"))
          throw std::string ("Invalid target!");
