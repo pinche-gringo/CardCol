@@ -1,3 +1,8 @@
+Overview of changes in version 0.5.10:
+
+  - Games can be loaded and saved (if enabled while configuring) - this is
+    just an option for testing rare situations.
+
 Overview of changes in version 0.5.05:
 
   - Fixed positionating the joker in colour series (again)

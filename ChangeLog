@@ -1,3 +1,25 @@
+2003-11-05  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.5.10 commented
+
+	* po/de.po, po/en.po, po/es.po: Added messages to load/save a game
+
+	* INSTALL: Explaining new option enable-saving
+
+	* configure.in: Version to 0.5.10; Option enable-saving added
+
+2003-11-03  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp:
+	Games can read/save their iniatial state (order of the cards)
+
+	* Common/Game.cpp: Generalized setting order of cards for "randomize"
+
+	* src/Options.h: Storing filename for saving/loading
+
+	* Common/Game.h:
+	Methods to set/return the order of the cards for/of randomizeCardsToPile
+
 2003-11-03  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.5.05 commented
