@@ -295,8 +295,10 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
     { _("_New"),      _("<ctl>N"), NEW,   ITEM },
     { "",             "",          0,     SEPARATOR },
     { _("E_xit"),     _("<ctl>Q"), EXIT,  ITEM },
+#if TRACELEVEL > 0
     { _("_Options"),  _("<alt>O"), 0,     BRANCH },
     { _("_Debug"),    _("<ctl>D"), DEBUG, CHECKITEM },
+#endif
     { _("_Help"),     _("<alt>H"), 0,     LASTBRANCH },
     { _("_About..."), _("<ctl>a"), ABOUT, ITEM } };
 
@@ -403,6 +405,7 @@ void RovhultAppl::command (int menu) {
       delete_event_impl (0);
       break;
 
+#if TRACELEVEL > 0
    case DEBUG:
       for (int i (1); i < NUM_PLAYERS; ++i) {
          ICardPile::ShowOpt show (players[i].hand.getShowOption ());
@@ -414,6 +417,7 @@ void RovhultAppl::command (int menu) {
                                    : ICardPile::QUITE_COMPRESSED);
       }
       break;
+#endif
 
    default:
       Check3 (0);
@@ -1414,7 +1418,7 @@ int RovhultAppl::makeTurn (unsigned int player) {
 
    if (pos2Play == -1) {
       if ((pos2Play = findCard2Play (player)) < 0)
-         pos2Play = -pos2Play;
+         pos2Play = ~pos2Play;
       else
          flipCards2Play (player, pos2Play);
    }
@@ -1603,9 +1607,10 @@ int RovhultAppl::findCard2Play (unsigned int player) const {
             Check3 (i < 3);
          }
 
+         CardWidget& card (players[player].reserve[i].getTopCard ());
          TRACE7 ("RovhultAppl::findCard2Play (unsigned int) -  Playing invisible "
-                 "card " << players[player].reserve[i].getTopCard () << " at pos " << i);
-         return -i;
+                 "card " << card << " at pos " << i);
+         return cardValid (card.number (), true) ? i : ~i;
       }
       Check3 (0);
    }
