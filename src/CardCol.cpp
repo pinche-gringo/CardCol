@@ -659,7 +659,7 @@ const IVIOApplication::longOptions CardgameAppl::lo[] = {
    { IVIOAPPL_HELP_OPTION },
    { "game", 'g' },
    { "browser", 'b' },
-   { "help-dir", 'd' },
+   { "dir-help", 'd' },
    { "file", 'f' },
    { "version", 'V' },
    { NULL, '\0' } };
@@ -672,7 +672,7 @@ const IVIOApplication::longOptions CardgameAppl::lo[] = {
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE)
      , pThread (NULL), pCommThread (NULL), game (NULL)
-     , options (opts), oldGame (NONE), restart (false) {
+     , options (opts), oldGame (NONE), restart (false), playerPos (0) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
 
    setIconProgram (xpmGame);
@@ -867,8 +867,9 @@ void CardgameCollection::command (int menu) {
       break; }
 
    case CONNECT:
-      PlayerConnectDlg::perform (player, PORT, cmgr);
-      TRACE1 ("CardgameCollection::command (int) - " << cmgr.getMode ());
+      playerPos = PlayerConnectDlg::perform (player, PORT, cmgr);
+      TRACE1 ("CardgameCollection::command (int) - " << cmgr.getMode ()
+              << "; Pos: " << playerPos);
       if (cmgr.getMode () != ConnectionMgr::NONE) {
          if (cmgr.getMode () == ConnectionMgr::CLIENT) {
             status.pop ();
@@ -1112,8 +1113,6 @@ void CardgameCollection::userWants2End () {
 ///      window already exists
 //-----------------------------------------------------------------------------
 void* CardgameCollection::loadCards (void*) {
-   // 
-
    gdk_threads_enter ();
    Check3 (is_realized ());
    status.push (_("Loading cardimages ..."));
@@ -1185,16 +1184,17 @@ void* CardgameCollection::waitForMessages (void*) {
    std::string input;
    try {
       while (true) {
+         static unsigned int actClient (0);
+
          if (cmgr.getMode () == ConnectionMgr::CLIENT)
             cmgr.getSocket ()->read (input);
          else {
-            static unsigned int actClient (0);
             TRACE7 ("CardgameCollection::waitForMessage (void*) - Client: "
                     << actClient);
-
-            cmgr.getClients ()[actClient]->read (input);
-            if (++actClient == cmgr.getClients ().size ())
+            if (actClient == cmgr.getClients ().size ())
                actClient = 0;
+
+            cmgr.getClients ()[actClient++]->read (input);
          }
          TRACE7 ("CardgameCollection::waitForMessage (void*) - `" << input <<'\'');
          if (input.empty ())
@@ -1203,7 +1203,8 @@ void* CardgameCollection::waitForMessages (void*) {
          char* msg = new char [input.length () + 1];
          strcpy (msg, input.c_str ());
          Glib::signal_idle ().connect
-             (bind (slot (*this, &CardgameCollection::handleMessage), msg));
+             (bind (slot (*this, &CardgameCollection::handleMessage),
+                    actClient, msg));
       }
    }
    catch (std::string& error) {
@@ -1228,12 +1229,13 @@ void* CardgameCollection::waitForMessages (void*) {
 
 //----------------------------------------------------------------------------
 /// Handles received error messages
+/// \param player: Player sending the message (relative to server)
 /// \param msg: Received message to handle
 /// \remarks An error message is in the following format:
 ///    <pre>  <b>Error</b>=<tt>Number</tt>;<b>Msg</b>="<tt>message</tt>"</pre>
 /// \returns bool: True: Message was error message and has been processed; else false
 //----------------------------------------------------------------------------
-bool CardgameCollection::handleErrorMessage (char* msg) {
+bool CardgameCollection::handleErrorMessage (unsigned int player, char* msg) {
    TRACE5 ("CardgameCollection::handleErrorMessage (char*) - " << msg);
 
    AttributeParse ap;
@@ -1246,7 +1248,7 @@ bool CardgameCollection::handleErrorMessage (char* msg) {
       ap.assignValues (msg);
 
       if (error) {
-         std::string message (_("Client sent an error %1!\n\n%2"));
+         std::string message (_("Client sent an error (%1)!\n\n%2"));
          message.replace (message.find ("%1"), 2, ANumeric::toString (error));
          message.replace (message.find ("%2"), 2, errText);
 
@@ -1264,16 +1266,17 @@ bool CardgameCollection::handleErrorMessage (char* msg) {
 
 //----------------------------------------------------------------------------
 /// Handles received messages
+/// \param player: Player sending the message (relative to server)
 /// \param msg: Received message to handle
 /// \returns bool: False
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
-bool CardgameCollection::handleMessage (char* msg) {
-   TRACE5 ("CardgameCollection::handleMessage (char*) - " << msg);
+bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
+   TRACE5 ("CardgameCollection::handleMessage (unsigned int player, char*) - " << msg);
 
-   if (!handleErrorMessage (msg)) {
+   if (!handleErrorMessage (player, msg)) {
       if (game)
-         game->handleMessage (msg);
+         game->handleMessage (player, msg);
       else {
          std::string game;
          try {
@@ -1343,7 +1346,7 @@ void CardgameAppl::showHelp () const {
              << "  -g, --game ....... " << _("[GAME] Select game to start (default: Rovhult)\n")
              << "  -f, --file ....... " << _("[FILE] Use file as INI file\n")
              << "  -b, --browser .... " << _("[NAME] Browser to use to display the help\n")
-             << "  -d, --help-dir ... " << _("[DIR] Directory to search for help\n")
+             << "  -d, --dir-help ... " << _("[DIR] Directory to search for help\n")
              << "  -V, --version .... " << _("Output version information and exit\n")
              << "  -h, -?, --help ... " << _("Displays this help and exit\n\n")
 
