@@ -73,7 +73,6 @@ class CardWidget : public Gtk::EventBox {
 
  protected:
   virtual void on_clicked ();
-  virtual bool on_button_press_event (GdkEventButton* ev);
   virtual bool on_button_release_event (GdkEventButton* ev);
 
  private:
@@ -87,7 +86,6 @@ class CardWidget : public Gtk::EventBox {
    const CardImages& deck;
 
    static COLOURS transColour[4];
-   static gdouble saveX, saveY;
 };
 
 #endif
