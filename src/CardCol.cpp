@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 9.9.2002
-//COPYRIGHT   : Anticopyright (A) 2002, 2003
+//COPYRIGHT   : Copyright (C) 2002 - 2004
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -1062,7 +1062,7 @@ const char* CardgameCollection::getHelpfile () {
 /// Shows the about box for the program
 //-----------------------------------------------------------------------------
 void CardgameCollection::showAboutbox () {
-   std::string ver (_("Anticopyright (A) 2002, 2003 Markus Schwab"
+   std::string ver (_("Copyright (C) 2002 - 2004 Markus Schwab"
                       "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
    ver.replace (ver.find ("%1"), 2, __DATE__);
    ver.replace (ver.find ("%2"), 2, __TIME__);
@@ -1284,8 +1284,9 @@ void* CardgameCollection::waitForMessages (void* player) {
    YGP::Socket* sock ((iPlayer == -1) ? cmgr.getSocket () : cmgr.getClients ()[iPlayer]);
    Check3 ((iPlayer == -1) ? playerPos : true);
    iPlayer = (iPlayer == -1) ? (aPlayer.size () - playerPos) : (iPlayer + 1);
+   unsigned int cont (true);
    try {
-      while (true) {
+      while (cont) {
          sock->read (input);
 
          TRACE7 ("CardgameCollection::waitForMessage (void*) - `" << input << '\'');
@@ -1293,6 +1294,7 @@ void* CardgameCollection::waitForMessages (void* player) {
             std::string msg (_("Lost connection to %1!"));
             Check3 (static_cast<unsigned int>(iPlayer) < aPlayer.size ());
             msg.replace (msg.find ("%1"), 2, aPlayer[iPlayer]->getName ());
+            cont = false;
             throw msg;
          }
 
@@ -1317,19 +1319,15 @@ void* CardgameCollection::waitForMessages (void* player) {
       std::string msg (_("Error receiving data!\n\nReason: %1"));
       msg.replace (msg.find ("%1"), 2, error);
 
-      char* charmsg = new char [msg.length () + 1];
-      strcpy (charmsg, msg.c_str ());
       Glib::signal_idle ().connect
-          (bind (slot (*this, &CardgameCollection::showMessage), charmsg));
+          (bind (slot (*this, &CardgameCollection::showMessage), msg));
    }
    catch (std::domain_error& error) {
       std::string msg (_("Lost connection to %1!"));
       Check3 (static_cast<unsigned int> (iPlayer) < aPlayer.size ());
       msg.replace (msg.find ("%1"), 2, aPlayer[iPlayer]->getName ());
-      char* charmsg (new char [msg.length () + 1]);
-      strcpy (charmsg, msg.c_str ());
       Glib::signal_idle ().connect
-          (bind (slot (*this, &CardgameCollection::showMessage), charmsg));
+          (bind (slot (*this, &CardgameCollection::showMessage), msg));
    }
 
    return NULL;
@@ -1479,13 +1477,12 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
 /// \returns bool: False
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
-bool CardgameCollection::showMessage (char* msg) {
+bool CardgameCollection::showMessage (const std::string msg) {
    Gtk::MessageDialog* dlg (new Gtk::MessageDialog (msg, Gtk::MESSAGE_ERROR));
    dlg->set_title (PACKAGE);
    dlg->signal_response ().connect
        (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
    dlg->show ();
-   delete [] msg;
    return false;
 }
 #endif
