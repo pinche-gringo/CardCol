@@ -303,7 +303,7 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { "",                     "",          0,        SUBMENUEND },
     { _("_Change decks ..."), _("<ctl>C"), CHGDECKS, ITEM },
     { _("_Save settings"),    _("<ctl>S"), SAVESET,  ITEM },
-#if TRACELEVEL > 0
+#if TRACELEVEL >= 0
     { _("_Debug"),            _("<ctl>D"), DEBUG,    CHECKITEM },
 #endif
     { _("_Help"),             _("<alt>H"), 0,        LASTBRANCH },
@@ -443,14 +443,21 @@ void CardgameCollection::command (int menu) {
       break;
 
    case EXIT:
+      if (game && game->isRunning ()
+          && (XMessageBox::Show (_("A game is running. Do you really want to quit?"),
+                                 PACKAGE, XMessageBox::QUESTION | XMessageBox::YESNO)
+              != XMessageBox::YES))
+            break;
+
       delete_event_impl (0);
       break;
 
-#if TRACELEVEL > 0
+#if TRACELEVEL >= 0
    case DEBUG: {
       static bool open = false;
-      Check3 (game);
-      game->playOpen (open = !open);
+      open = !open;
+      if (game)
+         game->playOpen (open);
       break; }
 #endif
 
