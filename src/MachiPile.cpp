@@ -27,6 +27,8 @@
 
 #include <cardgames-cfg.h>
 
+#define CHECK 9
+#define TRACELEVEL 1
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ANumeric.h>
@@ -228,3 +230,108 @@ void MachiPile::checkIntegrity () throw (Glib::ustring) {
          throw error;
       }
 }
+
+//----------------------------------------------------------------------------
+/// Checks if this has a card matching to the ones passed in pair
+/// \param pair: Pile holding the pair to match
+/// \param match: Set to
+///    - Position of the card which matches the pair (if this card can be
+///      played directly)
+///    - Position where the pile has to split, so that the matching card can be
+///      played
+/// \param nr: Number of cards which has to be moved (1, if the card can be
+///    played directly, else the number of cards to move to "free" the matching
+///    one)
+/// \return bool: True, if a matching card can be found
+/// \remarks \c match and \c nr might be changed, even if no matching card is
+///     found!
+//----------------------------------------------------------------------------
+bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& match,
+                               unsigned int& nr) const {
+   Check1 (pair.size () == 2);
+   CardWidget *card (operator[] (0));
+   int diff (cardDistance (*pair[1], *pair[0]));
+   int diffTable (cardDistance (*pair[0], *card));
+   TRACE1 ("MachiPile::hasMatching3rd (ICardPile&) - Differences: "
+           << diff << '/' << diffTable);
+
+   if (diff < 0)
+      diff = -diff;
+
+   nr = 1;
+   match = end ();
+   switch (diff) {
+   case 0:                                                     // Equal numbers
+      if (diffTable) {
+         if ((diffTable > 2)
+             && (getType () == COLOUR)
+             && (((int)(size () - 4) > diffTable)
+                 || ((int)(size () - 1) == diffTable))
+             && (Check3 (diffTable < (int)size ()),
+                 pair.find (operator[] (diffTable)->id ()) == -1)) {
+            match = begin () + diffTable;
+            nr = end () - match;
+            if ((size () - 4) > (unsigned int)diffTable)
+               pair.clear ();
+         }
+      }
+      else {
+         if (getType () == NUMBER) {
+            match = begin ();
+            while (match != end ()) {
+               if (pair.find ((*match)->id ()) == -1)
+                  break;
+               ++match;
+            }
+         }
+         else
+            if (pair.find (card->id ()) == -1)
+               match = begin ();
+      }
+      break;
+
+   case 1:
+      if ((pair[0]->colour () == card->colour ())
+          && (getType () == COLOUR)) {
+         Check3 (pair[1]->colour () == card->colour ());
+         if ((diffTable == 2) || (!(size () - diffTable)))
+            match = begin () + diffTable;
+         else if ((diffTable == -1)
+                  || ((size () - diffTable) == 2))
+            match = end () - 1;
+         else
+            if ((size () > 6)
+                && ((diffTable - 3) > (int)size ())) {
+               pair.clear ();
+               match = end () - diffTable - 2;
+               nr = end () - match;
+            }
+      }
+      break;
+
+   case 2:
+      if ((pair[0]->colour () == card->colour ()) && (diffTable < 0)
+          && (getType () == COLOUR)) {
+         Check3 (pair[1]->colour () == card->colour ());
+         if ((diffTable == 1)
+             || ((size () - 1) == (unsigned int)diffTable))
+            match = begin () + diffTable - 1;
+         else
+            if ((size () > 6)
+                && ((diffTable - 3) > (int)size ())) {
+               pair.clear ();
+               match =  end () - diffTable - 2;
+               nr = end () - match;
+            }
+      }
+      break;
+
+   default:
+      Check3 (0);
+   } // end-switch
+
+   TRACE1 ("MachiPile::hasMatching3rd (ICardPile&) - Match "
+           << ((match != end ()) ? 'Y' : 'N') << "; " << nr);
+   return match != end ();
+}
+

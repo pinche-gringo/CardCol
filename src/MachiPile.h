@@ -42,6 +42,8 @@ class MachiPile : public CardHPile {
    CardWidget& remove (unsigned int pos, bool visible);
 
    unsigned int getPosition4Card (const CardWidget& card) const;
+   bool hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& match,
+                        unsigned int& nr) const;
 
    TYPE getType () const { return type; }
 
