@@ -271,8 +271,9 @@ int Machiavelli::makeMove (unsigned int player) {
       }
       else {
          Check3 (pos1Play <= pos2Play);
-         Check3 (pos2Play < hands[player].size ());
-         flipCards2Play (hands[player], pos1Play, pos2Play);
+         Check3 (pos2Play <= hands[player].size ());
+         if (pos2Play < hands[player].size ())
+            flipCards2Play (hands[player], pos1Play, pos2Play);
       }
    }
    else {
@@ -290,7 +291,7 @@ int Machiavelli::makeMove (unsigned int player) {
          unsigned int nr (posPile >> 16);
          pos = posPile & 0xff;
          TRACE9 ("Machiavelli::makeMove (unsigned int) - Add from " << pile
-                 << " cards " << pos << '-' << (pos + nr));
+                 << " cards " << pos << '-' << (pos + nr - 1));
 
          Check3 (pile < tablePiles.size ());
          Check3 ((pos + nr) <= tablePiles[pile]->size ());
@@ -306,25 +307,29 @@ int Machiavelli::makeMove (unsigned int player) {
          if (tablePiles[pile]->size () < 3)
             target = pile;
 
-         pos = tablePiles[target]->getPosition4Card (*hands[player][pos1Play]);
-         Check3 (pos != -1U);
+         if (pos2Play < hands[player].size ()) {
+            pos = tablePiles[target]->getPosition4Card (*hands[player][pos1Play]);
+            Check3 (pos != -1U);
+         }
          posPiles.pop ();
       }
 
       Check1 (pos1Play <= pos2Play);
 
+      if (pos2Play < hands[player].size ()) {
 #if CHECK > 2
-      for (unsigned int t (pos1Play); t < pos2Play; ++t) {
-         int diff (MachiPile::cardDistance (*hands[player][t + 1], *hands[player][t]));
-         TRACE1 ("Buraco::makeMove (unsigned int) - Card " << *hands[player][t]);
-         Check3 ((diff == 0) || (diff == 1));
-      }
+         for (unsigned int t (pos1Play); t < pos2Play; ++t) {
+            int diff (MachiPile::cardDistance (*hands[player][t + 1], *hands[player][t]));
+            TRACE1 ("Buraco::makeMove (unsigned int) - Card " << *hands[player][t]);
+            Check3 ((diff == 0) || (diff == 1));
+         }
 #endif
 
-      // Move the played cards to the pile to play
-      Check3 (hands[player].size () > pos2Play);
-      for (; (int)pos1Play <= (int)pos2Play; --pos2Play)
-         tablePiles[target]->insert (hands[player].remove (pos1Play), pos++);
+         // Move the played cards to the pile to play
+         Check3 (hands[player].size () > pos2Play);
+         for (; (int)pos1Play <= (int)pos2Play; --pos2Play)
+            tablePiles[target]->insert (hands[player].remove (pos1Play), pos++);
+      }
       target = -1U;
 
 #if CHECK > 2
@@ -944,7 +949,7 @@ unsigned int Machiavelli::cardFitsToPile (const CardWidget& card, unsigned int o
                << (m - tablePiles.begin ()) << " at " << diff << " (" << pos << ")?");
 
        // A new pile can be made directly (enough cards on both sides)
-       if (((pos > 2) && (diff > 2)) || ((pos > 3) && (diff > 1))) {
+       if ((pos > 2) && (diff > 1)) {
           // Move cards to remove to hand (to be shown); The card from the
           // hand will be added in the next move
           ++diff;
@@ -1010,13 +1015,22 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
       // First try to make piles with two cards from the hand
       while ((h = playerPile.getFittingCard (**p, h + 1, &MachiPile::cardDistance))
              != playerPile.end ()) {
-         int diff (MachiPile::cardDistance (**p, **h));
-         if ((diff < 0)                             // Only go for up-sequences
-             || ((diff == 0) && ((*p)->id () == (*h)->id ())))
+         int diff (MachiPile::cardDistance (**h, **p));
+         if ((diff == 0) && ((*p)->id () == (*h)->id ()))
             continue;
+
+         if (diff < 0) {                      // Special handling of Ace as one
+            Check3 (((*p)->number () == CardWidget::ACE)
+                    || ((*h)->number () == CardWidget::ACE));
+            std::swap (p, h);
+            diff = -diff;
+            Check3 (diff == MachiPile::cardDistance (**h, **p));
+         }
 
          work.append (**p);
          work.append (**h);
+         TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Pair: "
+                 << **p << " - " << **h);
 
          // Try to add from the table
          for (std::vector<MachiPile*>::const_iterator t (tablePiles.begin ());
@@ -1029,11 +1043,25 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
              int diffTable (MachiPile::cardDistance (**p, *card));
              TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Differences: "
                      << diff << '/' << diffTable);
+
+             MachiPile::iterator c ((*t)->end ());
+             unsigned int nr (1);
              switch (diff) {
              case 0:                                           // Equal numbers
-                if (!diffTable) {
-                   MachiPile::iterator c ((*t)->begin ());
+                if (diffTable) {
+                   if ((diffTable > 2)
+                       && ((*t)->getType () == MachiPile::COLOUR)
+                       && ((((*t)->size () - 4) > (unsigned int)diffTable)
+                           || (((*t)->size () - 1) == (unsigned int)diffTable))) {
+                      c = (*t)->begin () + diffTable;
+                      nr = (*t)->end () - c;
+                      if (((*t)->size () - 4) > (unsigned int)diffTable)
+                         work.clear ();
+                   }
+                }
+                else {
                    if ((*t)->getType () == MachiPile::NUMBER) {
+                      c = (*t)->begin ();
                       while (c != (*t)->end ()) {
                          if (work.find ((*c)->id ()) == -1)
                             break;
@@ -1041,34 +1069,76 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
                       }
                    }
                    else
-                      if (work.find (card->id ()) != -1)
-                         c = (*t)->end ();
-
-                   if (c != (*t)->end ()) {
-                      playerPile.move (pos1Play = p - playerPile.begin (),
-                                       h - playerPile.begin ());
-                      pos2Play = pos1Play + 1;
-                      posPiles.push (((t - tablePiles.begin ()) << 8)
-                                     + 0x10000 + c - (*t)->begin ());
-                      (*c)->mark ();
-                      makeNewPile ();
-                      return (tablePiles.size () - 1) << 16;
-                   }
+                      if (work.find (card->id ()) == -1)
+                         c = (*t)->begin ();
                 }
                 break;
 
              case 1:
+                if (((*p)->colour () == card->colour ())
+                    && ((*t)->getType () == MachiPile::COLOUR)) {
+                   Check3 ((*h)->colour () == card->colour ());
+                   if ((diffTable == 2) || (!((*t)->size () - diffTable)))
+                      c = (*t)->begin () + diffTable;
+                   else if ((diffTable == -1)
+                            || (((*t)->size () - diffTable) == 3))
+                      c = (*t)->end () - 1;
+                   else
+                       if (((*t)->size () > 6)
+                           && ((diffTable - 3) > (int)(*t)->size ())) {
+                          work.clear ();
+                          c = (*t)->end () - diffTable - 2;
+                      }
+                }
+                break;
+
              case 2:
+                if (((*p)->colour () == card->colour ()) && (diffTable < 0)
+                    && ((*t)->getType () == MachiPile::COLOUR)) {
+                   Check3 ((*h)->colour () == card->colour ());
+                   if ((diffTable == 1)
+                       || (((*t)->size () - 1) == (unsigned int)diffTable))
+                      c = (*t)->begin () + diffTable - 1;
+                   else
+                      if (((*t)->size () > 6)
+                          && ((diffTable - 3) > (int)(*t)->size ())) {
+                         work.clear ();
+                         c =  (*t)->end () - diffTable - 2;
+                         nr = (*t)->end () - c;
+                      }
+                   }
                 break;
 
              default:
                 Check3 (0);
+             } // end-switch
+
+             if (c != (*t)->end ()) {
+                if (work.size ()) {
+                   TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Hand "
+                           << (p - playerPile.begin ()) << "; " << h - playerPile.begin ());
+                   playerPile.move (pos1Play = h - playerPile.begin (),
+                                    p - playerPile.begin ());
+                   pos2Play = pos1Play + 1;
+                }
+                else
+                   pos1Play = pos2Play = playerPile.size ();
+
+                TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Pile "
+                        << (t - tablePiles.begin ()) << "; Cards "
+                        << (c - (*t)->begin ()) << '-' << (c - (*t)->begin () + nr - 1));
+                posPiles.push (((t - tablePiles.begin ()) << 8)
+                               + (nr << 16) + c - (*t)->begin ());
+                while (nr--)
+                   (*c++)->mark ();
+                makeNewPile ();
+                return (tablePiles.size () - 1) << 16;
              }
-         }
+         } // end-for all table piles
          work.clear ();
          aPos.clear ();
-      }
-   }
+      } // end-while card has a fitting one
+   } // end-for all cards
    return -1U;
 }
 
