@@ -49,6 +49,7 @@ class CardPile : public Gtk::VBox {
       newCard.setVisible (visible);
       setTopCard (newCard); }
 
+   CardWidget& getTopCard () { return *cards[cards.size () - 1]; }
    CardWidget& removeTopCard ();
    void clear ();
 
