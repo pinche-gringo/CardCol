@@ -20,26 +20,35 @@
 #include <string>
 #include <vector.h>
 
-#include <CardWidget.h>
+#include <gdk--/pixmap.h>
+
+#include <SmartPtr.h>
+
 
 // Class to display a card on the screen
 class CardSet {
  public:
-   typedef enum { NORMAL } CardSets;
-
-   CardSet () { }
+   CardSet () : cards (CARDS) { }
    ~CardSet ();
 
-   CardWidget* getCard (unsigned int nr) const;
+   const Gdk_Pixmap& getCardImage (unsigned int nr) const;
 
-   void load (const Gdk_Window& parent, CardSets set = NORMAL) throw (std::string);
+   const Gdk_Pixmap& getCardBackground () const { return back_; }
+   void setCardBackground (const Gdk_Pixmap& back) { back_ = back; }
+
+   void load (const Gdk_Window& parent, const char* path = NULL) throw (std::string);
 
    unsigned int getCardNumber () const { return CARDS; }
 
  private:
-   vector<CardWidget*> cards;
+   vector<Gdk_Pixmap> cards;
+   Gdk_Pixmap back_;
 
    static const unsigned int CARDS = 52;  // Number of cards in traditional set
+
+   void unload ();
+
+   static std::string makeDirString (const char* path);
 };
 
 #endif
