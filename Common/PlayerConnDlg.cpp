@@ -265,7 +265,7 @@ YGP::Socket* PlayerConnectDlg::addClient (int socket) {
          error.replace (error.find ("%1"), 2, STRPROTOCOLL);
          throw error;
       }
-      else if ((protocoll == PROTOCOLL) && (variant < VARIANT)) {
+      else if ((protocoll == PROTOCOLL) && (variant < PROT_VARIANT)) {
          error = _("Protocoll variant not sufficient - Version %1 needed!\n\n"
                    "Generally this means, that the partner does not support\n"
                    "all game types - Continue at your own risk!");
