@@ -93,8 +93,9 @@ class Buraco : public Game {
    void doStapleSelected ();
    bool doRegisterHand (unsigned int first, unsigned int last);
 
-   void undoLast ();
-   void sortCards ();
+   void undoMove ();
+   void undoLast (unsigned int player);
+   void sortHand ();
 
    //@Section helper methods
    void enableHumanHand ();
@@ -207,6 +208,7 @@ class Buraco : public Game {
 
    Gtk::UIManager::ui_merge_id idMrg;
    Gtk::Widget* menuUndo;
+   Gtk::Widget* menuSort;
 };
 
 #endif
