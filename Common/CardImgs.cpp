@@ -24,8 +24,8 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include <errno.h>
-#include <stdlib.h>
+#include <cerrno>
+#include <cstdlib>
 
 #include <sstream>
 
@@ -41,18 +41,18 @@
 #include "CardImgs.h"
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Destructor
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Destructor
+//-----------------------------------------------------------------------------
 CardImages::~CardImages () {
    TRACE9 ("CardImages::~CardImages ()");
 }
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Retrieves the specified cardnumber
-//Parameters: nr: Number of card to retrieve
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Retrieves the specified cardnumber
+/// \param nr: Number of card to retrieve
+//-----------------------------------------------------------------------------
 const Glib::RefPtr<Gdk::Pixbuf> CardImages::getCardImage (unsigned int nr) const {
    TRACE8 ("CardImages::getCardImage (unsigned int) - Request for card " << nr);
    Check1 (nr < size ());
@@ -60,11 +60,11 @@ const Glib::RefPtr<Gdk::Pixbuf> CardImages::getCardImage (unsigned int nr) const
    return cards_[nr];
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Loads the cards (faces)
-//Parameters: path: Path to files
-//            thread: Flag if loading in thread
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Loads the cards (faces)
+/// \param path: Path to files
+/// \param thread: Flag if loading in thread
+//-----------------------------------------------------------------------------
 void CardImages::loadDecks (const std::string& path, bool thread) throw (std::string) {
    TRACE1 ("CardImages::loadDecks (const Gdk::Window&, const char*) - " << path
            << "; Threaded: " << (thread ? "Yes" : "No"));
@@ -105,11 +105,11 @@ void CardImages::loadDecks (const std::string& path, bool thread) throw (std::st
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Loads the background card
-//Parameters: back: File containing background picture
-//            thread: Flag if loading in thread
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Loads the background card
+/// \param back: File containing background picture
+/// \param thread: Flag if loading in thread
+//-----------------------------------------------------------------------------
 void CardImages::loadBack (const std::string& back,
                            bool thread) throw (std::string) {
    TRACE1 ("CardImages::loadBack (const Gdk::Window&, const char*) - " << back);
