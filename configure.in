@@ -6,7 +6,7 @@ AC_INIT()
 
 MAJOR_VERSION=0
 MINOR_VERSION=5
-MICRO_VERSION=03
+MICRO_VERSION=04
 RELEASE=$MAJOR_VERSION.$MINOR_VERSION
 VERSION=$RELEASE.$MICRO_VERSION
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -93,11 +93,15 @@ else
     if test -d "/usr/share/kde3/share/apps/carddecks"; then
         CARDDECKS_DIR="/usr/share/kde3/share/apps/carddecks"
     else
-        if test -d "/usr/share/kde3/apps/carddecks"; then
+        if test -d "/usr/kde3/share/apps/carddecks"; then
              CARDDECKS_DIR="/usr/kde3/share/apps/carddecks"
         else
-             CARDDECKS_DIR="/opt/kde3/share/apps/carddecks"
-             AC_MSG_WARN(using default)
+            if test -d "/usr/share/kde3/apps/carddecks"; then
+                 CARDDECKS_DIR="/usr/share/kde3/apps/carddecks"
+            else
+                 CARDDECKS_DIR="/opt/kde3/share/apps/carddecks"
+                 AC_MSG_WARN(using default)
+            fi
         fi
     fi
 fi
