@@ -46,23 +46,27 @@ class ICardPile {
 
    // Methods to access pile first-in-last-out
    void flipTopCard ();
-   void setTopCardVisible (bool visible = true);
-   void setTopCardInvisible () { setTopCardVisible (false); }
+   void showTopCardFace (bool visible = true);
+   void showTopCardBack () { showTopCardFace (false); }
 
    void setTopCards (const vector<CardWidget*>& staple);
    void setTopCards (const vector<CardWidget*>& staple, bool visible);
    void setTopCards (const vector<CardWidget*>& staple, bool visible, bool lastVisible) {
       setTopCards (staple, visible);
-      setTopCardVisible (lastVisible); }
+      showTopCardFace (lastVisible); }
 
    virtual void setTopCard (CardWidget& newCard);
    void setTopCard (CardWidget& newCard, bool visible) {
-      newCard.setVisible (visible);
+      newCard.showFace (visible);
       setTopCard (newCard); }
 
    CardWidget& getTopCard () const {
       Check3 (cards.size ()); return *cards[cards.size () - 1]; }
    virtual CardWidget& removeTopCard ();
+   CardWidget& removeShownTopCard (bool visible = true) {
+      CardWidget& topCard (removeTopCard ());
+      topCard.showFace (visible);
+      return topCard; }
 
    // Methods to random access pile
    virtual void insert (CardWidget& card, unsigned int pos);
@@ -99,7 +103,7 @@ class ICardPile {
    void setShowOption (ShowOpt show);
    ShowOpt getShowOption () const { return showOpt; }
 
-   bool topCardVisible () const { return getTopCard ().visible (); }
+   bool topCardShowsFace () const { return getTopCard ().showsFace (); }
 
    virtual void sortByNumber ();
    virtual void sortByColor ();
@@ -136,10 +140,6 @@ template <class T> class CardPile : public T, public ICardPile {
       CardWidget& card (ICardPile::removeTopCard ());
       T::remove (card);
       return card; }
-   CardWidget& removeTopCard (bool visible) {
-      CardWidget& topCard (removeTopCard ());
-      topCard.setVisible (visible);
-      return topCard; }
 
    virtual void insert (CardWidget& card, unsigned int pos) {
       ICardPile::insert (card, pos);
@@ -150,7 +150,7 @@ template <class T> class CardPile : public T, public ICardPile {
       T::remove (ICardPile::remove (card));
       return card; }
    CardWidget& remove (CardWidget& card, bool visible) {
-      card.setVisible (visible);
+      card.showFace (visible);
       return remove (card); }
    virtual CardWidget& remove (unsigned int pos) {
       CardWidget& card (ICardPile::remove (pos));
@@ -158,7 +158,7 @@ template <class T> class CardPile : public T, public ICardPile {
       return card; }
    CardWidget& remove (unsigned int pos, bool visible) {
       CardWidget& card (remove (pos));
-      card.setVisible (visible);
+      card.showFace (visible);
       return card; }
 
    virtual void resize (CardWidget& card, PileStyle s) const { }
@@ -188,13 +188,11 @@ typedef CardPile<Gtk::HBox>  CardHPile;
 
 void CardVPile::resize (CardWidget& card, PileStyle s) const {
    static unsigned int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
-   TRACE5 ("CardVPile::resize (CardWidget&, PileStyle) - " << (int)s << " (" << height[0] << ')');
    card.set_usize (-1, height[(int)s]);
 }
 
 void CardHPile::resize (CardWidget& card, PileStyle s) const {
    static unsigned int width[(int)LAST] = { card.getImageWidth (), 18, 7, 1 };
-   TRACE5 ("CardHPile::resize (CardWidget&, PileStyle) - " << (int)s << " (" << width[0] << ')');
    card.set_usize (width[(int)s], -1);
 }
 
@@ -219,7 +217,6 @@ template <class T> class CardInfoPile : public CardPile<T> {
       tt.set_tip (card);
       setTooltips ();
       return card; }
-   CardWidget& removeTopCard (bool visible) { CardPile<T>::removeTopCard (visible); }
 
    virtual void insert (CardWidget& card, unsigned int pos) {
       CardPile<T>::insert (card, pos);

@@ -61,7 +61,7 @@ void ICardPile::setTopCard (CardWidget& card) {
    }
 
    if (showOpt < DONT_CHANGE)
-      card.setVisible ((bool)showOpt);
+      card.showFace ((bool)showOpt);
 
    card.show ();
    cards.push_back (&card);
@@ -106,10 +106,10 @@ void ICardPile::flipTopCard () {
 //Purpose   : Sets the top card of the pile visible as indicated
 //Parameters: visible: Flag if cardface should be shown or back
 /*--------------------------------------------------------------------------*/
-void ICardPile::setTopCardVisible (bool visible) {
+void ICardPile::showTopCardFace (bool visible) {
    Check3 (cards.size () > 0);
 
-   getTopCard ().setVisible (visible);
+   getTopCard ().showFace (visible);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -184,7 +184,7 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
    }
 
    if (showOpt < DONT_CHANGE)
-      card.setVisible ((bool)showOpt);
+      card.showFace ((bool)showOpt);
 
    cards.insert (cards.begin () + pos, &card);
 }
@@ -412,7 +412,7 @@ void ICardPile::setShowOption (ShowOpt show) {
 
       for (i = cards.begin (); i != cards.end (); ++i) {
          Check3 (*i);
-         (*i)->setVisible (showOpt);
+         (*i)->showFace (showOpt);
       }
    }
 }
