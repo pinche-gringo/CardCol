@@ -29,9 +29,9 @@
 #include <gtkmm/button.h>
 #include <gtkmm/tooltips.h>
 
-#include <Trace_.h>
-#include <Check.h>
-#include <ANumeric.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
+#include <YGP/ANumeric.h>
 
 #include <CardWidget.h>
 
@@ -45,6 +45,7 @@ class ICardPile : public std::vector<CardWidget*> {
    typedef enum { SHOWBACK = 0, SHOWFACE, DONT_CHANGE } ShowOpt;
 
    typedef bool (*CMPFUNC) (const CardWidget*, const CardWidget*);
+   typedef int (*CMPFUNC2) (const CardWidget&, const CardWidget&);
 
    ICardPile (PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE);
    virtual ~ICardPile ();
@@ -86,21 +87,21 @@ class ICardPile : public std::vector<CardWidget*> {
 
    CardWidget* get (unsigned int id) const;
 
-   int find (CardWidget& card, CMPFUNC fnComp) const {
+   int find (const CardWidget& card, CMPFUNC fnComp) const {
       int pos (find1EqualOrBigger (card, fnComp));
       return ((pos != -1)
               && !fnComp (operator[] (pos), &card)) ? pos : -1; }
-   int findByNr (CardWidget& card) const { return find (card, compCardsByNr); }
-   int findByColour (CardWidget& card) const { return find (card, compCards); }
-   int findByID (CardWidget& card) const { return find (card, compCardsByID); }
+   int findByNr (const CardWidget& card) const { return find (card, compCardsByNr); }
+   int findByColour (const CardWidget& card) const { return find (card, compCards); }
+   int findByID (const CardWidget& card) const { return find (card, compCardsByID); }
    int find1EqualOrBigger (const CardWidget& card, CMPFUNC fnComp) const {
       std::vector<CardWidget*>::const_iterator i
          (std::lower_bound (begin (), end (), &card, fnComp));
       return ((i != end () && !fnComp (*i, &card))
               ? (i - begin ()) : -1); }
-   int find1EqualOrBiggerByNr (CardWidget& card) const {
+   int find1EqualOrBiggerByNr (const CardWidget& card) const {
       return find1EqualOrBigger (card, compCardsByNr); }
-   int find1EqualOrBiggerByColour (CardWidget& card) const {
+   int find1EqualOrBiggerByColour (const CardWidget& card) const {
       return find1EqualOrBigger (card, compCards); }
    int findFirstEqualOrBigger (CardWidget::NUMBERS nr) const;
    int findLastEqualOrBigger (CardWidget::NUMBERS nr) const {
@@ -112,12 +113,17 @@ class ICardPile : public std::vector<CardWidget*> {
    int find (CardWidget::COLOURS colour, unsigned int start = 0) const;
    int find (unsigned int id, unsigned int start = 0) const;
 
+   bool hasFittingPair (const CardWidget& card, bool pileHoldsCard, CMPFUNC2 cmp) const;
+   const_iterator getFittingCard (const CardWidget& card, CMPFUNC2 cmp) const {
+      return getFittingCard (card, begin (), cmp); }
+   const_iterator getFittingCard (const CardWidget& card, const_iterator start, CMPFUNC2 cmp) const;
+
    bool exists (CardWidget::NUMBERS nr, unsigned int start = 0) const {
       return find (nr, start) != -1; }
    bool exists (CardWidget::COLOURS colour, unsigned int start = 0) const {
       return find (colour, start) != -1; }
-   bool exists (CardWidget& card) const { return exists (&card); }
-   bool exists (CardWidget* card) const {
+   bool exists (const CardWidget& card) const { return exists (&card); }
+   bool exists (const CardWidget* card) const {
       return std::find (begin (), end (), card) != end (); }
 
    // General management-functions
@@ -303,7 +309,7 @@ template <class T> class CardInfoPile : public CardPile<T> {
    virtual void setTooltips () {
       std::string tip (ngettext ("%1 card", "%1 cards", size ()));
       tip.replace (tip.find ("%1"), 2,
-                   ANumeric::toString (size ()));
+                   YGP::ANumeric::toString (size ()));
       for (unsigned int i (0); i < size (); ++i)
          tt.set_tip (*operator[] (i), tip);
    }

@@ -25,7 +25,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <Trace_.h>
+#include <YGP/Trace_.h>
 
 #include "CardPile.h"
 
@@ -464,4 +464,97 @@ int ICardPile::find (unsigned int id, unsigned int start) const {
 /// \param PileStyle: Style of pile
 //-----------------------------------------------------------------------------
 void ICardPile::resize (CardWidget&, PileStyle) {
+}
+
+
+//-----------------------------------------------------------------------------
+/// Checks if the passed pile contains a pair matching the passed card
+/// \param card: Card where to find a pair to
+/// \param pileHoldsCard: Flag, if the pile contains the card (to skip)
+/// \param cmp: Method to compare two cards. This method gets the two cards to
+///        compare as input as must return an integer describing their
+///        difference (0: Equal). A pair can have a difference of at most
+///        [-2 - 2]
+/// \returns \c True, if the pile contains a matching pair
+//-----------------------------------------------------------------------------
+bool ICardPile::hasFittingPair (const CardWidget& card, bool pileHoldsCard,
+                                CMPFUNC2 cmp) const {
+   TRACE3 ("ICardPile::pileHasFittingPair (const ICardPile&, const "
+           "CardWidget*, bool) - " << card);
+
+   unsigned int nrs (0);
+   unsigned int bCols (0);
+
+   for (const_iterator p (begin ());
+        (p = getFittingCard (card, p, cmp)) != end (); ++p) {
+      if (pileHoldsCard && (*p == &card))    // Skip card if its the passed one
+         continue;
+
+      int diff (cmp (**p, card));
+      if (diff) {
+         diff = (diff < 0) ? (diff + 2) : (diff + 1);
+         Check3 (diff < 4);
+         TRACE8 ("ICardPile::pileHasFittingPair (const " "CardWidget*, bool, "
+                 "CMPFUNC2) - " << **p << " differs " << diff);
+         if ((((unsigned int)diff) < 4) && !(bCols & (1 << diff))) {
+            // The card is valid, if either a card bordering the one the
+            // inspect and this one has been found. Note that for aces the
+            // bordering card must be in the same direction as the card to
+            // to inspect (e.g. K-A-2 is not valid; only Q-K-A!)
+            if ((card.number () == CardWidget::ACE)
+                ? (bCols & (0x1 << (diff ^ 0x1)))
+                : (bCols & (diff ? (0x5 << (diff - 1)) : 0x1)))
+               return true;
+            bCols |= (1 << diff);
+         }
+      }
+      else
+         if (++nrs == 2)
+            return true;
+   }
+   TRACE8 ("CardPile::pileHasFittingPair (const " "CardWidget*, bool, CMPFUNC2) - "
+           << card << " matches " << nrs << '/' << std::hex << bCols << std::dec);
+   return false;
+}
+
+//-----------------------------------------------------------------------------
+/// Returns a card fitting to the passed on
+/// \param card: Card where to find a fitting one to
+/// \param start: Position where to start the search
+/// \param cmp: Method to compare two cards. This method gets the two cards to
+///        compare as input as must return an integer describing their
+///        difference (0: Equal). A pair can have a difference of at most
+///        [-2 - 2]
+/// \returns \c Position of matching card or pile.end ()
+/// \pre start must be a valid iterator in pile
+//-----------------------------------------------------------------------------
+ICardPile::const_iterator ICardPile::getFittingCard (const CardWidget& card,
+                                                     const_iterator start,
+                                                     CMPFUNC2 cmp) const {
+   TRACE9 ("ICardPile::getFittingCard (const CardWidget*, const_iterator, "
+           "CMPFUNC2) - " << card);
+
+   CardWidget::NUMBERS nr (card.number ());
+   CardWidget::COLOURS colour (card.colour ());
+   while (start != end ()) {
+      if ((*start)->number () == nr)
+         break;
+      else
+         if (((*start)->colour () == colour)
+             && ((static_cast<unsigned int> (cmp (card, **start) + 2)) < 5))
+            break;
+      ++start;
+   }
+
+#if TRACELEVEL > 8
+   if (start == end ()) {
+      TRACE ("ICardPile::getFittingCard (const CardWidget*, const_iterator, "
+             "CMPFUNC2) - End");
+   }
+   else {
+      TRACE ("ICardPile::getFittingCard (const CardWidget*, const_iterator, "
+             "CMPFUNC2) - Found " << **start);
+   }
+#endif
+   return start;
 }
