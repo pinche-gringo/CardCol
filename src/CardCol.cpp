@@ -703,13 +703,13 @@ CardgameCollection::~CardgameCollection () {
 
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Starts the game
+//Purpose   : Starts a game; if the type has changed also deleting the old one
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::startGame () {
    TRACE6 ("CardgameCollection::startGame () - Old game type " << oldGame
            << " -> New: " << options.type);
 
-   // Check if game has been changed; if so destroy the old one
+   // Check if the game has been changed; if so destroy the old one
    if (oldGame != options.type) {
       if (game) {
          game->clean ();
@@ -720,6 +720,7 @@ void CardgameCollection::startGame () {
       if (oldGame == GBURACO) {
          TRACE9 ("CardgameCollection::startGame () - Cleaning buraco cards");
          cards.clear ();
+         cardFaces.delImage (cardFaces.size () - 1);
          cardFaces.delImage (cardFaces.size () - 1);
          cardFaces.delImage (cardFaces.size () - 1);
          cards.addPacket (cardFaces);
@@ -743,6 +744,7 @@ void CardgameCollection::startGame () {
          break;
 
       case GBURACO:
+         cardFaces.addImage (xpmJoker);
          cardFaces.addImage (xpmJoker);
          cardFaces.addImage (xpmJoker);
          cards.clear ();
@@ -996,9 +998,11 @@ void CardgameCollection::closeProgram (int, const Gtk::Dialog* dlg) {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Checks the user-input after asking if he wants to end the game;
 //            depending on the answer either stops or continues
-//Parameters: input: Button pressed by the user
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::userWants2End () {
+   TRACE8 ("CardgameCollection::userWants2End ()");
+   Check1 (game);
+
    if (game->isRunning ()) {
       status.pop ();
       status.push (_("User canceled"));
@@ -1068,7 +1072,10 @@ void CardgameCollection::gameEvents (unsigned int status) {
       apMenus[END]->set_sensitive (false);
 
       if (restart)
-         startGame ();
+         // (Re)start the (new) game, when the event queue is empty (and
+         // therefore the old game has ended).
+         Glib::signal_idle ().connect
+             (bind_return (slot (*this, &CardgameCollection::startGame), false));
       restart = false;
       break;
    }
