@@ -33,6 +33,7 @@
 #include <gtkmm/messagedialog.h>
 
 #include "Hearts.h"
+#include <ScoreDlg.h>
 
 
 const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = { 3, 9, 3, 1 };
@@ -160,7 +161,8 @@ void Hearts::start () {
             (cards.getCard (i * (cards.size () / NUM_PLAYERS) + j));
 
    if (pScoreDlg) {
-      unsigned int player, points;
+      unsigned int player;
+      int points;
       pScoreDlg->getMaxPoints (points, player);
       if (points >= 100) {
          delete pScoreDlg;
@@ -340,7 +342,7 @@ unsigned int  Hearts::check4Winner () {
 //Parameters: player: ID of player who did the last turn
 //Returns   : Next player
 /*--------------------------------------------------------------------------*/
-unsigned int  Hearts::calcNextPlayer (unsigned int player) {
+unsigned int Hearts::calcNextPlayer (unsigned int player) {
    if (played.size () == NUM_PLAYERS) {
       // Everyone played its card: Search for winner of played pile;
       // clear it and continue with winner
@@ -356,11 +358,11 @@ unsigned int  Hearts::calcNextPlayer (unsigned int player) {
       player = -1U;
       setGameStatus (STOPPED);
       if (!pScoreDlg) {
-         pScoreDlg = HeartsScoreDlg::perform (names);
+         pScoreDlg = ScoreDlg::perform (names);
          pScoreDlg->get_window ()->set_transient_for (get_window ());
       }
 
-      unsigned int aScore[NUM_PLAYERS];
+      int aScore[NUM_PLAYERS];
       for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
          aScore[i] = pointsOfPile (players[i].won);
          if (aScore[i] == 26) {
@@ -374,7 +376,8 @@ unsigned int  Hearts::calcNextPlayer (unsigned int player) {
       pScoreDlg->show ();
 
       std::string stat (_("Round ended"));
-      unsigned int player, points;
+      unsigned int player;
+      int points;
       pScoreDlg->getMaxPoints (points, player);
       if (points >= 100) {
          stat = _("Game ended; %1 won");
@@ -428,7 +431,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
          // The game must be started with the two of clubs
          if (!cardsPlayed) {
             if ((card.colour () != CardWidget::CLUBS)
-                && (card.number () != CardWidget::TWO)) {
+                || (card.number () != CardWidget::TWO)) {
                Gtk::MessageDialog dlg (_("The game must be started with the two of clubs!"),
                                          Gtk::MESSAGE_ERROR);
                dlg.set_title (PACKAGE " - Hearts");
