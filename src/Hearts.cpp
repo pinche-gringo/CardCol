@@ -29,8 +29,6 @@
 
 #include <cardgames-cfg.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 #include <ConnMgr.h>
@@ -399,11 +397,16 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
    else
       player = ((player + 1) & 0x3);
 
-   if (!players[player].hand.size ()) {
+   if (!players[correctPlayer (player)].hand.size ()) {
       player = -1U;
       setGameStatus (STOPPED);
       if (!pScoreDlg) {
-         pScoreDlg = ScoreDlg::create (actPlayers);
+         // Resort player for score dialogue
+         std::vector<Player*> player;
+         for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+            player.push_back (actPlayers[(i + posServer) & 0x3]);
+         
+         pScoreDlg = ScoreDlg::create (player);
          pScoreDlg->get_window ()->set_transient_for (get_window ());
       }
 
@@ -454,8 +457,8 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
 /// \returns \c Status of moving; true: Card could be moved; false else
 //-----------------------------------------------------------------------------
 bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
-   TRACE5 ("Hearts::moveSelectedCardToPlayed (unsigned int, unsigned int) - Player: "
-           << player << " at position " << card);
+   TRACE5 ("Hearts::moveSelectedCardToPlayed (unsigned int, unsigned int) - Player "
+           << player << "; Pos.  " << card);
    Check1 (player < NUM_PLAYERS);
    Check1 (card < players[player].hand.size ());
    Check1 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
