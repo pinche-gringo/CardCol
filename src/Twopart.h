@@ -53,15 +53,15 @@ class Twopart : public Game {
    const Twopart& operator= (const Twopart&);
 
    // Event-handling
-   void cardSelected (unsigned int player, unsigned int iCard);
-   void playedSelected (unsigned int player);
+   void cardSelected (unsigned int iCard);
+   void playedSelected ();
 
    // Helper functions
    int executeMove (unsigned int player, unsigned int start, unsigned int end);
    void movePlayedCardsToPlayer (unsigned int nrPlayer, unsigned int start = 0);
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int start,
                                   unsigned int end);
-   void enablePlayer (unsigned int player);
+   int enableHuman ();
    unsigned int pickUpPlayedPile (unsigned int player);
    int  findNextPlayer (unsigned int player) const;
    int  findNextPlayerWithCards (unsigned int player) const;

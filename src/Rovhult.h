@@ -68,19 +68,19 @@ class Rovhult : public Game {
    void unregisterDND () const;
  
    // Event-handling
-   void pileSelected (unsigned int player, unsigned int pile);
-   void handSelected (unsigned int player, unsigned int iCard);
+   void pileSelected (unsigned int pile);
+   void handSelected (unsigned int iCard);
    void finishedExchange ();
-   void takeCards (unsigned int player);
+   void takeCards ();
 
-   int playFromPile (unsigned int player, unsigned int pile);
+   int playFromPile (unsigned int pile);
    int doPileSelected (unsigned int player, unsigned int pile);
 
    // Helper functions
    unsigned int movePlayedCardsToLooser (unsigned int nrLooser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;
    int  makeMove (unsigned int player);
-   void enablePlayer (unsigned int player);
+   int  enableHuman ();
    void dealCards ();
    CardWidget::NUMBERS playCardsFromHand (unsigned int player, unsigned int start,
                                           unsigned int end);

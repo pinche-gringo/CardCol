@@ -137,7 +137,7 @@ void Rovhult::finishedExchange () {
    unregisterDND ();
 
    players[0].hand.setStyle (ICardPile::COMPRESSED);
-   enablePlayer (0);
+   enableHuman ();
    staple.getTopCard ().remove_accelerator (*(get_toplevel ()->get_accel_group ()),
                                             ' ', 0);
    pileTop.disconnect ();
@@ -204,8 +204,8 @@ void Rovhult::exchangeAutoplayerCards () {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Enables the cards of the passed player
-//Parameters: player: Player to enable
+//Purpose   : Sorts the cards on the reserve piles
+//Parameters: player: Player whose cards should be sorted
 /*--------------------------------------------------------------------------*/
 void Rovhult::sortReserve (unsigned int player) {
    // Sort cards on piles
@@ -226,55 +226,51 @@ void Rovhult::sortReserve (unsigned int player) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Enables the cards of the passed player
+//Purpose   : Enables the cards of the human player
 //Parameters: player: Player to enable
 /*--------------------------------------------------------------------------*/
-void Rovhult::enablePlayer (unsigned int player) {
-   disableLastPlayer (); Check3 (activeCards.empty ());
+int Rovhult::enableHuman () {
+   disableHuman (); Check3 (activeCards.empty ());
 
-   if (players[player].hand.numberOfCards ()) {
-      TRACE2 ("Rovhult::enablePlayer (unsigned int) - Hand of player "
-           << player << " has " << players[player].hand.numberOfCards () << " card(s)");
+   if (players[0].hand.numberOfCards ()) {
+      TRACE2 ("Rovhult::enableHuman () - Has " << players[0].hand.numberOfCards ()
+              << " card(s) in the hand");
 
-      for (int i (players[player].hand.numberOfCards ()); i;)
+      for (int i (players[0].hand.numberOfCards ()); i;)
          activeCards.push_back
-            (players[player].hand.at (--i).clicked.connect_after
-             (bind (slot (this, &Rovhult::handSelected), player, i)));
+            (players[0].hand.at (--i).clicked.connect_after
+             (bind (slot (this, &Rovhult::handSelected), i)));
    }
    else {
-      TRACE2 ("Rovhult::enablePlayer (unsigned int) - Enable reserve of player "
-              << player);
+      TRACE2 ("Rovhult::enableHuman () - Enable reserve of human");
 
       for (int i (0); i < 3; ++i)
-         if (players[player].reserve[i].numberOfCards ()) {
-            TRACE8 ("Rovhult::enablePlayer (unsigned int) - Pile " << i << " has "
-                    << players[player].reserve[i].numberOfCards () << " card(s)");
+         if (players[0].reserve[i].numberOfCards ()) {
+            TRACE8 ("Rovhult::enableHuman () - Pile " << i << " has "
+                    << players[0].reserve[i].numberOfCards () << " card(s)");
             activeCards.push_back
-               (players[player].reserve[i].getTopCard ().clicked.connect_after
-                (bind (slot (this, &Rovhult::pileSelected), player, i)));
+               (players[0].reserve[i].getTopCard ().clicked.connect_after
+                (bind (slot (this, &Rovhult::pileSelected), i)));
          }
    }
 
    if (played.numberOfCards ()) {
-      TRACE2 ("Rovhult::enablePlayer (unsigned int) - Enable last played card for "
-              "player " << player);
+      TRACE2 ("Rovhult::enablePlayer (unsigned int) - Enable last played card");
       activeCards.push_back (played.getTopCard ().clicked.connect_after
-                             (bind (slot (this, &Rovhult::takeCards),
-                                    player)));
+                             (slot (this, &Rovhult::takeCards)));
    }
+   return Game::enableHuman ();
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card on table
-//Parameters: player: ID of player
-//            pile: Offset of selected pile
+//Parameters: pile: Offset of selected pile
 /*--------------------------------------------------------------------------*/
-void Rovhult::pileSelected (unsigned int player, unsigned int pile) {
-   Check3 (player < NUM_PLAYERS); Check3 (pile < 3);
-   TRACE1 ("Rovhult::pileSelected (unsigned int, unsinged int) - Position "
-           << pile << " of player " << player);
+void Rovhult::pileSelected (unsigned int pile) {
+   Check3 (pile < 3);
+   TRACE1 ("Rovhult::pileSelected (unsinged int) - Position " << pile);
 
-   ICardPile& actPile (players[player].reserve[pile]);
+   ICardPile& actPile (players[0].reserve[pile]);
    CardWidget& card (actPile.getTopCard ());
    bool showsFace (card.showsFace ());
 
@@ -282,36 +278,34 @@ void Rovhult::pileSelected (unsigned int player, unsigned int pile) {
    if (!showsFace)
       card.showFace ();
 
-   TRACE1 ("Rovhult::pileSelected (unsigned int, unsinged int) - Card " << card);
+   TRACE1 ("Rovhult::pileSelected (unsinged int) - Card " << card);
 
    if (!cardValid (card.number ()))  { // If selected card is not valid: Return
       actPile.removeTopCard ();
       played.append (card);
-      takeCards (player);
+      takeCards ();
       return;
    }
 
    // If face of card was visible: Just go on (as the user knows what he has
    // selected); if not: Wait a while to let the GUI update and continue then.
    if (showsFace)
-      playFromPile (player, pile);
+      playFromPile (pile);
    else
       Gtk::Main::timeout.connect (bind (slot (this, &Rovhult::playFromPile),
-                                        player, pile), 1000);
+                                        pile), 1000);
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Performs playing from a pile
-//Parameters: player: ID of player
-//            pile: Offset of selected pile
+//Parameters: pile: Offset of selected pile
 //Returns   : int: Always 0 to stop the timer (if called from one, that's it)
 /*--------------------------------------------------------------------------*/
-int Rovhult::playFromPile (unsigned int player, unsigned int pile) {
-   Check3 (player < NUM_PLAYERS); Check3 (pile < 3);
-   TRACE1 ("Rovhult::playFromPile (unsigned int, unsinged int) - Card at pos "
-           << pile << " for player " << player);
+int Rovhult::playFromPile (unsigned int pile) {
+   Check1 (pile < 3);
+   TRACE1 ("Rovhult::playFromPile (unsinged int) - Card at pos " << pile);
 
-   setNextPlayer (doPileSelected (player, pile));
+   setNextPlayer (doPileSelected (0, pile));
    makeNextMoves ();
    return 0;
 }
@@ -400,25 +394,22 @@ bool Rovhult::cardValid (CardWidget::NUMBERS nr, bool silent) const {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card in hand
-//Parameters: player: ID of player
-//            iCard: Offset of card in hand
+//Parameters: iCard: Offset of card in hand
 /*--------------------------------------------------------------------------*/
-void Rovhult::handSelected (unsigned int player, unsigned int pos) {
-   TRACE3 ("Rovhult::handSelected (unsigned int, unsinged int) - Checking player "
-           << player << "; Card at " << pos);
+void Rovhult::handSelected (unsigned int pos) {
+   TRACE3 ("Rovhult::handSelected (unsinged int) - Checking card at " << pos);
    Check3 (player < NUM_PLAYERS);
-   Check3 (pos <= players[player].hand.numberOfCards ());
+   Check3 (pos < players[0].hand.numberOfCards ());
 
-   CardWidget& card (players[player].hand.at (pos));
-   TRACE1 ("Rovhult::handSelected (unsigned int, unsinged int) - Card " << pos
-           << " = " << card);
+   CardWidget& card (players[0].hand.at (pos));
+   TRACE1 ("Rovhult::handSelected (unsinged int) - Card " << pos << " = " << card);
 
    if (!cardValid (card.number ()))
        return;
 
-   playCardsFromHand (player, players[player].hand.findFirstEqual (pos), pos);
+   playCardsFromHand (0, players[0].hand.findFirstEqual (pos), pos);
 
-   setNextPlayer (executeMove (player, card.number ()));
+   setNextPlayer (executeMove (0, card.number ()));
    makeNextMoves ();
 }
 
@@ -502,10 +493,10 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 //            its card to the passed player
 //Parameters: player: ID of player picking up the cards
 /*--------------------------------------------------------------------------*/
-void Rovhult::takeCards (unsigned int player) {
-   TRACE2 ("Rovhult::takeCards (unsigned int) - " << player);
+void Rovhult::takeCards () {
+   TRACE2 ("Rovhult::takeCards ()");
 
-   setNextPlayer (movePlayedCardsToLooser (player));
+   setNextPlayer (movePlayedCardsToLooser (0));
    makeNextMoves ();
 }
 
@@ -698,7 +689,7 @@ void Rovhult::clean () {
    played.clear ();
 
    players[0].hand.setStyle (ICardPile::NORMAL);
-   disableLastPlayer ();
+   disableHuman ();
 }
 
 /*--------------------------------------------------------------------------*/

@@ -128,28 +128,29 @@ void Twopart::start () {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Enables the cards of the passed player
-//Parameters: player: Player to enable
+//Returns   : int
 //Remarks   : Depending of the status of the game (PLAYING2) also the top
 //            card of the played pile is enabled
 /*--------------------------------------------------------------------------*/
-void Twopart::enablePlayer (unsigned int player) {
+int Twopart::enableHuman () {
    Check3 (activeCards.empty ());
    Check3 (gameStatus () >= PLAYING);
 
-   TRACE2 ("Twopart::enablePlayer (unsigned int) - player "
-           << player << " has " << players[player].hand.numberOfCards ()
+   TRACE2 ("Twopart::enableHuman () - Has " << players[0].hand.numberOfCards ()
            << " cards");
 
-   for (int i (players[player].hand.numberOfCards ()); i;)
+   for (int i (players[0].hand.numberOfCards ()); i;)
       activeCards.push_back
-         (players[player].hand.at (--i).clicked.connect_after
-           (bind (slot (this, (&Twopart::cardSelected)), player, i)));
+         (players[0].hand.at (--i).clicked.connect_after
+           (bind (slot (this, (&Twopart::cardSelected)), i)));
 
    if ((gameStatus () == PLAYING2)
        && (played.numberOfCards ()))
       activeCards.push_back
          (played.getTopCard ().clicked.connect_after
-          (bind (slot (this, (&Twopart::playedSelected)), player)));
+          (slot (this, (&Twopart::playedSelected))));
+
+   return Game::enableHuman ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -198,18 +199,16 @@ unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking the top card of the played pile
-//Parameters: player: ID of player
 //Requieres : Only for part 2 of the game
 /*--------------------------------------------------------------------------*/
-void Twopart::playedSelected (unsigned int player) {
-   TRACE3 ("Twopart::playedSelected (unsigned int) - Player " << player
-           << " picks up played pile");
+void Twopart::playedSelected () {
+   TRACE3 ("Twopart::playedSelected (unsigned int) - Human picks up played pile");
    Check3 (gameStatus () == PLAYING2);
    Check3 (bfPlayers);
 
-   setNextPlayer (pickUpPlayedPile (player));
+   setNextPlayer (pickUpPlayedPile (0));
    makeNextMoves ();
-   disableLastPlayer ();
+   disableHuman ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -283,20 +282,15 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player,
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card in hand
-//Parameters: player: ID of player
-//            pos: Offset of card in hand
+//Parameters: pos: Offset of card in hand
 /*--------------------------------------------------------------------------*/
-void Twopart::cardSelected (unsigned int player, unsigned int pos) {
-   TRACE5 ("Twopart::cardSelected (unsigned int, unsigned int) - Player: "
-           << player << " at position " << pos);
-   Check3 (player < NUM_PLAYERS);
-   Check3 (pos < players[player].hand.numberOfCards ());
+void Twopart::cardSelected (unsigned int pos) {
+   TRACE5 ("Twopart::cardSelected (unsigned int) - Position " << pos);
+   Check3 (pos < players[0].hand.numberOfCards ());
    Check3 (gameStatus () >= PLAYING);
 
-   setNextPlayer (executeMove (player, 
-                               ((gameStatus () == PLAYING2)
-                                ? findStartOfSerie (player, pos) : pos),
-                               pos));
+   setNextPlayer (executeMove (0, ((gameStatus () == PLAYING2)
+                                   ? findStartOfSerie (0, pos) : pos), pos));
    makeNextMoves ();
 }
 
@@ -929,7 +923,7 @@ void Twopart::clean () {
    }
    played.clear ();
 
-   disableLastPlayer ();
+   disableHuman ();
    staple.show ();
    if (pTrump) {
       delete pTrump;
@@ -953,9 +947,8 @@ void Twopart::dealCards () {
    offPos = 0;
 
    bfPlayers = bfOldPlayers = (1 << NUM_PLAYERS) - 1;
-   enablePlayer (startPlayer = 0);
-
-   displayTurn (0);
+   enableHuman ();
+   displayTurn (startPlayer = 0);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1046,7 +1039,7 @@ void Twopart::startPartTwo (unsigned int player) {
 
    Gtk::Main::timeout.connect (bind (slot (this, &Twopart::startPartTwoTimerFnc),
                                      player), 50);
-   disableLastPlayer ();
+   disableHuman ();
 }
 
 /*--------------------------------------------------------------------------*/
