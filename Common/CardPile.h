@@ -169,15 +169,13 @@ template <class T> class CardPile : public T, public ICardPile {
 
    virtual CardWidget& remove (CardWidget& card) {
       T::remove (card);
-      ICardPile::remove (card);
-      return card; }
+      return ICardPile::remove (card); }
    CardWidget& remove (CardWidget& card, bool visible) {
       card.showFace (visible);
       return remove (card); }
    virtual CardWidget& remove (unsigned int pos) {
       T::remove (at (pos));
-      CardWidget& card (ICardPile::remove (pos));
-      return card; }
+      return ICardPile::remove (pos); }
    CardWidget& remove (unsigned int pos, bool visible) {
       CardWidget& card (remove (pos));
       card.showFace (visible);
