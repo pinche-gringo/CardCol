@@ -45,6 +45,8 @@ class Options : public Entity {
    std::string  helpPath;      // %attrib%; Helpdir;     DOCUDIR
    std::string  decks;         // %attrib%; CardFront;   CARDDECKS_DIR "/cards-default"
    std::string  back;          // %attrib%; CardBack;    CARDDECKS_DIR "/decks/deck1.png"
+   std::string  target;
+   std::string  port;
 
    std::vector<Glib::ustring> names;
    const char*    pNameINIFile;
