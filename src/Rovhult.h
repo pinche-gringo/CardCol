@@ -43,6 +43,7 @@ class Rovhult : public Game {
    virtual void start ();
    virtual void playOpen (bool open);
    virtual void clean ();
+   virtual const char* name () { return "Røvhult"; }
 
  private:
    enum { PREPLAYING = Game::LAST };
