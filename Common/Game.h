@@ -106,7 +106,7 @@ class Game : public Gtk::Table {
    //@}
 
  protected:
-   virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile) = 0;
+   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile) = 0;
    virtual bool executeRemoteMove (ICardPile& pile, unsigned int target);
    virtual unsigned int getActTarget () const;
 

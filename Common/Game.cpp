@@ -181,8 +181,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
                 || stringToNumber (pos, token.c_str ())
                 || (pos >= cards.size ())
                 || (errno || (pTail && *pTail))) {
-               std::string error (_("Not a number: `%1'"));
-               error.replace (error.find ("%1"), 2, positions.getActNode ());
+               std::string error (N_("Invalid card specification!"));
                throw error;
             }
 
@@ -194,8 +193,8 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
       }
       catch (std::string& error) {
          writeError (*cmgr.getSocket (), 99, error);
-         std::string err (_("Received invalid input from the server!\n\nReason: %1"));
-         err.replace (err.find ("%1"), 2, error);
+         Glib::ustring err (_("Received invalid input from the server!\n\nReason: %1"));
+         err.replace (err.find ("%1"), 2, _(error.c_str ()));
          Gtk::MessageDialog dlg (err, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
          dlg.set_title (PACKAGE);
          dlg.run ();
@@ -366,8 +365,7 @@ void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std
    bool bFollow (false);
    while (tokCards.getNextNode (' ').size ()) {
       if (stringToNumber (card, tokCards.getActNode ().c_str ())) {
-         std::string error ("Not a card number: `%1'");
-         error.replace (error.find ("%1"), 2, tokCards.getActNode ());
+         std::string error (N_("Invalid card specification!"));
          throw error;
       }
 
@@ -392,8 +390,7 @@ void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std
          TRACE1 ("Game::flipCards2Play (ICardPile&, const std::string&) - "
                  "Card " << tokCards.getActNode () << " not found in "
                  << pile.size () << " cards");
-         std::string error ("Card %1 not found!");
-         error.replace (error.find ("%1"), 2, tokCards.getActNode ());
+         std::string error ("Card not found!");
          throw error;
       }
    } // end-while string has data
@@ -635,29 +632,20 @@ bool Game::handleMessage (unsigned int player, const std::string& msg) throw (st
 
    bool rc (true);
    Check2 (!ignoreNextMsg);
-   try {
-      switch (statGame) {
-      case NONE:
-         statGame = INITIALIZING;
-         data = msg.c_str ();
-         start ();
-         data = NULL;
-         break;
+   switch (statGame) {
+   case NONE:
+      statGame = INITIALIZING;
+      data = msg.c_str ();
+      start ();
+      data = NULL;
+      break;
 
-      case INITIALIZING:
-         break;
+   case INITIALIZING:
+      break;
 
-      default:                          // Playing (and game specific stati)
-         rc = performCommand (player, msg);
-      }
+   default:                          // Playing (and game specific stati)
+      rc = performCommand (player, msg);
    }
-   catch (std::string& error) {
-      std::string message (_("Error processing command `%1'!\n\n%2"));
-      message.replace (message.find ("%1"), 2, msg);
-      message.replace (message.find ("%2"), 2, error);
-      throw (message);
-   }
-
    return rc;
 }
 
@@ -694,17 +682,19 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (s
       unsigned long target (-1UL);
       if (stringToNumber (target, strTarget.c_str ())
           || (playTo != "Target"))
-         throw std::string ("Invalid target!");
+         throw std::string (N_("Invalid target!"));
 
       Check3 (actPlayer >= 0);
-      ICardPile& pile (getPileOfPlayer (actPlayer, target));
-      flipCards2Play (pile, cmd);
+      ICardPile* pile (getPileOfPlayer (actPlayer, target));
+      if (!pile)
+         throw std::string (N_("Invalid target!"));
+      flipCards2Play (*pile, cmd);
 
       // Inform clients about cards to play
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
           broadcastMessage (msg);
 
-      if (executeRemoteMove (pile, target)) {
+      if (executeRemoteMove (*pile, target)) {
          Glib::signal_timeout ().connect
              (bind (slot (*this, &Game::endRemoteMove), actPlayer),
               ComputerPlayer::TIMEOUT);
@@ -720,7 +710,7 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (s
               "Next player: " << cmd);
       unsigned long player;
       if (stringToNumber (player, cmd.c_str ()))
-         throw std::string ("Invalid number");
+         throw std::string (N_("Invalid number"));
 
       actPlayer = player;
       if (statGame == PLAYING)
@@ -732,7 +722,7 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (s
          broadcastMessage ("End");
    }
    else
-      throw std::string ("Unknown command!");
+      throw std::string (N_("Unknown command!"));
    return true;
 }
 
