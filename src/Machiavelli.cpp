@@ -757,6 +757,9 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
          msg << "Reorder=" << ((nr << 16) + (nrpile << 8) + off);
 
       msg << ";Target=" << (iPile << 16) + iCard;
+      if (info ==TABLE)
+         msg << ";Now=1";;
+
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
           ignoreNextMsg = true;
       broadcastMessage (msg.str ());
@@ -969,19 +972,19 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
       return (tablePiles.size () - 1) << 16;
    }
 
+   unsigned int dest (-1U);
    if (tablePiles.size ()) {
       // Check if any cards fits somewhere/somehow on an existing pile
       for (ICardPile::const_iterator p (playerPile.begin ());
            p != playerPile.end (); ++p) {
-         unsigned int pos (cardFitsToPile (**p, p - playerPile.begin ()));
-         if (pos != -1U)
-            return pos;
+         dest = cardFitsToPile (**p, p - playerPile.begin ());
+         if (dest != -1U)
+            break;
       }
 
-      unsigned int dest (reorderTableToFit (playerPile));
-      if (dest != -1U) {
-         Check2 (posPiles.size ());
-
+      if (dest == -1U)
+         dest = reorderTableToFit (playerPile);
+      if ((dest != -1U) && posPiles.size ()) {
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
             std::ostringstream msg;
             msg << "Reorder=";
@@ -989,13 +992,9 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
             for (std::deque<unsigned int>::const_iterator i (posPiles.begin ());
                  i != posPiles.end (); ++i)
                msg << *i << ' ';
-
-            if (pos1Play < hands[player].size ()) {
-               msg << ";Play=" << *hands[player][pos1Play];
-               if (pos2Play != pos1Play)
-                  msg << ' ' << *hands[player][pos2Play];
-            }
             msg << ";Target=" << dest;
+            if (pos2Play == hands[player].size ())
+               msg << ";Now=1";
                   
             if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
                ignoreNextMsg = 1;
@@ -1004,7 +1003,7 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
          }
       }
    }
-   return -1U;
+   return dest;
 }
 
 //-----------------------------------------------------------------------------
@@ -1468,9 +1467,6 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
       }
    }
    else if (cmd == "Reorder") {
-      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
-         broadcastMessage (message);
-
       Check2 (posPiles.empty ());
 
       YGP::Tokenize tokCards (command.getNextNode (';'));
@@ -1501,16 +1497,12 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
       }
 
       YGP::AttributeParse ap;
-      std::string hand;
-      ATTRIBUTE (ap, std::string, hand, "Play");
+      unsigned int now (0);
       ATTRIBUTE (ap, unsigned int, target, "Target");
-      ap.assignValues (command.getNextNode (';'));
+      ATTRIBUTE (ap, unsigned int, now, "Now");
+      ap.assignValues (command.getNextNode ('\0'));
 
-      if (hand.size ())
-         flipCards2Play (hands[player], hand);
-      else
-         pos1Play = pos2Play = hands[player].size ();
-
+      pos1Play = pos2Play = hands[currentPlayer ()].size ();
       unsigned int targetPile (target >> 16);
       if (targetPile > tablePiles.size ()) {
          target = -1U;
@@ -1524,10 +1516,11 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
           broadcastMessage (message);
 
-      Glib::signal_timeout ().connect
-         (bind (slot (*this, &Game::endRemoteMove), player),
-          ComputerPlayer::TIMEOUT);
-      return false;
+      if (now)
+         Glib::signal_timeout ().connect
+            (bind (slot (*this, &Game::endRemoteMove), currentPlayer ()),
+             ComputerPlayer::TIMEOUT);
+      return !now;
    }
    else if (cmd == "Move") {
       YGP::AttributeParse ap;
