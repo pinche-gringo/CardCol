@@ -268,7 +268,7 @@ unsigned int Buraco::showCardsToPlay (unsigned int player) {
        == (player >> 1))
       ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = 0x3;
 
-      (player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco = 0x3;
+   ICardPile& playerPile (hands[player]);
    if (gStatus.startTurn) {
       Check3 (dumped.size ());
       gStatus.startTurn = 0;
@@ -1302,7 +1302,7 @@ void Buraco::addBuraco (unsigned int player) {
 void Buraco::addBuraco (unsigned int player, bool show) {
    undo.pickUp = 1;
    undo.cJokers = hands[player].size ();
-   (player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco = (player >> 1);
+   if (!player) {
       Game::disableHuman ();
       for (unsigned int i (0); i < hands[0].size (); ++i)
          unregisterHandDND (*hands[0][i]);
@@ -1883,10 +1883,10 @@ int Buraco::cardDistance (const CardWidget& a, const CardWidget& b, bool aceIsOn
       TRACE9 ("Buraco::cardDistance (const CardWidget&, const CardWidget&, bool) - "
               "Checking for Ace");
          return -static_cast<int> (b.number ());
-          && (b.number () <= CardWidget::FOUR))
+      else if ((b.number () == CardWidget::ACE)
                && (a.number () < CardWidget::EIGHT))
          return static_cast<int> (a.number ());
-               && (a.number () <= CardWidget::FOUR))
+   }
 
    TRACE4 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
            "Distance: " << a.number () - b.number ());
