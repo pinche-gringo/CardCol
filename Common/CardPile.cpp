@@ -647,15 +647,9 @@ ICardPile::iterator ICardPile::getFittingCard (const CardWidget& card,
    TRACE9 ("ICardPile::getFittingCard (const CardWidget*, const_iterator, "
            "CMPFUNC2) - " << card);
 
-   CardWidget::NUMBERS nr (card.number ());
-   CardWidget::COLOURS colour (card.colour ());
    while (start != end ()) {
-      if ((*start)->number () == nr)
-         break;
-      else
-         if (((*start)->colour () == colour)
-             && ((static_cast<unsigned int> (cmp (card, **start) + 2)) < 5))
-            break;
+      if ((static_cast<unsigned int> (cmp (card, **start) + 2)) < 5)
+	 break;
       ++start;
    }
 
