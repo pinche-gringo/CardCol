@@ -525,15 +525,16 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
          return;
       
       disableLastPlayer ();
-      played.append (card);
       reserve[player][pile].removeTopCard ();
+      played.append (card);
       executeMove (player, CardWidget::UNREACHABLE);
       return;
    }
    disableLastPlayer ();
 
-   // Create a thread to enable the next player; as else re-registering the
-   // actual played card (inside its event-handler) wreaks quite a bit of havoc
+   // Create a thread perform the move from the pile; neccessary to enable
+   // the update of the GUI (for the card-flip, which would not be visible
+   // otherwise).
    pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::doPileSelected,
                                (void*)((player << 16) + pile));
 }
@@ -559,7 +560,7 @@ void RovhultAppl::doPileSelected (void* playerPile) {
    if (card.number () != CardWidget::TEN)
       played.append (card);
    while (pile--) {
-      if ((reserve[player][pile].numberOfCards () > 1)
+      if ((reserve[player][pile].topCardVisible ())
           && (reserve[player][pile].getTopCard ().number () == card.number ())) {
          CardWidget& movedCard (reserve[player][pile].removeTopCard ());
          if (movedCard.number () != CardWidget::TEN)
@@ -983,6 +984,7 @@ void RovhultAppl::unregisterDND (CardWidget& card) const {
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::dealCards () {
    TRACE9 ("RovhultAppl::dealCards ()");
+   Check3 (staple.numberOfCards () > 36);
 
    // Show cards on table: For all players put 6 cards on table (only the
    // (upper visible) and 3 (visible ones) in hand
@@ -1006,6 +1008,7 @@ void RovhultAppl::dealCards () {
 
    played.hide ();
 
+   Check3 (staple.numberOfCards ());
    staple.setAccessable (true);
    CardWidget& card (staple.getTopCard ());
    pileTop = card.clicked.connect (slot (this, &RovhultAppl::finishedExchange));
