@@ -140,9 +140,9 @@ class ICardPile : public std::vector<CardWidget*> {
 
 
    bool hasFittingPair (const CardWidget& card, CMPFUNC2 cmp, bool doubles = true) const;
-   const_iterator getFittingCard (const CardWidget& card, CMPFUNC2 cmp) const {
+   iterator getFittingCard (const CardWidget& card, CMPFUNC2 cmp) const {
       return getFittingCard (card, begin (), cmp); }
-   const_iterator getFittingCard (const CardWidget& card, const_iterator start, CMPFUNC2 cmp) const;
+   iterator getFittingCard (const CardWidget& card, const_iterator start, CMPFUNC2 cmp) const;
 
    unsigned int sortColourSerie (std::map<unsigned int, unsigned int>& aPos,
                                  std::vector<unsigned int>& aOrder);

@@ -25,6 +25,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#define TRACELEVEL 1
 #include "CardPile.h"
 
 //-----------------------------------------------------------------------------
@@ -545,9 +546,9 @@ bool ICardPile::hasFittingPair (const CardWidget& card, CMPFUNC2 cmp,
 /// \returns \c Position of matching card or pile.end ()
 /// \pre start must be a valid iterator in pile
 //-----------------------------------------------------------------------------
-ICardPile::const_iterator ICardPile::getFittingCard (const CardWidget& card,
-                                                     const_iterator start,
-                                                     CMPFUNC2 cmp) const {
+ICardPile::iterator ICardPile::getFittingCard (const CardWidget& card,
+                                               const_iterator start,
+                                               CMPFUNC2 cmp) const {
    TRACE9 ("ICardPile::getFittingCard (const CardWidget*, const_iterator, "
            "CMPFUNC2) - " << card);
 
@@ -573,7 +574,8 @@ ICardPile::const_iterator ICardPile::getFittingCard (const CardWidget& card,
              "CMPFUNC2) - Found " << **start);
    }
 #endif
-   return start;
+   return (const_cast<ICardPile*> (this)->begin ()
+           + (start - (const_iterator)begin ()));
 }
 
 //----------------------------------------------------------------------------
