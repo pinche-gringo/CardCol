@@ -25,8 +25,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -46,6 +44,8 @@ Human::~Human () {
 /// \returns bool: Flag, if the method should be called again in the next turn.
 //----------------------------------------------------------------------------
 bool Human::makeTurn (Game* game) {
+   TRACE1 ("Human::makeTurn (Game*) - " << name);
    Check1 (game);
    game->enableHuman ();
+   return false;
 }
