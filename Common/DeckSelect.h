@@ -40,7 +40,7 @@ class ICarddeckSelectDlg : public XDialog {
 
    void getSelection (std::string& deck, std::string& back) const {
       deck = aFiles[0] + aFiles[offDeck];
-      back = aFiles[0] + aFiles[offBack]; }
+      back = aFiles[0] + "decks/" + aFiles[offBack]; }
 
  protected:
    virtual void command (int action);
@@ -92,7 +92,10 @@ class CarddeckSelectDlg : public ICarddeckSelectDlg {
 
    static CarddeckSelectDlg* create (T& parent, PCALLBACK callback, const char* path,
                                      const std::string& deck, const std::string& back) {
-      return new CarddeckSelectDlg (parent, callback, path, deck, back);
+      CarddeckSelectDlg<T>* dlg (new CarddeckSelectDlg (parent, callback,
+                                                     path, deck, back));
+      dlg->get_window ()->set_transient_for (parent.get_window ());
+      return dlg;
    }
 
  protected:
