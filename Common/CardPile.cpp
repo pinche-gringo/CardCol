@@ -24,6 +24,8 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#define CHECK 3
+#define TRACELEVEL 9
 #include <Check.h>
 
 #include "CardPile.h"
@@ -51,7 +53,8 @@ ICardPile::~ICardPile () {
 //Parameters: newCard: New top-card
 /*--------------------------------------------------------------------------*/
 void ICardPile::setTopCard (CardWidget& card) {
-   TRACE5 ("ICardPile::setTopCard (CardWidget&) - New size: " << cards.size () + 1);
+   TRACE5 ("ICardPile::setTopCard (CardWidget&) - Card " << card
+           << " -> new size: " << cards.size () + 1);
 
    if ((style > NORMAL) && cards.size ()) {
       Check3 (cards[cards.size () - 1]);
@@ -68,11 +71,14 @@ void ICardPile::setTopCard (CardWidget& card) {
 //Returns   : CardWidget&: Reference to (removed) card
 /*--------------------------------------------------------------------------*/
 CardWidget& ICardPile::removeTopCard () {
-   TRACE5 ("ICardPile::removeTopCard () - New size: " << cards.size () - 1);
+   TRACE5 ("ICardPile::removeTopCard () - Size: " << cards.size ());
 
    Check3 (cards.size () > 0); Check3 (cards[cards.size () - 1]);
    CardWidget& card (getTopCard ());
    cards.pop_back ();
+
+   TRACE5("ICardPile::removeTopCard (CardWidget&) - Card " << card
+          << " -> new size: " << cards.size ());
 
    if (cards.size () && (style > NORMAL)) {
       TRACE9 ("ICardPile::removeTopCard () - Resizing");
@@ -174,7 +180,7 @@ void ICardPile::setAccessable (bool access) {
 //Parameters: card: Card to insert
 /*--------------------------------------------------------------------------*/
 void ICardPile::insert (CardWidget& card, unsigned int pos) {
-   TRACE5 ("ICardPile::insertCard (CardWidget&) - " << pos);
+   TRACE5 ("ICardPile::insertCard (CardWidget&) - Card " << card << " at " << pos);
    Check3 (pos <= cards.size ());
 
    card.show ();
@@ -319,19 +325,21 @@ void ICardPile::sortByColor () {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Checks if the passed card (internal number!) exists
+//Purpose   : Finds the first card being equal or bigger than the past one
 //Parameters: nr: Number of card (2, 3, 4, ... Ace) to search for
-//Returns   : bool: True if found
+//Returns   : int: Position of card in pile (or -1, if none found)
+//Requires  : Cards must be sorted (as the search is binary)
 /*--------------------------------------------------------------------------*/
-bool ICardPile::exists (CardWidget::NUMBERS nr) const {
+int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
    unsigned int first (0), last (cards.size ());
    unsigned int middle;
 
    while ((last - first) > 0 ) {
       middle = first + ((last - first) >> 1);
 
-      TRACE5 ("ICardPile::exists (CardWidget::NUMBERS) - Data = [" << first << "-("
-              << middle << ")-" << last << ')');
+      TRACE5 ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - Data = ["
+              << first << "-(" << middle << ")-" << last << ") = "
+              << *cards[middle]);
 
       Check3 (cards[first]); Check3 (cards[middle]);
       Check3 (cards[first]->number () <= cards[middle]->number ());
@@ -348,7 +356,32 @@ bool ICardPile::exists (CardWidget::NUMBERS nr) const {
       Check3 (first <= last); Check3 (middle <= last);
    }
 
-   TRACE5 ("ICardPile::exists (CardWidget::NUMBERS) - End = [" << first << "-("
-           << middle << ")-" << last << ')');
-   return (first != cards.size ()) && (cards[first]->number () == nr);
+   TRACE5 ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - End = ["
+           << first << "-(" << middle << ")-" << last << ") = "
+           << *cards[middle]);
+
+   return ((first != cards.size ()) && ((cards[first]->number () >= nr))
+           ? static_cast<int> (first) : -1);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Finds the last card being equal or minimal bigger than the past one
+//Parameters: nr: Number of card (2, 3, 4, ... Ace) to search for
+//Returns   : int: Position of card in pile (or -1, if none found)
+//Requires  : Cards must be sorted (as the search is binary)
+/*--------------------------------------------------------------------------*/
+int ICardPile::findLastEqualOrBigger (CardWidget::NUMBERS nr) const {
+   int pos (findFirstEqualOrBigger (nr));
+   if (pos == -1)
+      return -1;
+
+   nr = cards[pos]->number ();
+   while (++pos != cards.size ()) {
+      if (cards[pos]->number () != nr)
+         break;
+   }
+
+   TRACE5 ("ICardPile::findLastEqualOrBigger (CardWidget::NUMBERS) - Card "
+           << *cards[pos - 1] << " at position " << pos - 1);
+   return pos - 1;
 }

@@ -63,7 +63,12 @@ class ICardPile {
    CardWidget* get (unsigned int id) const;
    CardWidget& at (unsigned int pos) const { return *cards[pos]; }
 
-   bool exists (CardWidget::NUMBERS id) const;
+   int findFirstEqualOrBigger (CardWidget::NUMBERS nr) const;
+   int findLastEqualOrBigger (CardWidget::NUMBERS nr) const;
+
+   bool exists (CardWidget::NUMBERS nr) const {
+      int pos (findFirstEqualOrBigger (nr));
+      return (pos != -1) && (at (pos).number () == nr); }
    bool exists (CardWidget& card) const { exists (&card); }
    bool exists (CardWidget* card) const {
       return find (cards.begin (), cards.end (), card) != cards.end (); }
