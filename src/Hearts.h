@@ -82,6 +82,9 @@ class Hearts : public Game {
 
    void startPlaying ();
 
+   virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
    bool playedSQ;               // Flag, if the queen of spades has been played
@@ -98,6 +101,8 @@ class Hearts : public Game {
    CardHPile played;
 
    ScoreDlg* pScoreDlg;
+
+   Gtk::UIManager::ui_merge_id idMrg;
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
