@@ -843,7 +843,7 @@ void CardgameCollection::startGame () {
       for (unsigned int i (0); i < game->numberOfJokers (); ++i)
          cardFaces.addImage (xpmJoker);
    }
-   
+
    // Change number of decks if necessary
    if ((oldDecks != game->numberOfDecks ())
        || (oldJoker != game->numberOfJokers ())) {
