@@ -1,3 +1,79 @@
+2005-02-27  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.10 commented
+
+	* src/SgtMayor.cpp: Fixed playing 2nd card
+
+2005-02-26  Markus Schwab  <g17m0@lycos.com>
+
+	* po/en.po: Actualized
+
+	* po/de.po, po/es.po: Added new translations
+
+	* configure.in: Version to 0.7.10
+
+	* Common/Game.h, Common/Game.cpp:
+	  Made showWonCards virtual and can set style of piles
+
+2005-02-25  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SgtMayor.cpp, src/SgtMayor.h:
+	  Fixed calculating which card to play; Fixed displaying ticks>9
+
+2005-02-23  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SgtMayor.cpp, src/SgtMayor.h:
+	  Improved visibility of card-exchange; Improved computer player
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Using label to show point-status in statusbar
+
+2005-02-19  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp, src/Twopart.cpp: Added game-specific menu
+
+2005-02-16  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SgtMayor.cpp, src/SgtMayor.h:
+	  Added game-specific menu; Improved visibility of card-exchange
+
+2005-02-14  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp:
+	  Updating GUI after removing game-menu to not interfere with new menu
+
+	* src/CardCol.cpp: Fixed adding menu (only add once)
+
+	* src/SgtMayor.cpp, src/SgtMayor.h: Improved computer player
+
+	* src/Machiavelli.cpp: Fixed menu-handling
+
+	* src/MachiPile.cpp: Formatting changed
+
+	* Common/Game.h: Fixed comments
+
+	* Common/Game.cpp:
+	  Methods to sort won pile check if pile exists before sorting
+
+	* Common/CardWidget.cpp, Common/CardWidget.h:
+	  Only emitting clicked-signal if button is released close to click-position
+
+	* Common/CardPile.h: Using ustring to show tooltips
+
+	* src/Twopart.h, src/Hearts.h: Added game-specific menu
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Fixed trap undoing; Offering sort by colour
+
+2005-01-31  Markus Schwab  <g17m0@lycos.com>
+
+	* po/de.po, po/en.po, po/es.po: Actualized line-numbers
+
+	* src/Makefile.am: Fixed call of mgeni
+
+	* src/Buraco.cpp, src/Buraco.h, src/CardCol.cpp, src/CardCol.h, src/Machiavelli.h:
+	  Fixed menu-handling
+
 2005-01-28  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.03 commented

@@ -1,3 +1,12 @@
+Overview of changes in version 0.7.10:
+
+  - Improved Sgt. Mayor's computer player
+  - Sgt. Mayor can show the won cards
+  - Fixed handing of game-specific menus
+  - Can't sort cards in Buraco, directly after picking up the dumped cards
+  - Fixed trap in Buraco when undoing move
+  - Added game-specific menus to Hearts, Twopart and Sgt. Mayor
+
 Overview of changes in version 0.7.03:
 
   - Fixed bugs in Buraco
@@ -97,7 +106,7 @@ Overview of changes in version 0.5.03:
 
 Overview of changes in version 0.5.02:
 
-  - Fixed bug in replacing the joker in colour series
+  - Fixed bug replacing the joker in colour series
   - Fixed warning message about not installed libpthread, though it is installed
   - Updated INSTALL (installation from CVS)
   - Updated version info in po files (which hold the translated messages)
@@ -159,7 +168,7 @@ Overview of changes in version 0.3.00:
 Overview of changes in version 0.2.00:
 
   - Combined the games into one application
-  - Security check if the user terminates while a game is running
+  - Security check if the user ends the game while it is running
   - Playing of computer improved (both games)
   - Computer-player moves cards to the end of the staple before playing
   - Dialog to select carddecks improved (adapts size to show all decks)
