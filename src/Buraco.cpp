@@ -36,8 +36,6 @@
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 #include <ConnMgr.h>
@@ -295,15 +293,18 @@ int Buraco::makeMove (unsigned int player) {
          playerPile.insertSorted (dumped.removeTopCard (), compByNumberWithJokers);
          movePile (playerPile, dumped);
          playerPile.sort (compByNumberWithJokers);
+         if (dumped.size ())
             std::map<unsigned int, unsigned int> aPos;
             std::vector<unsigned int> aOrder;
             unsigned int nrs (playerPile.getSeries (dumpedCard, aPos, aOrder,
                                                     &cardDistance));
             unsigned int nrs (getSeries (playerPile, dumpedCard, aPos, aOrder));
                            playerPile.sortColourSerie (aPos, aOrder))
-                        ? sortColourSerie (playerPile, aPos, aOrder)
+                        : playerPile.find (dumpedCard, compByNumberWithJokers));
+                           sortColourSerie (playerPile, aPos, aOrder))
                         : playerPile.findByNr (dumpedCard));
 
+            makeNewPile (player & 1);
             target = (tablePiles[player & 1].size () - 1) << 16;
             CardVPile& pile (makeNewPile (player & 1));
       }
@@ -874,14 +875,43 @@ void Buraco::dumpedSelected () {
 
    // Special handling of player starting the game and can choose one of the
    // first two cards
-   // Move top card to human and enable the cards in his hand, when idle
-   // (means: *after* this signalhandler termintes)
+   CardWidget& card (dumped.removeTopCard ());
+   card.show ();
+   if (gStatus.startGame) {
+      Check3 (dumped.size () == 0);
+      hands[0].append (card);
+   }
+   else {
+      Check3 (pileHasFittingPair (hands[0], card));
+
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+         // Send played card to all clients (if any)
+      if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+         msg << "Play=" << card.id () << ";Target="
+             << (tablePiles[0].size () << 16) + 100;
+
+         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+            ++ignoreNextMsg;
+         if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      }
+
+      BuracoPile& pile (makeNewPile (0 & 1));                // Create new pile
+      pile.setTopCard (card);                            // with picked up card
+      CardVPile& pile (makeNewPile (0 & 1)     );            // Create new pile
+      acceptCards = hands[0].size ();;
+      if (dumped.size ())
+   }
+
+   // Enable the cards in humans hand, when idle (means: *after* this
+   // signalhandler terminates)
+   Glib::signal_idle ().connect
+   // signalhandler termintes)
 }
-       (bind_return (slot (*this, &Buraco::doDumpedSelected), false));
+       (bind_return (slot (*this, &Buraco::enableHumanHand), false));
 //-----------------------------------------------------------------------------
 /// Action after picking up the card from the dumped staple
 //-----------------------------------------------------------------------------
-/// Delayed callback after clicking on the dumped staple
+void Buraco::doDumpedSelected () {
    TRACE5 ("Buraco::doDumpedSelected () - " << gStatus.startGame);
    Check1 (gameStatus () == PLAYING);
    Check3 (dumped.size ());
@@ -891,25 +921,6 @@ void Buraco::dumpedSelected () {
    movePile (hands[player], dumped);
 }
 
-   // Special handling of player starting the game and can choose one of the
-   // first two cards
-   if (gStatus.startGame) {
-      Check3 (dumped.size () == 1);
-      CardWidget& card (dumped.removeTopCard ());
-      card.show ();
-      hands[player].append (card);
-   }
-   else {
-      Check3 (pileHasFittingPair (hands[player], dumped.getTopCard ()));
-      CardVPile& pile (makeNewPile (player & 1));            // Create new pile
-      pile.setTopCard (dumped.removeTopCard ());         // with picked up card
-
-      while (dumped.size ())
-          hands[player].append (dumped.removeTopCard ());
-   }
-
-   if (!player)
-      enableHumanHand ();
 //-----------------------------------------------------------------------------
 /// Enables a card in the hand of the player
 //-----------------------------------------------------------------------------
@@ -1562,6 +1573,7 @@ void Buraco::updateInfo () {
          // First check, if a joker can be replaced
          if ((posJoker != -1U)
              && (cardDistance (card, *pile[first]) == posJoker)) {
+            sendMoveCard (iPile, posJoker, 0);
             pile.move (0, posJoker);
             return posJoker + 1;
          }
@@ -1583,9 +1595,7 @@ void Buraco::updateInfo () {
                if ((diff == 2) && (posJoker > first)) {
                   Check3 (!first);
 
-                  std::ostringstream msg;
-                  msg << "Move=" << posJoker << ";To=0;Pile=" << iPile;
-                  broadcastMessage (msg.str ());
+                  sendMoveCard (iPile, posJoker, 0);
                   pile.move (0, posJoker);
                   ++first;
                }
@@ -1602,9 +1612,7 @@ void Buraco::updateInfo () {
             if ((diff == 2) && (posJoker < last)) {
                Check3 (first > posJoker);
 
-               std::ostringstream msg;
-               msg << "Move=" << posJoker << ";To=" << last << ";Pile=" << iPile;
-               broadcastMessage (msg.str ());
+               sendMoveCard (iPile, posJoker, last);
                pile.move (last, posJoker);
                --last;
             }
@@ -1615,6 +1623,27 @@ void Buraco::updateInfo () {
       }
 
 //----------------------------------------------------------------------------
+/// Sends a move-message to the connected machines
+/// \param pile: Number of pile involved
+/// \param from: Card to move
+/// \param to: Position card to move to
+//----------------------------------------------------------------------------
+void Buraco::sendMoveCard (unsigned int pile, unsigned int from, unsigned int to) const {
+   TRACE8 ("Buraco::sendMoveCard (3x unsigned int) - Pile " << pile << ' '
+           << from << "->" << to);
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+      // Send played card to all clients (if any)
+   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+      msg << "Move=" << from << ";To=" << to << ";Pile=" << pile;
+
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+         const_cast<Buraco*> (this)->ignoreNextMsg = true;
+      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+   }
+}
+
+
+//-----------------------------------------------------------------------------
 /// Shows or hides the cards of the computer player
 /// \param open: Flag if cards should be shown or hidden
 //-----------------------------------------------------------------------------

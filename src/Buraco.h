@@ -94,6 +94,7 @@ class Buraco : public Game {
    bool canDumpCards (unsigned int player, unsigned int cards,
                       unsigned int pile = -1U) const;
 
+   void sendMoveCard (unsigned int pile, unsigned int from, unsigned int to) const;
    unsigned int sortColourSerie (ICardPile& playerPile,
                                  std::map<unsigned int, unsigned int>& aPos,
                                  std::vector<unsigned int>& aOrder);
