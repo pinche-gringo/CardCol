@@ -158,8 +158,7 @@ void Game::disableHuman () {
 bool Game::randomizeCardsToPile (ICardPile& pile) const {
    // Randomize and put cards onto staple
    ConnectionMgr& cmgr (getConnectionMgr ());
-   if (cmgr.getMode () == ConnectionMgr::CLIENT) {
-      Check3 (data);
+   if (data && *data) {
       std::string input (data);
 
       AttributeParse ap;
@@ -189,7 +188,9 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
                     << "] = " << pos);
             cards.set (i, pos);
          }
-         writeOK (*cmgr.getSocket ());
+
+      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+          writeOK (*cmgr.getSocket ());
       }
       catch (std::string& error) {
          writeError (*cmgr.getSocket (), 99, error);
@@ -203,14 +204,15 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
    }
    else {
       cards.shuffle ();
-      if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
-         std::ostringstream msg;
-         msg << "Cards=";
-         for (unsigned int i (0); i < cards.size (); ++i)
-            msg << cards.getCard (i).id () << ' ';
+      std::ostringstream msg;
+      msg << "Cards=";
+      for (unsigned int i (0); i < cards.size (); ++i)
+         msg << cards.getCard (i).id () << ' ';
 
-         broadcastMessage (msg.str ());
-      }
+      const_cast<Game*> (this)->cardOrder = msg.str ();
+
+      if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
+         broadcastMessage (cardOrder);
    }
 
    pile.setTopCards (cards.getCards ());
@@ -786,16 +788,4 @@ bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) {
 //----------------------------------------------------------------------------
 bool Game::canBeStopped () const {
    return !(actPlayer && stati.pendingTurn);
-}
-
-//----------------------------------------------------------------------------
-/// Returns the name of the game to start new.
-/// \returns const char*: True, if the game can be stopped imediately
-/// \pre: Don't call! Only to be used after receiving a Game-message with a
-///       different game-name!
-//----------------------------------------------------------------------------
-const char* Game::name () {
-   Check (statGame == TERMINATED);
-   Check3 (data);
-   return data;
 }
