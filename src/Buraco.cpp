@@ -484,11 +484,14 @@ int Buraco::executeMove (unsigned int player) {
    TRACE8 ("Buraco::executeMove (unsigned int) - Searching for a card to dump");
    for (i = 0; i < playerPile.size () - 1; ++i) {
       ICardPile::const_iterator p (playerPile.getFittingCard (*playerPile[i], playerPile.begin (),
-   for (i = 0; i < playerPile.size () - 1; ++i)
-      if (playerPile.getFittingCard (*playerPile[i], playerPile.begin () + i + 1,
-                                     &cardDistance)
-          == playerPile.end ())
+                                                              &cardDistance));
+      if (static_cast<unsigned int> (p - playerPile.begin ()) == i)
+         p = playerPile.getFittingCard (*playerPile[i], ++p, &cardDistance);
+      if ((p - playerPile.begin ()) == i)
+         break;
+   }
 
+   while (i && isJoker (*playerPile[i]))              // Try to not dump jokers
       --i;
 
    Check3 (i < playerPile.size ());
@@ -1563,8 +1566,10 @@ void Buraco::sendMoveCard (unsigned int pile, unsigned int from, unsigned int to
 void Buraco::playOpen (bool open) {
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       hands[i].setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
-   for (unsigned int i (1); i < NUM_PLAYERS; ++i)
+      hands[i].setStyle (open ? ICardPile::COMPRESSED : ICardPile::QUITE_COMPRESSED);
    }
+}
+
 //-----------------------------------------------------------------------------
 /// Creates the combined team names from the players
 /// \param names: Array to receive groups
@@ -1680,7 +1685,7 @@ bool Buraco::canGetRidOfCards (unsigned int player) const {
    TRACE5 ("Buraco::canGetRidOfCards (unsigned int) - Checking player " << player);
    std::bitset<160> used; Check3 (hands[player].size () < used.size ());
    const CardHPile& pile (hands[player]);
-   std::bitset<200> used; Check3 (hands[player].size () < used.size ());
+
    unsigned int cJokers (0);
    unsigned int piles (0);
    for (ICardPile::const_iterator i (pile.begin ()); i != pile.end (); ++i) {
@@ -1707,7 +1712,7 @@ bool Buraco::canGetRidOfCards (unsigned int player) const {
            << '/' << hands[player].size () << "; " << cJokers << " Joker for "
            << piles << " piles -> "
            << '/' << hands[player].size () << "; Joker: " << cJokers);
-   return (((used.count () + 1) >= hands[player].size ())
+   return (((used.count () + 2) >= hands[player].size ())
 
 //-----------------------------------------------------------------------------
 /// Checks if the player can dump the specified number of cards; a player can
@@ -1800,10 +1805,16 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
 
    if (withJokers) {
       ICardPile::const_iterator i (pile.getFittingCard (card, pile.begin (),
-   return (withJokers
-           ? ((pile.getFittingCard (card, pile.begin (), &cardDistance) != pile.end ())
-              && !containsNoJoker (pile))
-           : pile.hasFittingPair (card, &cardDistance));
+                                                        &cardDistance));
+      if (*i == &card)
+         i = pile.getFittingCard (card, ++i, &cardDistance);
+      if ((i != pile.end ()) && !containsNoJoker (pile))
+         return true;
+   }
+
+   return pile.hasFittingPair (card, &cardDistance);
+}
+
 //-----------------------------------------------------------------------------
 /// Checks if the passed pile contains a pair matching the passed card
 /// \param pile: Pile to inspect
