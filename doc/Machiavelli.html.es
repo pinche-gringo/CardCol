@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003, 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -53,7 +53,7 @@
     <p>Cada mot&oacute;n por la mesa debe que tener por lo menos 3 cartas.</p>
 
     <p>Los jugadores empiezan con siete cartas en su mano. Cada turno empieza
-      con cortar una carta de la reserva (pasa automaticamente). 
+      con cortar una carta de la reserva (pasa automaticamente).
        Despu&eacute;s puede a&ntilde;adirlas a las pilas por la mesa,
       resortearlas como quiere, crece pilas nuevas (tambi&eacute;n con cartas
       ya existentes por la mesa) - en corto, hacer como quiere, si al fin del
@@ -92,10 +92,10 @@
 
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
-      Tirar y depositar significa hacer clic con el bot&oacute;n
-      <em>derecho</em> (o el central) del mouse en una carta, se sigue
-      empujando el but&oacute;n y se tira la carta a su destinaci&oacute;n. El
-      fin de esa actividad se se ejecuta con dejar el bot&oacute;n.</p>
+      Tirar y depositar significa hacer clic con un but&oacute;n de el
+      mouse en una carta, se sigue empujando el but&oacute;n y se tira la
+      carta a su destinaci&oacute;n. El fin de esa actividad se se ejecuta
+      con dejar el but&oacute;n.</p>
 
     <hr size=3 noshade>
     <table width="100%">

@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003, 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -45,7 +45,7 @@
     <p>La meta del juego es de librarse de todas sus cartas, de acuerdo con
       las siguentes reglas - por supuesto faciles como tambi&eacute;n los
       yankis lo juegan:</p>
-    
+
     <p>Todos los jugadores empiezan con tres cartas en su mano y dos veces
       tres cartas al mesa (los bajas tapadas y las por encima visibles).</p>
 
@@ -126,10 +126,10 @@
 
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
-      Tirar y depositar significa hacer clic con el bot&oacute;n
-      <em>derecho</em> (o el central) de el mouse en una carta, se sigue
-      empujando el but&oacute;n y se tira la carta a su destinaci&oacute;n. El
-      fin de esa actividad se se ejecuta con dejar el bot&oacute;n.</p>
+      Tirar y depositar significa hacer clic con un but&oacute;n de el
+      mouse en una carta, se sigue empujando el but&oacute;n y se tira la
+      carta a su destinaci&oacute;n. El fin de esa actividad se se ejecuta
+      con dejar el but&oacute;n.</p>
 
     <hr size=3 noshade>
     <table width="100%">

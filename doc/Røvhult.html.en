@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003, 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -45,7 +45,7 @@
 
     <p>The goal of the game is to get rid of all your cards, according to the
       following - quite simple as also Yankees are playing it ;) - rules:</p>
-    
+
     <p>Every player starts with three cards in his hand, and two times three
       cards on the table (where the lower three are face down (hidden) and
       the upper ones are visible).</p>
@@ -116,7 +116,7 @@
     <ul>
       <li>The staple: A heap of cards (with face down), from where you put
         up new cards (if you put the mouse over it you are informed about
-        the remaining cards).</li> 
+        the remaining cards).</li>
      <li>The cards of the human player; above the cards in the hand, below
         the cards on the table.</li>
       <li>In the next line it's the same with computer players 3 and 1. In
@@ -127,10 +127,9 @@
 
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
-      Drag and drop means clicking with the <em>right</em> (or the middle)
-      mouse button on the card, holding the button and then dragging the card
-      to its destination. The end of this activity is signaled by releasing
-      the button.</p>
+      Drag and drop means clicking with the a mouse button on the card,
+      holding the button and then dragging the card to its destination.
+      The end of this activity is signaled by releasing the button.</p>
 
     <hr size=3 noshade>
     <table width="100%">

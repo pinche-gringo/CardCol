@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003, 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -152,14 +152,14 @@
 
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
-      Tirar y depositar significa hacer clic con el bot&oacute;n
-      <em>derecho</em> (o el central) del mouse en una carta, se sigue
-      empujando el but&oacute;n y se tira la carta a su destinaci&oacute;n. El
-      fin de esa actividad se se ejecuta con dejar el bot&oacute;n.</p>
+      Tirar y depositar significa hacer clic con un but&oacute;n de el
+      mouse en una carta, se sigue empujando el but&oacute;n y se tira la
+      carta a su destinaci&oacute;n. El fin de esa actividad se se ejecuta
+      con dejar el but&oacute;n.</p>
 
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note2"></a>2)
       No se tiene que movir el mono manualmente. Solamente deposita la carta
-      que quieres jugar y el mono se mueve automaticalmente.</p>
+      que quieres jugar y el mono se mueve automaticamente.</p>
 
     <hr size=3 noshade>
     <table width="100%">

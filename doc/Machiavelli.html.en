@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003, 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -93,10 +93,9 @@
 
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
-      Drag and drop means clicking with the <em>right</em> (or the middle)
-      mouse button on the card, holding the button and then dragging the card
-      to its destination. The end of this activity is signaled by releasing
-      the button.</p>
+      Drag and drop means clicking with the a mouse button on the card,
+      holding the button and then dragging the card to its destination.
+      The end of this activity is signaled by releasing the button.</p>
 
     <hr size=3 noshade>
     <table width="100%">
