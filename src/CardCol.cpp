@@ -297,13 +297,13 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { _("E_xit"),             _("<ctl>Q"), EXIT,     ITEM },
     { _("_Options"),          _("<alt>O"), 0,        BRANCH },
     { _("_Change game"),      _("<alt>C"), 0,        SUBMENU },
-    {    _("_Rovhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
+    {    _("_Røvhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
     {    _("_Twopart"),       _("<ctl>T"), TWOPART,  LASTRADIOITEM },
     { "",                     "",          0,        SUBMENUEND },
     { _("_Change decks ..."), _("<ctl>C"), CHGDECKS, ITEM },
     { _("_Save settings"),    _("<ctl>S"), SAVESET,  ITEM },
 #if TRACELEVEL >= 1
-    { _("_Debug"),            _("<ctl>D"), DEBUG,    CHECKITEM },
+    { "_Debug",               "<ctl>D",    DEBUG,    CHECKITEM },
 #endif
     { _("_Help"),             _("<alt>H"), 0,        LASTBRANCH },
     { _("_About..."),         _("<ctl>A"), ABOUT,    ITEM } };
@@ -364,11 +364,13 @@ void CardgameCollection::startGame () {
       oldGame = typeGame;
       switch (typeGame) {
       case GROVHULT:
-         game = new TRovhult<CardgameCollection> (*this, &CardgameCollection::gameEvents);
+         game = new TGame<Rovhult, CardgameCollection>
+            (*this, &CardgameCollection::gameEvents);
          break;
 
       case GTWOPART:
-         game = new TTwopart<CardgameCollection> (*this, &CardgameCollection::gameEvents);
+         game = new TGame<Twopart, CardgameCollection>
+            (*this, &CardgameCollection::gameEvents);
          break;
 
       default:
@@ -603,7 +605,7 @@ void CardgameCollection::loadCards () {
 //Parameters: status: New status of game
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::gameEvents (unsigned int status) {
-   TRACE1 ("CardgameCollection::gameEvents (unsigned int) const - New status: "
+   TRACE8 ("CardgameCollection::gameEvents (unsigned int) const - New status: "
            << status);
 
    switch (status) {
