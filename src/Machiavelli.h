@@ -63,6 +63,9 @@ class Machiavelli : public Game {
    virtual const char* name () { return "Machiavelli"; }
    virtual void playOpen (bool);
 
+   virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+
    virtual unsigned int numberOfDecks () const { return 4; }
 
    virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
@@ -176,6 +179,10 @@ class Machiavelli : public Game {
    std::deque<unsigned int> posPiles;
 
    XGP::MessageDlg* undoDlg;
+
+   Gtk::Widget* undo1;
+   Gtk::Widget* undoAll;
+   Gtk::UIManager::ui_merge_id idMrg;
 };
 
 #endif

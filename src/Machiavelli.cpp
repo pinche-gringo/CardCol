@@ -31,6 +31,7 @@
 
 #include <gtk/gtkdnd.h>
 
+#include <gtkmm/stock.h>
 #include <gtkmm/statusbar.h>
 
 #include <YGP/Check.h>
@@ -317,8 +318,8 @@ int Machiavelli::makeMove (unsigned int player) {
          YGP::StatusObject obj;
          checkPiles (obj);
          if (obj.getType () != YGP::StatusObject::UNDEFINED) {
-            TRACE ("Machiavelli::makeMove (unsigned int) - Invalid piles!\n"
-                   << obj.getMessage ());
+            TRACE1 ("Machiavelli::makeMove (unsigned int) - Invalid piles!\n"
+		    << obj.getMessage ());
             Check (!"Valid piles");
          }
       }
@@ -874,6 +875,8 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    Check3 (aDNDHand.size () == hands[0].size ());
 
    undo.push (val);
+   undo1->set_sensitive (true);
+   undoAll->set_sensitive (true);
 }
 
 //----------------------------------------------------------------------------
@@ -1441,20 +1444,26 @@ void Machiavelli::undoMove (unsigned int number) {
 
    enableHuman ();
 
-   Check3 (undoDlg);
    if (undo.empty ()) {
-      delete undoDlg;
-      undoDlg = NULL;
+      if (undoDlg) {
+	 delete undoDlg;
+	 undoDlg = NULL;
+      }
+
+      undo1->set_sensitive (false);
+      undoAll->set_sensitive (false);
    }
-   else {
-      YGP::StatusObject obj;
-      checkPiles (obj);
-      if (obj.getType () != YGP::StatusObject::UNDEFINED)
-         obj.generalize (_("Can't end turn: The piles are not valid!"));
-      else
-         obj.setMessage (YGP::StatusObject::INFO, _("Could end turn: The piles are OK!"));
-      undoDlg->update (obj);
-   }
+   else
+      if (undoDlg) {
+	 YGP::StatusObject obj;
+	 checkPiles (obj);
+	 if (obj.getType () != YGP::StatusObject::UNDEFINED)
+	    obj.generalize (_("Can't end turn: The piles are not valid!"));
+	 else
+	    obj.setMessage (YGP::StatusObject::INFO, _("Could end turn: The piles are OK!"));
+
+	 undoDlg->update (obj);
+      }
 }
 
 //----------------------------------------------------------------------------
@@ -1537,8 +1546,8 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
          YGP::StatusObject obj;
          checkPiles (obj);
          if (obj.getType () != YGP::StatusObject::UNDEFINED) {
-            TRACE ("Machiavelli::handleMessage (unsigned int, const std::string&)"
-                   " - Invalid piles!\n" << obj.getMessage ());
+            TRACE1 ("Machiavelli::handleMessage (unsigned int, const std::string&)"
+		    " - Invalid piles!\n" << obj.getMessage ());
             Check (!"Valid piles");
          }
 #endif
@@ -1668,4 +1677,49 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
 unsigned int Machiavelli::getActTarget () const {
    Check3 ((target >> 16) < tablePiles.size ());
    return target;
+}
+
+//-----------------------------------------------------------------------------
+/// Adds machiavelli-specific menus
+/// \param mgrUI: UIManager to add to
+//-----------------------------------------------------------------------------
+void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
+   Check1 (mgrUI);
+   Glib::ustring ui ("<menubar name='Menu'>"
+		     "  <placeholder name='GameMenu'>"
+		     "    <menu action='Machi'>"
+		     "      <menuitem action='Undo'/>"
+		     "      <menuitem action='UndoAll'/>"
+		     "      <separator/>"
+		     "      <menuitem action='EndTurn'/>"
+		     "    </menu></placeholder></menubar>");
+
+   Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
+   grpAction->add (Gtk::Action::create ("Machi", _("_Machiavelli")));
+   grpAction->add (Gtk::Action::create ("Undo", Gtk::Stock::UNDO),
+		   Gtk::AccelKey ("<ctl>Z"),
+		   bind (mem_fun (*this, &Machiavelli::undoMove), 1));
+   grpAction->add (Gtk::Action::create ("UndoAll", _("Undo _all")),
+		   Gtk::AccelKey ("<ctl><alt>Z"),
+		   bind (mem_fun (*this, &Machiavelli::undoMove), -1U));
+   grpAction->add (Gtk::Action::create ("EndTurn", _("_End turn")),
+		   mem_fun (*this, (&Machiavelli::endTurn)));
+
+   mgrUI->insert_action_group (grpAction);
+   idMrg = mgrUI->add_ui_from_string (ui);
+
+   undo1 = mgrUI->get_widget ("/Menu/GameMenu/Machi/Undo"); Check3 (undo1);
+   undoAll = mgrUI->get_widget ("/Menu/GameMenu/Machi/UndoAll"); Check3 (undoAll);
+
+   undo1->set_sensitive (false);
+   undoAll->set_sensitive (false);
+}
+
+//-----------------------------------------------------------------------------
+/// Removes the machiavelli-specific menus
+/// \param mgrUI: UIManager to remove from
+//-----------------------------------------------------------------------------
+void Machiavelli::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
+   Check1 (mgrUI);
+   mgrUI->remove_ui (idMrg);
 }
