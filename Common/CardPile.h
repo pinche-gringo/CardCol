@@ -32,13 +32,18 @@ class CardPile : public Gtk::VBox {
    CardPile (Style style = NORMAL);
    virtual ~CardPile ();
 
+   void flipTopCard ();
    void setTopCardVisible (bool visible = true);
-   void setTopCard (CardWidget* newCard, bool cardVisible = true);
+   void setTopCardInVisible () { setTopCardVisible (false); }
+
+   void setTopCard (CardWidget& newCard);
+   void setTopCard (CardWidget& newCard, bool visible) {
+      setTopCard (newCard);
+      newCard.setVisible (visible); }
    CardWidget* removeTopCard ();
 
    bool existCard (CardWidget* card) const {
       return find (cards.begin (), cards.end (), card) != cards.end (); }
-
 
    unsigned int getCardNumber () const { return cards.size (); }
 

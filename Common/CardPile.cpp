@@ -29,6 +29,7 @@
 #include <Check.h>
 #include <Trace_.h>
 
+#include "CardSet.h"
 #include "CardWidget.h"
 
 #include "CardPile.h"
@@ -49,21 +50,23 @@ CardPile::~CardPile () {
    TRACE9 ("CardPile::~CardPile ()");
 }
 
-
 /*--------------------------------------------------------------------------*/
 //Purpose   : Sets the top card of the pile
 //Parameters: newCard: New top-card
-//            cardVisible: Flag, if the card is visible (or just back is shown)
 /*--------------------------------------------------------------------------*/
-void CardPile::setTopCard (CardWidget* newCard, bool cardVisible) {
-   TRACE5 ("CardPile::setTopCard (CardWidget*, bool) - New size: " << cards.size () + 1);
+void CardPile::setTopCard (CardWidget& card) {
+   TRACE5 ("CardPile::setTopCard (CardWidget&) - New size: " << cards.size () + 1);
 
-   pack_start (*newCard, false);
+   card.show ();
+   pack_start (card, false);
+
    if ((style > NORMAL) && cards.size ()) {
-      CardWidget* card (cards[cards.size () - 1]); Check3 (card);
-      card->set_usize (-1, style == COMPRESSED ? 15 : 1);
-   } 
-   cards.push_back (newCard);
+      CardWidget* lastCard (cards[cards.size () - 1]); Check3 (lastCard);
+      lastCard->set_usize (-1, style == COMPRESSED ? 15 : 1);
+   }
+
+   card.show ();
+   cards.push_back (&card);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -82,4 +85,24 @@ CardWidget* CardPile::removeTopCard () {
       cards[cards.size () - 1] ->set_usize (-1, 96);
 
    return pCard;
+}
+
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Flips the topmost card of the pile
+/*--------------------------------------------------------------------------*/
+void CardPile::flipTopCard () {
+   Check3 (cards.size () > 0);
+
+   cards[cards.size () - 1]->flip ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Returns and removes the top card of the pile
+//Parameters: visible: Flag if cardface should be shown or back
+/*--------------------------------------------------------------------------*/
+void CardPile::setTopCardVisible (bool visible) {
+   Check3 (cards.size () > 0);
+
+   cards[cards.size () - 1]->setVisible (visible);
 }
