@@ -18,13 +18,20 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <vector>
+
 #include <CardSet.h>
 #include <CardPile.h>
 
 #include <Game.h>
 
+#include <HeartsScore.h>
+
+
 namespace Gtk {
    class Box;
+   class Menu;
+   class MenuItem;
 };
 
 using namespace Gtk;
@@ -49,11 +56,13 @@ class Hearts : public Game {
    const Hearts& operator= (const Hearts& other);
 
    //@Section Event handling
-   void cardSelected (unsigned int player, unsigned int iCard);
+   void cardSelected (unsigned int iCard);
+   gint wonCardsSelected (GdkEvent *event);
+   void takeCard (unsigned int iCard);
 
    //@Section Virtual methods
    virtual int makeMove (unsigned int player);
-   virtual void enablePlayer (unsigned int player);
+   virtual int enableHuman ();
 
    //@Section Helper methods
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int card);
@@ -63,6 +72,12 @@ class Hearts : public Game {
    static void getPositionOfColors (ICardPile& pile, int result[4]);
    static unsigned int numberOfCards (int aPositions[4], CardWidget::COLORS color);
    static unsigned int pointsOfPile (ICardPile& pile);
+   void showWonCards (bool show = true);
+   int  enableWonCards ();
+   void disableWonCards ();
+
+   void sortWonByNumber ();
+   void sortWonByColor ();
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
@@ -74,6 +89,11 @@ class Hearts : public Game {
       CardHPile won;                            // Reserve-cards (for end-game)
    } players[NUM_PLAYERS];
    CardHPile played;
+
+   HeartsScoreDlg* pScoreDlg;
+
+   vector<Gtk::Connection> wonCards;           // Connections to show won cards
+   Gtk::Menu*              pmenuPopSort;
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
