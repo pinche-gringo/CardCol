@@ -18,6 +18,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -114,7 +115,6 @@ class Rovhult : public Game {
       return pos;
    }
 
-
    bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
    int executeMove (unsigned int player, CardWidget::NUMBERS nr);
 
@@ -135,8 +135,14 @@ class Rovhult : public Game {
    static std::vector<Gtk::TargetEntry> dndTypeHand;
    static std::vector<Gtk::TargetEntry> dndTypeTable;
 
-   std::vector<SigC::Connection> aTableDND;
-   std::vector<SigC::Connection> aHandDND;
+   void disconnectCard (const CardWidget& card);
+   void disconnectCardInHand (const CardWidget& card);
+   void disconnectCardOnTable (const CardWidget& card);
+
+   std::map <const CardWidget*, SigC::Connection> aTableDND;
+   std::map <const CardWidget*, SigC::Connection> aHandDND;
+   std::map <const CardWidget*, SigC::Connection> aHandData;
+   std::map <const CardWidget*, SigC::Connection> aTableData;
 
    unsigned int pos2Play;
    unsigned int pos1Play;
