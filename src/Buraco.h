@@ -171,6 +171,7 @@ class Buraco : public Game {
       unsigned int startTurn : 1;
       unsigned int team1Buraco : 2;
       unsigned int team2Buraco : 2;
+      unsigned int pickUpPlayed : 1;
    } gStatus;
    unsigned int target;
 
