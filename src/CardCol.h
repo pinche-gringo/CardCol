@@ -80,7 +80,9 @@ class CardgameCollection : public XApplication {
    void changePlayernames ();
 
    void makePlayer ();
-   void* waitForServerMessage (void*);
+   void* waitForMessages (void*);
+   bool handleMessage (char* msg);
+   bool showMessage (char* msg);
 
    static XApplication::MenuEntry CardgameCollection::menuItems[];
 
@@ -94,6 +96,7 @@ class CardgameCollection : public XApplication {
 
    typedef OThread<CardgameCollection> THRDAPPL;
    THRDAPPL* pThread;
+   THRDAPPL* pCommThread;
 
    Options& options;
    ConnectionMgr cmgr;

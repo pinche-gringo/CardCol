@@ -33,6 +33,7 @@
 
 #include <gtkmm/messagedialog.h>
 
+#define CHECK 9
 #define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
@@ -669,7 +670,7 @@ const IVIOApplication::longOptions CardgameAppl::lo[] = {
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE)
-     , pThread (NULL), game (NULL)
+     , pThread (NULL), pCommThread (NULL), game (NULL)
      , options (opts), oldGame (NONE), restart (false) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
 
@@ -711,7 +712,7 @@ CardgameCollection::CardgameCollection (Options& opts)
 /// INI file
 //----------------------------------------------------------------------------
 void CardgameCollection::makePlayer () {
-   Check3 (options.name.size ());
+   Check3 (options.names.size ());
    std::vector<Glib::ustring>::iterator i (options.names.begin ());
    player.push_back (new Human (*i));
    while (++i != options.names.end ())
@@ -798,7 +799,8 @@ void CardgameCollection::startGame () {
    name += " - " PACKAGE " V" PRG_RELEASE;
    set_title (name);
 
-   game->start ();
+   if (cmgr.getClients ().size ())
+      game->start ();
 }
 
 //-----------------------------------------------------------------------------
@@ -831,13 +833,14 @@ void CardgameCollection::command (int menu) {
          }
       }
       else {
-          if (pThread) {
+          if (cmgr.getMode () == ConnectionMgr::CLIENT) {
              Gtk::MessageDialog dlg (_("Stop waiting for the server to start the game and start a local one?"),
                                      Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
              dlg.set_title (PACKAGE);
              if (dlg.run () == Gtk::RESPONSE_YES) {
-                pThread->cancel ();
-                pThread = NULL;
+                Check3 (pCommThread);
+                pCommThread->cancel ();
+                pCommThread = NULL;
              }
              else
                 break;
@@ -860,13 +863,16 @@ void CardgameCollection::command (int menu) {
    case CONNECT:
       PlayerConnectDlg::perform (player, PORT, cmgr);
       TRACE1 ("CardgameCollection::command (int) - " << cmgr.getMode ());
-      if (cmgr.getMode () == ConnectionMgr::CLIENT) {
-          status.pop ();
-          status.push (_("Waiting for the server to start the game ..."));
-          pThread = THRDAPPL::create
-              (this, &CardgameCollection::waitForServerMessage,
-               NULL);
-          pThread->allowCancelation ();
+      if (cmgr.getMode () != ConnectionMgr::NONE) {
+         if (cmgr.getMode () == ConnectionMgr::CLIENT) {
+            status.pop ();
+            status.push (_("Waiting for the server to start the game ..."));
+         }
+
+         pCommThread = THRDAPPL::create
+             (this, &CardgameCollection::waitForMessages,
+              NULL);
+         pCommThread->allowCancelation ();
       }
       break;
 
@@ -1165,44 +1171,109 @@ void CardgameCollection::gameEvents (unsigned int status) {
 }
 
 //----------------------------------------------------------------------------
-/// Waits for the server to start the game
+/// Waits for messages
 //----------------------------------------------------------------------------
-void* CardgameCollection::waitForServerMessage (void*) {
+void* CardgameCollection::waitForMessages (void*) {
+   TRACE1 ("CardgameCollection::waitForMessage (void*)");
+   Check2 (cmgr.getMode () != ConnectionMgr::NONE);
+
    std::string input;
-   cmgr.getSocket ()->read (input);
-   TRACE7 ("CardgameCollection::waitForServerMessage (void*) - " << input);
-   gdk_threads_enter ();
-   status.pop ();
-   gdk_threads_leave ();
-
-   std::string game;
-   AttributeParse ap;
-   ATTRIBUTE (ap, std::string, game, "Game");
    try {
-      ap.assignValues (input);
-      cmgr.getSocket ()->write ("Error=0");
+      while (true) {
+         if (cmgr.getMode () == ConnectionMgr::CLIENT)
+            cmgr.getSocket ()->read (input);
+         else {
+            static unsigned int actClient (0);
+            TRACE7 ("CardgameCollection::waitForMessage (void*) - Client: "
+                    << actClient);
 
-      games type (CardgameAppl::convertToGameType (game.c_str ()));
-      if (type != NONE) {
-         options.type = type;
-         gdk_threads_enter ();
-         Glib::signal_idle  ().connect 
-             (bind_return (slot (*this, &CardgameCollection::startGame), false));
-         gdk_threads_leave ();
+            cmgr.getClients ()[actClient]->read (input);
+            if (++actClient == cmgr.getClients ().size ())
+               actClient = 0;
+         }
+         TRACE7 ("CardgameCollection::waitForMessage (void*) - `" << input <<'\'');
+
+         char* msg = new char [input.length () + 1];
+         strcpy (msg, input.c_str ());
+         Glib::signal_idle ().connect
+             (bind (slot (*this, &CardgameCollection::handleMessage), msg));
       }
    }
    catch (std::string& error) {
-      std::string msg ("Error=98;Msg=\"" + error);
-      msg += '"';
-      cmgr.getSocket ()->write (msg);
+      std::string msg (_("Error receiving data!\n\nReason: %1"));
+      msg.replace (msg.find ("%1"), 2, error);
 
-      gdk_threads_enter ();
-      status.push ("Received invalid message from server; continue waiting ... ");
-      gdk_threads_leave ();
+      char* charmsg = new char [msg.length () + 1];
+      strcpy (charmsg, msg.c_str ());
+      Glib::signal_idle ().connect
+          (bind (slot (*this, &CardgameCollection::showMessage), charmsg));
    }
-   pThread = NULL;
+
+   pCommThread = NULL;
 }
 
+//----------------------------------------------------------------------------
+/// Handles sent messages
+/// \param msg: Received message to handle
+/// \returns bool: False
+/// \remarks msg wil be deleted at the end
+//----------------------------------------------------------------------------
+bool CardgameCollection::handleMessage (char* msg) {
+   TRACE5 ("CardgameCollection::handleMessage (const std::string&) - " << msg);
+
+   if (game)
+       game->handleMessage (msg);
+   else {
+      std::string game;
+      try {
+          if (cmgr.getMode () == ConnectionMgr::SERVER)
+              throw std::string (_("Unexpected message in server mode"));
+
+          AttributeParse ap;
+          ATTRIBUTE (ap, std::string, game, "Game");
+          ap.assignValues (msg);
+
+          games type (CardgameAppl::convertToGameType (game.c_str ()));
+          if (type == NONE) {
+             std::string msg (_("Invalid game type: `%1'"));
+             msg.replace (msg.find ("%1"), 2, game);
+             throw msg;
+          }
+
+          options.type = type;
+          startGame ();
+          cmgr.getSocket ()->write ("Error=0");
+      }
+      catch (std::string& error) {
+         std::string msg ("Error=99;Msg=\"" + error);
+         msg += '"';
+         try {
+            cmgr.getSocket ()->write (msg);
+         }
+         catch (std::string& e) { }
+         Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR);
+         dlg.set_title (PACKAGE);
+         dlg.run ();
+      }
+   }
+
+   delete [] msg;
+   return false;
+}
+
+//----------------------------------------------------------------------------
+/// Shows an error from the communication thread
+/// \param msg: Received message to handle
+/// \returns bool: False
+/// \remarks msg wil be deleted at the end
+//----------------------------------------------------------------------------
+bool CardgameCollection::showMessage (char* msg) {
+   Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR);
+   dlg.set_title (PACKAGE);
+   dlg.run ();
+   delete [] msg;
+   return false;
+}
 
 
 //-----------------------------------------------------------------------------
