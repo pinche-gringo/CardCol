@@ -83,6 +83,9 @@ class CardgameCollection : public XApplication {
    std::string pathDeck;
    std::string pathBack;
 
+   typedef enum { NONE, GROVHULT, GTWOPART } games;
+   games typeGame;
+
    Game* game;
 
    static const std::string NAME_INIFILE;
@@ -91,6 +94,8 @@ class CardgameCollection : public XApplication {
 
    static const unsigned int WIDTH = 760;
    static const unsigned int HEIGHT = 700;
+
+   static games oldGame;
 };
 
 #endif

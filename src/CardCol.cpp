@@ -1,3 +1,4 @@
+
 //$Id$
 
 //PROJECT     : Cardgames
@@ -48,6 +49,8 @@
 #include "CardCol.h"
 
 const std::string CardgameCollection::NAME_INIFILE = PathSearch::expandNode ("~/.cardgames");
+
+CardgameCollection::games CardgameCollection::oldGame = NONE;
 
 // Pixmap for program
 const char* CardgameCollection::xpmGame[] = {
@@ -296,9 +299,10 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { "",                     "",          0,        SEPARATOR },
     { _("E_xit"),             _("<ctl>Q"), EXIT,     ITEM },
     { _("_Options"),          _("<alt>O"), 0,        BRANCH },
-    { _("_Change game"),      "",          0,        BRANCH },
-    {    _("_Rovhult"),       _("<ctl>R"), ROVHULT,  ITEM },
-    {    _("_Twopart"),       _("<ctl>T"), TWOPART,  ITEM },
+    { _("_Change game"),      _("<alt>C"), 0,        SUBMENU },
+    {    _("_Rovhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
+    {    _("_Twopart"),       _("<ctl>T"), TWOPART,  LASTRADIOITEM },
+    { "",                     "",          0,        SUBMENUEND },
     { _("_Change decks ..."), _("<ctl>C"), CHGDECKS, ITEM },
     { _("_Save settings"),    _("<ctl>S"), SAVESET,  ITEM },
 #if TRACELEVEL > 0
@@ -313,7 +317,8 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
 /*--------------------------------------------------------------------------*/
 CardgameCollection::CardgameCollection ()
    : XApplication (PACKAGE " - Cardgames V" PRG_RELEASE), status ()
-     , cardFaces (USED_CARDS), cards (), pThread (NULL), game (NULL) {
+     , cardFaces (USED_CARDS), cards (), pThread (NULL), game (NULL)
+     , typeGame (GROVHULT) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
@@ -349,11 +354,35 @@ CardgameCollection::~CardgameCollection () {
 //Purpose   : Starts the game
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::startGame () {
+   TRACE6 ("CardgameCollection::startGame () - Old game type " << oldGame
+           << " -> New: " << typeGame);
+
    pMenuEnd->set_sensitive (true);
 
-   delete game;
-   Check3 (getClient ());
-   game = new Twopart (*getClient (), status, cards); // TODO: Select game
+   // Check if game has been changed; if so destroy the old one
+   if (oldGame != typeGame) {
+      Check3 (getClient ());
+      if (game) {
+         getClient ()->remove (*game);
+         delete game;
+      }
+
+      oldGame = typeGame;
+      switch (typeGame) {
+      case GROVHULT:
+         game = new Rovhult (*getClient (), status, cards);
+         break;
+
+      case GTWOPART:
+         game = new Twopart (*getClient (), status, cards);
+         break;
+
+      default:
+         Check (0);
+      }
+   }
+
+   Check3 (game);
    game->start ();
 }
 
@@ -376,6 +405,14 @@ void CardgameCollection::command (int menu) {
          startGame ();
       break;
 
+   case TWOPART:
+      typeGame = GTWOPART;
+      break;
+
+   case ROVHULT:
+      typeGame = GROVHULT;
+      break;
+
    case END:
       Check3 (game && game->isRunning ());
       restart = false;
@@ -395,9 +432,10 @@ void CardgameCollection::command (int menu) {
       TRACE2 ("CardgameCollection::command () - Save file " << NAME_INIFILE);
       ofstream inifile (NAME_INIFILE.c_str ());
       
-      inifile << "[Decks]\nFront=" << pathDeck << "\nBack=" << pathBack << '\n';
+      inifile << "[Game]\nDefault=" << typeGame << "\n\n[Decks]\nFront="
+              << pathDeck << "\nBack=" << pathBack << '\n';
       break;
-      }
+   }
 
    case ABOUT: {
       string ver (_("Anticopyright (A) 2002 Markus Schwab"
@@ -520,7 +558,7 @@ void CardgameCollection::userWants2End (unsigned int input) {
 void CardgameCollection::loadCards () {
    // Cards need an realized (!) parent, so make somehow sure, that the window
    // already exists
-   Check3 (table.is_realized ());
+   Check3 (is_realized ());
 
    gdk_threads_enter ();
    status.push (1, _("Loading cardimages ..."));
@@ -530,6 +568,8 @@ void CardgameCollection::loadCards () {
    INISECTION (Decks);
    INIATTR2 (Decks, std::string, pathDeck, Front);
    INIATTR2 (Decks, std::string, pathBack, Back);
+   INISECTION (Game);
+   INIATTR2 (Game, unsigned int, (unsigned int)typeGame, Default);
 
    pathDeck = CARDSET_PATH "/Deck1";
    pathBack = CARDSET_PATH "/back1.xpm";
@@ -538,7 +578,7 @@ void CardgameCollection::loadCards () {
       unsigned int rc (INIFILE_READ ());
    }
    catch (std::string& error) {
-      TRACE ("'Twopart::loadCards () - Can't read INI-file '"
+      TRACE ("'CardgameCollection::loadCards () - Can't read INI-file '"
              << NAME_INIFILE << "'\nReason: " << error);
    }
 
