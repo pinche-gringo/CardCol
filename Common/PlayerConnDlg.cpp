@@ -1,7 +1,7 @@
 //$Id$
 
 //PROJECT     : Cardgames
-//SUBSYSTEM   : <FILLIN>
+//SUBSYSTEM   : Common
 //REFERENCES  :
 //TODO        :
 //BUGS        :
@@ -37,6 +37,7 @@
 #include <Trace_.h>
 #include <Socket.h>
 #include <ConnMgr.h>
+#include <AttrParse.h>
 
 #include "PlayerConnDlg.h"
 
@@ -101,7 +102,8 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) 
    ConnectDlg::connect (target, port);
    Check1 (cmgr.getSocket ());
 
-   std::string data ("Name=\"" + players[0] + '"');
+   std::string data ("Version=" PROTOCOLL ";Variant=" VARIANT ";Name=\""
+                     + players[0] + '"');
    try {
       cmgr.getSocket ()->write (data);
    }
@@ -123,14 +125,29 @@ Socket* PlayerConnectDlg::addClient (int socket) {
    Socket* sock (ConnectDlg::addClient (socket));
    Check3 (sock);
 
+   Glib::ustring error;
    try {
       std::string input;
       sock->read (input);
-      TRACE1 ("PlayerConnectDlg::addClient (int) - Received: " << input);
+      TRACE8 ("PlayerConnectDlg::addClient (int) - Received: " << input);
+
+      std::string name;
+      unsigned int protocoll, variant;
+      AttributeParse ap;
+      ATTRIBUTE (ap, std::string, name, "Name");
+      ATTRIBUTE (ap, unsigned int, protocoll, "Version");
+      ATTRIBUTE (ap, unsigned int, variant, "Variant");
+      ap.assignValues (input);
    }
    catch (std::domain_error& err) {
-      Glib::ustring error (_("Error getting player name!\n\nReason: %1"));
+      error = _("Error getting player name!\n\nReason: %1");
       error.replace (error.find ("%1"), 2, err.what ()); 
+   }
+   catch (std::string& err) {
+      error = _("Error analyzing input from client!\n\nReason: %1");
+      error.replace (error.find ("%1"), 2, err); 
+   }
+   if (error.size ()) {
       Gtk::MessageDialog dlg (error, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dlg.set_title (PACKAGE);
       dlg.run ();

@@ -34,17 +34,19 @@ namespace Gtk {
    class Separator;
 }
 
+class Player;
+
 
 // Class to display the score of the cardgames
 class ScoreDlg : public XDialog {
  public:
-   ScoreDlg (const std::vector<Glib::ustring>& playerNames);
+   ScoreDlg (const std::vector<Player*>& player);
    virtual ~ScoreDlg ();
 
-   static ScoreDlg* create (const std::vector<Glib::ustring>& playerNames) {
-      return new ScoreDlg (playerNames); }
+   static ScoreDlg* create (const std::vector<Player*>& player) {
+      return new ScoreDlg (player); }
 
-   void update (const std::vector<Glib::ustring>& playerNames);
+   void update (const std::vector<Player*>& player);
 
    void addPoints (int aPoints[]);
    void addPoints (const std::vector<int>& aPoints);

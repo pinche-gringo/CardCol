@@ -29,15 +29,17 @@ namespace Gtk {
    class Table;
 }
 
+class Player;
+
 
 // Class to enter the names of the players
 class IPlayerDlg : public XDialog {
  public:
-   IPlayerDlg (std::vector<Glib::ustring>& names);
+   IPlayerDlg (std::vector<Player*>& player);
    virtual ~IPlayerDlg ();
 
-   static IPlayerDlg* create (std::vector<Glib::ustring>& names) {
-      IPlayerDlg* dlg (new IPlayerDlg (names));
+   static IPlayerDlg* create (std::vector<Player*>& player) {
+      IPlayerDlg* dlg (new IPlayerDlg (player));
       dlg->signal_delete_event ().connect (slot (*dlg, &XDialog::free));
       return dlg;
    }
@@ -56,14 +58,14 @@ class IPlayerDlg : public XDialog {
       Gtk::Label* label;
       Gtk::Entry* value;
 
-      line (const Glib::ustring& label, Glib::ustring& attribute);
+      line (const Glib::ustring& label, const Glib::ustring& attribute);
       ~line ();
 
       void attach (Gtk::Table& table, unsigned int line);
    } line;
 
-   std::vector<line*>        aPlayers;
-   std::vector<Glib::ustring>& values;
+   std::vector<line*>    aPlayers;
+   std::vector<Player*>& values;
 };
 
 
@@ -74,13 +76,13 @@ class PlayerDlg : public IPlayerDlg {
  public:
    typedef void (T::*PCALLBACK) ();
 
-   PlayerDlg (T& parent, PCALLBACK callback, std::vector<Glib::ustring>& names)
-      : IPlayerDlg (names), obj (parent), pCallback (callback) { }
+   PlayerDlg (T& parent, PCALLBACK callback, std::vector<Player*>& player)
+      : IPlayerDlg (player), obj (parent), pCallback (callback) { }
    virtual ~PlayerDlg () { }
    
    static PlayerDlg* create (T& parent, PCALLBACK callback,
-                             std::vector<Glib::ustring>& names) {
-      PlayerDlg<T>* dlg (new PlayerDlg (parent, callback, names));
+                             std::vector<Player*>& player) {
+      PlayerDlg<T>* dlg (new PlayerDlg (parent, callback, player));
       dlg->signal_delete_event ().connect (slot (*dlg, &XDialog::free));
       dlg->get_window ()->set_transient_for (parent.get_window ());
       return dlg;

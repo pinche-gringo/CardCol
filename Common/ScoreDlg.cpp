@@ -35,23 +35,24 @@
 #include <Check.h>
 #include <Trace_.h>
 
+#include "Player.h"
 #include "ScoreDlg.h"
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : (Default-)Constructor; Shows the dialog
-//Parameters: playerNames: Vector with names of players
-/*--------------------------------------------------------------------------*/
-ScoreDlg::ScoreDlg (const std::vector<Glib::ustring>& playerNames)
+//-----------------------------------------------------------------------------
+/// (Default-)Constructor; Shows the dialog
+/// \param player: Vector with player
+//-----------------------------------------------------------------------------
+ScoreDlg::ScoreDlg (const std::vector<Player*>& player)
    : XDialog (OK), client (new Gtk::HBox) {
    TRACE9 ("ScoreDlg::ScoreDlg ()");
    set_title (_("Score"));
 
-   for (unsigned int i (0); i < playerNames.size (); ++i) {
+   for (unsigned int i (0); i < player.size (); ++i) {
       aColumns.push_back (new column ());
       client->pack_start (aColumns.back ()->getBox (), true, true, 15);
    }
-   update (playerNames);
+   update (player);
 
    client->show ();
    get_vbox ()->pack_start (*client, Gtk::SHRINK, 5);
@@ -59,9 +60,9 @@ ScoreDlg::ScoreDlg (const std::vector<Glib::ustring>& playerNames)
    show ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Destructor
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Destructor
+//-----------------------------------------------------------------------------
 ScoreDlg::~ScoreDlg () {
    for (std::vector<column*>::iterator i (aColumns.begin ());
         i != aColumns.end (); ++i)
@@ -69,10 +70,10 @@ ScoreDlg::~ScoreDlg () {
 }
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Adds a line to the scores
-//Parameters: aPoints: Array of points
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Adds a line to the scores
+/// \param aPoints: Array of points
+//-----------------------------------------------------------------------------
 void ScoreDlg::addPoints (int aPoints[]) {
    for (std::vector<column*>::iterator i (aColumns.begin ());
         i != aColumns.end (); ++i) {
@@ -81,10 +82,10 @@ void ScoreDlg::addPoints (int aPoints[]) {
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Adds a line to the scores
-//Parameters: aPoints: Vector of points
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Adds a line to the scores
+/// \param aPoints: Vector of points
+//-----------------------------------------------------------------------------
 void ScoreDlg::addPoints (const std::vector<int>& aPoints) {
    Check1 (aPoints.size () <= aColumns.size ());
 
@@ -97,19 +98,19 @@ void ScoreDlg::addPoints (const std::vector<int>& aPoints) {
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback after selecting OK; Hides the dialog
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Callback after selecting OK; Hides the dialog
+//-----------------------------------------------------------------------------
 void ScoreDlg::okEvent () {
    hide ();
 }
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Gets the player with highest number of points and the points
-//Parameters: points: Reference where to put the highest points
-//            player: Reference where to put the player with the highest points
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Gets the player with highest number of points and the points
+/// \param points: Reference where to put the highest points
+/// \param player: Reference where to put the player with the highest points
+//-----------------------------------------------------------------------------
 void ScoreDlg::getMaxPoints (int& points, unsigned int& player) {
    points = INT_MIN;
    for (std::vector<column*>::iterator i (aColumns.begin ());
@@ -124,11 +125,11 @@ void ScoreDlg::getMaxPoints (int& points, unsigned int& player) {
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Gets the player with highest number of points and the points
-//Parameters: points: Reference where to put the highest points
-//            player: Reference where to put the player with the highest points
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Gets the player with highest number of points and the points
+/// \param points: Reference where to put the highest points
+/// \param player: Reference where to put the player with the highest points
+//-----------------------------------------------------------------------------
 void ScoreDlg::getMinPoints (int& points, unsigned int& player) {
    points = INT_MAX;
    for (std::vector<column*>::iterator i (aColumns.begin ());
@@ -139,25 +140,25 @@ void ScoreDlg::getMinPoints (int& points, unsigned int& player) {
       }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Changes the names of the playing people
-//Parameters: newNames: Array holding the new names of the players
-/*--------------------------------------------------------------------------*/
-void ScoreDlg::update (const std::vector<Glib::ustring>& playerNames) {
+//-----------------------------------------------------------------------------
+/// Changes the names of the playing people
+/// \param player: Array holding the new player
+//-----------------------------------------------------------------------------
+void ScoreDlg::update (const std::vector<Player*>& player) {
    Check1 (playerNames.size () <= aColumns.size ());
 
-   std::vector<Glib::ustring>::const_iterator p (playerNames.begin ());
+   std::vector<Player*>::const_iterator p (player.begin ());
    for (std::vector<column*>::iterator i (aColumns.begin ());
         i != aColumns.end (); ++i) {
-      (*i)->setTitle (*p);
+      (*i)->setTitle ((*p)->getName ());
       ++p;
    }
 }
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Constructor
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Constructor
+//-----------------------------------------------------------------------------
 ScoreDlg::column::column ()
    : pBox (new Gtk::VBox ()) , pTitle (new Gtk::Label ())
      , pSum (new NumLabel (0)) , pSep (new Gtk::HSeparator ()) {
@@ -175,17 +176,17 @@ ScoreDlg::column::column ()
    pBox->pack_end (*pSep, false, false, 0);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Destructor
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Destructor
+//-----------------------------------------------------------------------------
 ScoreDlg::column::~column () {
 }
       
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Adds a value to the column
-//Parameters: points: Number to add to column
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Adds a value to the column
+/// \param points: Number to add to column
+//-----------------------------------------------------------------------------
 void ScoreDlg::column::addEntry (int points) {
    Check3 (pBox); 
    NumLabel* label (Gtk::manage (new NumLabel (points)));
@@ -197,10 +198,10 @@ void ScoreDlg::column::addEntry (int points) {
    pSum->update ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Sets the "title" (the first line) of the column
-//Parameters: title: New "title"
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Sets the "title" (the first line) of the column
+/// \param title: New "title"
+//-----------------------------------------------------------------------------
 void ScoreDlg::column::setTitle (const Glib::ustring& title) {
    Check3 (pTitle);
    pTitle->set_text (title);
