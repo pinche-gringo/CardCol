@@ -1642,22 +1642,30 @@ int RovhultAppl::findCard2Play (unsigned int player) const {
          if (pPile->numberOfCards ()) {
             CardWidget& card (pPile->getTopCard ());
             if (card.showsFace ()) {
-               cardShowsFace = true;
-
                // If card can be played: Search for last equal card
                if (cardValid (card.number (), true)) {
-                  while ((i < 2)
-                         && (pPile = &players[player].reserve[i + 1])
+                  unsigned int lastEqual (i);
+
+                  while ((lastEqual < 2)
+                         && (pPile = &players[player].reserve[lastEqual + 1])
                          && pPile->numberOfCards ()
                          && pPile->topCardShowsFace ()
                          && (pPile->getTopCard ().number ()
                              == card.number ()))
-                     ++i;
+                     ++lastEqual;
+
+                  // Only play all cards, if it is not a special card
+                  // or there are no other remaining cards
+                  if (!isSpecialCard (card.number ())
+                      || (!cardShowsFace && (lastEqual == 2)))
+                     i = lastEqual;
 
                   TRACE7 ("RovhultAppl::findCard2Play (unsigned int) -  Playing "
                           "visible card " << card << " at pos " << i);
                   return i;
                }
+
+               cardShowsFace = true;
             }
          }
       }
