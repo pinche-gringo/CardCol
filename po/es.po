@@ -5,7 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.6 ($Revision$)\n"
-"POT-Creation-Date: 2004-09-17 13:51-0500\n"
+"Report-Msgid-Bugs-To: g17m0@lycos.com\n"
+"POT-Creation-Date: 2004-10-07 18:22-0400\n"
 "PO-Revision-Date: 2004-09-17 13:52-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -62,7 +63,7 @@ msgstr ""
 "Intercambiar las cartas de la mano (arriba) con las de abojo (con su mouse) "
 "- después hace click en una carta para empezar el juego"
 
-#: Common/CardImgs.cpp:97 Common/CardImgs.cpp:129 Common/DeckSelect.cpp:266
+#: Common/CardImgs.cpp:97 Common/CardImgs.cpp:129 Common/DeckSelect.cpp:271
 msgid "Unknown error"
 msgstr "Error inspecificado"
 
@@ -99,7 +100,7 @@ msgstr "Cartas disponibles"
 msgid "Available backgrounds"
 msgstr "Fondos de cartas disponibles"
 
-#: Common/DeckSelect.cpp:269
+#: Common/DeckSelect.cpp:274
 msgid ""
 "Error loading image from file `%1'!\n"
 "\n"
