@@ -812,15 +812,21 @@ int Twopart:: endRound (unsigned int player) {
                  << bfPlayers << std::dec << ')');
 
          TRACE6 ("Twopart::endRound (unsigned int) - Try to continue with player " << nextPlayer);
+         if (players[nextPlayer].hand.empty () && cPlayers)
+            nextPlayer = findNextPlayer (nextPlayer);
+         TRACE8 ("Twopart::endRound (unsigned int) - Remaining (" << cPlayers
+                 << ") " << std::hex << bfPlayers << std::dec << "; Next: " << nextPlayer);
+
          if (cPlayers < 2) {                   // Less than two players found:
             bfPlayers = (1 << NUM_PLAYERS) - 1;
             cPlayers = removePlayersWithoutCards ();
 
-            if (players[nextPlayer].hand.empty () && cPlayers)
-               nextPlayer = findNextPlayer (nextPlayer);
             movePlayedCardsToPlayer (nextPlayer);
             if (!cPlayers)
                nextPlayer = ~nextPlayer;
+            else
+               if (players[nextPlayer].hand.empty ())
+                  nextPlayer = findNextPlayer (nextPlayer);
          }
       }
       // All played cards are differnt: Winner is the one with highest card
@@ -833,7 +839,7 @@ int Twopart:: endRound (unsigned int player) {
          removePlayersWithoutCards ();
          bfOldPlayers = bfPlayers;
 
-         if (!players[nextPlayer].hand.size ())
+         if (players[nextPlayer].hand.empty ())
             nextPlayer = findNextPlayer (nextPlayer);
          if (nextPlayer == -1)
             nextPlayer = ~startPlayer;
@@ -843,6 +849,7 @@ int Twopart:: endRound (unsigned int player) {
 
    bfOldPlayers = bfPlayers;
    TRACE8 ("Twopart::endRound (unsigned int) - Continuing with player " << nextPlayer);
+   Check3 (players[nextPlayer].hand.size ());
    return startPlayer = nextPlayer;
 }
 
