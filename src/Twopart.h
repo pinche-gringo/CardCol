@@ -74,14 +74,25 @@ class Twopart : public XApplication {
    void dealCards ();
    void fillStaple ();
    void userWants2End (unsigned int input);
+   void analyzeLastPlayed (unsigned int startPos, unsigned int cards, int& max,
+                           int& maxPos, int& maxEqual, int& maxEqualPos) const;
 
    unsigned int pos2Player (unsigned int pos) const;
+   unsigned int findPos2Play (unsigned int player) const;
+   unsigned int findSmallestCard (unsigned int player) const;
+   unsigned int findEndOfSerie (unsigned int player, unsigned int start) const;
+
 
    int startPartTwoTimerFnc ();
    void startPartTwo (unsigned int player) {
       TRACE9 ("Twopart::startPartTwo () - *** Start timer ***");
-      actPlayer = player;
-      Gtk::Main::timeout.connect (slot (this, &Twopart::startPartTwoTimerFnc), 100); }
+      // Delay starting of part two, in case of human player; as re-enabling a
+      // signal (button-callback) inside the signal handler wreaks quite a bit
+      // of havoc
+      if (actPlayer = player)
+         startPartTwoTimerFnc ();
+      else
+         Gtk::Main::timeout.connect (slot (this, &Twopart::startPartTwoTimerFnc), 100); }
 
    int makeNextMove ();
    void makeNextMoves () {
