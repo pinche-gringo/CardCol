@@ -30,28 +30,28 @@
 #include "CardPile.h"
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Constructor; adds all controls to the dialog
-//Parameters: set: Specifier for type of cardset
-//            show: Flag, if cards show their faces
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Constructor; adds all controls to the dialog
+/// \param set: Specifier for type of cardset
+/// \param show: Flag, if cards show their faces
+//-----------------------------------------------------------------------------
 ICardPile::ICardPile (PileStyle s, ShowOpt show)
    : style (s), showOpt (show) {
    TRACE3 ("ICardPile::ICardPile (PileStyle) - " << (int)style);
    Check3 (s < LAST);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Destructor
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Destructor
+//-----------------------------------------------------------------------------
 ICardPile::~ICardPile () {
    TRACE9 ("ICardPile::~ICardPile ()");
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Sets the top card of the pile
-//Parameters: newCard: New top-card
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Sets the top card of the pile
+/// \param newCard: New top-card
+//-----------------------------------------------------------------------------
 void ICardPile::setTopCard (CardWidget& card) {
    TRACE5 ("ICardPile::setTopCard (CardWidget&) - Card " << card
            << " -> new size: " << size () + 1);
@@ -68,10 +68,10 @@ void ICardPile::setTopCard (CardWidget& card) {
    resize (size () - 1, NORMAL);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Returns and removes the top card of the pile
-//Returns   : CardWidget&: Reference to (removed) card
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Returns and removes the top card of the pile
+/// \returns \c CardWidget&: Reference to (removed) card
+//-----------------------------------------------------------------------------
 CardWidget& ICardPile::removeTopCard () {
    TRACE5 ("ICardPile::removeTopCard () - Size: " << size ());
    Check3 (size () > 0); Check3 (operator [] (size () - 1));
@@ -88,29 +88,29 @@ CardWidget& ICardPile::removeTopCard () {
 }
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Flips the topmost card of the pile
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Flips the topmost card of the pile
+//-----------------------------------------------------------------------------
 void ICardPile::flipTopCard () {
    Check3 (size () > 0);
 
    getTopCard ().flip ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Sets the top card of the pile visible as indicated
-//Parameters: visible: Flag if cardface should be shown or back
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Sets the top card of the pile visible as indicated
+/// \param visible: Flag if cardface should be shown or back
+//-----------------------------------------------------------------------------
 void ICardPile::showTopCardFace (bool visible) {
    Check3 (size () > 0);
 
    getTopCard ().showFace (visible);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Adds various cards to the pile
-//Parameters: visible: Flag if cardface should be shown or back
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Adds various cards to the pile
+/// \param visible: Flag if cardface should be shown or back
+//-----------------------------------------------------------------------------
 void ICardPile::setTopCards (const std::vector<CardWidget*>& staple) {
    std::vector<CardWidget*>::const_iterator i;
 
@@ -120,10 +120,10 @@ void ICardPile::setTopCards (const std::vector<CardWidget*>& staple) {
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Adds various cards to the pile
-//Parameters: visible: Flag if cardface should be shown or back
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Adds various cards to the pile
+/// \param visible: Flag if cardface should be shown or back
+//-----------------------------------------------------------------------------
 void ICardPile::setTopCards (const std::vector<CardWidget*>& staple, bool visible) {
    std::vector<CardWidget*>::const_iterator i;
 
@@ -133,19 +133,19 @@ void ICardPile::setTopCards (const std::vector<CardWidget*>& staple, bool visibl
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Removes all cards from pile
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Removes all cards from pile
+//-----------------------------------------------------------------------------
 void ICardPile::clear () {
    while (size ())
       remove (getTopCard ());
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Returns the card with the passed ID
-//Parameters: id: ID of card to return
-//Returns   : CardWidget*: Pointer to card with passed ID (or NULL)
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Returns the card with the passed ID
+/// \param id: ID of card to return
+/// \returns \c CardWidget*: Pointer to card with passed ID (or NULL)
+//-----------------------------------------------------------------------------
 CardWidget* ICardPile::get (unsigned int id) const {
    std::vector<CardWidget*>::const_iterator i;
 
@@ -157,11 +157,11 @@ CardWidget* ICardPile::get (unsigned int id) const {
    return NULL;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Inserts a card into the pile
-//Parameters: card: Card to insert
-//            pos: Position of new card
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Inserts a card into the pile
+/// \param card: Card to insert
+/// \param pos: Position of new card
+//-----------------------------------------------------------------------------
 void ICardPile::insert (CardWidget& card, unsigned int pos) {
    TRACE5 ("ICardPile::insert (CardWidget, unsigned int&) - Card " << card
            << " at " << pos);
@@ -176,20 +176,20 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
       resize ((pos == (size () - 1)) ? pos - 1 : pos, style);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Inserts a card into the pile; sorted by the passed function
-//Parameters: card: Card to insert
-//            fnSort: Function, how to sort
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Inserts a card into the pile; sorted by the passed function
+/// \param card: Card to insert
+/// \param fnSort: Function, how to sort
+//-----------------------------------------------------------------------------
 void ICardPile::insertSorted (CardWidget& card, CMPFUNC fnSort) {
    TRACE5 ("ICardPile::insertSorted (CardWidget&, CMPFUNC) - Card " << card);
    insert (card, (upper_bound (begin (), end (), &card, fnSort) - begin ()));
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Removes the passed card from the collection
-//Parameters: card: Card to remove
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Removes the passed card from the collection
+/// \param card: Card to remove
+//-----------------------------------------------------------------------------
 CardWidget& ICardPile::remove (CardWidget& card) {
    TRACE8 ("ICardPile::remove (CardWidget&) - " << card);
    Check3 (size () > 0);
@@ -207,10 +207,10 @@ CardWidget& ICardPile::remove (CardWidget& card) {
    return card;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Removes the card at the passed position from the collection
-//Parameters: card: Card(position) to remove
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Removes the card at the passed position from the collection
+/// \param card: Card(position) to remove
+//-----------------------------------------------------------------------------
 CardWidget& ICardPile::remove (unsigned int pos) {
    Check1 (size () > pos);
    TRACE8 ("ICardPile::remove (unsigned int) - Card at pos " << pos << " ("
@@ -229,10 +229,10 @@ CardWidget& ICardPile::remove (unsigned int pos) {
    return *pTemp;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Changes the drawing-style of the collection
-//Parameters: s: New style
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Changes the drawing-style of the collection
+/// \param s: New style
+//-----------------------------------------------------------------------------
 void ICardPile::setStyle (PileStyle s) {
    TRACE5 ("ICardPile::setStyle (PileStyle) - Size = " << size ());
 
@@ -248,12 +248,12 @@ void ICardPile::setStyle (PileStyle s) {
       resize (size () - 1, NORMAL);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Sorts the cards in the pile with regard of the colour
-//Parameters: a: Card to compare
-//            b: Card to compare
-//Returns   : bool: True, if a < b
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Sorts the cards in the pile with regard of the colour
+/// \param a: Card to compare
+/// \param b: Card to compare
+/// \returns \c bool: True, if a < b
+//-----------------------------------------------------------------------------
 bool ICardPile::compCards (const CardWidget* a, const CardWidget* b) {
    Check3 (a); Check3 (b);
    TRACE9 ("ICardPile::compCards (const CardWidget*, const CardWidget*) - "
@@ -264,12 +264,12 @@ bool ICardPile::compCards (const CardWidget* a, const CardWidget* b) {
            ? a->number () < b->number () : a->colour () < b->colour ());
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Sorts the cards in the pile without regard of the colour
-//Parameters: a: Card to compare
-//            b: Card to compare
-//Returns   : bool: True, if a < b
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Sorts the cards in the pile without regard of the colour
+/// \param a: Card to compare
+/// \param b: Card to compare
+/// \returns \c bool: True, if a < b
+//-----------------------------------------------------------------------------
 bool ICardPile::compCardsByNr (const CardWidget* a, const CardWidget* b) {
    Check3 (a); Check3 (b);
    TRACE9 ("ICardPile::compCardsByNr (const CardWidget*, const CardWidget*) - "
@@ -278,19 +278,30 @@ bool ICardPile::compCardsByNr (const CardWidget* a, const CardWidget* b) {
    return a->number () < b->number ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Sorts the cards in the pile according the past function
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Sorts the cards in the pile without regard of the colour
+/// \param a: Card to compare
+/// \param b: Card to compare
+/// \returns \c bool: True, if a < b
+//-----------------------------------------------------------------------------
+bool ICardPile::compCardsByID (const CardWidget* a, const CardWidget* b) {
+   Check3 (a); Check3 (b);
+   return a->id () < b->id ();
+}
+
+//-----------------------------------------------------------------------------
+/// Sorts the cards in the pile according the past function
+//-----------------------------------------------------------------------------
 void ICardPile::sort (CMPFUNC fnSort) {
    std::sort (begin (), end (), fnSort);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Finds the first card being equal or bigger than the past one
-//Parameters: nr: Number of card (2, 3, 4, ... Ace) to search for
-//Returns   : int: Position of card in pile (or -1, if none found)
-//Requires  : Cards must be sorted (as the search is binary)
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Finds the first card being equal or bigger than the past one
+/// \param nr: Number of card (2, 3, 4, ... Ace) to search for
+/// \returns \c int: Position of card in pile (or -1, if none found)
+/// \pre Cards must be sorted (as the search is binary)
+//-----------------------------------------------------------------------------
 int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
    unsigned int first (0), last (size ());
    unsigned int middle;
@@ -333,12 +344,12 @@ int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
            ? static_cast<int> (first) : -1);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Finds the last card having an equal number as the passed card
-//Parameters: pos: Card whose (equal) number has to be found
-//Returns   : int: Position of card in pile
-//Requires  : Cards must be sorted
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Finds the last card having an equal number as the passed card
+/// \param pos: Card whose (equal) number has to be found
+/// \returns \c int: Position of card in pile
+/// \pre Cards must be sorted
+//-----------------------------------------------------------------------------
 int ICardPile::findLastEqual (unsigned int pos) const {
    Check3 (pos < size ());
 
@@ -353,12 +364,12 @@ int ICardPile::findLastEqual (unsigned int pos) const {
    return pos - 1;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Finds the first card having an equal number as the passed card
-//Parameters: pos: Card whose (equal) number has to be found
-//Returns   : int: Position of card in pile
-//Requires  : Cards must be sorted
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Finds the first card having an equal number as the passed card
+/// \param pos: Card whose (equal) number has to be found
+/// \returns \c int: Position of card in pile
+/// \pre Cards must be sorted
+//-----------------------------------------------------------------------------
 int ICardPile::findFirstEqual (unsigned int pos) const {
    TRACE5 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Checking card " << pos);
    Check1 (pos < size ());
@@ -376,10 +387,10 @@ int ICardPile::findFirstEqual (unsigned int pos) const {
    return pos + 1;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Makes the staple display either back or faces of the cards
-//Parameters: show: Option of how to display the cards
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Makes the staple display either back or faces of the cards
+/// \param show: Option of how to display the cards
+//-----------------------------------------------------------------------------
 void ICardPile::setShowOption (ShowOpt show) {
    showOpt = show;
 
@@ -393,11 +404,11 @@ void ICardPile::setShowOption (ShowOpt show) {
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Moves the card at pos source to pos dest
-//Parameters: source: Position of card to move
-//            dest: New position of card
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Moves the card at pos source to pos dest
+/// \param source: Position of card to move
+/// \param dest: New position of card
+//-----------------------------------------------------------------------------
 CardWidget& ICardPile::move (unsigned int dest, unsigned int source) {
    TRACE5 ("ICardPile::move (unsigned int, unsigned int) - Card from pos "
            << source << " to " << dest);
@@ -405,12 +416,12 @@ CardWidget& ICardPile::move (unsigned int dest, unsigned int source) {
    insert (remove (source), dest);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Searches for the first card having the passed number
-//Parameters: nr: Number to search for
-//            start: Position of start of search
-//Returns   : int: Offset of found card or -1
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Searches for the first card having the passed number
+/// \param nr: Number to search for
+/// \param start: Position of start of search
+/// \returns \c int: Offset of found card or -1
+//-----------------------------------------------------------------------------
 int ICardPile::find (CardWidget::NUMBERS nr, unsigned int start) const {
    for (; start < size (); ++start)
       if (operator[] (start)->number () == nr)
@@ -419,12 +430,12 @@ int ICardPile::find (CardWidget::NUMBERS nr, unsigned int start) const {
    return -1;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Searches for the first card having the passed colour
-//Parameters: colour: Colour to search for
-//            start: Position of start of search
-//Returns   : int: Offset of found card or -1
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Searches for the first card having the passed colour
+/// \param colour: Colour to search for
+/// \param start: Position of start of search
+/// \returns \c int: Offset of found card or -1
+//-----------------------------------------------------------------------------
 int ICardPile::find (CardWidget::COLOURS colour, unsigned int start) const {
    for (; start < size (); ++start)
       if (operator[] (start)->colour () == colour)
@@ -433,10 +444,22 @@ int ICardPile::find (CardWidget::COLOURS colour, unsigned int start) const {
    return -1;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Resizing of a card in the pile
-//Parameters: CardWidget&: Card to resize
-//            PileStyle: Style of pile
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Searches for the first card having the passed id
+/// \param id: ID of card to search for
+/// \returns \c int: Offset of found card or -1
+//-----------------------------------------------------------------------------
+int ICardPile::find (unsigned int id) const {
+   for (const_iterator i (begin ()); i != end (); ++i)
+      if ((*i)->id () == id)
+         return i - begin ();
+   return -1;
+}
+
+//-----------------------------------------------------------------------------
+/// Resizing of a card in the pile
+/// \param CardWidget&: Card to resize
+/// \param PileStyle: Style of pile
+//-----------------------------------------------------------------------------
 void ICardPile::resize (CardWidget&, PileStyle) {
 }

@@ -36,7 +36,8 @@
 #include <CardWidget.h>
 
 
-// Class to display a pile of cards on the screen
+/**Class to display a pile of cards on the screen
+ */
 class ICardPile : public std::vector<CardWidget*> {
  public:
    typedef enum { NORMAL = 0, COMPRESSED, QUITE_COMPRESSED, VERY_COMPRESSED,
@@ -91,6 +92,7 @@ class ICardPile : public std::vector<CardWidget*> {
               && !fnComp (operator[] (pos), &card)) ? pos : -1; }
    int findByNr (CardWidget& card) const { return find (card, compCardsByNr); }
    int findByColour (CardWidget& card) const { return find (card, compCards); }
+   int findByID (CardWidget& card) const { return find (card, compCardsByID); }
    int find1EqualOrBigger (const CardWidget& card, CMPFUNC fnComp) const {
       std::vector<CardWidget*>::const_iterator i
          (std::lower_bound (begin (), end (), &card, fnComp));
@@ -108,6 +110,7 @@ class ICardPile : public std::vector<CardWidget*> {
    int findFirstEqual (unsigned int pos) const;
    int find (CardWidget::NUMBERS nr, unsigned int start = 0) const;
    int find (CardWidget::COLOURS colour, unsigned int start = 0) const;
+   int find (unsigned int id) const;
 
    bool exists (CardWidget::NUMBERS nr, unsigned int start = 0) const {
       return find (nr, start) != -1; }
@@ -141,14 +144,19 @@ class ICardPile : public std::vector<CardWidget*> {
  private:
    static bool compCards (const CardWidget* a, const CardWidget* b);
    static bool compCardsByNr (const CardWidget* a, const CardWidget* b);
+   static bool compCardsByID (const CardWidget* a, const CardWidget* b);
 };
 
 
-// Specializations of ICardPile to display. The template must support:
-//
-//   - pack_start, remove, reorder_child - Methods
-//
-// Designed to be used with the Gtk::?Box-classes
+/**Specializations of ICardPile to display. The template must support the
+ * following methods:
+ *
+ *   - pack_start()
+ *   - remove()
+ *   - reorder_child()
+ *
+ * Designed to be used with the Gtk::?Box-classes
+ */
 template <class T> class CardPile : public T, public ICardPile {
  public:
    CardPile (PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE)
@@ -208,6 +216,8 @@ typedef CardPile<Gtk::VBox>  CardVPile;
 typedef CardPile<Gtk::HBox>  CardHPile;
 
 
+/**Implementation of the resize() methods for Gtk::VBox
+ */
 inline void CardVPile::resize (unsigned int pos, PileStyle s) {
    ICardPile::resize (pos, s); }
 inline void CardVPile::resize (CardWidget& card, PileStyle s) {
@@ -222,6 +232,8 @@ inline void CardVPile::resize (CardWidget& card, PileStyle s) {
    }
 }
 
+/**Implementation of the resize() methods for Gtk::HBox
+ */
 inline void CardHPile::resize (unsigned int pos, PileStyle s) {
    ICardPile::resize (pos, s); }
 inline void CardHPile::resize (CardWidget& card, PileStyle s) {
@@ -236,8 +248,9 @@ inline void CardHPile::resize (CardWidget& card, PileStyle s) {
 }
 
 
-// Specializations of CardPile, displaying the number of cards as tooltip
-// (especially usefull, if the pile is (very) compressed ;) )
+/**Specializations of CardPile, displaying the number of cards as tooltip
+ * (especially usefull, if the pile is (very/totally) compressed ;) )
+ */
 template <class T> class CardInfoPile : public CardPile<T> {
  public:
    CardInfoPile (ICardPile::PileStyle style = NORMAL,
