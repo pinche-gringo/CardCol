@@ -21,6 +21,7 @@
 #include <vector>
 
 #include <gtkmm/table.h>
+#include <gtkmm/uimanager.h>
 
 #include <YGP/Mutex.h>
 
@@ -30,6 +31,7 @@ namespace Gtk {
    class Box;
    class Menu;
    class Dialog;
+   class MenuShell;
    class Statusbar;
 };
 namespace YGP {
@@ -70,6 +72,8 @@ class Game : public Gtk::Table {
    virtual void clean ();
    virtual const char* name () = 0;
    virtual void changeNames (const std::vector<Player*>& newPlayer);
+   virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
    //@}
 
    /// \name Carddeck information

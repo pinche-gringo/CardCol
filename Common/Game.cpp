@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 10.9.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2004
+//COPYRIGHT   : Copyright (C) 2002 - 2005
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -772,4 +772,18 @@ bool Game::ignoreMessage () {
       return true;
    }
    return false;
+}
+
+//-----------------------------------------------------------------------------
+/// Adds game-specific menus
+/// \param mgrUI: UIManager to add to
+//-----------------------------------------------------------------------------
+void Game::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
+}
+
+//-----------------------------------------------------------------------------
+/// Removes the game-specific menus
+/// \param mgrUI: UIManager to add to
+//-----------------------------------------------------------------------------
+void Game::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 }
