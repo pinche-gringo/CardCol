@@ -29,7 +29,6 @@
 
 #include <cardgames-cfg.h>
 
-#define DEBUG 0
 #include <Check.h>
 #include <Trace_.h>
 
@@ -112,8 +111,8 @@ std::string CardImages::makeDirString (const char* path) {
    if (dir.empty ())
       dir = ".";
 
-   if (dir[dir.size () - 1] != File::DIRSEPERATOR)
-      dir += File::DIRSEPERATOR;
+   if (dir[dir.size () - 1] != File::DIRSEPARATOR)
+      dir += File::DIRSEPARATOR;
 
    return dir;
 }

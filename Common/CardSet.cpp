@@ -27,8 +27,6 @@
 
 #include <stdlib.h>
 
-
-#define DEBUG 0
 #include <Check.h>
 #include <Trace_.h>
 
