@@ -254,6 +254,7 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
    Check3 (end < pile.numberOfCards ());
    Check3 (start <= end);
 
+   unsigned int diff (end - start);
    bool bFollow (false);
    do {
       CardWidget& card (pile.at (start));
@@ -267,9 +268,11 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
       }
       bFollow = true;
    } while (end-- && (start <= end));
+   TRACE9 ("Game::flipCards2Play (ICardPile&, unsigned int, unsigned int) - "
+           "Changed positions " << start << " and " << end);
 
-   start += pile.numberOfCards () - end - 2;
    end =  pile.numberOfCards () - 1;
+   start = end - diff;
    TRACE8 ("Game::flipCards2Play (ICardPile&, unsigned int, unsigned int) - "
            "New positions " << start << " and " << end);
 }
