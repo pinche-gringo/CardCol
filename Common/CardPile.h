@@ -169,16 +169,15 @@ class ICardPile : public std::vector<CardWidget*> {
    virtual void sort (CMPFUNC fnSort);
    void sortByNumber () { sort (compCardsByNr); }
    void sortByColour () { sort (compCards); }
+
+   static bool compCards (const CardWidget* a, const CardWidget* b);
+   static bool compCardsByNr (const CardWidget* a, const CardWidget* b);
+   static bool compCardsByID (const CardWidget* a, const CardWidget* b);
    //@}
 
  protected:
    PileStyle style;
    ShowOpt showOpt;
-
- private:
-   static bool compCards (const CardWidget* a, const CardWidget* b);
-   static bool compCardsByNr (const CardWidget* a, const CardWidget* b);
-   static bool compCardsByID (const CardWidget* a, const CardWidget* b);
 };
 
 
