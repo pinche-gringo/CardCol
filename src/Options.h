@@ -48,6 +48,11 @@ class Options : public Entity {
    std::string  target;
    std::string  port;
 
+#ifdef SAVE_GAME
+   bool load;
+   std::string gameFile;
+#endif
+
    std::vector<Glib::ustring> names;
    const char*    pNameINIFile;
 };
