@@ -9,13 +9,12 @@ MINOR_VERSION=4
 MICRO_VERSION=00
 RELEASE=$MAJOR_VERSION.$MINOR_VERSION
 VERSION=$RELEASE.$MICRO_VERSION
-AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE")
+AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
+                   [Define to the release of the program])
 AC_SUBST(VERSION)
 AC_SUBST(RELEASE)
 
-LIBVERSION=1:0:0
-LIBRELEASE=0.4
-AC_SUBST(LIBVERSION)
+LIBRELEASE=$RELEASE
 AC_SUBST(LIBRELEASE)
 
 INCLUDES="-I. -I\$(top_srcdir) -DLOCALEDIR=\\\"\$(datadir)/locale\\\" -DDOCUDIR=\\\"\$(datadir)/doc/\$(PACKAGE)/\\\""
@@ -46,7 +45,7 @@ AM_GNU_GETTEXT
 dnl Checks for libraries.
 AC_CHECK_LIB(stdc++, main)
 PKG_CHECK_MODULES(CARDGAME, gtkmm-2.0 >= 2.2.0 gthread-2.0 > 2.2.0
-                  Attr >= 0.6.0 XAppl >= 0.6.10)
+                  YMP >= 0.6.0 XMP >= 0.6.11)
 AC_SUBST(CARDGAME_CFLAGS)
 AC_SUBST(CARDGAME_LIBS)
 
@@ -74,6 +73,26 @@ AC_ARG_ENABLE(checks,
               else
                   CXXFLAGS="$CXXFLAGS -DNDEBUG -UCHECK"; fi)
 
+dnl Try to find the KDE carddecks
+if test -d "/opt/kde3/share/apps/carddecks"; then
+    CARDDECKS_DIR="/opt/kde3/share/apps/carddecks"
+else
+    if test -d "/usr/share/kde3/share/apps/carddecks"; then
+        CARDDECKS_DIR="/usr/share/kde3/share/apps/carddecks"
+    else
+        if test -d "/usr/share/kde3/apps/carddecks"; then
+             CARDDECKS_DIR="/usr/kde3/share/apps/carddecks"
+        else
+             CARDDECKS_DIR="/opt/kde3/share/apps/carddecks"
+        fi
+    fi
+fi
+AC_ARG_WITH(carddeck-dir,
+            AC_HELP_STRING([--with-carddeck-dir=DIR], [Path to the carddecks]),
+            [test -n "$withval" && CARDDECKS_DIR=$withval])
+AC_DEFINE_UNQUOTED(CARDDECKS_DIR, "$CARDDECKS_DIR",
+                   [Directory holding the carddecks])
+
 AC_OUTPUT([Makefile Common/Makefile src/Makefile intl/Makefile m4/Makefile \
            po/Makefile.in doc/Makefile])
 
@@ -99,7 +118,7 @@ AH_TOP([#ifndef DIRCOMP_CFG_H
 ])
 AH_BOTTOM([#if defined (HAVE_GETTEXT) && defined (ENABLE_NLS)
 #  include <libintl.h>
-#  define _(String)                           gettext (String)
+#  define _(String)                           Glib::locale_to_utf8 (gettext (String))
 #  define N_(String)                          gettext_noop (String)
 #  define gettext_noop(String)                (String)
 #else
@@ -111,4 +130,3 @@ AH_BOTTOM([#if defined (HAVE_GETTEXT) && defined (ENABLE_NLS)
 #endif
 
 #endif])
-AH_TEMPLATE([PRG_RELEASE], [Define for the release of the program])
