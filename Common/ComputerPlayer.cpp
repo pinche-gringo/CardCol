@@ -25,8 +25,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -49,6 +47,7 @@ ComputerPlayer::~ComputerPlayer () {
 /// \param game: Game played
 //----------------------------------------------------------------------------
 bool ComputerPlayer::makeTurn (Game* game) {
+   TRACE1 ("ComputerPlayer::makeTurn (Game*) - " << name);
    Check1 (game);
    return game->makeComputerMove ();
 }
