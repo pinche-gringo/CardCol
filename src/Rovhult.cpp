@@ -293,6 +293,7 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
     { (initI18n (PACKAGE, LOCALEDIR),
       _("_Game")),    _("<alt>G"), 0,     BRANCH },
     { _("_New"),      _("<ctl>N"), NEW,   ITEM },
+    { _("_End"),      _("<ctl>E"), END,   ITEM },
     { "",             "",          0,     SEPARATOR },
     { _("E_xit"),     _("<ctl>Q"), EXIT,  ITEM },
 #if TRACELEVEL > 0
@@ -300,20 +301,21 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
     { _("_Debug"),    _("<ctl>D"), DEBUG, CHECKITEM },
 #endif
     { _("_Help"),     _("<alt>H"), 0,     LASTBRANCH },
-    { _("_About..."), _("<ctl>a"), ABOUT, ITEM } };
+    { _("_About..."), _("<ctl>A"), ABOUT, ITEM } };
 
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Defaultconstructor; all widget are created
 /*--------------------------------------------------------------------------*/
 RovhultAppl::RovhultAppl ()
-   : XApplication (PACKAGE " - Rovhult V" PRG_RELEASE), status (), actPlayer (0)
-     , tblTable (16, 20), cardFaces (USED_CARDS), cards (), pThread (NULL)
-     , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::VERY_COMPRESSED) {
+   : XApplication (PACKAGE " - Rovhult V" PRG_RELEASE), status ()
+     , actPlayer (0), tblTable (16, 20), cardFaces (USED_CARDS), cards ()
+     , pThread (NULL), staple (ICardPile::VERY_COMPRESSED)
+     , played (ICardPile::VERY_COMPRESSED), statGame (INITIALIZING) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
-   pMenuNew = addMenu (menuItems[1]); Check3 (pMenuNew);
+   pMenuNew = dynamic_cast<MenuItem*> (addMenu (menuItems[1])); Check3 (pMenuNew);
    pMenuNew->set_sensitive (false);
 
    tblTable.show ();
@@ -336,7 +338,9 @@ RovhultAppl::RovhultAppl ()
    TRACE9 ("RovhultAppl::RovhultAppl () - Thread-ID = " << pThread->getID ());
 
    // Create controls
-   addMenus (menuItems + 2, sizeof (menuItems) / sizeof (menuItems[0]) - 2);
+   pMenuEnd = dynamic_cast<MenuItem*> (addMenu (menuItems[2])); Check3 (pMenuEnd);
+   pMenuEnd->set_sensitive (false);
+   addMenus (menuItems + 3, sizeof (menuItems) / sizeof (menuItems[0]) - 3);
 
    // Show and attach card-piles
    for (int i (0); i < NUM_PLAYERS; ++i) {
@@ -378,17 +382,44 @@ RovhultAppl::~RovhultAppl () {
 
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Destructor
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::startGame () {
+   statGame = PLAYING;
+   pMenuEnd->set_sensitive (true);
+   cleanTable ();
+   fillStaple ();
+   dealCards ();
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Command-handler
 //Parameters: menu: ID of command (menu)
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::command (int menu) {
    switch (menu) {
    case NEW: {
-      cleanTable ();
-      fillStaple ();
-      dealCards ();
+      if (statGame == PLAYING) {
+         restart = true;
+         XMessageDialog<RovhultAppl>::Show (*this, &RovhultAppl::userWants2End,
+                                            _("A game is already running. Do you really"
+                                              " want to end it and start another?"),
+                                            PACKAGE " - Rovhult",
+                                            XMessageBox::QUESTION | XMessageBox::YESNO);
+      }
+      else
+         startGame ();
       break;
    }
+
+   case END:
+      Check3 (statGame == PLAYING);
+      restart = false;
+      XMessageDialog<RovhultAppl>::Show (*this, &RovhultAppl::userWants2End,
+                                         _("Do you really want to end the game?"),
+                                         PACKAGE " - Rovhult",
+                                         XMessageBox::QUESTION | XMessageBox::YESNO);
+      break;
 
    case ABOUT: {
       string ver (_("Anticopyright (A) 2002 Markus Schwab"
@@ -422,6 +453,21 @@ void RovhultAppl::command (int menu) {
    default:
       Check3 (0);
    } // end-switch
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Checks the user-input after asking if he wants to end the game;
+//             depending on the answer either stops or continues
+//Parameters: input: Button pressed by the user
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::userWants2End (unsigned int input) {
+   if (input == XMessageBox::YES) {
+      statGame = TOSTOP;
+      status.pop (1);
+      status.push (1, _("User canceled"));
+      disableLastPlayer ();
+      pMenuEnd->set_sensitive (false);
+   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -538,6 +584,14 @@ int RovhultAppl::makeComputerMove () {
    inTurn = true;
 #endif
 
+   if (statGame == TOSTOP) {
+      TRACE8 ("RovhultAppl::makeComputerMove () - End game ");
+      statGame = STOPPED;
+      if (restart)
+         startGame ();
+      return 0;
+   }
+
    TRACE2 ("RovhultAppl::makeComputerMove () - Start with player "
            << actPlayer);
 
@@ -616,7 +670,7 @@ void RovhultAppl::disableLastPlayer () {
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    Check3 (player < NUM_PLAYERS); Check3 (pile < 3);
-   TRACE1 ("Rovhult::pileSelected (unsigned int, unsinged int) - Position "
+   TRACE1 ("RovhultAppl::pileSelected (unsigned int, unsinged int) - Position "
            << pile << " of player " << player);
 
    ICardPile& actPile (players[player].reserve[pile]);
@@ -627,7 +681,7 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    if (!showsFace)
       card.showFace ();
 
-   TRACE1 ("Rovhult::pileSelected (unsigned int, unsinged int) - Card " << card);
+   TRACE1 ("RovhultAppl::pileSelected (unsigned int, unsinged int) - Card " << card);
 
    if (!cardValid (card.number ()))  { // If selected card is not valid: Return
       actPile.removeTopCard ();
@@ -659,7 +713,7 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
 /*--------------------------------------------------------------------------*/
 int RovhultAppl::playFromPile (unsigned int player, unsigned int pile) {
    Check3 (player < NUM_PLAYERS); Check3 (pile < 3);
-   TRACE1 ("Rovhult::playFromPile (unsigned int, unsinged int) - Card at pos "
+   TRACE1 ("RovhultAppl::playFromPile (unsigned int, unsinged int) - Card at pos "
            << pile << " for player " << player);
 
    actPlayer = doPileSelected (player, pile);
@@ -680,7 +734,7 @@ int RovhultAppl::playFromPile (unsigned int player, unsigned int pile) {
 //Returns   : int: player to continue
 /*--------------------------------------------------------------------------*/
 int RovhultAppl::doPileSelected (unsigned int player, unsigned int pile) {
-   TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - " 
+   TRACE1 ("RovhultAppl::doPileSelected (unsigned int, unsinged int) - " 
            << player << '/' << pile);
 
    ICardPile* actPile (&players[player].reserve[pile]);
@@ -733,26 +787,27 @@ bool RovhultAppl::cardValid (CardWidget::NUMBERS nr, bool silent) const {
       break;
 
    default:
+      std::string error;
       if (played.numberOfCards ()) {
          CardWidget& lastPlayed (played.getTopCard ());
 
          if (lastPlayed.number () == CardWidget::SEVEN) {
-            if (nr > CardWidget::SEVEN) {
-               if (!silent)
-                  XMessageBox::Show (_("After a 7, the played card must be equal or smaller!"),
-                                     _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
-               return false;
-            }
+            if (nr > CardWidget::SEVEN)
+               error = _("After a 7, the played card must be equal or smaller!");
          }
          else
-            if (nr < played.getTopCard ().number ()) {
-               if (!silent)
-                  XMessageBox::Show (_("Played card must be equal or bigger!"),
-                                     _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
-               return false;
-            }
+            if (nr < lastPlayed.number ())
+               error = _("Played card must be equal or bigger!");
+
+         if (error.size ()) {
+            if (!silent)
+               XMessageBox::Show (error, _("Invalid move"),
+                                  XMessageBox::ERROR | XMessageBox::OK);
+            return false;
+         }
       }
    } // end-switch
+
    return true;
 }
 
@@ -762,13 +817,13 @@ bool RovhultAppl::cardValid (CardWidget::NUMBERS nr, bool silent) const {
 //            iCard: Offset of card in hand
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
-   TRACE3 ("Rovhult::handSelected (unsigned int, unsinged int) - Checking player "
+   TRACE3 ("RovhultAppl::handSelected (unsigned int, unsinged int) - Checking player "
            << player << "; Card at " << pos);
    Check3 (player < NUM_PLAYERS);
    Check3 (pos <= players[player].hand.numberOfCards ());
 
    CardWidget& card (players[player].hand.at (pos));
-   TRACE1 ("Rovhult::handSelected (unsigned int, unsinged int) - Card " << pos
+   TRACE1 ("RovhultAppl::handSelected (unsigned int, unsinged int) - Card " << pos
            << " = " << card);
 
    if (!cardValid (card.number ()))
@@ -842,6 +897,7 @@ int RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
          stat = _("Player %1 lost");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
          status.push (1, stat);
+         pMenuEnd->set_sensitive (false);
          return -1;
       }
 
@@ -963,7 +1019,7 @@ bool RovhultAppl::playerHandCanContinue (const ICardPile& pile, CardWidget::NUMB
 //            minCards: Minimal number of cards pile should hold
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::fillUpPile (ICardPile& pile, unsigned int minCards) {
-   TRACE3 ("Rovhult::fillUpPile (ICardPile&, unsinged int) - "
+   TRACE3 ("RovhultAppl::fillUpPile (ICardPile&, unsinged int) - "
            << pile.numberOfCards () << " -> " << minCards);
 
    while ((pile.numberOfCards () < minCards) && staple.numberOfCards ()) {
@@ -971,7 +1027,7 @@ void RovhultAppl::fillUpPile (ICardPile& pile, unsigned int minCards) {
       newCard.showFace ();
       pile.insertSorted (newCard);
 
-      TRACE8 ("Rovhult::fillUpPile (ICardPile&, unsinged int) - Appended card "
+      TRACE8 ("RovhultAppl::fillUpPile (ICardPile&, unsinged int) - Appended card "
               << newCard);
    }
 }
@@ -981,7 +1037,7 @@ void RovhultAppl::fillUpPile (ICardPile& pile, unsigned int minCards) {
 //Returns   : unsigned int: Number of equal cards
 /*--------------------------------------------------------------------------*/
 unsigned int RovhultAppl::numberOfEqualTopCards () const {
-   TRACE8 ("Rovhult::numberOfEqualTopCards () const");
+   TRACE8 ("RovhultAppl::numberOfEqualTopCards () const");
    unsigned int nrCards (played.numberOfCards ());
 
    if (nrCards)
@@ -992,11 +1048,11 @@ unsigned int RovhultAppl::numberOfEqualTopCards () const {
    int i (1);
    CardWidget& card (played.getTopCard ());
    while (i <= nrCards) {
-      TRACE9 ("Rovhult::numberOfEqualTopCards () const - Checking "
+      TRACE9 ("RovhultAppl::numberOfEqualTopCards () const - Checking "
               << played.at (nrCards - i) << " with " << card);
       
       if (played.at (nrCards - i).number () != card.number ()) {
-         TRACE8 ("Rovhult::numberOfEqualTopCards () const - found " << i);
+         TRACE8 ("RovhultAppl::numberOfEqualTopCards () const - found " << i);
          break;
       }
       ++i;
@@ -1009,13 +1065,13 @@ unsigned int RovhultAppl::numberOfEqualTopCards () const {
 //Returns   : bool: True, if 4 equal cards found
 /*--------------------------------------------------------------------------*/
 bool RovhultAppl::clearPlayedIf4Equal () {
-   TRACE8 ("Rovhult::clearPlayedIf4Equal ()");
+   TRACE8 ("RovhultAppl::clearPlayedIf4Equal ()");
 
    int cards (numberOfEqualTopCards ()); Check3 (cards <= 4);
    if (cards < 4)
       return false;
 
-   TRACE7 ("Rovhult::clearPlayedIf4Equal () - found 4");
+   TRACE7 ("RovhultAppl::clearPlayedIf4Equal () - found 4");
    played.clear ();
    return true;
 }
@@ -1025,7 +1081,7 @@ bool RovhultAppl::clearPlayedIf4Equal () {
 //Parameters: nrLooser: Nr. of player getting all played cards
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::movePlayedCardsToLooser (unsigned int nrLooser) {
-   TRACE8 ("Rovhult::movePlayedCardsToLooser () - Player " << nrLooser << " gets "
+   TRACE8 ("RovhultAppl::movePlayedCardsToLooser () - Player " << nrLooser << " gets "
            << played.numberOfCards () << " cards");
    Check3 (nrLooser < NUM_PLAYERS);
 
@@ -1065,9 +1121,6 @@ void RovhultAppl::loadCards () {
 
    cardFaces.load (staple.get_window ());  // Cards need an realized (!) parent
    cards.addPacket (cardFaces);
-   mutexThread.lock ();
-   pThread = NULL;
-   mutexThread.unlock ();
 
    gdk_threads_enter ();
    pMenuNew->set_sensitive (true);
@@ -1088,6 +1141,10 @@ void RovhultAppl::loadCards () {
    played.set_usize (width, height);
    staple.set_usize (width, height);
    gdk_threads_leave ();
+
+   statGame = STOPPED;
+
+   pThread = NULL;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1188,19 +1245,18 @@ void RovhultAppl::dealCards () {
          for (unsigned int k (0); k < 2; ++k) {           // Set cards on table
             CardWidget& card (staple.removeTopCard ());
             players[i].reserve[j].setTopCard (card, k);
-
-            if (k && !i)      // Enable drag-n-drop for the top-card of human
-               registerTableDND (card, i, j);
          } // end-for two cards pro pile (in reserve)
 
          // Put card into hand
          CardWidget& card (staple.removeTopCard ());
          card.showFace ();
-         players[i].hand.append (card);
-
-         if (!i)
-            registerHandDND (card, 0, j);
+         players[i].hand.insertSorted (card);
       }
+
+   for (unsigned int i (0); i < players[i].hand.numberOfCards (); ++i) {
+      registerHandDND (players[0].hand.at (i), 0, i);
+      registerTableDND (players[0].reserve[i].getTopCard (), 0, i);
+   }
 
    played.hide ();
 

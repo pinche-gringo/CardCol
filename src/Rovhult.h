@@ -43,7 +43,7 @@ class RovhultAppl : public XApplication {
 
  private:
    // IDs for menus
-   enum { NEW, EXIT, DEBUG, ABOUT };
+   enum { NEW, END, EXIT, DEBUG, ABOUT };
 
    // Protected manager functions
    RovhultAppl (const RovhultAppl&);
@@ -110,6 +110,11 @@ class RovhultAppl : public XApplication {
 
    void loadCards ();
 
+   void startGame ();
+
+   void userWants2End (unsigned int input);
+   bool restart;
+
    static XApplication::MenuEntry RovhultAppl::menuItems[];
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
@@ -121,10 +126,13 @@ class RovhultAppl : public XApplication {
    static const char* xpmAuthor[];
    static const char* xpmRovhult[];
 
+   enum { INITIALIZING, PLAYING, TOSTOP, STOPPED } statGame;
+
    Gtk::Statusbar status;
    Gtk::Table     tblTable;
 
-   Widget* pMenuNew;
+   MenuItem* pMenuNew;
+   MenuItem* pMenuEnd;
 
    // Variables for makeComputerMove
    int actPlayer;                                         // Player to continue
@@ -144,7 +152,8 @@ class RovhultAppl : public XApplication {
 
    typedef OThread<RovhultAppl> THRDAPPL;
    THRDAPPL* pThread;
-   Mutex mutexThread;
+
+   Mutex mutexStatus;
 
    static const unsigned int USED_CARDS = 52;
 
