@@ -70,6 +70,7 @@ class RovhultAppl : public XApplication {
    void finishedExchange ();
    void takeCards (unsigned int player);
 
+   int playFromPile (unsigned int player, unsigned int pile);
    int doPileSelected (unsigned int player, unsigned int pile);
 
    // Helper functions
@@ -101,7 +102,7 @@ class RovhultAppl : public XApplication {
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
    bool existOnlySpecialCards (unsigned int player, unsigned int pos) const;
 
-   CardWidget& cardAtPos (unsigned int player, unsigned int pos) const;
+   CardWidget* cardAtPos (unsigned int player, unsigned int pos) const;
 
    bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
    int executeMove (unsigned int player, CardWidget::NUMBERS nr);
@@ -124,7 +125,8 @@ class RovhultAppl : public XApplication {
 
    Widget* pMenuNew;
 
-   int actPlayer;
+   // Variables for makeComputerMove
+   int actPlayer;                                         // Player to continue
 
    CardImages cardFaces;
    CardSet cards;
@@ -145,8 +147,8 @@ class RovhultAppl : public XApplication {
 
    static const unsigned int USED_CARDS = 52;
 
-   static const unsigned int WIDTH = 760;
-   static const unsigned int HEIGHT = 735;
+   static const unsigned int WIDTH = 700;
+   static const unsigned int HEIGHT = 700;
 
    static GtkTargetEntry dndTypeTable;
    static GtkTargetEntry dndTypeHand;
