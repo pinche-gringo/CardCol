@@ -43,9 +43,13 @@
 #include <XAbout.h>
 #include <XAttribute.h>
 
+#include <Human.h>
+#include <RemotePlayer.h>
+#include <ComputerPlayer.h>
+
 #include <PlayerDlg.h>
-#include <ConnectDlg.h>
 #include <DeckSelect.h>
+#include <PlayerConnDlg.h>
 
 #include "Hearts.h"
 #include "Rovhult.h"
@@ -656,10 +660,10 @@ const IVIOApplication::longOptions CardgameAppl::lo[] = {
    { NULL, '\0' } };
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Defaultconstructor; all widget are created
-//Parameters: type: Type of game to start with
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Defaultconstructor; all widget are created
+/// \param type: Type of game to start with
+//-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE)
      , pThread (NULL), game (NULL)
@@ -694,23 +698,33 @@ CardgameCollection::CardgameCollection (Options& opts)
               << e);
       CardgameCollection::loadCards ();
    }
+
+   Check3 (options.name.size ());
+   std::vector<Glib::ustring>::iterator i (options.names.begin ());
+   player.push_back (new Human (*i));
+   while (++i != options.names.end ())
+       player.push_back (new ComputerPlayer (*i));
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Destructor
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Destructor
+//-----------------------------------------------------------------------------
 CardgameCollection::~CardgameCollection () {
    TRACE9 ("CardgameCollection::~CardgameCollection ()");
    if (game) {
       game->clean ();
       delete game;
    }
+
+   for (std::vector<Player*>::iterator i (player.begin ());
+        i != player.end (); ++i)
+      delete *i;
 }
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Starts a game; if the type has changed also deleting the old one
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Starts a game; if the type has changed also deleting the old one
+//-----------------------------------------------------------------------------
 void CardgameCollection::startGame () {
    TRACE6 ("CardgameCollection::startGame () - Old game type " << oldGame
            << " -> New: " << options.type);
@@ -775,19 +789,19 @@ void CardgameCollection::startGame () {
    game->start ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Returns the names of the players
-//Returns   : The names of the players
-//Remarks   : Can't be inline because of cyclic dependencies to Options
-/*--------------------------------------------------------------------------*/
-const std::vector<Glib::ustring>& CardgameCollection::getNames () const {
-   return options.names;
+//-----------------------------------------------------------------------------
+/// Returns the player
+/// \returns \c The player
+/// \remarks Can't be inline because of cyclic dependencies to Options
+//-----------------------------------------------------------------------------
+const std::vector<Player*>& CardgameCollection::getPlayer () const {
+   return player;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Command-handler
-//Parameters: menu: ID of command (menu)
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Command-handler
+/// \param menu: ID of command (menu)
+//-----------------------------------------------------------------------------
 void CardgameCollection::command (int menu) {
    TRACE2 ("CardgameCollection::command (int) - " << menu);
    switch (menu) {
@@ -820,7 +834,7 @@ void CardgameCollection::command (int menu) {
       break; }
 
    case CONNECT:
-      ConnectDlg::perform (options.names.size (), PORT);
+      PlayerConnectDlg::perform (options.names, PORT, cmgr);
       break;
 
    case TWOPART:
@@ -847,7 +861,7 @@ void CardgameCollection::command (int menu) {
 
    case CHGNAMES:
       PlayerDlg<CardgameCollection>
-         ::create (*this, &CardgameCollection::changePlayernames, options.names);
+         ::create (*this, &CardgameCollection::changePlayernames, player);
       break;
 
    case SAVESET: {
@@ -856,7 +870,9 @@ void CardgameCollection::command (int menu) {
       if (inifile) {
          options.strType = options.type + '0';
          INIFile::write (inifile, "Game", options);
-         INIList<Glib::ustring>::write (inifile, "Players", options.names);
+         for (unsigned int i (0); i < player.size (); ++i)
+            options.names[i] = player[i]->getName ();
+         INIList<Glib::ustring>::write (inifile, "Player", options.names);
       }
       break;
    }
@@ -896,10 +912,10 @@ void CardgameCollection::command (int menu) {
    } // end-switch
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Returns the name of the file to display in the help
-//Returns   : Name of file to display
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Returns the name of the file to display in the help
+/// \returns \c Name of file to display
+//-----------------------------------------------------------------------------
 const char* CardgameCollection::getHelpfile () {
    std::string file (options.helpPath);
    if (file[file.size () - 1] != File::DIRSEPARATOR)
@@ -908,34 +924,34 @@ const char* CardgameCollection::getHelpfile () {
    return file.c_str ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shows the about box for the program
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Shows the about box for the program
+//-----------------------------------------------------------------------------
 void CardgameCollection::showAboutbox () {
    std::string ver (_("Anticopyright (A) 2002, 2003 Markus Schwab"
                       "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
    ver.replace (ver.find ("%1"), 2, __DATE__);
    ver.replace (ver.find ("%2"), 2, __TIME__);
 
-   XAbout* about (new XAbout (ver, PACKAGE " V" VERSION));
+   XAbout* about (XAbout::create (ver, PACKAGE " V" VERSION));
    about->setIconProgram (xpmGame);
    about->setIconAuthor (xpmAuthor);
    about->get_window ()->set_transient_for (get_window ());
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback to change the names of the playing people
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Callback to change the names of the playing people
+//-----------------------------------------------------------------------------
 void CardgameCollection::changePlayernames () {
    TRACE2 ("CardgameCollection::changePlayernames");
    if (game)
-      game->changeNames (options.names);
+      game->changeNames (player);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback to change the carddecks
-//Parameters: cmd: Selected button of dialog
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Callback to change the carddecks
+/// \param cmd: Selected button of dialog
+//-----------------------------------------------------------------------------
 void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
    TRACE2 ("CardgameCollection::changeDecks (const ICarddeckSelectDlg&)");
 
@@ -958,11 +974,11 @@ void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
            << pThread->getID ());
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Loads the cards (from xpm-files)
-//Parameters: opt: Actually a bit field! Option indicationg what to load
-//Returns   : bool: Status; true when loading was OK, false otherwise
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Loads the cards (from xpm-files)
+/// \param opt: Actually a bit field! Option indicationg what to load
+/// \returns \c bool: Status; true when loading was OK, false otherwise
+//-----------------------------------------------------------------------------
 bool CardgameCollection::changeCards (void* opt) {
    TRACE2 ("CardgameCollection::changeCards (void*) - Option: " << opt);
 
@@ -1003,21 +1019,21 @@ bool CardgameCollection::changeCards (void* opt) {
    return false;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Terminates the program; also closing the passed dialog
-//Parameters: int: Response of dialog (ignored)
-//            dlg: Dialog to close additionally
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Terminates the program; also closing the passed dialog
+/// \param int: Response of dialog (ignored)
+/// \param dlg: Dialog to close additionally
+//-----------------------------------------------------------------------------
 void CardgameCollection::closeProgram (int, const Gtk::Dialog* dlg) {
    Check1 (dlg);
    delete dlg;
    // delete this;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Checks the user-input after asking if he wants to end the game;
-//            depending on the answer either stops or continues
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Checks the user-input after asking if he wants to end the game; depending
+/// on the answer either stops or continues
+//-----------------------------------------------------------------------------
 void CardgameCollection::userWants2End () {
    TRACE8 ("CardgameCollection::userWants2End ()");
    Check1 (game);
@@ -1043,9 +1059,9 @@ void CardgameCollection::userWants2End () {
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Loads the cards (from xpm-files)
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Loads the cards (from xpm-files)
+//-----------------------------------------------------------------------------
 void CardgameCollection::loadCards () {
    // Cards need an realized (!) parent, so make somehow sure, that the window
    // already exists
@@ -1074,10 +1090,10 @@ void CardgameCollection::loadCards () {
    pThread = NULL;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Handling of game-events
-//Parameters: status: New status of game
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Handling of game-events
+/// \param status: New status of game
+//-----------------------------------------------------------------------------
 void CardgameCollection::gameEvents (unsigned int status) {
    TRACE8 ("CardgameCollection::gameEvents (unsigned int) const - New status: "
            << status);
@@ -1106,9 +1122,9 @@ void CardgameCollection::gameEvents (unsigned int status) {
 }
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Displays the help
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Displays the help
+//-----------------------------------------------------------------------------
 void CardgameAppl::showHelp () const {
    std::cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
              << _(" [OPTIONS]\n\n")
@@ -1130,19 +1146,19 @@ void CardgameAppl::showHelp () const {
                  "  Helpdir=/usr/share/doc/Cardgames/\n"
                  "  CardFront=/usr/share/carddecks/cards-default\n"
                  "  CardBack=/usr/share/carddecks/decks/deck1.png\n\n"
-                 "  [Players]\n"
+                 "  [Player]\n"
                  "  0=Human\n"
                  "  1=Computer 1\n"
                  "  2=Computer 2\n"
                  "  3=Computer 3\n");
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Checks the validity of the passed option
-//Parameters: option: Actual option
-//Returns   : bool: Status; false: Invalid option/option-value
-//Require   : option not '\0´'
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Checks the validity of the passed option
+/// \param option: Actual option
+/// \returns \c bool: Status; false: Invalid option/option-value Require :
+///     option not '\0´'
+//-----------------------------------------------------------------------------
 bool CardgameAppl::handleOption (const char option) {
    Check3 (option != '\0');
 
@@ -1196,11 +1212,11 @@ bool CardgameAppl::handleOption (const char option) {
    return true;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Converts a text to a game type
-//Parameters: pText: Text to convert
-//Returns   : Type of game as understood by the CardgameCollection
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Converts a text to a game type
+/// \param pText: Text to convert
+/// \returns \c Type of game as understood by the CardgameCollection
+//-----------------------------------------------------------------------------
 CardgameCollection::games CardgameAppl::convertToGameType (const char* pText) {
    static struct {
       const char* pText;
@@ -1222,11 +1238,11 @@ CardgameCollection::games CardgameAppl::convertToGameType (const char* pText) {
    return CardgameCollection::NONE;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Reads the options of the INI-file
-//Parameters: pFile: Pointer to filename
-//Requieres : pFile not NULL
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Reads the options of the INI-file
+/// \param pFile: Pointer to filename
+/// \param Requieres : pFile not NULL
+//-----------------------------------------------------------------------------
 void CardgameAppl::readINIFile (const char* pFile) {
    TRACE5 ("CardgameAppl::readINIFile (const char*) - " << pFile);
    Check3 (pFile);
@@ -1241,7 +1257,7 @@ void CardgameAppl::readINIFile (const char* pFile) {
    try {
       INIFILE (pFile);
       INIOBJ (options, Game);
-      INILIST2 (Players, Glib::ustring, options.names);
+      INILIST2 (Player, Glib::ustring, options.names);
 
       unsigned int rc (INIFILE_READ ());
    }
@@ -1262,12 +1278,12 @@ void CardgameAppl::readINIFile (const char* pFile) {
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Performs the job of the applications
-//Parameters: int: Number of parameters (without options)
-//            const char*: Array with pointer to arguments
-//Returns   : int: Status
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Performs the job of the applications
+/// \param int: Number of parameters (without options)
+/// \param const char*: Array with pointer to arguments
+/// \returns \c int: Status
+//-----------------------------------------------------------------------------
 int CardgameAppl::perform (int, const char**) {
    TRACE5 ("CardgameAppl::perform (int, const char**) - Params: " << args);
    srand (time (NULL));              // Initialize the random number generator
@@ -1280,12 +1296,12 @@ int CardgameAppl::perform (int, const char**) {
 }
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Entrypoint of application
-//Parameters: argc: Number of parameters
-//            argv: Array with pointer to parameter
-//Returns   : int: Status
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Entrypoint of application
+/// \param argc: Number of parameters
+/// \param argv: Array with pointer to parameter
+/// \returns \c int: Status
+//-----------------------------------------------------------------------------
 int main (int argc, const char* argv[]) {
    Glib::thread_init (NULL);
    gdk_threads_init ();

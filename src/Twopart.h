@@ -33,14 +33,14 @@ class Twopart : public Game {
  public:
    // Manager functions
    Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<Glib::ustring>& names);
+            const std::vector<Player*>& players);
    ~Twopart ();
 
    virtual void start ();
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Twopart"; }
-   virtual void changeNames (const std::vector<Glib::ustring>& newNames);
+   virtual void changeNames (const std::vector<Player*>& newPlayer);
 
  private:
    // Status of game

@@ -34,7 +34,7 @@ class Rovhult : public Game {
  public:
    // Manager functions
    Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<Glib::ustring>& names);
+            const std::vector<Player*>& players);
    ~Rovhult ();
 
    virtual void end (bool restart);
@@ -42,7 +42,7 @@ class Rovhult : public Game {
    virtual void playOpen (bool open);
    virtual void clean ();
    virtual const char* name () { return "Røvhult"; }
-   virtual void changeNames (const std::vector<Glib::ustring>& newNames);
+   virtual void changeNames (const std::vector<Player*>& newPlayer);
 
  private:
    enum { PREPLAYING = Game::LAST };

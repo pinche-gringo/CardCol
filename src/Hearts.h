@@ -34,14 +34,14 @@ class ScoreDlg;
 class Hearts : public Game {
  public:
    Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-           const std::vector<Glib::ustring>& names);
+           const std::vector<Player*>& player);
    virtual ~Hearts ();
 
    virtual void start ();
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Hearts"; }
-   virtual void changeNames (const std::vector<Glib::ustring>& newNames);
+   virtual void changeNames (const std::vector<Player*>& newPlayer);
 
  private:
    enum Status { EXCHANGE = Game::LAST };

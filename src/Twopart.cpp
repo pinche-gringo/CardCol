@@ -35,6 +35,7 @@
 #include <Check.h>
 #include <Trace_.h>
 
+#include <Player.h>
 #include <CardSet.h>
 #include <CardWidget.h>
 
@@ -47,16 +48,16 @@ const unsigned int Twopart::ROWS_PLAYER[NUM_PLAYERS] = { 4,  8, 10, 8 };
 char Twopart::sortOrder[4];
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Defaultconstructor; all widget are created
-//Parameters: parent: Parent widget to display the game in
-//            statusbar: Status bar widget to display information about the game
-//            cardset: Cardset to use
-//            names: Vector of player-names
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Defaultconstructor; all widget are created
+/// \param parent: Parent widget to display the game in
+/// \param statusbar: Status bar widget to display information about the game
+/// \param cardset: Cardset to use
+/// \param players: Vector of player
+//-----------------------------------------------------------------------------
 Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, 
-                  CardSet& cardset, const std::vector<Glib::ustring>& names)
-   : Game (parent, statusbar, cardset, names, 12, 15)
+                  CardSet& cardset, const std::vector<Player*>& player)
+   : Game (parent, statusbar, cardset, player, 12, 15)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK)
      , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL), offPos (0)
@@ -68,7 +69,7 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    int height (cards.getCard (0).getImageHeight ());
 
    // Show and attach card-piles
-   changeNames (names);
+   changeNames (player);
    for (int i (0); i < NUM_PLAYERS; ++i) {
       players[i].name.show ();
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 3,
@@ -108,16 +109,16 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    staple.set_size_request (width, height);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Destructor
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Destructor
+//-----------------------------------------------------------------------------
 Twopart::~Twopart () {
    TRACE9 ("Twopart::~Twopart ()");
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Starts the game
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Starts the game
+//-----------------------------------------------------------------------------
 void Twopart::start () {
    Game::start ();
    randomizeCardsToPile (staple);
@@ -133,12 +134,12 @@ void Twopart::start () {
    pos1Play = pos2Play = (unsigned int)-1;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Enables the cards of the passed player
-//Returns   : int
-//Remarks   : Depending of the status of the game (PLAYING2) also the top
-//            card of the played pile is enabled
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Enables the cards of the passed player
+/// \returns \c int
+/// \remarks Depending of the status of the game (PLAYING2) also the top card
+///     of the played pile is enabled
+//-----------------------------------------------------------------------------
 bool Twopart::enableHuman () {
    Check3 (activeCards.empty ());
    Check3 (gameStatus () >= PLAYING);
@@ -160,12 +161,12 @@ bool Twopart::enableHuman () {
    return Game::enableHuman ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Moving played cards (of last person) to the passed player
-//Parameters: player: ID of player who should get the cards
-//Returns   : unsigned int: Next player
-//Requieres : Only for part 2 of the game
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Moving played cards (of last person) to the passed player
+/// \param player: ID of player who should get the cards
+/// \returns \c unsigned int: Next player Requieres : Only for part 2 of the
+///     game
+//-----------------------------------------------------------------------------
 unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
    TRACE3 ("Twopart::pickUpPlayedPile (unsigned int) - Player " << player
            << " picks up played pile");
@@ -204,10 +205,10 @@ unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
    return findNextPlayer (player);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback after clicking the top card of the played pile
-//Requieres : Only for part 2 of the game
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Callback after clicking the top card of the played pile Requieres : Only
+/// for part 2 of the game
+//-----------------------------------------------------------------------------
 void Twopart::playedSelected () {
    TRACE3 ("Twopart::playedSelected (unsigned int) - Human picks up played pile");
    Check3 (gameStatus () == PLAYING2);
@@ -218,13 +219,13 @@ void Twopart::playedSelected () {
    disableHuman ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback after clicking on a card in hand
-//Parameters: player: ID of player
-//            start: Offset of first card to play
-//            end: Offset of last card to play
-//Returns   : bool: Status of moving; true: Card could be moved; false else
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Callback after clicking on a card in hand
+/// \param player: ID of player
+/// \param start: Offset of first card to play
+/// \param end: Offset of last card to play
+/// \returns \c bool: Status of moving; true: Card could be moved; false else
+//-----------------------------------------------------------------------------
 bool Twopart::moveSelectedCardToPlayed (unsigned int player,
                                         unsigned int start, unsigned int end) {
    TRACE5 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsigned int) - Player: "
@@ -289,10 +290,10 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player,
    return true;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback after clicking on a card in hand
-//Parameters: pos: Offset of card in hand
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Callback after clicking on a card in hand
+/// \param pos: Offset of card in hand
+//-----------------------------------------------------------------------------
 void Twopart::cardSelected (unsigned int pos) {
    TRACE5 ("Twopart::cardSelected (unsigned int) - Position " << pos);
    Check3 (pos < players[0].hand.size ());
@@ -303,13 +304,13 @@ void Twopart::cardSelected (unsigned int pos) {
    makeNextMoves ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Executes a move out of a hand
-//Parameters: player: ID of player
-//            start: Offset of first card to play
-//            end: Offset of last card to play
-//Returns   : int: Next player or -1 at end
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Executes a move out of a hand
+/// \param player: ID of player
+/// \param start: Offset of first card to play
+/// \param end: Offset of last card to play
+/// \returns \c int: Next player or -1 at end
+//-----------------------------------------------------------------------------
 int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int end) {
    TRACE5 ("Twopart::executeMove (unsigned int, unsigned int) - Player: "
            << player << " at position " << start << " to " << end);
@@ -348,7 +349,9 @@ int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int 
       Glib::ustring str ((gameStatus () == PLAYING)
                          ? _("First part ended; Part 2 starts %1")
                          : _("%1 lost"));
-      str.replace (str.find ("%1"), 2, names[player]);
+      Check3 (actPlayers.size () > player);
+      Check3 (actPlayers[player]);
+      str.replace (str.find ("%1"), 2, actPlayers[player]->getName ());
       status.pop ();
       status.push (str);
 
@@ -364,11 +367,11 @@ int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int 
    return player;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Makes the move for the next player.
-//Parameters: player: Actual player
-//Returns   : int: Next player or -1 if end of game
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Makes the move for the next player.
+/// \param player: Actual player
+/// \returns \c int: Next player or -1 if end of game
+//-----------------------------------------------------------------------------
 int Twopart::makeMove (unsigned int player) {
    TRACE5 ("Twopart::makeMove () - Turn of player " << player);
    Check3 (gameStatus () >= PLAYING);
@@ -384,7 +387,9 @@ int Twopart::makeMove (unsigned int player) {
          player = pickUpPlayedPile (player);
 
          Glib::ustring stat ( _("%1 can't continue -> Picking up last cards; "));
-         stat.replace (stat.find ("%1"), 2, names[oldPlayer]);
+         Check3 (actPlayers.size () > oldPlayer);
+         Check3 (actPlayers[oldPlayer]);
+         stat.replace (stat.find ("%1"), 2, actPlayers[oldPlayer]->getName ());
          displayTurn (player, stat);
       }
    }
@@ -396,15 +401,14 @@ int Twopart::makeMove (unsigned int player) {
    return player;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Searches for the card(s) to play by analyzing the previously
-//            played cards
-//            to him if so. Else enable the players which can continue
-//Parameters: player: ID of player to analyze
-//            start: Offset of first card to play
-//            end: Offset of last card to play
-//Returns   : int: Position to play; or -1 if player can't continue
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Searches for the card(s) to play by analyzing the previously played cards
+/// to him if so. Else enable the players which can continue
+/// \param player: ID of player to analyze
+/// \param start: Offset of first card to play
+/// \param end: Offset of last card to play
+/// \returns \c int: Position to play; or -1 if player can't continue
+//-----------------------------------------------------------------------------
 int Twopart::findPos2Play (unsigned int player, unsigned int& start,
                            unsigned int& end) const {
    Check3 (player); Check3 (player < NUM_PLAYERS);
@@ -580,11 +584,11 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Searches for the smallest card in the hand of the passed player
-//Parameters: player: Player to inspect
-//Returns   : int: Position of smallest card
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Searches for the smallest card in the hand of the passed player
+/// \param player: Player to inspect
+/// \returns \c int: Position of smallest card
+//-----------------------------------------------------------------------------
 unsigned int Twopart::findSmallestCard (unsigned int player) const {
    TRACE5 ("Twopart::findSmallestCard (unsigned int) - Inspecting player " << player);
    Check3 (player < NUM_PLAYERS);
@@ -619,13 +623,13 @@ unsigned int Twopart::findSmallestCard (unsigned int player) const {
    return pos;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Searches for the last position of the card which are in a serie
-//            (same colour; number increasing by 1)
-//Parameters: player: Player to inspect
-//            start: Position to start
-//Returns   : unsinged int: Position of last card in serie
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Searches for the last position of the card which are in a serie (same
+/// colour; number increasing by 1)
+/// \param player: Player to inspect
+/// \param start: Position to start
+/// \returns \c unsinged int: Position of last card in serie
+//-----------------------------------------------------------------------------
 unsigned int Twopart::findEndOfSerie (unsigned int player, unsigned int start) const {
    Check3 (start < players[player].hand.size ());
 
@@ -645,13 +649,13 @@ unsigned int Twopart::findEndOfSerie (unsigned int player, unsigned int start) c
    return start - 1;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Searches for the first position of the card which are in a serie
-//            (same colour; number decreasing by 1)
-//Parameters: player: Player to inspect
-//            start: Position to start
-//Returns   : unsinged int: Position of first card in serie
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Searches for the first position of the card which are in a serie (same
+/// colour; number decreasing by 1)
+/// \param player: Player to inspect
+/// \param start: Position to start
+/// \returns \c unsinged int: Position of first card in serie
+//-----------------------------------------------------------------------------
 unsigned int Twopart::findStartOfSerie (unsigned int player, unsigned int start) const {
    Check3 (start < players[player].hand.size ());
 
@@ -671,12 +675,12 @@ unsigned int Twopart::findStartOfSerie (unsigned int player, unsigned int start)
    return start + 1;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Checks if there is a winner for the round and moves played cards
-//            to him if so. Else enable the players which can continue
-//Parameters: player: Actual player (ending the round)
-//Returns   : int: Next player; or -1 if there is no next player
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Checks if there is a winner for the round and moves played cards to him if
+/// so. Else enable the players which can continue
+/// \param player: Actual player (ending the round)
+/// \returns \c int: Next player; or -1 if there is no next player
+//-----------------------------------------------------------------------------
 int Twopart:: endRound (unsigned int player) {
    TRACE8 ("Twopart::endRound (unsigned int)");
    Check3 (!bfPlayers);
@@ -782,16 +786,16 @@ int Twopart:: endRound (unsigned int player) {
    return startPlayer = nextPlayer;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Analyzes the played staple and retrieves the highest card(s)
-//Parameters: startPos: Position from where to start analyzing
-//            max: Highest single card
-//            maxPos: Position of highest single card
-//            maxEqua: Highest pair
-//            maxEquaPos: Position of highest equal card
-//            trumps: Number of trumps
-//Remarks   : Values are not resetted!
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Analyzes the played staple and retrieves the highest card(s)
+/// \param startPos: Position from where to start analyzing
+/// \param max: Highest single card
+/// \param maxPos: Position of highest single card
+/// \param maxEqua: Highest pair
+/// \param maxEquaPos: Position of highest equal card
+/// \param trumps: Number of trumps
+/// \remarks Values are not resetted!
+//-----------------------------------------------------------------------------
 void Twopart::analyzeLastPlayed (unsigned int startPos, unsigned int cards,
                                  int& max, int& maxPos, int& maxEqual,
                                  int& maxEqualPos, int& trumps) const {
@@ -831,11 +835,11 @@ void Twopart::analyzeLastPlayed (unsigned int startPos, unsigned int cards,
    TRACE3 ("TwoPart::analyzeLastPlayed (...) - Trumps: " << trumps);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Finds the next player having cards
-//Parameters: player: Number of player to start with
-//Returns   : int: Number of next player (or -1)
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Finds the next player having cards
+/// \param player: Number of player to start with
+/// \returns \c int: Number of next player (or -1)
+//-----------------------------------------------------------------------------
 int Twopart::findNextPlayerWithCards (unsigned int player) const {
    unsigned int i (player);
    do {
@@ -847,12 +851,12 @@ int Twopart::findNextPlayerWithCards (unsigned int player) const {
    return -1;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Finds the next player which can continue according to the
-//            bfPlayers bitfield
-//Parameters: player: Number of player to start with
-//Returns   : int: Number of next player (or -1)
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Finds the next player which can continue according to the bfPlayers
+/// bitfield
+/// \param player: Number of player to start with
+/// \returns \c int: Number of next player (or -1)
+//-----------------------------------------------------------------------------
 int Twopart::findNextPlayer (unsigned int player) const {
    if (!bfPlayers)                                // No players left: Return -1
       return -1;
@@ -865,10 +869,10 @@ int Twopart::findNextPlayer (unsigned int player) const {
    return player;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Removes all players having no cards left from the player-bitfield
-//Returns   : Number of players left
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Removes all players having no cards left from the player-bitfield
+/// \returns \c Number of players left
+//-----------------------------------------------------------------------------
 unsigned int Twopart::removePlayersWithoutCards () {
    unsigned int cPlayers (0);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
@@ -880,13 +884,12 @@ unsigned int Twopart::removePlayersWithoutCards () {
    return cPlayers;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Converts a position in the played staple into the number of the
-//            player
-//Parameters: pos: Position to convert
-//            start: First player of round
-//Returns   : unsigned int: Number of player
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Converts a position in the played staple into the number of the player
+/// \param pos: Position to convert
+/// \param start: First player of round
+/// \returns \c unsigned int: Number of player
+//-----------------------------------------------------------------------------
 unsigned int Twopart::pos2Player (unsigned int pos) const {
    TRACE9 ("Twopart::pos2Player (unsigned int) - Pos to convert: " << pos
            << "; starting with player " << startPlayer);
@@ -902,11 +905,11 @@ unsigned int Twopart::pos2Player (unsigned int pos) const {
    return start;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Method to move the cards of the actual round to the winner
-//Parameters: receiver: Nr. of player getting all played cards
-//            start: Startposition of cards to move
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Method to move the cards of the actual round to the winner
+/// \param receiver: Nr. of player getting all played cards
+/// \param start: Startposition of cards to move
+//-----------------------------------------------------------------------------
 void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start) {
    TRACE8 ("Twopart::movePlayedCardsToPlayer () - " << played.size ()
            << " cards for player " << receiver << " til position " << start);
@@ -924,9 +927,9 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start
       players[receiver].hand.sort (compByColourAccTrumps);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Remove cards from everything which can hold them
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Remove cards from everything which can hold them
+//-----------------------------------------------------------------------------
 void Twopart::clean () {
    staple.clear ();                                             // Clear staple
    for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
@@ -944,9 +947,9 @@ void Twopart::clean () {
    Game::clean ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Deals the cards
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Deals the cards
+//-----------------------------------------------------------------------------
 void Twopart::dealCards () {
    TRACE9 ("Twopart::dealCards ()");
 
@@ -964,11 +967,11 @@ void Twopart::dealCards () {
    displayTurn (startPlayer = 0);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Starts part two of the game
-//Parameters: player: Player starting part II
-//Returns   : int: Value indicating if timer should continue
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Starts part two of the game
+/// \param player: Player starting part II
+/// \returns \c int: Value indicating if timer should continue
+//-----------------------------------------------------------------------------
 bool Twopart::startPartTwoTimerFnc (unsigned int player) {
    TRACE8 ("Twopart::startPartTwoTimerFnc ()");
    TRACE9 ("Twopart::startPartTwoTimerFnc (unsigned int) - Continuing with " << player);
@@ -1026,13 +1029,13 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
    return false;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Compares the cards in the pile with regard of the colour and
-//            with special consideration of trumps
-//Parameters: a: Card to compare
-//            b: Card to compare
-//Returns   : bool: True, if a < b
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Compares the cards in the pile with regard of the colour and with special
+/// consideration of trumps
+/// \param a: Card to compare
+/// \param b: Card to compare
+/// \returns \c bool: True, if a < b
+//-----------------------------------------------------------------------------
 bool Twopart::compByColourAccTrumps (const CardWidget* a, const CardWidget* b) {
    Check3 (a); Check3 (b);
 
@@ -1045,10 +1048,10 @@ bool Twopart::compByColourAccTrumps (const CardWidget* a, const CardWidget* b) {
            : (sortOrder[a->colour ()] < sortOrder[b->colour ()]));
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Starts part two of the game
-//Parameters: player: Player to start part II
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Starts part two of the game
+/// \param player: Player to start part II
+//-----------------------------------------------------------------------------
 void Twopart::startPartTwo (unsigned int player) {
    TRACE9 ("Twopart::startPartTwo (unsigned int) - Continuing with " << player);
 
@@ -1058,10 +1061,10 @@ void Twopart::startPartTwo (unsigned int player) {
    disableHuman ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shows or hides the cards of the computer player
-//Parameters: open: Flag if cards should be shown or hidden
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Shows or hides the cards of the computer player
+/// \param open: Flag if cards should be shown or hidden
+//-----------------------------------------------------------------------------
 void Twopart::playOpen (bool open) {
    ICardPile::ShowOpt show (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
 
@@ -1076,12 +1079,12 @@ void Twopart::playOpen (bool open) {
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Finds a bigger card, with respect to trumps
-//Parameters: pile: Pile to analyze
-//            nr: Number of card to beat
-//Returns   : int: Pos to play (or -1, if no card is bigger)
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Finds a bigger card, with respect to trumps
+/// \param pile: Pile to analyze
+/// \param nr: Number of card to beat
+/// \returns \c int: Pos to play (or -1, if no card is bigger)
+//-----------------------------------------------------------------------------
 int Twopart::findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const {
    // Find first bigger (or equal) card without checking for trumps
    int pos (pile.findFirstEqualOrBigger (nr));
@@ -1101,13 +1104,13 @@ int Twopart::findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const {
    return pos;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Changes the names of the playing people
-//Parameters: newNames: Array holding the new names of the players
-/*--------------------------------------------------------------------------*/
-void Twopart::changeNames (const std::vector<Glib::ustring>& newNames) {
-   Game::changeNames (newNames);
+//-----------------------------------------------------------------------------
+/// Changes the names of the playing people
+/// \param newPlayer: Array holding the new player
+//-----------------------------------------------------------------------------
+void Twopart::changeNames (const std::vector<Player*>& newPlayer) {
+   Game::changeNames (newPlayer);
 
    for (int i (0); i < NUM_PLAYERS; ++i)
-      players[i].name.set_text (names[i]);
+      players[i].name.set_text (actPlayers[i]->getName ());
 }

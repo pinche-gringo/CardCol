@@ -31,6 +31,7 @@
 #include <CardPile.h>
 #include <CardImgs.h>
 
+#include <ConnMgr.h>
 #include <IVIOAppl.h>
 #include <XApplication.h>
 
@@ -51,7 +52,7 @@ class CardgameCollection : public XApplication {
    Gtk::Box& getClient () { return *XApplication::getClient (); }
    Gtk::Statusbar& getStatusbar () { return status; }
    CardSet& getCards () { return cards; }
-   const std::vector<Glib::ustring>& getNames () const;
+   const std::vector<Player*>& getPlayer () const;
 
  private:
    // IDs for menus
@@ -91,6 +92,8 @@ class CardgameCollection : public XApplication {
    THRDAPPL* pThread;
 
    Options& options;
+   ConnectionMgr cmgr;
+   std::vector<Player*> player;
 
    games oldGame;
    unsigned int restart;

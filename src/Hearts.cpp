@@ -25,6 +25,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <cardgames-cfg.h>
+
 #include <Check.h>
 #include <Trace_.h>
 
@@ -32,8 +34,10 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#include "Hearts.h"
+#include <Player.h>
 #include <ScoreDlg.h>
+
+#include "Hearts.h"
 
 
 const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = { 3, 9, 3, 1 };
@@ -45,11 +49,11 @@ const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 //Parameters: parent: Parent widget to display the game in
 //            statusbar: Status bar widget to display information about the game
 //            cardset: Cardset to use
-//            names: Vector of player-names
+//            player: Vector of player
 /*--------------------------------------------------------------------------*/
 Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-                const std::vector<Glib::ustring>& names)
-   : Game (parent, statusbar, cardset, names, 14, 10)
+                const std::vector<Player*>& player)
+   : Game (parent, statusbar, cardset, player, 14, 10)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , pos2Play (-1U), playedSQ (false), pScoreDlg (NULL)
      , player2Exchange (3) {
@@ -59,7 +63,7 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
    int height (cards.getCard (0).getImageHeight ());
 
    // Show and attach card-piles
-   changeNames (names);
+   changeNames (player);
    for (int i (0); i < NUM_PLAYERS; ++i) {
       players[i].name.show ();
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + ((i & 1) ? 1 : 5),
@@ -172,7 +176,9 @@ void Hearts::start () {
 
    if (player2Exchange) {
       Glib::ustring stat (_("Select 3 cards to exchange with %1"));
-      stat.replace (stat.find ("%1"), 2, names[player2Exchange]);
+      Check3 (actPlayers.size () > player2Exchange);
+      Check3 (actPlayers[player2Exchange]);
+      stat.replace (stat.find ("%1"), 2, actPlayers[player2Exchange]->getName ());
       status.pop ();
       status.push (stat);
       setGameStatus (EXCHANGE);
@@ -358,7 +364,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       player = -1U;
       setGameStatus (STOPPED);
       if (!pScoreDlg) {
-         pScoreDlg = ScoreDlg::create (names);
+         pScoreDlg = ScoreDlg::create (actPlayers);
          pScoreDlg->get_window ()->set_transient_for (get_window ());
       }
 
@@ -382,7 +388,10 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       if (points >= 100) {
          stat = _("Game ended; %1 won");
          pScoreDlg->getMinPoints (points, player);
-         stat.replace (stat.find ("%1"), 2, names[player]);
+
+         Check3 (actPlayers.size () > player);
+         Check3 (actPlayers[player]);
+         stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
       }
 
       status.pop ();
@@ -851,14 +860,14 @@ unsigned int Hearts::pointsOfPile (ICardPile& pile) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Changes the names of the playing people
-//Parameters: newNames: Array holding the new names of the players
+//Parameters: newPlayer: Array holding the new player
 /*--------------------------------------------------------------------------*/
-void Hearts::changeNames (const std::vector<Glib::ustring>& newNames) {
-   Game::changeNames (newNames);
+void Hearts::changeNames (const std::vector<Player*>& newPlayer) {
+   Game::changeNames (newPlayer);
 
    for (int i (0); i < NUM_PLAYERS; ++i)
-      players[i].name.set_text (names[i]);
+      players[i].name.set_text (actPlayers[i]->getName ());
 
    if (pScoreDlg)
-      pScoreDlg->update (newNames);
+      pScoreDlg->update (newPlayer);
 }

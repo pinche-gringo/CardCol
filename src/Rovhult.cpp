@@ -39,6 +39,7 @@
 
 #include <XAbout.h>
 
+#include <Player.h>
 #include <CardWidget.h>
 
 #include "SigCExt.h"
@@ -58,11 +59,11 @@ const unsigned int Rovhult::ROWS_PLAYER[NUM_PLAYERS] = { 4, 7, 13, 7 };
 //Parameters: parent: Parent widget (box) to display the game in
 //            statusbar: Status bar widget to display information about the game
 //            cardset: Cardset to use
-//            names: Vector of player-names
+//            names: Vector of players
 /*--------------------------------------------------------------------------*/
 Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
-                  CardSet& cardset, const std::vector<Glib::ustring>& names)
-   : Game (parent, statusbar, cardset, names, 16, 20)
+                  CardSet& cardset, const std::vector<Player*>& player)
+   : Game (parent, statusbar, cardset, player, 16, 20)
      , staple (ICardPile::VERY_COMPRESSED)
      , played (ICardPile::VERY_COMPRESSED, ICardPile::SHOWFACE) {
     TRACE9 ("Rovhult::Rovhult (Gtk::Box& Gtk::Statusbar&, CardSet&,"
@@ -76,7 +77,7 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    int height (cards.getCard (0).getImageHeight ());
 
    // Show and attach card-piles
-   changeNames (names);
+   changeNames (player);
    for (int i (0); i < NUM_PLAYERS; ++i) {
       for (int j (0); j < 3; ++j) {
          players[i].reserve[j].setStyle (ICardPile::QUITE_COMPRESSED);
@@ -494,10 +495,12 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
        || (player != nextAvailablePlayer ((player - 1) & 0x3))) {
       player = nextAvailablePlayer (player);
 
+      Check3 (actPlayers.size () > player);
+      Check3 (actPlayers[player]);
       if (nextAvailablePlayer (player) == -1) {
          status.pop ();
          stat = _("%1 lost");
-         stat.replace (stat.find ("%1"), 2, names[player]);
+         stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
          status.push (stat);
          setGameStatus (STOPPED);
          return -1;
@@ -505,7 +508,7 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 
       if (nr == CardWidget::EIGHT) {
          stat = _("Skipping %1; ");
-         stat.replace (stat.find ("%1"), 2, names[player]);
+         stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
          player = nextAvailablePlayer (player);
       }
    }
@@ -667,11 +670,13 @@ unsigned int Rovhult::movePlayedCardsToLooser (unsigned int nrLooser) {
    TRACE8 ("Rovhult::movePlayedCardsToLooser () - Player " << nrLooser << " gets "
            << played.size () << " cards");
    Check3 (nrLooser < NUM_PLAYERS);
+   Check3 (players.size () > nrLooser);
+   Check3 (actPlayers[nrLooser]);
 
    movePile (players[nrLooser].hand, played);
    players[nrLooser].hand.sortByNumber ();
    Glib::ustring stat (_("%1 can't continue -> Taking whole pile. "));
-   stat.replace (stat.find ("%1"), 2, names[nrLooser]);
+   stat.replace (stat.find ("%1"), 2, actPlayers[nrLooser]->getName ());
    displayTurn (nrLooser =  nextAvailablePlayer (nrLooser), stat);
    return nrLooser;
 }
@@ -1357,11 +1362,11 @@ void Rovhult::end (bool restart) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Changes the names of the playing people
-//Parameters: newNames: Array holding the new names of the players
+//Parameters: newPlayer: Array holding the new player
 /*--------------------------------------------------------------------------*/
-void Rovhult::changeNames (const std::vector<Glib::ustring>& newNames) {
-   Game::changeNames (newNames);
+void Rovhult::changeNames (const std::vector<Player*>& newPlayer) {
+   Game::changeNames (newPlayer);
 
    for (int i (0); i < NUM_PLAYERS; ++i)
-      players[i].name.set_text (names[i]);
+      players[i].name.set_text (actPlayers[i]->getName ());
 }
