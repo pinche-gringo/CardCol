@@ -309,14 +309,14 @@ bool ICardPile::exists (CardWidget::NUMBERS nr) const {
    unsigned int middle (last >> 1);
 
    while ((last - first) > 0 ) {
-      TRACE ("ICardPile::exits (CardWidget::NUMBERS) - [" << first << '-'
-             << last << ')');
+      TRACE5 ("ICardPile::exists (CardWidget::NUMBERS) - [" << first << '-'
+              << last << ')');
       if (compNr (cards[middle], nr))
          last = middle;
       else
          first = middle + 1;
 
-      middle = (last - first) >> 1;
+      middle = first + ((last - first) >> 1);
    }
    return !compNr (cards[middle], nr);
 }
@@ -329,7 +329,7 @@ bool ICardPile::exists (CardWidget::NUMBERS nr) const {
 /*--------------------------------------------------------------------------*/
 bool ICardPile::compNr (const CardWidget* card, CardWidget::NUMBERS nr) {
    Check3 (card);
-   TRACE ("ICardPile::compNr (const CardWidget*, CardWidget::NUMBERS) - "
-          << card->number () << " <-> " << nr);
+   TRACE5 ("ICardPile::compNr (const CardWidget*, CardWidget::NUMBERS) - "
+           << card->number () << " <-> " << nr);
    return card->number () < nr;
 }
