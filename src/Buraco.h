@@ -87,6 +87,8 @@ class Buraco : public Game {
                                    bool pileHoldsCard = false, bool withJokers = false);
    static bool pileHasFittingPair (const ICardPile& pile);
    static bool compByNumberWithJokers (const CardWidget* a, const CardWidget* b);
+   static int cardDistance (const CardWidget& a, const CardWidget& b,
+                            bool aceIsOne = true);
 
    //@Section to handle piles on table
    CardVPile& makeNewPile (unsigned int team);
