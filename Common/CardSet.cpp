@@ -54,7 +54,7 @@ void CardSet::addPacket (const CardImages& decks) {
 
    for (int i (0); i < decks.size (); ++i) {
       CardWidget* card (new CardWidget (decks, i, true)); Check3 (card);
-
+      card->show ();
       cards_.push_back (card);
    } // endfor
 
