@@ -108,14 +108,14 @@
       <li>Den Reservestapel: Ein Haufen von (verdeckten) Karten, von dem
         neue Karten aufgenommen werden. Wird die Mauszeiger darauf
         positioniert, erscheint ein kleines Fenster, das &uuml;ber die
-        Nummer der &uuml;brigen Karten informiert. Im zweiten Teil wird hier
+        Anzahl der &uuml;brigen Karten informiert. Im zweiten Teil wird hier
         &uuml;ber die Trumpf-Farbe informiert.</li>
       <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb, darunter die in
         seiner Hand. Die gewonnenen Karten k&ouml;nnen durch Anklicken betrachtet
         werden; ein Rechts-Klick erm&ouml;glicht zu&auml;tzlich sortieren.</li>
       <li>In der n&auml;chsten Reihe befinden sich die Karten der Computer-Spieler
         3 und 1. Zwischen ihnen ist der Stapel der gespielten Karten (der
-        ebenfalls die Nummer der gespielten Karten anzeigt, wenn der Mauszeiger
+        ebenfalls die Anzahl der gespielten Karten anzeigt, wenn der Mauszeiger
         dar&uuml;ber positioniert wird)..</li>
       <li>In der letzten Reihe sind die Karten von Computer-Spieler 2.</li>
     </ul>
