@@ -702,19 +702,20 @@ int Twopart:: endRound () {
       // Find player to continue
       nextPlayer = findNextPlayer (nextPlayer);
       TRACE6 ("Twopart::endRound () - Try to continue with player " << nextPlayer);
-      if (nextPlayer == -1) {                  // None found: Search within all
+      if (cPlayers < 2) {                   // Less than two found: 
          bfPlayers = (1 << NUM_PLAYERS) - 1;
          cPlayers = removePlayersWithoutCards ();
-         nextPlayer = bfPlayers ? findNextPlayer (nextPlayer) : ~startPlayer;
-         movePlayedCardsToPlayer (startPlayer);
-      }
-      else
-         // Less than two players left: Activate winner
-         if (cPlayers < 2)
-            movePlayedCardsToPlayer (nextPlayer);
-#if CHECK > 0
+
+         if (nextPlayer == -1) {
+            nextPlayer = bfPlayers ? findNextPlayer (nextPlayer) : ~startPlayer;
+            movePlayedCardsToPlayer (startPlayer);
+         }
          else
-            Check (cPlayers > 1);
+            movePlayedCardsToPlayer (nextPlayer);
+      }
+#if CHECK > 0
+      else
+         Check (cPlayers > 1);
 #endif
    }
    // All played cards are differnt: Winner is the one with highest card
@@ -886,9 +887,9 @@ void Twopart::dealCards () {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Starts part two of the game
-//Parameters: player: ID of player starting the game
+//Returns   : int: Value indicating if timer should continue
 /*--------------------------------------------------------------------------*/
-void Twopart::startPartTwo (unsigned int player) {
+int Twopart::startPartTwoTimerFnc () {
    statGame = PLAYING2;
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.sortByColor ();
@@ -896,7 +897,7 @@ void Twopart::startPartTwo (unsigned int player) {
       players[i].won.setShowOption (ICardPile::SHOWFACE);
    }
 
-   enablePlayer (player);
+   enablePlayer (actPlayer);
 }
 
 

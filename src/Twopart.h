@@ -68,10 +68,15 @@ class Twopart : public XApplication {
    void cleanTable ();
    void dealCards ();
    void fillStaple ();
-   void startPartTwo (unsigned int player);
    void userWants2End (unsigned int input);
 
    unsigned int pos2Player (unsigned int pos) const;
+
+   int startPartTwoTimerFnc ();
+   void startPartTwo (unsigned int player) {
+      TRACE9 ("Twopart::startPartTwo () - *** Start timer ***");
+      actPlayer = player;
+      Gtk::Main::timeout.connect (slot (this, &Twopart::startPartTwoTimerFnc), 100); }
 
    int makeComputerMove ();
    void makeComputerMoves () {
