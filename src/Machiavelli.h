@@ -87,10 +87,11 @@ class Machiavelli : public Game {
    unsigned int showCardsToPlay (unsigned int player);
    void dealCard (unsigned int player);
    void checkPiles (YGP::StatusObject& obj) const;
-   void endGame ();
+   void endGame (unsigned int looser);
    bool hasSerie (ICardPile& playerPile);
    unsigned int cardFitsToPile (const CardWidget& card, unsigned int offset);
    unsigned int reorderTableToFit (ICardPile& playerPile);
+   unsigned int reorderTableToFit2 (ICardPile& playerPile);
    //@}
 
    /// name Drag-and-drop methods
