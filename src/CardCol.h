@@ -24,8 +24,8 @@
 #include <gtkmm/button.h>
 #include <gtkmm/statusbar.h>
 
+#include <Mutex.h>
 #include <Thread.h>
-
 
 #include <CardSet.h>
 #include <CardPile.h>
@@ -54,6 +54,7 @@ class CardgameCollection : public XApplication {
    CardSet& getCards () { return cards; }
    const std::vector<Player*>& getPlayer () const;
    ConnectionMgr& getConnectionMgr () { return cmgr; };
+   Mutex& getClientMutex () { return mxSerMsgs; }
    const unsigned int getPlayerPosition () const { return playerPos; }
 
  private:
@@ -80,6 +81,7 @@ class CardgameCollection : public XApplication {
    void changeDecks (const ICarddeckSelectDlg& dialog);
    void changePlayernames ();
 
+   void initCommunication ();
    void makePlayer ();
    void* waitForMessages (void*);
    bool handleErrorMessage (unsigned int player, char* msg);
@@ -101,6 +103,7 @@ class CardgameCollection : public XApplication {
    THRDAPPL* pCommThread;
 
    Options& options;
+   Mutex mxSerMsgs;
    ConnectionMgr cmgr;
    std::vector<Player*> player;
 

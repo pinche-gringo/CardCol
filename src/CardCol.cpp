@@ -42,6 +42,7 @@
 
 #include <File.h>
 #include <INIFile.h>
+#include <Tokenize.h>
 #include <PathSrch.h>
 #include <AttrParse.h>
 
@@ -661,6 +662,8 @@ const IVIOApplication::longOptions CardgameAppl::lo[] = {
    { "browser", 'b' },
    { "dir-help", 'd' },
    { "file", 'f' },
+   { "listen-at", 'l' },
+   { "connect-to", 'c' },
    { "version", 'V' },
    { NULL, '\0' } };
 
@@ -706,6 +709,20 @@ CardgameCollection::CardgameCollection (Options& opts)
    }
 
    makePlayer ();
+
+   if (options.port.size ()) {
+      TRACE9 ("CardgameCollection::CardgameCollection () - Connect: "
+              << options.target << '-' << options.port);
+      if (options.target.size ())
+         playerPos = PlayerConnectDlg::perform (player, cmgr, options.target,
+                                                options.port);
+      else
+          playerPos = PlayerConnectDlg::perform (player, cmgr, options.port);
+
+      TRACE1 ("CardgameCollection::command (int) - " << cmgr.getMode ()
+              << "; Pos: " << playerPos);
+      initCommunication ();
+   }
 }
 
 //----------------------------------------------------------------------------
@@ -870,17 +887,8 @@ void CardgameCollection::command (int menu) {
       playerPos = PlayerConnectDlg::perform (player, PORT, cmgr);
       TRACE1 ("CardgameCollection::command (int) - " << cmgr.getMode ()
               << "; Pos: " << playerPos);
-      if (cmgr.getMode () != ConnectionMgr::NONE) {
-         if (cmgr.getMode () == ConnectionMgr::CLIENT) {
-            status.pop ();
-            status.push (_("Waiting for the server to start the game ..."));
-         }
-
-         pCommThread = THRDAPPL::create
-             (this, &CardgameCollection::waitForMessages,
-              NULL);
-         pCommThread->allowCancelation ();
-      }
+      if (cmgr.getMode () != ConnectionMgr::NONE)
+         initCommunication ();
       break;
 
    case TWOPART:
@@ -956,6 +964,19 @@ void CardgameCollection::command (int menu) {
    default:
       XApplication::command (menu);
    } // end-switch
+}
+
+//-----------------------------------------------------------------------------
+/// Initializes the communication
+//-----------------------------------------------------------------------------
+void CardgameCollection::initCommunication () {
+   if (cmgr.getMode () == ConnectionMgr::CLIENT) {
+       status.pop ();
+       status.push (_("Waiting for the server to start the game ..."));
+   }
+
+   pCommThread = THRDAPPL::create (this, &CardgameCollection::waitForMessages, NULL);
+   pCommThread->allowCancelation ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1131,7 +1152,9 @@ void* CardgameCollection::loadCards (void*) {
       apMenus[CONNECT]->set_sensitive (true);
 
       status.pop ();
-      status.push (_("Start a new game with Ctrl+N (or Game -> New)"));
+      if (cmgr.getMode () != ConnectionMgr::CLIENT) {
+         status.push (_("Start a new game with Ctrl+N (or Game -> New)"));
+      }
       gdk_threads_leave ();
    }
 
@@ -1145,7 +1168,7 @@ void* CardgameCollection::loadCards (void*) {
 //-----------------------------------------------------------------------------
 void CardgameCollection::gameEvents (unsigned int status) {
    TRACE8 ("CardgameCollection::gameEvents (unsigned int) const - New status: "
-           << status);
+           << status << "; Restart: " << restart);
 
    switch (status) {
    case Game::PLAYING:
@@ -1168,7 +1191,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
              (bind_return (slot (*this, &CardgameCollection::startGame), false));
       else if (restart == -1U)
          Glib::signal_idle ().connect
-             (bind_return (slot (*this, &CardgameCollection::hide), false));
+             (bind_return (slot (*this, &CardgameCollection::destroy_), false));
       restart = false;
       break;
    }
@@ -1186,8 +1209,11 @@ void* CardgameCollection::waitForMessages (void*) {
       while (true) {
          static unsigned int actClient (0);
 
-         if (cmgr.getMode () == ConnectionMgr::CLIENT)
+         if (cmgr.getMode () == ConnectionMgr::CLIENT) {
             cmgr.getSocket ()->read (input);
+            mxSerMsgs.lock ();         // Wait til client allows messages again
+            mxSerMsgs.unlock ();
+         }
          else {
             TRACE7 ("CardgameCollection::waitForMessage (void*) - Client: "
                     << actClient);
@@ -1200,11 +1226,15 @@ void* CardgameCollection::waitForMessages (void*) {
          if (input.empty ())
             throw std::string (_("Lost connection!"));
 
-         char* msg = new char [input.length () + 1];
-         strcpy (msg, input.c_str ());
-         Glib::signal_idle ().connect
-             (bind (slot (*this, &CardgameCollection::handleMessage),
-                    actClient, msg));
+         Tokenize messages (input);
+         std::string message;
+         while ((message = messages.getNextNode ('\0')).size ()) {
+            char* msg (new char [message.length () + 1]);
+            strcpy (msg, message.c_str ());
+            Glib::signal_idle ().connect
+                (bind (slot (*this, &CardgameCollection::handleMessage),
+                       actClient, msg));
+         }
       }
    }
    catch (std::string& error) {
@@ -1343,12 +1373,14 @@ void CardgameAppl::showHelp () const {
    std::cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
              << _(" [OPTIONS]\n\n")
        // For translations: Write the Rovhult with 'ø'
-             << "  -g, --game ....... " << _("[GAME] Select game to start (default: Rovhult)\n")
-             << "  -f, --file ....... " << _("[FILE] Use file as INI file\n")
-             << "  -b, --browser .... " << _("[NAME] Browser to use to display the help\n")
-             << "  -d, --dir-help ... " << _("[DIR] Directory to search for help\n")
-             << "  -V, --version .... " << _("Output version information and exit\n")
-             << "  -h, -?, --help ... " << _("Displays this help and exit\n\n")
+             << "  -g, --game ......... " << _("[GAME] Select game to start (default: Rovhult)\n")
+             << "  -f, --file ......... " << _("[FILE] Use file as INI file\n")
+             << "  -b, --browser ...... " << _("[NAME] Browser to use to display the help\n")
+             << "  -d, --dir-help ..... " << _("[DIR] Directory to search for help\n")
+             << "  -l, --listen-at .... " << _("[PORT] Awaits connections on port PORT\n")
+             << "  -l, --connect-to ... " << _("[SERVER[:PORT]] Connects to SERVER:PORT\n")
+             << "  -V, --version ...... " << _("Output version information and exit\n")
+             << "  -h, -?, --help ..... " << _("Displays this help and exit\n\n")
 
        // For translations: Write one of the Rovhults with 'ø'
              << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco or the\n"
@@ -1415,6 +1447,29 @@ bool CardgameAppl::handleOption (const char option) {
          readINIFile (pFile);
       else
          std::cerr << PACKAGE << _("-warning: No file specified! Ignoring option `f'\n");
+      break; }
+
+   case 'l': {
+      const char* port (getOptionValue ());
+      if (port)
+         options.port = port;
+      else
+         std::cerr << PACKAGE << _("-warning: No port specified! Ignoring option `l'\n");
+      break; }
+
+   case 'c': {
+      const char* target (getOptionValue ());
+      if (target) {
+         char* port (strchr (target, ':'));
+         if (port) {
+            options.target.assign (target, port - target);
+            options.port = port + 1;
+         }
+         else
+             options.target = target;
+      }
+      else
+         std::cerr << PACKAGE << _("-warning: No target specified! Ignoring option `c'\n");
       break; }
 
    case 'V':
