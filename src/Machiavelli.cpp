@@ -1128,8 +1128,8 @@ unsigned int Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
                continue;
 
             diff = MachiPile::cardDistance (**p, **i);
-            TRACE ("Machiavelli::reorderTableToFit2 (ICardPile&) - Matching: " << **i
-                   << "; Diff: " << diff);
+            TRACE8 ("Machiavelli::reorderTableToFit2 (ICardPile&) - Matching: " << **i
+                    << "; Diff: " << diff);
             work.append (**p);
             work.append (**i);
 
