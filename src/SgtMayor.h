@@ -1,0 +1,89 @@
+#ifndef SGTMAYOR_H
+#define SGTMAYOR_H
+
+//$Id$
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+
+#include <vector>
+
+#include <gtkmm/label.h>
+
+#include <CardSet.h>
+#include <CardPile.h>
+
+#include <Game.h>
+
+
+// Class to handle the Hearts cardgame
+class SgtMayor : public Game {
+ public:
+   SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
+             const std::vector<Player*>& player, unsigned int posPlayer,
+             YGP::Mutex& mxSerialize);
+   virtual ~SgtMayor ();
+
+   virtual void start ();
+   virtual void clean ();
+   virtual void playOpen (bool open);
+   virtual const char* name () { return "Sergeant Mayor"; }
+   virtual void changeNames (const std::vector<Player*>& newPlayer);
+
+   virtual bool handleMessage (unsigned int player, const std::string& message) throw (std::string);
+
+ protected:
+   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
+
+ private:
+   enum Status { EXCHANGE = Game::LAST };
+
+   // Protected manager functions
+   SgtMayor (const SgtMayor& other);
+   const SgtMayor& operator= (const SgtMayor& other);
+
+   //@Section Event handling
+   void cardSelected (unsigned int iCard);
+
+   //@Section Virtual methods
+   virtual int makeMove (unsigned int player);
+   virtual bool enableHuman ();
+
+   //@Section Helper methods
+   void startPlaying ();
+   bool moveSelectedCardToPlayed (unsigned int player, unsigned int card);
+   static unsigned int calcNextPlayer (unsigned int player) {
+      return (++player >= NUM_PLAYERS) ? 0 : player;
+   }
+
+   //@Section Computer player
+   unsigned int findPos2Play (unsigned int player);
+
+   static const unsigned int NUM_PLAYERS = 3;              // Number of players
+
+   struct {
+      CardHPile  hand;                        // For players: Cards in the hand
+      Gtk::HBox  won;                                              // Won ticks
+      Gtk::Label name;
+   } players[NUM_PLAYERS];
+   CardHPile played;
+
+   unsigned int startPlayer;
+
+   static const unsigned int COLS_PLAYER[NUM_PLAYERS];
+   static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
+};
+
+#endif
