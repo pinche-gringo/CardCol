@@ -33,7 +33,7 @@
 #include <XApplication.h>
 
 
-// Class to handle the -cardgame
+// Class to handle the Twopart-cardgame
 class Twopart : public XApplication {
  public:
    // Manager functions
@@ -45,7 +45,8 @@ class Twopart : public XApplication {
    enum { NEW, END, EXIT, DEBUG, ABOUT };
 
    // Status of game
-   enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, PLAYING2, AUTOPLAYING } statGame;
+   enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, PLAYING2, AUTOPLAYING,
+          AUTOPLAYING2 } statGame;
 
    // Protected manager functions
    Twopart (const Twopart&);
@@ -54,9 +55,10 @@ class Twopart : public XApplication {
    // Event-handling
    virtual void command (int menu);
    void cardSelected (unsigned int player, unsigned int iCard);
+   void playedSelected (unsigned int player);
 
    // Helper functions
-   void movePlayedCardsToPlayer (unsigned int nrPlayer);
+   void movePlayedCardsToPlayer (unsigned int nrPlayer, unsigned int start = 0);
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int iCard);
    void enablePlayer (unsigned int player);
    void disableLastPlayer ();
@@ -81,10 +83,14 @@ class Twopart : public XApplication {
    int makeComputerMove ();
    void makeComputerMoves () {
       TRACE9 ("Twopart::makeComputerMoves () - *** Start timer ***");
-      statGame = AUTOPLAYING;
+      Check3 ((statGame == PLAYING) || (statGame == PLAYING2));
+      statGame = (statGame == PLAYING) ? AUTOPLAYING : AUTOPLAYING2;
       Gtk::Main::timeout.connect (slot (this, &Twopart::makeComputerMove), 100); }
 
    int endRound ();
+
+   static char sortOrder[4];
+   static bool compByColorAccTrumps (const CardWidget* a, const CardWidget* b);
 
    void loadCards ();
 
@@ -96,7 +102,7 @@ class Twopart : public XApplication {
    unsigned int actPlayer;          // Player who is in turn (needed for timer)
 
    // Variables for endRound
-   unsigned int startPos;                         // Offset of cards to analyze
+   unsigned int startPos[NUM_PLAYERS]; // Offset of cards played by each player
    unsigned int startPlayer;  // Player who started round (needed for endRound)
    unsigned int bfOldPlayers;  // Array indicating players while starting round
 
