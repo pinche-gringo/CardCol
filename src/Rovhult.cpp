@@ -307,7 +307,7 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
 RovhultAppl::RovhultAppl ()
    : XApplication (PACKAGE " - Rovhult V" VERSION), status ()
      , tblTable (16, 19), cardFaces (USED_CARDS), cards (), pThread (NULL)
-     , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::VERY_COMPRESSED, false) {
+     , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::VERY_COMPRESSED, true) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
@@ -330,8 +330,8 @@ RovhultAppl::RovhultAppl ()
 
 
    // Load cards in background
-   pThread = THRDAPPL::create  (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::loadCards,
-                                NULL);
+   pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::loadCards,
+                               NULL);
    TRACE9 ("RovhultAppl::RovhultAppl () - Thread-ID = " << pThread->getID ());
 
    // Create controls
@@ -433,6 +433,21 @@ void RovhultAppl::finishedExchange () {
 }
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Wrapper for enablePlayer to be called from a thread
+//Parameters: void*: Not really a pointer, but the number of the player
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::threadedEnablePlayer (void* player) {
+   TRACE2 ("RovhultAppl::threadedEnablePlayer (void*)");
+   assert ((unsigned int)player <= NUM_PLAYERS);
+
+   sleep (0);
+
+   gdk_threads_enter ();
+   enablePlayer ((unsigned int)player);
+   gdk_threads_leave (); 
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Enables the cards of the passed player
 //Parameters: player: Player to enable
 /*--------------------------------------------------------------------------*/
@@ -445,7 +460,7 @@ void RovhultAppl::enablePlayer (unsigned int player) {
 
       for (int i (hands[player].numberOfCards ()); i;)
          activeCards.push_back
-            (hands[player].at (--i).clicked.connect
+            (hands[player].at (--i).clicked.connect_after
              (bind (slot (this, &RovhultAppl::handSelected), player, i)));
    }
    else {
@@ -455,20 +470,15 @@ void RovhultAppl::enablePlayer (unsigned int player) {
       for (int i (0); i < 3; ++i) {
          if (reserve[player][i].numberOfCards ())
             activeCards.push_back
-               (reserve[player][i].getTopCard ().clicked.connect
+               (reserve[player][i].getTopCard ().clicked.connect_after
                 (bind (slot (this, &RovhultAppl::pileSelected), player, i)));
       }
    }
 
-#if 0
-   // TODO: Enable when there's a solution how to register callbacks caused by
-   // a event, but after the event is handled
-   // If played pile contains cards, register callback to pick up cards
    if (played.numberOfCards ())
-      activeCards.push_back (played.getTopCard ().clicked.connect
+      activeCards.push_back (played.getTopCard ().clicked.connect_after
                              (bind (slot (this, &RovhultAppl::movePlayedCardsToLooser),
                                     player)));
-#enif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -504,7 +514,7 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
       card.setVisible ();
       reserve[player][pile].removeTopCard ();
       played.append (card);
-      executeMove ((player - 1) & 0xf, CardWidget::UNREACHABLE);
+      executeMove ((player - 1) & 0x3, CardWidget::UNREACHABLE);
       return;
    }
    card.setVisible ();
@@ -637,7 +647,10 @@ void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
       status.push (1, stat);
    }
 
-   enablePlayer (player);
+   // Create a thread to enable the next player; as else re-registering the
+   // actual played card (inside its event-handler) wreaks quite a bit of havoc
+   THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::threadedEnablePlayer,
+                     (void*)(player));
 }
 
 /*--------------------------------------------------------------------------*/
