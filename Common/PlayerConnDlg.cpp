@@ -34,8 +34,6 @@
 
 #include <cardgames-cfg.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 #include <Socket.h>
@@ -43,7 +41,8 @@
 #include <AttrParse.h>
 #include <XAttribute.h>
 
-#include <RemotePlayer.h>
+#include "Human.h"
+#include "RemotePlayer.h"
 
 #include "PlayerConnDlg.h"
 
@@ -184,7 +183,7 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
       Glib::ustring names;
       unsigned int rc (0);
       AttributeParse ap;
-      ATTRIBUTE (ap, unsigned int, posPlayer, "Number");
+      ATTRIBUTE (ap, unsigned int, posPlayer, "Self");
       ATTRIBUTE (ap, Glib::ustring, names, "Names");
       ATTRIBUTE (ap, Glib::ustring, error, "Msg");
       ATTRIBUTE (ap, unsigned int, rc, "Error");
@@ -192,33 +191,37 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
 
       if (rc)
          throw error;
-
       if (!posPlayer)
-         throw std::string (_("Invalid player number!"));
+         throw std::string (_("Position of this player is missing!"));
+
+      // Clear the old players
+      for (std::vector<Player*>::iterator i (aPlayer.begin ());
+           i != aPlayer.end (); ++i)
+          delete *i;
+      aPlayer.clear ();
 
       Tokenize split (names);
-      unsigned int i (1);
+      unsigned int c (0);
       while (split.getNextNode ('\n').size ()) {
-         TRACE9 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - Setting "
-                 << split.getActNode ());
+         TRACE9 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int)"
+                 "- Setting " << split.getActNode ());
 
-         Player* pPlayer = new RemotePlayer (cmgr.getSocket (), split.getActNode ());
-         if (i < aPlayer.size ()) {
-            delete aPlayer[i];
-            aPlayer[i] = pPlayer;
-         }
-         else
+         Player* pPlayer ((c == posPlayer)
+                          ? static_cast<Player*> (new Human (split.getActNode ()))
+                          : static_cast<Player*> (new RemotePlayer (cmgr.getSocket (), split.getActNode ())));
+
+         if (c < posPlayer)
             aPlayer.push_back (pPlayer);
-         i++;
+         else {
+            Check3 (aPlayer.size () > (c - posPlayer));
+            aPlayer.insert (aPlayer.begin () + c - posPlayer, pPlayer);
+         }
+         c++;
       }
       TRACE9 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - Players: "
-              << i << "<->" << aPlayer.size ());
-      if ((i != aPlayer.size ()) || (posPlayer >= aPlayer.size ()))
+              << c << "<->" << aPlayer.size ());
+      if ((c != aPlayer.size ()) || (posPlayer >= aPlayer.size ()))
          throw std::string (_("Wrong number of players!"));
-
-      delete aPlayer[posPlayer + 1];
-      aPlayer[posPlayer + 1] = aPlayer[0];
-      aPlayer.erase (aPlayer.begin ());
    }
    catch (std::domain_error& err) {
       error = _("Error sending player name!\n\nReason: %1");
@@ -270,8 +273,8 @@ Socket* PlayerConnectDlg::addClient (int socket) {
       connected->set_text (connected->get_text () + name + '\n');
 
       Check3 (aPlayer.size () < 10);
-      input = "Number=";
-      input += '0' + cmgr.getClients ().size ();
+      input = "Self=";
+      input += ('0' + cmgr.getClients ().size ());
       input += ";Names=";
       for (std::vector<Player*>::iterator i (aPlayer.begin ());
            i != aPlayer.end (); ++i)
