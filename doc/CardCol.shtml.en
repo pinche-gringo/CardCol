@@ -61,7 +61,7 @@
              { if (FILENAME !~ /index\..*/) \
                 { sub (/<\/title>/, "")
                   sub (/<title>/, "")
-                  $1 = "<tr><td>&nbsp;&nbsp;<a href=" FILENAME ">" $1 "</a></td><td>"
+                  $1 = "<tr><td>&nbsp;&nbsp;<a href=\"" FILENAME "\">" $1 "</a></td><td>"
                   print $0 "</td></tr>" } }\' *.html
         ' -->
         </table>
