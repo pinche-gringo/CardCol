@@ -71,6 +71,9 @@ Burazno::Burazno (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    boxTeam[0].pack_end (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
    boxTeam[0].set_size_request (-1, height + 5 * 15);
    boxTeam[1].set_size_request (-1, height + 5 * 15);
+   boxTeam[0].set_size_request (width, height + 5 * 15);
+   boxTeam[1].set_size_request (width, height + 5 * 15);
+      attach (hands[i], (i << 2) - 4, (i << 2) - 2, 4, 5,
 
    for (unsigned int i (0); i < NUM_PLAYERS - 1; ++i) {
       attach (hands[i], 0, 10, 3, 4, Gtk::EXPAND, Gtk::SHRINK, 0);
@@ -148,6 +151,7 @@ int Burazno::makeMove (unsigned int player) {
       CardHPile& source (hands[player]);
       unsigned int oldPlayer (player);
       CardHPile& source (hands[player - 1]);
+      target >>= 16;
       if (target == 0xffff) {
          TRACE4 ("Buraco::makeMove (unsigned int) - Dumping card");
          Check3 (pos1Play == pos2Play);
@@ -173,20 +177,21 @@ int Burazno::makeMove (unsigned int player) {
       // Move played cards to pile to play
       for (; pos1 <= pos2; --pos2)
          dest->insert (source.remove (pos1), pos);
-      
+      if (gStatus.pickUpPlayed) {
+         Check3 (dumped.size ());
             addBuraco (oldPlayer);
-         if (reserve[player & 1].size ())
-            addReserve (player);
+         else
+            addReserve (oldPlayer);
          else {
-            Check3 (buraznos[player & 1]);
-            if (hands[player & 1].size ()) {
-                for (std::vector<CardVPile*>::iterator p
-                        (tablePiles[player & 1].begin ()); 
-                     p != tablePiles[player & 1].end (); ++p)
-                   if (containsNoJoker (**p)) {
-                      flipCards2Play (**p, pos1 = 0, pos2 = 0);
-                      return (p - tablePiles[player].begin ()) << 16;
-                   }
+            Check3 (buraznos[oldPlayer & 1]);
+            if (hands[oldPlayer & 1].size ()) {
+               for (std::vector<CardVPile*>::iterator p
+                       (tablePiles[oldPlayer & 1].begin ()); 
+                    p != tablePiles[oldPlayer & 1].end (); ++p)
+                  if (containsNoJoker (**p)) {
+                     flipCards2Play (**p, pos1 = 0, pos2 = 0);
+                     target = p - tablePiles[oldPlayer].begin () << 16;
+                  }
             }
             else {
             }
@@ -194,7 +199,6 @@ int Burazno::makeMove (unsigned int player) {
    }
          }
    return player;
-      target = -1U;
 }
 
 //-----------------------------------------------------------------------------
@@ -248,15 +252,14 @@ int Burazno::executeMove (unsigned int player) {
    // Check for 3 cards having the same number
    ICardPile& playerPile (hands[player - 1]);
    unsigned int count (1);
-   for (unsigned int i (1); i < playerPile.size () - 1; ++i) {
+   unsigned int i (1);
+   for (; i < playerPile.size (); ++i) {
       Check3 (playerPile[i]);
-      if (isJoker (*playerPile[i]))
-          continue;
 
       // Check if the actual card can be added to an existing pile
       if (tablePiles[player & 1].size ()) {
          unsigned int target (cardFitsOnPlayedPile (player, i));
-         if (target != -1U)
+         if ((target != -1U) && canDumpCards (player, 1))
 
    // Check for 3 cards belonging to a serie
 
@@ -264,16 +267,17 @@ int Burazno::executeMove (unsigned int player) {
       if (playerPile[i]->number () == playerPile[i - 1]->number ())
          ++count;
       else {
-         if (count >= 3) {
-            CardVPile& pile (makeNewPile (player & 1));    // Create new pile with
-            pos1 = i - count;
-            pos2 = i - 1;
-            flipCards2Play (playerPile, pos1, pos2);
-            return (tablePiles[player & 1].size () - 1) << 16;
-         }
+         if ((count >= 3) && !isJoker (*playerPile[i - 1]))
+            break;
          count = 1;
 
    // Check if all cards in the hand can (and should) be played
+   if ((count >= 3)  && !isJoker (*playerPile[i - 1]))
+      if (canDumpCards (player, count) || (count-- > 3)) {
+         CardVPile& pile (makeNewPile (player & 1)); // Create new pile with
+         flipCards2Play (playerPile, pos1 = i - count, pos2 = i - 1);
+         return (tablePiles[player & 1].size () - 1) << 16;
+      }
    TRACE8 ("Buraco::executeMove (unsigned int) - Playing all?");
    if (!unfinishedMonoPiles[player & 1]
    if ((reserve[player & 1].size () || buraznos[player & 1]) 
@@ -323,7 +327,7 @@ int Burazno::executeMove (unsigned int player) {
    for (i = 0; i < playerPile.size () - 1; ++i) {
    TRACE8 ("Burazno::executeMove (unsigned int) - Searching for a card to dump");
    count = 1;
-   unsigned int i (1);
+   i = 1;
    for (; i < playerPile.size () - 1; ++i) {
       if (isJoker (*playerPile[i]))
           continue;
@@ -338,8 +342,9 @@ int Burazno::executeMove (unsigned int player) {
          ++count;
       break;
    }
+      --i;
    Check3 (i <= playerPile.size ());
-   if (i >= playerPile.size ()) {         // No single card found: Dump highest
+   if (i >= playerPile.size ()) {         // No single card found: Dump lowest
       while (i--)
          if (!isJoker (*playerPile[i]))
             break;
@@ -743,7 +748,7 @@ void Burazno::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
    if (!humanPilesOK (iCard >> 8)) {
    // Only allow dropping of last card, if the game can be ended, or there
    // is still the reserve
-   if ((handHuman.size () < 2) && !buraznos[0] && reserve[0].empty ()) {
+   if (!canDumpCards (0, 1)) {
       context->drag_finish (false, false, time);
       Gtk::MessageDialog dlg (_("Can't drop last  cards!!"),
                               Gtk::MESSAGE_ERROR);
@@ -769,6 +774,17 @@ void Burazno::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
    TRACE4 ("Burazno::cardDroppedOnTable (...) - Card dropped: " << moved);
        && isJoker (moved) || (*pValue >= acceptCards)) {
    if (iCard == -1U) {    // If card was dropped on the new label: Create pile
+      // Only allow dropping on new pile with < 5 cards, if the game can be ended,
+      // or there is still the reserve
+      if (!canDumpCards (0, 3)) {
+                                 Gtk::MESSAGE_ERROR);
+         Gtk::MessageDialog dlg (_("Not enough cards to make new pile!!"),
+         dlg.run ();
+         return;
+      }
+
+      // Only allow dropping on new pile while having < 5 cards, if the game
+      // can be ended, or there is still the reserve
       // Check validity of drop
       if (isJoker (moved))
          ; // TODO: Check if there is a pair
@@ -810,10 +826,10 @@ void Burazno::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
    else {
       // Else check pile to use
       Check1 ((iCard >> 8) < tablePiles[0].size ());
-      // Else find pile to use
+      pile = tablePiles[0][iPile = (iCard >> 8)];
       Check1 ((iCard >> 8) <= tablePiles[0].size ());
       pile = tablePiles[0][iPile = (iCard++ >> 8)];
-      if (cardFitsOnPile (*pile, moved) == -1) {
+      if ((iCard = cardFitsOnPile (*pile, moved)) == -1) {
                                  Gtk::MESSAGE_ERROR);
          Gtk::MessageDialog dlg (_("This card does not fit on the dropped pile!"),
          dlg.run ();
@@ -821,7 +837,6 @@ void Burazno::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       }
 
       if ((iCard = cardFitsOnPile (iPile, moved)) == -1U) {
-      iCard &= 0xff;
    // End old drag
    context->drag_finish (true, false, time);
    activeCards[*pValue].disconnect ();
@@ -975,15 +990,11 @@ CardVPile& Burazno::makeNewPile (unsigned int team) {
    Check1 ((sizeof (tablePiles) / sizeof (tablePiles[0]))
             == (sizeof (boxTeam) / sizeof (boxTeam[0])));
    tablePiles[team].push_back (pile);
-   static int width (staple.getTopCard ().getImageWidth ());
-   static int height (staple.getTopCard ().getImageHeight ());
-
    CardVPile* pile (new CardVPile (ICardPile::COMPRESSED, ICardPile::SHOWFACE));
 
    pile->show ();
    return *pile;
 }
-   pile->set_size_request (width, height + 5 * 15);
 
 //-----------------------------------------------------------------------------
 /// Checks if the passed card can be put on one of the existing piles
@@ -1011,11 +1022,12 @@ unsigned int Burazno::cardFitsOnPlayedPile (unsigned int player, unsigned int iC
 
       // one having picked up the reserve already played (the missing card
       // Play joker, if you can make a burazno (7 in a row)
-      if (isJoker (card)
-          && ((*p)->size () == 6) && containsNoJoker (**p)) {
-         pos1 = pos2 = iCard;
-         flipCards2Play (hands[player - 1], pos1, pos2);
-         return ((p - tablePiles[player & 1].begin ()) << 16) + (*p)->size ();
+      if (isJoker (card)) {
+         if (((*p)->size () == 6) && containsNoJoker (**p)) {
+            pos1 = pos2 = iCard;
+            flipCards2Play (hands[player - 1], pos1, pos2);
+            return ((p - tablePiles[player & 1].begin ()) << 16) + (*p)->size ();
+   }
 
       else {
          int pos (cardFitsOnPile (**p, card));
@@ -1146,7 +1158,7 @@ int Burazno::cardFitsOnPile (ICardPile& pile, CardWidget& card) const {
          TRACE9 ("Burazno::cardFitsOnPile (CardVPile&, CardWidget&) - Diff (start): "
                  << diff << "; max: " << maxDiff);
          Check3 (diff);
-         if (diff <= maxDiff) {
+         if (diff && (diff <= maxDiff)) {
             if ((diff == 2) && posJoker > first) {
                Check3 (!first);
                pile.move (0, posJoker);
@@ -1159,7 +1171,7 @@ int Burazno::cardFitsOnPile (ICardPile& pile, CardWidget& card) const {
          diff = card.number () - pile[last]->number ();
          TRACE9 ("Burazno::cardFitsOnPile (CardVPile&, CardWidget&) - Diff (end): "
                  << diff << "; max: " << maxDiff);
-         if (diff <= maxDiff) {
+         if (diff && (diff <= maxDiff)) {
             if ((diff == 2) && posJoker < last) {
                Check3 (!first);
                pile.move (last + 1, posJoker);
@@ -1197,6 +1209,7 @@ void Burazno::endGame () {
 //            except of the jokers
 //Parameters: player: Player whose cards should be inspected
 //Returns   : True: if all cards can be played
+//Remarks   : This method does not check for triplets anymore!
 /*--------------------------------------------------------------------------*/
 bool Burazno::canGetRidOfCards (unsigned int player) {
    TRACE5 ("Burazno::canGetRidOfCards (unsigned int) - Checking player " << player);
@@ -1228,3 +1241,18 @@ bool Burazno::canGetRidOfCards (unsigned int player) {
 
    TRACE9 ("Buraco::canGetRidOfCards (unsigned int) -  " << used.count ()
    return (used.count () == used.size ()) && (piles <= cJokers);
+//-----------------------------------------------------------------------------
+/// Checks if the player can dump the specified number of cards; a player can
+/*--------------------------------------------------------------------------*/
+//Purpose   : Checks if the player can dump the specified number of cards; a
+//            player can only dump all of his cards, if:
+//              - The team has a burazno
+//              - The team still has the reserve
+//Parameters: player: Player to analyze
+//Returns   : True, if the cards can be played
+/*--------------------------------------------------------------------------*/
+bool Burazno::canDumpCards (unsigned int player, unsigned int cards) const {
+   unsigned int cPile (player ? hands[player - 1].size () : handHuman.size ());
+   return ((cPile > (cards + 2)) || buraznos[player & 1]
+           || !reserve[player & 1].empty ());
+

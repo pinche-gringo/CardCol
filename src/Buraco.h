@@ -68,11 +68,13 @@ class Burazno : public Game {
    unsigned int showCardsToPlay (unsigned int player);
    int  executeMove (unsigned int player);
    void endGame ();
+   bool canGetRidOfCards (unsigned int player);
+   bool canDumpCards (unsigned int player, unsigned int cards) const;
 
    //@Section to handle piles on table
    CardVPile& makeNewPile (unsigned int team);
    unsigned int cardFitsOnPlayedPile (unsigned int player, unsigned int card);
-   int  cardFitsOnPile (CardVPile& pile, CardWidget& card) const;
+   int  cardFitsOnPile (ICardPile& pile, CardWidget& card) const;
    void removeBurazno (unsigned int player, CardVPile& pile);
    void updateInfo ();
    bool humanPilesOK (unsigned int except = -1U) const;
