@@ -260,7 +260,7 @@ int Buraco::makeMove (unsigned int player) {
 /// \param player: Player to inspect
 /// \returns \c ID of the target (32 Bit: Pile << 16 + Position)
 //-----------------------------------------------------------------------------
-/// \returns \c ID for target (32 Bit: Pile << 16 + Position)
+unsigned int Buraco::showCardsToPlay (unsigned int player) {
    TRACE2 ("Buraco::showCardsToPlay (unsigned int) - " << player << " ("
            << gStatus.startGame << '/' << gStatus.startTurn << ')');
 
@@ -302,14 +302,17 @@ int Buraco::makeMove (unsigned int player) {
             std::vector<unsigned int> aOrder;
             unsigned int nrs (playerPile.getSeries (dumpedCard, aPos, aOrder,
                                                     &cardDistance));
-            unsigned int nrs (getSeries (playerPile, dumpedCard, aPos, aOrder));
+            TRACE8 ("Buraco::showCardsToPlay (unsigned int) - Sizes: "
+                    << nrs << "<->" << aPos.size ());
             Check3 ((nrs >= 3) || (aPos.size () >= 3));
 
             if (nrs > 7)
                nrs = 7;
+            pos1Play = ((nrs < aPos.size ())
+                        ? (nrs = aPos.size (),
                            playerPile.sortColourSerie (aPos, aOrder))
                         : playerPile.find (dumpedCard, compByNumberWithJokers));
-                           sortColourSerie (playerPile, aPos, aOrder))
+            pos2Play = pos1Play + nrs - 1;
                         : playerPile.findByNr (dumpedCard));
 
             makeNewPile (player & 1);
@@ -349,7 +352,7 @@ int Buraco::makeMove (unsigned int player) {
 int Buraco::executeMove (unsigned int player) {
    TRACE6 ("Buraco::executeMove (player) - " << player);
 
-   TRACE6 ("Buraco::executeMove (player) - Checking for 3 in a row");
+   ICardPile& playerPile (hands[player]);
 
    // Check if any card can be added to an existing pile
    if (tablePiles[player & 1].size ())
@@ -362,7 +365,7 @@ int Buraco::executeMove (unsigned int player) {
          if ((target != -1U) && canDumpCards (player, 1, target >> 16))
 
    // Check for 3 cards belonging to a serie
-   
+   unsigned int i (0);
    for (; i < playerPile.size (); ++i) {
       TRACE8 ("Buraco::executeMove (unsigned int) - Analyzing card " << *playerPile[i]);
 
@@ -370,7 +373,8 @@ int Buraco::executeMove (unsigned int player) {
       std::vector<unsigned int> aOrder;
       unsigned int nrs (playerPile.getSeries (*playerPile[i], aPos, aOrder,
                                               &cardDistance));
-      unsigned int nrs (getSeries (playerPile, *playerPile[i], aPos, aOrder));
+
+      // Play found cards (if any)
       //   - Play jokers if there are at least 5 and the team has still the
       //     reserve and the other team has no burraco and the reserve
       //   - Play the bigger of the found matching cards, if there are >= 3
@@ -383,9 +387,11 @@ int Buraco::executeMove (unsigned int player) {
                  || (nrs > 6)))
          if (nrs < aPos.size ()) {
             nrs = aPos.size ();
-            i = sortColourSerie (playerPile, aPos, aOrder);
+            i = playerPile.sortColourSerie (aPos, aOrder);
          if (nrs > 7)
             nrs = 7;
+
+	 bool canDump (canDumpCards (player, nrs));
          if (!unfinishedMonoPiles[player & 1]
          if (canDumpCards (player, nrs) || (nrs-- > 3)) {
             pos1Play = firstPos;
@@ -492,119 +498,6 @@ int Buraco::executeMove (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Starts the game by dealing the cards
-//----------------------------------------------------------------------------
-/// Sorts a series of matching cards to the end of the pile
-/// \param playerPile: Pile to inspect
-/// \param aPos: Map holding the positions of the cards in the pile
-/// \param aOrder: Sorted order of the cards
-/// \returns unsigned int: Position of start of sorted serie
-//----------------------------------------------------------------------------
-unsigned int Buraco::sortColourSerie (ICardPile& playerPile,
-                                      std::map<unsigned int, unsigned int>& aPos,
-                                      std::vector<unsigned int>& aOrder) {
-   unsigned int pos (1);
-   for (std::vector<unsigned int>::reverse_iterator p (aOrder.rbegin ());
-        p != aOrder.rend (); ++p) {
-      std::map<unsigned int, unsigned int>::const_iterator v;
-      if ((v = aPos.find (*p)) != aPos.end ()) {
-          TRACE9 ("Buraco::sortColourSeries (...) - Moving " << v->second
-                  << " to end " << ((*p < 2) ? *p : 0));
-          Check3 ((p - aOrder.rbegin ()) >= 0);
-          // Move the card to the end of the staple; If it belongs before the
-          // first card move it before the other cards.
-          playerPile.move (playerPile.size () - pos, v->second);
-          unsigned int oldOrder (*p);
-          if (((p + 1) != aOrder.rend ()) && (*(p + 1) < oldOrder))
-             ++pos;
-      }
-   }
-   TRACE9 ("Buraco::sortColourSeries (...) - Moved "
-           << playerPile.size () - aPos.size () << " cards");
-   return playerPile.size () - aPos.size ();
-}
-
-//----------------------------------------------------------------------------
-/// Gets a series of matching cards
-/// \param playerPile: Pile to inspect
-/// \param card: Card to compare
-/// \param aPos: Map holding the positions of the cards in the pile
-/// \param aOrder: Sorted order of the cards
-/// \returns unsigned int: The number of matching cards in a row
-//----------------------------------------------------------------------------
-unsigned int Buraco::getSeries (ICardPile& playerPile, CardWidget& card,
-                                std::map<unsigned int, unsigned int>& aPos,
-                                std::vector<unsigned int>& aOrder) {
-   TRACE3 ("Buraco::getSeries (...) for " << card);
-   unsigned int nrs (1);
-   unsigned int bCols (0x4);
-
-   for (ICardPile::const_iterator p (playerPile.begin ());
-        ((p = playerPile.getFittingCard (card, p, &cardDistance))
-         != playerPile.end ()); ++p) {
-      if (*p == &card) {
-         aPos[2] = p - playerPile.begin ();
-         aOrder.push_back (2);
-      }
-      else {
-         int diff (cardDistance (**p, card));
-         TRACE9 ("Buraco::getSeries (...) - " << **p << " differs " << diff);
-         if (diff) {
-            diff += 2;
-            Check3 (diff <= 4);
-            if (!(bCols & (1 << diff))) {
-               Check3 (aPos.find (diff) == aPos.end ());
-               bCols |= (1 << diff);
-               aPos[diff] = p - playerPile.begin ();
-               aOrder.push_back (diff);
-               if (aPos.size () == 7)
-                   break;
-            }
-         }
-         else
-            if (++nrs == 7)
-                break;
-      }
-   }
-
-   // Check if the series of colors is a valid one
-   TRACE9 ("Buraco::getSeries (...) - Serie: " << std::hex << bCols << std::dec);
-   Check3 (bCols & 0x4);
-
-   // Delete cards having no direct access to the analyzed one
-   if ((bCols & 0x3) == 0x1) {
-      Check3 (aPos.find (0) != aPos.end ());
-      Check3 (aPos.find (1) == aPos.end ());
-      aPos.erase (aPos.find (0));
-   }
-   if ((bCols & 0x18) == 0x10) {
-      Check3 (aPos.find (4) != aPos.end ());
-      Check3 (aPos.find (3) == aPos.end ());
-      aPos.erase (aPos.find (4));
-   }
-
-   // Special handling of series of colours for an ace, to avoid the problem
-   // with 3-K-A of one colour.
-   if (card.number () == CardWidget::ACE) {
-       if ((bCols & 0xa) == 0xa) {
-          std::map<unsigned int, unsigned int>::iterator i;
-          if ((bCols & 0x18) == 0x18) {
-             if ((i = aPos.find (0)) != aPos.end ())
-                aPos.erase (i);
-             if ((i = aPos.find (1)) != aPos.end ())
-                aPos.erase (i);
-          }
-          else {
-             if ((i = aPos.find (3)) != aPos.end ())
-                aPos.erase (i);
-             if ((i = aPos.find (4)) != aPos.end ())
-                aPos.erase (i);
-          }
-       }
-   }
-
-   return nrs;
-}
-
 //-----------------------------------------------------------------------------
 void Buraco::start () {
    TRACE9 ("Buraco::start ()");
@@ -1218,7 +1111,7 @@ bool Buraco::humanPilesOK (unsigned int except) const {
       // Check validity of drop
       if (!(isJoker (moved)
             ? pileHasFittingPair (hands[0])
-            : pileHasFittingPair (hands[0], moved, true, acceptCards == -1U))) {
+            : pileHasFittingPair (hands[0], moved, acceptCards == -1U))) {
                                     ? N_("You can't end the game (there's no \"cerrado\")!")
          Gtk::MessageDialog dlg (_("There are no cards to make three of a kind!"),
          dlg.run ();
@@ -1899,19 +1792,18 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
 /// \param card: Card where to find a pair to
 /// \param withJokers: Flag, if jokers should be inspected
 /// \returns \c True, if the pile contains a matching pair
-/// \param pileHoldsCard: Flag, if the pile contains the card (to skip)
 //-----------------------------------------------------------------------------
 bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
                                  bool withJokers) {
    TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&, const CardWidget*,"
-                                 bool pileHoldsCard, bool withJokers) {
+           " bool) - " << card);
 
-           " 2x bool) - " << card);
+   if (withJokers) {
       ICardPile::const_iterator i (pile.getFittingCard (card, pile.begin (),
    return (withJokers
            ? ((pile.getFittingCard (card, pile.begin (), &cardDistance) != pile.end ())
               && !containsNoJoker (pile))
-           : pile.hasFittingPair (card, pileHoldsCard, &cardDistance));
+           : pile.hasFittingPair (card, &cardDistance));
 //-----------------------------------------------------------------------------
 /// Checks if the passed pile contains a pair matching the passed card
 /// \param pile: Pile to inspect
@@ -1923,17 +1815,11 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget* exclud
 bool Buraco::pileHasFittingPair (const ICardPile& pile) {
    TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&)");
         p != pile.end (); ++p)
-   unsigned int jokers (0);
       if (*p != exclude)
          if ((pile.getFittingCard (**p, pile.begin (), &cardDistance) != p)
-       if (isJoker (**p)) {
-           if (++jokers == 3)
-              return true;
-       }
-       else
-          if ((pile.getFittingCard (**p, pile.begin (), &cardDistance) != p)
-              || (pile.getFittingCard (**p, p + 1, &cardDistance) != pile.end ()))
-             return true;
+      if ((pile.getFittingCard (**p, pile.begin (), &cardDistance) != p)
+          || (pile.getFittingCard (**p, p + 1, &cardDistance) != pile.end ()))
+         return true;
 
 //-----------------------------------------------------------------------------
 /// Compares the cards in the pile with regard of the colour and with special

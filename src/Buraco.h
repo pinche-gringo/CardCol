@@ -102,14 +102,8 @@ class Buraco : public Game {
                       unsigned int pile = -1U) const;
 
    void sendMoveCard (unsigned int pile, unsigned int from, unsigned int to) const;
-   unsigned int sortColourSerie (ICardPile& playerPile,
-                                 std::map<unsigned int, unsigned int>& aPos,
-                                 std::vector<unsigned int>& aOrder);
-   unsigned int getSeries (ICardPile& playerPile, CardWidget& card,
-                           std::map<unsigned int, unsigned int>& aPos,
-                           std::vector<unsigned int>& aOrder);
    static bool pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
-                                   bool pileHoldsCard = false, bool withJokers = false);
+                                   bool withJokers = false);
    static bool pileHasFittingPair (const ICardPile& pile);
    static bool compByNumberWithJokers (const CardWidget* a, const CardWidget* b);
    void makeTeamNames (std::vector<Player*>& names) const;
