@@ -337,6 +337,11 @@ CardgameCollection::CardgameCollection ()
 
    show ();
 
+   names.push_back ("Human");
+   names.push_back ("Player 1");
+   names.push_back ("Player 2");
+   names.push_back ("Player 3");
+
    // Load cards in background
    try {
       pThread = THRDAPPL::create (this, (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::loadCards,
@@ -346,11 +351,6 @@ CardgameCollection::CardgameCollection ()
    catch (std::string& e) {
       XMessageBox::Show (e, _("Error starting thread"), XMessageBox::ERROR);
    }
-
-   names.push_back ("Human");
-   names.push_back ("Player 1");
-   names.push_back ("Player 2");
-   names.push_back ("Player 3");
 }
 
 /*--------------------------------------------------------------------------*/
@@ -453,7 +453,8 @@ void CardgameCollection::command (int menu) {
       break;
 
    case CHGNAMES:
-      PlayerDlg::perform (names);
+      PlayerDlg<CardgameCollection>
+         ::create (*this, &CardgameCollection::changePlayernames, names);
       break;
 
    case SAVESET: {
@@ -529,6 +530,15 @@ void CardgameCollection::command (int menu) {
    default:
       Check3 (0);
    } // end-switch
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback to change the names of the playing people
+/*--------------------------------------------------------------------------*/
+void CardgameCollection::changePlayernames () {
+   TRACE2 ("CardgameCollection::changePlayernames");
+   if (game)
+      game->changeNames (names);
 }
 
 /*--------------------------------------------------------------------------*/

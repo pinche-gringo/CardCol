@@ -73,6 +73,7 @@ class CardgameCollection : public XApplication {
    void startGame ();
 
    void changeDecks (const ICarddeckSelectDlg& dialog);
+   void changePlayernames ();
 
    static XApplication::MenuEntry CardgameCollection::menuItems[];
 
