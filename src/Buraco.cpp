@@ -379,7 +379,8 @@ int Buraco::executeMove (unsigned int player) {
               || (nrs > 5))
              && ((points[(player + 1) & 1] < 101)
                  || (nrs > 6)
-             && (points[(player + 1) & 1] < 100))
+             && ((points[(player + 1) & 1] < 100)
+                 || (nrs > 6)))
          if (nrs < aPos.size ()) {
             nrs = aPos.size ();
             i = sortColourSerie (playerPile, aPos, aOrder);
@@ -563,7 +564,6 @@ unsigned int Buraco::getSeries (ICardPile& playerPile, CardWidget& card,
 
    // Check if the series of colors is a valid one
    TRACE9 ("Buraco::getSeries (...) - Serie: " << std::hex << bCols << std::dec);
-   Check3 (aPos.find (2) != aPos.end ());
    Check3 (bCols & 0x4);
 
    // Delete cards having no direct access to the analyzed one
@@ -1266,7 +1266,7 @@ bool Buraco::humanPilesOK (unsigned int except) const {
    if (move != -1U) {
       Check3 (move <= pile->size ());
       Check3 (move != pile->getPosJoker ());
-      Check3 (move < pile->size ());
+      Check3 (pile->getPosJoker () != 7);
       sendMoveCard (iPile, pile->getPosJoker (), move);
    }
 
@@ -1281,6 +1281,11 @@ bool Buraco::humanPilesOK (unsigned int except) const {
 
    // Accept again the jokers, if the pile has has now three cards (jokers are
    // disabled, if the human picked up the dumped pile.
+   if (pile->size () == 3)
+      acceptCards = -1U;
+   else
+      if (acceptCards != -1U)
+   if (containsOnlyJoker (hands[0]) && humanPilesOK ())
       if (!reserve[0].empty ()) {
          addBuraco (0);
          return;
@@ -1294,11 +1299,7 @@ bool Buraco::humanPilesOK (unsigned int except) const {
 
    // Re-register the cards in the hand of the human for DND
    if (*pValue < hands[0].size ())
-   // Re-register the cards in the hand of the human for DND; accept again the
-   // jokers, if the pile has has now three cards (jokers are disabled, if the
-   // human picked up the dumped pile.
-   if (pile->size () == 3)
-      acceptCards = -1U;
+      registerHandDND (*pValue, hands[0].size () - 1);
    Check3 (aDNDHand.size () == hands[0].size ());
 }
 
@@ -1502,7 +1503,7 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
       if ((move != -1U) && canDumpCards (player, 1, ((int)target) >> 16)) {
          Check3 (move <= pile.size ());
       if (move != -1U) {
-         Check3 (move < pile.size ());
+	 Check3 (pile.getPosJoker () != 7);
          sendMoveCard (bestPile, pile.getPosJoker (), move);
       }
 
@@ -1819,8 +1820,8 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
            || reserve[player & 1].size ()
            || ((pile != -1U)
                && (((tablePiles[player & 1][pile]->size () + cards) >= 7)
-                   || (((tablePiles[player & 1][pile]->size () + cards) == 5)
-                       && (hands[player].size () == 2)
+                   || (((tablePiles[player & 1][pile]->size () + cards) == 6)
+                       && ((hands[player].size () - cards) == 1)
                        && canClosePile (player, pile))))
            || (cards >= 7));
 //----------------------------------------------------------------------------
@@ -1839,7 +1840,7 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
    BuracoPile& orig (*tablePiles[player & 1][pile]);
    Check1 (orig.size () == 5);
    Check1 (hands[player].size () == 2);
-   Check1 (orig->size () == 5);
+
    bool isOK (false);
    // Make a copy of the original pile
    BuracoPile copy;
@@ -1851,10 +1852,10 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
        if (copy.getPosition4Card (*hands[player][i], pos, move)) {
           Check3 (pos <= copy.size ());
           if (move != -1U) {
-          Check3 (pos <= pile.size ());
+             Check3 (move <= copy.size ());
              Check3 (move != copy.getPosJoker ());
-             Check3 (move < pile.size ());
-             Check3 (move != pile.getPosJoker ());
+             copy.move (move, copy.getPosJoker ());
+          }
 	  copy.insert (*new CardWidget (*hands[player][i]), pos);
 
              isOK = true;
