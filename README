@@ -47,7 +47,15 @@ with a command like:
       (pngtopnm $i | ppmtoxpm -name=$name > <destpath>/$name.xpm);
    done
 
-Note that if you create the decks in that way, you also need to create a
+Of course you can also use other images; just make sure, that the cards are
+numbered from 1.xpm to 52.xpm, starting with the ace of clubs (1.xpm), the ace
+of spades (2.xpm), the ace of hearts (3.xpm), the ace of diamonds (4.xpm) and
+then (in the same sequence of the colours) down king, queen, ... 3, 2.
+
+Take care, that the cards have the same size (I don't do any resizing and I
+think GKT+ neither)!
+
+Note that if you create the decks by yourself, you also need to create a
 header called "Cardset-config.h" defining the path where they are installed
 (with something like #define CARDSET_PATH "/usr/...")
 
@@ -61,8 +69,9 @@ See the file INSTALL
 Documentation
 -------------
 
-Is in the doc directory; in HTML-format. At the moment you can't access them
-from the program, though that would be nice (and might come in the future).
+Is in the doc directory; in HTML-format. If the documentation is properly
+installed (make doc-install in the doc subdirectory; see also the file INSTALL)
+it can be accessed from the program (by pressing F1 or via Help - Content).
 
 
 How to report bugs and/or send patches
@@ -71,7 +80,7 @@ How to report bugs and/or send patches
 Bug reports and patches should be send to the e-mail address of the author (me)
 (g17m0@lycos.com).
 
-Please include
+Please include for bugs:
 
   - The version of the package. In case you don't know: The title of the
     about box.
