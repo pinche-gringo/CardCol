@@ -46,6 +46,7 @@ class Game : public Gtk::Table {
    virtual void end (bool startNew);
    virtual void playOpen (bool) { }
    virtual void control (unsigned int status) const { }
+   virtual void clean ();
 
    // Status handling
    bool isRunning () const { return statGame >= PLAYING; }
@@ -68,7 +69,6 @@ class Game : public Gtk::Table {
    void makeNextMoves ();
    virtual int makeMove (unsigned int player) = 0;
 
-   virtual void clean ();
    void randomizeCardsToPile (ICardPile& pile) const;
    static void movePile (ICardPile& dest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
