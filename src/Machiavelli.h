@@ -81,6 +81,7 @@ class Machiavelli : public Game {
    unsigned int findNextPlayer (unsigned int player) const;
    MachiPile& makeNewPile ();
    unsigned int showCardsToPlay (unsigned int player);
+   void dealCard (unsigned int player);
    //@}
 
    /// name Drag-and-drop methods
@@ -93,13 +94,13 @@ class Machiavelli : public Game {
    void registerHandDND (unsigned int iCard);
    void unregisterHandDND (CardWidget& card);
    void getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
-                     GtkSelectionData* pData, guint info, guint32 time,
+                     GtkSelectionData* pData, guint, guint32 time,
                      unsigned int cardPos);
    void cardDropped (const Glib::RefPtr<Gdk::DragContext>& pContext, gint, gint,
                      GtkSelectionData* pData, guint info, guint32 time,
                      unsigned int card);
    void cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& pContext, gint,
-                            gint, GtkSelectionData* pData, guint, guint32 time,
+                            gint, GtkSelectionData* pData, guint info, guint32 time,
                             unsigned int cardPile);
    //@}
 
@@ -123,8 +124,8 @@ class Machiavelli : public Game {
       SigC::Connection connReceive;
       SigC::Connection connGet;
    } CONNECTIONS;
-   std::map<CardWidget*, CONNECTIONS>      aDNDHand;
-   std::map<CardWidget*, SigC::Connection> aDNDTable;
+   std::map<CardWidget*, CONNECTIONS> aDNDHand;
+   std::map<CardWidget*, CONNECTIONS> aDNDTable;
 
    unsigned int target;       // Target of the last move of the computer player
 };

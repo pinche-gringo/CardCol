@@ -37,7 +37,7 @@
 #define CHECK 9
 #define TRACELEVEL 9
 #include <YGP/Check.h>
-#include <YGP/Trace_.h>
+#include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
 #include <YGP/Tokenize.h>
 #include <YGP/AttrParse.h>
@@ -51,7 +51,10 @@
 #include "Machiavelli.h"
 
 
-static std::vector<Gtk::TargetEntry> dndType;
+enum { HAND, TABLE };
+static std::vector<Gtk::TargetEntry> dndTypeHand;
+static std::vector<Gtk::TargetEntry> dndTypeTable;
+static std::vector<Gtk::TargetEntry> dndTypeBoth;
 
 
 //-----------------------------------------------------------------------------
@@ -103,9 +106,17 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    changeNames (player);
 
-   if (dndType.empty ())
-      dndType.push_back
-         (Gtk::TargetEntry ("icon/card", GTK_TARGET_SAME_APP, 0));
+   if (dndTypeHand.empty ()) {
+      Check3 (dndTypeTable.empty ());
+      Check3 (dndTypeBoth.empty ());
+      dndTypeHand.push_back
+         (Gtk::TargetEntry ("icon/card/hand", GTK_TARGET_SAME_APP, HAND));
+      dndTypeTable.push_back
+         (Gtk::TargetEntry ("icon/card/table", GTK_TARGET_SAME_APP, TABLE));
+
+      dndTypeBoth.push_back (dndTypeHand.front ());
+      dndTypeBoth.push_back (dndTypeTable.front ());
+   }
 
    show_all_children ();
 }
@@ -176,8 +187,10 @@ void Machiavelli::clean () {
 /// \param open: Flag if cards should be shown or hidden
 //-----------------------------------------------------------------------------
 void Machiavelli::playOpen (bool open) {
-   for (unsigned int i (1); i < NUM_PLAYERS; ++i)
+    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       hands[i].setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
+      hands[i].setStyle (open ? ICardPile::COMPRESSED : ICardPile::QUITE_COMPRESSED);
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -245,7 +258,9 @@ int Machiavelli::makeMove (unsigned int player) {
       // No more cards found: Continue with next player
       if (target == -1U) {
          player = findNextPlayer (player);
-         hands[player].append (staple.removeTopCard ());
+         displayTurn (player);
+
+         dealCard (player);
       }
       else {
          Check3 (pos1Play <= pos2Play);
@@ -290,17 +305,18 @@ bool Machiavelli::enableHuman () {
    Check3 (staple.size ());
    Check3 (activeCards.empty ());
 
-   activeCards.push_back (staple.getTopCard ().signal_clicked ().connect
-                          (slot (*this, (&Machiavelli::stapleSelected))));
+   if (staple.size ())
+       activeCards.push_back (staple.getTopCard ().signal_clicked ().connect
+                              (slot (*this, (&Machiavelli::stapleSelected))));
 
    Check3 (hands[0].size ());
    for (unsigned int i (0); i < hands[0].size (); ++i)
       registerHandDND (i);
    Check3 (aDNDHand.size () == hands[0].size ());
 
-   newPile.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
-   aDNDTable[NULL] = newPile.signal_drag_data_received ().connect
-      (bind (slot (*this, &Machiavelli::cardDroppedOnTable), -1U));
+   newPile.drag_dest_set (dndTypeBoth, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
+   aDNDTable[NULL].connReceive = newPile.signal_drag_data_received ().connect
+       (bind (slot (*this, &Machiavelli::cardDroppedOnTable), -1U));
 
    for (unsigned int i (0); i < tablePiles.size (); ++i) {
       MachiPile& pile (*tablePiles[i]);
@@ -385,7 +401,7 @@ void Machiavelli::setStartPlayer () {
       }
    }
 
-   hands[startPlayer].append (staple.removeTopCard ());
+   dealCard (startPlayer);
    displayTurn (startPlayer++);
    startPlayer &= 0x3;
    makeNextMoves ();
@@ -413,8 +429,8 @@ void Machiavelli::stapleSelected () {
 
    unsigned int nextPlayer (findNextPlayer (currentPlayer ()));
    setNextPlayer (nextPlayer);
-   hands[nextPlayer].append (staple.removeTopCard ());
-
+   displayTurn (nextPlayer);
+   dealCard (nextPlayer);
    makeNextMoves ();
 }
 
@@ -449,9 +465,9 @@ void Machiavelli::registerHandDND (unsigned int iCard) {
    Check3 (aDNDHand.find (&card) == aDNDHand.end ());
 
    // Card accepts drops from hand and drags from table
-   card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
+   card.drag_dest_set (dndTypeHand, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    card.drag_source_set
-      (dndType, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
+      (dndTypeHand, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
        Gdk::ACTION_MOVE);
 
    card.drag_source_set_icon (card.getImage ());
@@ -515,9 +531,16 @@ void Machiavelli::registerTableDND (CardWidget& card, unsigned int nr) {
            << " = " << std::hex << nr << " - " << &card << std::dec);
 
    // Card accepts drops from hand and drags from table
-   card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
-   aDNDTable[&card] = card.signal_drag_data_received ().connect
+   card.drag_dest_set (dndTypeBoth, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
+   card.drag_source_set
+       (dndTypeTable, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
+        Gdk::ACTION_MOVE);
+   card.drag_source_set_icon (card.getImage ());
+
+   aDNDTable[&card].connReceive = card.signal_drag_data_received ().connect
       (bind (slot (*this, &Machiavelli::cardDroppedOnTable), nr));
+   aDNDTable[&card].connGet = card.signal_drag_data_get ().connect
+      (bind (slot (*this, &Machiavelli::getDropData), nr));
 }
 
 //-----------------------------------------------------------------------------
@@ -529,11 +552,12 @@ void Machiavelli::unregisterTableDND (CardWidget& card) {
            << " - " << &card );
    Check1 (aDNDTable.size () > 1);
 
-   std::map<CardWidget*, SigC::Connection>::iterator i (aDNDTable.find (&card));
+   std::map<CardWidget*, CONNECTIONS>::iterator i (aDNDTable.find (&card));
    Check1 (i != aDNDTable.end ());
 
    card.drag_dest_unset ();
-   i->second.disconnect ();
+   i->second.connGet.disconnect ();
+   i->second.connReceive.disconnect ();
    aDNDTable.erase (i);
 }
 
@@ -541,9 +565,11 @@ void Machiavelli::unregisterTableDND (CardWidget& card) {
 /// Stops the drag´n´drop abilities of all cards on the table
 //-----------------------------------------------------------------------------
 void Machiavelli::unregisterTableDND () {
-   for (std::map<CardWidget*, SigC::Connection>::iterator i (aDNDTable.begin ());
-        i != aDNDTable.end (); ++i)
-      i->second.disconnect ();
+   for (std::map<CardWidget*, CONNECTIONS>::iterator i (aDNDTable.begin ());
+        i != aDNDTable.end (); ++i) {
+      i->second.connGet.disconnect ();
+      i->second.connReceive.disconnect ();
+   }
 
    aDNDTable.clear ();
 }
@@ -553,13 +579,12 @@ void Machiavelli::unregisterTableDND () {
 /// \param pContext: Context of the drag (contains things like source,
 /// \param target, action, ...)
 /// \param pData: Describes the thing which was dropped
-/// \param info: Describes the type of pData (should be 0)
 /// \param time: Timestamp of the drag
 /// \param card: Number of card where something was dropped at
 /// \pre \c pContext, \c pData not NULL; Expects \c info to be 0
 //-----------------------------------------------------------------------------
 void Machiavelli::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
-                               gint, gint, GtkSelectionData* pData, guint info,
+                               gint, gint, GtkSelectionData* pData, guint,
                                guint32 time, unsigned int card) {
    Check3 (pData);
    Check3 (!context->get_is_source ());
@@ -598,9 +623,9 @@ void Machiavelli::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
 /// \pre \c pContext, \c pData not NULL; Expects \c info to be 0
 //-----------------------------------------------------------------------------
 void Machiavelli::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
-                               GtkSelectionData* pData, guint info, guint32 time,
+                               GtkSelectionData* pData, guint, guint32 time,
                                unsigned int cardPos) {
-   Check1 (pData); Check1 (!info);
+   Check1 (pData);
    Check1 (pContext->get_is_source ());
 
    gtk_selection_data_set (pData, pData->target, 8, reinterpret_cast <guchar*> (&cardPos),
@@ -619,30 +644,39 @@ void Machiavelli::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
 //-----------------------------------------------------------------------------
 void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
                                       gint, gint, GtkSelectionData* pData,
-                                      guint, guint32 time, unsigned int iCard) {
+                                      guint info, guint32 time, unsigned int iCard) {
    TRACE1 ("Machiavelli::cardDroppedOnTable (...) - Card dropped on " << std::hex
-           << (int)iCard << std::dec);
-   Check3 (pData);
-   Check3 (!context->get_is_source ());
-   Check3 (pData->length == sizeof (int));
-   Check3 (pData->format == 8);
+           << (int)iCard << std::dec << "; " << info);
+   Check1 (pData);
+   Check1 (!context->get_is_source ());
+   Check1 (pData->length == sizeof (int));
+   Check1 (pData->format == 8);
+   Check1 ((info == HAND) || (info == TABLE));
 
    unsigned int* pValue (reinterpret_cast <unsigned int*> (pData->data));
-   Check3 (pValue);
-   Check3 (*pValue < hands[0].size ());
-   TRACE1 ("Machiavelli::cardDroppedOnTable (...) - Inserting card " << *pValue
-           << " in pile");
+   TRACE1 ("Machiavelli::cardDroppedOnTable (...) - Inserting card " << std::hex
+           << *pValue << std::hex << " in pile");
+   Check2 (pValue);
+
+   unsigned int nrpile (*pValue >> 8);
+   unsigned int off (*pValue & 0xff);
+   Check2 ((info == HAND)
+           ? (off < hands[0].size ())
+           : (nrpile < tablePiles.size () && (off < tablePiles[nrpile]->size ())));
 
    // Move dropped card to a (new) pile on the table
    unsigned int iPile (0);
    MachiPile* pile (NULL);
-   CardWidget& moved (*hands[0][*pValue]);
-   TRACE4 ("Machiavelli::cardDroppedOnTable (...) - Card dropped: " << moved);
+   ICardPile& src ((info == HAND) ? hands[0] : *tablePiles[nrpile]);
+   CardWidget* moved (src[off]);
+   unsigned int nr ((info == HAND) ? 1 : (src.size () - off));
+   TRACE4 ("Machiavelli::cardDroppedOnTable (...) - Card dropped: " << *moved);
 
    if (iCard == -1U) {    // If card was dropped on the new label: Create pile
-      if (!hands[0].hasFittingPair (moved, &MachiPile::cardDistance, false)) {
+      if ((info == HAND)
+          && !src.hasFittingPair (*moved, &MachiPile::cardDistance, false)) {
          context->drag_finish (false, false, time);
-         Gtk::MessageDialog dlg (_("There are no cards to make three of a kind!"),
+         Gtk::MessageDialog dlg (_("There are no cards to make a valid new pile!"),
                                  Gtk::MESSAGE_ERROR);
          dlg.set_title (_("Invalid move"));
          dlg.run ();
@@ -659,7 +693,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       Check1 (iPile < tablePiles.size ());
       pile = tablePiles[iPile];
 
-      iCard = pile->getPosition4Card (moved);
+      iCard = pile->getPosition4Card (*moved);
       if (iCard == -1U) {
          context->drag_finish (true, false, time);
          Gtk::MessageDialog dlg (_("This card does not fit on that pile!"),
@@ -671,34 +705,39 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    }
    Check3 (pile);
 
-   // Send move
-   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-      std::ostringstream msg;
-      msg << "Play=" << hands[0][*pValue]->id () << ";Target="
-          << (iPile << 16) + iCard + 100;
-      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-         ignoreNextMsg = true;
-      broadcastMessage (msg.str ());
-   }
-
    // End old drag
    context->drag_finish (true, false, time);
 
-   // Unregister old card
-   hands[0].remove (*pValue);
-   unregisterHandDND (moved);
+   while (nr--) {
+      TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Insert to: " << iPile
+              << "; Pos: " << iCard);
+      Check3 (iCard != -1U);
 
-   // Insert card into pile and register it for DND
-   TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Insert to: " << iPile);
-   Check3 (iCard <= pile->size ());
-   pile->insert (moved, iCard);
-   registerTableDND (moved, (iPile << 8) + iCard);
-   if (iCard < (pile->size () - 1))
-      registerTableDND (iPile, iCard + 1, pile->size () - 1);
+      // Send move
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+         std::ostringstream msg;
+         msg << "Play=" << src[off]->id () << ";Target="
+             << (iPile << 16) + iCard + 100;
+         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+             ignoreNextMsg = true;
+         broadcastMessage (msg.str ());
+      }
 
-   // Player has won, if he does not have any cards left
-   if (hands[0].empty ()) {
-      return;
+      // Unregister old card
+      src.remove (off);
+      (info == HAND) ? unregisterHandDND (*moved) : unregisterTableDND (*moved);
+
+      // Insert card into pile and register it for DND
+      Check3 (iCard <= pile->size ());
+      pile->insert (*moved, iCard);
+      registerTableDND (*moved, (iPile << 8) + iCard);
+      if (iCard < (pile->size () - 1))
+         registerTableDND (iPile, iCard + 1, pile->size () - 1);
+
+      moved = src[off];
+      iCard = pile->getPosition4Card (*moved);
+      if (iCard == -1U)
+         break;
    }
 
    // Re-register the cards in the hand of the human for DND
@@ -774,7 +813,7 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
       std::map<unsigned int, unsigned int> aPos;                   // diff, pos
       std::vector<unsigned int> aOrder;
       unsigned int nrs (playerPile.getSeries (*playerPile[i], aPos, aOrder,
-                                              &MachiPile::cardDistance));
+                                              &MachiPile::cardDistance, false));
 
       // Play the bigger of the found matching cards, if there are >= 3
       if ((nrs > aPos.size ()) ? (nrs > 2) : (aPos.size () > 2)) {
@@ -790,4 +829,22 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
       }
    }
    return -1U;
+}
+
+//----------------------------------------------------------------------------
+/// Deals a card to the passed player
+/// \param player: Player to give a card to 
+//----------------------------------------------------------------------------
+void Machiavelli::dealCard (unsigned int player) {
+   if (staple.size () == 1) {
+      Gtk::MessageDialog dlg (_("Taking last card! Solve the game (somehow) ..."),
+                              Gtk::MESSAGE_ERROR);
+      dlg.set_title (_("Game over"));
+      dlg.run ();
+   }
+
+   if (staple.size ()) {
+      CardWidget& card (staple.removeTopCard ());
+      player ? hands[player].insertSorted (card) : hands[0].append (card);
+   }
 }
