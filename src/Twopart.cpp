@@ -1010,6 +1010,7 @@ void Twopart::clean () {
    disableHuman ();
    staple.show ();
    if (pTrump) {
+      remove (*pTrump);
       delete pTrump;
       pTrump = NULL;
    }
