@@ -25,6 +25,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <Trace_.h>
 
 #include "CardPile.h"
@@ -54,19 +56,19 @@ ICardPile::~ICardPile () {
 /*--------------------------------------------------------------------------*/
 void ICardPile::setTopCard (CardWidget& card) {
    TRACE5 ("ICardPile::setTopCard (CardWidget&) - Card " << card
-           << " -> new size: " << cards.size () + 1);
+           << " -> new size: " << size () + 1);
 
-   if ((style > NORMAL) && cards.size ()) {
-      Check3 (cards[cards.size () - 1]);
-      resize (cards.size () - 1, style);
+   if ((style > NORMAL) && size ()) {
+      Check3 (operator [] (size () - 1));
+      resize (size () - 1, style);
    }
 
    if (showOpt < DONT_CHANGE)
       card.showFace ((bool)showOpt);
 
    card.show ();
-   cards.push_back (&card);
-   resize (cards.size () - 1, NORMAL);
+   push_back (&card);
+   resize (size () - 1, NORMAL);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -74,18 +76,18 @@ void ICardPile::setTopCard (CardWidget& card) {
 //Returns   : CardWidget&: Reference to (removed) card
 /*--------------------------------------------------------------------------*/
 CardWidget& ICardPile::removeTopCard () {
-   TRACE5 ("ICardPile::removeTopCard () - Size: " << cards.size ());
-   Check3 (cards.size () > 0); Check3 (cards[cards.size () - 1]);
+   TRACE5 ("ICardPile::removeTopCard () - Size: " << size ());
+   Check3 (size () > 0); Check3 (operator [] (size () - 1));
 
    CardWidget& card (getTopCard ());
-   cards.pop_back ();
+   pop_back ();
 
    TRACE5 ("ICardPile::removeTopCard (CardWidget&) - Card " << card
-           << " -> new size: " << cards.size ());
+           << " -> new size: " << size ());
 
-   if (cards.size () && (style > NORMAL))
+   if (size () && (style > NORMAL))
       CardWidget& card (getTopCard ());
-   resize (cards.size () - 1, NORMAL);
+   resize (size () - 1, NORMAL);
    return card;
 }
 
@@ -94,7 +96,7 @@ CardWidget& ICardPile::removeTopCard () {
 //Purpose   : Flips the topmost card of the pile
 /*--------------------------------------------------------------------------*/
 void ICardPile::flipTopCard () {
-   Check3 (cards.size () > 0);
+   Check3 (size () > 0);
 
    getTopCard ().flip ();
 }
@@ -104,7 +106,7 @@ void ICardPile::flipTopCard () {
 //Parameters: visible: Flag if cardface should be shown or back
 /*--------------------------------------------------------------------------*/
 void ICardPile::showTopCardFace (bool visible) {
-   Check3 (cards.size () > 0);
+   Check3 (size () > 0);
 
    getTopCard ().showFace (visible);
 }
@@ -139,7 +141,7 @@ void ICardPile::setTopCards (const std::vector<CardWidget*>& staple, bool visibl
 //Purpose   : Removes all cards from pile
 /*--------------------------------------------------------------------------*/
 void ICardPile::clear () {
-   while (cards.size ())
+   while (size ())
       remove (getTopCard ());
 }
 
@@ -151,7 +153,7 @@ void ICardPile::clear () {
 CardWidget* ICardPile::get (unsigned int id) const {
    std::vector<CardWidget*>::const_iterator i;
 
-   for (i = cards.begin (); i != cards.end (); ++i) {
+   for (i = begin (); i != end (); ++i) {
       Check3 (*i);
       if ((*i)->id () == id)
          return *i;
@@ -167,17 +169,17 @@ CardWidget* ICardPile::get (unsigned int id) const {
 void ICardPile::insert (CardWidget& card, unsigned int pos) {
    TRACE5 ("ICardPile::insertCard (CardWidget, unsigned int&) - Card " << card
            << " at " << pos);
-   Check3 (pos <= cards.size ());
+   Check3 (pos <= size ());
 
    card.show ();
 
    if (showOpt < DONT_CHANGE)
       card.showFace ((bool)showOpt);
 
-   cards.insert (cards.begin () + pos, &card);
+   std::vector<CardWidget*>::insert (begin () + pos, &card);
 
-   if ((style > NORMAL) && cards.size () > 1)   // Cards to display compressed?
-      resize ((pos == (cards.size () - 1)) ? pos - 1 : pos, style);
+   if ((style > NORMAL) && size () > 1)         // Cards to display compressed?
+      resize ((pos == (size () - 1)) ? pos - 1 : pos, style);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -187,9 +189,7 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
 void ICardPile::insertSorted (CardWidget& card) {
    TRACE5 ("ICardPile::insertSorted (CardWidget&) - Card " << card);
    
-   insert (card, (upper_bound (cards.begin (), cards.end (),
-                              &card, compCardsByNr)
-                  - cards.begin ()));
+   insert (card, (upper_bound (begin (), end (), &card, compCardsByNr) - begin ()));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -199,9 +199,7 @@ void ICardPile::insertSorted (CardWidget& card) {
 void ICardPile::insertColorSorted (CardWidget& card) {
    TRACE5 ("ICardPile::insertSorted (CardWidget&) - Card " << card);
    
-   insert (card, (upper_bound (cards.begin (), cards.end (),
-                              &card, compCards)
-                  - cards.begin ()));
+   insert (card, (upper_bound (begin (), end (), &card, compCards) - begin ()));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -210,20 +208,19 @@ void ICardPile::insertColorSorted (CardWidget& card) {
 /*--------------------------------------------------------------------------*/
 CardWidget& ICardPile::remove (CardWidget& card) {
    TRACE8 ("ICardPile::remove (CardWidget&) - Card " << card);
-   Check3 (cards.size () > 0);
+   Check3 (size () > 0);
 
    // Search for card and remove it
-   std::vector<CardWidget*>::iterator i (std::find (cards.begin (),
-                                                    cards.end (), &card));
-   Check3 (i != cards.end ());
+   std::vector<CardWidget*>::iterator i (std::find (begin (), end (), &card));
+   Check3 (i != end ());
 
    // Check if we have to resize a card
    if (style > NORMAL)
       // If last card was removed: Resize new last card (if any)
-      resize ((((i + 1) == cards.end ()) && i != cards.begin ()) ?
-              (i - cards.begin () - 1) : (i - cards.begin ()), NORMAL);
+      resize ((((i + 1) == end ()) && i != begin ()) ?
+              (i - begin () - 1) : (i - begin ()), NORMAL);
 
-   cards.erase (i);
+   erase (i);
    return card;
 }
 
@@ -234,19 +231,19 @@ CardWidget& ICardPile::remove (CardWidget& card) {
 CardWidget& ICardPile::remove (unsigned int pos) {
    TRACE8 ("ICardPile::remove (unsigned int&) - Card at pos " << pos << " ("
            << at (pos) << ')');
-   Check3 (cards.size () > pos);
+   Check3 (size () > pos);
 
    // Remove card on passed position
-   std::vector<CardWidget*>::iterator i (cards.begin () + pos);
+   std::vector<CardWidget*>::iterator i (begin () + pos);
    CardWidget* pTemp (*i); Check3 (pTemp);
 
    // Check if we have to resize a card
    if (style > NORMAL)
       // If last card was removed: Resize new last card (if any)
-      resize ((((i + 1) == cards.end ()) && i != cards.begin ()) ?
-              (i - cards.begin () - 1) : (i - cards.begin ()), NORMAL);
+      resize ((((i + 1) == end ()) && i != begin ()) ?
+              (i - begin () - 1) : (i - begin ()), NORMAL);
 
-   cards.erase (i--);
+   erase (i--);
    return *pTemp;
 }
 
@@ -255,18 +252,18 @@ CardWidget& ICardPile::remove (unsigned int pos) {
 //Parameters: s: New style
 /*--------------------------------------------------------------------------*/
 void ICardPile::setStyle (PileStyle s) {
-   TRACE5 ("ICardPile::setStyle (PileStyle) - Size = " << cards.size ());
+   TRACE5 ("ICardPile::setStyle (PileStyle) - Size = " << size ());
 
    if (s == style)
       return;
 
    style = s;
-   for (int i (0); i < static_cast <int> (cards.size () - 1); ++i) {
-      Check3 (cards[i]);
+   for (int i (0); i < static_cast <int> (size () - 1); ++i) {
+      Check3 (operator[] (i));
       resize (i, style);
    }
-   if (cards.size ())
-      resize (cards.size () - 1, NORMAL);
+   if (size ())
+      resize (size () - 1, NORMAL);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -303,7 +300,7 @@ bool ICardPile::compCardsByNr (const CardWidget* a, const CardWidget* b) {
 //Purpose   : Sorts the cards in the pile according the past function
 /*--------------------------------------------------------------------------*/
 void ICardPile::sort (CMPFUNC fnSort) {
-   std::sort (cards.begin (), cards.end (), fnSort);
+   std::sort (begin (), end (), fnSort);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -313,44 +310,44 @@ void ICardPile::sort (CMPFUNC fnSort) {
 //Requires  : Cards must be sorted (as the search is binary)
 /*--------------------------------------------------------------------------*/
 int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
-   unsigned int first (0), last (cards.size ());
+   unsigned int first (0), last (size ());
    unsigned int middle;
 
    TRACE8 ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - Searching for "
-           << nr << " in " << cards.size () << " cards");
+           << nr << " in " << size () << " cards");
 
    while ((last - first) > 0 ) {
       middle = first + ((last - first) >> 1);
 
       TRACE5 ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - Data = ["
               << first << "-(" << middle << ")-" << last << ") = "
-              << *cards[middle]);
+              << *operator[] (middle));
 
-      Check3 (cards[first]); Check3 (cards[middle]);
-      Check3 (cards[first]->number () <= cards[middle]->number ());
-      Check3 ((last == cards.size ()) ? 1
-              : cards[last] && (cards[middle]->number () <= cards[last]->number ()));
+      Check3 (operator[] (first)); Check3 (operator[] (middle));
+      Check3 (operator[] (first)->number () <= operator[] (middle)->number ());
+      Check3 ((last == size ()) ? 1
+              : operator[] (last) && (operator[] (middle)->number () <= operator[] (last)->number ()));
 
-      if (cards[middle]->number () < nr)
+      if (operator[] (middle)->number () < nr)
          first = middle + 1;
       else
          last = middle;
 
-      Check3 (middle >= 0); Check3 (middle <= cards.size ());
-      Check3 (first >= 0); Check3 (last <= cards.size ());
+      Check3 (middle >= 0); Check3 (middle <= size ());
+      Check3 (first >= 0); Check3 (last <= size ());
       Check3 (first <= last); Check3 (middle <= last);
    }
 
 #if TRACELEVEL > 4
    TRACE ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - End = ["
           << first << "-(" << middle << ")-" << last << ')');
-   if (first < cards.size ())
-      TRACE ("\t-> " << *cards[first])
+   if (first < size ())
+      TRACE ("\t-> " << *operator[] (first))
    else
       TRACE ("\t-> Not found");
 #endif
 
-   return ((first < cards.size ()) && ((cards[first]->number () >= nr))
+   return ((first < size ()) && ((operator[] (first)->number () >= nr))
            ? static_cast<int> (first) : -1);
 }
 
@@ -361,16 +358,16 @@ int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
 //Requires  : Cards must be sorted
 /*--------------------------------------------------------------------------*/
 int ICardPile::findLastEqual (unsigned int pos) const {
-   Check3 (pos < cards.size ());
+   Check3 (pos < size ());
 
-   CardWidget::NUMBERS nr (cards[pos]->number ());
-   while (++pos < cards.size ()) {
-      if (cards[pos]->number () != nr)
+   CardWidget::NUMBERS nr (operator[] (pos)->number ());
+   while (++pos < size ()) {
+      if (operator[] (pos)->number () != nr)
          break;
    }
 
    TRACE5 ("ICardPile::findLastEqual (CardWidget::NUMBERS) - Card "
-           << *cards[pos - 1] << " at position " << pos - 1);
+           << *operator[] (pos - 1) << " at position " << pos - 1);
    return pos - 1;
 }
 
@@ -382,18 +379,18 @@ int ICardPile::findLastEqual (unsigned int pos) const {
 /*--------------------------------------------------------------------------*/
 int ICardPile::findFirstEqual (unsigned int pos) const {
    TRACE5 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Checking card " << pos);
-   Check1 (pos < cards.size ());
-   Check3 (cards[pos]);
+   Check1 (pos < size ());
+   Check3 (operator[] (pos));
 
-   CardWidget::NUMBERS nr (cards[pos]->number ());
+   CardWidget::NUMBERS nr (operator[] (pos)->number ());
    while (pos--) {
       TRACE9 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Checking card"
-              << " at " << pos << " = " << *cards[pos]);
-      if (cards[pos]->number () != nr)
+              << " at " << pos << " = " << *operator[] (pos));
+      if (operator[] (pos)->number () != nr)
          break;
    }
    TRACE5 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Card at position "
-           << (pos + 1) << " = " << *cards[pos + 1]);
+           << (pos + 1) << " = " << *operator[] (pos + 1));
    return pos + 1;
 }
 
@@ -407,7 +404,7 @@ void ICardPile::setShowOption (ShowOpt show) {
    if (showOpt < DONT_CHANGE) {
       std::vector<CardWidget*>::iterator i;
 
-      for (i = cards.begin (); i != cards.end (); ++i) {
+      for (i = begin (); i != end (); ++i) {
          Check3 (*i);
          (*i)->showFace (showOpt);
       }
@@ -433,8 +430,8 @@ CardWidget& ICardPile::move (unsigned int dest, unsigned int source) {
 //Returns   : int: Offset of found card or -1
 /*--------------------------------------------------------------------------*/
 int ICardPile::find (CardWidget::NUMBERS nr, unsigned int start) const {
-   for (; start < cards.size (); ++start)
-      if (cards[start]->number () == nr)
+   for (; start < size (); ++start)
+      if (operator[] (start)->number () == nr)
          return start;
 
    return -1;
@@ -447,8 +444,8 @@ int ICardPile::find (CardWidget::NUMBERS nr, unsigned int start) const {
 //Returns   : int: Offset of found card or -1
 /*--------------------------------------------------------------------------*/
 int ICardPile::find (CardWidget::COLORS color, unsigned int start) const {
-   for (; start < cards.size (); ++start)
-      if (cards[start]->color () == color)
+   for (; start < size (); ++start)
+      if (operator[] (start)->color () == color)
          return start;
 
    return -1;

@@ -36,7 +36,7 @@
 
 
 // Class to display a pile of cards on the screen
-class ICardPile {
+class ICardPile : public std::vector<CardWidget*> {
  public:
    typedef enum { NORMAL = 0, COMPRESSED, QUITE_COMPRESSED, VERY_COMPRESSED,
                   LAST } PileStyle;
@@ -64,7 +64,7 @@ class ICardPile {
       setTopCard (newCard); }
 
    CardWidget& getTopCard () const {
-      Check3 (cards.size ()); return *cards[cards.size () - 1]; }
+      Check3 (size ()); return *operator[] (size () - 1); }
    virtual CardWidget& removeTopCard ();
    CardWidget& removeShownTopCard (bool visible = true) {
       CardWidget& topCard (removeTopCard ());
@@ -82,21 +82,18 @@ class ICardPile {
    virtual CardWidget& move (unsigned int dest, unsigned int source);
 
    CardWidget* get (unsigned int id) const;
-   CardWidget& at (unsigned int pos) const {
-      Check3 (pos < cards.size ()); return *cards[pos]; }
 
    int find (CardWidget& card, CMPFUNC fnComp) const {
       int pos (find1EqualOrBigger (card, fnComp));
       return ((pos != -1)
-              && !fnComp (cards[pos], &card)) ? pos : -1; }
+              && !fnComp (operator[] (pos), &card)) ? pos : -1; }
    int findByNr (CardWidget& card) const { return find (card, compCardsByNr); }
    int findByColor (CardWidget& card) const { return find (card, compCards); }
    int find1EqualOrBigger (const CardWidget& card, CMPFUNC fnComp) const {
       std::vector<CardWidget*>::const_iterator i
-         (std::lower_bound (cards.begin (), cards.end (),
-                            &card, fnComp));
-      return ((i != cards.end () && !fnComp (*i, &card))
-              ? (i - cards.begin ()) : -1); }
+         (std::lower_bound (begin (), end (), &card, fnComp));
+      return ((i != end () && !fnComp (*i, &card))
+              ? (i - begin ()) : -1); }
    int find1EqualOrBiggerByNr (CardWidget& card) const {
       return find1EqualOrBigger (card, compCardsByNr); }
    int find1EqualOrBiggerByColor (CardWidget& card) const {
@@ -116,11 +113,10 @@ class ICardPile {
       return find (color, start) != -1; }
    bool exists (CardWidget& card) const { exists (&card); }
    bool exists (CardWidget* card) const {
-      return std::find (cards.begin (), cards.end (), card) != cards.end (); }
+      return std::find (begin (), end (), card) != end (); }
 
    // General management-functions
    virtual void resize (unsigned int pos, PileStyle s);
-   unsigned int numberOfCards () const { return cards.size (); }
    void clear ();
    void setStyle (PileStyle s);
    PileStyle getStyle () const { return style; }
@@ -134,7 +130,6 @@ class ICardPile {
    void sortByColor () { sort (compCards); }
 
  protected:
-   std::vector<CardWidget*> cards;
    PileStyle style;
    ShowOpt showOpt;
 
@@ -179,7 +174,7 @@ template <class T> class CardPile : public T, public ICardPile {
       card.showFace (visible);
       return remove (card); }
    virtual CardWidget& remove (unsigned int pos) {
-      T::remove (at (pos));
+      T::remove (*operator[] (pos));
       return ICardPile::remove (pos); }
    CardWidget& remove (unsigned int pos, bool visible) {
       CardWidget& card (remove (pos));
@@ -188,17 +183,17 @@ template <class T> class CardPile : public T, public ICardPile {
 
    virtual void resize (unsigned int pos, PileStyle s) { Check (0); }
    virtual void sort (CMPFUNC fnSort) {
-      if (cards.size ()) {
-         resize (cards.size () - 1, style);
+      if (size ()) {
+         resize (size () - 1, style);
          ICardPile::sort (fnSort);
          resortGUI (); } }
 
  protected:
    virtual void resortGUI () {
-      for (int i (0); i < cards.size (); ++i)
-         Gtk::Box::reorder_child (*cards[i], i);
-      if (cards.size ())
-         resize (cards.size () - 1, NORMAL);
+      for (int i (0); i < size (); ++i)
+         Gtk::Box::reorder_child (*operator[] (i), i);
+      if (size ())
+         resize (size () - 1, NORMAL);
    }
 };
 
@@ -209,7 +204,7 @@ typedef CardPile<Gtk::HBox>  CardHPile;
 
 void CardVPile::resize (unsigned int pos, PileStyle s) {
    if (pos != -1U) {
-      CardWidget& card (*cards[pos]);
+      CardWidget& card (*operator[] (pos));
       int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
       card.set_size_request (-1, height[s]);
    }
@@ -217,7 +212,7 @@ void CardVPile::resize (unsigned int pos, PileStyle s) {
 
 void CardHPile::resize (unsigned int pos, PileStyle s) {
    if (pos != -1U) {
-      CardWidget& card (*cards[pos]);
+      CardWidget& card (*operator[] (pos));
       int width[(int)LAST] = { card.getImageWidth(), 18, 7, 1 };
       card.set_size_request (width[s], -1);
    }
@@ -277,11 +272,11 @@ template <class T> class CardInfoPile : public CardPile<T> {
       setTooltips (); }
 
    virtual void setTooltips () {
-      std::string tip (ngettext ("%1 card", "%1 cards", cards.size ()));
+      std::string tip (ngettext ("%1 card", "%1 cards", size ()));
       tip.replace (tip.find ("%1"), 2,
-                   ANumeric::toString (cards.size ()));
-      for (int i (0); i < cards.size (); ++i)
-         tt.set_tip (*cards[i], tip);
+                   ANumeric::toString (size ()));
+      for (int i (0); i < size (); ++i)
+         tt.set_tip (*operator[] (i), tip);
    }
 
  private:
@@ -304,18 +299,18 @@ class PseudoPile : public Gtk::Button, public ICardPile {
    virtual ~PseudoPile () { }
 
    virtual void resize (unsigned int pos, PileStyle s) {
-      if ((pos == (cards.size () - 1)) || !cards.size ()) {
+      if ((pos == (size () - 1)) || !size ()) {
          dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->clear ();
-         if (cards.size ())
+         if (size ())
             dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->set
-               (cards.back ()->getShownImage ());
+               (back ()->getShownImage ());
       } }
    virtual void sort (CMPFUNC fnSort) {
-      if (cards.size ()) {
-         resize (cards.size () - 1, style);
+      if (size ()) {
+         resize (size () - 1, style);
          ICardPile::sort (fnSort);
          dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->set
-            (cards.back ()->getShownImage ()); }
+            (back ()->getShownImage ()); }
    }
 };
 
@@ -371,9 +366,9 @@ class PseudoInfoPile : public PseudoPile {
 
  protected:
    virtual void setTooltips () {
-      std::string tip (ngettext ("%1 card", "%1 cards", cards.size ()));
+      std::string tip (ngettext ("%1 card", "%1 cards", size ()));
       tip.replace (tip.find ("%1"), 2,
-                   ANumeric::toString (cards.size ()));
+                   ANumeric::toString (size ()));
       tt.set_tip (*this, tip);
    }
 
