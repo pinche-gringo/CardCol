@@ -158,6 +158,7 @@ void Buraco::cleanCerrado (unsigned int player) {
       Check3 (target != -1U);
       Check1 (pos1Play <= pos2Play);
    }
+      Check1 (pos1 <= pos2);
       Check1 (pos1Play <= pos2Play);
 
       Check1 (pos1 <= pos2);
@@ -354,10 +355,12 @@ int Buraco::executeMove (unsigned int player) {
       if (isJoker (*playerPile[i])
           ? ((((nrs > 4) && (reserve[player & 1].size ()))
               || (nrs > 5))
-          ? ((nrs > 4) && (reserve[player & 1].size ())
+             && ((points[(player + 1) & 1] < 101)
+                 || (nrs > 6)
              && (points[(player + 1) & 1] < 100))
          if (nrs < aPos.size ()) {
           if (nrs < aPos.size ()) {
+             unsigned int pos (1);
              for (std::vector<unsigned int>::reverse_iterator p (aOrder.rbegin ());
                   p != aOrder.rend (); ++p) {
                 std::map<unsigned int, unsigned int>::const_iterator v;
@@ -369,8 +372,9 @@ int Buraco::executeMove (unsigned int player) {
                    // Move the card to the end of the staple; If it belongs
                    // before the first card (which can only happen with aces)
                    // move it before the other cards.
-                   playerPile.move (playerPile.size () - (p - aOrder.rbegin ())
-                                    - 1 - ((*p < 2) ? *p : 0), v->second);
+                   playerPile.move (playerPile.size () - pos, v->second);
+                   if (*p >= 2)
+                      ++pos;
                 }
              }
              i = playerPile.size () - (nrs = aPos.size ());
@@ -477,6 +481,9 @@ void Buraco::start () {
 
    pos1Play = pos2Play = 0;
    target = -1U;
+   pos1 = pos2 = 0;
+   if (randomizeCardsToPile (staple)) {
+      for (unsigned int j (0); j < 11; ++j) {
    randomizeCardsToPile (staple);
             reserve[(i - posServer) & 1].push_back (&staple.removeTopCard ());
    for (unsigned int j (0); j < 11; ++j) {
@@ -534,6 +541,9 @@ void Buraco::clean () {
 
    Game::clean ();
 
+   delete pScoreDlg;
+   pScoreDlg = NULL;
+}
 
 //-----------------------------------------------------------------------------
 /// Enables the cards the human can pick up.
@@ -1207,9 +1217,10 @@ CardVPile& Buraco::makeNewPile (unsigned int team) {
       // might be in there) and the oponent can't finish
       if (isJoker (card)) {
          if ((((*p)->size () == 6) && containsNoJoker (**p)
-              && ((reserve[player & 1].empty ()
-                   && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco
-                        == 0x3)))
+              && (((reserve[player & 1].empty ()
+                    && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco
+                         == 0x3)))
+                   || (points[player & 1] > 100))
                   || ((reserve[(player + 1) & 1].empty ())
                       && (points[(player + 1) & 1] > 100))))
              || (((*p)->size () > 2) && containsOnlyJoker (**p))) {
