@@ -199,7 +199,7 @@ unsigned int Buraco::ENDPOINTS (2000);
          Check3 (dumped.size ());
             addBuraco (oldPlayer);
          else
-            addReserve (oldPlayer, false);
+            addBuraco (oldPlayer, false);
                cleanCerrado (oldPlayer);
                Check3 (points[oldPlayer & 1] > 100);
                endGame ();
@@ -221,6 +221,11 @@ unsigned int Buraco::ENDPOINTS (2000);
 /*--------------------------------------------------------------------------*/
            << gStatus.startGame << '/' << gStatus.startTurn << ')');
    TRACE2 ("Buraco::showCardsToPlay (unsigned int) - " << player);
+       == (player >> 1))
+      ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = 0x3;
+
+      (player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco = 0x3;
+   if (gStatus.startTurn) {
       gStatus.startTurn = 0;
       ICardPile& playerPile (hands[player]);
           ? (isJoker (dumpedCard)
@@ -343,7 +348,7 @@ unsigned int Buraco::ENDPOINTS (2000);
       if (!reserve[player & 1].empty ()) {
          addBuraco (player);
          return executeMove (player);
-         addReserve (player);
+      }
 
    // No more cards to put down: Find a card to dump
    TRACE8 ("Buraco::executeMove (unsigned int) - Searching for a card to dump");
@@ -377,6 +382,16 @@ unsigned int Buraco::ENDPOINTS (2000);
 
    if (pScoreDlg) {
       unsigned int player;
+      int points;
+      pScoreDlg->getMaxPoints (points, player);
+      if (points >= (int)ENDPOINTS) {
+         delete pScoreDlg;
+      if (points >= 2000) {
+      }
+   }
+
+   pos1Play = pos2Play = 0;
+   target = -1U;
    randomizeCardsToPile (staple);
             reserve[(i - posServer) & 1].push_back (&staple.removeTopCard ());
    for (unsigned int j (0); j < 11; ++j) {
@@ -397,6 +412,8 @@ unsigned int Buraco::ENDPOINTS (2000);
                   " them on the table - click card to dump to end turn"));
 
    gStatus.startTurn = gStatus.startGame = 1;
+   gStatus.team1Buraco = gStatus.team2Buraco = 0x3;
+
    points[0] = points[1] = 0;
    updateInfo ();
    setNextPlayer (startPlayer);
@@ -531,7 +548,7 @@ unsigned int Buraco::ENDPOINTS (2000);
    // If the player has no more cards left (except of joker): Give him the reserve
          addBuraco (0);
       else if (hands[0].empty ()) {
-         addReserve (0);
+         points[0] += 100;
          endGame ();
          return;
       }
@@ -915,7 +932,7 @@ unsigned int Buraco::ENDPOINTS (2000);
       if (!reserve[0].empty ()) {
          addBuraco (0);
          return;
-         addReserve (0);
+      }
       else
          if (hands[0].empty ()) {
             points[0] += 100;
@@ -992,8 +1009,8 @@ unsigned int Buraco::ENDPOINTS (2000);
 //-----------------------------------------------------------------------------
 /// Checks, if the passed pile does not contain neither jokers nor 2s.
 /*--------------------------------------------------------------------------*/
-//Purpose   : Checks, if the passed pile does not containcards neither jokers
-//            nor 2s.
+//Purpose   : Checks, if the passed pile does not contain neither jokers nor
+//            2s.
 //Parameters: pile: Pile to inspect
 //Returns   : True, if there are no jokers
 /*--------------------------------------------------------------------------*/
@@ -1008,14 +1025,15 @@ unsigned int Buraco::ENDPOINTS (2000);
 //-----------------------------------------------------------------------------
 /// Adds the buraco to the passed player.
 /*--------------------------------------------------------------------------*/
-//Purpose   : Checks, if the passed pile contains no cards except jokers or 2s.
+//Purpose   : Adds the buraco to the passed player
 //            This is also true for empty piles.
 //Parameters: player: Player getting the reserve
 //            showt: Flag, if info-message should be displayed
 /*--------------------------------------------------------------------------*/
-void Buraco::addReserve (unsigned int player, bool show) {
+void Buraco::addBuraco (unsigned int player, bool show) {
    undo.pickUp = 1;
    undo.cJokers = hands[player].size ();
+   (player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco = player >> 1;
       Game::disableHuman ();
       for (unsigned int i (0); i < hands[0].size (); ++i)
          unregisterHandDND (*hands[0][i]);
@@ -1090,12 +1108,14 @@ CardVPile& Buraco::makeNewPile (unsigned int team) {
       Check3 ((*p)->size () < 7);
 
       // one having picked up the reserve already played (the missing card
-      // Play joker, if you can make a cerrado (7 in a row) - but only if
-      // you haven't already picked up the reserve (the missing card might be
-      // in there and the oponent can't finish
+      // might be in there) and the oponent can't finish. And of course not,
+      // if you have 7 monos in your hand!
+      // might be in there) and the oponent can't finish
       if (isJoker (card)) {
          if ((((*p)->size () == 6) && containsNoJoker (**p)
-              && (reserve[player & 1].empty ()
+              && ((reserve[player & 1].empty ()
+                   && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco
+                        == 0x3)))
                   || ((reserve[(player + 1) & 1].empty ())
                       && (points[(player + 1) & 1] > 100))))
              || (((*p)->size () > 2) && containsOnlyJoker (**p))) {
@@ -1295,8 +1315,6 @@ int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
 
    if (!currentPlayer ())
       disableHuman ();
-   status.pop ();
-   status.push (_("Game ended"));
 
    if (!pScoreDlg) {
       pScoreDlg = ScoreDlg::create (nameTeams);
@@ -1339,6 +1357,18 @@ int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
    
 
    Glib::ustring stat (_("Round ended"));
+   unsigned int player;
+   std::string stat (_("Round ended"));
+   pScoreDlg->getMaxPoints (maxPoints, player);
+   TRACE9 ("Buraco::endGame () - Points: " << maxPoints);
+   if (maxPoints >= (int)ENDPOINTS) {
+   if (maxPoints >= 2000) {
+   }
+
+   // Move cards of partners to first player and show them
+   status.push (stat);
+
+   setGameStatus (STOPPED);
 }
    setGameStatus (STOPPED);   
 
