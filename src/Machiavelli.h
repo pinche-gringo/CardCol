@@ -21,6 +21,7 @@
 #include <map>
 #include <stack>
 #include <vector>
+#include <deque>
 
 #include <gtkmm/label.h>
 #include <gtkmm/scrolledwindow.h>
@@ -61,7 +62,7 @@ class Machiavelli : public Game {
    virtual const char* name () { return "Machiavelli"; }
    virtual void playOpen (bool);
 
-   virtual bool handleMessage (unsigned int player, const char* msg);
+   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
 
  private:
    Machiavelli ();
@@ -70,7 +71,7 @@ class Machiavelli : public Game {
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
-   /// name Virtual methods
+   /// \name Virtual methods
    //@{
    virtual int makeMove (unsigned int player);
    virtual bool enableHuman ();
@@ -81,7 +82,7 @@ class Machiavelli : public Game {
    virtual unsigned int getActTarget () const;
    //@}
 
-   /// name Helper methods
+   /// \name Helper methods
    //@{
    void setStartPlayer ();
    unsigned int findNextPlayer (unsigned int player) const;
@@ -96,9 +97,10 @@ class Machiavelli : public Game {
    unsigned int reorderTableToFit (ICardPile& playerPile);
    unsigned int reorderTableToFit2 (ICardPile& playerPile);
    unsigned int reorderTableToFit3 (ICardPile& playerPile);
+   unsigned int reorderTableToFit4 (ICardPile& playerPile);
    //@}
 
-   /// name Drag-and-drop methods
+   /// \name Drag-and-drop methods
    //@{
    void registerTableDND (unsigned int pile, unsigned int start, unsigned int end);
    void registerTableDND (CardWidget& card, unsigned int nr);
@@ -118,7 +120,7 @@ class Machiavelli : public Game {
                             unsigned int cardPile);
    //@}
 
-   /// name Callback from events
+   /// \name Callback from events
    //@{
    void stapleSelected ();
    void undoMove (unsigned int number);
@@ -164,7 +166,7 @@ class Machiavelli : public Game {
    } undoValue;
 
    std::stack<undoValue> undo;
-   std::stack<unsigned int> posPiles;
+   std::deque<unsigned int> posPiles;
 
    XGP::MessageDlg* undoDlg;
 };

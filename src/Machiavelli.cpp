@@ -95,6 +95,8 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
               Gtk::EXPAND, Gtk::SHRINK, 5, 5);
       attach (names[i], (i << 2) - 4, (i << 2), 5, 6,
               Gtk::EXPAND, Gtk::SHRINK, 0);
+      hands[i].setStyle (ICardPile::QUITE_COMPRESSED);
+      hands[i].setShowOption (ICardPile::SHOWBACK);
    }
    hands[0].setStyle (ICardPile::COMPRESSED);
    hands[0].setShowOption (ICardPile::SHOWFACE);
@@ -256,7 +258,7 @@ int Machiavelli::makeMove (unsigned int player) {
 
       // Check if cards have to be moved from the table
       while (posPiles.size ()) {
-         unsigned int posPile (posPiles.top ());
+         unsigned int posPile (posPiles.back ());
          unsigned int pile ((posPile >> 8) & 0xff);
          unsigned int nr (posPile >> 16);
          unsigned int posSrc (posPile & 0xff);
@@ -271,8 +273,10 @@ int Machiavelli::makeMove (unsigned int player) {
             card.unmark ();
             tablePiles[target]->insert (card, pos++);
          }
-         Check3 (tablePiles[pile]->size () >= 3);
-         posPiles.pop ();
+         if (tablePiles[pile]->empty ())
+            removePile (pile);
+
+         posPiles.pop_back ();
       }
 
       if (pos2Play < hands[player].size ()) {
@@ -740,19 +744,23 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    // End old drag
    context->drag_finish (true, false, time);
 
+   // Store undo-info 4 Bytes: Target-pile, target-card, source-pile,
+   // source-card; if played from hand, set source-pile to 0xff
+   undoValue val (iPile, iCard, (info == HAND) ? 0xff : nrpile, off, nr);
+
    // Send move
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       std::ostringstream msg;
-      msg << "Play=" << src[off]->id () << ";Target="
-          << (iPile << 16) + iCard;
+      if (info == HAND)
+         msg << "Play=" << src[off]->id ();
+      else
+         msg << "Reorder=" << ((nr << 16) + (nrpile << 8) + off);
+
+      msg << ";Target=" << (iPile << 16) + iCard;
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
           ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
-
-   // Store undo-info 4 Bytes: Target-pile, target-card, source-pile,
-   // source-card; if played from hand, set source-pile to 0xff
-   undoValue val (iPile, iCard, (info == HAND) ? 0xff : nrpile, off, nr);
 
    while (nr--) {
       TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Insert to: " << iPile
@@ -903,44 +911,44 @@ unsigned int Machiavelli::cardFitsToPile (const CardWidget& card, unsigned int o
    unsigned int dest (-1U);
    for (std::vector<MachiPile*>::const_iterator m (tablePiles.begin ());
         m != tablePiles.end (); ++m) {
-       Check2 ((*m)->getType () != MachiPile::UNDEFINED);
+      Check2 ((*m)->getType () != MachiPile::UNDEFINED);
 
-       // Check if the card can be added to an existing pile
-       dest = (*m)->getPosition4Card (card);
-       if (dest != -1U) {
-          pos1Play = pos2Play = offset;
-          return ((m - tablePiles.begin ()) << 16) + dest;
-       }
+      // Check if the card can be added to an existing pile
+      dest = (*m)->getPosition4Card (card);
+      if (dest != -1U) {
+         pos1Play = pos2Play = offset;
+         return ((m - tablePiles.begin ()) << 16) + dest;
+      }
 
-       // Or can the card be added by splitting the pile?
-       int diff (MachiPile::cardDistance (card, *(**m)[0]));
-       if (((*m)->getType () == MachiPile::COLOUR)
-           ? ((diff < 0) || (card.colour () != (**m)[0]->colour ()))
-           : diff)
-          continue;
+      // Or can the card be added by splitting the pile?
+      int diff (MachiPile::cardDistance (card, *(**m)[0]));
+      if (((*m)->getType () == MachiPile::COLOUR)
+          ? ((diff < 0) || (card.colour () != (**m)[0]->colour ()))
+          : diff)
+         continue;
 
-       int pos ((*m)->size () - static_cast<unsigned int> (diff));
-       TRACE8 ("Machiavelli::cardFitsToPile (const CardWidget&unsigned int) - Splitting "
-               << (m - tablePiles.begin ()) << " at " << diff << " (" << pos << ")?");
+      int pos ((*m)->size () - static_cast<unsigned int> (diff));
+      TRACE8 ("Machiavelli::cardFitsToPile (const CardWidget&unsigned int) - Splitting "
+              << (m - tablePiles.begin ()) << " at " << diff << " (" << pos << ")?");
 
-       // A new pile can be made directly (enough cards on both sides)
-       if ((pos > 2) && (diff > 1)) {
-          // Move cards to remove to hand (to be shown); The card from the
-          // hand will be added in the next move
-          ++diff;
-          pos1Play = pos2Play = offset;
-          posPiles.push ((((*m)->size () - diff) << 16)
-                         + ((m - tablePiles.begin ()) << 8) + diff);
-          TRACE9 ("Machiavelli::showCardsToPlay (unsigned int) - Marked pile: "
-                  << std::hex << pos2Play << std::dec);
+      // A new pile can be made directly (enough cards on both sides)
+      if ((pos > 2) && (diff > 1)) {
+         // Move cards to remove to hand (to be shown); The card from the
+         // hand will be added in the next move
+         ++diff;
+         pos1Play = pos2Play = offset;
+         posPiles.push_back ((((*m)->size () - diff) << 16)
+                             + ((m - tablePiles.begin ()) << 8) + diff);
+         TRACE9 ("Machiavelli::cardFitsToPile (const CardWidget&unsigned int) - Marked pile: "
+                 << std::hex << pos2Play << std::dec);
 
-          do {
-             Check3 ((unsigned int)diff < (*m)->size ());
-             (**m)[diff]->mark ();
-          } while (static_cast<unsigned int> (++diff) < (*m)->size ());
-          makeNewPile ();
-          return (tablePiles.size () - 1) << 16;
-       }
+         do {
+            Check3 ((unsigned int)diff < (*m)->size ());
+            (**m)[diff]->mark ();
+         } while (static_cast<unsigned int> (++diff) < (*m)->size ());
+         makeNewPile ();
+         return (tablePiles.size () - 1) << 16;
+      }
    }
    return -1U;
 }
@@ -970,7 +978,31 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
             return pos;
       }
 
-      return reorderTableToFit (playerPile);
+      unsigned int dest (reorderTableToFit (playerPile));
+      if (dest != -1U) {
+         Check2 (posPiles.size ());
+
+         if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+            std::ostringstream msg;
+            msg << "Reorder=";
+
+            for (std::deque<unsigned int>::const_iterator i (posPiles.begin ());
+                 i != posPiles.end (); ++i)
+               msg << *i << ' ';
+
+            if (pos1Play < hands[player].size ()) {
+               msg << ";Play=" << *hands[player][pos1Play];
+               if (pos2Play != pos1Play)
+                  msg << ' ' << *hands[player][pos2Play];
+            }
+            msg << ";Target=" << dest;
+                  
+            if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+               ignoreNextMsg = 1;
+
+            broadcastMessage (msg.str ());
+         }
+      }
    }
    return -1U;
 }
@@ -1032,11 +1064,12 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
                TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Pile "
                        << (t - tablePiles.begin ()) << "; Cards "
                        << (c - (*t)->begin ()) << '-' << (c - (*t)->begin () + nr - 1));
-               posPiles.push (((t - tablePiles.begin ()) << 8)
-                              + (nr << 16) + c - (*t)->begin ());
+               posPiles.push_back (((t - tablePiles.begin ()) << 8)
+                                   + (nr << 16) + c - (*t)->begin ());
                while (nr--)
                   (*c++)->mark ();
                makeNewPile ();
+
                return (tablePiles.size () - 1) << 16;
             } // endif pile has matching card
          } // end-for all table piles
@@ -1108,8 +1141,8 @@ unsigned int Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
                           << (o - tablePiles.begin ()) << "; Card " << **c
                           << " (" << (c - (*o)->begin ()) << ')');
 
-                  posPiles.push (((o - tablePiles.begin ()) << 8)
-                                 + (1 << 16) + c - (*o)->begin ());
+                  posPiles.push_back (((o - tablePiles.begin ()) << 8)
+                                      + (1 << 16) + c - (*o)->begin ());
                   (*c)->mark ();
                   return (((t - tablePiles.begin ()) << 16)
                           + ((diff == -2) ? 0 : (*t)->size ()));
@@ -1198,8 +1231,8 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                      TRACE9 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Pile "
                              << (t - tablePiles.begin ()) << "; Card "
                              << (i - (*t)->begin ()) << '-' << (i - (*t)->begin () + nr - 1));
-                     posPiles.push (((t - tablePiles.begin ()) << 8)
-                                    + (nr << 16) + i - (*t)->begin ());
+                     posPiles.push_back (((t - tablePiles.begin ()) << 8)
+                                         + (nr << 16) + i - (*t)->begin ());
 
                      (*i)->mark ();
                   }
@@ -1211,8 +1244,8 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                   TRACE9 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Pile "
                           << (o - tablePiles.begin ()) << "; Card "
                           << (c - (*o)->begin ()) << '-' << (c - (*o)->begin () + nr - 1));
-                  posPiles.push (((o - tablePiles.begin ()) << 8)
-                                 + (nr << 16) + c - (*o)->begin ());
+                  posPiles.push_back (((o - tablePiles.begin ()) << 8)
+                                      + (nr << 16) + c - (*o)->begin ());
                   while (nr--)
                      (*c++)->mark ();
                   makeNewPile ();
@@ -1224,6 +1257,30 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
          } // end-for all matching cards in the pile
       } // end-for all table piles
    } // end-for all cards
+
+   return (playerPile.size () < 4) ? reorderTableToFit4 (playerPile) : -1U;
+}
+
+//-----------------------------------------------------------------------------
+/// Tries to play a card by recursively reordering the whole table
+/// \param playerPile: Pile to inspect
+/// \returns \c ID of the target (32 Bit: Pile << 16 + Position) or -1U
+/// \remarks: Sets pos1Play and pos2Play approbiatly
+//-----------------------------------------------------------------------------
+unsigned int Machiavelli::reorderTableToFit4 (ICardPile& playerPile) {
+   // Inspect every card
+   for (ICardPile::const_iterator c (playerPile.begin ());
+        c != playerPile.end (); ++c) {
+      
+      for (std::vector<MachiPile*>::const_iterator t (tablePiles.begin ());
+           t != tablePiles.end (); ++t) {
+         Check2 ((*t)->getType () != MachiPile::UNDEFINED);
+         
+         // TODO
+      }
+
+   }
+   
    return -1U;
 }
 
@@ -1305,6 +1362,18 @@ void Machiavelli::undoMove (unsigned int number) {
       Check3 (move.number);
       Check3 ((move.number + move.destPos) <= src.size ());
 
+      // Inform clients about cards to play
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+            ignoreNextMsg = true;
+
+         std::ostringstream msg;
+         msg << "Move=" << move.destPile << ";From=" << move.destPos << ";To="
+             << (move.destPos + move.number - 1) << ";Target=" << move.srcPile
+             << ";At=" << move.srcPos;
+         broadcastMessage (msg.str ());
+      }
+
       do {
          dest.insert (src.remove (move.destPos), move.srcPos++);
       } while (--move.number);
@@ -1359,12 +1428,13 @@ void Machiavelli::endGame (unsigned int looser) {
 //----------------------------------------------------------------------------
 ICardPile& Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile) {
    Check1 (player < NUM_PLAYERS);
-   Check1 (pile <= tablePiles.size ());
+   Check1 ((pile >> 16) <= tablePiles.size ());
 
+   target = pile;
+   pile >>= 16;
    if (pile == tablePiles.size ())
       makeNewPile ();
 
-   target = pile;
    return hands[player];
 }
 
@@ -1373,32 +1443,20 @@ ICardPile& Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile)
 /// \param player: ID of the player sending the message
 /// \param message: Message received from the server
 /// \returns bool: True, if message has been processed completey
+/// \throw std::string: In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Machiavelli::handleMessage (unsigned int player, const char* message) {
-   TRACE1 ("Machiavelli::handleMessage (unsigned int player, const char*) - "
+bool Machiavelli::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
+   TRACE1 ("Machiavelli::handleMessage (unsigned int player, const std::string&) - "
            << message << " (" << player << ')');
     
    YGP::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
    bool rc (true);
-   if (cmd == "Move") {
-      YGP::AttributeParse ap;
-      unsigned int card (-1U), dest (-1U), iPile (-1U);
-      ATTRIBUTE (ap, unsigned int, card, "Move");
-      ATTRIBUTE (ap, unsigned int, dest, "To");
-      ATTRIBUTE (ap, unsigned int, iPile, "Pile");
-      ap.assignValues (message);
+   if (cmd == "EndTurn") {
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
+         broadcastMessage (message);
 
-      if (iPile >= tablePiles.size ())
-         throw std::string ("Invalid pile!");
-      ICardPile& pile (*tablePiles[iPile]);
-      if ((card >= pile.size ()) || (dest >= pile.size ()))
-         throw std::string ("Invalid card!");
-
-      pile.move (dest, card);
-   }
-   else if (cmd == "EndTurn") {
       unsigned int nextPlayer (findNextPlayer (currentPlayer ()));
       if (nextPlayer == findNextPlayer (nextPlayer))
          endGame (nextPlayer);
@@ -1406,12 +1464,108 @@ bool Machiavelli::handleMessage (unsigned int player, const char* message) {
          displayTurn (player = nextPlayer);
          dealCard (nextPlayer);
          setNextPlayer (nextPlayer);
+         makeNextMoves ();
       }
+   }
+   else if (cmd == "Reorder") {
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
+         broadcastMessage (message);
+
+      Check2 (posPiles.empty ());
+
+      YGP::Tokenize tokCards (command.getNextNode (';'));
+      unsigned long posPile (0);
+      while (tokCards.getNextNode (' ').size ()) {
+         if (stringToNumber (posPile, tokCards.getActNode ().c_str ())) {
+            std::string error ("Not a card number: `%1'");
+            error.replace (error.find ("%1"), 2, tokCards.getActNode ());
+            throw error;
+         }
+
+         unsigned int pile ((posPile >> 8) & 0xff);
+         unsigned int nr (posPile >> 16);
+         unsigned int posSrc (posPile & 0xff);
+         TRACE9 ("Machiavelli::handleMessage (unsigned int, const std::string&)"
+                 " - Add from " << pile << " cards " << posSrc << '-' << (posSrc + nr - 1));
+
+         if (pile >= tablePiles.size ())
+            throw std::string ("Invalid source pile");
+         ICardPile& srcPile (*tablePiles[pile]);
+         if ((posSrc + nr) > srcPile.size ())
+            throw std::string ("Invalid cards");
+
+         posPiles.push_back (posPile);
+
+         while (nr--)
+            srcPile[posSrc++]->mark ();
+      }
+
+      YGP::AttributeParse ap;
+      std::string hand;
+      ATTRIBUTE (ap, std::string, hand, "Play");
+      ATTRIBUTE (ap, unsigned int, target, "Target");
+      ap.assignValues (command.getNextNode (';'));
+
+      if (hand.size ())
+         flipCards2Play (hands[player], hand);
+      else
+         pos1Play = pos2Play = hands[player].size ();
+
+      unsigned int targetPile (target >> 16);
+      if (targetPile > tablePiles.size ()) {
+         target = -1U;
+         throw std::string ("Invalid target pile");
+      }
+
+      if (targetPile == tablePiles.size ())
+         makeNewPile ();
+
+      // Inform clients about cards to play
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
+          broadcastMessage (message);
+
+      Glib::signal_timeout ().connect
+         (bind (slot (*this, &Game::endRemoteMove), player),
+          ComputerPlayer::TIMEOUT);
+      return false;
+   }
+   else if (cmd == "Move") {
+      YGP::AttributeParse ap;
+      unsigned int card1 (-1U), card2 (-1U), dest (-1U), src (-1U), destPos (0);
+      ATTRIBUTE (ap, unsigned int, src, "Move");
+      ATTRIBUTE (ap, unsigned int, card1, "From");
+      ATTRIBUTE (ap, unsigned int, card2, "To");
+      ATTRIBUTE (ap, unsigned int, dest, "Target");
+      ATTRIBUTE (ap, unsigned int, destPos, "At");
+      ap.assignValues (message);
+
+      if (src >= tablePiles.size ())
+         throw std::string ("Invalid source pile!");
+      ICardPile& srcPile (*tablePiles[src]);
+      if ((card2 < card1) || (card2 >= srcPile.size ()))
+         throw std::string ("Invalid cards!");
+
+      if ((dest >= tablePiles.size ()) && (dest != 255))
+         throw std::string ("Invalid destination pile!");
+      ICardPile& pile ((dest == 255) ? hands[player] : *tablePiles[dest]);
+
+      if (destPos >= pile.size ())
+         throw std::string ("Invalid position in destination pile!");
+
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
+         broadcastMessage (message);
+
+      do {
+         pile.insert (srcPile.remove (card1), destPos++);
+      } while (card1 < card2--);
+
+      if (srcPile.empty ())
+         removePile (src);
    }
    else {
       rc = Game::handleMessage (player, message);
       if (cmd == "ActPlayer") {
-         TRACE1 ("Machiavelli::handleMessage (unsigned int player, const char*) - "
+         TRACE1 ("Machiavelli::handleMessage (unsigned int player, const std::string&) - "
                  "Next player: " << currentPlayer ());
 
          startPlayer = currentPlayer ();
@@ -1426,6 +1580,6 @@ bool Machiavelli::handleMessage (unsigned int player, const char* message) {
 /// \returns unsigned int: ID of the target
 //----------------------------------------------------------------------------
 unsigned int Machiavelli::getActTarget () const {
-   Check3 (target < tablePiles.size ());
+   Check3 ((target >> 16) < tablePiles.size ());
    return target;
 }
