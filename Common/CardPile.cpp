@@ -27,7 +27,6 @@
 
 #include "CardPile.h"
 
-
 //-----------------------------------------------------------------------------
 /// Constructor; adds all controls to the dialog
 /// \param set: Specifier for type of cardset
@@ -482,7 +481,9 @@ bool ICardPile::hasFittingPair (const CardWidget& card, CMPFUNC2 cmp,
    unsigned int nrs (0);
    unsigned int bCols (0);
 
-   unsigned int foundCards[] = { card.id (), -1U, -1U };
+   std::vector<unsigned int> foundCards (4);
+   if (!doubles)
+      foundCards.push_back (card.id ());
 
    for (const_iterator p (begin ());
         (p = getFittingCard (card, p, cmp)) != end (); ++p) {
@@ -509,34 +510,26 @@ bool ICardPile::hasFittingPair (const CardWidget& card, CMPFUNC2 cmp,
       }
       else {
          // Filter out doubles (if specififed)
-         if (!doubles) {
-            unsigned int i (0);
-            for (; i < (sizeof (foundCards) / sizeof (foundCards[0])); ++i) {
-               TRACE1 ("ICardPile::pileHasFittingPair (const CardWidget*, "
-                       "CMPFUNC2, bool) - " << foundCards[i] << '-' << (*p)->id ());
-               if (foundCards[i] != -1U) {
-                  if (foundCards[i] == (*p)->id ()) {
-                     break;
-                  }
-               }
-               else {
-                  foundCards[i] = (*p)->id ();
-                  i = sizeof (foundCards) / sizeof (foundCards[0]);
-                  break;
-               }
-            }
+        if (!doubles) {
+           std::vector<unsigned int>::const_iterator i (foundCards.begin ());
+           do {
+              TRACE1 ("ICardPile::pileHasFittingPar (const CardWidget*, CMPFUNC2, bool)) - "
+                      << *i << '-' << (*p)->id ());
+              if (*i == (*p)->id ())
+                 break;
+           } while (++i != foundCards.end ());
+           if (i != foundCards.end ())
+              continue;
 
-            if (i != sizeof (foundCards) / sizeof (foundCards[0]))
-               continue;
-
-            TRACE1 ("ICardPile::pileHasFittingPair (const " "CardWidget*, "
-                    "CMPFUNC2, bool) - Adding non-double " << **p);
+           foundCards.push_back ((*p)->id ());
+           TRACE1 ("ICardPile::pileHasFittingPair (const " "CardWidget*, "
+                   "CMPFUNC2, bool) - Adding non-double " << **p);
          }
          if (++nrs == 2)
             return true;
       }
    }
-   TRACE7 ("CardPile::pileHasFittingPair (const " "CardWidget*, CMPFUNC2, bool) - "
+   TRACE7 ("CardPile::pileHasFittingPair (const CardWidget*, CMPFUNC2, bool) - "
            << card << " matches " << nrs << '/' << std::hex << bCols << std::dec);
    return false;
 }
@@ -627,11 +620,12 @@ unsigned int ICardPile::getSeries (CardWidget& card,
                                    std::map<unsigned int, unsigned int>& aPos,
                                    std::vector<unsigned int>& aOrder, CMPFUNC2 cmp,
                                    bool doubles) {
-   TRACE3 ("ICardPile::getSeries (...) for " << card);
-   unsigned int nrs (1);
+   TRACE1 ("ICardPile::getSeries (...) for " << card);
+   unsigned int nrs (0);
    unsigned int bCols (0x4);
 
-   std::vector<unsigned int> foundCards;
+   std::vector<unsigned int> foundCards (4);
+   unsigned int cDoubles (0);
    if (!doubles)
       foundCards.push_back (card.id ());
 
@@ -639,10 +633,11 @@ unsigned int ICardPile::getSeries (CardWidget& card,
       if (*p == &card) {
          aPos[2] = p - begin ();
          aOrder.push_back (2);
+         ++nrs;
       }
       else {
          int diff (cmp (**p, card));
-         TRACE9 ("ICardPile::getSeries (...) - " << **p << " differs " << diff);
+         TRACE1 ("ICardPile::getSeries (...) - " << **p << " differs " << diff);
          Check3 (static_cast<unsigned int> (diff + 2) < 5);
          if (diff) {
             diff += 2;
@@ -665,11 +660,16 @@ unsigned int ICardPile::getSeries (CardWidget& card,
                   if (*i == (*p)->id ())
                      break;
                } while (++i != foundCards.end ());
-               if (i != foundCards.end ())
+               if (i != foundCards.end ()) {
+                  ++cDoubles;
                   continue;
+               }
 
                foundCards.push_back ((*p)->id ());
                TRACE1 ("ICardPile::getSeries (...) - Adding non-double " << **p);
+
+               if (cDoubles)
+                  move (p - begin () - cDoubles, p - begin ());
             }
             ++nrs;
          }
@@ -677,7 +677,7 @@ unsigned int ICardPile::getSeries (CardWidget& card,
    }
 
    // Check if the series of colors is a valid one
-   TRACE9 ("ICardPile::getSeries (...) - Serie: " << std::hex << bCols << std::dec);
+   TRACE1 ("ICardPile::getSeries (...) - Serie: " << std::hex << bCols << std::dec);
    Check3 (bCols & 0x4);
 
    // Delete cards having no direct access to the analyzed one
