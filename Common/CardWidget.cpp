@@ -81,10 +81,11 @@ void CardWidget::setVisible (bool visible) {
 //Returns   : ostream&: Reference to the passed output-stream
 /*--------------------------------------------------------------------------*/
 ostream& operator<< (ostream& out, const CardWidget& card) {
-   // Letters describing the colors (clubs, spades, hearts, diamons)
+   // Letters describing the colors (clubs, spades, hearts, diamonds)
    static char* colors = _("CSHD");
-   static char* specialCards = _("JQKA");
-   out << colors[card.color ()]
-       << (char)((card.number () > CardWidget::TEN)
-                 ? specialCards[card.number ()  - CardWidget::JACK] : card.number () + '2');
+   static char* specialCards = _("TJQKA");
+   out << colors[card.nrCard & 0x3]
+       << (char)((card.number () >= CardWidget::TEN)
+                 ? specialCards[card.number ()  - CardWidget::TEN]
+                 : card.number () + '2');
 }
