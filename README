@@ -23,15 +23,15 @@ Various card games; til now they consist of:
     sometimes) system from a company with a very good sales department.
 
 
-The whole thing is:    
-  
-Copyright (C) 2002 - 2004 Markus Schwab <g17m0@lycos.com>
+The whole thing is:
+
+Copyright (C) 2002 - 2005 Markus Schwab <g17m0@lycos.com>
 ---------------------------------------------------------
 
-Basically this means, the package is distributed under the GNU General Public
-License; in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the file COPYING for details.
+The package is distributed under the GNU General Public License; in the hope
+that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+file COPYING for details.
 
 
 Card decks
@@ -78,7 +78,7 @@ Please include for bugs:
 
   - The version of the package. In case you don't know: The title of the
     about box.
-  - The version of the used General library.
+  - The version of the used libYGP library.
   - How to reproduce the bug.
   - In case of a crash there should also be a stackdump in your systemlog which
     might help in localizing the bug.
