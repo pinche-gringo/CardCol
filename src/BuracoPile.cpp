@@ -25,8 +25,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -182,7 +180,7 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
          // First check, if a joker can be replaced
          if ((status.posJoker < 7)
              && (Buraco::cardDistance (card, *operator[] (status.posFirst))
-                 == status.posJoker)) {
+                 == static_cast<int> (status.posJoker))) {
             if (status.posJoker)
                 move = ((((status.posJoker > status.posFirst)
                           ? operator[] (status.posFirst) ->number ()
