@@ -26,8 +26,7 @@
 
 #include <cardgames-cfg.h>
 
-#include <assert.h>
-#include <stdio.h>
+#include <cstdio>
 
 #include <fstream>
 
@@ -583,8 +582,9 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { "",                     "",          0,        SEPARATOR },
     { _("E_xit"),             _("<ctl>Q"), EXIT,     ITEM },
     { _("_Options"),          _("<alt>O"), 0,        BRANCH },
-    { _("_Change game"),      _("<alt>C"), 0,        SUBMENU },
-    {    _("_Røvhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
+    { _("_Change game"),      "",          0,        SUBMENU },
+    // For translations: Write the Rovhult with 'ø'
+    {    _("_Rovhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
     {    _("_Twopart"),       _("<ctl>T"), TWOPART,  RADIOITEM },
     {    _("_Hearts"),        _("<ctl>H"), HEARTS,   RADIOITEM },
     {    _("_Buraco"),        _("<ctl>B"), BURACO,   LASTRADIOITEM },
@@ -696,7 +696,10 @@ CardgameCollection::CardgameCollection (Options& opts)
 /*--------------------------------------------------------------------------*/
 CardgameCollection::~CardgameCollection () {
    TRACE9 ("CardgameCollection::~CardgameCollection ()");
-   delete game;
+   if (game) {
+      game->clean ();
+      delete game;
+   }
 }
 
 
@@ -760,8 +763,8 @@ void CardgameCollection::startGame () {
    }
 
    Check3 (game);
-   Glib::ustring name (PACKAGE " V" PRG_RELEASE " - ");
-   name += Glib::locale_to_utf8 (game->name ());
+   Glib::ustring name (Glib::locale_to_utf8 (game->name ()));
+   name += " - " PACKAGE " V" PRG_RELEASE;
    set_title (name);
 
    game->start ();
@@ -855,8 +858,15 @@ void CardgameCollection::command (int menu) {
             dlg.set_title (PACKAGE);
             if (dlg.run () != Gtk::RESPONSE_YES)
                break;
+
+            if (game->canBeStopped ())
+               game->stop ();
+            else {
+               restart = -1U;
+               game->end (false);
+               break;
+            }
          }
-         game->clean ();
       }
       hide ();
       break;
@@ -1047,7 +1057,7 @@ void CardgameCollection::loadCards () {
       gdk_threads_leave ();
    }
 
-   assert (cardFaces.size ());
+   Check3 (cardFaces.size ());
    pThread = NULL;
 }
 
@@ -1069,11 +1079,14 @@ void CardgameCollection::gameEvents (unsigned int status) {
       Check3 (apMenus[END]);
       apMenus[END]->set_sensitive (false);
 
-      if (restart)
+      if (restart == 1)
          // (Re)start the (new) game, when the event queue is empty (and
          // therefore the old game has ended).
          Glib::signal_idle ().connect
              (bind_return (slot (*this, &CardgameCollection::startGame), false));
+      else if (restart == -1U)
+         Glib::signal_idle ().connect
+             (bind_return (slot (*this, &CardgameCollection::hide), false));
       restart = false;
       break;
    }
@@ -1086,22 +1099,24 @@ void CardgameCollection::gameEvents (unsigned int status) {
 void CardgameAppl::showHelp () const {
    std::cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
              << _(" [OPTIONS]\n\n")
-             << "  -g, --game ....... " << _("[GAME] Select game to start (default: Røvhult)\n")
+       // For translations: Write the Rovhult with 'ø'
+             << "  -g, --game ....... " << _("[GAME] Select game to start (default: Rovhult)\n")
              << "  -f, --file ....... " << _("[FILE] Use file as INI file\n")
              << "  -b, --browser .... " << _("[NAME] Browser to use to display the help\n")
              << "  -d, --help-dir ... " << _("[DIR] Directory to search for help\n")
              << "  -V, --version .... " << _("Output version information and exit\n")
              << "  -h, -?, --help ... " << _("Displays this help and exit\n\n")
 
-             << _("Valid values for GAME are Rovhult, Røvhult, Twopart, Hearts and Buracno or the\n"
-                  "numbers 0 - 3 (corresponding to the games in the above order).\n\n"
-                  "The INI file can have the following entries:")
-             << ("  [Game]\n"
+       // For translations: Write one of the Rovhults with 'ø'
+             << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco or the\n"
+                  "numbers 0 - 3 (corresponding to the games in the above order).\n\n")
+             << ("The INI file can have the following entries:\n\n"
+                 "  [Game]\n"
                  "  Type=Twopart\n"
                  "  Helpbrowser=galeon\n"
                  "  Helpdir=/usr/share/doc/Cardgames/\n"
-                 "  CardFront=/usr/local/share/Cardsets/Deck1\n"
-                 "  CardBack=/usr/local/share/Cardsets/back1.xpm\n\n"
+                 "  CardFront=/usr/share/carddecks/cards-default\n"
+                 "  CardBack=/usr/share/carddecks/decks/deck1.png\n\n"
                  "  [Players]\n"
                  "  0=Human\n"
                  "  1=Computer 1\n"
