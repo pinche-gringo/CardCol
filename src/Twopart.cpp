@@ -3,7 +3,8 @@
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Twopart
 //REFERENCES  :
-//TODO        : - Picking up played pile at end (of game) doesn't seem to work
+//TODO        : - Don't play trump-cards at end of part I
+//              - Analyze picking up pile when prev. player runs out of cards
 //BUGS        :
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
@@ -422,32 +423,54 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
       int maxEqualNr (-1);
       int posMax (-1);
       int posMaxEqual (-1);
+      int trumps (0);
       analyzeLastPlayed (*startPos, played.numberOfCards () - *startPos,
-                         maxNr, posMax, maxEqualNr, posMaxEqual);
+                         maxNr, posMax, maxEqualNr, posMaxEqual, trumps);
 
       start = (unsigned int)-1;
       // Try to get the cards if there are loads of high cards (a third or more)
-      // or if the average card played is at least a 8
+      // or if the average card played is at least a 8 or there are trumps inside
       if (((played.numberOfCards () / 3) < cHigh)
-          || (points >= CardWidget::EIGHT)) {
+          || (points >= CardWidget::SEVEN)
+          || trumps) {
+         end = -1U;
          // Search for card whose number you own
-         for (unsigned int i (*startPos);
-              i < players[player].hand.numberOfCards (); ++i)
-            if ((played.exists (players[player].hand.at (i).number ()))
+         for (start = 0;
+              start < players[player].hand.numberOfCards (); ++start)
+            if ((played.exists (players[player].hand.at (start).number ()))
                 && ((posMaxEqual == -1) 
-                    || (played.at (i).number () >= maxEqualNr))) {
+                    || (played.at (start).number () >= maxEqualNr))) {
                TRACE2 ("Twopart::findPos2Play (unsigned int) - Having equal card at "
-                       << i);
-               return start = end = i;
+                       << start);
+
+               // Use card if it's a trump
+               if (pTrump
+                   && (pTrump->color () == players[player].hand.at (start).color ())) {
+                  return end = start;
+               }
+               if (end == -1U)
+                  end = start;
             }
-         
-         // Player has no equal card: Play high card if higher (and he is the
-         // last player) or 
-         if (((!(bfPlayers & ~(1 << player)))
-              && (posMaxEqual == -1)
-              && ((start = players[player].hand.findFirstEqualOrBigger
-                   (static_cast<CardWidget::NUMBERS> (maxNr))) != -1))
-             // or the staple is being fighted for and player has high cards
+         // Reset start to last found card
+         Check3 (start == players[player].hand.numberOfCards ());
+         if ((start >= players[player].hand.numberOfCards ()) && (end != -1U)) {
+            start = end;
+            end = -1U; }
+         else
+            start = 0;
+
+         // Last player plays high card if higher (even if he would have an
+         // equal card in case the pile is really good) or ...
+         if (((start != end)
+              || (cHigh > 1) || (points >= CardWidget::TEN))
+             && ((!(bfPlayers & ~(1 << player)))
+                 && (trumps
+                     || ((posMaxEqual == -1)
+                         && ((start = (findBigger
+                                       (players[player].hand,
+                                        static_cast<CardWidget::NUMBERS> (maxNr)))
+                              != -1)))))
+             // ... the staple is being fighted for and player has high cards
              || (*startPos
                  && ((start = players[player].hand.numberOfCards () - 1),
                      ((players[player].hand.at (start).number ()
@@ -457,8 +480,9 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
                          && (posMaxEqual == -1))))) {
             TRACE2 ("Twopart::findPos2Play (unsigned int) - Playing highest card at "
                     << start);
-            return end = start;
+            end = start;
          }
+         return end = start;
       }
 
       // Try to get the cards if you don't have any close to the end of part 1
@@ -477,23 +501,29 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
 
       // We don't want the pile; so try not to get it:
       TRACE5 ("Twopart::findPos2Play (unsigned int) - Avoiding pile");
+      CardWidget::NUMBERS nr;
       start = ((players[player].hand.numberOfCards () > 1)
                && ((played.exists (players[player].hand.at (0).number (), *startPos)
-                    && (players[player].hand.at (1).number () < CardWidget::SIX)
+                    && (!bfPlayers & ~(1 << player))
+                    && ((nr = players[player].hand.at (1).number ()) <= maxNr)
+                    && (nr <= CardWidget::SIX)
                     && !played.exists (players[player].hand.at (1).number (), *startPos))
                    || ((players[player].hand.at (0).number () == maxEqualNr)
                        && !played.exists (players[player].hand.at (1).number (),
                                           *startPos)
-                       && (players[player].hand.at (1).number () < CardWidget::SIX))));
+                       && (players[player].hand.at (1).number () <= CardWidget::SEVEN))));
+      TRACE5 ("Twopart::findPos2Play (unsigned int) - Avoiding returns " << start);
 
       // Final check: If you have to pick up the pile and you're the last,
-      // use at least a high card
+      // use at least a high card (unless there are doubles)
       if (!start
+          && (posMaxEqual == -1)
           && !(bfPlayers & ~(1 << player))
           && (players[player].hand.numberOfCards () > 1)
-          && (players[player].hand.at (start).number () > maxNr)
-          && (posMaxEqual == -1))
+          && (players[player].hand.at (start).number () > maxNr))
          start = 1;
+
+      TRACE5 ("Twopart::findPos2Play (unsigned int) - Playing card at " << start);
       return end = start;
    }
    else {
@@ -669,7 +699,9 @@ int Twopart:: endRound (unsigned int player) {
       int maxEqualNr (-1);
       int posMax (-1);
       int posMaxEqual (-1);
-      analyzeLastPlayed (*startPos, cPlayers, maxNr, posMax, maxEqualNr, posMaxEqual);
+      int trumps (-1);
+      analyzeLastPlayed (*startPos, cPlayers, maxNr, posMax, maxEqualNr,
+                         posMaxEqual, trumps);
 
       TRACE4 ("Twopart::endRound (unsigned int) - Player starting round: " << startPlayer
               << "; players: " << cPlayers);
@@ -751,34 +783,44 @@ int Twopart:: endRound (unsigned int player) {
 //            maxPos: Position of highest single card
 //            maxEqua: Highest pair
 //            maxEquaPos: Position of highest equal card
+//            trumps: Number of trumps
+//Remarks   : Values are not resetted!
 /*--------------------------------------------------------------------------*/
 void Twopart::analyzeLastPlayed (unsigned int startPos, unsigned int cards,
                                  int& max, int& maxPos, int& maxEqual,
-                                 int& maxEqualPos) const {
-   cards += startPos;
+                                 int& maxEqualPos, int& trumps) const {
+   TRACE3 ("TwoPart::analyzeLastPlayed (...) - Analyzing cards [" << startPos
+           << " to " << (cards + startPos) << ") of " << played.numberOfCards ());
+   cards += startPos; Check3 (cards <= played.numberOfCards ());
+
    // Check if card is bigger then all previous
    for (; startPos < cards; ++startPos) {
       if ((int)(played.at (startPos).number ()) > max) {
-         TRACE3 ("TwoPart::analyzePlayed () - New highest card " << played.at (startPos)
-                 << " at position " << startPos);
+         TRACE3 ("TwoPart::analyzeLastPlayed (...) - New highest card "
+                 << played.at (startPos) << " at position " << startPos);
          max = (int)played.at (startPos).number ();
          maxPos = startPos;
-         }
-         Check3 (maxPos < played.numberOfCards ());
-         Check3 (max == played.at (maxPos).number ());
+      }
+      Check3 (maxPos < played.numberOfCards ());
+      Check3 (max == played.at (maxPos).number ());
 
-         // Check if card has equal cards
-         for (unsigned int j (startPos + 1); j < cards; ++j)
-            if (played.at (startPos).number () == played.at (j).number ())
-               if ((int)(played.at (startPos).number ()) > maxEqual) {
-                  TRACE3 ("TwoPart::analyzePlayed () - Found equal "
-                          << played.at (startPos).numberStr ()
-                          << " at positions " << startPos << " and " << j);
-                  maxEqual = (int)played.at (startPos).number ();
-                  maxEqualPos = startPos;
-                  break;
-               } // endif equal card found
-   } // end-for all players still in game
+      // Add trumps
+      if (pTrump
+          && (pTrump->color () == played.at (startPos).color ()))
+         ++trumps;
+
+      // Check if card has equal cards
+      for (unsigned int j (startPos + 1); j < cards; ++j)
+         if (played.at (startPos).number () == played.at (j).number ())
+            if ((int)(played.at (startPos).number ()) > maxEqual) {
+               TRACE3 ("TwoPart::analyzeLastPlayed (...) - Found equal "
+                       << played.at (startPos).numberStr ()
+                       << " at positions " << startPos << " and " << j);
+               maxEqual = (int)played.at (startPos).number ();
+               maxEqualPos = startPos;
+               break;
+            } // endif equal card found
+   } // end-for all cards
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1018,4 +1060,25 @@ void Twopart::playOpen (bool open) {
                                    : ICardPile::COMPRESSED);
       players[i].hand.setShowOption (i ? show : ICardPile::SHOWFACE);
    }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Finds a bigger card, with respect to trumps
+//Parameters: pile: Pile to analyze
+//            nr: Number of card to beat
+//Returns   : int: Pos to play (or -1, if no card is bigger)
+/*--------------------------------------------------------------------------*/
+int Twopart::findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const {
+   // Find first bigger (or equal) card without checking for trumps
+   int pos (pile.findFirstEqualOrBigger (nr));
+
+   // Now check if there's a bigger trump
+   if (pTrump && (pos != -1)) {
+      unsigned int newPos (pos);
+      while (pile.at (newPos + 1).color () == pTrump->color ())
+         ++newPos;
+
+      pos = newPos;
+   }
+   return pos;
 }

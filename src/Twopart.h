@@ -77,13 +77,16 @@ class Twopart : public Game {
    void dealCards ();
    void userWants2End (unsigned int input);
    void analyzeLastPlayed (unsigned int startPos, unsigned int cards, int& max,
-                           int& maxPos, int& maxEqual, int& maxEqualPos) const;
+                           int& maxPos, int& maxEqual, int& maxEqualPos,
+                           int& trumps) const;
 
    unsigned int pos2Player (unsigned int pos) const;
    int findPos2Play (unsigned int player, unsigned int& start, unsigned int& end) const;
    unsigned int findSmallestCard (unsigned int player) const;
    unsigned int findEndOfSerie (unsigned int player, unsigned int start) const;
    unsigned int findStartOfSerie (unsigned int player, unsigned int start) const;
+   int findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const;
+
 
    int startPartTwoTimerFnc (unsigned int player);
    void startPartTwo (unsigned int player);
