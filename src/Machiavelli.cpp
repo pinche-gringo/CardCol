@@ -262,9 +262,12 @@ int Machiavelli::makeMove (unsigned int player) {
 
       // No more cards found: Continue with next player
       if (target == -1U) {
-         player = findNextPlayer (player);
-         displayTurn (player);
-
+         unsigned int nextPlayer (findNextPlayer (player));
+         if (nextPlayer == player) {
+            endGame ();
+            return -1;
+         }
+         displayTurn (player = nextPlayer);
          dealCard (player);
       }
       else {
@@ -300,11 +303,7 @@ int Machiavelli::makeMove (unsigned int player) {
       if (hands[player].empty ()) {
          unsigned int next (findNextPlayer (player));
          if (next == player) {
-            status.pop ();
-            Glib::ustring stat (_("%1 lost"));
-            stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
-            status.push (stat);
-            setGameStatus (STOPPED);
+            endGame ();
             return -1;
          }
          displayTurn (player = next);
@@ -476,10 +475,14 @@ void Machiavelli::stapleSelected () {
    disableHuman ();
 
    unsigned int nextPlayer (findNextPlayer (currentPlayer ()));
-   setNextPlayer (nextPlayer);
-   displayTurn (nextPlayer);
-   dealCard (nextPlayer);
-   makeNextMoves ();
+   if (nextPlayer == currentPlayer ())
+      endGame ();
+   else {
+      setNextPlayer (nextPlayer);
+      displayTurn (nextPlayer);
+      dealCard (nextPlayer);
+      makeNextMoves ();
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -848,24 +851,24 @@ MachiPile& Machiavelli::makeNewPile () {
 unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
    TRACE2 ("Machiavelli::showCardsToPlay (unsigned int) - Player " << player);
 
+   static unsigned int nextTarget (-1U);
+   if (nextTarget != -1U) {
+      pos1Play = pos2Play = nextTarget & 0xffff;
+      Check3 (pos1Play < sizeof (hands[player]));
+
+      Check3 ((nextTarget >> 16) < tablePiles.size ());
+      MachiPile& dest (*tablePiles[nextTarget >> 16]);
+
+      unsigned int target (dest.getPosition4Card (*hands[player][pos1Play]));
+      Check3 (target != -1U);
+      target += nextTarget & 0xffff0000;
+
+      nextTarget = -1U;
+      return target;
+   }
+
    ICardPile& playerPile (hands[player]);
    unsigned int dest (-1U);
-
-   // Check if any card can be added to an existing pile
-   if (tablePiles.size ())
-      for (ICardPile::const_iterator p (playerPile.begin ());
-           p != playerPile.end (); ++p) {
-         TRACE8 ("Machiavelli::showCardsToPlay (player) - Adding card " << **p << '?');
-
-         for (std::vector<MachiPile*>::const_iterator m (tablePiles.begin ());
-              m != tablePiles.end (); ++m) {
-            dest = (*m)->getPosition4Card (**p);
-            if (dest != -1U) {
-                pos1Play = pos2Play = p - playerPile.begin ();
-                return ((m - tablePiles.begin ()) << 16) + dest;
-            }
-         }
-      }
 
    // Check for 3 cards belonging to a serie
    unsigned int i (0);
@@ -879,7 +882,7 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
 
       // Play the bigger of the found matching cards, if there are >= 3
       if ((nrs > aPos.size ()) ? (nrs > 2) : (aPos.size () > 2)) {
-         if (nrs < aPos.size ()) {
+         if (nrs <= aPos.size ()) {
             i = playerPile.sortColourSerie (aPos, aOrder);
             nrs = aPos.size ();
          }
@@ -890,6 +893,60 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
          return (tablePiles.size () - 1) << 16;
       }
    }
+
+   if (tablePiles.size ())
+      // Check if any cards fits somehow to existing piles
+      for (ICardPile::const_iterator p (playerPile.begin ());
+           p != playerPile.end (); ++p) {
+         TRACE8 ("Machiavelli::showCardsToPlay (player) - Adding card " << **p << '?');
+
+         for (std::vector<MachiPile*>::const_iterator m (tablePiles.begin ());
+              m != tablePiles.end (); ++m) {
+            Check2 ((*m)->getType () != MachiPile::UNDEFINED);
+
+            // Check if the card can be added to an existing pile
+            dest = (*m)->getPosition4Card (**p);
+            if (dest != -1U) {
+                pos1Play = pos2Play = p - playerPile.begin ();
+                return ((m - tablePiles.begin ()) << 16) + dest;
+            }
+
+            // Or can the card be added by reordering the pile?
+            int diff (MachiPile::cardDistance (**p, *(**m)[0]));
+            if ((diff < 0)
+                || (((*m)->getType () == MachiPile::COLOUR)
+                    ? ((*p)->colour () != (**m)[0]->colour ())
+                    : diff))
+               continue;
+
+            int pos ((*m)->size () - static_cast<unsigned int> (diff));
+            TRACE8 ("Machiavelli::showCardsToPlay (player) - Splitting "
+                    << (m - tablePiles.begin ()) << " at " << diff << " ("
+                    << pos << ")?");
+
+            // A new pile can be made directly (enough cards on both sides)
+            if (((pos > 2) && (diff > 2)) || ((pos > 3) && (diff > 2))) {
+               makeNewPile ();
+
+               // Move cards to remove to hand (to be shown); The card from the
+               // hand will be added in the next move
+               pos1Play = playerPile.size ();
+               ++diff;
+               do {
+                  TRACE9 ("Machiavelli::showCardsToPlay (player) - Moving " << (diff + 1));
+                  Check3 ((unsigned int)diff < (*m)->size ());
+                  playerPile.append ((*m)->remove (diff));
+               } while (static_cast<unsigned int> (diff) < (*m)->size ());
+               pos2Play = playerPile.size () - 1;
+
+               nextTarget = (((tablePiles.size () - 1) << 16)
+                             + (p - playerPile.begin ()));
+               return (tablePiles.size () - 1) << 16;
+            }
+         }
+      }
+
+
    return -1U;
 }
 
@@ -992,4 +1049,15 @@ void Machiavelli::removePile (unsigned int pile) {
    tablePiles.erase (tablePiles.begin () + pile);
    piles.remove (tmp);
    delete &tmp;
+}
+
+//----------------------------------------------------------------------------
+/// Ends the game
+//----------------------------------------------------------------------------
+void Machiavelli::endGame () {
+   status.pop ();
+   Glib::ustring stat (_("%1 lost"));
+   stat.replace (stat.find ("%1"), 2, actPlayers[currentPlayer ()]->getName ());
+   status.push (stat);
+   setGameStatus (STOPPED);
 }
