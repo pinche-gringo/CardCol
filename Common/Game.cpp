@@ -196,7 +196,8 @@ bool Game::makeComputerMove () {
    TRACE5 ("Game::makeComputerMove () - Turn of player " << actPlayer);
 
    if (statGame == TOSTOP) {
-      TRACE8 ("Game::makeCompuerMove () - End game ");
+      TRACE8 ("Game::makeComputerMove () - End game; Restart: "
+              << (restart ? "Yes" : "No"));
       setGameStatus (STOPPED);
       if (restart)
          start ();
@@ -204,7 +205,7 @@ bool Game::makeComputerMove () {
    }
 
    actPlayer = makeMove (actPlayer);
-   TRACE9 ("Game::makeCompuerMove () - Next player: " << actPlayer);
+   TRACE9 ("Game::makeComputerMove () - Next player: " << actPlayer);
    if (!actPlayer)
       enableHuman ();
    return actPlayer > 0;
