@@ -37,7 +37,6 @@
 #include <YGP/File.h>
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
-#include <YGP/Socket.h>
 #include <YGP/INIFile.h>
 #include <YGP/ANumeric.h>
 #include <YGP/Tokenize.h>
@@ -48,12 +47,10 @@
 #include <XGP/XAttribute.h>
 
 #include <Human.h>
-#include <RemotePlayer.h>
 #include <ComputerPlayer.h>
 
 #include <PlayerDlg.h>
 #include <DeckSelect.h>
-#include <PlayerConnDlg.h>
 
 #include "Hearts.h"
 #include "Rovhult.h"
@@ -68,10 +65,14 @@
 const unsigned int CardgameCollection::WIDTH (760);
 const unsigned int CardgameCollection::HEIGHT (750);
 
+#ifdef HAVE_LIBPTHREAD
+#  include <YGP/Socket.h>
+#  include <PlayerConnDlg.h>
 
-#define DEFPORT                31338
-#define STRING(nr)             #nr
+#  define DEFPORT                31338
+#  define STRING(nr)             #nr
 static const unsigned int PORT (DEFPORT);
+#endif
 
 
 // Pixmap for program
@@ -667,8 +668,10 @@ const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {
    { "browser", 'b' },
    { "dir-help", 'd' },
    { "file", 'f' },
+#ifdef HAVE_LIBPTHREAD
    { "listen-at", 'l' },
    { "connect-to", 'c' },
+#endif
    { "version", 'V' },
 #ifdef SAVE_GAME
    { "save-game", 'S' },
@@ -695,21 +698,27 @@ CardgameCollection::CardgameCollection (Options& opts)
    // Create controls
    addMenus (menuItems, sizeof (menuItems) / sizeof (menuItems[0]));
    showHelpMenu ();
-   Check3 (apMenus[NEW]); Check3 (apMenus[CONNECT]); Check3 (apMenus[END]);
+   Check3 (apMenus[NEW]); Check3 (apMenus[END]);
    apMenus[NEW]->set_sensitive (false);
-   apMenus[CONNECT]->set_sensitive (false);
    apMenus[END]->set_sensitive (false);
+
+#ifdef HAVE_LIBPTHREAD
+   Check3 (apMenus[CONNECT]); 
+   apMenus[CONNECT]->set_sensitive (false);
+#endif
 
    status.show ();
    getClient ().pack_end (status, Gtk::PACK_SHRINK);
 
    show ();
+   mxGuiCmd.lock ();
 
    Glib::signal_idle ().connect
        (bind_return (slot (*this, &CardgameCollection::loadCards), false));
-   mxGuiCmd.lock ();
    makePlayer ();
 
+
+#ifdef HAVE_LIBPTHREAD
    if (options.port.size ()) {
       TRACE9 ("CardgameCollection::CardgameCollection (Options&) - Connect: "
               << options.target << '-' << options.port);
@@ -724,6 +733,7 @@ CardgameCollection::CardgameCollection (Options& opts)
       if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
          initCommunication ();
    }
+#endif
 }
 
 //----------------------------------------------------------------------------
@@ -856,7 +866,7 @@ void CardgameCollection::startGame () {
       }
 #endif
 
-      game->setCardOrder ("");
+      game->clearCardOrder ();
    }
    else
       game->setGameStatus (Game::NONE);
@@ -923,6 +933,7 @@ void CardgameCollection::command (int menu) {
       }
       break; }
 
+#ifdef HAVE_LIBPTHREAD
    case CONNECT:
       playerPos = PlayerConnectDlg::perform (aPlayer, PORT, cmgr);
       TRACE1 ("CardgameCollection::command (int) - Mode: " << cmgr.getMode ()
@@ -930,6 +941,7 @@ void CardgameCollection::command (int menu) {
       if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
          initCommunication ();
       break;
+#endif
 
    case TWOPART:
       options.type = GTWOPART;
@@ -1010,11 +1022,11 @@ void CardgameCollection::command (int menu) {
    } // end-switch
 }
 
+#ifdef HAVE_LIBPTHREAD
 //-----------------------------------------------------------------------------
 /// Initializes the communication
 //-----------------------------------------------------------------------------
 void CardgameCollection::initCommunication () {
-#ifdef HAVE_LIBPTHREAD
    Check2 (cmgr.getMode () != YGP::ConnectionMgr::NONE);
    Check2 (aCommThreads.empty ());
 
@@ -1031,8 +1043,8 @@ void CardgameCollection::initCommunication () {
                                                 (void*)i));
          aCommThreads[i]->allowCancelation ();
       }
-#endif
 }
+#endif
 
 //-----------------------------------------------------------------------------
 /// Returns the name of the file to display in the help
@@ -1128,9 +1140,13 @@ void* CardgameCollection::changeCards (void* opt) {
           (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
       dlg->show ();
 
-      Check3 (apMenus[NEW]); Check3 (apMenus[CONNECT]);
+      Check3 (apMenus[NEW]);
       apMenus[NEW]->set_sensitive (false);
+
+#ifdef HAVE_LIBPTHREAD
+      Check3 (apMenus[CONNECT]);
       apMenus[CONNECT]->set_sensitive (false);
+#endif
    }
    return NULL;
 }
@@ -1193,9 +1209,13 @@ void CardgameCollection::loadCards () {
 
    void* rc (changeCards ((void*)-1));
    if (rc) {
-      Check3 (apMenus[NEW]); Check3 (apMenus[CONNECT]);
+      Check3 (apMenus[NEW]);
       apMenus[NEW]->set_sensitive (true);
+
+#ifdef HAVE_LIBPTHREAD
+      Check3 (apMenus[CONNECT]);
       apMenus[CONNECT]->set_sensitive (true);
+#endif
 
       status.pop ();
       if (cmgr.getMode () != YGP::ConnectionMgr::CLIENT) {
@@ -1217,16 +1237,20 @@ void CardgameCollection::gameEvents (unsigned int status) {
    switch (status) {
    case Game::PLAYING:
       Check3 (apMenus[END]);
-      Check3 (apMenus[CONNECT]);
       apMenus[END]->set_sensitive (true);
+#ifdef HAVE_LIBPTHREAD
+      Check3 (apMenus[CONNECT]);
       apMenus[CONNECT]->set_sensitive (false);
+#endif
       break;
 
    case Game::STOPPED:
       Check3 (apMenus[END]);
-      Check3 (apMenus[CONNECT]);
       apMenus[END]->set_sensitive (false);
-      apMenus[CONNECT]->set_sensitive (true);
+#ifdef HAVE_LIBPTHREAD
+      Check3 (apMenus[CONNECT]);
+      apMenus[CONNECT]->set_sensitive (false);
+#endif
 
       if (restart == 1) {
          // (Re)start the (new) game, when the event queue is empty (and
@@ -1243,12 +1267,12 @@ void CardgameCollection::gameEvents (unsigned int status) {
    } 
 }
 
+#ifdef HAVE_LIBPTHREAD
 //----------------------------------------------------------------------------
 /// Wait for messages
 /// \param player: ID of player (-1 for server; 0 .. n for clients)
 //----------------------------------------------------------------------------
 void* CardgameCollection::waitForMessages (void* player) {
-#ifdef HAVE_LIBPTHREAD
    TRACE1 ("CardgameCollection::waitForMessage (void*)");
    Check2 (cmgr.getMode () != YGP::ConnectionMgr::NONE);
 
@@ -1275,21 +1299,17 @@ void* CardgameCollection::waitForMessages (void* player) {
          YGP::Tokenize messages (input);
          std::string message;
          while ((message = messages.getNextNode ('\0')).size ()) {
-            char* msg (new char [message.length () + 1]);
-            strcpy (msg, message.c_str ());
-
             TRACE9 ("CardgameCollection::waitForMessages (void*) - Lock (thread)");
             mxThreadCmd.lock ();    // Wait til last message has been processed
-            TRACE9 ("CardgameCollection::waitForMessages (void*) - Perform cmd" << msg);
-            Glib::signal_idle ().connect
-                (bind (slot (*this, &CardgameCollection::handleMessage),
-                       iPlayer, msg));
+            TRACE9 ("CardgameCollection::waitForMessages (void*) - Perform cmd " << message);
 
-            TRACE9 ("CardgameCollection::waitForMessages (void*) - Wait for GUI");
-            mxThreadCmd.unlock ();
+            Glib::signal_idle ().connect
+               (bind (slot (*this, &CardgameCollection::handleMessage),
+                      iPlayer, message));
             mxGuiCmd.lock ();
+            mxThreadCmd.unlock ();
             mxGuiCmd.unlock ();
-            TRACE9 ("CardgameCollection::waitForMessages (void*) - GUI finsished");
+            TRACE9 ("CardgameCollection::waitForMessages (void*) - Handled msg");
          }
       }
    }
@@ -1313,17 +1333,20 @@ void* CardgameCollection::waitForMessages (void* player) {
    }
 
    return NULL;
-#endif
 }
+#endif
 
 //----------------------------------------------------------------------------
 /// Starts the game and unlocks a (locked) msg-handling mutex
 //----------------------------------------------------------------------------
 void CardgameCollection::doStartGame () {
    startGame ();
+#ifdef HAVE_LIBPTHREAD
    mxThreadCmd.unlock ();
+#endif
 }
 
+#ifdef HAVE_LIBPTHREAD
 //----------------------------------------------------------------------------
 /// Handles received global messages: Those are:
 ///   - Error messages (to display error messages):
@@ -1338,8 +1361,8 @@ void CardgameCollection::doStartGame () {
 /// \returns int: True: Message was a supported message and has been processed;
 ///     -1 if Message was handled, but not fully processed yet; else false
 //----------------------------------------------------------------------------
-int CardgameCollection::handleGlobalMessage (unsigned int player, char* msg) throw (std::string) {
-#ifdef HAVE_LIBPTHREAD
+int CardgameCollection::handleGlobalMessage (unsigned int player,
+                                             const std::string& msg) throw (std::string) {
    TRACE5 ("CardgameCollection::handleGlobalMessage (unsigned int, char*) - " << msg);
 
    YGP::Tokenize message (msg);
@@ -1394,7 +1417,6 @@ int CardgameCollection::handleGlobalMessage (unsigned int player, char* msg) thr
       return true;
    }
    return false;
-#endif
 }
 
 //----------------------------------------------------------------------------
@@ -1404,17 +1426,12 @@ int CardgameCollection::handleGlobalMessage (unsigned int player, char* msg) thr
 /// \returns bool: False
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
-bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
-#ifdef HAVE_LIBPTHREAD
+bool CardgameCollection::handleMessage (unsigned int player, const std::string msg) {
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - " << msg);
 
-   TRACE9 ("CardgameCollection::handleMessage (unsigned int, char*) - Locking Cmd (main)");
-   mxThreadCmd.lock ();                               // Block message processing
-   TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - Unlocking GUI");
    mxGuiCmd.unlock ();
-   TRACE9 ("CardgameCollection::handleMessage (unsigned int, char*) - Locked (main)");
+   mxThreadCmd.lock ();                               // Block message processing
    mxGuiCmd.lock ();
-   TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - Locking GUI");
 
    bool unlock (true);
    try {
@@ -1444,9 +1461,7 @@ bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
    if (unlock)
       mxThreadCmd.unlock ();
 
-   delete [] msg;
    return false;
-#endif
 }
 
 //----------------------------------------------------------------------------
@@ -1456,7 +1471,6 @@ bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
 bool CardgameCollection::showMessage (char* msg) {
-#ifdef HAVE_LIBPTHREAD
    Gtk::MessageDialog* dlg (new Gtk::MessageDialog (msg, Gtk::MESSAGE_ERROR));
    dlg->set_title (PACKAGE);
    dlg->signal_response ().connect
@@ -1464,8 +1478,8 @@ bool CardgameCollection::showMessage (char* msg) {
    dlg->show ();
    delete [] msg;
    return false;
-#endif
 }
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -1479,8 +1493,10 @@ void CardgameAppl::showHelp () const {
              << "  -f, --file ......... " << _("[FILE] Use file as INI file\n")
              << "  -b, --browser ...... " << _("[NAME] Browser to use to display the help\n")
              << "  -d, --dir-help ..... " << _("[DIR] Directory to search for help\n")
+#ifdef HAVE_LIBPTHREAD
              << "  -l, --listen-at .... " << _("[PORT] Awaits connections on port PORT\n")
              << "  -c, --connect-to ... " << _("[SERVER[:PORT]] Connects to SERVER:PORT\n")
+#endif
 #ifdef SAVE_GAME
              << "  -S, --save-game .... " << _("[FILE] Saves game into FILE\n")
              << "  -L, --load-game .... " << _("[FILE] Load game from FILE\n")
@@ -1555,6 +1571,7 @@ bool CardgameAppl::handleOption (const char option) {
          std::cerr << PACKAGE << _("-warning: No file specified! Ignoring option `f'\n");
       break; }
 
+#ifdef HAVE_LIBPTHREAD
    case 'l': {
       const char* port (getOptionValue ());
       if (port)
@@ -1579,6 +1596,7 @@ bool CardgameAppl::handleOption (const char option) {
       else
          std::cerr << PACKAGE << _("-warning: No target specified! Ignoring option `c'\n");
       break; }
+#endif
 
    case 'V':
       std::cout << description () << '\n';
@@ -1709,6 +1727,10 @@ int CardgameAppl::perform (int, const char**) {
 /// \returns \c int: Status
 //-----------------------------------------------------------------------------
 int main (int argc, const char* argv[]) {
+#ifdef HAVE_LIBPTHREAD
+   Glib::thread_init ();
+#endif
+
    Gtk::Main gtk (&argc, const_cast<char***> (&argv));
    CardgameAppl appl (argc, argv);
    return appl.run ();
