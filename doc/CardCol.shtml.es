@@ -82,6 +82,18 @@
       ' -->
     </table>
 
+    <h2>Modo de empleo</h2>
+    <p>Principalmente se ejecuta el programa sin ninguna opción:</p>
+
+    <pre>   CardCol</pre>
+
+    <p>Dependende de la versión (o las opciones durante configurar) hay
+      opciones diferentes para controlar el programa.</p>
+
+    <pre>   CardCol --help</pre>
+
+    <p>muestra una ayuda sobre el uso.</p>
+
     <h2>Cr&eacute;ditos</h2>
     <p>Un abrazo fuerte a Ingrid y Jonathan, que me ense&ntilde;aron todos los
       trucos de <tt>Buraco</tt> y lo jugaron conmigo por horas.</p>
@@ -98,5 +110,5 @@
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
-</body>
+  </body>
 </html>

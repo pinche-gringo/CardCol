@@ -42,13 +42,13 @@
       schl&auml;gt besser die Zeit w&auml;hrend einer &gt; 10st&uuml;ndigen
       Bus/Bahn/was-auch-immer-Reise tot, als ein gutes Kartenspiel?</p>
 
-    <p>Alle Spiele sind f&uuml;r mehrere Personen (mit Computer-Spieler).
-      Sollte jemand Solit&auml;rspiele suchen, kann ich die exzellenten
-      KDE-Kartenspiele empfehlen.</p>
+    <p>Alle Spiele sind f&uuml;r mehrere Personen (&uuml;ber ein Netzwerk oder
+      mit Computer-Spieler).  Sollte jemand Solit&auml;rspiele suchen, kann
+      ich die exzellenten KDE-Kartenspiele empfehlen.</p>
 
     <p>Vertrieben wird das Programm unter der GNU General Public License, die
       prinizipell folgendes aussagt (Details findet man in der in diesem Paket
-      enthaltenen Datei <tt>COPYING</tt> oder of der
+      enthaltenen Datei <tt>COPYING</tt> oder auf der
       <a href="http://www.gnu.org">GNU Homepage (http://www.gnu.org)</a>):</p>
 
     <blockquote><em><p>Dieses Programm ist freie Software. Sie k&ouml;nnen es
@@ -81,6 +81,18 @@
       ' -->
     </table>
 
+    <h2>Aufruf</h2>
+    <p>Prinzipell startet man das Programm ohne jegliche Optionen, also etwa</p>
+
+    <pre>   CardCol</pre>
+
+    <p>Je nach Version des Spieles (oder den Optionen beim Konfigurieren)
+      existieren unterschiedliche Optionen zur Steuerung des Programms.</p>
+
+    <pre>   CardCol --help</pre>
+
+    <p>liefert eine Hilfe zum Aufruf.</p>
+
     <h2>Gr&uuml;&szlig;e und Danksagung</h2>
     <p>Eine feste Umarmung an Ingrid un Jonathan, die mir alle Tricks von
       <tt>Buraco</tt> beigebracht haben und es mit mir stundenlang gespielt
@@ -99,5 +111,5 @@
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
-</body>
+  </body>
 </html>

@@ -80,6 +80,18 @@
       ' -->
     </table>
 
+    <h2>Usage</h2>
+    <p>Principally the program is started without any options, like this:</p>
+
+    <pre>   CardCol</pre>
+
+    <p>Depending on the version (or the options while configuring) exist
+      different options to control the program.</p>
+
+    <pre>   CardCol --help</pre>
+
+    <p>prints a help for the usage.</p>
+
     <h2>Credits</h2>
     <p>A big hug to Ingrid and Jonathan for teaching me all of the tricks
       which <tt>Buraco</tt> has to offer. Not to mention the hours we actually
@@ -97,5 +109,5 @@
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
-</body>
+  </body>
 </html>
