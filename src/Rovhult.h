@@ -46,7 +46,7 @@ class RovhultAppl : public XApplication {
    // IDs for menus
    enum { NEW, EXIT, ABOUT };
 
-   void pileSelected (CardVPile* parent);
+   void pileSelected (unsigned int player, unsigned int pile);
    void handSelected (unsigned int player, unsigned int iCard);
 
    void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
@@ -77,7 +77,11 @@ class RovhultAppl : public XApplication {
    bool clearPlayedIf4Equal ();
    void fillUpPile (ICardPile& pile, unsigned int minCards);
 
-   bool playerCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const;
+   bool playerCanContinue (unsigned int player, CardWidget::NUMBERS card) const;
+   bool playerHandCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const;
+
+   bool cardValid (CardWidget::NUMBERS nr);
+   void executeMove (unsigned int player, CardWidget::NUMBERS nr);
 
    void loadCards ();
 

@@ -423,8 +423,6 @@ void RovhultAppl::finishedExchange () {
          CardWidget& card (hands[i].at (j));
          unregisterDND (card);
          unregisterDND (reserve[i][j].getTopCard ());
-
-         reserve[i][j].setAccessable (false);
       }
    }
 
@@ -439,14 +437,28 @@ void RovhultAppl::finishedExchange () {
 //Parameters: player: Player to enable
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::enablePlayer (unsigned int player) {
-   TRACE2 ("RovhultAppl::enablePlayer (unsigned int) - " << player << " - "
-           << hands[player].numberOfCards () << " cards");
+   Check3 (activeCards.empty ());
 
-   for (int i (hands[player].numberOfCards ()); i;)
-      activeCards.push_back
-         (hands[player].at (--i).clicked.connect
-          (bind (slot (this, &RovhultAppl::handSelected),
-                 player, i)));
+   if (hands[player].numberOfCards ()) {
+      TRACE2 ("RovhultAppl::enablePlayer (unsigned int) - Hand of player "
+           << player << " has " << hands[player].numberOfCards () << " cards");
+
+      for (int i (hands[player].numberOfCards ()); i;)
+         activeCards.push_back
+            (hands[player].at (--i).clicked.connect
+             (bind (slot (this, &RovhultAppl::handSelected), player, i)));
+   }
+   else {
+      TRACE2 ("RovhultAppl::enablePlayer (unsigned int) - Enable reserve of player "
+              << player);
+
+      for (int i (0); i < 3; ++i) {
+         if (reserve[player][i].numberOfCards ())
+            activeCards.push_back
+               (reserve[player][i].getTopCard ().clicked.connect
+                (bind (slot (this, &RovhultAppl::pileSelected), player, i)));
+      }
+   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -466,37 +478,44 @@ void RovhultAppl::disablePlayer (unsigned int player) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card on table
-//Parameters: parent: Pile of card
-/*--------------------------------------------------------------------------*/
-void RovhultAppl::pileSelected (CardVPile* parent) {
-   Check3 (parent);
-
-   // TODO: Implement for end-game
-   CardWidget& card (parent->removeTopCard ());
-   TRACE1 ("Rovhult::pileSelected (CardVPile*, unsinged int) - "
-           << card.color () << '/' << card.number ());
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback after clicking on a card in hand
 //Parameters: player: ID of player
 //            iCard: Offset of card in hand
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
-   Check3 (pos <= cards.numberOfCards ());
-   Check3 (player <= NUM_PLAYERS);
+void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
+   Check3 (player <= NUM_PLAYERS); Check3 (pile < 3);
 
-   CardWidget& card (hands[player].at (pos));
-   TRACE1 ("Rovhult::handSelected (unsigned int, unsinged int) - " << pos << " = "
+   CardWidget& card (reserve[player][pile].getTopCard ());
+   TRACE1 ("Rovhult::pileSelected (CardVPile*, unsinged int) - "
            << card.color () << '/' << card.number ());
 
-   // Check if played card is valid (equal or bigger)
-   // The following cards have special meaning:
-   //   - 2: Can be played always
-   //   - 7: The next card must be equal or *smaller*
-   //   - 8: Skips the next player
-   //   -10: Clears the staple; the same player can continue with cards in hand
-   switch (card.number ()) {
+   if (!cardValid (card.number ()))
+       return;
+
+   // Move card (and cards with equal number below) from player to played staple
+   do {
+      if (reserve[player][pile].getTopCard ().number () == card.number ()) {
+         CardWidget& movedCard (reserve[player][pile].removeTopCard ());
+         if (movedCard.number () != CardWidget::TEN)
+            played.append (movedCard);
+      }
+   } while (pile--);
+
+   executeMove (player, card.number ());
+}
+
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Check if played card is valid (equal or bigger)
+//            The following cards have special meaning:
+//              - 2: Can be played always
+//              - 7: The next card must be equal or *smaller*
+//              - 8: Skips the next player
+//              -10: Clears the staple; the same player can continue with cards in hand
+//Parameters: nr: Card to check
+//Returns   : bool: True, if card can be played
+/*--------------------------------------------------------------------------*/
+bool RovhultAppl::cardValid (CardWidget::NUMBERS nr) {
+   switch (nr) {
    case CardWidget::TWO:
       break;
 
@@ -509,20 +528,40 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
          CardWidget& lastPlayed (played.getTopCard ());
 
          if (lastPlayed.number () == CardWidget::SEVEN) {
-            if (card.number () > CardWidget::SEVEN) {
+            if (nr > CardWidget::SEVEN) {
                XMessageBox::Show (_("After a 7, the played card must be equal or smaller!"),
                                   _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
-               return;
+               return false;
             }
          }
          else
-            if (card.number () < played.getTopCard ().number ()) {
+            if (nr < played.getTopCard ().number ()) {
                XMessageBox::Show (_("Played card must be equal or bigger!"),
                                   _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
-               return;
+               return false;
             }
       }
    } // end-switch
+   return true;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback after clicking on a card in hand
+//Parameters: player: ID of player
+//            iCard: Offset of card in hand
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
+   TRACE3 ("Rovhult::handSelected (unsigned int, unsinged int) - Checking player "
+           << player << "; Card at " << pos);
+   Check3 (player <= NUM_PLAYERS);
+   Check3 (pos <= hands[player].numberOfCards ());
+
+   CardWidget& card (hands[player].at (pos));
+   TRACE1 ("Rovhult::handSelected (unsigned int, unsinged int) - " << pos << " = "
+           << card.color () << '/' << card.number ());
+
+   if (!cardValid (card.number ()))
+       return;
 
    // Move card (and cards with equal number below) from player to played staple
    do {
@@ -536,26 +575,48 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
    if ((card.number () != CardWidget::TEN) || (!hands[player].numberOfCards ()))
       fillUpPile (hands[player], card.number () != CardWidget::TEN ? 3 : 1);
 
+   executeMove (player, card.number ());
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Executes the move -> Check consequences for next in round and
+//            calculate next player
+//Parameters: player: ID of player who played the last card
+//            iCard: Offset of card in hand
+//            NUMBERS: Played card
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
+   TRACE3 ("RovhultAppl::executeMove (unsigned int, CardWidget::NUMBERS - " << player)
+   Check3 (player < NUM_PLAYERS);
+
    disablePlayer (player);
    // If last 4 cards have the same number or ten was played: Don't increase player
-   if (!clearPlayedIf4Equal () || (card.number () != CardWidget::TEN)) {
+   if ((nr != CardWidget::TEN) && !clearPlayedIf4Equal ()) {
       ++player;
       player &= 0x3;
 
-      if (card.number () == CardWidget::EIGHT) {
-         std::string stat (_("Skipping player %1"));
+      std::string stat;
+      status.pop (1);
+      if (nr == CardWidget::EIGHT) {
+         std::string stat (_("Skipping player %1; "));
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
-         status.pop (1);
          status.push (1, stat);
          ++player;
          player &= 0x3;
       }
 
       // Check if next player has fitting card
-      if (!playerCanContinue (hands[player], card.number ())) {
+      if (!playerCanContinue (player, nr)) {
          movePlayedCardsToLooser (player++);
          player &= 0x3;
+
+         stat = stat + _("Player %1 can't continue -> Getting whole pile. ");
+         stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
       }
+
+      stat = stat + _("Turn of player %1");
+      stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+      status.push (1, stat);
    }
 
    enablePlayer (player);
@@ -563,10 +624,48 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Checks if the passed pile has a card which can be played
-//Parameters: pile: Pile (of cards) to inspect
+//Parameters: player: ID of player to analyze
 //            card: Last played card
 /*--------------------------------------------------------------------------*/
-bool RovhultAppl::playerCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const {
+bool RovhultAppl::playerCanContinue (unsigned int player, CardWidget::NUMBERS card) const {
+   TRACE3 ("RovhultAppl::playerCanContinue (unsigned int, CardWidget::NUMBERS) const - "
+           << player << "; Card: " << card);
+   Check3 (player < NUM_PLAYERS);
+ 
+   if (hands[player].numberOfCards ())
+      return playerHandCanContinue (hands[player], card);
+
+   for (int i (0); i < 3; ++i)
+      if (reserve[player][i].numberOfCards ()) {
+         TRACE5 ("RovhultAppl::playerCanContinue (unsigned int, CardWidget::NUMBERS) const"
+                 " - Checking pile " << i);
+
+         CardWidget::NUMBERS nr (reserve[player][i].getTopCard ().number ());
+         switch (nr) {
+         case CardWidget::TWO:
+         case CardWidget::TEN:
+            return true;
+
+         default:
+            TRACE7 ("RovhultAppl::playerCanContinue (unsigned int, CardWidget::NUMBERS) const"
+                    " - Value of card: " << nr);
+            if (((card == CardWidget::SEVEN) && (nr <= CardWidget::SEVEN))
+                || ((card != CardWidget::SEVEN) && (nr >= card)))
+               return true;
+         } // end-switch card
+      } // endif pile contains cards
+
+   return false;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Checks if the passed pile has a card which can be played
+//Parameters: player: ID of player to analyze
+//            card: Last played card
+/*--------------------------------------------------------------------------*/
+bool RovhultAppl::playerHandCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const {
+   TRACE3 ("RovhultAppl::playerHandCanContinue (const ICardPile&, CardWidget::NUMBERS) const"
+           << " - Card: " << card);
    Check3 (pile.numberOfCards ());
 
    // Check if first/last is smaller/bigger then passed one
@@ -579,7 +678,7 @@ bool RovhultAppl::playerCanContinue (const ICardPile& pile, CardWidget::NUMBERS 
          return true;
    }
 
-   TRACE3 ("RovhultAppl::playerCanContinue (const ICardPile&, CardWidget::NUMBERS"
+   TRACE3 ("RovhultAppl::playerHandCanContinue (const ICardPile&, CardWidget::NUMBERS"
            " - Special check");
    // Simple check failed -> Check for special card (2 or 10)
    if (pile.at (0).number () == CardWidget::TWO)
@@ -640,11 +739,6 @@ void RovhultAppl::movePlayedCardsToLooser (unsigned int nrLooser) {
       hands[nrLooser].append (played.remove (0));
 
    hands[nrLooser].sortByNumber ();
-
-   status.pop (1);
-   std::string stat (_("Player %1 can't continue -> Getting whole pile"));
-   stat.replace (stat.find ("%1"), 2, (char)(nrLooser + '0'));
-   status.push (1, stat);
 }
 
 /*--------------------------------------------------------------------------*/
