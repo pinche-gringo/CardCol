@@ -36,12 +36,19 @@ class CardPile : public Gtk::VBox {
    void setTopCardVisible (bool visible = true);
    void setTopCardInVisible () { setTopCardVisible (false); }
 
+   void setTopCards (const vector<CardWidget*>& staple);
+   void setTopCards (const vector<CardWidget*>& staple, bool visible);
+   void setTopCards (const vector<CardWidget*>& staple, bool visible, bool lastVisible) {
+      setTopCards (staple, visible);
+      setTopCardVisible (lastVisible); }
+
    void setTopCard (CardWidget& newCard);
    void setTopCard (CardWidget& newCard, bool visible) {
-      setTopCard (newCard);
-      newCard.setVisible (visible); }
-   CardWidget* removeTopCard ();
+      newCard.setVisible (visible);
+      setTopCard (newCard); }
+   CardWidget& removeTopCard ();
 
+   bool existCard (CardWidget& card) const { existCard (&card); }
    bool existCard (CardWidget* card) const {
       return find (cards.begin (), cards.end (), card) != cards.end (); }
 

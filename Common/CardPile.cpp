@@ -25,11 +25,10 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#define DEBUG 9
+#define DEBUG 0
 #include <Check.h>
 #include <Trace_.h>
 
-#include "CardSet.h"
 #include "CardWidget.h"
 
 #include "CardPile.h"
@@ -71,20 +70,20 @@ void CardPile::setTopCard (CardWidget& card) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Returns and removes the top card of the pile
-//Returns   : CardWidget*: Pointer to (removed) card
+//Returns   : CardWidget&: Reference to (removed) card
 /*--------------------------------------------------------------------------*/
-CardWidget* CardPile::removeTopCard () {
+CardWidget& CardPile::removeTopCard () {
    TRACE5 ("CardPile::removeTopCard () - New size: " << cards.size () - 1);
 
-   Check3 (cards.size () > 0);
-   CardWidget* pCard (cards[cards.size () - 1]);
+   Check3 (cards.size () > 0); Check3 (cards[cards.size () - 1]);
+   CardWidget& card (*cards[cards.size () - 1]);
    remove (*cards[cards.size () - 1]);
    cards.pop_back ();
 
    if (cards.size ())
       cards[cards.size () - 1] ->set_usize (-1, 96);
 
-   return pCard;
+   return card;
 }
 
 
@@ -98,11 +97,37 @@ void CardPile::flipTopCard () {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Returns and removes the top card of the pile
+//Purpose   : Sets the top card of the pile visible as indicated
 //Parameters: visible: Flag if cardface should be shown or back
 /*--------------------------------------------------------------------------*/
 void CardPile::setTopCardVisible (bool visible) {
    Check3 (cards.size () > 0);
 
    cards[cards.size () - 1]->setVisible (visible);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Adds various cards to the staple
+//Parameters: visible: Flag if cardface should be shown or back
+/*--------------------------------------------------------------------------*/
+void CardPile::setTopCards (const vector<CardWidget*>& staple) {
+   vector<CardWidget*>::const_iterator i;
+
+   for (i = staple.begin (); i != staple.end (); ++i) {
+      Check3 (*i); Check3 (**i);
+      setTopCard (**i);
+   }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Adds various cards to the staple
+//Parameters: visible: Flag if cardface should be shown or back
+/*--------------------------------------------------------------------------*/
+void CardPile::setTopCards (const vector<CardWidget*>& staple, bool visible) {
+   vector<CardWidget*>::const_iterator i;
+
+   for (i = staple.begin (); i != staple.end (); ++i) {
+      Check3 (*i); Check3 (**i);
+      setTopCard (**i, visible);
+   }
 }
