@@ -12,5 +12,5 @@ Common/Game.cpp
 Common/PlayerDlg.cpp
 src/CardCol.cpp
 src/Hearts.cpp
-src/HeartsScore.cpp
+Common/ScoreDlg.cpp
 src/Buraco.cpp
