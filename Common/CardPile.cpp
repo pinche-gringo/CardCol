@@ -24,6 +24,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+
 #include <Trace_.h>
 
 #include "CardPile.h"
@@ -74,7 +75,6 @@ void ICardPile::setTopCard (CardWidget& card) {
 /*--------------------------------------------------------------------------*/
 CardWidget& ICardPile::removeTopCard () {
    TRACE5 ("ICardPile::removeTopCard () - Size: " << cards.size ());
-
    Check3 (cards.size () > 0); Check3 (cards[cards.size () - 1]);
 
    CardWidget& card (getTopCard ());
@@ -86,8 +86,6 @@ CardWidget& ICardPile::removeTopCard () {
    if (cards.size () && (style > NORMAL))
       CardWidget& card (getTopCard ());
    resize (cards.size () - 1, NORMAL);
-
-   card.set_sensitive (true);
    return card;
 }
 
@@ -155,10 +153,8 @@ CardWidget* ICardPile::get (unsigned int id) const {
 
    for (i = cards.begin (); i != cards.end (); ++i) {
       Check3 (*i);
-      if ((*i)->id () == id) {
-         (*i)->set_sensitive (true);
+      if ((*i)->id () == id)
          return *i;
-      }
    }
    return NULL;
 }
@@ -385,16 +381,19 @@ int ICardPile::findLastEqual (unsigned int pos) const {
 //Requires  : Cards must be sorted
 /*--------------------------------------------------------------------------*/
 int ICardPile::findFirstEqual (unsigned int pos) const {
-   Check3 (pos < cards.size ());
+   TRACE5 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Checking card " << pos);
+   Check1 (pos < cards.size ());
+   Check3 (cards[pos]);
 
    CardWidget::NUMBERS nr (cards[pos]->number ());
    while (pos--) {
+      TRACE9 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Checking card"
+              << " at " << pos << " = " << *cards[pos]);
       if (cards[pos]->number () != nr)
          break;
    }
-
-   TRACE5 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Card "
-           << *cards[pos] << " at position " << pos);
+   TRACE5 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Card at position "
+           << (pos + 1) << " = " << *cards[pos + 1]);
    return pos + 1;
 }
 
@@ -461,5 +460,4 @@ int ICardPile::find (CardWidget::COLORS color, unsigned int start) const {
 //            PileStyle: Style of pile
 /*--------------------------------------------------------------------------*/
 void ICardPile::resize (unsigned int pos, PileStyle) {
-   Check (0);
 }
