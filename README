@@ -5,13 +5,13 @@ Various card games; up til now they consist of:
   - Røvhult (the danish words for arsehole); a game I learned from 3 danes
     while travelling South America. 
 
-
-Planned are:
-
   - TwoPart: A game I learned from some norwegians. They probably mentioned the
     name; though I was not able to remember it (you have no idea how long it
     took me to learn the word "røvhult" - not to mention the pronuncation).
     So the name descirbes the game (a bit).
+
+
+Planned are:
 
   - Burazno: A famous game in Venezuela; a bit similar to Canasta or the like
     in Europe.
@@ -31,15 +31,25 @@ even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the file COPYING for more details.
 
 
-Thanks
-------
+Card decks
+----------
 
-  - Gunter Gerhardt <gerhardt@draeger.com>
-  - T. Kirk <grania@mailcity.com>
+Are not included. If you happen to have another cardgame installed (like
+GNOME's FreeCell or the KDE patience games), you can try to extract those
+decks.
 
-for distributing their carddecks under the GPL (which enabled me to convert
-them from KDE's cardgames pack (who seemed to got them from XSkat 3.2
-(http://www.gulu.net/xskat/) - Isn't the GPL a great thing?)).
+I prepared a selection of my favorite decks which should be available in the
+same place where you got this package. They are shamelessly stolen from KDE
+with a command like:
+
+   for i in <sourcepath>/*.png; do
+      name=${i##*/}; name=${name%%.png};
+      (pngtopnm $i | ppmtoxpm -name=$name > <destpath>/$name.xpm);
+   done
+
+Note that if you create the decks in that way, you also need to create a
+header called "Cardset-config.h" defining the path where they are installed
+(with something like #define CARDSET_PATH "/usr/...")
 
 
 Installation
@@ -51,7 +61,9 @@ See the file INSTALL
 Documentation
 -------------
 
-Hm, well, yes should come. Would be nice online. Wait!
+Is in the doc directory; in HTML-format. At the moment you can't access them
+from the program, though that would be nice (and might come in the future).
+
 
 How to report bugs and/or send patches
 --------------------------------------
