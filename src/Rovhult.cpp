@@ -128,6 +128,7 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    attach (played, 7, 11, 5, 14, Gtk::SHRINK, Gtk::SHRINK, 1);
 
    if (dndTypeHand.empty ()) {
+      Check3 (dndTypeTable.empty ());
       dndTypeHand.push_back
          (Gtk::TargetEntry ("icon/card/hand", GTK_TARGET_SAME_APP, HAND));
       dndTypeTable.push_back
