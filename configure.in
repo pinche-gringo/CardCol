@@ -2,13 +2,12 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.7.01, [g17m0@lycos.com], CardCol)
+AC_INIT(Cardgames, 0.7.02, [g17m0@lycos.com], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
-VERSION=AC_PACKAGE_VERSION
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
                    [Define to the release of the program])
-AC_SUBST(VERSION)
+AC_SUBST(PACKAGE_VERSION)
 AC_SUBST(RELEASE)
 
 PROTOCOLL=1
@@ -107,9 +106,13 @@ if test -n $CARDDECKS_DIR; then
          else
             if test -d "/usr/share/kde3/apps/carddecks"; then
                CARDDECKS_DIR="/usr/share/kde3/apps/carddecks"
-            else
-               CARDDECKS_DIR="/opt/kde3/share/apps/carddecks"
-               AC_MSG_WARN(using default)
+	    else
+	       if test -d "/usr/share/apps/carddecks"; then
+                  CARDDECKS_DIR="/usr/share/apps/carddecks"
+               else
+                  CARDDECKS_DIR="/opt/kde3/share/apps/carddecks"
+                  AC_MSG_WARN(using default)
+               fi
             fi
          fi
       fi
