@@ -468,10 +468,14 @@ void RovhultAppl::userWants2End (unsigned int input) {
          status.pop (1);
          status.push (1, _("User canceled"));
 
-         if (statGame == AUTOPLAYING)
-            statGame = TOSTOP;
-         else
+         if (statGame == PREPLAYING)
+            unregisterDND ();
+
+         statGame = (statGame == AUTOPLAYING) ? TOSTOP : STOPPED;
+         if (restart)
             startGame ();
+         else
+            disableLastPlayer ();
       }
    }
 }
@@ -1248,6 +1252,7 @@ void RovhultAppl::unregisterDND (CardWidget& card) const {
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::unregisterDND () const {
    Check3 (players[0].hand.numberOfCards () == 3);
+   Check3 (statGame == PREPLAYING);
 
    for (int i (0); i < 3; ++i) {
       CardWidget& card (players[0].hand.at (i));
