@@ -33,7 +33,7 @@
 #include <gtkmm/table.h>
 
 #include <YGP/Check.h>
-#include <YGP/Trace_.h>
+#include <YGP/Trace.h>
 
 #include "Player.h"
 #include "PlayerDlg.h"

@@ -26,7 +26,7 @@
 
 
 #include <YGP/Check.h>
-#include <YGP/Trace_.h>
+#include <YGP/Trace.h>
 
 #include "Game.h"
 #include "ComputerPlayer.h"

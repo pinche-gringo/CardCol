@@ -30,7 +30,7 @@
 #include <gtkmm/tooltips.h>
 
 #include <YGP/Check.h>
-#include <YGP/Trace_.h>
+#include <YGP/Trace.h>
 #include <YGP/ANumeric.h>
 
 #include <CardWidget.h>

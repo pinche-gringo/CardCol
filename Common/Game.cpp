@@ -39,7 +39,7 @@
 #include <gtkmm/messagedialog.h>
 
 #include <YGP/Check.h>
-#include <YGP/Trace_.h>
+#include <YGP/Trace.h>
 #include <YGP/Socket.h>
 #include <YGP/ConnMgr.h>
 #include <YGP/AttrParse.h>

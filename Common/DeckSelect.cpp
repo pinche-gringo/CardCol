@@ -35,7 +35,7 @@
 #include <gtkmm/messagedialog.h>
 
 #include <YGP/Check.h>
-#include <YGP/Trace_.h>
+#include <YGP/Trace.h>
 #include <YGP/DirSrch.h>
 
 #include "DeckSelect.h"
