@@ -26,6 +26,7 @@
 
 #include <cardgames-cfg.h>
 
+#include <assert.h>
 #include <stdio.h>
 
 #include <fstream>
@@ -34,6 +35,7 @@
 
 #include <gtkmm/messagedialog.h>
 
+#define TRACELEVEL 1
 #include <Check.h>
 #include <Trace_.h>
 
@@ -48,7 +50,7 @@
 #include "Hearts.h"
 #include "Rovhult.h"
 #include "Twopart.h"
-#include "Burazno.h"
+#include "Buraco.h"
 #include "Options.h"
 #include <PlayerDlg.h>
 
@@ -585,15 +587,16 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { _("E_xit"),             _("<ctl>Q"), EXIT,     ITEM },
     { _("_Options"),          _("<alt>O"), 0,        BRANCH },
     { _("_Change game"),      _("<alt>C"), 0,        SUBMENU },
-    {    _("_Rovhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
+    {    _("_Røvhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
     {    _("_Twopart"),       _("<ctl>T"), TWOPART,  RADIOITEM },
     {    _("_Hearts"),        _("<ctl>H"), HEARTS,   RADIOITEM },
-    {    _("_Burazno"),       _("<ctl>B"), BURAZNO,  LASTRADIOITEM },
+    {    _("_Buraco"),        _("<ctl>B"), BURACO,   LASTRADIOITEM },
     { "",                     "",          0,        SUBMENUEND },
     { _("Change _decks ..."), _("<ctl>D"), CHGDECKS, ITEM },
     { _("Change _names ..."), _("<ctl>C"), CHGNAMES, ITEM },
     { _("_Save settings"),    _("<ctl>S"), SAVESET,  ITEM },
 #if TRACELEVEL >= 1
+    { "",                     "",          0,        SEPARATOR },
     { "_Debug",               "<ctl>G",    DEBUG,    CHECKITEM }
 #endif
 };
@@ -661,7 +664,8 @@ CardgameCollection::CardgameCollection (Options& opts)
      , options (opts), oldGame (NONE), restart (false) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
 
-   set_size_request (WIDTH, HEIGHT);
+   setIconProgram (xpmGame);
+   set_default_size (WIDTH, HEIGHT);
 
    helpBrowser = options.browser;
 
@@ -694,6 +698,7 @@ CardgameCollection::CardgameCollection (Options& opts)
 /*--------------------------------------------------------------------------*/
 CardgameCollection::~CardgameCollection () {
    TRACE9 ("CardgameCollection::~CardgameCollection ()");
+   delete game;
 }
 
 
@@ -712,11 +717,11 @@ void CardgameCollection::startGame () {
          delete game;
       }
 
-      if (oldGame == GBURAZNO) {
-         TRACE9 ("CardgameCollection::startGame () - Cleaning burazno cards");
+      if (oldGame == GBURACO) {
+         TRACE9 ("CardgameCollection::startGame () - Cleaning buraco cards");
          cards.clear ();
-         cardFaces.delImage (cardFaces.numberOfCards () - 1);
-         cardFaces.delImage (cardFaces.numberOfCards () - 1);
+         cardFaces.delImage (cardFaces.size () - 1);
+         cardFaces.delImage (cardFaces.size () - 1);
          cards.addPacket (cardFaces);
       }
 
@@ -737,7 +742,7 @@ void CardgameCollection::startGame () {
             (*this, &CardgameCollection::gameEvents);
          break;
 
-      case GBURAZNO:
+      case GBURACO:
          cardFaces.addImage (xpmJoker);
          cardFaces.addImage (xpmJoker);
          cards.clear ();
@@ -745,7 +750,7 @@ void CardgameCollection::startGame () {
          cards.addPacket (cardFaces);
          cards.addPacket (cardFaces);
          cards.addPacket (cardFaces);
-         game = new TGame<Burazno, CardgameCollection>
+         game = new TGame<Buraco, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 
@@ -755,8 +760,8 @@ void CardgameCollection::startGame () {
    }
 
    Check3 (game);
-   std::string name (PACKAGE " V" PRG_RELEASE " - ");
-   name += game->name ();
+   Glib::ustring name (PACKAGE " V" PRG_RELEASE " - ");
+   name += Glib::locale_to_utf8 (game->name ());
    set_title (name);
 
    game->start ();
@@ -816,8 +821,8 @@ void CardgameCollection::command (int menu) {
       options.type = GHEARTS;
       break;
 
-   case BURAZNO:
-      options.type = GBURAZNO;
+   case BURACO:
+      options.type = GBURACO;
       break;
 
    case CHGDECKS:
@@ -843,12 +848,15 @@ void CardgameCollection::command (int menu) {
    }
 
    case EXIT:
-      if (game && game->isRunning ()) {
-         Gtk::MessageDialog dlg (_("A game is running. Do you really want to quit?"),
-                                 Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-         dlg.set_title (PACKAGE);
-         if (dlg.run () != Gtk::RESPONSE_YES)
-            break;
+      if (game) {
+         if (game->isRunning ()) {
+            Gtk::MessageDialog dlg (_("A game is running. Do you really want to quit?"),
+                                    Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+            dlg.set_title (PACKAGE);
+            if (dlg.run () != Gtk::RESPONSE_YES)
+               break;
+         }
+         game->clean ();
       }
       hide ();
       break;
@@ -1004,7 +1012,7 @@ void CardgameCollection::loadCards () {
    status.push (_("Start a new game with Ctrl+N (or Game -> New)"));
    gdk_threads_leave ();
 
-   assert (cardFaces.numberOfCards ());
+   assert (cardFaces.size ());
    pThread = NULL;
 }
 
@@ -1046,7 +1054,7 @@ void CardgameAppl::showHelp () const {
                   "  -d, --help-dir ... [DIR] Directory to search for help\n"
                   "  -V, --version .... Output version information and exit\n"
                   "  -h, -?, --help ... Displays this help and exit\n\n"
-                  "Valid values for GAME are Rovhult, Røvhult, Twopart, Hearts and Burazno or the\n"
+                  "Valid values for GAME are Rovhult, Røvhult, Twopart, Hearts and Buracno or the\n"
                   "numbers 0 - 3 (corresponding to the games in the above order).\n\n"
                   "The INI file can have the following entries:")
              << ("  [Game]\n"
@@ -1079,7 +1087,7 @@ bool CardgameAppl::handleOption (const char option) {
          if (type != CardgameCollection::NONE)
             options.type = type;
          else {
-            std::string err (_("-warning: INI-file contains invalid game type `%1'"));
+            std::string err (_("-warning: Invalid game type `%1'"));
             err.replace (err.find ("%1"), 2, game);
             std::cerr << PACKAGE << err << '\n';
          }
@@ -1134,11 +1142,11 @@ CardgameCollection::games CardgameAppl::convertToGameType (const char* pText) {
                   { "Røvhult", CardgameCollection::GROVHULT },
                   { "Twopart", CardgameCollection::GTWOPART },
                   { "Hearts", CardgameCollection::GHEARTS },
-                  { "Burazno", CardgameCollection::GBURAZNO },
+                  { "Buraco", CardgameCollection::GBURACO },
                   { "0", CardgameCollection::GROVHULT },
                   { "1", CardgameCollection::GTWOPART },
                   { "2", CardgameCollection::GHEARTS },
-                  { "3", CardgameCollection::GBURAZNO } };
+                  { "3", CardgameCollection::GBURACO } };
 
    for (unsigned int i (0); i < (sizeof (values) / sizeof (values[0])); ++i)
       if (!strcmp (values[i].pText, pText))
@@ -1195,14 +1203,11 @@ void CardgameAppl::readINIFile (const char* pFile) {
 //Returns   : int: Status
 /*--------------------------------------------------------------------------*/
 int CardgameAppl::perform (int, const char**) {
-   TRACE5 ("CardgameAppl::perform (int, const char**) - Params: " << args
-           << "; 1 = " << ppArgs[0]);
+   TRACE5 ("CardgameAppl::perform (int, const char**) - Params: " << args);
    srand (time (NULL));              // Initialize the random number generator
 
    gdk_threads_enter ();
-   TRACE5 ("CardgameAppl::perform (int, const char**) - Creating window");
    CardgameCollection win (options);
-   TRACE5 ("CardgameAppl::perform (int, const char**) - Running appl")
    Gtk::Main::run (win);
    gdk_threads_leave ();
    return 0;
