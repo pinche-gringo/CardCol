@@ -1,3 +1,16 @@
+Overview of changes in version 0.3.00:
+
+  - Hearts implemented
+  - Security check if user closes it application while a game is running
+  - Application shows the actual game type in the title bar
+  - Posibility to inspect the won cards
+  - Games show names of the players (which can be changed)
+  - Program understands options from the command line
+  - Spanish messages improved
+  - Dialog to select the browser to use
+  - INI-file can contain more options (like browser and help-dir)
+  - Display help to the program or to the running game (by pressing F1)
+
 Overview of changes in version 0.2.00:
 
   - Combined the games in one application
@@ -9,7 +22,7 @@ Overview of changes in version 0.2.00:
 Overview of changes in version 0.1.03:
 
   - Twopart got computer-player
-  - Carddecks seperated; can be changed during the game
+  - Carddecks separated; can be changed during the game
   - Improved Røvhult's computer player
 
 Overview of changes in version 0.1.02:
