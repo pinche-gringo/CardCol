@@ -247,8 +247,8 @@ int Buraco::makeMove (unsigned int player) {
             addBuraco (oldPlayer, false);
                cleanCerrado (oldPlayer);
                Check3 (points[oldPlayer & 1] > 100);
+               points[oldPlayer & 1] += 100;
                endGame ();
-               cleanCerrado (oldPlayer);
                return -1;
             }
       }
@@ -1442,16 +1442,6 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
 
    unsigned int bestPile (-1U);
    unsigned int maxPoints (0);
-   // Don't play jokers if team doesn't have a cerrado or other team still
-   // has its reserve
-   if (isJoker (card)
-       && !(((reserve[player & 1].empty ()
-              && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco
-                   == 0x3)))
-             || (points[player & 1] > 100))
-            || reserve[(player + 1) & 1].empty ()))
-      return -1U;
-
    unsigned int size (0);
    for (std::vector<BuracoPile*>::iterator p (tablePiles[player & 1].begin ());
         p != tablePiles[player & 1].end (); ++p) {
@@ -1472,13 +1462,18 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
       // might be in there) and the oponent can't finish
           ? (((((*p)->size () == 6) && ((*p)->getPosJoker () > 6))
 	      && ((hands[player].size () - iCard) < 7)
-          ? ((((*p)->size () == 6) && ((*p)->getPosJoker () > 6))
+              && (((reserve[player & 1].empty ()
+                         == 0x3)))
+                   || (points[player & 1] > 100))
+                  || reserve[(player + 1) & 1].empty ()
+                  || (points[(player + 1) & 1] > 100)))
+                  || reserve[(player + 1) & 1].empty ()))
              != -1)) {
 	 // Always play on a joker pile (don't bother checking for a second one)
 	 if ((*p)->getPotentialPoints () >= 1000) {
                  && (maxPoints < (*p)->getPotentialPoints ()))) {
             size = (*p)->size ();
-                 && maxPoints < (*p)->getPotentialPoints ())) {
+                 && (maxPoints < (*p)->getPotentialPoints ()))) {
             bestPile = p - tablePiles[player & 1].begin ();
          }
       }
@@ -1596,7 +1591,7 @@ int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
             if (*pCard == &card)
             pCard = getFittingCard (hand, pileCard, pCard);
             if (pCard == hand.end ())
-               pCard = getFittingCard (hand, card, ++pCard);
+               pCard = getFittingCard (hand, pileCard, ++pCard);
 
             TRACE8 ("Buraco::cardFitsOnPile (unsigned int, const CardWidget&) const -  "
                     "Dist: " << dist << "<->" << cardDistance (**pCard, card));
@@ -1806,11 +1801,16 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
 
    bool enoughCards ((hands[player].size () > (cards + 1))
 		     || reserve[player & 1].size ());
+   unsigned int pos, move;
    return ((hands[player].size () > (cards + 1))
            || (points[player & 1] > 100)
            || reserve[player & 1].size ()
            || ((pile != -1U)
-               && ((tablePiles[player & 1][pile]->size () + cards) >= 7))
+               && (((tablePiles[player & 1][pile]->size () + cards) >= 7)
+                   || (((tablePiles[player & 1][pile]->size () + cards) == 6)
+                       && (hands[player].size () == 2)
+                       && (tablePiles[player & 1][pile]->getPosition4Card
+                           (*hands[player][0], pos, move)))))
            || (cards >= 7));
 //----------------------------------------------------------------------------
 
