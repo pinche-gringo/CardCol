@@ -80,8 +80,8 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
               ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
               ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
               GTK_EXPAND, GTK_EXPAND, 1);
-      TRACE ("Twopart::Twopart () - Name at: " << COLS_PLAYER[i] << '/'
-             << ROWS_PLAYER[i] + ((i == 2) ? 3 : 1));
+      TRACE9 ("Twopart::Twopart () - Name at: " << COLS_PLAYER[i] << '/'
+              << ROWS_PLAYER[i] + ((i == 2) ? 3 : 1));
 
       players[i].won.show ();
       attach (players[i].won, COLS_PLAYER[i] + 1,
@@ -89,14 +89,14 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
               ROWS_PLAYER[i] + ((i == 2) ? 2 : -2),
               ROWS_PLAYER[i] + ((i == 2) ? 3 : -1),
               0, 0, 1);
-      TRACE ("Twopart::Twopart () - Won pile at: "
+      TRACE9 ("Twopart::Twopart () - Won pile at: "
               << COLS_PLAYER[i] + 1 << '/' << ROWS_PLAYER[i] + ((i == 2) ? 2 : -2));
 
       players[i].hand.show ();
       attach (players[i].hand, COLS_PLAYER[i],
               COLS_PLAYER[i] + 3, ROWS_PLAYER[i],
               ROWS_PLAYER[i] + 1, 0, 0, 1);
-      TRACE ("Twopart::Twopart () - Hand at: "
+      TRACE9 ("Twopart::Twopart () - Hand at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
 
       players[i].won.setShowOption (ICardPile::SHOWBACK);
