@@ -40,6 +40,8 @@ class ICardPile {
    typedef enum { NORMAL = 0, COMPRESSED, QUITE_COMPRESSED, VERY_COMPRESSED, LAST } PileStyle;
    typedef enum { SHOWBACK = 0, SHOWFACE, DONT_CHANGE } ShowOpt;
 
+   typedef bool (*CMPFUNC) (const CardWidget*, const CardWidget*);
+
    ICardPile (PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE);
    virtual ~ICardPile ();
 
@@ -79,6 +81,12 @@ class ICardPile {
    CardWidget& at (unsigned int pos) const {
       Check3 (pos < cards.size ()); return *cards[pos]; }
 
+   int find (CardWidget& card, CMPFUNC fnComp) const {
+      CardWidget* const* low (lower_bound (cards.begin (), cards.end (),
+                                           &card, fnComp));
+      return (low != cards.end ()) ? (low - cards.begin ()) : -1; }
+   int findByNr (CardWidget& card) const { return find (card, compCardsByNr); }
+   int findByColor (CardWidget& card) const { return find (card, compCards); }
    int findFirstEqualOrBigger (CardWidget::NUMBERS nr) const;
    int findLastEqualOrBigger (CardWidget::NUMBERS nr) const {
       int pos (findFirstEqualOrBigger (nr));
@@ -90,7 +98,7 @@ class ICardPile {
       return (pos != -1) && (at (pos).number () == nr); }
    bool exists (CardWidget& card) const { exists (&card); }
    bool exists (CardWidget* card) const {
-      return find (cards.begin (), cards.end (), card) != cards.end (); }
+      return ::find (cards.begin (), cards.end (), card) != cards.end (); }
 
    // General management-functions
    // - resize is actually a virtual static method but as this does
@@ -104,8 +112,6 @@ class ICardPile {
    ShowOpt getShowOption () const { return showOpt; }
 
    bool topCardShowsFace () const { return getTopCard ().showsFace (); }
-
-   typedef bool (*CMPFUNC) (const CardWidget*, const CardWidget*);
 
    virtual void sort (CMPFUNC fnSort);
    void sortByNumber () { sort (compCardsByNr); }
