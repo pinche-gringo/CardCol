@@ -61,7 +61,7 @@ class Twopart : public XApplication {
    void dealCards ();
    void fillStaple ();
 
-   unsigned int pos2Player (unsigned int pos) const;
+   unsigned int pos2Player (unsigned int pos, unsigned int start) const;
 
    int makeComputerMove ();
    void makeComputerMoves () {
