@@ -36,8 +36,6 @@
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 8
 #include <Check.h>
 #include <Trace_.h>
 #include <ConnMgr.h>
@@ -544,21 +542,16 @@ unsigned int Buraco::getSeries (ICardPile& playerPile, CardWidget& card,
       else {
          int diff (cardDistance (**p, card));
          TRACE9 ("Buraco::getSeries (...) - " << **p << " differs " << diff);
-         // Only consider series of colours for cards lower than ace, to
-         // avoid the problem with 3-K-A of one colour (the ace should
-         // haven been found from the 3 anyway).
          if (diff) {
-            if (card.number () != CardWidget::ACE) {
-               diff += 2;
-               Check3 (diff <= 4);
-               if (!(bCols & (1 << diff))) {
-                  Check3 (aPos.find (diff) == aPos.end ());
-                  bCols |= (1 << diff);
-                  aPos[diff] = p - playerPile.begin ();
-                  aOrder.push_back (diff);
-                  if (aPos.size () == 7)
-                     break;
-               }
+            diff += 2;
+            Check3 (diff <= 4);
+            if (!(bCols & (1 << diff))) {
+               Check3 (aPos.find (diff) == aPos.end ());
+               bCols |= (1 << diff);
+               aPos[diff] = p - playerPile.begin ();
+               aOrder.push_back (diff);
+               if (aPos.size () == 7)
+                   break;
             }
          }
          else
@@ -582,6 +575,26 @@ unsigned int Buraco::getSeries (ICardPile& playerPile, CardWidget& card,
       Check3 (aPos.find (4) != aPos.end ());
       Check3 (aPos.find (3) == aPos.end ());
       aPos.erase (aPos.find (4));
+   }
+
+   // Special handling of series of colours for an ace, to avoid the problem
+   // with 3-K-A of one colour.
+   if (card.number () == CardWidget::ACE) {
+       if ((bCols & 0xa) == 0xa) {
+          std::map<unsigned int, unsigned int>::iterator i;
+          if ((bCols & 0x18) == 0x18) {
+             if ((i = aPos.find (0)) != aPos.end ())
+                aPos.erase (i);
+             if ((i = aPos.find (1)) != aPos.end ())
+                aPos.erase (i);
+          }
+          else {
+             if ((i = aPos.find (3)) != aPos.end ())
+                aPos.erase (i);
+             if ((i = aPos.find (4)) != aPos.end ())
+                aPos.erase (i);
+          }
+       }
    }
 
    return nrs;
@@ -1458,8 +1471,8 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
       // might be in there) and the oponent can't finish
           ? (((((*p)->size () == 6) && ((*p)->getPosJoker () > 6))
 	      && ((hands[player].size () - iCard) < 7)
-          ? (((*p)->size () == 6) && ((*p)->getPosJoker () > 6)
-              || (((*p)->size () > 2) && ((*p)->getPosFirst () > 6)))
+          ? ((((*p)->size () == 6) && ((*p)->getPosJoker () > 6))
+             != -1)) {
 	 // Always play on a joker pile (don't bother checking for a second one)
 	 if ((*p)->getPotentialPoints () >= 1000) {
                  && (maxPoints < (*p)->getPotentialPoints ()))) {
@@ -1681,7 +1694,7 @@ void Buraco::endGame () {
          if ((*p)->getPoints () < 0)
             monoPile += 1000;
          sum += (*p)->getCardPoints ();
-            monoPile -= 1000;
+      }
 
       TRACE5 ("Buraco::endGame () - Points of team " << i << " on table: "
               << sum << '/' << monoPile);
