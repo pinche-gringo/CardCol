@@ -27,8 +27,6 @@
 #define DEBUG 0
 #include <Check.h>
 
-#include "CardWidget.h"
-
 #include "CardPile.h"
 
 
@@ -267,6 +265,7 @@ void ICardPile::setStyle (Style s) {
 //Returns   : bool: True, if a < b
 /*--------------------------------------------------------------------------*/
 bool ICardPile::compCards (const CardWidget* a, const CardWidget* b) {
+   Check3 (a); Check3 (b);
    bool diff (a->color () < b->color ());
    if (!diff)
       diff = a->number () < b->number ();
@@ -280,6 +279,7 @@ bool ICardPile::compCards (const CardWidget* a, const CardWidget* b) {
 //Returns   : bool: True, if a < b
 /*--------------------------------------------------------------------------*/
 bool ICardPile::compCardsByNr (const CardWidget* a, const CardWidget* b) {
+   Check3 (a); Check3 (b);
    TRACE9 ("ICardPile::compCardsByNr (const CardWidget*, const CardWidget*) - "
            << a->number () << " <-> " << b->number ());
    return a->number () < b->number ();
@@ -289,12 +289,47 @@ bool ICardPile::compCardsByNr (const CardWidget* a, const CardWidget* b) {
 //Purpose   : Sorts the cards in the pile without regard of the number
 /*--------------------------------------------------------------------------*/
 void ICardPile::sortByNumber () {
-   sort (cards.begin (), cards.end (), &ICardPile::compCardsByNr);
+   sort (cards.begin (), cards.end (), compCardsByNr);
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Sorts the cards in the pile without regard of the number
 /*--------------------------------------------------------------------------*/
 void ICardPile::sortByColor () {
-   sort (cards.begin (), cards.end (), &ICardPile::compCards);
+   sort (cards.begin (), cards.end (), compCards);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Checks if the passed card (internal number!) exists
+//Parameters: nr: Number of card (2, 3, 4, ... Ace) to search for
+//Returns   : bool: True if found
+/*--------------------------------------------------------------------------*/
+bool ICardPile::exists (CardWidget::NUMBERS nr) const {
+   unsigned int first (0), last (cards.size ());
+   unsigned int middle (last >> 1);
+
+   while ((last - first) > 0 ) {
+      TRACE ("ICardPile::exits (CardWidget::NUMBERS) - [" << first << '-'
+             << last << ')');
+      if (compNr (cards[middle], nr))
+         last = middle;
+      else
+         first = middle + 1;
+
+      middle = (last - first) >> 1;
+   }
+   return !compNr (cards[middle], nr);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Checks if the passed card has the specified value
+//Parameters: nr: Number of card (2, 3, 4, ... Ace) to search for
+//            card: Pointer to card to analyze
+//Returns   : bool: True if if is smaller
+/*--------------------------------------------------------------------------*/
+bool ICardPile::compNr (const CardWidget* card, CardWidget::NUMBERS nr) {
+   Check3 (card);
+   TRACE ("ICardPile::compNr (const CardWidget*, CardWidget::NUMBERS) - "
+          << card->number () << " <-> " << nr);
+   return card->number () < nr;
 }

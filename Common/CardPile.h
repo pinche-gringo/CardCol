@@ -24,8 +24,8 @@
 
 #include <Trace_.h>
 
+#include <CardWidget.h>
 
-class CardWidget;
 
 // Class to display a pile of cards on the screen
 class ICardPile {
@@ -63,8 +63,9 @@ class ICardPile {
    CardWidget* get (unsigned int id) const;
    CardWidget& at (unsigned int pos) const { return *cards[pos]; }
 
-   bool exist (CardWidget& card) const { exist (&card); }
-   bool exist (CardWidget* card) const {
+   bool exists (CardWidget::NUMBERS id) const;
+   bool exists (CardWidget& card) const { exists (&card); }
+   bool exists (CardWidget* card) const {
       return find (cards.begin (), cards.end (), card) != cards.end (); }
 
    // General management-functions
@@ -85,6 +86,8 @@ class ICardPile {
  private:
    static bool compCards (const CardWidget* a, const CardWidget* b);
    static bool compCardsByNr (const CardWidget* a, const CardWidget* b);
+
+   static bool compNr (const CardWidget* card, CardWidget::NUMBERS nr);
 };
 
 
