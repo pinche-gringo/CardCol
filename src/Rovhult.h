@@ -102,6 +102,8 @@ class RovhultAppl : public XApplication {
 
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
    bool existOnlySpecialCards (unsigned int player, unsigned int pos) const;
+   bool isSpecialCard (CardWidget::NUMBERS nr) const {
+      return (nr == CardWidget::TEN) || (nr == CardWidget::TWO); }
 
    CardWidget* cardAtPos (unsigned int player, unsigned int pos) const;
 
