@@ -52,7 +52,7 @@ class CardImages {
       cards_.reserve (cards);
       load (path, back, thread); }
 
-   unsigned int numberOfCards () const { return cards_.size (); }
+   unsigned int size () const { return cards_.size (); }
 
  private:
    std::vector<Glib::RefPtr<Gdk::Pixbuf> > cards_;

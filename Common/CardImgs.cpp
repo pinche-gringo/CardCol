@@ -55,7 +55,7 @@ CardImages::~CardImages () {
 /*--------------------------------------------------------------------------*/
 const Glib::RefPtr<Gdk::Pixbuf> CardImages::getCardImage (unsigned int nr) const {
    TRACE8 ("CardImages::getCardImage (unsigned int) - Request for card " << nr);
-   Check1 (nr < numberOfCards ());
+   Check1 (nr < size ());
    Check3 (cards_[nr]);
    return cards_[nr];
 }
@@ -75,7 +75,7 @@ void CardImages::loadDecks (const std::string& path, bool thread) throw (std::st
 
    std::string err;
 
-   for (int i = 1; i <= numberOfCards (); ++i) {
+   for (int i = 1; i <= size (); ++i) {
       std::ostringstream out;
       out << file << i << ".xpm" << std::ends;
       TRACE9 ("CardImages::loadDecks (const Gdk::Window&, const char*) - File "

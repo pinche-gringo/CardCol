@@ -34,7 +34,7 @@ class CardSet {
 
    CardWidget& getCard (unsigned int nrCard) const;
    const std::vector<CardWidget*>& getCards () const { return cards_; }
-   unsigned int numberOfCards () const { return cards_.size (); }
+   unsigned int size () const { return cards_.size (); }
 
    void shuffle ();
 
