@@ -1,20 +1,23 @@
                        Cardgames
 
-Various card games; up til now they consist of:
+Various card games; til now they consist of:
 
-  - Røvhult (the danish words for arsehole); a game I learned from 3 danes
-    while travelling South America. 
+  - Røvhult (the danish words for arsehole); obviously I learned it from danes
+    (3 of them), but it is also know internationally.
 
-  - TwoPart: A game I learned from some norwegians. They probably mentioned the
+  - Twopart: A game I learned from some norwegians. They probably mentioned the
     name; though I was not able to remember it (you have no idea how long it
-    took me to learn the word "røvhult" - not to mention the pronuncation).
+    took me to learn the word "Røvhult" - not to mention the pronuncation).
     So the name descirbes the game (a bit).
+
+  - Hearts: A game included in various (?) versions of the operating (??? Well,
+    sometimes) system from a company with a very good sales department.
 
 
 Planned are:
 
   - Burazno: A famous game in Venezuela; a bit similar to Canasta or the like
-    in Europe.
+    in Europe. Just need a glue, how to manage the cards on the screen ;)
 
   - Tarok. The game of my youth (long ago). Fucking hell, looking forward to
     the computer player.
@@ -38,7 +41,7 @@ Are not included. If you happen to have another cardgame installed (like
 GNOME's FreeCell or the KDE patience games), you can try to extract those
 decks.
 
-I prepared a selection of my favorite decks which should be available in the
+I prepared a selection of my favorite decks which should be available on the
 same place where you got this package. They are shamelessly stolen from KDE
 with a command like:
 
@@ -50,7 +53,7 @@ with a command like:
 Of course you can also use other images; just make sure, that the cards are
 numbered from 1.xpm to 52.xpm, starting with the ace of clubs (1.xpm), the ace
 of spades (2.xpm), the ace of hearts (3.xpm), the ace of diamonds (4.xpm) and
-then (in the same sequence of the colours) down king, queen, ... 3, 2.
+then (in the same sequence of the colours) down from king, queen, ... to 3, 2.
 
 Take care, that the cards have the same size (I don't do any resizing and I
 think GKT+ neither)!
@@ -71,7 +74,8 @@ Documentation
 
 Is in the doc directory; in HTML-format. If the documentation is properly
 installed (make doc-install in the doc subdirectory; see also the file INSTALL)
-it can be accessed from the program (by pressing F1 or via Help - Content).
+or the path is specified either in the INI-file or via an option, it can be
+accessed from the program (by pressing F1 or via Help - Content).
 
 
 How to report bugs and/or send patches
@@ -84,6 +88,7 @@ Please include for bugs:
 
   - The version of the package. In case you don't know: The title of the
     about box.
+  - The version of the used General library.
   - How to reproduce the bug.
   - In case of a crash there should also be a stackdump in your systemlog which
     might help in localizing the bug.
