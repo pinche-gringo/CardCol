@@ -33,8 +33,6 @@
 
 #include <glib.h>
 
-#define CHECK 3
-#define TRACELEVEL 8
 #include <Check.h>
 #include <Trace_.h>
 
@@ -301,7 +299,7 @@ XApplication::MenuEntry Twopart::menuItems[] = {
     { _("_Debug"),    _("<ctl>D"), DEBUG, CHECKITEM },
 #endif
     { _("_Help"),     _("<alt>H"), 0,     LASTBRANCH },
-    { _("_About..."), _("<ctl>a"), ABOUT, ITEM } };
+    { _("_About..."), _("<ctl>A"), ABOUT, ITEM } };
 
 
 /*--------------------------------------------------------------------------*/
@@ -539,11 +537,10 @@ void Twopart::playedSelected (unsigned int player) {
 
    // Re-enable next two players (having cards); continue with first of them
    removePlayer (player);
-
    unsigned int next;
    unsigned int cAdded (0);
-   for (unsigned int i (1); i < NUM_PLAYERS; ++i)
-      if ((!(bfPlayers & (1 << (next = (actPlayer + i) & 0x3))))
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+      if ((!(bfPlayers & (1 << (next = (actPlayer + i + 1) & 0x3))))
           && players[next].hand.numberOfCards ()) {
          TRACE5 ("Twopart::playedSelected (unsigned int) - Re-adding player "
                  << next);
@@ -552,6 +549,7 @@ void Twopart::playedSelected (unsigned int player) {
             break;
       }
    actPlayer = findNextPlayer (player);
+
 
    TRACE7 ("Twopart::playedSelected (unsigned int) - Continuing with player "
            << actPlayer);
@@ -611,8 +609,6 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player, unsigned int pos) {
       unsigned int posIns (played.numberOfCards ());
       if (offPos < (NUM_PLAYERS - 1))
          startPos[offPos++] = posIns;
-      else
-         offPos = 0;
 #if TRACELEVEL > 8
       for (unsigned int i(0); i < (NUM_PLAYERS - 1); ++i)
          TRACE ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int) - "
@@ -646,6 +642,7 @@ void Twopart::cardSelected (unsigned int player, unsigned int pos) {
            << player << " at position " << pos);
    Check3 (player <= NUM_PLAYERS);
    Check3 (pos <= players[player].hand.numberOfCards ());
+   Check3 ((statGame == PLAYING) || (statGame == PLAYING2));
 
    if (!moveSelectedCardToPlayed (player, pos))
       return;
@@ -654,8 +651,7 @@ void Twopart::cardSelected (unsigned int player, unsigned int pos) {
    // or calculate next player if not
    TRACE7 ("Twopart::cardSelected (unsigned int, unsigned int) - Players: "
            << hex << bfPlayers << dec);
-   actPlayer = player;
-   removePlayer (actPlayer);
+   removePlayer (actPlayer = player);
    int newPlayer (actPlayer);
    if (bfPlayers)
       newPlayer = findNextPlayer (player);
@@ -669,17 +665,24 @@ void Twopart::cardSelected (unsigned int player, unsigned int pos) {
       newPlayer = endRound ();
    }
 
-   if (newPlayer < 0) {
-      actPlayer = ~newPlayer;
+   // Check if the actual part terminated
+   if ((statGame == PLAYING)
+       ? (newPlayer < 0)
+       : (newPlayer == findNextPlayerWithCards (newPlayer))) {
+      actPlayer = (statGame == PLAYING) ? ~newPlayer : newPlayer;
 
-      std::string str (_("First part ended; Part 2 starts player %1"));
+      std::string str ((statGame == PLAYING)
+                       ? _("First part ended; Part 2 starts player %1")
+                       : _("Player %1 lost"));
       str.replace (str.find ("%1"), 2, (char)(actPlayer + '0'));
-
       status.pop (1);
       status.push (1, str);
 
       disableLastPlayer ();
-      startPartTwo (actPlayer);
+      if (statGame == PLAYING)
+         startPartTwo (actPlayer);
+      else
+         statGame = STOPPED;
    }
    else {
       actPlayer = newPlayer;
@@ -690,6 +693,7 @@ void Twopart::cardSelected (unsigned int player, unsigned int pos) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Makes the move for a computer player.
+//Returns   : int: Flag for timer, if it should continue (0: no; else: yes)
 /*--------------------------------------------------------------------------*/
 int Twopart::makeComputerMove () {
    if (statGame == TOSTOP) {
@@ -720,7 +724,10 @@ int Twopart:: endRound () {
       played.clear ();
       bfPlayers = (1 << NUM_PLAYERS) - 1;
       removePlayersWithoutCards ();
-      return startPlayer = actPlayer = findNextPlayer (actPlayer);
+      offPos = 0;
+      if (!players[actPlayer].hand.numberOfCards ())
+         actPlayer = findNextPlayer (actPlayer);
+      return startPlayer = actPlayer;
    }
 
    bfPlayers = bfOldPlayers;
@@ -795,7 +802,8 @@ int Twopart:: endRound () {
               << " player(s) still in round (" << hex << bfPlayers << dec << ')');
 
       // Find player to continue
-      nextPlayer = findNextPlayer (nextPlayer);
+      if (!players[nextPlayer].hand.numberOfCards ())
+         nextPlayer = findNextPlayer (nextPlayer);
       TRACE6 ("Twopart::endRound () - Try to continue with player " << nextPlayer);
       if (cPlayers < 2) {                   // Less than two found: 
          bfPlayers = (1 << NUM_PLAYERS) - 1;
@@ -823,7 +831,8 @@ int Twopart:: endRound () {
       removePlayersWithoutCards ();
       bfOldPlayers = bfPlayers;
 
-      nextPlayer = findNextPlayer (nextPlayer);
+      if (!players[nextPlayer].hand.numberOfCards ())
+         nextPlayer = findNextPlayer (nextPlayer);
       if (nextPlayer == -1)
          nextPlayer = ~startPlayer;
    }
@@ -834,8 +843,25 @@ int Twopart:: endRound () {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Finds the next player which can continue
-//Parameters: player: Number of player winning round
+//Purpose   : Finds the next player having cards
+//Parameters: player: Number of player to start with
+//Returns   : int: Number of next player (or -1)
+/*--------------------------------------------------------------------------*/
+int Twopart::findNextPlayerWithCards (unsigned int player) {
+   unsigned int i (player);
+   do {
+      i = (i + 1) & 0x3;
+      if (players[i].hand.numberOfCards ())
+         return i;
+   } while (i != player);
+
+   return -1;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Finds the next player which can continue according to the
+//            bfPlayers bitfield
+//Parameters: player: Number of player to start with
 //Returns   : int: Number of next player (or -1)
 /*--------------------------------------------------------------------------*/
 int Twopart::findNextPlayer (unsigned int player) {
@@ -843,8 +869,9 @@ int Twopart::findNextPlayer (unsigned int player) {
       return -1;
 
    // Find first player (starting with the passed one) being still in game
-   while (!(bfPlayers & (1 << player)))
+   do {
       player = (player + 1) & 0x3;
+   } while (!(bfPlayers & (1 << player)));
 
    return player;
 }
@@ -958,14 +985,17 @@ void Twopart::cleanTable () {
    staple.clear ();                                             // Clear staple
    for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
       players[i].hand.clear ();
+      players[i].hand.setStyle (ICardPile::NORMAL);
       players[i].won.clear ();
    }
    played.clear ();
 
    disableLastPlayer ();
    staple.show ();
-   if (pTrump)
+   if (pTrump) {
       delete pTrump;
+      pTrump = NULL;
+   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -982,7 +1012,6 @@ void Twopart::dealCards () {
    for (unsigned int i (0); i < (NUM_PLAYERS - 1); ++i)
       startPos[i] = 0;
    offPos = 0;
-
 
    bfPlayers = bfOldPlayers = (1 << NUM_PLAYERS) - 1;
    enablePlayer (actPlayer = startPlayer = 0);
