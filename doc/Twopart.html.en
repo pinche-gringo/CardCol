@@ -79,8 +79,9 @@
         <ul>
           <li>The staple: A heap of cards (with face down), from where you put
             up new cards (if you put the mouse over it you are informed about
-            the remaining cards).</li>
-          <li>The cards of the human player.</li>
+            the number of remaining cards).</li>
+          <li>The cards of the human player. The won cards (above) become visible,
+            if they are clicked into; right-clicking allows to sort them.</li>
           <li>In the next line it's the same with computer players 1 and 3. In
             between them there's the played pile (which also shows the number of
             the cards inside, is the mouse rests over it).</li>
@@ -92,7 +93,7 @@
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
 <!-- hhmts start -->
-Last modified: Tue Oct  1 13:07:04 PET 2002
+Last modified: Sun Jan 12 22:35:20 PET 2003
 <!-- hhmts end -->
           - $Revision$
 </body>
