@@ -25,7 +25,10 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #define DEBUG 0
+#include <Check.h>
 #include <Trace_.h>
+
+#include <gtk--/pixmap.h>
 
 #include "CardWidget.h"
 
@@ -64,4 +67,7 @@ void CardWidget::setVisible (bool visible) {
    isVisible = visible;
    add_pixmap (visible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
                NULL);
+   Check3 (get_child ()); Check3 (Gtk::Pixmap::isA (get_child ()));
+
+   dynamic_cast <Gtk::Pixmap*> (get_child ())->set_alignment (0.0, 0.0);
 }
