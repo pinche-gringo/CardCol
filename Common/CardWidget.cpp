@@ -29,8 +29,8 @@
 
 #include <cardgames-cfg.h>
 
-#include <Check.h>
-#include <Trace_.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
 
 #include "CardWidget.h"
 

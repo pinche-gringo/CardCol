@@ -34,10 +34,9 @@
 #include <gtkmm/image.h>
 #include <gtkmm/messagedialog.h>
 
-#include <Check.h>
-#include <Trace_.h>
-
-#include <DirSrch.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
+#include <YGP/DirSrch.h>
 
 #include "DeckSelect.h"
 
@@ -53,7 +52,7 @@ static const char* const DEFAULTFILE = "14.png";
 //-----------------------------------------------------------------------------
 ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& deck,
                                         const std::string& back)
-   : XDialog (_("Select carddeck"), OKCANCEL)
+   : XGP::XDialog (_("Select carddeck"), OKCANCEL)
      , offDeck (-1), offBack (-1)
      , boxDecks (), txtDecks (_("Available decks")), selDeck (), decks ()
      , selBack (), boxBack (), txtBack (_("Available backgrounds")), backs ()
@@ -80,15 +79,15 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 
    std::string cardDirs (path ? path : CARDDECKS_DIR);
    if (cardDirs.size ()
-       && (cardDirs[cardDirs.size () - 1] != File::DIRSEPARATOR))
-      cardDirs += File::DIRSEPARATOR;
+       && (cardDirs[cardDirs.size () - 1] != YGP::File::DIRSEPARATOR))
+      cardDirs += YGP::File::DIRSEPARATOR;
    cardDirs += "cards-*";
-   DirectorySearch ds (cardDirs);
+   YGP::DirectorySearch ds (cardDirs);
 
    TRACE8 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Searching in path "
            << cardDirs);
-   const File* dir (ds.find (IDirectorySearch::FILE_DIRECTORY
-                             | IDirectorySearch::FILE_READONLY));
+   const YGP::File* dir (ds.find (YGP::IDirectorySearch::FILE_DIRECTORY
+                                  | YGP::IDirectorySearch::FILE_READONLY));
    unsigned int offset (0);
    aFiles.push_back (dir->path ());
 
@@ -103,7 +102,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
       pathDeck += dir->name ();
 
       std::string file (pathDeck);
-      file += File::DIRSEPARATOR;
+      file += YGP::File::DIRSEPARATOR;
       file += DEFAULTFILE;
       TRACE6 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Reading file "
               << file);
@@ -139,8 +138,8 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 
    unsigned int offsetBack (offset + 1);
    std::string pathDecks (aFiles[0] + "decks/");
-   dir = ds.find (pathDecks + "deck*.png", IDirectorySearch::FILE_NORMAL
-                  | IDirectorySearch::FILE_READONLY);
+   dir = ds.find (pathDecks + "deck*.png", YGP::IDirectorySearch::FILE_NORMAL
+                  | YGP::IDirectorySearch::FILE_READONLY);
    while (dir) {
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Reading "
               "background file " << dir->path () << dir->name ());
@@ -203,7 +202,7 @@ void ICarddeckSelectDlg::deckSelect (unsigned int offset) {
            << aFiles[0] << aFiles[offset + 1]);
 
    setButtonImage (selDeck, aFiles[0] + aFiles[offDeck = offset + 1]
-                   + '/' + DEFAULTFILE);
+                   + YGP::File::DIRSEPARATOR + DEFAULTFILE);
 }
 
 //-----------------------------------------------------------------------------
@@ -218,7 +217,8 @@ void ICarddeckSelectDlg::backSelect (unsigned int offset) {
    TRACE3 ("ICarddeckSelectDlg::backSelect (const std::string&) - Selected "
            << aFiles[0] << "decks/" << aFiles[offset]);
 
-   setButtonImage (selBack, aFiles[0] + "decks/" + aFiles[offBack = offset]);
+   setButtonImage (selBack, aFiles[0] + "decks" + YGP::File::DIRSEPARATOR
+                   + aFiles[offBack = offset]);
 }
 
 //-----------------------------------------------------------------------------

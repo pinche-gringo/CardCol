@@ -26,12 +26,12 @@
 #include <gtkmm/button.h>
 #include <gtkmm/buttonbox.h>
 
-#include <Folder.h>
-#include <XDialog.h>
+#include <XGP/Folder.h>
+#include <XGP/XDialog.h>
 
 
 // Class to select the card decks to use
-class ICarddeckSelectDlg : public XDialog {
+class ICarddeckSelectDlg : public XGP::XDialog {
  public:
    ICarddeckSelectDlg (const char* path, const std::string& deck,
                        const std::string& back);
@@ -62,12 +62,12 @@ class ICarddeckSelectDlg : public XDialog {
    Gtk::HBox   boxDecks;
    Gtk::Label  txtDecks;
    Gtk::Button selDeck;
-   Folder      decks;
+   XGP::Folder decks;
 
    Gtk::Button selBack;
    Gtk::HBox   boxBack;
    Gtk::Label  txtBack;
-   Folder      backs;
+   XGP::Folder backs;
 
    Gtk::HButtonBox box;
 

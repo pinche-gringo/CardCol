@@ -24,16 +24,14 @@
 #include <gtkmm/button.h>
 #include <gtkmm/statusbar.h>
 
-#include <Mutex.h>
-#include <Thread.h>
+#include <YGP/Mutex.h>
+#include <YGP/Thread.h>
+#include <YGP/ConnMgr.h>
+#include <YGP/IVIOAppl.h>
 
 #include <CardSet.h>
 #include <CardPile.h>
 #include <CardImgs.h>
-
-#include <ConnMgr.h>
-#include <IVIOAppl.h>
-#include <XApplication.h>
 
 class Game;
 class Options;
@@ -41,7 +39,7 @@ class ICarddeckSelectDlg;
 
 
 // Class to handle the Rovhult-cardgame
-class CardgameCollection : public XApplication {
+class CardgameCollection : public XGP::XApplication {
  public:
    // IDs of games. The games starting with GBURACO get 4 decks!
    typedef enum { NONE = -1, GROVHULT = 0, GTWOPART, GHEARTS, GBURACO,
@@ -51,12 +49,12 @@ class CardgameCollection : public XApplication {
    CardgameCollection (Options& opts);
    ~CardgameCollection ();
 
-   Gtk::Box& getClient () { return *XApplication::getClient (); }
+   Gtk::Box& getClient () { return *XGP::XApplication::getClient (); }
    Gtk::Statusbar& getStatusbar () { return status; }
    CardSet& getCards () { return cards; }
    const std::vector<Player*>& getPlayer () const;
-   ConnectionMgr& getConnectionMgr () { return cmgr; };
-   Mutex& getClientMutex () { return mxThreadCmd; }
+   YGP::ConnectionMgr& getConnectionMgr () { return cmgr; };
+   YGP::Mutex& getClientMutex () { return mxThreadCmd; }
    const unsigned int getPlayerPosition () const { return playerPos; }
 
  private:
@@ -91,7 +89,7 @@ class CardgameCollection : public XApplication {
    bool handleMessage (unsigned int player, char* msg);
    bool showMessage (char* msg);
 
-   static XApplication::MenuEntry CardgameCollection::menuItems[];
+   static XGP::XApplication::MenuEntry CardgameCollection::menuItems[];
 
    static const char* xpmGame[];
    static const char* xpmAuthor[];
@@ -101,13 +99,13 @@ class CardgameCollection : public XApplication {
    CardImages cardFaces;
    CardSet cards;
 
-   typedef OThread<CardgameCollection> THRDAPPL;
+   typedef YGP::OThread<CardgameCollection> THRDAPPL;
    std::vector<THRDAPPL*> aCommThreads;
 
    Options& options;
-   Mutex mxThreadCmd;
-   Mutex mxGuiCmd;
-   ConnectionMgr cmgr;
+   YGP::Mutex mxThreadCmd;
+   YGP::Mutex mxGuiCmd;
+   YGP::ConnectionMgr cmgr;
    std::vector<Player*> aPlayer;
 
    unsigned int playerPos;

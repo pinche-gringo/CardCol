@@ -32,8 +32,8 @@
 #include <gtkmm/label.h>
 #include <gtkmm/separator.h>
 
-#include <Check.h>
-#include <Trace_.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
 
 #include "Player.h"
 #include "ScoreDlg.h"

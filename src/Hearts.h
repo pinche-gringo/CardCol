@@ -35,7 +35,7 @@ class Hearts : public Game {
  public:
    Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
            const std::vector<Player*>& player, unsigned int posPlayer,
-           Mutex& mxSerialize);
+           YGP::Mutex& mxSerialize);
    virtual ~Hearts ();
 
    virtual void start ();

@@ -20,11 +20,11 @@
 
 #include <vector>
 
-#include <ANumeric.h>
-#include <SmartPtr.h>
+#include <YGP/ANumeric.h>
+#include <YGP/SmartPtr.h>
 
-#include <XDialog.h>
-#include <XAttrLabel.h>
+#include <XGP/XDialog.h>
+#include <XGP/XAttrLabel.h>
 
 
 namespace Gtk {
@@ -38,7 +38,7 @@ class Player;
 
 
 // Class to display the score of the cardgames
-class ScoreDlg : public XDialog {
+class ScoreDlg : public XGP::XDialog {
  public:
    ScoreDlg (const std::vector<Player*>& player);
    virtual ~ScoreDlg ();
@@ -61,9 +61,9 @@ class ScoreDlg : public XDialog {
 
    virtual void okEvent ();
 
-   typedef SmartPtr<Gtk::Box>        PBox;
-   typedef SmartPtr<Gtk::Label>      PLabel;
-   typedef SmartPtr<Gtk::Separator>  PSeparator;
+   typedef YGP::SmartPtr<Gtk::Box>        PBox;
+   typedef YGP::SmartPtr<Gtk::Label>      PLabel;
+   typedef YGP::SmartPtr<Gtk::Separator>  PSeparator;
 
    PBox client;
 
@@ -79,8 +79,8 @@ class ScoreDlg : public XDialog {
       Gtk::Box& getBox () const { return *pBox; }
 
     private:
-      typedef XAttributeLabel2<ANumeric> NumLabel;
-      typedef SmartPtr<NumLabel>         PNumLabel;
+      typedef XGP::XAttributeLabel2<YGP::ANumeric> NumLabel;
+      typedef YGP::SmartPtr<NumLabel>              PNumLabel;
 
       PBox       pBox;
       PLabel     pTitle;

@@ -22,7 +22,9 @@
 
 
 // Forward declarations
-class Socket;
+namespace YGP {
+   class Socket;
+}
 
 
 /**Implementation of a player on a (remote) computer, communicating over a
@@ -32,14 +34,14 @@ class RemotePlayer : public Player {
  public:
    /// Constructor; taking the socket for the communication and a name of the
    /// player
-   RemotePlayer (Socket* socket, const Glib::ustring& name) : Player (name)
+   RemotePlayer (YGP::Socket* socket, const Glib::ustring& name) : Player (name)
        , sock (socket) { }
    virtual ~RemotePlayer ();
 
    virtual bool makeTurn (Game* game);
 
  protected:
-   Socket* sock;
+   YGP::Socket* sock;
 
  private:
    RemotePlayer ();

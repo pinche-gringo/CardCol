@@ -20,7 +20,7 @@
 
 #include <vector>
 
-#include <ConnectDlg.h>
+#include <XGP/ConnectDlg.h>
 
 class Player;
 
@@ -29,25 +29,25 @@ class Player;
 
    After establishing the connection it negotiates the player names.
 */
-class PlayerConnectDlg : public ConnectDlg {
+class PlayerConnectDlg : public XGP::ConnectDlg {
  public:
    PlayerConnectDlg (std::vector<Player*>& player, const Glib::ustring& port,
-                     ConnectionMgr& cmgr);
+                     YGP::ConnectionMgr& cmgr);
    virtual ~PlayerConnectDlg ();
 
    static unsigned int perform (std::vector<Player*>& player, const Glib::ustring& port,
-                                ConnectionMgr& cmgr);
+                                YGP::ConnectionMgr& cmgr);
    static unsigned int perform (std::vector<Player*>& player, unsigned int port,
-                                ConnectionMgr& cmgr);
-   static unsigned int perform (std::vector<Player*>& player, ConnectionMgr& cmgr,
+                                YGP::ConnectionMgr& cmgr);
+   static unsigned int perform (std::vector<Player*>& player, YGP::ConnectionMgr& cmgr,
                                 const Glib::ustring& listenAt);
-   static unsigned int perform (std::vector<Player*>& player, ConnectionMgr& cmgr,
+   static unsigned int perform (std::vector<Player*>& player, YGP::ConnectionMgr& cmgr,
                                 const Glib::ustring& host, const Glib::ustring& hostPort);
 
  protected:
    /// \name Connection management
    virtual void connect (const Glib::ustring& target, unsigned int port) throw (std::domain_error);
-   virtual Socket* addClient (int socket);
+   virtual YGP::Socket* addClient (int socket);
 
    Gtk::Label* connected;
    Gtk::Label* lblConnected;

@@ -35,7 +35,7 @@ class Twopart : public Game {
    // Manager functions
    Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             const std::vector<Player*>& players, unsigned int posPlayer,
-            Mutex& mxSerialize);
+            YGP::Mutex& mxSerialize);
    ~Twopart ();
 
    virtual void start ();

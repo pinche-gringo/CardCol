@@ -37,10 +37,10 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#include <Check.h>
-#include <Trace_.h>
-#include <ConnMgr.h>
-#include <Tokenize.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
+#include <YGP/ConnMgr.h>
+#include <YGP/Tokenize.h>
 
 #include <Player.h>
 #include <CardSet.h>
@@ -66,7 +66,7 @@ char Twopart::sortOrder[4];
 //-----------------------------------------------------------------------------
 Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, 
                   CardSet& cardset, const std::vector<Player*>& player,
-                  unsigned int posPlayer, Mutex& mxSerialize)
+                  unsigned int posPlayer, YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 12, 15)
      , bfPlayers ((1 << NUM_PLAYERS) - 1), offPos (0)
      , bfOldPlayers (bfPlayers), pTrump (NULL)
@@ -154,14 +154,14 @@ void Twopart::start () {
 
       pos1Play = pos2Play = -1U;
 
-      if (getConnectionMgr ().getMode () != ConnectionMgr::CLIENT) {
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
          setNextPlayer (startPlayer = rand () & 0x3);
 
          // Send startplayer to the clients
-         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
-            const std::vector<Socket*>& clients (getConnectionMgr ().getClients ());
+         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
+            const std::vector<YGP::Socket*>& clients (getConnectionMgr ().getClients ());
             unsigned int player ((currentPlayer () - 1) & 0x3);
-            for (std::vector<Socket*>::const_iterator i (clients.begin ());
+            for (std::vector<YGP::Socket*>::const_iterator i (clients.begin ());
                  i != clients.end (); ++i) {
                std::ostringstream msg;
                msg << "ActPlayer=" << player;
@@ -264,11 +264,11 @@ void Twopart::playedSelected () {
    Check3 (gameStatus () == PLAYING2);
    Check3 (bfPlayers);
 
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       Check3 (startPos[offPos - 1] < played.size ());
       std::ostringstream msg;
       msg << "Play=" << played[startPos[offPos - 1]]->id () << ";Target=1";
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
@@ -361,7 +361,7 @@ void Twopart::cardSelected (unsigned int pos) {
 
    unsigned int start ((gameStatus () == PLAYING2) ? findStartOfSerie (0, pos) : pos);
    // Inform the others about the move
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
       std::ostringstream msg;
       msg << "Play=";
@@ -369,7 +369,7 @@ void Twopart::cardSelected (unsigned int pos) {
          msg << players[0].hand[i]->id () << ' ';
       msg << players[0].hand[pos]->id () << ";Target=0";
 
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
@@ -458,7 +458,7 @@ int Twopart::makeMove (unsigned int player) {
       }
       else {
          if ((gameStatus () == PLAYING2)
-             && (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)) {
+             && (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)) {
             std::ostringstream msg;
             Check3 (startPos[offPos - 1] < played.size ());
             msg << "Play=" << played[startPos[offPos - 1]]->id () << ";Target=1";
@@ -1186,7 +1186,7 @@ bool Twopart::handleMessage (unsigned int player, const char* message) {
    TRACE1 ("Twopart::handleMessage (unsigned int player, const char*) - "
            << message << " (" << player << ')');
     
-   Tokenize command (message);
+   YGP::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
    bool rc (Game::handleMessage (player, message));

@@ -34,19 +34,18 @@
 
 #include <gtkmm/messagedialog.h>
 
-#include <Check.h>
-#include <Trace_.h>
-#include <Socket.h>
-#include <ANumeric.h>
+#include <YGP/File.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
+#include <YGP/Socket.h>
+#include <YGP/INIFile.h>
+#include <YGP/ANumeric.h>
+#include <YGP/Tokenize.h>
+#include <YGP/PathSrch.h>
+#include <YGP/AttrParse.h>
 
-#include <File.h>
-#include <INIFile.h>
-#include <Tokenize.h>
-#include <PathSrch.h>
-#include <AttrParse.h>
-
-#include <XAbout.h>
-#include <XAttribute.h>
+#include <XGP/XAbout.h>
+#include <XGP/XAttribute.h>
 
 #include <Human.h>
 #include <RemotePlayer.h>
@@ -588,7 +587,7 @@ static char * xpmJoker[] = {
 
 
 // With a very ugly trick initialize I18n before the first use of gettext)
-XApplication::MenuEntry CardgameCollection::menuItems[] = {
+XGP::XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { (initI18n (PACKAGE, LOCALEDIR),
       _("_Game")),            _("<alt>G"), 0,        BRANCH },
     { _("_New"),              _("<ctl>N"), NEW,      ITEM },
@@ -620,7 +619,7 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
 
 // VIO-Application part of the Cardgames; cares about reading the INI-file and
 // processing the options
-class CardgameAppl : public IVIOApplication {
+class CardgameAppl : public YGP::IVIOApplication {
  public:
    CardgameAppl (const int argc, const char* argv[])
       : IVIOApplication (argc, argv, lo) { }
@@ -635,7 +634,7 @@ class CardgameAppl : public IVIOApplication {
    // Program-handling
    virtual bool        shallShowInfo () const { return false; }
    virtual int         perform (int argc, const char* argv[]);
-   virtual const char* name () const { return PACKAGE; }
+   virtual const char* name () const { return PACKAGE_NAME; }
    virtual const char* description () const {
       static std::string version =
          (PACKAGE " V" VERSION " - "
@@ -660,7 +659,7 @@ class CardgameAppl : public IVIOApplication {
    static const longOptions lo[];
 };
 
-const IVIOApplication::longOptions CardgameAppl::lo[] = {
+const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {
    { IVIOAPPL_HELP_OPTION },
    { "game", 'g' },
    { "browser", 'b' },
@@ -720,7 +719,7 @@ CardgameCollection::CardgameCollection (Options& opts)
 
       TRACE1 ("CardgameCollection::CardgameCollection (Options&) - "
               << cmgr.getMode () << "; Pos: " << playerPos);
-      if (cmgr.getMode () != ConnectionMgr::NONE)
+      if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
          initCommunication ();
    }
 }
@@ -845,7 +844,7 @@ void CardgameCollection::startGame () {
    }
 #endif
 
-   if (cmgr.getMode () != ConnectionMgr::CLIENT) {
+   if (cmgr.getMode () != YGP::ConnectionMgr::CLIENT) {
       game->start ();
 
 #if SAVE_GAME
@@ -892,13 +891,13 @@ void CardgameCollection::command (int menu) {
       }
       else {
 #ifdef HAVE_LIBPTHREAD
-          if (cmgr.getMode () == ConnectionMgr::CLIENT) {
+          if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT) {
              Gtk::MessageDialog dlg (_("Stop waiting for the server to start the game and start a local one?"),
                                      Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
              dlg.set_title (PACKAGE);
              if (dlg.run () == Gtk::RESPONSE_YES) {
                 Check3 (aCommThreads.size () == 1);
-                cmgr.changeMode (ConnectionMgr::NONE);
+                cmgr.changeMode (YGP::ConnectionMgr::NONE);
                 aCommThreads[0]->cancel ();
                 delete aCommThreads[0];
                 aCommThreads.clear ();
@@ -926,7 +925,7 @@ void CardgameCollection::command (int menu) {
       playerPos = PlayerConnectDlg::perform (aPlayer, PORT, cmgr);
       TRACE1 ("CardgameCollection::command (int) - Mode: " << cmgr.getMode ()
               << "; Pos: " << playerPos);
-      if (cmgr.getMode () != ConnectionMgr::NONE)
+      if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
          initCommunication ();
       break;
 
@@ -966,10 +965,10 @@ void CardgameCollection::command (int menu) {
       std::ofstream inifile (options.pNameINIFile);
       if (inifile) {
          options.strType = options.type + '0';
-         INIFile::write (inifile, "Game", options);
+         YGP::INIFile::write (inifile, "Game", options);
          for (unsigned int i (0); i < aPlayer.size (); ++i)
             options.names[i] = aPlayer[i]->getName ();
-         INIList<Glib::ustring>::write (inifile, "Player", options.names);
+         YGP::INIList<Glib::ustring>::write (inifile, "Player", options.names);
       }
       break;
    }
@@ -1017,7 +1016,7 @@ void CardgameCollection::initCommunication () {
    Check2 (cmgr.getMode () != ConnectionMgr::NONE);
    Check2 (aCommThreads.empty ());
 
-   if (cmgr.getMode () == ConnectionMgr::CLIENT) {
+   if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT) {
       status.pop ();
       status.push (_("Waiting for the server to start the game ..."));
       aCommThreads.push_back (THRDAPPL::create (this, &CardgameCollection::waitForMessages,
@@ -1039,8 +1038,8 @@ void CardgameCollection::initCommunication () {
 //-----------------------------------------------------------------------------
 const char* CardgameCollection::getHelpfile () {
    std::string file (options.helpPath);
-   if (file[file.size () - 1] != File::DIRSEPARATOR)
-      file += File::DIRSEPARATOR;
+   if (file[file.size () - 1] != YGP::File::DIRSEPARATOR)
+      file += YGP::File::DIRSEPARATOR;
    file += game ? (std::string (game->name ()) + ".html") : "CardCol.html";
    return file.c_str ();
 }
@@ -1054,7 +1053,7 @@ void CardgameCollection::showAboutbox () {
    ver.replace (ver.find ("%1"), 2, __DATE__);
    ver.replace (ver.find ("%2"), 2, __TIME__);
 
-   XAbout* about (XAbout::create (ver, PACKAGE " V" VERSION));
+   XGP::XAbout* about (XGP::XAbout::create (ver, PACKAGE " V" VERSION));
    about->setIconProgram (xpmGame);
    about->setIconAuthor (xpmAuthor);
    about->get_window ()->set_transient_for (get_window ());
@@ -1197,7 +1196,7 @@ void CardgameCollection::loadCards () {
       apMenus[CONNECT]->set_sensitive (true);
 
       status.pop ();
-      if (cmgr.getMode () != ConnectionMgr::CLIENT) {
+      if (cmgr.getMode () != YGP::ConnectionMgr::CLIENT) {
          status.push (_("Start a new game with Ctrl+N (or Game -> New)"));
       }
    }
@@ -1256,7 +1255,7 @@ void* CardgameCollection::waitForMessages (void* player) {
            ? (iPlayer == -1) : (iPlayer < cmgr.getClients ().size ()));
 
    std::string input;
-   Socket* sock ((iPlayer == -1) ? cmgr.getSocket () : cmgr.getClients ()[iPlayer]);
+   YGP::Socket* sock ((iPlayer == -1) ? cmgr.getSocket () : cmgr.getClients ()[iPlayer]);
    ++iPlayer;
    try {
       while (true) {
@@ -1270,7 +1269,7 @@ void* CardgameCollection::waitForMessages (void* player) {
             throw msg;
          }
 
-         Tokenize messages (input);
+         YGP::Tokenize messages (input);
          std::string message;
          while ((message = messages.getNextNode ('\0')).size ()) {
             char* msg (new char [message.length () + 1]);
@@ -1340,7 +1339,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player, char* msg) thr
 #ifdef HAVE_LIBPTHREAD
    TRACE5 ("CardgameCollection::handleGlobalMessage (unsigned int, char*) - " << msg);
 
-   Tokenize message (msg);
+   YGP::Tokenize message (msg);
    std::string cmd (message.getNextNode ('='));
    std::string param (message.getNextNode (';'));
    TRACE3 ("CardgameCollection::handleGlobalMessage (unsigned int, char*) - " << cmd);
@@ -1375,7 +1374,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player, char* msg) thr
 
          cmd.replace (cmd.find ("%1"), 2, aPlayer[player]->getName ());
          cmd.replace (cmd.find ("%1"), 2, 
-                      (cmgr.getMode () == ConnectionMgr::CLIENT
+                      (cmgr.getMode () == YGP::ConnectionMgr::CLIENT
                        ? _("The server")
                        : aPlayer[player]->getName ()));
          cmd.replace (cmd.find ("%2"), 2, param);

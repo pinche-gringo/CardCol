@@ -34,12 +34,13 @@
 
 #include <cardgames-cfg.h>
 
-#include <Check.h>
-#include <Trace_.h>
-#include <Socket.h>
-#include <ConnMgr.h>
-#include <AttrParse.h>
-#include <XAttribute.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
+#include <YGP/Socket.h>
+#include <YGP/ConnMgr.h>
+#include <YGP/AttrParse.h>
+
+#include <XGP/XAttribute.h>
 
 #include "Human.h"
 #include "RemotePlayer.h"
@@ -55,8 +56,8 @@
 //-----------------------------------------------------------------------------
 PlayerConnectDlg::PlayerConnectDlg (std::vector<Player*>& player,
                                     const Glib::ustring& port,
-                                    ConnectionMgr& cmgr)
-    : ConnectDlg (player.size (), port, cmgr)
+                                    YGP::ConnectionMgr& cmgr)
+    : XGP::ConnectDlg (player.size (), port, cmgr)
       , connected (new Gtk::Label ())
       , lblConnected (new Gtk::Label (_("Connected:")))
       , aPlayer (player), posPlayer (0) {
@@ -89,7 +90,7 @@ PlayerConnectDlg::~PlayerConnectDlg () {
 /// \returns <tt>unsigned int</tt>: Number player has for the server
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, unsigned int defPort,
-                                        ConnectionMgr& connMgr) {
+                                        YGP::ConnectionMgr& connMgr) {
    std::ostringstream port;
    port << defPort;
    return perform (player, port.str (), connMgr);
@@ -103,7 +104,7 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, unsigned i
 /// \returns <tt>unsigned int</tt>: Number player has for the server
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, const Glib::ustring& defPort,
-                                        ConnectionMgr& connMgr) {
+                                        YGP::ConnectionMgr& connMgr) {
    unsigned int pos (0);
    PlayerConnectDlg* dlg (new PlayerConnectDlg (player, defPort, connMgr));
    dlg->run ();
@@ -120,7 +121,7 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, const Glib
 /// \returns <tt>unsigned int</tt>: The number the player has for the server
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
-                                        ConnectionMgr& cmgr, const Glib::ustring& listenAt) {
+                                        YGP::ConnectionMgr& cmgr, const Glib::ustring& listenAt) {
    unsigned int pos (0);
    PlayerConnectDlg* dlg (new PlayerConnectDlg (player, "0", cmgr));
    Check3 (dlg->pPort); Check3 (dlg->pWait);
@@ -141,7 +142,7 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
 /// \returns <tt>unsigned int</tt>: The number the player has for the server
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
-                                        ConnectionMgr& cmgr, const Glib::ustring& host,
+                                        YGP::ConnectionMgr& cmgr, const Glib::ustring& host,
                                         const Glib::ustring& hostPort) {
    unsigned int pos (0);
    PlayerConnectDlg* dlg (new PlayerConnectDlg (player, "0", cmgr));
@@ -180,7 +181,7 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
 
       Glib::ustring names;
       unsigned int rc (0);
-      AttributeParse ap;
+      YGP::AttributeParse ap;
       ATTRIBUTE (ap, unsigned int, posPlayer, "Self");
       ATTRIBUTE (ap, Glib::ustring, names, "Names");
       ATTRIBUTE (ap, Glib::ustring, error, "Msg");
@@ -198,7 +199,7 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
           delete *i;
       aPlayer.clear ();
 
-      Tokenize split (names);
+      YGP::Tokenize split (names);
       unsigned int c (0);
       while (split.getNextNode ('\n').size ()) {
          TRACE9 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int)"
@@ -240,9 +241,9 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
 /// Updates the name of the player with the data send from the client
 /// \param socket: Socket over which the clients communicates
 //----------------------------------------------------------------------------
-Socket* PlayerConnectDlg::addClient (int socket) {
+YGP::Socket* PlayerConnectDlg::addClient (int socket) {
    TRACE3 ("PlayerConnectDlg::addClient (int)");
-   Socket* sock (ConnectDlg::addClient (socket));
+   YGP::Socket* sock (ConnectDlg::addClient (socket));
    Check3 (sock);
 
    Glib::ustring error;
@@ -253,15 +254,22 @@ Socket* PlayerConnectDlg::addClient (int socket) {
 
       Glib::ustring name;
       unsigned int protocoll (0), variant (0);
-      AttributeParse ap;
+      YGP::AttributeParse ap;
       ATTRIBUTE (ap, Glib::ustring, name, "Name");
       ATTRIBUTE (ap, unsigned int, protocoll, "Version");
       ATTRIBUTE (ap, unsigned int, variant, "Variant");
       ap.assignValues (input);
 
       if (protocoll < PROTOCOLL) {
-          error = _("Protocoll version %1 needed!");
-          error.replace (error.find ("%1"), 2, STRPROTOCOLL);
+         error = _("Protocoll version %1 needed!");
+         error.replace (error.find ("%1"), 2, STRPROTOCOLL);
+         throw error;
+      }
+      else if ((protocoll == PROTOCOLL) && (variant < VARIANT)) {
+         error = _("Protocoll variant not sufficient - Version %1 needed!\n\n"
+                   "Generally this means, that the partner does not support\n"
+                   "all game types - Continue at your own risk!");
+         error.replace (error.find ("%1"), 2, STRVARIANT);
       }
 
       TRACE8 ("PlayerConnectDlg::addClient (int) - Connected: " << name);

@@ -38,11 +38,11 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#include <Check.h>
-#include <Trace_.h>
-#include <Socket.h>
-#include <ConnMgr.h>
-#include <AttrParse.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
+#include <YGP/Socket.h>
+#include <YGP/ConnMgr.h>
+#include <YGP/AttrParse.h>
 
 #include "Player.h"
 #include "CardSet.h"
@@ -64,7 +64,7 @@
 //-----------------------------------------------------------------------------
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             const std::vector<Player*>& player, unsigned int posPlayer,
-            Mutex& mxSerialize, unsigned int rows, unsigned int columns)
+            YGP::Mutex& mxSerialize, unsigned int rows, unsigned int columns)
    : Gtk::Table (rows, columns), status (statusbar) , cards (cardset)
      , actPlayers (player), mxSerializeMsgs (mxSerialize), posServer (posPlayer)
      , pos2Play (-1U) , pos1Play (-1U), ignoreNextMsg (false), data (NULL)
@@ -102,7 +102,7 @@ void Game::start () {
 
    setGameStatus (PLAYING);
 
-   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+   if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
       std::string msg ("Game=");
       msg += name ();
       TRACE8 ("Game::start () - Sending: " << msg);
@@ -115,7 +115,7 @@ void Game::start () {
 //-----------------------------------------------------------------------------
 void Game::stop () {
    TRACE8 ("Game::stop ()");
-   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
+   if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
       broadcastMessage ("End");
 
    clean ();
@@ -157,16 +157,16 @@ void Game::disableHuman () {
 //-----------------------------------------------------------------------------
 bool Game::randomizeCardsToPile (ICardPile& pile) const {
    // Randomize and put cards onto staple
-   ConnectionMgr& cmgr (getConnectionMgr ());
+   YGP::ConnectionMgr& cmgr (getConnectionMgr ());
    if (data && *data) {
       std::string input (data);
 
-      AttributeParse ap;
+      YGP::AttributeParse ap;
       ATTRIBUTE (ap, std::string, input, "Cards");
       try {
          ap.assignValues (input);
 
-         Tokenize positions (input);
+         YGP::Tokenize positions (input);
          TRACE8 ("Game::randomizeCardsToPile (ICardPile&) - Cards: " << cards.size ());
          for (unsigned int i (0); i < (cards.size () - 1); ++i) {
             unsigned long pos (0);
@@ -189,7 +189,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
             cards.set (i, pos);
          }
 
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
           writeOK (*cmgr.getSocket ());
       }
       catch (std::string& error) {
@@ -211,7 +211,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
 
       const_cast<Game*> (this)->cardOrder = msg.str ();
 
-      if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
          broadcastMessage (cardOrder);
    }
 
@@ -360,7 +360,7 @@ void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std
    TRACE2 ("Game::flipCards2Play (ICardPile&, const std::string&) - Cards " << cards);
    Check1 (cards.size ());
 
-   Tokenize tokCards (cards);
+   YGP::Tokenize tokCards (cards);
    unsigned long card (0);
    unsigned int cCards (0);
    bool bFollow (false);
@@ -429,7 +429,7 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
    bool bFollow (false);
 
    // Inform clients about cards to play
-   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+   if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
       std::ostringstream msg;
       msg << "Play=";
       for (unsigned int i (start); i < end; ++i)
@@ -579,9 +579,9 @@ void Game::control (unsigned int status) const {
 void Game::broadcastMessage (const std::string& msg) const {
    TRACE3 ("Game::broadcastMessage (const std::string&) - " << msg);
 
-   const ConnectionMgr& cmgr (getConnectionMgr ());
-   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
-      for (std::vector<Socket*>::const_iterator i (cmgr.getClients ().begin ());
+   const YGP::ConnectionMgr& cmgr (getConnectionMgr ());
+   if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
+      for (std::vector<YGP::Socket*>::const_iterator i (cmgr.getClients ().begin ());
            i != cmgr.getClients ().end (); ++i)
          writeMessage (**i, msg);
    else
@@ -593,7 +593,7 @@ void Game::broadcastMessage (const std::string& msg) const {
 /// \param socket: Socket to write message to
 /// \param msg: Message to write
 //----------------------------------------------------------------------------
-void Game::writeMessage (Socket& socket, const std::string& msg) {
+void Game::writeMessage (YGP::Socket& socket, const std::string& msg) {
    try {
       socket.write (msg);
       socket.write ("\0", 1);
@@ -613,7 +613,7 @@ void Game::writeMessage (Socket& socket, const std::string& msg) {
 /// \param rc: Error code to send
 /// \param msg: Message to write
 //----------------------------------------------------------------------------
-void Game::writeError (Socket& socket, unsigned int rc, const std::string& msg) {
+void Game::writeError (YGP::Socket& socket, unsigned int rc, const std::string& msg) {
    std::ostringstream error;
    error << "Error=" << rc << ";Msg=\"" + msg << "\"\0";
    writeMessage (socket, error.str ());
@@ -656,7 +656,7 @@ bool Game::handleMessage (unsigned int player, const char* msg) {
          message.replace (message.find ("%1"), 2, msg);
          message.replace (message.find ("%2"), 2, error);
 
-         if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT) {
+         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT) {
             Check3 (getConnectionMgr ().getSocket ());
             writeError (*getConnectionMgr ().getSocket (), 1, error);
          }
@@ -705,7 +705,7 @@ bool Game::performCommand (unsigned int player, const char* msg) throw (std::str
            << msg << " (" << player << ')');
    Check1 (msg);
 
-   Tokenize command (msg);
+   YGP::Tokenize command (msg);
    std::string cmd (command.getNextNode ('='));
    TRACE2 ("Game::performCommand (unsigned int player, const char*) - " << cmd);
 
@@ -724,7 +724,7 @@ bool Game::performCommand (unsigned int player, const char* msg) throw (std::str
       flipCards2Play (pile, cmd);
 
       // Inform clients about cards to play
-      if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
           broadcastMessage (msg);
 
       if (executeRemoteMove (pile, target)) {

@@ -36,12 +36,10 @@
 #include <gtkmm/accelgroup.h>
 #include <gtkmm/messagedialog.h>
 
-#include <Check.h>
-#include <Trace_.h>
-#include <ConnMgr.h>
-#include <Tokenize.h>
-
-#include <XAbout.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
+#include <YGP/ConnMgr.h>
+#include <YGP/Tokenize.h>
 
 #include <Player.h>
 #include <CardWidget.h>
@@ -70,7 +68,7 @@ const unsigned int Rovhult::ROWS_PLAYER[NUM_PLAYERS] = { 4, 7, 13, 7 };
 //-----------------------------------------------------------------------------
 Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                   CardSet& cardset, const std::vector<Player*>& player,
-                  unsigned int posPlayer, Mutex& mxSerialize)
+                  unsigned int posPlayer, YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 16, 20)
      , played (ICardPile::VERY_COMPRESSED, ICardPile::SHOWFACE)
      , staple (ICardPile::VERY_COMPRESSED)
@@ -159,14 +157,14 @@ void Rovhult::start () {
       pos1Play = pos2Play = -1U;
       aExchanged = 0;
 
-      if (getConnectionMgr ().getMode () != ConnectionMgr::CLIENT) {
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
          setNextPlayer (rand () & 0x3);
 
          // Send startplayer to the clients
-         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
-            const std::vector<Socket*>& clients (getConnectionMgr ().getClients ());
+         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
+            const std::vector<YGP::Socket*>& clients (getConnectionMgr ().getClients ());
             unsigned int player ((currentPlayer () - 1) & 0x3);
-            for (std::vector<Socket*>::const_iterator i (clients.begin ());
+            for (std::vector<YGP::Socket*>::const_iterator i (clients.begin ());
                  i != clients.end (); ++i) {
                std::ostringstream msg;
                msg << "ActPlayer=" << player;
@@ -201,7 +199,7 @@ void Rovhult::finishedExchange (unsigned int iCard) {
    status.pop ();
    displayTurn (currentPlayer ());
 
-   if ((getConnectionMgr ().getMode () == ConnectionMgr::NONE)
+   if ((getConnectionMgr ().getMode () == YGP::ConnectionMgr::NONE)
        || (aExchanged == 0xf)) {
       setGameStatus (PLAYING);
       makeNextMoves ();
@@ -234,7 +232,7 @@ int Rovhult::compareCards (const CardWidget& lhs, const CardWidget& rhs) {
 /// \param player: Not really a void*, but actually the (next computer)player
 //-----------------------------------------------------------------------------
 void Rovhult::exchangeAutoplayerCards () {
-   if (getConnectionMgr ().getMode () != ConnectionMgr::CLIENT)
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT)
       for (unsigned int i (getConnectionMgr ().getClients ().size () + 1);
            i < NUM_PLAYERS; ++i) {
          for (unsigned int j (0); j < 3; ++j) {
@@ -282,7 +280,7 @@ void Rovhult::exchangeAutoplayerCards () {
 //----------------------------------------------------------------------------
 void Rovhult::sendExchangedCards (unsigned int player) {
    // Send starting positions to the clients
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       std::ostringstream msg;
       msg << "Exchange=" << players[player].hand[0]->id () << ' '
           << players[player].hand[1]->id () << ' '
@@ -292,7 +290,7 @@ void Rovhult::sendExchangedCards (unsigned int player) {
           << players[player].reserve[2].getTopCard ().id () << ";Player="
           << ((player + posServer) & 0x3);
 
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
 
       broadcastMessage (msg.str ());
@@ -392,11 +390,11 @@ void Rovhult::pileSelected (unsigned int pile) {
          played.append (actPile.removeTopCard ());
 
          // Inform the others about the move
-         if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+         if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
             // Send played card to all clients (if any)
             std::ostringstream msg;
             msg << "Play=" << card.id () << ";Target=" << (pile + 5);
-            if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+            if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
                 ignoreNextMsg = true;
             broadcastMessage (msg.str ());
          }
@@ -407,11 +405,11 @@ void Rovhult::pileSelected (unsigned int pile) {
    }
 
    // Inform the others about the move
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
       std::ostringstream msg;
       msg << "Play=" << card.id () << ";Target=" << (pile + 1);
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
@@ -540,7 +538,7 @@ void Rovhult::handSelected (unsigned int pos) {
 
    // Inform the others about the move
    unsigned int start (players[0].hand.findFirstEqual (pos));
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
       std::ostringstream msg;
       msg << "Play=";
@@ -548,7 +546,7 @@ void Rovhult::handSelected (unsigned int pos) {
          msg << players[0].hand[i]->id () << ' ';
       msg << players[0].hand[pos]->id () << ";Target=0";
 
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
@@ -643,10 +641,10 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 void Rovhult::takeCards () {
    TRACE2 ("Rovhult::takeCards ()");
 
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       std::ostringstream msg;
       msg << "Play=" << played.getTopCard ().id () << ";Target=4";
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
@@ -1147,7 +1145,7 @@ void Rovhult::showCards2Play (unsigned int player) {
          pile.getTopCard ().showFace ();
 
          // Inform the others about the move
-         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
             // Send played card to all clients (if any)
             std::ostringstream msg;
             msg << "Play="
@@ -1158,7 +1156,7 @@ void Rovhult::showCards2Play (unsigned int player) {
       }
       else {
          // Inform the others about the move
-         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
             // Send played card to all clients (if any)
             std::ostringstream msg;
             msg << "Play="
@@ -1183,7 +1181,7 @@ int Rovhult::makeMove (unsigned int player) {
                               ? played.getTopCard ().number () : CardWidget::TWO)))
          showCards2Play (player);
       else {
-         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
             std::ostringstream msg;
             msg << "Play=" << played[played.size () - 1]->id () << ";Target=4";
             broadcastMessage (msg.str ());
@@ -1554,7 +1552,7 @@ bool Rovhult::handleMessage (unsigned int player, const char* message) {
       TRACE1 ("Rovhult::handleMessage (unsigned int player, const char*) - "
               << message << " (" << player << ')');
 
-      Tokenize command (message);
+      YGP::Tokenize command (message);
       std::string cmd (command.getNextNode ('='));
 
       if (cmd == "Exchange") {
@@ -1611,9 +1609,9 @@ bool Rovhult::handleMessage (unsigned int player, const char* message) {
 
                   TRACE2 ("Rovhult::handleMessage (unsigned int player, const char*) - "
                           "Exchanged: " << std::hex << aExchanged << std::dec);
-                     ConnectionMgr& cmgr (getConnectionMgr ());
+                     YGP::ConnectionMgr& cmgr (getConnectionMgr ());
                      // Inform other clients
-                     if (cmgr.getMode () == ConnectionMgr::SERVER)
+                     if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
                         broadcastMessage (message);
 
                      if (aExchanged == 0xf) {

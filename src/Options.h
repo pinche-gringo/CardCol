@@ -22,12 +22,15 @@
 #include <vector>
 
 #include <cardgames-cfg.h>
+
+#include <XGP/XApplication.h>
+
 #include "CardCol.h"
 
-#include <Entity.h>
+#include <YGP/Entity.h>
 
 
-class Options : public Entity {
+class Options : public YGP::Entity {
    friend class CardgameAppl;
    friend class CardgameCollection;
 

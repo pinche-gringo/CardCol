@@ -36,7 +36,7 @@ class Rovhult : public Game {
    // Manager functions
    Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             const std::vector<Player*>& players, unsigned int posPlayer,
-            Mutex& mxSerialize);
+            YGP::Mutex& mxSerialize);
    ~Rovhult ();
 
    virtual void end (bool restart);

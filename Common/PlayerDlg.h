@@ -20,7 +20,7 @@
 
 #include <vector>
 
-#include <XDialog.h>
+#include <XGP/XDialog.h>
 
 
 namespace Gtk {
@@ -33,14 +33,14 @@ class Player;
 
 
 // Class to enter the names of the players
-class IPlayerDlg : public XDialog {
+class IPlayerDlg : public XGP::XDialog {
  public:
    IPlayerDlg (std::vector<Player*>& player);
    virtual ~IPlayerDlg ();
 
    static IPlayerDlg* create (std::vector<Player*>& player) {
       IPlayerDlg* dlg (new IPlayerDlg (player));
-      dlg->signal_response ().connect (slot (*dlg, &XDialog::free));
+      dlg->signal_response ().connect (slot (*dlg, &XGP::XDialog::free));
       return dlg;
    }
 
@@ -83,7 +83,7 @@ class PlayerDlg : public IPlayerDlg {
    static PlayerDlg* create (T& parent, PCALLBACK callback,
                              std::vector<Player*>& player) {
       PlayerDlg<T>* dlg (new PlayerDlg (parent, callback, player));
-      dlg->signal_response ().connect (slot (*dlg, &XDialog::free));
+      dlg->signal_response ().connect (slot (*dlg, &XGP::XDialog::free));
       dlg->get_window ()->set_transient_for (parent.get_window ());
       return dlg;
    }

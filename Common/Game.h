@@ -22,7 +22,7 @@
 
 #include <gtkmm/table.h>
 
-#include <Mutex.h>
+#include <YGP/Mutex.h>
 
 
 // Forward declarations
@@ -32,11 +32,13 @@ namespace Gtk {
    class Dialog;
    class Statusbar;
 };
+namespace YGP {
 class Socket;
+class ConnectionMgr;
+}
 class Player;
 class CardSet;
 class ICardPile;
-class ConnectionMgr;
 
 
 /**Abstract base class providing usefull methods for card games.
@@ -53,7 +55,7 @@ class Game : public Gtk::Table {
 
    Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
          const std::vector<Player*>& player, unsigned int posPlayer,
-         Mutex& mxSerialize, unsigned int rows, unsigned int columns);
+         YGP::Mutex& mxSerialize, unsigned int rows, unsigned int columns);
    virtual ~Game ();
 
    // Managing
@@ -63,7 +65,7 @@ class Game : public Gtk::Table {
    virtual void playOpen (bool) { }
    /// Informs the parent about status changes
    virtual void control (unsigned int status) const;
-   virtual ConnectionMgr& getConnectionMgr () const = 0;
+   virtual YGP::ConnectionMgr& getConnectionMgr () const = 0;
    virtual void clean ();
    virtual const char* name () = 0;
    virtual void changeNames (const std::vector<Player*>& newPlayer);
@@ -110,9 +112,9 @@ class Game : public Gtk::Table {
 
    /// \name Communication helper methods
    //@{
-   static void writeError (Socket& socket, unsigned int rc, const std::string& msg);
-   static void writeOK (Socket& socket) { return writeMessage (socket, "Error=0"); }
-   static void writeMessage (Socket& socket, const std::string& msg);
+   static void writeError (YGP::Socket& socket, unsigned int rc, const std::string& msg);
+   static void writeOK (YGP::Socket& socket) { return writeMessage (socket, "Error=0"); }
+   static void writeMessage (YGP::Socket& socket, const std::string& msg);
    void broadcastMessage (const std::string& msg) const;
    //@}
 
@@ -152,7 +154,7 @@ class Game : public Gtk::Table {
    std::vector<SigC::Connection> activeCards;
    const std::vector<Player*>&   actPlayers;
 
-   Mutex& mxSerializeMsgs;
+   YGP::Mutex& mxSerializeMsgs;
 
    unsigned int posServer;     ///< Position the player occupies for the server
 
@@ -211,7 +213,7 @@ class TGame : public Parent {
       (obj.*pCallback) (status);
    }
 
-   virtual ConnectionMgr& getConnectionMgr () const {
+   virtual YGP::ConnectionMgr& getConnectionMgr () const {
       return obj.getConnectionMgr ();
    }
 

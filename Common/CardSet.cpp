@@ -27,8 +27,8 @@
 
 #include <cstdlib>
 
-#include <Check.h>
-#include <Trace_.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
 
 #include "CardImgs.h"
 #include "CardWidget.h"

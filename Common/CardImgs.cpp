@@ -31,12 +31,11 @@
 
 #include <cardgames-cfg.h>
 
-#include <Check.h>
-#include <Trace_.h>
+#include <YGP/File.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
 
 #include <gtkmm/widget.h>
-
-#include <File.h>
 
 #include "CardImgs.h"
 
@@ -70,8 +69,8 @@ void CardImages::loadDecks (const std::string& path, bool thread) throw (std::st
            << "; Threaded: " << (thread ? "Yes" : "No"));
 
    std::string file (path);
-   if (file[file.size () - 1] != File::DIRSEPARATOR)
-      file += File::DIRSEPARATOR;
+   if (file[file.size () - 1] != YGP::File::DIRSEPARATOR)
+      file += YGP::File::DIRSEPARATOR;
 
    std::string err;
 

@@ -29,10 +29,10 @@
 
 #include <cardgames-cfg.h>
 
-#include <Check.h>
-#include <Trace_.h>
-#include <ConnMgr.h>
-#include <Tokenize.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
+#include <YGP/ConnMgr.h>
+#include <YGP/Tokenize.h>
 
 #include <gtkmm/menu.h>
 #include <gtkmm/statusbar.h>
@@ -59,7 +59,7 @@ const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 //-----------------------------------------------------------------------------
 Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
                 const std::vector<Player*>& player, unsigned int posPlayer,
-                Mutex& mxSerialize)
+                YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 14, 10)
      , playedSQ (false) , player2Exchange (3)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
@@ -289,11 +289,11 @@ void Hearts::cardSelected (unsigned int iCard) {
 
    if (moveSelectedCardToPlayed (0, iCard)) {
       if (gameStatus () == PLAYING) {
-         if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+         if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
             // Send played card to all clients (if any)
             std::ostringstream msg;
             msg << "Play=" << played[played.size () - 1]->id () << ";Target=0";
-            if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+            if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
                ignoreNextMsg = true;
             broadcastMessage (msg.str ());
          }
@@ -306,7 +306,7 @@ void Hearts::cardSelected (unsigned int iCard) {
             // Exchange the cards in pre-play
             TRACE7 ("Hearts::cardSelected (unsigned int) - Finished exchange");
 
-            if (getConnectionMgr ().getMode () == ConnectionMgr::NONE) {
+            if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::NONE) {
                exchangeCards ();
                startPlaying ();
             }
@@ -316,8 +316,8 @@ void Hearts::cardSelected (unsigned int iCard) {
                    << ' ' << played[2]->id () << ";Player=" << posServer;
                broadcastMessage (msg.str ());
 
-               ConnectionMgr& cmgr (getConnectionMgr ());
-               if ((cmgr.getMode () == ConnectionMgr::SERVER)
+               YGP::ConnectionMgr& cmgr (getConnectionMgr ());
+               if ((cmgr.getMode () == YGP::ConnectionMgr::SERVER)
                    && cardsExchanged ((cmgr.getClients ().size () + 1) * 3)) {
                   exchangeCards ();
                   startPlaying ();
@@ -358,10 +358,10 @@ void Hearts::startPlaying () {
    Check3 (nextPlayer < NUM_PLAYERS);
 
    setNextPlayer (nextPlayer);
-   ConnectionMgr& cmgr (getConnectionMgr ());
-   if (((cmgr.getMode () == ConnectionMgr::NONE)
+   YGP::ConnectionMgr& cmgr (getConnectionMgr ());
+   if (((cmgr.getMode () == YGP::ConnectionMgr::NONE)
         && nextPlayer)
-       || ((cmgr.getMode () == ConnectionMgr::SERVER)
+       || ((cmgr.getMode () == YGP::ConnectionMgr::SERVER)
            && (nextPlayer > getConnectionMgr ().getClients ().size ())))
       flipCards2Play (players[nextPlayer].hand, pos1Play = 0, pos2Play = 0);
 
@@ -560,7 +560,7 @@ void Hearts::exchangeCards () {
 
    movePile (aExchange[0], played); Check9 (aExchange[0].size () == 3);
 
-   if (getConnectionMgr ().getMode () != ConnectionMgr::CLIENT) {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
       for (unsigned int i (getConnectionMgr ().getClients ().size () + 1);
            i < NUM_PLAYERS; ++i) {
          TRACE8 ("Hearts::exchangeCards () - Player " << i);
@@ -635,7 +635,7 @@ void Hearts::exchangeCards () {
             }
          }
 
-         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
             std::ostringstream msg;
             msg << "Exchange=" << aExchange[i][0]->id () << ' '
                 << aExchange[i][1]->id () << ' ' << aExchange[i][2]->id ()
@@ -965,7 +965,7 @@ bool Hearts::handleMessage (unsigned int player, const char* message) {
       TRACE1 ("Hearts::handleMessage (unsigned int player, const char*) - "
               << message << " (" << player << ')');
 
-      Tokenize command (message);
+      YGP::Tokenize command (message);
       std::string cmd (command.getNextNode ('='));
 
       if (cmd == "Exchange") {
@@ -1003,12 +1003,12 @@ bool Hearts::handleMessage (unsigned int player, const char* message) {
             TRACE2 ("Hearts::handleMessage (unsigned int player, const char*) - "
                     "Exchanged: " << aExchange[lPlayer].size () << " cards");
             if (aExchange[lPlayer].size () == 3) {
-               ConnectionMgr& cmgr (getConnectionMgr ());
+               YGP::ConnectionMgr& cmgr (getConnectionMgr ());
                // Inform other clients
-               if (cmgr.getMode () == ConnectionMgr::SERVER)
+               if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
                   broadcastMessage (message);
 
-               if (cardsExchanged (((cmgr.getMode () == ConnectionMgr::SERVER)
+               if (cardsExchanged (((cmgr.getMode () == YGP::ConnectionMgr::SERVER)
                                     ? (cmgr.getClients ().size () + 1)
                                     : NUM_PLAYERS) * 3)) {
                   exchangeCards ();
