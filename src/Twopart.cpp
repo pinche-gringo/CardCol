@@ -33,6 +33,8 @@
 
 #include <glib.h>
 
+#define CHECK 3
+#define TRACELEVEL 8
 #include <Check.h>
 #include <Trace_.h>
 
@@ -307,7 +309,7 @@ Twopart::Twopart ()
      , tblTable (11, 7), cardFaces (USED_CARDS), cards (), pThread (NULL)
      , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
-     , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL) {
+     , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL), bfOldPlayers (bfPlayers) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
@@ -524,12 +526,15 @@ int Twopart:: endRound () {
    TRACE8 ("Twopart::endRound ()");
    Check3 (!bfPlayers);
 
+   bfPlayers = bfOldPlayers;
+   unsigned int cPlayers (0);
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+      if (bfPlayers & (1 << i))
+         ++cPlayers;
+
    unsigned int nextPlayer (NUM_PLAYERS);
    unsigned int i (0);                   // Index of first card for every round
-   unsigned int cPlayers (NUM_PLAYERS);    // TODO: Store bitfield for players!
    unsigned int start (startPlayer);
-
-   bfPlayers = (1 << NUM_PLAYERS) - 1;
    do {
       TRACE8 ("Twopart::endRound () - Round has " << cPlayers << " players; Start = "
               << i << " of " << played.numberOfCards () << " cards");
@@ -564,7 +569,8 @@ int Twopart:: endRound () {
                } // endif equal card found
       } // end-for all players still in game
 
-      TRACE4 ("Twopart::endRound () - Player starting round: " << start);
+      TRACE4 ("Twopart::endRound () - Player starting round: " << start
+              << "; players: " << cPlayers);
       // Equal cards found
       if (posMaxEqual >= 0) {
          unsigned int bfPlayersOut (0);
@@ -590,7 +596,7 @@ int Twopart:: endRound () {
          } // endfor check for equal cards
          bfPlayers &= ~bfPlayersOut;
          TRACE5 ("Twopart::endRound () - Found equal cards; " << cPlayers
-                 << " players still in round (" << hex << bfPlayers << ')');
+                 << " player(s) still in round (" << hex << bfPlayers << ')');
 
          // Find player to continue
          nextPlayer = findNextPlayer (nextPlayer);
@@ -598,13 +604,17 @@ int Twopart:: endRound () {
          if (nextPlayer == -1) {               // None found: Search within all
             bfPlayers = (1 << NUM_PLAYERS) - 1;
             cPlayers = removePlayersWithoutCards ();
+            bfOldPlayers = bfPlayers;
             nextPlayer = findNextPlayer (nextPlayer);
+            Check3 (end == played.numberOfCards ());
+            movePlayedCardsToPlayer (start);
+            break;
          }
 
          // Less than two players left: Activate winner
          if (cPlayers < 2) {
             Check3 (end == played.numberOfCards ());
-            movePlayedCardsToPlayer (startPlayer = start);
+            movePlayedCardsToPlayer (startPlayer = start = nextPlayer);
             break;
          }
          
@@ -621,6 +631,7 @@ int Twopart:: endRound () {
 
          bfPlayers = (1 << NUM_PLAYERS) - 1;
          removePlayersWithoutCards ();
+         bfOldPlayers = bfPlayers;
 
          startPlayer = nextPlayer = findNextPlayer (nextPlayer);
          break;
@@ -762,6 +773,7 @@ void Twopart::cleanTable () {
    staple.clear ();                                             // Clear staple
    for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
       players[i].hand.clear ();
+      players[i].won.clear ();
    }
    played.clear ();
 
@@ -788,7 +800,7 @@ void Twopart::dealCards () {
       }
 
    enablePlayer (0);
-   bfPlayers = (1 << NUM_PLAYERS) - 1;
+   bfPlayers = bfOldPlayers = (1 << NUM_PLAYERS) - 1;
    actPlayer = 0;
    startPlayer = 0;
 }
