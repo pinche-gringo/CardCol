@@ -2,15 +2,16 @@
 
 bin_PROGRAMS=CardCol
 
-CardCol_SOURCES=CardCol.cpp Twopart.cpp Rovhult.cpp Hearts.cpp HeartsScore.cpp
+CardCol_SOURCES=CardCol.cpp Twopart.cpp Rovhult.cpp Hearts.cpp HeartsScore.cpp\
+		Burazno.cpp Twopart.h Rovhult.h Hearts.h HeartsScore.h\
+		Options.h CardCol.h
 
 
 INCLUDES = @INCLUDES@ -I../Common `gtkmm-config --cflags`
 
 CardCol_LDFLAGS=-L../Common -lCard  `gtkmm-config --libs` -lgthread
 
-EXTRA_DIST=Options.meta Twopart.h Rovhult.h Hearts.h HeartsScore.h Options.h\
-	   CardCol.h
+EXTRA_DIST=Options.meta
 
 Options.meta: Options.h
 	mgeni Options.h Options.meta
