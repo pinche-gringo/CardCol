@@ -809,9 +809,9 @@ unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[
                  "Checking card " << pile.at (pos) << " at pos " << pos
                  << " against " << aPlayed[color] << " cards");
          if (cardsPlayed
-             || (color != CardWidget::HEARTS)
              || ((color == CardWidget::SPADES)
-                 && card != CardWidget::QUEEN))
+                 ? (card != CardWidget::QUEEN)
+                 : (color != CardWidget::HEARTS)))
             return pos;
          ++pos;
       }
