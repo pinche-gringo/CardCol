@@ -14,8 +14,12 @@ AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
 AC_SUBST(VERSION)
 AC_SUBST(RELEASE)
 
-AC_DEFINE_UNQUOTED(PROTOCOLL, "1", [Version of the communication protocoll])
-AC_DEFINE_UNQUOTED(VARIANT, "0", [Variant of the verstion of the communication protocoll])
+PROTOCOLL=1
+VARIANT=0
+AC_DEFINE_UNQUOTED(PROTOCOLL, $PROTOCOLL, [Version of the communication protocoll])
+AC_DEFINE_UNQUOTED(VARIANT, $VARIANT, [Variant of the verstion of the communication protocoll])
+AC_DEFINE_UNQUOTED(STRPROTOCOLL, "$PROTOCOLL", [Version of the communication protocoll - stringified verstion])
+AC_DEFINE_UNQUOTED(STRVARIANT, "$VARIANT", [Variant of the verstion of the communication protocoll - stringified verstion])
 
 LIBRELEASE=$RELEASE
 AC_SUBST(LIBRELEASE)
@@ -48,7 +52,7 @@ AM_GNU_GETTEXT
 dnl Checks for libraries.
 AC_CHECK_LIB(stdc++, main)
 PKG_CHECK_MODULES(CARDGAME, gtkmm-2.0 >= 2.2.0 gthread-2.0 > 2.2.0
-                  YGP >= 0.6.20 XGP >= 0.6.20)
+                  YGP >= 0.6.21 XGP >= 0.6.21)
 AC_SUBST(CARDGAME_CFLAGS)
 AC_SUBST(CARDGAME_LIBS)
 
