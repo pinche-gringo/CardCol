@@ -46,6 +46,12 @@ class RovhultAppl : public XApplication {
    // IDs for menus
    enum { NEW, EXIT, ABOUT };
 
+   void pileSelected (CardPile* parent, unsigned int card);
+   void handSelected (CardCollection* parent, unsigned int card);
+
+   void cardDropped (GdkDragContext* pContext, gint x, gint y,
+                     GtkSelectionData* pData, guint info, guint32 time);
+
  private:
    // Protected manager functions
    RovhultAppl (const RovhultAppl&);
@@ -91,6 +97,9 @@ class RovhultAppl : public XApplication {
 
    static const unsigned int WIDTH = 720;
    static const unsigned int HEIGHT = 690;
+
+
+   static GtkTargetEntry dndTypes;
 };
 
 #endif
