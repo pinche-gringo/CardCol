@@ -212,13 +212,19 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
 
             if (diff && (diff <= maxDiff)) {
                pos = status.posFirst - diff + 1;
-               if ((diff == 2) && (status.posJoker > status.posFirst)
-                   && ((operator[] (status.posFirst)->number () != CardWidget::ACE)
-                       || (size () < 3))) {
+               if (((diff == 2) && (status.posJoker > status.posFirst)
+                    && ((operator[] (status.posFirst)->number () != CardWidget::ACE)
+                        || (size () < 3)))
+                   || ((diff == 1) && (card.number () == CardWidget::ACE)
+                       && !status.posJoker && !pos)) {
                   Check3 (!status.posFirst);
 
-                  move = 0;
-                  ++pos;
+                  move = ((((status.posJoker > status.posFirst)
+                            ? operator[] (status.posFirst)->number ()
+                            : card.number ()) == CardWidget::ACE)
+                          ? status.posLast : 0);
+                  if (move)
+                     ++pos;
                }
                return true;
             }
