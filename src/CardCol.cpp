@@ -785,14 +785,17 @@ void CardgameCollection::startGame () {
    // Check if the game has been changed; if so destroy the old one
    unsigned int oldDecks (0), oldJoker (0);
 
-   if (oldGame != static_cast<int> (options.type)) {
-      if (game) {
-         oldDecks = game->numberOfDecks ();
-         oldJoker = game->numberOfJokers ();
+   if (game) {
+      oldDecks = game->numberOfDecks ();
+      oldJoker = game->numberOfJokers ();
+
+      if (oldGame != static_cast<int> (options.type)) {
          getClient ().remove (*game);
          delete game;
       }
+   }
 
+   if (oldGame != static_cast<int> (options.type)) {
       oldGame = CardgameCollection::games (options.type);
       switch (oldGame) {
       case GROVHULT:
