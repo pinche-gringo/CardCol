@@ -60,6 +60,7 @@
 #include "Rovhult.h"
 #include "Twopart.h"
 #include "Buraco.h"
+#include "Machiavelli.h"
 #include "Options.h"
 
 #include "CardCol.h"
@@ -604,7 +605,8 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     {    _("_Rovhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
     {    _("_Twopart"),       _("<ctl>T"), TWOPART,  RADIOITEM },
     {    _("_Hearts"),        _("<ctl>H"), HEARTS,   RADIOITEM },
-    {    _("_Buraco"),        _("<ctl>B"), BURACO,   LASTRADIOITEM },
+    {    _("_Buraco"),        _("<ctl>B"), BURACO,   RADIOITEM },
+    {    _("_Machiavelli"),   _("<ctl>M"), MACHIAVELLI, LASTRADIOITEM },
     { "",                     "",          0,        SUBMENUEND },
     { _("Change _decks ..."), _("<ctl>D"), CHGDECKS, ITEM },
     { _("Change _names ..."), _("<ctl>C"), CHGNAMES, ITEM },
@@ -813,6 +815,11 @@ void CardgameCollection::startGame () {
             (*this, &CardgameCollection::gameEvents);
          break;
 
+      case GMACHIAVELLI:
+         game = new TGame<Machiavelli, CardgameCollection>
+            (*this, &CardgameCollection::gameEvents);
+         break;
+
       default:
          Check (0);
       }
@@ -932,6 +939,10 @@ void CardgameCollection::command (int menu) {
 
    case BURACO:
       options.type = GBURACO;
+      break;
+
+   case MACHIAVELLI:
+      options.type = GMACHIAVELLI;
       break;
 
    case CHGDECKS:
@@ -1466,8 +1477,8 @@ void CardgameAppl::showHelp () const {
              << "  -h, -?, --help ..... " << _("Displays this help and exit\n\n")
 
        // For translations: Write one of the Rovhults with 'ø'
-             << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco or the\n"
-                  "numbers 0 - 3 (corresponding to the games in the above order).\n\n")
+             << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco,\n"
+                  "Machiavelli or the numbers 0 - 4 (corresponding to the games in the above order).\n\n")
              << _("The INI file can have the following entries:\n\n")
              <<  "  [Game]\n"
                  "  Type=Twopart\n"
@@ -1603,10 +1614,12 @@ CardgameCollection::games CardgameAppl::convertToGameType (const char* pText) {
                   { "Twopart", CardgameCollection::GTWOPART },
                   { "Hearts", CardgameCollection::GHEARTS },
                   { "Buraco", CardgameCollection::GBURACO },
+                  { "Machiavelli", CardgameCollection::GMACHIAVELLI },
                   { "0", CardgameCollection::GROVHULT },
                   { "1", CardgameCollection::GTWOPART },
                   { "2", CardgameCollection::GHEARTS },
-                  { "3", CardgameCollection::GBURACO } };
+                  { "3", CardgameCollection::GBURACO },
+                  { "4", CardgameCollection::GMACHIAVELLI } };
 
    for (unsigned int i (0); i < (sizeof (values) / sizeof (values[0])); ++i)
       if (!strcmp (values[i].pText, pText)) {
