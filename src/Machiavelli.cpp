@@ -35,7 +35,7 @@
 #include <gtkmm/messagedialog.h>
 
 #define CHECK 9
-//#define TRACELEVEL 9
+#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace_.h>
 #include <YGP/ConnMgr.h>
@@ -130,16 +130,15 @@ void Machiavelli::start () {
    target = -1U;
 
    if (randomizeCardsToPile (staple)) {
-      for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+      for (unsigned int i (0); i < NUM_PLAYERS; ++i)
           for (unsigned int j (0); j < 7; ++j)
              hands[(i - posServer) & 0x3].append (staple.removeTopCard ());
 
-          hands[i].sortByColour ();
-      }
-
+      hands[0].sortByColour ();
       for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
          hands[i].setStyle (ICardPile::QUITE_COMPRESSED);
          hands[i].setShowOption (ICardPile::SHOWBACK);
+         hands[i].sortByNumber ();
       }
 
       status.pop ();
@@ -238,9 +237,48 @@ int Machiavelli::makeMove (unsigned int player) {
    Check1 (gameStatus () == PLAYING);
    Check1 (!hands[player].empty ());
 
-   unsigned int nextPlayer (findNextPlayer (player));
-   hands[nextPlayer].append (staple.removeTopCard ());
-   return nextPlayer;
+   if (target == -1U) {
+      target = showCardsToPlay (player);
+      TRACE8 ("Machiavelli::makeMove (unsigned int) - Going to play cards to "
+              << std::hex << (int)target << std::dec);
+
+      // No more cards found: Continue with next player
+      if (target == -1U) {
+         player = findNextPlayer (player);
+         hands[player].append (staple.removeTopCard ());
+      }
+      else {
+         Check3 (pos1Play <= pos2Play);
+         Check3 (pos2Play < hands[player].size ());
+         flipCards2Play (hands[player], pos1Play, pos2Play);
+      }
+   }
+   else {
+      Check1 (pos1Play <= pos2Play);
+
+      unsigned int pos (target & 0xffff);
+      target >>= 16;
+
+      TRACE4 ("Machiavelli::makeMove (unsigned int) - Moving cards to pile " << target);
+      Check3 (target < tablePiles.size ());
+      ICardPile& dest ();
+
+#if CHECK > 2
+      for (unsigned int t (pos1Play); t < pos2Play; ++t) {
+         int diff (MachiPile::cardDistance (*hands[player][t + 1], *hands[player][t]));
+         TRACE1 ("Buraco::makeMove (unsigned int) - Card " << *hands[player][t]);
+         Check3 ((diff == 0) || (diff == 1));
+      }
+#endif
+
+      // Move the played cards to the pile to play
+      Check3 (hands[player].size () > pos2Play);
+      for (; (int)pos1Play <= (int)pos2Play; --pos2Play)
+         tablePiles[target]->insert (hands[player].remove (pos1Play), pos++);
+      target = -1U;
+   }
+
+   return player;
 }
 
 //-----------------------------------------------------------------------------
@@ -602,7 +640,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    TRACE4 ("Machiavelli::cardDroppedOnTable (...) - Card dropped: " << moved);
 
    if (iCard == -1U) {    // If card was dropped on the new label: Create pile
-      if (!hands[0].hasFittingPair (moved, true, &MachiPile::cardDistance)) {
+      if (!hands[0].hasFittingPair (moved, &MachiPile::cardDistance, false)) {
          context->drag_finish (false, false, time);
          Gtk::MessageDialog dlg (_("There are no cards to make three of a kind!"),
                                  Gtk::MESSAGE_ERROR);
@@ -699,4 +737,57 @@ MachiPile& Machiavelli::makeNewPile () {
    piles.add (*pile);
    tablePiles.push_back (pile);
    return *pile;
+}
+
+//-----------------------------------------------------------------------------
+/// Searches for cards to play and shows them in the hand of the actual player
+/// \param player: Player to inspect
+/// \returns \c ID of the target (32 Bit: Pile << 16 + Position) or -1U
+//-----------------------------------------------------------------------------
+unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
+   TRACE2 ("Machiavelli::showCardsToPlay (unsigned int) - Player " << player);
+
+   ICardPile& playerPile (hands[player]);
+   unsigned int dest (-1U);
+
+   // Check if any card can be added to an existing pile
+   if (tablePiles.size ())
+      for (ICardPile::const_iterator p (playerPile.begin ());
+           p != playerPile.end (); ++p) {
+         TRACE8 ("Machiavelli::showCardsToPlay (player) - Adding card " << **p << '?');
+
+         for (std::vector<MachiPile*>::const_iterator m (tablePiles.begin ());
+              m != tablePiles.end (); ++m) {
+            dest = (*m)->getPosition4Card (**p);
+            if (dest != -1U) {
+                pos1Play = pos2Play = p - playerPile.begin ();
+                return ((m - tablePiles.begin ()) << 16) + dest;
+            }
+         }
+      }
+
+   // Check for 3 cards belonging to a serie
+   unsigned int i (0);
+   for (; i < playerPile.size (); ++i) {
+      TRACE8 ("Machiavelli::showCardsToPlay (player) - Analyzing card " << *playerPile[i]);
+
+      std::map<unsigned int, unsigned int> aPos;                   // diff, pos
+      std::vector<unsigned int> aOrder;
+      unsigned int nrs (playerPile.getSeries (*playerPile[i], aPos, aOrder,
+                                              &MachiPile::cardDistance));
+
+      // Play the bigger of the found matching cards, if there are >= 3
+      if ((nrs > aPos.size ()) ? (nrs > 2) : (aPos.size () > 2)) {
+         if (nrs < aPos.size ()) {
+            i = playerPile.sortColourSerie (aPos, aOrder);
+            nrs = aPos.size ();
+         }
+
+         makeNewPile ();
+         pos1Play = i;
+         pos2Play = i + nrs - 1;
+         return (tablePiles.size () - 1) << 16;
+      }
+   }
+   return -1U;
 }

@@ -80,6 +80,7 @@ class Machiavelli : public Game {
    void setStartPlayer ();
    unsigned int findNextPlayer (unsigned int player) const;
    MachiPile& makeNewPile ();
+   unsigned int showCardsToPlay (unsigned int player);
    //@}
 
    /// name Drag-and-drop methods
