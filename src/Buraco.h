@@ -32,6 +32,9 @@
 #include <Game.h>
 
 
+class ScoreDlg;
+
+
 class Buraco : public Game {
  public:
    Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
@@ -68,6 +71,7 @@ class Buraco : public Game {
    static bool containsNoJoker (const std::vector<CardWidget*>& pile);
    void addReserve (unsigned int player, bool show = true);
    static bool isJoker (const CardWidget& card);
+   static unsigned int getPoints (const CardWidget& card);
    unsigned int showCardsToPlay (unsigned int player);
    int  executeMove (unsigned int player);
    void endGame ();
@@ -106,9 +110,9 @@ class Buraco : public Game {
                             unsigned int cardPile);
 
    CardHPile hands[NUM_PLAYERS];              // For all players: Cards in hand
-   std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];       // Piles on table
+   std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];      // Piles on table
    std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
-   unsigned int cerrados[NUM_PLAYERS >> 1];          // Number of cerrados/team
+   int points[NUM_PLAYERS >> 1];                       // Number of points/team
 
    unsigned int startPlayer;
 
@@ -132,6 +136,8 @@ class Buraco : public Game {
    unsigned int target;
    unsigned int pos1;
    unsigned int pos2;
+
+   ScoreDlg* pScoreDlg;
 };
 
 #endif

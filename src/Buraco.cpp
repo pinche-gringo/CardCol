@@ -39,6 +39,8 @@
 #include <ANumeric.h>
 #include <ScoreDlg.h>
 
+
+
 #include "SigCExt.h"
 std::vector<Gtk::TargetEntry> Buraco::dndType;
 
@@ -58,7 +60,7 @@ unsigned int Buraco::ENDPOINTS (2000);
      , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
      , newPile (_("New pile")), startTurn (START_GAME | START_TURN)
-     , target (-1U), pos1 (0), pos2 (0) {
+     , target (-1U), pos1 (0), pos2 (0), pScoreDlg (NULL) {
 
            "std::vector<std::string>&)");
        scrlTable[i] = new Gtk::ScrolledWindow ();
@@ -113,6 +115,7 @@ unsigned int Buraco::ENDPOINTS (2000);
 /*--------------------------------------------------------------------------*/
    clean ();
    delete pScoreDlg;
+   // Free team names
 
 //-----------------------------------------------------------------------------
 /// Removes a cerrado from the table
@@ -201,8 +204,9 @@ unsigned int Buraco::ENDPOINTS (2000);
             addReserve (oldPlayer, false);
                cleanCerrado (oldPlayer);
                Check3 (points[oldPlayer & 1] > 100);
-               Check3 (cerrados[oldPlayer & 1]);
+               endGame ();
                cleanCerrado (oldPlayer);
+               return -1;
             }
       }
    }
@@ -230,7 +234,7 @@ unsigned int Buraco::ENDPOINTS (2000);
       Check3 ((end == -1) || (end < playerPile.size ()));
 
       if ((!isJoker (dumped.getTopCard ())) && ((end - start) >= 1)
-          && (cerrados[player & 1] || !reserve[player & 1].empty ()
+          && ((points[player & 1] > 100) || !reserve[player & 1].empty ()
               || (dumped.size () + playerPile.size () > 3))) {
          CardVPile& pile (makeNewPile (player & 1));         // Create new pile
          pile.setTopCard (dumped.removeTopCard ());      // with picked up card
@@ -298,7 +302,7 @@ unsigned int Buraco::ENDPOINTS (2000);
    TRACE8 ("Buraco::executeMove (unsigned int) - Playing all?");
    if (!unfinishedMonoPiles[player & 1]
    TRACE8 ("Buraco::executeMove (player) - Playing all?");
-   if ((!reserve[player & 1].empty () || cerrados[player & 1]) 
+   if ((!reserve[player & 1].empty () || (points[player & 1] > 100)) 
        && canGetRidOfCards (player)) {
       // Find first non-joker
       std::vector<CardWidget*>::const_iterator ci (playerPile.begin ());
@@ -327,7 +331,7 @@ unsigned int Buraco::ENDPOINTS (2000);
 
       else
          // Get rid off jokers, if team has already a "cerrado" (7 equal)
-         if (cerrados[player & 1]) {
+         if (points[player & 1] > 100) {
             for (std::vector<CardVPile*>::const_iterator p (tablePiles[player & 1].begin ());
                  p != tablePiles[player & 1].end (); ++p)
                if (containsNoJoker (**p)) {
@@ -393,7 +397,7 @@ unsigned int Buraco::ENDPOINTS (2000);
                   " them on the table - click card to dump to end turn"));
 
    startTurn = START_TURN | START_GAME;
-   cerrados[0] = cerrados[1] = 0;
+   points[0] = points[1] = 0;
    updateInfo ();
    setNextPlayer (startPlayer);
    displayTurn (startPlayer++);
@@ -527,6 +531,7 @@ unsigned int Buraco::ENDPOINTS (2000);
       else if (hands[0].empty ()) {
          addReserve (0);
          endGame ();
+         return;
       }
 
    gStatus.startTurn = 1;
@@ -815,17 +820,6 @@ unsigned int Buraco::ENDPOINTS (2000);
    Check3 (*pValue < hands[0].size ());
 
    if (!humanPilesOK (iCard >> 8)) {
-   // Only allow dropping of last card, if the game can be ended, or there
-   // is still the reserve
-   if (!canDumpCards (0, 1)) {
-      context->drag_finish (false, false, time);
-      Gtk::MessageDialog dlg (_("You can't end the game (there's no \"cerrado\")!"),
-                              Gtk::MESSAGE_ERROR);
-      dlg.set_title (_("Invalid move"));
-      dlg.run ();
-      return;
-   }
-
       context->drag_finish (false, false, time);
       Gtk::MessageDialog dlg (_("You need to fill up other piles first!"),
                               Gtk::MESSAGE_ERROR);
@@ -921,6 +915,17 @@ unsigned int Buraco::ENDPOINTS (2000);
       }
 
       if ((iCard = cardFitsOnPile (iPile, moved)) == -1U) {
+         context->drag_finish (false, false, time);
+      // Only allow dropping of last card, if the game can be ended, or there
+      // is still the reserve
+      if (!canDumpCards (0, 1) && (pile->size () < 6)) {
+                                 Gtk::MESSAGE_ERROR);
+         Gtk::MessageDialog dlg (_("You can't end the game (there's no \"cerrado\")!"),
+         dlg.run ();
+         return;
+      }
+
+      if ((pile->size () == 1)
    // End old drag
    context->drag_finish (true, false, time);
    activeCards[*pValue].disconnect ();
@@ -950,6 +955,7 @@ unsigned int Buraco::ENDPOINTS (2000);
          if (hands[0].empty ()) {
             points[0] += 100;
             endGame ();
+            return;
          }
 
    // Re-register the cards in the hand of the human for DND
@@ -1070,14 +1076,13 @@ void Buraco::addReserve (unsigned int player, bool show) {
       status.push (stat);
    status.pop ();
 
+   points[player & 1] += 100;
 
 //-----------------------------------------------------------------------------
 /// Hides the joker, which are displayed when picking up the buraco
 /*--------------------------------------------------------------------------*/
-//Purpose   : Checks, if the passed pile contains no cards except jokers or 2s.
-//            This is also true for empty piles.
-//Parameters: pile: Pile add reserve to
-//            team: Which reserve to use
+//Purpose   : Makes a new pile for the passed team.
+//Parameters: team: Which team to make the pile for
 /*--------------------------------------------------------------------------*/
 CardVPile& Buraco::makeNewPile (unsigned int team) {
    TRACE9 ("Buraco::makeNewPile (unsigned int) - New pile for team " << team);
@@ -1120,10 +1125,11 @@ CardVPile& Buraco::makeNewPile (unsigned int team) {
       // you haven't already picked up the reserve (the missing card might be
       // in there and the oponent can't finish
       if (isJoker (card)) {
-         if (((*p)->size () == 6) && containsNoJoker (**p)
-             && (reserve[player & 1].empty ()
-                 || ((reserve[(player + 1) & 1].empty ())
-                     && cerrados[(player + 1) & 1]))) {
+         if ((((*p)->size () == 6) && containsNoJoker (**p)
+              && (reserve[player & 1].empty ()
+                  || ((reserve[(player + 1) & 1].empty ())
+                      && (points[(player + 1) & 1] > 100))))
+             || (((*p)->size () > 2) && containsOnlyJoker (**p))) {
             pos1 = pos2 = iCard;
             flipCards2Play (hands[player], pos1, pos2);
             return ((p - tablePiles[player & 1].begin ()) << 16) + (*p)->size ();
@@ -1153,6 +1159,20 @@ CardVPile& Buraco::makeNewPile (unsigned int team) {
 //-----------------------------------------------------------------------------
 /// Removes a cerrado (a pile with 7 cards) from the table
 /*--------------------------------------------------------------------------*/
+//Purpose   : Returns the value of the passed card
+//Parameters: card: Card to inspect
+//Returns   : Value of the card
+/*--------------------------------------------------------------------------*/
+unsigned int Buraco::getPoints (const CardWidget& card) {
+   if (card.number () == CardWidget::TWO)
+      return 25;
+   
+   if (card.number () > CardWidget::ACE)
+      return 50;
+   return (card.number () <= CardWidget::SEVEN) ? 5 : 10;
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Removes a cerrado (a pile with 7 cards) from the table
 //Parameters: player: Player causing the remove of the pile
 //            pile: Pile holding the cerrado
@@ -1181,8 +1201,14 @@ void Buraco::removeCerrado (unsigned int player, CardVPile& pile) {
       for (ICardPile::iterator c (pile.begin ()); c != pile.end (); ++c)
          unregisterTableDND (**c);
    }
+
+   CardWidget& card (isJoker (*pile[0]) ? *pile[1] : *pile[0]);
+   points[team] += (isJoker (card)
+                    ? 1000
+                    : ((card.number () == CardWidget::ACE)
+                       ? containsNoJoker (pile) ? 500 : 300
+                       : containsNoJoker (pile) ? 400 : 200));
    delete &pile;
-   cerrados[team]++;
 
 //-----------------------------------------------------------------------------
 /// Actualizes the info-part of the statusbar
@@ -1190,10 +1216,10 @@ void Buraco::removeCerrado (unsigned int player, CardVPile& pile) {
 //Purpose   : Actualizes the info-part of the statusbar
 /*--------------------------------------------------------------------------*/
    strInfo.replace (strInfo.find ("%1"), 2, YGP::ANumeric::toString (points[0]));
-   std::string strInfo (_("Cerrados [Buracos]: %1 [%2] / %3 [%4]"));
-   strInfo.replace (strInfo.find ("%1"), 2, ANumeric::toString (cerrados[0]));
+   std::string strInfo (_("Points [Buraco]: %1 [%2] / %3 [%4]"));
+   strInfo.replace (strInfo.find ("%1"), 2, ANumeric::toString (points[0]));
    strInfo.replace (strInfo.find ("%2"), 2, 1, (reserve[0].empty () ? 'N' : 'Y'));
-   strInfo.replace (strInfo.find ("%3"), 2, ANumeric::toString (cerrados[1]));
+   strInfo.replace (strInfo.find ("%3"), 2, ANumeric::toString (points[1]));
    strInfo.replace (strInfo.find ("%4"), 2, 1, (reserve[1].empty () ? 'N' : 'Y'));
 }
    info.pop ();
@@ -1237,16 +1263,6 @@ int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
             break;
       return first;
    }
-
-   // Check if pile contains only jokers; only accept another joker or
-   // - if the pile has only 1 card - a card which is part of a pair
-   if (first == -1U)
-      return (isJoker (card)
-              ? 0
-              : (posJoker
-                 ? - 1
-                 : (pileHasFittingPair (hands[currentPlayer ()], card, false)
-                    ? 0 : -1)));
 
    // Else check if the pile is a numberd or a coloured one
    Check3 (first <= last); Check3 (last < pile.size ());
@@ -1319,11 +1335,53 @@ int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
 //Purpose   : Performs the steps to end the game
 /*--------------------------------------------------------------------------*/
 
+   if (!currentPlayer ())
+      disableHuman ();
    status.pop ();
    status.push (_("Game ended"));
 
    if (!pScoreDlg) {
       pScoreDlg = ScoreDlg::create (nameTeams);
+      pScoreDlg->get_window ()->set_transient_for (get_window ());
+      std::vector <std::string> _names;
+      for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
+         std::string name (_("Team %1\n%2/%3"));
+         name.replace (name.find ("%1"), 2, 1, char ('1' + i));
+         name.replace (name.find ("%2"), 2, names[i << 1]);
+         name.replace (name.find ("%3"), 2, names[(i << 1) + 1]);
+         _names.push_back (name);
+      }
+      pScoreDlg = ScoreDlg::perform (_names);
+   points[0] += reserve[0].empty () ? 100 : -100;
+   points[1] += reserve[1].empty () ? 100 : -100;
+   // Sum up all cards on the table
+   for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
+      int sum (0);
+      int monoPile (0);
+      unsigned int sum (0);
+           p != tablePiles[i].end (); ++p) {
+      for (std::vector<CardVPile*>::const_iterator p (tablePiles[i].begin ());
+           p != tablePiles[i].end (); ++p)
+         for (std::vector<CardWidget*>::const_iterator c ((*p)->begin ());
+              c != (*p)->end (); ++c)
+             sum += getPoints (**c);
+              << sum << '/' << monoPile);
+      TRACE5 ("Buraco::endGame () - Points of team " << i << "on table: "
+              << sum);
+      if (points[i] < 200)
+         points[i] = -sum;
+      else
+         points[i] = sum;
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+      for (std::vector<CardWidget*>::const_iterator c (hands[i].begin ());
+           c != hands[i].end (); ++c)
+         points[i & 1] -= getPoints (**c);
+
+   pScoreDlg->addPoints (points);
+   
+
+   Glib::ustring stat (_("Round ended"));
+}
    setGameStatus (STOPPED);   
 
 //-----------------------------------------------------------------------------
@@ -1381,7 +1439,7 @@ bool Buraco::canGetRidOfCards (unsigned int player) {
 /*--------------------------------------------------------------------------*/
 bool Buraco::canDumpCards (unsigned int player, unsigned int cards) const {
    unsigned int cPile (hands[player].size ());
-   return (cPile >= (cards + 2) || cerrados[player & 1]
+   return (cPile >= (cards + 2) || (points[player & 1] > 100)
            || !reserve[player & 1].empty ());
 //----------------------------------------------------------------------------
 
@@ -1424,7 +1482,7 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile,
                diff = (diff < 0) ? (diff + 2) : (diff + 1);
                TRACE9 ("Buraco::pileHasFittingPair (const ICardPile&, const "
                        "CardWidget*) - " << **p << " differs " << diff);
-               if ((diff < 4) && !(bCols & (1 << diff))) {
+               if ((((unsigned int)diff) < 4) && !(bCols & (1 << diff))) {
                    if (bCols & (diff ? (0x5 << (diff - 1)) : 0x1))
                       return true;
                    bCols |= (1 << diff);
