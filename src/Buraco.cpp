@@ -314,12 +314,21 @@ void Buraco::cleanCerrado (unsigned int player) {
                     << **ci << " and " << **next);
             TRACE1 ("Buraco::executeMove (player) - Have two with joker: "
             Check3 (diff ? (*next)->colour () == (*ci)->colour () : true);
-            unsigned int diff (cardDistance (**next, **ci));
-            Check3 (diff <= 2);
+            if (diff < 0) {
                Check3 (diff >= -2);
-            playerPile.move (playerPile.size () - 1, next - playerPile.begin ());
-            playerPile.move (playerPile.size () - 1 - diff,
-                             ci - playerPile.begin ());
+               playerPile.move (playerPile.size () - 2,
+                                next - playerPile.begin ());
+               Check3 (next > (ci - diff));
+               playerPile.move (playerPile.size () - 1 + diff,
+                                ci - playerPile.begin ());
+               playerPile.move (playerPile.size () - 1, ci - playerPile.begin ());
+               Check3 (diff <= 2);
+               playerPile.move (playerPile.size () - 1, next - playerPile.begin ());
+               playerPile.move (playerPile.size () - 1 - diff,
+                                ci - playerPile.begin ());
+            }
+
+            // Create a new pile with the found pair and a joker
             makeNewPile (player & 1);
             pos1Play = playerPile.size () - 3;
             CardVPile& pile (makeNewPile (player & 1));
@@ -327,18 +336,17 @@ void Buraco::cleanCerrado (unsigned int player) {
                             pos2 = playerPile.size () - 1);
          ++ci;
       }
+         ++ci;
 
    // >= 2 normal cards left.
-      // Get rid off jokers, if the team has already a "cerrado" (7 equal)
-      if ((points[player & 1] > 100)
-          && (isJoker (*playerPile[pos1 = pos2 = playerPile.size () - 1]))) {
+      if ((ci != playerPile.end ()) && isJoker (**ci))
          for (std::vector<CardVPile*>::const_iterator p (tablePiles[player & 1].begin ());
-             p != tablePiles[player & 1].end (); ++p)
-             if (((*p)->size () < 7) && containsNoJoker (**p)) {
-                 flipCards2Play (playerPile, pos1, pos2);
-                 return (p - tablePiles[player & 1].begin ()) << 16;
-             }
-      }
+              p != tablePiles[player & 1].end (); ++p)
+            if (((*p)->size () < 7) && containsNoJoker (**p)) {
+               pos1 = pos2 = ci - playerPile.begin ();
+               flipCards2Play (playerPile, pos1, pos2);
+               return (p - tablePiles[player & 1].begin ()) << 16;
+
    if (containsOnlyJoker (playerPile))
       if (!reserve[player & 1].empty ()) {
          addBuraco (player);
@@ -354,8 +362,8 @@ void Buraco::cleanCerrado (unsigned int player) {
           == playerPile.end ())
 
       --i;
-   while (isJoker (*playerPile[i]) && --i)            // Try to not dump jokers
-      ;
+
+   Check3 (i < playerPile.size ());
    pos1Play = pos2Play = i;
    return 0xffff0000;
    flipCards2Play (playerPile, pos1 = i, pos2 = i);
@@ -1270,13 +1278,15 @@ int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
 
          // This code assums that the coloured pile is sorted from lower card
          // to higher cards (strict ascending)
-         Check3 (cardDistance (*pile[first], *pile[last]) <= 0);
+         Check3 ((cardDistance (*pile[first], *pile[last]) <= 0)
+                 || (pile[first]->number () == CardWidget::ACE));
          // Possible difference the card can have: 1 or two if joker at one end
          unsigned int maxDiff ((posJoker == -1U) ? 1
                                : (((posJoker < first) || (posJoker > last))
                                   ? 2 : 1));
-         unsigned int diff (cardDistance (*pile[first], card,
-                                          pile[first]->number () <= CardWidget::FOUR));
+         unsigned int diff (pile[first]->number () == CardWidget::ACE ? -1U
+                            : cardDistance (*pile[first], card,
+                                            pile[first]->number () <= CardWidget::FOUR));
          TRACE9 ("Buraco::cardFitsOnPile (CardVPile&, CardWidget&) - Diff (start): "
                  << diff << "; max: " << maxDiff);
          Check3 (diff);
