@@ -76,6 +76,7 @@ CardWidget& ICardPile::removeTopCard () {
    TRACE5 ("ICardPile::removeTopCard () - Size: " << cards.size ());
 
    Check3 (cards.size () > 0); Check3 (cards[cards.size () - 1]);
+
    CardWidget& card (getTopCard ());
    cards.pop_back ();
 
@@ -224,11 +225,10 @@ CardWidget& ICardPile::remove (CardWidget& card) {
    // Check if we have to resize a card
    if (style > NORMAL)
       // If last card was removed: Resize new last card (if any)
-      if (((i + 1) == cards.end ()) && i != cards.begin ())
-         resize ((i - cards.begin () - 1), NORMAL);
+      resize ((((i + 1) == cards.end ()) && i != cards.begin ()) ?
+              (i - cards.begin () - 1) : (i - cards.begin ()), NORMAL);
 
-   cards.erase (i--);
-
+   cards.erase (i);
    return card;
 }
 
@@ -244,11 +244,10 @@ CardWidget& ICardPile::remove (unsigned int pos) {
    CardWidget* pTemp (*i); Check3 (pTemp);
 
    // Check if we have to resize a card
-   if (style > NORMAL) {
+   if (style > NORMAL)
       // If last card was removed: Resize new last card (if any)
-      if (((i + 1) == cards.end ()) && i != cards.begin ())
-         resize ((i - cards.begin () - 1), NORMAL);
-   }
+      resize ((((i + 1) == cards.end ()) && i != cards.begin ()) ?
+              (i - cards.begin () - 1) : (i - cards.begin ()), NORMAL);
 
    cards.erase (i--);
    return *pTemp;
