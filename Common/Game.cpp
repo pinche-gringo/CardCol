@@ -39,7 +39,6 @@
 #include <gtkmm/messagedialog.h>
 
 #define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 #include <Socket.h>
@@ -59,15 +58,16 @@
 /// \param statusbar: For messages
 /// \param cardset: Cardset
 /// \param player: Vector of player
+/// \param posPlayer: Position of the player for the server
 /// \param rows: Number of rows needed by game
 /// \param columns: Number of columns needed by game
 //-----------------------------------------------------------------------------
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<Player*>& player, unsigned int rows,
-            unsigned int columns)
+            const std::vector<Player*>& player, unsigned int posPlayer,
+            unsigned int rows, unsigned int columns)
    : Gtk::Table (rows, columns), statGame (NONE), status (statusbar)
      , cards (cardset), restart (false), pWonPile (NULL), pMenuPopSort (NULL)
-     , actPlayers (player), data (NULL) {
+     , actPlayers (player), data (NULL), posServer (posPlayer) {
    TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, std::vector<Player*>,"
            "unsinged int, unsigned int)");
    Check3 (cardset.size ());
@@ -101,16 +101,11 @@ void Game::start () {
    setGameStatus (PLAYING);
    actPlayer = 0;
 
-   Check3 (getConnectionMgr ());
-   ConnectionMgr* cmgr (getConnectionMgr ());
-   if (cmgr && cmgr->getClients ().size ()) {
+   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
       std::string msg ("Game=");
       msg += name ();
       TRACE9 ("Game::start () - Sending: " << msg);
-      for (std::vector<Socket*>::const_iterator i (cmgr->getClients ().begin ());
-           i != cmgr->getClients ().end (); ++i) {
-         writeMessage (**i, msg);
-      }
+      broadcastMessage (msg);
    }
 }
 
@@ -159,8 +154,8 @@ void Game::disableHuman () {
 //-----------------------------------------------------------------------------
 bool Game::randomizeCardsToPile (ICardPile& pile) const {
    // Randomize and put cards onto staple
-   ConnectionMgr* cmgr (getConnectionMgr ());
-   if (cmgr && (cmgr->getMode () == ConnectionMgr::CLIENT)) {
+   ConnectionMgr& cmgr (getConnectionMgr ());
+   if (cmgr.getMode () == ConnectionMgr::CLIENT) {
       Check3 (data);
       std::string input (data);
 
@@ -191,10 +186,10 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
                     << "] = " << pos);
             cards.set (i, pos);
          }
-         writeOK (*cmgr->getSocket ());
+         writeOK (*cmgr.getSocket ());
       }
       catch (std::string& error) {
-         writeError (*cmgr->getSocket (), 99, error);
+         writeError (*cmgr.getSocket (), 99, error);
          std::string err (_("Received invalid input from the server!\n\nReason: %1"));
          err.replace (err.find ("%1"), 2, error);
          Gtk::MessageDialog dlg (err, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
@@ -205,17 +200,13 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
    }
    else {
       cards.shuffle ();
-      if (cmgr && cmgr->getClients ().size ()) {
+      if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
          std::ostringstream msg;
          msg << "Cards=";
          for (unsigned int i (0); i < cards.size (); ++i)
             msg << cards.getCard (i).id () << ' ';
-         TRACE9 ("Game::randomizeCardsToPile (ICardPile&) - Sending: " << msg.str ());
 
-         for (std::vector<Socket*>::const_iterator i (cmgr->getClients ().begin ());
-              i != cmgr->getClients ().end (); ++i) {
-            writeMessage (**i, msg.str ());
-         }
+         broadcastMessage (msg.str ());
       }
    }
 
@@ -257,6 +248,7 @@ void Game::clean () {
 //-----------------------------------------------------------------------------
 void Game::makeNextMoves () {
    if (actPlayer >= 0) {
+      TRACE9 ("Game::makeNextMoves () - " << actPlayer);
       Check1 (actPlayer < actPlayers.size ());
       unsigned int timeout (actPlayers[actPlayer]->timeout ());
       if (timeout)
@@ -351,13 +343,24 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
    unsigned int s (start);
    unsigned int e (end);
    bool bFollow (false);
+
+   // Inform clients about cards to play
+   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+      std::ostringstream msg;
+      msg << "Play=";
+      for (unsigned int i (start); i < end; ++i)
+         msg << i << ' ';
+      msg << end << ";Target=0";
+
+      broadcastMessage (msg.str ());
+   }
+
    do {
       CardWidget& card (*pile[s]);
       pile.move (pile.size () - 1, s);
       card.showFace ();
 
-      if ((pile.getStyle () != ICardPile::NORMAL)
-          && bFollow) {
+      if ((pile.getStyle () != ICardPile::NORMAL) && bFollow) {
          Check3 (pile.size () > 1);
          pile.resize (pile.size () - 2, ICardPile::COMPRESSED);
       }
@@ -478,29 +481,6 @@ void Game::changeNames (const std::vector<Player*>& newPlayer) {
    const_cast<std::vector<Player*>&> (actPlayers) = newPlayer;
 }
 
-//-----------------------------------------------------------------------------
-/// Reads the turn of a remote player
-/// \param socket: Socket from which to read the turn
-/// \returns bool: Flag, if player continues its turn
-//-----------------------------------------------------------------------------
-bool Game::readTurn (Socket& socket) {
-   return false;
-}
-
-//-----------------------------------------------------------------------------
-/// Sends the performed turn to a clients
-/// \param socket: Socket from which to read the turn
-/// \param start: First card of the player to play
-/// \param end: Last card of the player to play
-/// \returns bool: Flag, if message could be sent
-//-----------------------------------------------------------------------------
-bool Game::writeTurn (Socket& socket, unsigned int start, unsigned int end) {
-   std::ostringstream msg;
-   msg << "Start=" << start << ";End=" << end;
-   writeMessage (socket, msg.str ());
-
-}
-
 //----------------------------------------------------------------------------
 /// Callback to inform a controller about status changes
 /// \param status: New status of the game
@@ -509,11 +489,19 @@ void Game::control (unsigned int status) const {
 }
 
 //----------------------------------------------------------------------------
-/// Checks, if the game is running in server mode
-/// \returns ConnectionMgr*: Pointer to connection manager or NULL
+/// Writes a message to all partners
+/// \param msg: Message to write
 //----------------------------------------------------------------------------
-ConnectionMgr* Game::getConnectionMgr () const {
-   return NULL;
+void Game::broadcastMessage (const std::string& msg) const {
+   TRACE3 ("Game::broadcastMessage (const std::string&) - " << msg);
+
+   const ConnectionMgr& cmgr (getConnectionMgr ());
+   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
+      for (std::vector<Socket*>::const_iterator i (cmgr.getClients ().begin ());
+           i != cmgr.getClients ().end (); ++i)
+         writeMessage (**i, msg);
+   else
+       writeMessage (*cmgr.getSocket (), msg);
 }
 
 //----------------------------------------------------------------------------
@@ -548,10 +536,12 @@ void Game::writeError (Socket& socket, unsigned int rc, const std::string& msg) 
 
 //----------------------------------------------------------------------------
 /// Handles a message send from the server
+/// \param player: ID of player sending the message
 /// \param msg: Message to handle
 //----------------------------------------------------------------------------
-void Game::handleMessage (const char* msg) {
-   TRACE1 ("Game::handleMessage (const char*) - " << msg);
+void Game::handleMessage (unsigned int player, const char* msg) {
+   TRACE1 ("Game::handleMessage (unsigned int player, const char*) - " << msg
+           << " (" << player << ')');
    Check1 (msg);
    Check2 (!data);
 
@@ -567,7 +557,7 @@ void Game::handleMessage (const char* msg) {
          break;
 
       default:                             // Playing (and game specific stati)
-          if (!performCommand (msg)) {
+          if (!performCommand (player, msg)) {
             std::string error (_("Invalid message `%1'"));
             error.replace (error.find ("%1"), 2, msg);
             throw error;
@@ -576,10 +566,9 @@ void Game::handleMessage (const char* msg) {
       }
    }
    catch (std::string& error) {
-      ConnectionMgr* cmgr (getConnectionMgr ());
-      if (cmgr && (cmgr->getMode () == ConnectionMgr::CLIENT)) {
-         Check3 (cmgr->getSocket ());
-         writeError (*cmgr->getSocket (), 1, error);
+      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT) {
+         Check3 (getConnectionMgr ().getSocket ());
+         writeError (*getConnectionMgr ().getSocket (), 1, error);
       }
 
       std::string message (_("Error processing server command!\n\n%1"));
@@ -601,34 +590,42 @@ void Game::setNextPlayer (unsigned int player) {
    TRACE9 ("Game::setNextPlayer (unsigned int) - " << player);
    actPlayer = player;
 
-   ConnectionMgr* cmgr (getConnectionMgr ());
-   if (cmgr && cmgr->getClients ().size ()) {
+   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+      Check3 (!posServer);
       std::ostringstream msg;
       msg << "ActPlayer=" << player;
 
-      TRACE9 ("Game::start () - Sending: " << msg.str ());
-      for (std::vector<Socket*>::const_iterator i (cmgr->getClients ().begin ());
-           i != cmgr->getClients ().end (); ++i) {
-         writeMessage (**i, msg.str ());
-      }
+      broadcastMessage (msg.str ());
    }
+   else
+      actPlayer = correctPlayer (actPlayer);
+}
+
+//----------------------------------------------------------------------------
+/// Corrects the player number (as they differ between server and client)
+//----------------------------------------------------------------------------
+unsigned int Game::correctPlayer (unsigned int player) const {
+   return (player + posServer) & 0x3;
 }
 
 //----------------------------------------------------------------------------
 /// Handles a command the server sent in playing mode
+/// \param player: ID of player sending the message
 /// \param msg: Command to perform
 //----------------------------------------------------------------------------
-bool Game::performCommand (const char* msg) {
-   TRACE8 ("Game::performCommand (const char*) - Msg: " << msg);
+bool Game::performCommand (unsigned int player, const char* msg) {
+   TRACE8 ("Game::performCommand (unsigned int player, const char*) - "
+           << msg << " (" << player << ')');
    Check1 (msg);
 
    Tokenize command (msg);
    std::string cmd (command.getNextNode ('='));
-   TRACE2 ("Game::performCommand (const char*) - Cmd: " << cmd);
+   TRACE2 ("Game::performCommand (unsigned int player, const char*) - " << cmd);
 
    if (cmd == "ActPlayer") {
-      cmd = command.getNextNode (';');
-      TRACE9 ("Game::performCommand (const char*) - Startplayer: " << cmd);
+       cmd = command.getNextNode (';');
+      TRACE9 ("Game::performCommand (unsigned int player, const char*) - "
+              "Startplayer: " << cmd);
       unsigned long player;
       if (stringToNumber (player, cmd.c_str ()))
          return false;
@@ -636,6 +633,29 @@ bool Game::performCommand (const char* msg) {
       // Don't set player directly; maybe we will support once a more-leveled
       // server system (just kidding).
       setNextPlayer (player);
+   }
+   else if (cmd == "Play") {
+      cmd = command.getNextNode (';');
+      std::string playTo (command.getNextNode ('='));
+      std::string strTarget (command.getNextNode (';'));
+
+      unsigned long target;
+      if (stringToNumber (target, strTarget.c_str ())
+          || playTo != "Target")
+         return false;
+      ICardPile& pile (getPileOfPlayer (actPlayer, target));
+
+      command = cmd;
+      unsigned int cards (0);
+      unsigned long lCard (0);
+      unsigned int card (0);
+      while (command.getNextNode (' ').size ()) {
+         if (stringToNumber (lCard, command.getActNode ().c_str ()))
+            return false;
+
+         card = lCard - cards++;
+         flipCards2Play (pile, card, card);
+      }
    }
    else
       return false;

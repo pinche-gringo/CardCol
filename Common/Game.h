@@ -51,8 +51,8 @@ class Game : public Gtk::Table {
           LAST };
 
    Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-         const std::vector<Player*>& player, unsigned int rows,
-         unsigned int columns);
+         const std::vector<Player*>& player, unsigned int posPlayer,
+         unsigned int rows, unsigned int columns);
    virtual ~Game ();
 
    // Managing
@@ -62,10 +62,12 @@ class Game : public Gtk::Table {
    virtual void playOpen (bool) { }
    /// Informs the parent about status changes
    virtual void control (unsigned int status) const;
-   virtual ConnectionMgr* getConnectionMgr () const;
+   virtual ConnectionMgr& getConnectionMgr () const = 0;
    virtual void clean ();
    virtual const char* name () = 0;
    virtual void changeNames (const std::vector<Player*>& newPlayer);
+
+   virtual void handleMessage (unsigned int player, const char* msg);
 
    /// \name Status handling
    //@{
@@ -75,10 +77,12 @@ class Game : public Gtk::Table {
    /// turn of the human)
    virtual bool canBeStopped () const { return !actPlayer; }
 
-   /// Returns the actual game status
+   /// Handling the actual game status
    unsigned int gameStatus () const { return statGame; }
    void setGameStatus (unsigned int newStatus);
    //@}
+
+   void setPlayerPosition (unsigned int posPlayer) { posServer = posPlayer; }
 
    virtual void disableHuman ();
 
@@ -88,22 +92,22 @@ class Game : public Gtk::Table {
    bool makeComputerMove ();
    //@}
 
+ protected:
+   virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile) = 0;
+
    /// \name Communication helper methods
    //@{
-   virtual void handleMessage (const char* msg);
-
-   static bool readTurn (Socket& socket);
-   static bool writeTurn (Socket& socket, unsigned int start, unsigned int end);
    static void writeError (Socket& socket, unsigned int rc, const std::string& msg);
    static void writeOK (Socket& socket) { return writeMessage (socket, "Error=0"); }
    static void writeMessage (Socket& socket, const std::string& msg);
+   void broadcastMessage (const std::string& msg) const;
    //@}
 
- protected:
    /// Returns the current player
    unsigned int currentPlayer () const { return actPlayer; }
    /// Sets the next player
    void setNextPlayer (unsigned int player);
+   virtual unsigned int correctPlayer (unsigned int player) const;
 
    void flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end);
    void displayTurn (unsigned int player);
@@ -115,7 +119,7 @@ class Game : public Gtk::Table {
    static void movePile (ICardPile& dest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
 
-   bool performCommand (const char* msg);
+   bool performCommand (unsigned int player, const char* msg);
    static bool stringToNumber (unsigned long& number, const char* text);
 
    // Handling of won cards (if any)
@@ -134,6 +138,8 @@ class Game : public Gtk::Table {
 
    std::vector<SigC::Connection> activeCards;
    const std::vector<Player*>&   actPlayers;
+
+   unsigned int posServer;       // Position the player occupies for the server
 
  private:
    bool enableActWonCards ();
@@ -167,7 +173,8 @@ class TGame : public Parent {
 
    TGame (Controller& controller, PCALLBACK callback)
       : Parent (controller.getClient (), controller.getStatusbar (),
-                controller.getCards (), controller.getPlayer ())
+                controller.getCards (), controller.getPlayer (),
+                controller.getPlayerPosition ())
       , obj (controller), pCallback (callback) { }
    virtual ~TGame () { }
 
@@ -176,8 +183,8 @@ class TGame : public Parent {
       (obj.*pCallback) (status);
    }
 
-   virtual ConnectionMgr* getConnectionMgr () const {
-      return &obj.getConnectionMgr ();
+   virtual ConnectionMgr& getConnectionMgr () const {
+      return obj.getConnectionMgr ();
    }
 
  private:
