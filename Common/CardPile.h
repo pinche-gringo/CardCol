@@ -74,8 +74,9 @@ class ICardPile : public std::vector<CardWidget*> {
 
    // Methods to random access pile
    virtual void insert (CardWidget& card, unsigned int pos);
-   void insertSorted (CardWidget& card);
-   void insertColourSorted (CardWidget& card);
+   void insertSorted (CardWidget& card, CMPFUNC fnSort = compCardsByNr);
+   void insertColourSorted (CardWidget& card) {
+      insertSorted (card, compCards); }
    void append (CardWidget& card) { setTopCard (card); }
    virtual CardWidget& remove (CardWidget& card);
    virtual CardWidget& remove (unsigned int pos);

@@ -177,23 +177,13 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Inserts a card into the pile; sorted by number
+//Purpose   : Inserts a card into the pile; sorted by the passed function
 //Parameters: card: Card to insert
+//            fnSort: Function, how to sort
 /*--------------------------------------------------------------------------*/
-void ICardPile::insertSorted (CardWidget& card) {
-   TRACE5 ("ICardPile::insertSorted (CardWidget&) - Card " << card);
-   
-   insert (card, (upper_bound (begin (), end (), &card, compCardsByNr) - begin ()));
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Inserts a card into the pile; sorted by colour and number
-//Parameters: card: Card to insert
-/*--------------------------------------------------------------------------*/
-void ICardPile::insertColourSorted (CardWidget& card) {
-   TRACE5 ("ICardPile::insertSorted (CardWidget&) - Card " << card);
-   
-   insert (card, (upper_bound (begin (), end (), &card, compCards) - begin ()));
+void ICardPile::insertSorted (CardWidget& card, CMPFUNC fnSort) {
+   TRACE5 ("ICardPile::insertSorted (CardWidget&, CMPFUNC) - Card " << card);
+   insert (card, (upper_bound (begin (), end (), &card, fnSort) - begin ()));
 }
 
 /*--------------------------------------------------------------------------*/
