@@ -708,9 +708,8 @@ void Rovhult::clean () {
 
    staple.clear ();                                             // Clear staple
    for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
-      for (int j (0); j < 3; ++j) {
+      for (int j (0); j < 3; ++j)
          players[i].reserve[j].clear ();
-      }
 
       players[i].hand.clear ();
    }
@@ -718,11 +717,13 @@ void Rovhult::clean () {
 
    players[0].hand.setStyle (ICardPile::NORMAL);
    disableHuman ();
+
+   Game::clean ();
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Prepares the card for drag´n´drop (starting from the table,
-//            ending on hand or ending on table, starting from hand)
+//            ending on the hand or ending on the table, starting from the hand)
 //Parameters: card: Card to prepare for drag´n´drop
 //            pile: Number of pile on reserve holding card
 /*--------------------------------------------------------------------------*/
