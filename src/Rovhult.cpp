@@ -38,6 +38,7 @@
 
 #include <XAbout.h>
 #include <XMessageBox.h>
+#include <Cardset-config.h>
 
 #include <CardWidget.h>
 #include "Rovhult.h"
@@ -471,11 +472,16 @@ void RovhultAppl::userWants2End (unsigned int input) {
          if (statGame == PREPLAYING)
             unregisterDND ();
 
-         statGame = (statGame == AUTOPLAYING) ? TOSTOP : STOPPED;
-         if (restart)
-            startGame ();
-         else
-            disableLastPlayer ();
+         if (statGame == AUTOPLAYING)
+            statGame = TOSTOP;
+         else {
+            statGame = STOPPED;
+         
+            if (restart)
+               startGame ();
+            else
+               disableLastPlayer ();
+         }
       }
    }
 }
@@ -890,7 +896,7 @@ CardWidget::NUMBERS RovhultAppl::playCardsFromHand (unsigned int player, unsigne
 /*--------------------------------------------------------------------------*/
 int RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
    TRACE3 ("RovhultAppl::executeMove (unsigned int, CardWidget::NUMBERS) - Player "
-           << player)
+           << player);
    Check3 (player < NUM_PLAYERS);
 
    status.pop (1);
@@ -1130,7 +1136,9 @@ void RovhultAppl::loadCards () {
    status.push (1, _("Loading cardimages ..."));
    gdk_threads_leave ();
 
-   cardFaces.load (staple.get_window ());  // Cards need an realized (!) parent
+  // Cards need an realized (!) parent
+   cardFaces.load (staple.get_window (), CARDSET_PATH "/Deck1",
+                   CARDSET_PATH "/back1.xpm");
    cards.addPacket (cardFaces);
 
    gdk_threads_enter ();
@@ -1489,10 +1497,10 @@ void RovhultAppl::flipCards2Play (unsigned int player, unsigned int pos) {
          card->showFace ();
          card->set_relief (GTK_RELIEF_NORMAL);
          if (card->width () < card->getImageWidth ())
-            played.resize (*card, ICardPile::COMPRESSED);
+            players[player].hand.resize (pos, ICardPile::COMPRESSED);
       }
    } while (pos
-            && (card = cardAtPos (player, --pos))
+            && ((card = cardAtPos (player, --pos)))
             && (card->number () == nr));
 }
 
@@ -1684,9 +1692,13 @@ int RovhultAppl::findCard2Play (unsigned int player) const {
                      ++lastEqual;
 
                   // Only play all cards, if it is not a special card
-                  // or there are no other remaining cards
+                  // or there are only special cards remaining
                   if (!isSpecialCard (card.number ())
-                      || (!cardShowsFace && (lastEqual == 2)))
+                      // Tests for special cards: First line checks for only equal
+                      // the second line works for mixed special cards
+                      || (!cardShowsFace
+                          && ((lastEqual == 2)
+                              || (pPile->getTopCard ().number () == CardWidget::TEN))))
                      i = lastEqual;
 
                   TRACE7 ("RovhultAppl::findCard2Play (unsigned int) -  Playing "
