@@ -651,7 +651,7 @@ unsigned int Rovhult::movePlayedCardsToLooser (unsigned int nrLooser) {
 
    movePile (players[nrLooser].hand, played);
    players[nrLooser].hand.sortByNumber ();
-   std::string stat (_("Player %1 can't continue -> Takeing whole pile. "));
+   std::string stat (_("Player %1 can't continue -> Taking whole pile. "));
    stat.replace (stat.find ("%1"), 2, (char)(nrLooser + '0'));
    displayTurn (nrLooser =  nextAvailablePlayer (nrLooser), stat);
    return nrLooser;
