@@ -252,14 +252,16 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
    CardWidget *card (operator[] (0));
    int diff (cardDistance (*pair[1], *pair[0]));
    int diffTable (cardDistance (*pair[0], *card,
-                                (diff < 0) ? ACE
+                                (diff < 0) ? ONE
                                 : ((pair[0]->number () == CardWidget::ACE)
-                                   && (pair[1]->number () < 5)) ? ONE : BOTH));
+                                   && (pair[1]->number () < 5)) ? ACE : BOTH));
    TRACE1 ("MachiPile::hasMatching3rd (ICardPile&) - Differences: "
            << diff << '/' << diffTable);
 
-   if (diff < 0)
+   if (diff < 0) {
       diff = -diff;
+      diffTable = -diffTable;
+   }
 
    nr = 1;
    match = end ();
@@ -304,7 +306,8 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
          else if (((size () - diffTable) == 3) || ((size () - diffTable) == 0))
             match = end () - 1;
          else
-            if ((size () > 6) && (diffTable > (int)(size () - 7))) {
+            if ((size () > 6) && (diffTable > (int)(size () - 7))
+               && (diffTable > -1)) {
                pair.clear ();
                match = end () - diffTable - 3;
                nr = end () - match;
