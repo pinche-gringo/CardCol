@@ -25,8 +25,8 @@ can be done with a make doc-install in the doc subdirectory. If someone can tell
 me how I could automatize that, *please* send me a mail/patch.
 
 
-How to build (after checking out of CVS)
-----------------------------------------
+How to build (after checking out of CVS for the first time)
+-----------------------------------------------------------
 
 As there is no public CVS server, these are just notes for me.
 
@@ -42,8 +42,10 @@ Additional prerequiste software:
 Inside the directory containing the source code type
 
   gettextize --intl --no-changelog
+  mv Makefile.am~ Makefile.am
+  mv configure.in~ configure.in
   libtoolize
-  aclocal && automake -a && autoconf
+  aclocal && automake -a && autoconf && autoheader
   ./configure [configure-options]
   make [make-options]
 
