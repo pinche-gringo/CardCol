@@ -831,7 +831,6 @@ CardgameCollection::~CardgameCollection () {
 #endif
 }
 
-
 //-----------------------------------------------------------------------------
 /// Starts a game; if the type has changed also deleting the old one
 //-----------------------------------------------------------------------------
@@ -847,8 +846,12 @@ void CardgameCollection::startGame () {
       oldJoker = game->numberOfJokers ();
 
       if (oldGame != options.type) {
-         getClient ().remove (*game);
+	 // Remove menubar and update GUI to not interfere with new game
 	 game->removeMenus (mgrUI);
+	 Glib::RefPtr<Glib::MainContext> ctx (Glib::MainContext::get_default ());
+	 while (ctx->iteration (false));
+
+         getClient ().remove (*game);
          delete game;
       }
    }
