@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Anticopyright (A) 2003
+//COPYRIGHT   : Copyright (C) 2002 - 2004
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -279,10 +279,11 @@ int Machiavelli::makeMove (unsigned int player) {
 
          // getPosition4Card can't handle a coloured pair with a gap
          if (pos == -1U) {
-            Check3 ((tablePiles[target]->size () == 2)
-                    && (MachiPile::cardDistance (*(*tablePiles[target])[1],
-                                                 *(*tablePiles[target])[0]) == 2));
-            pos = 1;
+            Check3 (((tablePiles[target]->size () == 2)
+                     && (MachiPile::cardDistance (*(*tablePiles[target])[1],
+                                                 *(*tablePiles[target])[0]) == 2))
+                    || (tablePiles[target]->size () == 1));
+            pos = (tablePiles[target]->size () == 1) ? 0 : 1;
          }
          Check3 (pos != -1U);
       }
@@ -292,7 +293,8 @@ int Machiavelli::makeMove (unsigned int player) {
       if (pos2Play < hands[player].size ()) {
 #if CHECK > 2
          for (unsigned int t (pos1Play); t < pos2Play; ++t) {
-            int diff (MachiPile::cardDistance (*hands[player][t + 1], *hands[player][t]));
+            int diff (MachiPile::cardDistance (*hands[player][t + 1], *hands[player][t],
+                                               (t == pos1Play) ? MachiPile::BOTH : MachiPile::ACE));
             TRACE1 ("Buraco::makeMove (unsigned int) - Card " << *hands[player][t]);
             Check3 ((diff == 0) || (diff == 1));
          }
@@ -735,27 +737,25 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       }
 
       if (info == TABLE) {
-         // Move only one card from a numbered pile
+         // Move only one card from/to a numbered pile
          if ((pile->getType () == MachiPile::NUMBER)
              || ((pile->getType () == MachiPile::UNDEFINED)
                  && (pile->size () == 1)
-                 && ((*pile)[0]->number () == moved->number ())))
+                 && ((*pile)[0]->number () == moved->number ()))
+             || (tablePiles[nrpile]->getType () == MachiPile::NUMBER))
             nr = 1;
 
          // Check if only cards from an edge are moved to the beginning of
-         // a coloured pile
-         if ((tablePiles[nrpile]->getType () != MachiPile::NUMBER)
-             && (!iCard || (!off && (moved->number () == CardWidget::ACE)))) {
-            if ((off != (src.size () - 1)) && off) {
-               context->drag_finish (true, false, time);
-               Gtk::MessageDialog dlg (_("Card is not on the edge of the origen - try splitting the origin first!"),
-                                       Gtk::MESSAGE_ERROR);
-               dlg.set_title (_("Invalid move"));
-               dlg.run ();
-               return;
-            }
-            // Also move only one card, if the target is a numbered pile
-            nr = 1;
+         // a coloured pile or a numbered pile
+         if ((tablePiles[nrpile]->getType () == MachiPile::COLOUR)
+             && (((off + nr) != src.size ()) && off)
+             && (iCard != pile->size ())) {
+            context->drag_finish (true, false, time);
+            Gtk::MessageDialog dlg (_("Card is not on the edge of the origen - try splitting the origin first!"),
+                                    Gtk::MESSAGE_ERROR);
+            dlg.set_title (_("Invalid move"));
+            dlg.run ();
+            return;
          }
       }
    }
@@ -811,8 +811,10 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       checkPiles (obj);
       if (obj.getType () == YGP::StatusObject::UNDEFINED) {
          unsigned int nextPlayer (findNextPlayer (0));
-         if (nextPlayer == findNextPlayer (nextPlayer))
+         if (nextPlayer == findNextPlayer (nextPlayer)) {
             endGame (nextPlayer);
+            disableHuman ();
+         }
       }
    }
 
@@ -1496,6 +1498,17 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
          dealCard (nextPlayer);
          setNextPlayer (nextPlayer);
          makeNextMoves ();
+
+#if CHECK > 2
+         YGP::StatusObject obj;
+         checkPiles (obj);
+         if (obj.getType () != YGP::StatusObject::UNDEFINED) {
+            TRACE ("Machiavelli::handleMessage (unsigned int, const std::string&)"
+                   " - Invalid piles!\n" << obj.getMessage ());
+            Check (!"Valid piles");
+         }
+#endif
+
       }
    }
    else if (cmd == "Reorder") {
