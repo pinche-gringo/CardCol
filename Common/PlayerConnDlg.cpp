@@ -148,15 +148,24 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) 
       Tokenize split (names);
       unsigned int i (1);
       while (split.getNextNode ('\n').size ()) {
-         delete aPlayer[i];
-         aPlayer[i++] = new RemotePlayer (cmgr.getSocket (), split.getActNode ());
+         TRACE9 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - Setting "
+                 << split.getActNode ());
+
+         Player* pPlayer = new RemotePlayer (cmgr.getSocket (), split.getActNode ());
+         if (i < aPlayer.size ()) {
+            delete aPlayer[i];
+            aPlayer[i] = pPlayer;
+         }
+         else
+            aPlayer.push_back (pPlayer);
+         i++;
       }
       TRACE9 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - Players: "
-              << i);
-      if ((i - 1) != aPlayer.size ())
+              << i << "<->" << aPlayer.size ());
+      if (i != aPlayer.size ())
          throw std::string (_("Wrong number of players!"));
 
-      delete aPlayer[player];
+      delete aPlayer[++player];
       aPlayer[player] = aPlayer[0];
       aPlayer.erase (aPlayer.begin ());
    }
