@@ -20,7 +20,10 @@
 
 #include "Player.h"
 
+
+// Forward declarations
 class Socket;
+
 
 /**Implementation of a player on a (remote) computer, communicating over a
    network.
@@ -34,6 +37,7 @@ class RemotePlayer : public Player {
    virtual ~RemotePlayer ();
 
    virtual bool makeTurn (Game* game);
+   virtual unsigned int timeout () const;
 
  protected:
    Socket* sock;
