@@ -99,8 +99,7 @@ Game::~Game () {
 void Game::start () {
    TRACE8 ("Game::start () - Act. status: " << statGame);
    Check3 ((statGame <= INITIALIZING) || (statGame == STOPPED));
-   if (statGame == STOPPED)
-      clean ();
+   clean ();
 
    setGameStatus (PLAYING);
 
@@ -180,7 +179,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
             // Read next token; the value must be a number
             if ((token = positions.getNextNode (' ')).empty ()
                 || stringToNumber (pos, token.c_str ())
-                || (pos > cards.size ())
+                || (pos >= cards.size ())
                 || (errno || (pTail && *pTail))) {
                std::string error (_("Not a number: `%1'"));
                error.replace (error.find ("%1"), 2, positions.getActNode ());
@@ -356,7 +355,7 @@ void Game::setGameStatus (unsigned int newStatus) {
 /// \param start: Position of last card to play; update to reflect moving
 //-----------------------------------------------------------------------------
 void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std::string) {
-   TRACE2 ("Game::flipCards2Play (ICardPile&, const std::string& cards) - Cards " << cards);
+   TRACE2 ("Game::flipCards2Play (ICardPile&, const std::string&) - Cards " << cards);
    Check1 (cards.size ());
 
    Tokenize tokCards (cards);
@@ -371,8 +370,10 @@ void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std
       }
 
       card = pile.find (static_cast <unsigned int> (card));
-      if (card != -1U) {
+      if ((card != -1U) && (card < (pile.size () - cCards))) {
          Check3 (card < pile.size ());
+         TRACE9 ("Game::flipCards2Play (ICardPile&, const std::string&) - Found "
+                 << card << " = " << *pile[card]);
          ++cCards;
 
          CardWidget& cardWg (*pile[card]);
@@ -401,6 +402,14 @@ void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std
            "New positions " << pos1Play << " and " << pos2Play);
 }
 
+//----------------------------------------------------------------------------
+/// Returns the actual target, where flipCard2Play should position the cards to
+/// \returns unsigned int: ID of the target
+//----------------------------------------------------------------------------
+unsigned int Game::getActTarget () const {
+   return 0;
+}
+
 //-----------------------------------------------------------------------------
 /// Flips the cards the user is about to play
 /// \param pile: Pile to manipulate
@@ -423,7 +432,7 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
       msg << "Play=";
       for (unsigned int i (start); i < end; ++i)
          msg << pile[i]->id () << ' ';
-      msg << pile[end]->id () << ";Target=0";
+      msg << pile[end]->id () << ";Target=" << getActTarget ();
 
       broadcastMessage (msg.str ());
    }
@@ -604,7 +613,7 @@ void Game::writeMessage (Socket& socket, const std::string& msg) {
 //----------------------------------------------------------------------------
 void Game::writeError (Socket& socket, unsigned int rc, const std::string& msg) {
    std::ostringstream error;
-   error << "Error=" << rc << ";Msg=\"" + msg;
+   error << "Error=" << rc << ";Msg=\"" + msg << '"';
    writeMessage (socket, error.str ());
 }
 
@@ -777,7 +786,6 @@ bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) {
 //----------------------------------------------------------------------------
 bool Game::canBeStopped () const {
    return !(actPlayer && stati.pendingTurn);
-;
 }
 
 //----------------------------------------------------------------------------
