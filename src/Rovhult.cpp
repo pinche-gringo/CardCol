@@ -45,7 +45,6 @@
 #include <CardWidget.h>
 #include <ComputerPlayer.h>
 
-#include "SigCExt.h"
 #include "Rovhult.h"
 
 
@@ -130,9 +129,9 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    if (dndTypeHand.empty ()) {
       Check3 (dndTypeTable.empty ());
       dndTypeHand.push_back
-         (Gtk::TargetEntry ("icon/card/hand", GTK_TARGET_SAME_APP, HAND));
+         (Gtk::TargetEntry ("icon/card/hand", Gtk::TARGET_SAME_APP, HAND));
       dndTypeTable.push_back
-         (Gtk::TargetEntry ("icon/card/table", GTK_TARGET_SAME_APP, TABLE));
+         (Gtk::TargetEntry ("icon/card/table", Gtk::TARGET_SAME_APP, TABLE));
    }
 }
 
@@ -335,7 +334,7 @@ bool Rovhult::enableHuman () {
       for (int i (players[0].hand.size ()); i;)
          activeCards.push_back
             (players[0].hand[--i]->signal_clicked ().connect
-             (bind (slot (*this, &Rovhult::handSelected), i)));
+             (bind (mem_fun (*this, &Rovhult::handSelected), i)));
    }
    else {
       TRACE2 ("Rovhult::enableHuman () - Enable reserve of human");
@@ -346,14 +345,14 @@ bool Rovhult::enableHuman () {
                     << players[0].reserve[i].size () << " card(s)");
             activeCards.push_back
                (players[0].reserve[i].getTopCard ().signal_clicked ().connect
-                (bind (slot (*this, &Rovhult::pileSelected), i)));
+                (bind (mem_fun (*this, &Rovhult::pileSelected), i)));
          }
    }
 
    if (played.size ()) {
       TRACE2 ("Rovhult::enablePlayer (unsigned int) - Enable last played card");
       activeCards.push_back (played.getTopCard ().signal_clicked ().connect
-                             (slot (*this, &Rovhult::takeCards)));
+                             (mem_fun (*this, &Rovhult::takeCards)));
    }
    return Game::enableHuman ();
 }
@@ -420,7 +419,7 @@ void Rovhult::pileSelected (unsigned int pile) {
    if (showsFace)
       playFromPile (pile);
    else
-      Glib::signal_timeout ().connect (bind (slot (*this, &Rovhult::playFromPile),
+      Glib::signal_timeout ().connect (bind (mem_fun (*this, &Rovhult::playFromPile),
                                              pile), ComputerPlayer::TIMEOUT);
 }
 
@@ -868,9 +867,9 @@ void Rovhult::registerTableDND (CardWidget& card, unsigned int pile) {
 
    card.drag_source_set_icon (card.getImage ());
    aTableDND[&card] = card.signal_drag_data_received ().connect
-       (bind (slot (*this, &Rovhult::cardDroppedOnTable), pile));
+       (bind (mem_fun (*this, &Rovhult::cardDroppedOnTable), pile));
    aTableData[&card] = card.signal_drag_data_get ().connect
-       (bind (slot (*this, &Rovhult::getDropData), pile));
+       (bind (mem_fun (*this, &Rovhult::getDropData), pile));
 }
 
 //-----------------------------------------------------------------------------
@@ -892,15 +891,15 @@ void Rovhult::registerHandDND (CardWidget& card,  unsigned int iCard) {
 
    card.drag_source_set_icon (card.getImage ());
    aHandDND[&card] = card.signal_drag_data_received ().connect
-       (bind (slot (*this, &Rovhult::cardDroppedOnHand), iCard));
+       (bind (mem_fun (*this, &Rovhult::cardDroppedOnHand), iCard));
    aHandData[&card] = card.signal_drag_data_get ().connect
-       (bind (slot (*this, &Rovhult::getDropData), iCard));
+       (bind (mem_fun (*this, &Rovhult::getDropData), iCard));
 
    TRACE9 ("Rovhult::registerHandDND (CardWidget&, unsigned int) - Activate: "
            << activeCards.size () << '/' << activeCards.capacity ());
    Check3 (activeCards.size () >= iCard);
    SigC::Connection conn (card.signal_clicked ().connect
-                          (bind (slot (*this, &Rovhult::finishedExchange), iCard)));
+                          (bind (mem_fun (*this, &Rovhult::finishedExchange), iCard)));
    if (activeCards.size () > iCard)
       activeCards[iCard] = conn;
    else
@@ -1012,23 +1011,23 @@ void Rovhult::dealCards () {
 /// Callback after dropping a card onto (cards on) table
 /// \param pContext: Context of the drag (contains things like source,
 /// \param target, action, ...)
-/// \param pData: Describes the thing which was dropped
-/// \param info: Describes the type of pData (should be 0)
+/// \param data: Describes the thing which was dropped
+/// \param info: Describes the type of data (should be 0)
 /// \param time: Timestamp of the drag
 /// \param pile: Number of pile
-/// \param Requieres : pContext, pData not NULL; Expects info to be 0
+/// \param Requieres : pContext not NULL; Expects info to be 0
 //-----------------------------------------------------------------------------
 void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
-                                  gint, gint, GtkSelectionData* pData, guint info,
-                                  guint32 time, unsigned int pile) {
-   Check3 (pData);
+                                  int, int, const Gtk::SelectionData& data,
+                                  guint info, guint32 time, unsigned int pile) {
    Check3 (!context->get_is_source ());
-   Check3 (pData->length == sizeof (int));
-   Check3 (pData->format == 8);
+   Check3 (data.get_length () == sizeof (int));
+   Check3 (data.get_format () == 8);
 
    Check3 (pile < 3);
    
-   unsigned int* pValue (reinterpret_cast <unsigned int*> (pData->data));
+   unsigned int* pValue (reinterpret_cast <unsigned int*>
+                         (const_cast<guint8*> (data.get_data ())));
    Check3 (pValue);
 
    TRACE1 ("Rovhult::cardDroppedOnTable (...) - Data = "
@@ -1061,23 +1060,23 @@ void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 /// Callback after dropping a card onto onto hand
 /// \param context: Context of the drag (contains things like source,
 /// \param target, action, ...)
-/// \param pData: Describes the thing which was dropped
-/// \param info: Describes the type of pData (should be 0)
+/// \param data: Describes the thing which was dropped
+/// \param info: Describes the type of data (should be 0)
 /// \param time: Timestamp of the drag
 /// \param card: Number of card
-/// \param Requieres : pData not NULL; Expects info to be 0
+/// \param Requieres : Expects info to be 0
 //-----------------------------------------------------------------------------
 void Rovhult::cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
-                                 gint, gint, GtkSelectionData* pData, guint info,
-                                 guint32 time, unsigned int card) {
-   Check3 (pData);
+                                 int, int, const Gtk::SelectionData& data,
+                                 guint info, guint32 time, unsigned int card) {
    Check3 (!context->get_is_source ());
-   Check3 (pData->length == sizeof (int));
-   Check3 (pData->format == 8);
+   Check3 (data.get_length () == sizeof (int));
+   Check3 (data.get_format () == 8);
 
    Check3 (card < players[0].hand.size ());
 
-   unsigned int* pValue (reinterpret_cast <unsigned int*> (pData->data));
+   unsigned int* pValue (reinterpret_cast <unsigned int*>
+                         (const_cast<guint8*> (data.get_data ())));
    Check3 (pValue);
 
    TRACE1 ("Rovhult::cardDroppedOnHand (...) - Data = "
@@ -1111,19 +1110,19 @@ void Rovhult::cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
 /// Callback to query the data to drop
 /// \param context: Context of the drag (contains things like source,
 /// \param target, action, ...)
-/// \param pData: Describes the thing which was dropped
+/// \param data: Describes the thing which was dropped
 /// \param time: Timestamp of the drag
 /// \param cardPos: Position of card (either in hand or pile on table)
-/// \param Requieres : pContext, pData not NULL; Expects info to be 0
+/// \param Requieres : pContext not NULL; Expects info to be 0
 //-----------------------------------------------------------------------------
 void Rovhult::getDropData (const Glib::RefPtr<Gdk::DragContext>& context,
-                           GtkSelectionData* pData, guint info, guint32 time,
-                           unsigned int cardPos) {
-   Check3 (pData); Check3 (info < 2);
+                           Gtk::SelectionData& data, guint info,
+                           guint32 time, unsigned int cardPos) {
+   Check3 (info < 2);
    Check3 (context->get_is_source ());
 
-   gtk_selection_data_set (pData, pData->target, 8, reinterpret_cast <guchar*> (&cardPos),
-                           sizeof (cardPos));
+   data.set (data.get_target (), 8, reinterpret_cast <guchar*> (&cardPos),
+             sizeof (cardPos));
 }
 
 //-----------------------------------------------------------------------------
@@ -1527,12 +1526,12 @@ ICardPile* Rovhult::getPileOfPlayer (unsigned int player, unsigned int pile) {
            << player << "; Pile " << pile);
 
    if (pile > 4) {
-      ICardPile& pile (players[player].reserve[pile - 5]);
-      Check3 (pile.size ());
-      if (cardValid (pile.getTopCard ().number (), true))
-         return &pile;
+      ICardPile& playerPile (players[player].reserve[pile - 5]);
+      Check3 (playerPile.size ());
+      if (cardValid (playerPile.getTopCard ().number (), true))
+         return &playerPile;
       else {
-         played.append (pile.removeTopCard ());
+         played.append (playerPile.removeTopCard ());
          return &played;
       }
    }

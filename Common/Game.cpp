@@ -195,7 +195,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
          writeError (*cmgr.getSocket (), 99, error);
          Glib::ustring err (_("Received invalid input from the server!\n\nReason: %1"));
          err.replace (err.find ("%1"), 2, _(error.c_str ()));
-         Gtk::MessageDialog dlg (err, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+         Gtk::MessageDialog dlg (err, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
          dlg.set_title (PACKAGE);
          dlg.run ();
          return false;
@@ -259,12 +259,12 @@ void Game::makeNextMoves () {
       unsigned int timeout (actPlayers[actPlayer]->timeout ());
       if (timeout) {
          Glib::signal_timeout ().connect
-             (bind (slot (*actPlayers[actPlayer], &Player::makeTurn), this), timeout);
+             (bind (mem_fun (*actPlayers[actPlayer], &Player::makeTurn), this), timeout);
          stati.pendingTurn = 1;
       }
       else
           Glib::signal_idle ().connect
-              (bind (slot (*actPlayers[actPlayer], &Player::makeTurn), this));
+              (bind (mem_fun (*actPlayers[actPlayer], &Player::makeTurn), this));
       disableHuman ();
    }
 }
@@ -463,7 +463,7 @@ void Game::showWonCards (bool show) {
       pWonPile->setShowOption (show ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
       pWonPile->setStyle (show ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
       Glib::signal_timeout ().connect
-         (slot (*this, &Game::enableActWonCards), 50);
+         (mem_fun (*this, &Game::enableActWonCards), 50);
       disableWonCards ();
    }
 }
@@ -489,10 +489,10 @@ bool Game::wonCardsSelected (GdkEvent* event) {
             pMenuPopSort = new Gtk::Menu;
             pMenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem
                                               (_("Sort by number"),
-                                               slot (*this, &Game::sortWonByNumber)));
+                                               mem_fun (*this, &Game::sortWonByNumber)));
             pMenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem
                                               (_("Sort by colour"),
-                                               slot (*this, &Game::sortWonByColour)));
+                                               mem_fun (*this, &Game::sortWonByColour)));
          }
          pMenuPopSort->popup (bev->button, bev->time);
          break; }
@@ -511,7 +511,7 @@ void Game::sortWonByNumber () {
    Check3 (pWonPile);
    pWonPile->sortByNumber ();
    showWonCards ();
-   Glib::signal_timeout ().connect (slot (*this, &Game::enableActWonCards), 50);
+   Glib::signal_timeout ().connect (mem_fun (*this, &Game::enableActWonCards), 50);
    disableWonCards ();
 }
 
@@ -523,7 +523,7 @@ void Game::sortWonByColour () {
    Check3 (pWonPile);
    pWonPile->sortByColour ();
    showWonCards ();
-   Glib::signal_timeout ().connect (slot (*this, &Game::enableActWonCards), 50);
+   Glib::signal_timeout ().connect (mem_fun (*this, &Game::enableActWonCards), 50);
    disableWonCards ();
 }
 
@@ -539,7 +539,7 @@ bool Game::enableActWonCards () {
    for (int i (pWonPile->size ()); i;)
       wonCards.push_back
          ((*pWonPile)[--i]->signal_event ().connect
-          (slot (*this, (&Game::wonCardsSelected))));
+          (mem_fun (*this, (&Game::wonCardsSelected))));
    return false;
 }
 
@@ -598,7 +598,7 @@ void Game::writeMessage (YGP::Socket& socket, const std::string& msg) {
    catch (std::domain_error& error) {
       std::string err (_("Can't write message!\n\nReason: %1"));
       err.replace (err.find ("%1"), 2, error.what ());
-      Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      Gtk::MessageDialog dlg (msg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dlg.set_title (PACKAGE);
       dlg.run ();
    }
@@ -696,7 +696,7 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (s
 
       if (executeRemoteMove (*pile, target)) {
          Glib::signal_timeout ().connect
-             (bind (slot (*this, &Game::endRemoteMove), actPlayer),
+             (bind (mem_fun (*this, &Game::endRemoteMove), actPlayer),
               ComputerPlayer::TIMEOUT);
          stati.pendingTurn = 1;
          return false;

@@ -231,7 +231,7 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
       error.replace (error.find ("%1"), 2, err);
    }
    if (error.size ()) {
-      Gtk::MessageDialog dlg (error, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      Gtk::MessageDialog dlg (error, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dlg.set_title (PACKAGE);
       dlg.run ();
    }
@@ -301,7 +301,7 @@ YGP::Socket* PlayerConnectDlg::addClient (int socket) {
       error.replace (error.find ("%1"), 2, err); 
    }
    if (error.size ()) {
-      Gtk::MessageDialog dlg (error, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      Gtk::MessageDialog dlg (error, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dlg.set_title (PACKAGE);
       dlg.run ();
    }

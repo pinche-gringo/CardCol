@@ -191,13 +191,13 @@ bool Twopart::enableHuman () {
    for (int i (players[0].hand.size ()); i;)
       activeCards.push_back
          (players[0].hand[--i]->signal_clicked ().connect
-           (bind (slot (*this, (&Twopart::cardSelected)), i)));
+           (bind (mem_fun (*this, (&Twopart::cardSelected)), i)));
 
    if ((gameStatus () == PLAYING2)
        && (played.size ()))
       activeCards.push_back
          (played.getTopCard ().signal_clicked ().connect
-          (slot (*this, (&Twopart::playedSelected))));
+          (mem_fun (*this, (&Twopart::playedSelected))));
 
    return Game::enableHuman ();
 }
@@ -1105,7 +1105,7 @@ void Twopart::startPartTwo (unsigned int player) {
    TRACE8 ("Twopart::startPartTwo (unsigned int) - Continuing with " << player);
 
    Glib::signal_timeout ().connect
-      (bind (slot (*this, &Twopart::startPartTwoTimerFnc),
+      (bind (mem_fun (*this, &Twopart::startPartTwoTimerFnc),
              player), 50);
    disableHuman ();
 }

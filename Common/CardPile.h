@@ -199,7 +199,7 @@ template <class T> class CardPile : public T, public ICardPile {
 
    virtual void setTopCard (CardWidget& newCard) {
       ICardPile::setTopCard (newCard);
-      pack_start (newCard, Gtk::PACK_SHRINK); }
+      T::pack_start (newCard, Gtk::PACK_SHRINK); }
    void setTopCard (CardWidget& newCard, bool visible) {
       ICardPile::setTopCard (newCard, visible); }
 
@@ -209,8 +209,8 @@ template <class T> class CardPile : public T, public ICardPile {
       return card; }
 
    virtual unsigned int insert (CardWidget& card, unsigned int pos) {
-      pack_start (card, Gtk::PACK_SHRINK);
-      reorder_child (card, pos);
+      T::pack_start (card, Gtk::PACK_SHRINK);
+      T::reorder_child (card, pos);
       return ICardPile::insert (card, pos);
    }
 
@@ -286,8 +286,8 @@ inline void CardHPile::resize (CardWidget& card, PileStyle s) {
  */
 template <class T> class CardInfoPile : public CardPile<T> {
  public:
-   CardInfoPile (ICardPile::PileStyle style = NORMAL,
-                 ICardPile::ShowOpt show = DONT_CHANGE)
+   CardInfoPile (ICardPile::PileStyle style = ICardPile::NORMAL,
+                 ICardPile::ShowOpt show = ICardPile::DONT_CHANGE)
       : CardPile<T> (style, show) { }
    virtual ~CardInfoPile () { }
 
@@ -314,7 +314,8 @@ template <class T> class CardInfoPile : public CardPile<T> {
       setTooltips ();
       return card; }
    CardWidget& remove (CardWidget& card, bool visible) {
-      CardPile<T>::remove (card, visible); }
+      CardPile<T>::remove (card, visible);
+      return card; }
    virtual CardWidget& remove (unsigned int pos) {
       CardWidget& card (CardPile<T>::remove (pos));
       tt.unset_tip (card);
@@ -336,11 +337,11 @@ template <class T> class CardInfoPile : public CardPile<T> {
       setTooltips (); }
 
    virtual void setTooltips () {
-      std::string tip (ngettext ("%1 card", "%1 cards", size ()));
+      std::string tip (ngettext ("%1 card", "%1 cards", CardPile<T>::size ()));
       tip.replace (tip.find ("%1"), 2,
-                   YGP::ANumeric::toString (size ()));
-      for (unsigned int i (0); i < size (); ++i)
-         tt.set_tip (*operator[] (i), tip);
+                   YGP::ANumeric::toString (CardPile<T>::size ()));
+      for (unsigned int i (0); i < CardPile<T>::size (); ++i)
+         tt.set_tip (*CardPile<T>::operator[] (i), tip);
    }
 
  private:

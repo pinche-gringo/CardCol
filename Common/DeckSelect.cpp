@@ -62,7 +62,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 
    Gtk::Button& apply (*manage (new Gtk::Button (Gtk::Stock::APPLY)));
    apply.signal_clicked ().connect
-       (bind (slot (*this, &ICarddeckSelectDlg::command), Gtk::RESPONSE_APPLY));
+       (bind (mem_fun (*this, &ICarddeckSelectDlg::command), Gtk::RESPONSE_APPLY));
    get_action_area ()->pack_end (apply, false, false, 5);
 
    boxDecks.pack_start (decks, true, true, 50);
@@ -109,7 +109,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 
       Gtk::Button* temp (createButton (file));
       temp->signal_clicked ().connect
-         (bind (slot (*this, &ICarddeckSelectDlg::deckSelect), offset));
+         (bind (mem_fun (*this, &ICarddeckSelectDlg::deckSelect), offset));
       aDecks.push_back (temp);
 
       decks.add (*temp);
@@ -147,7 +147,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 
       Gtk::Button* temp (createButton (pathDecks + dir->name ()));
       temp->signal_clicked ().connect
-         (bind (slot (*this, &ICarddeckSelectDlg::backSelect), ++offset));
+         (bind (mem_fun (*this, &ICarddeckSelectDlg::backSelect), ++offset));
       aBacks.push_back (temp);
 
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Comparing "
@@ -269,7 +269,7 @@ void ICarddeckSelectDlg::setButtonImage (Gtk::Button& button, const std::string&
       std::string msg (_("Error loading image from file `%1'!\n\nReason: %2"));
       msg.replace (msg.find ("%1"), 2, file);
       msg.replace (msg.find ("%2"), 2, err);
-      Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      Gtk::MessageDialog dlg (msg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dlg.run ();
       return;
    }

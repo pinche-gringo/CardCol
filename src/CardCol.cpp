@@ -716,7 +716,7 @@ CardgameCollection::CardgameCollection (Options& opts)
    mxGuiCmd.lock ();
 
    Glib::signal_idle ().connect
-       (bind_return (slot (*this, &CardgameCollection::loadCards), false));
+       (bind_return (mem_fun (*this, &CardgameCollection::loadCards), false));
    makePlayer ();
 
 
@@ -907,7 +907,7 @@ void CardgameCollection::command (int menu) {
              << (game && game->isRunning () ? "Yes" : "No"));
       if (game && game->isRunning ()) {
          Gtk::MessageDialog dlg (_("A game is already running. Do you really"
-                                   " want to end it and start another?"),
+                                   " want to end it and start another?"), false,
                                  Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
          dlg.set_title (PACKAGE);
          if (dlg.run () == Gtk::RESPONSE_YES) {
@@ -919,7 +919,7 @@ void CardgameCollection::command (int menu) {
 #ifdef HAVE_LIBPTHREAD
           if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT) {
              Gtk::MessageDialog dlg (_("Stop waiting for the server to start the game and start a local one?"),
-                                     Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+                                     false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
              dlg.set_title (PACKAGE);
              if (dlg.run () == Gtk::RESPONSE_YES) {
                 Check3 (aCommThreads.size () == 1);
@@ -939,7 +939,7 @@ void CardgameCollection::command (int menu) {
    case END: {
       Check3 (game && game->isRunning ());
       Gtk::MessageDialog dlg (_("Do you really want to end the game?"),
-                              Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+                              false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
       dlg.set_title (PACKAGE);
       if (dlg.run () == Gtk::RESPONSE_YES) {
          restart = false;
@@ -1009,7 +1009,7 @@ void CardgameCollection::command (int menu) {
       if (game) {
          if (game->isRunning ()) {
             Gtk::MessageDialog dlg (_("A game is running. Do you really want to quit?"),
-                                    Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+                                    false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
             dlg.set_title (PACKAGE);
             if (dlg.run () != Gtk::RESPONSE_YES)
                break;
@@ -1163,10 +1163,10 @@ void* CardgameCollection::changeCards (void* opt) {
       Glib::ustring msg ("Couldn't load the card images!\n\n"
                          "Reason: %1");
       msg.replace (msg.find ("%1"), 2, e);
-      Gtk::MessageDialog* dlg (new Gtk::MessageDialog (e, Gtk::MESSAGE_ERROR));
+      Gtk::MessageDialog* dlg (new Gtk::MessageDialog (e, false, Gtk::MESSAGE_ERROR));
       dlg->set_title (PACKAGE);
       dlg->signal_response ().connect
-          (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
+          (bind (mem_fun (*this, &CardgameCollection::closeDialog), dlg));
       dlg->show ();
 
       Check3 (apMenus[NEW]);
@@ -1285,11 +1285,11 @@ void CardgameCollection::gameEvents (unsigned int status) {
          // (Re)start the (new) game, when the event queue is empty (and
          // therefore the old game has ended).
          Glib::signal_idle ().connect
-             (bind_return (slot (*this, &CardgameCollection::doStartGame), false));
+             (bind_return (mem_fun (*this, &CardgameCollection::doStartGame), false));
       }
       else if (restart == -1U)
          Glib::signal_idle ().connect
-             (bind_return (slot (*this, &CardgameCollection::hide), false));
+             (bind_return (mem_fun (*this, &CardgameCollection::hide), false));
 
       restart = false;
       break;
@@ -1335,7 +1335,7 @@ void* CardgameCollection::waitForMessages (void* player) {
             TRACE9 ("CardgameCollection::waitForMessages (void*) - Perform cmd " << message);
 
             Glib::signal_idle ().connect
-               (bind (slot (*this, &CardgameCollection::handleMessage),
+               (bind (mem_fun (*this, &CardgameCollection::handleMessage),
                       iPlayer, message));
             mxGuiCmd.lock ();
             mxThreadCmd.unlock ();
@@ -1349,14 +1349,14 @@ void* CardgameCollection::waitForMessages (void* player) {
       msg.replace (msg.find ("%1"), 2, error);
 
       Glib::signal_idle ().connect
-          (bind (slot (*this, &CardgameCollection::showMessage), msg));
+          (bind (mem_fun (*this, &CardgameCollection::showMessage), msg));
    }
    catch (std::domain_error& error) {
       std::string msg (_("Lost connection to %1!"));
       Check3 (static_cast<unsigned int> (iPlayer) < aPlayer.size ());
       msg.replace (msg.find ("%1"), 2, aPlayer[iPlayer]->getName ());
       Glib::signal_idle ().connect
-          (bind (slot (*this, &CardgameCollection::showMessage), msg));
+          (bind (mem_fun (*this, &CardgameCollection::showMessage), msg));
    }
 
    return NULL;
@@ -1436,10 +1436,10 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
          err.replace (err.find ("%2"), 2, param);
          err.replace (err.find ("%3"), 2, _(cmd.c_str ()));
 
-         Gtk::MessageDialog* dlg (new Gtk::MessageDialog (err, Gtk::MESSAGE_ERROR));
+         Gtk::MessageDialog* dlg (new Gtk::MessageDialog (err, false, Gtk::MESSAGE_ERROR));
          dlg->set_title (PACKAGE);
          dlg->signal_response ().connect
-             (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
+             (bind (mem_fun (*this, &CardgameCollection::closeDialog), dlg));
          dlg->show ();
       }
       return true;
@@ -1493,10 +1493,10 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
       message.replace (message.find ("%1"), 2, msg);
       message.replace (message.find ("%2"), 2, _(error.c_str ()));
 
-      Gtk::MessageDialog* dlg (new Gtk::MessageDialog (error, Gtk::MESSAGE_ERROR));
+      Gtk::MessageDialog* dlg (new Gtk::MessageDialog (error, false, Gtk::MESSAGE_ERROR));
       dlg->set_title (PACKAGE);
       dlg->signal_response ().connect
-          (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
+          (bind (mem_fun (*this, &CardgameCollection::closeDialog), dlg));
       dlg->show ();
    }
 
@@ -1514,10 +1514,10 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
 bool CardgameCollection::showMessage (const std::string msg) {
-   Gtk::MessageDialog* dlg (new Gtk::MessageDialog (msg, Gtk::MESSAGE_ERROR));
+   Gtk::MessageDialog* dlg (new Gtk::MessageDialog (msg, false, Gtk::MESSAGE_ERROR));
    dlg->set_title (PACKAGE);
    dlg->signal_response ().connect
-       (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
+       (bind (mem_fun (*this, &CardgameCollection::closeDialog), dlg));
    dlg->show ();
    return false;
 }

@@ -40,7 +40,7 @@ class IPlayerDlg : public XGP::XDialog {
 
    static IPlayerDlg* create (std::vector<Player*>& player) {
       IPlayerDlg* dlg (new IPlayerDlg (player));
-      dlg->signal_response ().connect (slot (*dlg, &XGP::XDialog::free));
+      dlg->signal_response ().connect (mem_fun (*dlg, &IPlayerDlg::free));
       return dlg;
    }
 
@@ -83,7 +83,7 @@ class PlayerDlg : public IPlayerDlg {
    static PlayerDlg* create (T& parent, PCALLBACK callback,
                              std::vector<Player*>& player) {
       PlayerDlg<T>* dlg (new PlayerDlg (parent, callback, player));
-      dlg->signal_response ().connect (slot (*dlg, &XGP::XDialog::free));
+      dlg->signal_response ().connect (mem_fun (*dlg, &PlayerDlg<T>::free));
       dlg->get_window ()->set_transient_for (parent.get_window ());
       return dlg;
    }

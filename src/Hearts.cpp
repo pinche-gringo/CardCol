@@ -244,13 +244,13 @@ bool Hearts::enableHuman () {
    for (int i (players[0].hand.size ()); i;)
       activeCards.push_back
          (players[0].hand[--i]->signal_clicked ().connect
-           (bind (slot (*this, (&Hearts::cardSelected)), i)));
+           (bind (mem_fun (*this, (&Hearts::cardSelected)), i)));
 
    if (gameStatus () == EXCHANGE)
       for (int i (played.size ()); i;)
          activeCards.push_back
             (played[--i]->signal_clicked ().connect
-             (bind (slot (*this, (&Hearts::takeCard)), i)));
+             (bind (mem_fun (*this, (&Hearts::takeCard)), i)));
 
    return Game::enableHuman ();
 }
@@ -473,8 +473,8 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
    Check1 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
 
    if (gameStatus () == PLAYING) {
-      CardWidget& card (*players[player].hand[card]);
-      CardWidget::COLOURS playColour (card.colour ());
+      CardWidget& actCard (*players[player].hand[card]);
+      CardWidget::COLOURS playColour (actCard.colour ());
       unsigned int cardsPlayed (0);
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          cardsPlayed += players[i].won.size ();
@@ -493,8 +493,8 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
       else {
          // The game must be started with the two of clubs
          if (!cardsPlayed) {
-            if ((card.colour () != CardWidget::CLUBS)
-                || (card.number () != CardWidget::TWO)) {
+            if ((actCard.colour () != CardWidget::CLUBS)
+                || (actCard.number () != CardWidget::TWO)) {
                Gtk::MessageDialog dlg (_("The game must be started with the two of clubs!"),
                                          Gtk::MESSAGE_ERROR);
                dlg.set_title (PACKAGE " - Hearts");
@@ -517,8 +517,8 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
 
       // The queen of spades can't be played in the first round
       if (!cardsPlayed) {
-         if ((card.colour () == CardWidget::SPADES)
-             && (card.number () == CardWidget::QUEEN)) {
+         if ((actCard.colour () == CardWidget::SPADES)
+             && (actCard.number () == CardWidget::QUEEN)) {
             Gtk::MessageDialog dlg (_("The queen of spades can't be played in the first"
                                       " round!"), Gtk::MESSAGE_ERROR);
             dlg.set_title (PACKAGE " - Hearts");
@@ -681,12 +681,12 @@ void Hearts::getPositionOfColours (ICardPile& pile, int result[4]) {
 //-----------------------------------------------------------------------------
 unsigned int Hearts::numberOfCards (const int aPositions[4], CardWidget::COLOURS colour) {
    Check1 (colour <= CardWidget::HEARTS);
-   unsigned int nr (0);
+   unsigned int nr (0), col ((unsigned int)colour);
    if (aPositions[colour] != -1) {
       nr = aPositions[colour] + 1;
-      while (colour)
-         if (aPositions[--(unsigned int)colour] != -1) {
-            nr -= aPositions[colour] + 1;
+      while (col)
+         if (aPositions[--col] != -1) {
+            nr -= aPositions[col] + 1;
             break;
          }
    }

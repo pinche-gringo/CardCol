@@ -62,13 +62,13 @@ class Rovhult : public Game {
 
    // Drag and drop handling
    void getDropData (const Glib::RefPtr<Gdk::DragContext>& context,
-                     GtkSelectionData* pData, guint info, guint32 time,
+                     Gtk::SelectionData& data, guint info, guint32 time,
                      unsigned int cardPos);
    void cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
-                            int, int, GtkSelectionData* selection_data, guint,
-                            guint time, unsigned int pile);
+                            int, int, const Gtk::SelectionData& selection_data,
+                            guint, guint time, unsigned int pile);
    void cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
-                           int, int, GtkSelectionData* selection_data, guint,
+                           int, int, const Gtk::SelectionData& selection_data, guint,
                            guint time, unsigned int card);
 
    void registerHandDND (CardWidget& card, unsigned int card);

@@ -48,8 +48,6 @@
 #include <CardWidget.h>
 #include <ComputerPlayer.h>
 
-#include "SigCExt.h"
-
 #include "Machiavelli.h"
 
 
@@ -116,9 +114,9 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       Check3 (dndTypeTable.empty ());
       Check3 (dndTypeBoth.empty ());
       dndTypeHand.push_back
-         (Gtk::TargetEntry ("icon/card/hand", GTK_TARGET_SAME_APP, HAND));
+         (Gtk::TargetEntry ("icon/card/hand", Gtk::TARGET_SAME_APP, HAND));
       dndTypeTable.push_back
-         (Gtk::TargetEntry ("icon/card/table", GTK_TARGET_SAME_APP, TABLE));
+         (Gtk::TargetEntry ("icon/card/table", Gtk::TARGET_SAME_APP, TABLE));
 
       dndTypeBoth.push_back (dndTypeHand.front ());
       dndTypeBoth.push_back (dndTypeTable.front ());
@@ -127,7 +125,7 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    nextTurn.set_flags (Gtk::CAN_DEFAULT);
    nextTurn.grab_default ();
    nextTurn.set_sensitive (false);
-   nextTurn.signal_clicked ().connect (slot (*this, (&Machiavelli::endTurn)));
+   nextTurn.signal_clicked ().connect (mem_fun (*this, (&Machiavelli::endTurn)));
 
    show_all_children ();
 }
@@ -341,7 +339,7 @@ bool Machiavelli::enableHuman () {
 
    if (staple.size ())
        activeCards.push_back (staple.getTopCard ().signal_clicked ().connect
-                              (slot (*this, (&Machiavelli::endTurn))));
+                              (mem_fun (*this, (&Machiavelli::endTurn))));
    nextTurn.set_sensitive (true);
 
    for (unsigned int i (0); i < hands[0].size (); ++i)
@@ -350,7 +348,7 @@ bool Machiavelli::enableHuman () {
 
    newPile.drag_dest_set (dndTypeBoth, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    aDNDTable[NULL].connReceive = newPile.signal_drag_data_received ().connect
-       (bind (slot (*this, &Machiavelli::cardDroppedOnTable), -1U));
+       (bind (mem_fun (*this, &Machiavelli::cardDroppedOnTable), -1U));
 
    for (unsigned int i (0); i < tablePiles.size (); ++i) {
       MachiPile& pile (*tablePiles[i]);
@@ -449,9 +447,9 @@ void Machiavelli::endTurn () {
       undoDlg->get_action_area ()->pack_end (*undoLast, Gtk::PACK_SHRINK, 5);
 
       undoAll->signal_clicked ().connect
-          (bind (slot (*this, &Machiavelli::undoMove), -1U));
+          (bind (mem_fun (*this, &Machiavelli::undoMove), -1U));
       undoLast->signal_clicked ().connect
-          (bind (slot (*this, &Machiavelli::undoMove), 1));
+          (bind (mem_fun (*this, &Machiavelli::undoMove), 1));
       return;
    }
 
@@ -516,9 +514,9 @@ void Machiavelli::registerHandDND (unsigned int iCard) {
 
    card.drag_source_set_icon (card.getImage ());
    aDNDHand[&card].connReceive = card.signal_drag_data_received ().connect
-      (bind (slot (*this, &Machiavelli::cardDropped), iCard));
+      (bind (mem_fun (*this, &Machiavelli::cardDropped), iCard));
    aDNDHand[&card].connGet = card.signal_drag_data_get ().connect
-      (bind (slot (*this, &Machiavelli::getDropData), iCard));
+      (bind (mem_fun (*this, &Machiavelli::getDropData), iCard));
 }
 
 //-----------------------------------------------------------------------------
@@ -581,9 +579,9 @@ void Machiavelli::registerTableDND (CardWidget& card, unsigned int nr) {
    card.drag_source_set_icon (card.getImage ());
 
    aDNDTable[&card].connReceive = card.signal_drag_data_received ().connect
-      (bind (slot (*this, &Machiavelli::cardDroppedOnTable), nr));
+      (bind (mem_fun (*this, &Machiavelli::cardDroppedOnTable), nr));
    aDNDTable[&card].connGet = card.signal_drag_data_get ().connect
-      (bind (slot (*this, &Machiavelli::getDropData), nr));
+      (bind (mem_fun (*this, &Machiavelli::getDropData), nr));
 }
 
 //-----------------------------------------------------------------------------
@@ -621,21 +619,21 @@ void Machiavelli::unregisterTableDND () {
 /// Callback after dropping a card (within the hand)
 /// \param pContext: Context of the drag (contains things like source,
 /// \param target, action, ...)
-/// \param pData: Describes the thing which was dropped
+/// \param data: Describes the thing which was dropped
 /// \param time: Timestamp of the drag
 /// \param card: Number of card where something was dropped at
-/// \pre \c pContext, \c pData not NULL; Expects \c info to be 0
+/// \pre \c pContext not NULL; Expects \c info to be 0
 //-----------------------------------------------------------------------------
 void Machiavelli::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
-                               gint, gint, GtkSelectionData* pData, guint,
+                               gint, gint, const Gtk::SelectionData& data, guint,
                                guint32 time, unsigned int card) {
-   Check3 (pData);
    Check3 (!context->get_is_source ());
-   Check3 (pData->length == sizeof (int));
-   Check3 (pData->format == 8);
+   Check3 (data.get_length () == sizeof (int));
+   Check3 (data.get_format () == 8);
    Check3 (card < hands[0].size ());
 
-   unsigned int* pValue (reinterpret_cast <unsigned int*> (pData->data));
+   unsigned int* pValue (reinterpret_cast <unsigned int*>
+                         (const_cast<guint8*> (data.get_data ())));
    Check3 (pValue);
    Check3 (*pValue < hands[0].size ());
    TRACE1 ("Machiavelli::cardDropped (...) - Inserting card " << *pValue
@@ -660,43 +658,42 @@ void Machiavelli::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
 /// Callback to query the data to drop
 /// \param pContext: Context of the drag (contains things like source,
 /// \param target, action, ...)
-/// \param pData: Describes the thing which was dropped
+/// \param data: Describes the thing which was dropped
 /// \param time: Timestamp of the drag
 /// \param cardPos: Position of card (either in hand or pile on table)
-/// \pre \c pContext, \c pData not NULL; Expects \c info to be 0
+/// \pre \c pContext not NULL; Expects \c info to be 0
 //-----------------------------------------------------------------------------
 void Machiavelli::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
-                               GtkSelectionData* pData, guint, guint32 time,
+                               Gtk::SelectionData& data, guint, guint32 time,
                                unsigned int cardPos) {
-   Check1 (pData);
    Check1 (pContext->get_is_source ());
 
-   gtk_selection_data_set (pData, pData->target, 8, reinterpret_cast <guchar*> (&cardPos),
-                           sizeof (cardPos));
+   data.set (data.get_target (), 8, reinterpret_cast <guchar*> (&cardPos),
+             sizeof (cardPos));
 }
 
 //-----------------------------------------------------------------------------
 /// Callback after dropping a card on the table
 /// \param pContext: Context of the drag (contains things like source,
 /// \param target, action, ...)
-/// \param pData: Describes the thing which was dropped
-/// \param info: Describes the type of pData (should be 0)
+/// \param data: Describes the thing which was dropped
+/// \param info: Describes the type of data (should be 0)
 /// \param time: Timestamp of the drag
 /// \param iCard: Combination of card and pile on which card was dropped
-/// \pre \c pContext, \c pData not NULL;
+/// \pre \c pContext not NULL;
 //-----------------------------------------------------------------------------
 void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
-                                      gint, gint, GtkSelectionData* pData,
+                                      gint, gint, const Gtk::SelectionData& data,
                                       guint info, guint32 time, unsigned int iCard) {
    TRACE1 ("Machiavelli::cardDroppedOnTable (...) - Card dropped on " << std::hex
            << (int)iCard << std::dec << "; " << info);
-   Check1 (pData);
    Check1 (!context->get_is_source ());
-   Check1 (pData->length == sizeof (int));
-   Check1 (pData->format == 8);
+   Check1 (data.get_length () == sizeof (int));
+   Check1 (data.get_format () == 8);
    Check1 ((info == HAND) || (info == TABLE));
 
-   unsigned int* pValue (reinterpret_cast <unsigned int*> (pData->data));
+   unsigned int* pValue (reinterpret_cast <unsigned int*>
+                         (const_cast<guint8*> (data.get_data ())));
    TRACE1 ("Machiavelli::cardDroppedOnTable (...) - Inserting card " << std::hex
            << *pValue << std::hex << " in pile");
    Check2 (pValue);
@@ -1587,8 +1584,8 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
 
       if (now)
          Glib::signal_timeout ().connect
-            (bind (slot (*this, &Game::endRemoteMove), currentPlayer ()),
-             ComputerPlayer::TIMEOUT);
+            (bind (mem_fun (*this, &Machiavelli::endRemoteMove),
+                   currentPlayer ()), ComputerPlayer::TIMEOUT);
       return !now;
    }
    else if (cmd == "Move") {

@@ -129,14 +129,14 @@ class Buraco : public Game {
    void registerHandDND (unsigned int iCard);
    void unregisterHandDND (CardWidget& card);
    void getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
-                     GtkSelectionData* pData, guint info, guint32 time,
+                     Gtk::SelectionData& data, guint info, guint32 time,
                      unsigned int cardPos);
    void cardDropped (const Glib::RefPtr<Gdk::DragContext>& pContext, gint, gint,
-                     GtkSelectionData* pData, guint info, guint32 time,
+                     const Gtk::SelectionData& data, guint info, guint32 time,
                      unsigned int card);
    void cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& pContext, gint,
-                            gint, GtkSelectionData* pData, guint, guint32 time,
-                            unsigned int cardPile);
+                            gint, const Gtk::SelectionData& pData, guint,
+                            guint32 time, unsigned int cardPile);
 
    Gtk::Label names[NUM_PLAYERS];                        // Names of the player
    CardHPile hands[NUM_PLAYERS];              // For all players: Cards in hand

@@ -160,7 +160,6 @@ void SgtMayor::start () {
          for (unsigned int j (0); j < (cards.size () / NUM_PLAYERS); ++j)
             players[(i - posServer) & 0x3].hand.insertColourSorted (pile.removeTopCard ());
 
-      // Add the card which can be exchanged by the two of spades
       Check3 (!pExchange);
       pExchange = &pile.removeTopCard ();
 
@@ -234,7 +233,7 @@ bool SgtMayor::enableHuman () {
    for (int i (players[0].hand.size ()); i;)
       activeCards.push_back
          (players[0].hand[--i]->signal_clicked ().connect
-           (bind (slot (*this, (&SgtMayor::cardSelected)), i)));
+           (bind (mem_fun (*this, (&SgtMayor::cardSelected)), i)));
 
    return Game::enableHuman ();
 }
@@ -257,7 +256,7 @@ void SgtMayor::cardSelected (unsigned int iCard) {
       // The same colour must be played again (if available)
       CardWidget::COLOURS colour (played[0]->colour ());
       if ((playColour != colour) && players[0].hand.exists (colour)) {
-         Gtk::MessageDialog dlg (_("Play first cards with an equal colour as "
+         Gtk::MessageDialog dlg (_("Play a card with an equal colour to "
                                    "the first played one!"), Gtk::MESSAGE_ERROR);
          dlg.set_title (PACKAGE " - SgtMayor");
          dlg.run ();
@@ -337,7 +336,6 @@ void SgtMayor::startPlaying () {
    unsigned int exchgPlayer (-1U);
    unsigned int exchgCard (0);
 
-   // Search for the player having the two of spades
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       if (exchgPlayer == -1U)
          for (exchgCard = 0; exchgCard < players[i].hand.size (); ++exchgCard) {
@@ -363,15 +361,11 @@ void SgtMayor::startPlaying () {
       pExchange = &exchg;
       pExchange->showBack ();
 
-      Glib::ustring stat (_("Player %1 exchanged the two of spades; "));
-      stat.replace (stat.find ("%1"), 2,
-                    actPlayers[exchgPlayer]->getName ());
-
       // Mark the exchanged card, if the human received it
       if (!exchgPlayer) {
          players[0].hand[target]->mark ();
          Glib::signal_timeout ().connect
-             (bind (slot (*this, &SgtMayor::unmark), players[0].hand[target]), 1000);
+             (bind (mem_fun (*this, &SgtMayor::unmark), players[0].hand[target]), 1000);
       }
 
       if (startPlayer)
@@ -385,7 +379,7 @@ void SgtMayor::startPlaying () {
          for (int i (players[0].hand.size ()); i;)
             activeCards.push_back
                (players[0].hand[--i]->signal_clicked ().connect
-                (bind (slot (*this, (&SgtMayor::cardColourSelect)), i)));
+                (bind (mem_fun (*this, (&SgtMayor::cardColourSelect)), i)));
          return;
       }
    }
@@ -682,7 +676,7 @@ void SgtMayor::makeExchange () {
       for (int i (players[0].hand.size ()); i;)
          activeCards.push_back
             (players[0].hand[--i]->signal_clicked ().connect
-             (bind (slot (*this, (&SgtMayor::cardExchange)), i)));
+             (bind (mem_fun (*this, (&SgtMayor::cardExchange)), i)));
    }
    else
       startPlaying ();
@@ -745,7 +739,7 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
    if (!playerGood) {
       players[0].hand[posGood]->mark ();
       Glib::signal_timeout ().connect
-         (bind (slot (*this, &SgtMayor::unmark), players[0].hand[posGood]), 1000);
+         (bind (mem_fun (*this, &SgtMayor::unmark), players[0].hand[posGood]), 1000);
    }
 }
 

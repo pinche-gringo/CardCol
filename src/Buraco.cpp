@@ -36,6 +36,8 @@
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/messagedialog.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/ConnMgr.h>
 #include <YGP/ANumeric.h>
 #include <YGP/Tokenize.h>
@@ -47,7 +49,6 @@
 
 
 
-#include "SigCExt.h"
 std::vector<Gtk::TargetEntry> Buraco::dndType;
 
 
@@ -126,7 +127,7 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       dndType.push_back
          (Gtk::TargetEntry ("icon/card", Gtk::TARGET_SAME_APP, 0));
 
-         (Gtk::TargetEntry ("icon/card", GTK_TARGET_SAME_APP, 0));
+   statusbar.pack_end (frameInfo, Gtk::PACK_SHRINK, 5);
    frameInfo.set_shadow_type (Gtk::SHADOW_IN);
    info.set_size_request (300, -1);
    statusbar.set_has_resize_grip (false);
@@ -634,9 +635,9 @@ bool Buraco::enableHuman () {
    stapleTop = staple.getTopCard ().signal_clicked ().connect
       (mem_fun (*this, (&Buraco::stapleSelected)));
    dumpedTop = dumped.getTopCard ().signal_clicked ().connect
-      (slot (*this, (&Buraco::stapleSelected)));
+      (mem_fun (*this, (&Buraco::dumpedSelected)));
 
-      (slot (*this, (&Buraco::dumpedSelected)));
+   return Game::enableHuman ();
 }
 
 //-----------------------------------------------------------------------------
@@ -660,7 +661,7 @@ void Buraco::enableHumanHand () {
    aDNDTable[NULL] = newPile.signal_drag_data_received ().connect
       (bind (mem_fun (*this, &Buraco::cardDroppedOnTable), -1U));
 
-      (bind (slot (*this, &Buraco::cardDroppedOnTable), -1U));
+   for (unsigned int i (0); i < tablePiles[0].size (); ++i) {
       Check3 (tablePiles[0][i]);
       for (unsigned int j (0); j < tablePiles[0][i]->size (); ++j)
          registerTableDND (*(*tablePiles[0][i])[j], (i << 8) + j);
@@ -776,7 +777,7 @@ void Buraco::stapleSelected () {
    Glib::signal_idle ().connect
       (bind_return (mem_fun (*this, &Buraco::doStapleSelected), false));
 }
-       (bind_return (slot (*this, &Buraco::doStapleSelected), false));
+       (bind_return (mem_fun (*this, &Buraco::doStapleSelected), false));
 //-----------------------------------------------------------------------------
 /// Delayed callback after clicking on the staple
 //-----------------------------------------------------------------------------
@@ -860,7 +861,7 @@ void Buraco::dumpedSelected () {
    Glib::signal_idle ().connect
        (bind_return (mem_fun (*this, &Buraco::enableHumanHand), false));
 }
-       (bind_return (slot (*this, &Buraco::enableHumanHand), false));
+
 //-----------------------------------------------------------------------------
 /// Action after picking up the card from the dumped staple
 //-----------------------------------------------------------------------------
@@ -885,7 +886,7 @@ void Buraco::enableCard (unsigned int pos) {
       (hands[0][pos]->signal_clicked ().connect
        (bind (mem_fun (*this, (&Buraco::cardSelected)), pos)));
 }
-       (bind (slot (*this, (&Buraco::cardSelected)), pos)));
+
 //-----------------------------------------------------------------------------
 /// Prepares the card for drag´n´drop
 /// \param iCard: Number of card in hand
@@ -908,9 +909,9 @@ void Buraco::registerHandDND (unsigned int iCard) {
    aDNDHand[&card].connReceive = card.signal_drag_data_received ().connect
       (bind (mem_fun (*this, &Buraco::cardDropped), iCard));
    aDNDHand[&card].connGet = card.signal_drag_data_get ().connect
-      (bind (slot (*this, &Buraco::cardDropped), iCard));
+      (bind (mem_fun (*this, &Buraco::getDropData), iCard));
 }
-      (bind (slot (*this, &Buraco::getDropData), iCard));
+
 //-----------------------------------------------------------------------------
 /// Stops the drag´n´drop abilities of the passed card
 /// \param card: Card to unregister of dnd
@@ -967,7 +968,7 @@ void Buraco::registerTableDND (CardWidget& card, unsigned int nr) {
    aDNDTable[&card] = card.signal_drag_data_received ().connect
       (bind (mem_fun (*this, &Buraco::cardDroppedOnTable), nr));
 }
-      (bind (slot (*this, &Buraco::cardDroppedOnTable), nr));
+
 //-----------------------------------------------------------------------------
 /// Stops the drag´n´drop abilities of the passed card
 /// \param card: Card to de-register
@@ -991,22 +992,22 @@ void Buraco::unregisterTableDND (CardWidget& card) {
 /// \param target, action, ...)
 /// \param data: Describes the thing which was dropped
 /// \param info: Describes the type of data (should be 0)
-/// \param pData: Describes the thing which was dropped
-/// \param info: Describes the type of pData (should be 0)
+/// \param time: Timestamp of the drag
+/// \param card: Number of card where something was dropped at
 /// \pre \c pContext not NULL; Expects \c info to be 0
 //-----------------------------------------------------------------------------
-/// \pre \c pContext, \c pData not NULL; Expects \c info to be 0
+void Buraco::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
                           gint, gint, const Gtk::SelectionData& data,
                           guint info, guint32 time, unsigned int card) {
-                           gint, gint, GtkSelectionData* pData, guint info,
-                           guint32 time, unsigned int card) {
-   Check3 (pData);
+   Check3 (!context->get_is_source ());
+   Check3 (data.get_length () == sizeof (int));
    Check3 (data.get_format () == 8);
-   Check3 (pData->length == sizeof (int));
-   Check3 (pData->format == 8);
+   Check3 (card < hands[0].size ());
+
    unsigned int* pValue (reinterpret_cast <unsigned int*>
                          (const_cast<guint8*> (data.get_data ())));
-   unsigned int* pValue (reinterpret_cast <unsigned int*> (pData->data));
+   Check3 (pValue);
+   Check3 (*pValue < hands[0].size ());
    TRACE1 ("Buraco::cardDropped (...) - Inserting card " << *pValue
            << " at pos " << card);
 
@@ -1058,23 +1059,23 @@ bool Buraco::humanPilesOK (unsigned int except) const {
 /// \param target, action, ...)
 /// \param data: Describes the thing which was dropped
 /// \param info: Describes the type of data (should be 0)
-/// \param pData: Describes the thing which was dropped
-/// \param info: Describes the type of pData (should be 0)
+/// \param time: Timestamp of the drag
+/// \param iCard: Combination of card and pile on which card was dropped
 /// \pre \c pContext not NULL;
 //-----------------------------------------------------------------------------
-/// \pre \c pContext, \c pData not NULL;
+void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
                                  gint, gint, const Gtk::SelectionData& data,
                                  guint, guint32 time, unsigned int iCard) {
-                                 gint, gint, GtkSelectionData* pData,
+   TRACE1 ("Buraco::cardDroppedOnTable (...) - Card dropped on " << std::hex
            << (int)iCard << std::dec);
    Check3 (!context->get_is_source ());
    Check3 (data.get_length () == sizeof (int));
-   Check3 (pData);
    Check3 (data.get_format () == 8);
-   Check3 (pData->length == sizeof (int));
-   Check3 (pData->format == 8);
+
+   unsigned int* pValue (reinterpret_cast <unsigned int*>
                          (const_cast<guint8*> (data.get_data ())));
-   unsigned int* pValue (reinterpret_cast <unsigned int*> (pData->data));
+   Check3 (pValue);
+   TRACE1 ("Buraco::cardDroppedOnTable (...) - Inserting card " << *pValue
            << " in pile");
    Check3 (*pValue < hands[0].size ());
    Check3 (*pValue < hands[0].size ());
@@ -1232,19 +1233,19 @@ bool Buraco::humanPilesOK (unsigned int except) const {
 /// \param target, action, ...)
 /// \param data: Describes the thing which was dropped
 /// \param time: Timestamp of the drag
-/// \param pData: Describes the thing which was dropped
+/// \param cardPos: Position of card (either in hand or pile on table)
 /// \pre \c pContext not NULL; Expects \c info to be 0
 //-----------------------------------------------------------------------------
-/// \pre \c pContext, \c pData not NULL; Expects \c info to be 0
+void Buraco::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
                           Gtk::SelectionData& data, guint info, guint32 time,
                           unsigned int cardPos) {
-                           GtkSelectionData* pData, guint info, guint32 time,
-                           unsigned int cardPos) {
-   Check1 (pData); Check1 (!info);
+   Check1 (!info);
+   Check1 (pContext->get_is_source ());
+
    data.set (data.get_target (), 8, reinterpret_cast <guchar*> (&cardPos),
              sizeof (cardPos));
-   gtk_selection_data_set (pData, pData->target, 8, reinterpret_cast <guchar*> (&cardPos),
-                           sizeof (cardPos));
+}
+
 //-----------------------------------------------------------------------------
 /// Prepares the passed region of cards for drag´n´drop
 /// \param start: Number of first card to prepare for DND
@@ -1263,7 +1264,7 @@ void Buraco::registerHandDND (unsigned int start, unsigned int end) {
 
          (bind (mem_fun (*this, (&Buraco::cardSelected)), start));
 
-         (bind (slot (*this, (&Buraco::cardSelected)), start));
+      unregisterHandDND (*hands[0][start]);
       registerHandDND (start);
    }
    TRACE9 ("Buraco::registerHandDND (unsigned int, unsigned int) - End ");
