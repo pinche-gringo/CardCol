@@ -57,7 +57,7 @@ class SgtMayor : public Game {
    void cardSelected (unsigned int iCard);
    void cardExchange (unsigned int iCard);
    void cardColourSelect (unsigned int iCard);
-   bool exchangeMarked (unsigned int srcCard, unsigned int destPlayer);
+   bool exchangeMarked (CardWidget* card, unsigned int destPlayer);
    bool unmark (unsigned int card);
 
    //@Section Virtual methods
@@ -73,6 +73,7 @@ class SgtMayor : public Game {
 			 unsigned int playerGood, unsigned int posGood);
    void showTrump (CardWidget::COLOURS);
    void makeExchange ();
+   void displayExchangeStatus ();
    void startPlaying ();
    unsigned int playCard (unsigned int player, unsigned int card);
    static unsigned int calcNextPlayer (unsigned int player) {
@@ -104,7 +105,7 @@ class SgtMayor : public Game {
 
    unsigned int startPlayer;
    std::bitset<13>playedCards[4];
-   int diffTicks[NUM_PLAYERS];
+   signed char diffTicks[NUM_PLAYERS];
 
    Gtk::UIManager::ui_merge_id idMrg;
 
