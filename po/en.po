@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.5 ($Revision$)\n"
-"POT-Creation-Date: 2003-11-03 12:55-0500\n"
+"POT-Creation-Date: 2003-11-05 12:17-0500\n"
 "PO-Revision-Date: 2003-11-03 12:24-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -101,37 +101,37 @@ msgid ""
 "Reason: %2"
 msgstr ""
 
-#: Common/Game.cpp:183
+#: Common/Game.cpp:182
 msgid "Not a number: `%1'"
 msgstr ""
 
-#: Common/Game.cpp:196
+#: Common/Game.cpp:197
 msgid ""
 "Received invalid input from the server!\n"
 "\n"
 "Reason: %1"
 msgstr ""
 
-#: Common/Game.cpp:326 Common/Game.cpp:337
+#: Common/Game.cpp:328 Common/Game.cpp:339
 msgid "Turn of %1"
 msgstr ""
 
-#: Common/Game.cpp:492
+#: Common/Game.cpp:494
 msgid "Sort by number"
 msgstr ""
 
-#: Common/Game.cpp:495
+#: Common/Game.cpp:497
 msgid "Sort by colour"
 msgstr ""
 
-#: Common/Game.cpp:600
+#: Common/Game.cpp:602
 msgid ""
 "Can't write message!\n"
 "\n"
 "Reason: %1"
 msgstr ""
 
-#: Common/Game.cpp:653
+#: Common/Game.cpp:655
 msgid ""
 "Error processing command `%1'!\n"
 "\n"
@@ -268,28 +268,28 @@ msgid ""
 "Distributed under the terms of the GNU General Public License"
 msgstr ""
 
-#: src/CardCol.cpp:848
+#: src/CardCol.cpp:872
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 
-#: src/CardCol.cpp:860
+#: src/CardCol.cpp:884
 msgid "Stop waiting for the server to start the game and start a local one?"
 msgstr ""
 
-#: src/CardCol.cpp:880
+#: src/CardCol.cpp:904
 msgid "Do you really want to end the game?"
 msgstr ""
 
-#: src/CardCol.cpp:940
+#: src/CardCol.cpp:964
 msgid "A game is running. Do you really want to quit?"
 msgstr ""
 
-#: src/CardCol.cpp:982
+#: src/CardCol.cpp:1006
 msgid "Waiting for the server to start the game ..."
 msgstr ""
 
-#: src/CardCol.cpp:1012
+#: src/CardCol.cpp:1036
 msgid ""
 "Anticopyright (A) 2002, 2003 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
@@ -297,89 +297,97 @@ msgid ""
 "Compiled on %1 at %2"
 msgstr ""
 
-#: src/CardCol.cpp:1118
+#: src/CardCol.cpp:1142
 msgid "User canceled"
 msgstr ""
 
-#: src/CardCol.cpp:1146
+#: src/CardCol.cpp:1170
 msgid "Loading cardimages ..."
 msgstr ""
 
-#: src/CardCol.cpp:1161
+#: src/CardCol.cpp:1185
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr ""
 
-#: src/CardCol.cpp:1233 src/CardCol.cpp:1270
+#: src/CardCol.cpp:1251 src/CardCol.cpp:1288
 msgid "Lost connection to %1!"
 msgstr ""
 
-#: src/CardCol.cpp:1261
+#: src/CardCol.cpp:1279
 msgid ""
 "Error receiving data!\n"
 "\n"
 "Reason: %1"
 msgstr ""
 
-#: src/CardCol.cpp:1317
+#: src/CardCol.cpp:1335
 msgid "Invalid game type: `%1'"
 msgstr ""
 
-#: src/CardCol.cpp:1340
+#: src/CardCol.cpp:1358
 msgid "Unspecified error"
 msgstr ""
 
-#: src/CardCol.cpp:1345
+#: src/CardCol.cpp:1363
 msgid "The server"
 msgstr ""
 
-#: src/CardCol.cpp:1434
+#: src/CardCol.cpp:1452
 msgid ""
 "Collection of cardgames\n"
 "\n"
 "Usage: "
 msgstr ""
 
-#: src/CardCol.cpp:1435
+#: src/CardCol.cpp:1453
 msgid ""
 " [OPTIONS]\n"
 "\n"
 msgstr ""
 
-#: src/CardCol.cpp:1437
+#: src/CardCol.cpp:1455
 msgid "[GAME] Select game to start (default: Rovhult)\n"
 msgstr "[GAME] Select game to start (default: Røvhult)\n"
 
-#: src/CardCol.cpp:1438
+#: src/CardCol.cpp:1456
 msgid "[FILE] Use file as INI file\n"
 msgstr ""
 
-#: src/CardCol.cpp:1439
+#: src/CardCol.cpp:1457
 msgid "[NAME] Browser to use to display the help\n"
 msgstr ""
 
-#: src/CardCol.cpp:1440
+#: src/CardCol.cpp:1458
 msgid "[DIR] Directory to search for help\n"
 msgstr ""
 
-#: src/CardCol.cpp:1441
+#: src/CardCol.cpp:1459
 msgid "[PORT] Awaits connections on port PORT\n"
 msgstr ""
 
-#: src/CardCol.cpp:1442
+#: src/CardCol.cpp:1460
 msgid "[SERVER[:PORT]] Connects to SERVER:PORT\n"
 msgstr ""
 
-#: src/CardCol.cpp:1443
+#: src/CardCol.cpp:1462
+msgid "[FILE] Saves game into FILE\n"
+msgstr ""
+
+#: src/CardCol.cpp:1463
+msgid "[FILE] Load game from FILE\n"
+msgstr ""
+
+#: src/CardCol.cpp:1465
 msgid "Output version information and exit\n"
 msgstr ""
 
-#: src/CardCol.cpp:1444
+#: src/CardCol.cpp:1466
 msgid ""
 "Displays this help and exit\n"
 "\n"
 msgstr ""
 
-#: src/CardCol.cpp:1447
+#: src/CardCol.cpp:1469
 msgid ""
 "Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco or "
 "the\n"
@@ -391,53 +399,63 @@ msgstr ""
 "numbers 0 - 3 (corresponding to the games in the above order).\n"
 "\n"
 
-#: src/CardCol.cpp:1449
+#: src/CardCol.cpp:1471
 msgid ""
 "The INI file can have the following entries:\n"
 "\n"
 msgstr ""
 
-#: src/CardCol.cpp:1480
+#: src/CardCol.cpp:1502
 msgid "-warning: Invalid game type `%1'"
 msgstr ""
 
-#: src/CardCol.cpp:1486
+#: src/CardCol.cpp:1508
 msgid "-warning: No game specified! Ignoring option `g'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1494
+#: src/CardCol.cpp:1516
 msgid "-warning: No directory specified! Ignoring option `d'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1502
+#: src/CardCol.cpp:1524
 msgid "-warning: No browser specified! Ignoring option `b'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1510
+#: src/CardCol.cpp:1532
 msgid "-warning: No file specified! Ignoring option `f'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1518
+#: src/CardCol.cpp:1540
 msgid "-warning: No port specified! Ignoring option `l'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1533
+#: src/CardCol.cpp:1555
 msgid "-warning: No target specified! Ignoring option `c'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1586
+#: src/CardCol.cpp:1569
+msgid ""
+"-warning: Option `%1' has already been specified!\n"
+"Overwriting old setting\n"
+msgstr ""
+
+#: src/CardCol.cpp:1579
+msgid "-warning: No file specified! Ignoring option `%1'\n"
+msgstr ""
+
+#: src/CardCol.cpp:1631
 msgid "Human"
 msgstr ""
 
-#: src/CardCol.cpp:1587
+#: src/CardCol.cpp:1632
 msgid "Player 1"
 msgstr ""
 
-#: src/CardCol.cpp:1588
+#: src/CardCol.cpp:1633
 msgid "Player 2"
 msgstr ""
 
-#: src/CardCol.cpp:1589
+#: src/CardCol.cpp:1634
 msgid "Player 3"
 msgstr ""
 
