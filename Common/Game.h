@@ -148,6 +148,8 @@ class Game : public Gtk::Table {
    unsigned int pos2Play;                    ///< Upper border of cards to play
    unsigned int pos1Play;                    ///< Lower border of cards to play
 
+   bool ignoreNextMsg;
+
  private:
    bool enableActWonCards ();
 

@@ -70,7 +70,8 @@ Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
    : Gtk::Table (rows, columns), statGame (NONE), status (statusbar)
      , cards (cardset), restart (false), pWonPile (NULL), pMenuPopSort (NULL)
      , actPlayers (player), data (NULL), posServer (posPlayer)
-     , pos2Play (-1U), pos1Play (-1U), mxSerializeMsgs (mxSerialize)  {
+     , pos2Play (-1U), pos1Play (-1U), mxSerializeMsgs (mxSerialize)
+     , ignoreNextMsg (false) {
    TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, std::vector<Player*>,"
            "unsinged int, unsigned int)");
    Check3 (cardset.size ());
@@ -274,8 +275,8 @@ void Game::makeNextMoves () {
 bool Game::endRemoteMove (unsigned int player) {
    TRACE8 ("Game::endRemoteMove () - " << player);
    mxSerializeMsgs.unlock ();
-   Glib::signal_idle ().connect
-       (bind (slot (*actPlayers[player], &Player::makeTurn), this));
+   actPlayer = makeMove (player);
+   makeNextMoves ();
    return false;
 }
 
@@ -370,6 +371,8 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
          msg << i << ' ';
       msg << end << ";Target=0";
 
+      if (!actPlayer)
+         ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
 
@@ -564,6 +567,11 @@ void Game::handleMessage (unsigned int player, const char* msg) {
    Check1 (msg);
    Check2 (!data);
 
+   if (ignoreNextMsg) {
+      ignoreNextMsg = false;
+      return;
+   }
+
    try {
       switch (statGame) {
       case NONE:
@@ -603,19 +611,10 @@ void Game::handleMessage (unsigned int player, const char* msg) {
 //----------------------------------------------------------------------------
 /// Sets the player performing the next turn
 /// \param player: Number identifying player (starting with 0)
-/// \remarks: In server mode this information is send to all clients
 //----------------------------------------------------------------------------
 void Game::setNextPlayer (unsigned int player) {
    TRACE9 ("Game::setNextPlayer (unsigned int) - " << player);
    actPlayer = player;
-
-   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
-      Check3 (!posServer);
-      std::ostringstream msg;
-      msg << "ActPlayer=" << player;
-
-      broadcastMessage (msg.str ());
-   }
 }
 
 //----------------------------------------------------------------------------
@@ -639,19 +638,7 @@ bool Game::performCommand (unsigned int player, const char* msg) {
    std::string cmd (command.getNextNode ('='));
    TRACE2 ("Game::performCommand (unsigned int player, const char*) - " << cmd);
 
-   if (cmd == "ActPlayer") {
-       cmd = command.getNextNode (';');
-      TRACE9 ("Game::performCommand (unsigned int player, const char*) - "
-              "Next player: " << cmd);
-      unsigned long player;
-      if (stringToNumber (player, cmd.c_str ()))
-         return false;
-
-      // Don't set player directly; maybe we will support once a more-leveled
-      // server system (just kidding).
-      setNextPlayer (player);
-   }
-   else if (cmd == "Play") {
+   if (cmd == "Play") {
       cmd = command.getNextNode (';');
       std::string playTo (command.getNextNode ('='));
       std::string strTarget (command.getNextNode (';'));
