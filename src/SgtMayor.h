@@ -57,7 +57,8 @@ class SgtMayor : public Game {
    void cardSelected (unsigned int iCard);
    void cardExchange (unsigned int iCard);
    void cardColourSelect (unsigned int iCard);
-   bool unmark (const CardWidget* card);
+   bool exchangeMarked (unsigned int srcCard, unsigned int destPlayer);
+   bool unmark (unsigned int card);
 
    //@Section Virtual methods
    virtual int makeMove (unsigned int player);
@@ -66,6 +67,10 @@ class SgtMayor : public Game {
    //@Section Helper methods
    void exchangeCards (unsigned int playerBad, unsigned int posBad, unsigned int playerGood);
    void exchangeCards (unsigned int playerBad, unsigned int playerGood);
+   void directExchange (unsigned int playerBad, unsigned int posBad,
+			unsigned int playerGood, unsigned int posGood);
+   void delayedExchange (unsigned int playerBad, unsigned int posBad,
+			 unsigned int playerGood, unsigned int posGood);
    void showTrump (CardWidget::COLOURS);
    void makeExchange ();
    void startPlaying ();
@@ -78,6 +83,10 @@ class SgtMayor : public Game {
    unsigned int findPos2Play (unsigned int player);
    bool isHighest (const CardWidget& card) const;
    unsigned int tryToGetTickWithTrump (const ICardPile& pile) const;
+
+   virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void showWonCards (bool show = true, unsigned int style = -1U);
 
    static const unsigned int NUM_PLAYERS = 3;              // Number of players
 
@@ -96,6 +105,8 @@ class SgtMayor : public Game {
    unsigned int startPlayer;
    std::bitset<13>playedCards[4];
    int diffTicks[NUM_PLAYERS];
+
+   Gtk::UIManager::ui_merge_id idMrg;
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];

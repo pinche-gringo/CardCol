@@ -29,15 +29,16 @@
 
 #include <cardgames-cfg.h>
 
+#include <gtkmm/menu.h>
+#include <gtkmm/stock.h>
+#include <gtkmm/statusbar.h>
+#include <gtkmm/messagedialog.h>
+
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
 #include <YGP/ANumeric.h>
 #include <YGP/Tokenize.h>
-
-#include <gtkmm/menu.h>
-#include <gtkmm/statusbar.h>
-#include <gtkmm/messagedialog.h>
 
 #include <Player.h>
 
@@ -316,7 +317,8 @@ void SgtMayor::cardExchange (unsigned int iCard) {
 
          if (!diffTicks[0]) {
             disableHuman ();
-            startPlaying ();
+            Glib::signal_idle ().connect
+	       (bind_return (mem_fun (*this, &SgtMayor::startPlaying), false));
          }
          return;
       }
@@ -358,6 +360,7 @@ void SgtMayor::startPlaying () {
    }
 
    // Is a card to exchange?
+   Glib::ustring stat;
    if (exchgPlayer != -1U) {
       Check3 (pExchange);
       CardWidget& exchg (players[exchgPlayer].hand.remove (exchgCard));
@@ -365,18 +368,22 @@ void SgtMayor::startPlaying () {
       pExchange = &exchg;
       pExchange->showBack ();
 
+      stat = _("%1 exchanged the 2 of spades; ");
+      stat.replace (stat.find ("%1"), 2, actPlayers[exchgPlayer]->getName ());
+
       // Mark the exchanged card, if the human received it
       if (!exchgPlayer) {
          players[0].hand[target]->mark ();
          Glib::signal_timeout ().connect
-             (bind (mem_fun (*this, &SgtMayor::unmark), players[0].hand[target]), 1000);
+             (bind (mem_fun (*this, &SgtMayor::unmark), target), 1000);
       }
 
       if (startPlayer)
-         displayTurn (startPlayer);
+         displayTurn (startPlayer, stat);
       else {
          status.pop ();
-	 status.push (_("Select the special colour by clicking on a card"));
+	 stat += _("Select the special colour");
+	 status.push (stat);
 
          for (int i (players[0].hand.size ()); i;)
             activeCards.push_back
@@ -386,7 +393,7 @@ void SgtMayor::startPlaying () {
       }
    }
    else
-      displayTurn (startPlayer, _("Nobodoy can exchange the two of clubs; "));
+      displayTurn (startPlayer, _("Nobodoy can exchange the two of spades; "));
 
    // Find special colour
    ICardPile& pile (players[startPlayer].hand);
@@ -434,6 +441,7 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
 	   << cColours[1] << '/' << cColours[2] << '/' << cColours[3]);
    TRACE9 ("SgtMayor::findPos2Play (unsigned int) - Pos: " << (int)posColours[0] << '/'
 	   << (int)posColours[1] << '/' << (int)posColours[2] << '/' << (int)posColours[3]);
+   TRACE9 ("SgtMayor::findPos2Play (unsigned int) - Out: " << std::hex << (int)bfColours << std::dec);
 
    switch (played.size ()) {
    case 0: {
@@ -470,7 +478,9 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
 	 Check3 (posColours[maxCards] != -1U);
 	 pos = posColours[maxCards];
 	 if (!isHighest (*pile[posColours[maxCards]])
-	     || (trumpsLeft && (bfColours & (0x110 << maxCards))))
+	     || (trumpsLeft
+		 && (bfColours & (0x111 << maxCards))
+		 || ((posColours[maxCards] + cColours[maxCards]) == 13)))
 	    pos -= cColours[maxCards] - 1;
 	 break;
       }
@@ -499,6 +509,7 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
 	      << "; Next: " << nextHasntColour);
 
       if (pos == -1U) {
+	 bfColours |= ((1 << played[0]->colour ()) << (player << 4));
 	 pos = posColours[pTrump->colour ()];
 	 if ((pos == -1U)
 	     || (nextHasntColour
@@ -662,6 +673,9 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
       }
       players[player].won.append (played.removeTopCard ());
       Check3 (played.empty ());
+
+      if (!player)
+	 enableWonCards (players[0].won);
    }
    else
       player = calcNextPlayer (player);
@@ -780,10 +794,60 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int playerGood) {
    exchangeCards (playerBad, posBad, playerGood);
 }
 
+//-----------------------------------------------------------------------------
+/// Exchanges cards directly; e.g. between computer players
+/// \param playerBad: Player giving away a bad card
+/// \param posBad: Position of bad card to give away
+/// \param playerGood: Player giving away a good card
+/// \param posGood: Position of good card to give away
+//-----------------------------------------------------------------------------
+void SgtMayor::directExchange (unsigned int playerBad, unsigned int posBad,
+			       unsigned int playerGood, unsigned int posGood) {
+   CardWidget& bad (players[playerBad].hand.remove (posBad));
+   CardWidget& good (players[playerGood].hand.remove (posGood));
+   players[playerBad].hand.insertColourSorted (good);
+   players[playerGood].hand.insertColourSorted (bad);
+   TRACE9 ("SgtMayor::directExchange (4x unsigned int ) - Player "
+           << playerBad << " and " << playerGood << " exchange " << bad
+           << " and " << good);
+}
+
+//-----------------------------------------------------------------------------
+/// Exchanges cards directly; e.g. between computer players
+/// \param playerBad: Player giving away a bad card
+/// \param posBad: Position of bad card to give away
+/// \param playerGood: Player giving away a good card
+/// \param posGood: Position of good card to give away
+//-----------------------------------------------------------------------------
+void SgtMayor::delayedExchange (unsigned int playerBad, unsigned int posBad,
+				unsigned int playerGood, unsigned int posGood) {
+   Check2 (!(playerBad && playerGood));
+   Check2 (posBad < players[playerBad].hand.size ());
+   Check2 (posGood < players[playerGood].hand.size ());
+
+   // For easier handling: playerBad is human
+   if (playerBad) {
+      std::swap (playerGood, playerBad);
+      std::swap (posGood, posBad);
+   }
+   Check3 (playerGood); Check3 (!playerBad);
+
+   CardWidget& bad (*players[playerBad].hand.at (posBad));
+   CardWidget& good (players[playerGood].hand.remove (posGood));
+   played.append (good);
+   TRACE9 ("SgtMayor::delayedExchange (4x unsigned int ) - Player "
+           << playerBad << " and " << playerGood << " exchange " << bad
+           << " and " << good);
+
+   players[0].hand[posBad]->mark ();
+   Glib::signal_timeout ().connect
+      (bind (mem_fun (*this, &SgtMayor::exchangeMarked), posBad, playerGood), 1000);
+}
 
 //----------------------------------------------------------------------------
 /// Exchanges a good card from playerGood with a bad card from player bad
 /// \param playerBad: Player giving away a bad card
+/// \param posBad: Position of bad card to give away
 /// \param playerGood: Player giving away a good card
 //----------------------------------------------------------------------------
 void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
@@ -803,38 +867,110 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
            << playerGood << "'s " << posGood);
    Check3 (posGood < players[playerGood].hand.size ());
 
-   CardWidget& bad (players[playerBad].hand.remove (posBad));
-   CardWidget& good (players[playerGood].hand.remove (posGood));
-   posBad = players[playerBad].hand.insertColourSorted (good);
-   posGood = players[playerGood].hand.insertColourSorted (bad);
-   TRACE9 ("SgtMayor::exchangeCards (3x unsigned int ) - Player "
-           << playerBad << " and " << playerGood << " exchange " << bad
-           << " and " << good);
+   if (playerBad && playerGood)
+      directExchange (playerBad, posBad, playerGood, posGood);
+   else
+      delayedExchange (playerBad, posBad, playerGood, posGood);
 
    --diffTicks[playerBad];
    ++diffTicks[playerGood];
+}
 
-   if (!playerBad) {
-      playerGood = 0;
-      posGood = posBad;
-   }
-   if (!playerGood) {
-      players[0].hand[posGood]->mark ();
-      Glib::signal_timeout ().connect
-         (bind (mem_fun (*this, &SgtMayor::unmark), players[0].hand[posGood]), 1000);
-   }
+//----------------------------------------------------------------------------
+/// Exchanges the passed card with the one first in the played area (if any)
+/// \param srcCard: Position of card to exchange
+/// \param destPlayer: Player to get the card
+/// \return bool: Always false to end the timer
+//----------------------------------------------------------------------------
+bool SgtMayor::exchangeMarked (unsigned int srcCard, unsigned int destPlayer) {
+   TRACE9 ("SgtMayor::exchangeMarked (2x unsigned int) - Moving " << srcCard
+	   << " to player " << destPlayer);
+   Check1 (srcCard); Check2 (srcCard < players[0].hand.size ());
+   Check2 (played.size ()); Check1 ((destPlayer - 1) < (NUM_PLAYERS - 1));
+
+   CardWidget& hand (players[0].hand.remove (srcCard));
+   hand.unmark ();
+
+   players[0].hand.insertColourSorted (played.remove (0));
+   players[destPlayer].hand.insertColourSorted (hand);
+
+   disableHuman ();
+   if (diffTicks[0])
+      for (int i (players[0].hand.size ()); i;)
+	 activeCards.push_back
+	    (players[0].hand[--i]->signal_clicked ().connect
+	     (bind (mem_fun (*this, (&SgtMayor::cardExchange)), i)));
+   return false;
 }
 
 //----------------------------------------------------------------------------
 /// Unmarks the passed card
-/// \param card: Card to unmark
+/// \param card: Position of card to unmark
 /// \return bool: Always false to end the timer
 //----------------------------------------------------------------------------
-bool SgtMayor::unmark (const CardWidget* card) {
-   Check1 (card);
-   TRACE9 ("SgtMayor::unmark (unsigned int) - Unmarking " << *card);
-   Check3 ((unsigned int)players[0].hand.findByColour (*card) < players[0].hand.size ());
+bool SgtMayor::unmark (unsigned int card) {
+   Check1 (card); Check2 (card < players[0].hand.size ());
+   TRACE9 ("SgtMayor::unmark (unsigned int) - Unmarking " << card);
 
-   players[0].hand[players[0].hand.findByColour (*card)]->unmark ();
+   players[0].hand.at (card)->unmark ();
    return false;
+}
+
+//-----------------------------------------------------------------------------
+/// Adds game-specific menus
+/// \param mgrUI: UIManager to add to
+//-----------------------------------------------------------------------------
+void SgtMayor::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
+   Check1 (mgrUI);
+   Glib::ustring ui ("<menubar name='Menu'>"
+		     "  <placeholder name='GameMenu'>"
+		     "    <menu action='MB'>"
+		     "      <menuitem action='Sort'/>"
+		     "      <menuitem action='SortCol'/>"
+		     "    </menu></placeholder></menubar>");
+
+   Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
+   grpAction->add (Gtk::Action::create ("MB", _("_Sgt. Mayor")));
+   grpAction->add (Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
+					_("_Sort won cards (by number)")),
+		   Gtk::AccelKey ("<ctl><alt>S"),
+		   mem_fun (*this, &SgtMayor::sortWonByNumber));
+   grpAction->add (Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
+					_("Sort won cards (by _colour)")),
+		   Gtk::AccelKey ("<shft><ctl>S"),
+		   mem_fun (*this, &SgtMayor::sortWonByColour));
+
+   mgrUI->insert_action_group (grpAction);
+   idMrg = mgrUI->add_ui_from_string (ui);
+}
+
+//-----------------------------------------------------------------------------
+/// Removes the game-specific menus
+/// \param mgrUI: UIManager to remove from
+//-----------------------------------------------------------------------------
+void SgtMayor::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
+   Check1 (mgrUI);
+   mgrUI->remove_ui (idMrg);
+}
+
+//-----------------------------------------------------------------------------
+/// Shows or hides the won cards
+/// \param show: Flag if to show or to hide the cards
+//-----------------------------------------------------------------------------
+void SgtMayor::showWonCards (bool show, unsigned int style) {
+   TRACE9 ("SgtMayor::showWonCards (bool, unsigned int) - " << show << '/' << style);
+
+   for (CardVPile::iterator c (players[0].won.begin ());
+	c != players[0].won.end (); ++c)
+      if (show)
+	 (*c)->show ();
+      else
+	 if (((c - players[0].won.begin ()) % 3) != 2)
+	    (*c)->hide ();
+
+   if (show) {
+      Game::showWonCards (true);
+   }
+   else
+      Game::showWonCards (false, ICardPile::QUITE_COMPRESSED);
 }
