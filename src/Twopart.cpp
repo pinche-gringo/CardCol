@@ -214,6 +214,12 @@ unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
    Check3 (gameStatus () == PLAYING2);
    Check3 (bfPlayers);
 
+   Glib::ustring stat ( _("%1 can't continue -> Picking up last cards; "));
+   Check3 (actPlayers.size () > player);
+   Check3 (actPlayers[player]);
+   stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
+   displayTurn (player, stat);
+
    // Move played cards to player
    Check3 (offPos > 0); Check3 (offPos < NUM_PLAYERS);
    movePlayedCardsToPlayer (player, startPos[--offPos]);
@@ -255,6 +261,13 @@ void Twopart::playedSelected () {
    Check3 (gameStatus () == PLAYING2);
    Check3 (bfPlayers);
 
+   if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT) {
+      Check3 (startPos[--offPos] < played.size ());
+      std::ostringstream msg;
+      msg << "Play=" << played[startPos[offPos - 1]]->id () << ";Target=1";
+      ignoreNextMsg = true;
+      broadcastMessage (msg.str ());
+   }
    setNextPlayer (pickUpPlayedPile (0));
    makeNextMoves ();
    disableHuman ();
@@ -439,16 +452,8 @@ int Twopart::makeMove (unsigned int player) {
          flipCards2Play (players[player].hand, pos1Play, pos2Play);
          return player;
       }
-      else {
-         unsigned int oldPlayer (player);
+      else
          player = pickUpPlayedPile (player);
-
-         Glib::ustring stat ( _("%1 can't continue -> Picking up last cards; "));
-         Check3 (actPlayers.size () > oldPlayer);
-         Check3 (actPlayers[oldPlayer]);
-         stat.replace (stat.find ("%1"), 2, actPlayers[oldPlayer]->getName ());
-         displayTurn (player, stat);
-      }
    }
    else {
       player = executeMove (player, pos1Play, pos2Play);
@@ -974,10 +979,9 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start
    Check3 (start < played.size ());
 
    if ((gameStatus () == PLAYING2)
-       && (getConnectionMgr ().getMode () != ConnectionMgr::NONE)) {
+       && (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)) {
       std::ostringstream msg;
       msg << "Play=" << played[start]->id () << ";Target=1";
-      ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
    movePile (((gameStatus () == PLAYING)
@@ -1198,6 +1202,9 @@ void Twopart::handleMessage (unsigned int player, const char* message) {
 //----------------------------------------------------------------------------
 bool Twopart::executeRemoteMove (ICardPile& pile, unsigned int card) {
    if (&pile == &played) {
+      TRACE7 ("Twopart::executeRemoteMove (ICardPile&, unsigned int) - Card "
+              << card << "; ("
+              << (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) ? "S)" : "C)");
       Check3 (gameStatus () == PLAYING2);
       pos1Play = pos2Play = -1U;
       setNextPlayer (pickUpPlayedPile (currentPlayer ()));
