@@ -31,22 +31,26 @@ class BuracoPile : public CardVPile {
 
    virtual void insert (CardWidget& card, unsigned int pos);
 
+   virtual CardWidget& remove (CardWidget& card);
+   CardWidget& remove (CardWidget& card, bool visible);
+   virtual CardWidget& remove (unsigned int pos);
+   CardWidget& remove (unsigned int pos, bool visible);
+
    unsigned int getCardPoints () const;
-   unsigned int getPotentialPoints () const { return points; }
+   unsigned int getPotentialPoints () const { return status.points; }
    unsigned int getPoints () const {
-      return (size () == 7 ? points : points >= 1000 ? -1000 : 0); }
+      return ((size () == 7) ? status.points : (status.points >= 1000) ? -1000 : 0); }
 
    unsigned int getPosJoker () const { return status.posJoker; }
    unsigned int getPosFirst () const { return status.posFirst; }
    unsigned int getPosLast () const { return status.posLast; }
 
    bool getPosition4Card (const CardWidget& card, unsigned int& pos,
-                          int& move) const;
+                          unsigned int& move) const;
 
  protected:
    bool isValid (const CardWidget& card) const {
-      unsigned int pos;
-      int move;
+      unsigned int pos, move;
       return getPosition4Card (card, pos, move); }
    void analyzePile ();
 
@@ -56,12 +60,12 @@ class BuracoPile : public CardVPile {
 
    enum { UNDEFINED, NUMBER, COLOUR };
 
-   unsigned int points;
    struct {
       unsigned int posFirst : 3;
       unsigned int posLast  : 3;
       unsigned int posJoker : 3;
       unsigned int type     : 2;
+      unsigned int points   : 11;
    } status;
 };
 
