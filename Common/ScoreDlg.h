@@ -74,7 +74,7 @@ class ScoreDlg : public XDialog {
       void addEntry (int points);
       void setTitle (const std::string& title);
 
-      unsigned int getPoints () const { return pSum->getAttribute (); }
+      int getPoints () const { return pSum->getAttribute (); }
       Gtk::Box& getBox () const { return *pBox; }
 
     private:
