@@ -76,11 +76,14 @@ class Hearts : public Game {
    static unsigned int numberOfCards (int aPositions[4], CardWidget::COLORS color);
    static unsigned int pointsOfPile (ICardPile& pile);
 
+   void startPlaying ();
+
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
    bool playedSQ;               // Flag, if the queen of spades has been played
    unsigned int aPlayed[4];         // Array holding played cars for each color
    unsigned int pos2Play;                                   // Position to play
+   unsigned int player2Exchange;  // ID of (next) player to exchange cards with
 
    struct {
       CardHPile  hand;                        // For players: Cards in the hand
