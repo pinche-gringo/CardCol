@@ -29,6 +29,8 @@
 #include <CardPile.h>
 #include <CardWidget.h>
 
+#include "BuracoPile.h"
+
 #include <Game.h>
 
 
@@ -56,6 +58,11 @@ class Buraco : public Game {
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
    virtual bool handleMessage (unsigned int player, const char* msg);
+
+   static unsigned int getPoints (const CardWidget& card);
+   static bool isJoker (const CardWidget& card);
+   static int cardDistance (const CardWidget& a, const CardWidget& b,
+                            bool aceIsOne = true);
 
  private:
    Buraco (const Buraco& other);
@@ -85,8 +92,6 @@ class Buraco : public Game {
    static bool containsOnlyJoker (const std::vector<CardWidget*>& pile);
    static bool containsNoJoker (const std::vector<CardWidget*>& pile);
    void addBuraco (unsigned int player, bool show = true);
-   static bool isJoker (const CardWidget& card);
-   static unsigned int getPoints (const CardWidget& card);
    unsigned int showCardsToPlay (unsigned int player);
    int  executeMove (unsigned int player);
    void endGame ();
@@ -111,16 +116,14 @@ class Buraco : public Game {
                                    bool pileHoldsCard = false, bool withJokers = false);
    static bool pileHasFittingPair (const ICardPile& pile);
    static bool compByNumberWithJokers (const CardWidget* a, const CardWidget* b);
-   static int cardDistance (const CardWidget& a, const CardWidget& b,
-                            bool aceIsOne = true);
    void makeTeamNames (std::vector<Player*>& names) const;
    void Buraco::setStartPlayer ();
 
    //@Section to handle piles on table
-   CardVPile& makeNewPile (unsigned int team);
+   BuracoPile& makeNewPile (unsigned int team);
    unsigned int cardFitsOnPlayedPile (unsigned int player, unsigned int card);
    int  cardFitsOnPile (unsigned int pile, const CardWidget& card) const;
-   void removeCerrado (unsigned int player, CardVPile& pile);
+   void removeCerrado (unsigned int player, BuracoPile& pile);
    void cleanCerrado (unsigned int player);
    void updateInfo ();
    bool humanPilesOK (unsigned int except = -1U) const;
@@ -143,7 +146,7 @@ class Buraco : public Game {
                             unsigned int cardPile);
 
    CardHPile hands[NUM_PLAYERS];              // For all players: Cards in hand
-   std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];      // Piles on table
+   std::vector<BuracoPile*> tablePiles[NUM_PLAYERS >> 1];     // Piles on table
    std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
    int points[NUM_PLAYERS >> 1];                       // Number of points/team
 
