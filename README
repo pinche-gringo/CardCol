@@ -1,10 +1,71 @@
                        Cardgames
 
-Various card-games
+Various card games; up til now they consist of:
+
+  - Røvhult (the danish words for arsehole); a game I learned from 3 danes
+    while travelling South America. 
+
+
+Planned are:
+
+  - TwoPart: A game I learned from some norwegians. They probably mentioned the
+    name; though I was not able to remember it (you have no idea how long it
+    took me to learn the word "røvhult" - not to mention the pronuncation).
+    So the name descirbes the game (a bit).
+
+  - Burazno: A famous game in Venezuela; a bit similar to Canasta or the like
+    in Europe.
+
+  - Tarok. The game of my youth (long ago). Fucking hell, looking forward to
+    the computer player.
+
+
+The whole thing is:    
+  
 Anti-Copyright (A) 2002 Markus Schwab <g17m0@lycos.com>
------------------------------------------------------------------------
+-------------------------------------------------------
 
-How to build Cardgames
+Basically this means, the package is distributed under the GNU General Public
+License; in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the file COPYING for more details.
 
-./configure [--prefix=<path>]     # Default: /usr/local
-make
+
+Thanks
+------
+
+  - Gunter Gerhardt <gerhardt@draeger.com>
+  - T. Kirk <grania@mailcity.com>
+
+for distributing their carddecks under the GPL (which enabled me to convert
+them from KDE's cardgames pack (who seemed to got them from XSkat 3.2
+(http://www.gulu.net/xskat/) - Isn't the GPL a great thing?)).
+
+
+Installation
+-------------
+
+See the file INSTALL
+
+
+Documentation
+-------------
+
+Hm, well, yes should come. Would be nice online. Wait!
+
+How to report bugs and/or send patches
+--------------------------------------
+
+Bug reports and patches should be send to the e-mail address of the author (me)
+(g17m0@lycos.com).
+
+Please include
+
+  - The version of the package. In case you don't know: The title of the
+    about box.
+  - How to reproduce the bug.
+  - In case of a crash there should also be a stackdump in your systemlog which
+    might help in localizing the bug.
+  - Anything else you think might be helpful.
+
+Please note that I don't (can't) check my mails daily, so please be patient.
