@@ -60,6 +60,7 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
    staple.show ();
    attach (staple, 3, 4, 2, 7, 0, 0);
 
+   Check3 (cards.numberOfCards ());
    unsigned int width (cards.getCard (0).getImageWidth ());
    unsigned int height (cards.getCard (0).getImageHeight ());
 
@@ -111,10 +112,10 @@ Rovhult::~Rovhult () {
 /*--------------------------------------------------------------------------*/
 void Rovhult::start () {
    Game::start ();
-
-   clean ();
+   statGame = INITIALIZING;
    randomizeCardsToPile (staple);
    dealCards ();
+   statGame = PREPLAYING;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -140,6 +141,8 @@ void Rovhult::finishedExchange () {
                                             ' ', 0);
    pileTop.disconnect ();
 
+
+   displayTurn (0);
    statGame = PLAYING;
 }
 
@@ -455,7 +458,6 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
            << player);
    Check3 (player < NUM_PLAYERS);
 
-   status.pop (1);
    std::string stat;
 
    // If last 4 cards have the same number or ten was played: Don't increase
@@ -466,6 +468,7 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
          player = nextAvailablePlayer (player);
 
       if (nextAvailablePlayer (player) == -1) {
+         status.pop (1);
          stat = _("Player %1 lost");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
          status.push (1, stat);
@@ -493,9 +496,7 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
    else
       stat = _("Pile cleared; ");
 
-   stat = stat + _("Turn of player %1");
-   stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
-   status.push (1, stat);
+   displayTurn (player, stat);
    return player;
 }
 
@@ -686,6 +687,8 @@ int Rovhult::nextAvailablePlayer (unsigned int actPlayer) const {
 //            any signals (DND)
 /*--------------------------------------------------------------------------*/
 void Rovhult::clean () {
+   TRACE9 ("Rovhult::clean () - Status: " << statGame);
+
    if (statGame == PREPLAYING)
       unregisterDND ();
 
@@ -712,7 +715,7 @@ void Rovhult::clean () {
 /*--------------------------------------------------------------------------*/
 void Rovhult::registerTableDND (CardWidget& card, unsigned int player,
                                     unsigned int pile) {
-   Check3 (statGame == PREPLAYING);
+   Check3 (statGame == INITIALIZING);
 
    static Gdk_Colormap color (get_colormap ());
    static Gdk_Bitmap bitmap;
@@ -736,7 +739,7 @@ void Rovhult::registerTableDND (CardWidget& card, unsigned int player,
 /*--------------------------------------------------------------------------*/
 void Rovhult::registerHandDND (CardWidget& card, unsigned int player,
                                     unsigned int iCard) {
-   Check3 (statGame == PREPLAYING);
+   Check3 (statGame == INITIALIZING);
 
    static Gdk_Colormap color (get_colormap ());
    static Gdk_Bitmap bitmap;
@@ -765,6 +768,7 @@ void Rovhult::unregisterDND (CardWidget& card) const {
 //Parameters: card: Card to unregister of dnd
 /*--------------------------------------------------------------------------*/
 void Rovhult::unregisterDND () const {
+   TRACE9 ("Rovhult::unregisterDND () - Status: " << statGame);
    Check3 (statGame == PREPLAYING);
 
    if (players[0].hand.numberOfCards () == 3)
@@ -797,8 +801,6 @@ void Rovhult::dealCards () {
          card.showFace ();
          players[i].hand.insertSorted (card);
       }
-
-   statGame = PREPLAYING;
 
    // Enable drag-and-drop for cards in hand (of human player)
    for (unsigned int i (0); i < players[i].hand.numberOfCards (); ++i) {
