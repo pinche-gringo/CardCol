@@ -68,7 +68,8 @@ class Hearts : public Game {
 
    //@Section Helper methods
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int card);
-   unsigned int  check4Winner (unsigned int player);
+   unsigned int  calcNextPlayer (unsigned int player);
+   unsigned int  check4Winner ();
    unsigned int findPos2Play (unsigned int player);
    void exchangeCards ();
    static void getPositionOfColors (ICardPile& pile, int result[4]);
@@ -77,6 +78,7 @@ class Hearts : public Game {
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
+   bool playedSQ;               // Flag, if the queen of spades has been played
    unsigned int aPlayed[4];         // Array holding played cars for each color
    unsigned int pos2Play;                                   // Position to play
 
