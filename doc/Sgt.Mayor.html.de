@@ -1,0 +1,111 @@
+ <!-- -*-HTML-*- -->
+<!-- $Id$ -->
+
+<!--
+  Copyright (C) 2004 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//DE"
+        "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <title>Sgt. Mayor - Mach Deine Stiche oder Du wirst es b&uuml;&szlig;en</title>
+    <meta name="description" content="Dokumentation des Sgt. Mayors Kartenspiels">
+    <meta name="keywords" content="documentation, docu, dokumentation, doku, Sgt. Mayor, game, card, cardgame, spiel, karte, kartenspiel">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2004-04-18">
+    <meta name="DC.Rights" content="Copyright (C) 2004, distributed under the GNU Free Documentation License">
+  </head>
+
+  <body>
+    <h1 align="center">Sgt. Mayor</h1>
+    <hr size=2>
+
+    <p>Sgt. Mayor ist ein englisches Kartenspiel - oder zumindest lernte ich
+      es von zwei Engl&auml;ndern kennen (bzw. eigentlich von Ver&oacute;nica
+      (die zwar keine Engl&auml;nderin ist, aber es von diesen beiden
+      lernte. Aber wem interessierts ...)).</p>
+
+    <p>Gespielt wird Sgt. Mayor von lediglich 3 Personen, die jeder 17 Karten
+      bekommen. Die fehlende 52 Karte ist der Talon, der von der Person mit
+      der Pik 2 getauscht werden kann.</p>
+
+    <p>Die Spieler m&uuml;ssen jeweils 9, 5 und 3 Stiche machen. Es startet
+      der Spieler, der die 9 Stiche machen mu&szlig; mit dem Festlegen der
+      Trumpf-Farbe (sollte Pik Trumpf sein, kann der Spieler, der zuvor die
+      Pik 2 tauschte, diese wiederum gegen eine beliebige andere
+      tauschen). Danach startet er das Spiel nach den folgenden Regeln:</p>
+
+    <p>Es beginnt der Spieler, der 9 Stiche machen mu&szlig;.</p>
+
+    <p>Es kann mit jeder Farbe begonnen werden. Danach herrscht Farbzwang;
+      wenn ein Spieler diese Farbe nicht besitzt kann er eine beliebige andere
+      spielen (Trumpf oder nicht).</p>
+
+    <p>Nachdem alle Spieler ihre Karte abgelegt haben, gewinnt den gespielten
+      Stapel der Spieler mit der h&ouml;chsten Karte (der Farbe der zuerst
+      gespielten Karte oder dem h&ouml;chsten Trumpf). Der Gewinner startet
+      dann die n&auml;chste Runde.</p>
+
+    <p>Die Differenz der gemachten mit der zu machenden Stiche spielt eine
+      Rolle in der n&auml;chsten Runde. Der- oder diejenigen mit einem
+      &Uuml;berschu&szlig; an Stichen geben diese Differenz an beliebigen (im
+      allgemeinen die schlechten) Karten an diejenigen mit zuwenigen. Diese
+      m&uuml;ssen ihre h&ouml;chste Karte dieser Farbe zur&uuml;ckgeben
+      (bzw. eine beliebige (auch schlechte), wenn sie diese Farbe nicht
+      besitzen).</p>
+
+    <p>Die n&auml;chste Runde startet der Spieler, der zuvor 5 Stiche machen
+      mu&szlig;te (wobei jetzt er 9 Stiche machen mu&szlig;).</p>
+
+    <p>Das Spiel endet, wenn eine Person mehr als 5 Stiche zuviel gemacht
+      hat.</p>
+
+    <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
+
+    <h2>Anmerkungen zum Layout</h2>
+    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+      unten):</p>
+
+    <ul>
+      <li>Die Trumpf-Farbe (als As).</li>
+      <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb, darunter
+        die in seiner Hand. Die gewonnenen Karten k&ouml;nnen durch Anklicken
+        betrachtet werden; ein Rechts-Klick erm&ouml;glicht zu&auml;tzlich
+        sortieren.</li>
+      <li>In der n&auml;chsten Reihe befindet sich der Stapel der gespielten
+        Karten.</li>
+      <li>In der letzten Reihe sind die Karten von Computer-Spieler 1 und 2.</li>
+    </ul>
+
+    <hr size=2 noshade>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td><a href="Røvhult.html.de">Vorherige</a><br>(R&oslash;vhult)</td>
+        <td><a href="CardCol.html.de">&Uuml;berblick</a></td>
+        <td><a href="Twopart.html.de">N&auml;chste</a><br>(Twopart)</td>
+      </tr>
+    </table>
+  </body>
+</html>

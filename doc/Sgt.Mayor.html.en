@@ -1,0 +1,103 @@
+<!-- -*-HTML-*- -->
+<!-- $Id$ -->
+
+<!--
+  Copyright (C) 2004 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//ES"
+        "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <title>Sgt. Mayor - Get your ticks or regret it</title>
+    <meta name="description" content="Documentation of the Sgt. Mayor cardgame">
+    <meta name="keywords" content="Documentation, Docu, Sgt. Mayor; game, card, cardgame">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2004-04-18">
+    <meta name="DC.Rights" content="Copyright (C) 2004, distributed under the GNU Free Documentation License">
+  </head>
+
+  <body>
+    <h1 align="center">Sgt. Mayor</h1>
+    <hr size=2>
+
+    <p>Sgt. Mayor is an english cardgame - or at least I learned it from two
+      english people (or actually from Ver&oacute;nica (who is not exactly
+      english, but learned it herselve from those two english. But who cares
+      ...)).</p>
+
+    <p>The game is played by only 3 persons, who each get 17 carts. The
+      missing 52th can be exchanged from the person owing the 2 of spades.</p>
+
+    <p>The players have to get 9, 5 and 3 ticks respectively. It starts the
+      player needing to get 9 ticks by selecting the colour of the trumps
+      (should this be spades, can the player which previously exchanged the
+      two of spades change this card again against any other). Then the
+      actual game starts according to the following rules:</p>
+
+    <p>It starts the player needingt to get 9 ticks.</p>
+
+    <p>Each turn can be started by any colour. Then you must stick with this
+      colour; or, if a player doesn't have any card of this colour, play any
+      colour (be it a trump or not).</p>
+
+    <p>The played stapel wins the player having played the highest card (of
+      the colour of the first played card or with the highest trump). The
+      winner starts the next round.</p>
+
+    <p>The difference between the made and the proposed ticks is important in
+      the next round. The or those player having too much ticks can give this
+      difference of any (usually bad) cards to those having too less ticks.
+      Those people must return their heighest cards of these colours (or - if
+      they shouldn't have cards with that colour - any (even bad) card).</p>
+
+    <p>The next round starts the player which before needed to get 5 ticks.
+      Now he must get 9 ticks.</p>
+
+    <p>The game ends, if one persons gets more than 5 ticks too much.</p>
+
+    <p>The status line gives some information about what's going on!</p>
+
+    <h2>Note to the layout</h2>
+    <p>After starting a game you have (from left to right and from top to
+      bottom):</p>
+
+    <ul>
+      <li>A card (an ace) indicating the special colour.</li>
+      <li>The cards of the human player. The won cards (above) become visible,
+        if they are clicked into; right-clicking allows to sort them.</li>
+      <li>The played pile.</li>
+      <li>In the last line there are computer player 1 and 2</li>
+    </ul>
+
+    <hr size=2 noshade>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td><a href="Røvhult.html.en">Previous</a><br>(R&oslash;vhult)</td>
+        <td><a href="CardCol.html.en">Cardgames</a></td>
+        <td><a href="Twopart.html.en">Next</a><br>(Twopart)</td>
+      </tr>
+    </table>
+  </body>
+</html>
