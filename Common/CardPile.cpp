@@ -61,20 +61,25 @@ void CardPile::setTopCard (CardWidget* newCard, bool cardVisible) {
    pack_start (*newCard, false);
    if ((style > NORMAL) && cards.size ()) {
       CardWidget* card (cards[cards.size () - 1]); Check3 (card);
-      card->set_usize (card->width (), style == COMPRESSED ? 5 : 1);
+      card->set_usize (-1, style == COMPRESSED ? 15 : 1);
    } 
    cards.push_back (newCard);
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Sets the top card of the pile
-//Parameters: new: New top-card
-//            cardVisible: Flag, if the card is visible (or just back is shown)
+//Purpose   : Returns and removes the top card of the pile
+//Returns   : CardWidget*: Pointer to (removed) card
 /*--------------------------------------------------------------------------*/
 CardWidget* CardPile::removeTopCard () {
    TRACE5 ("CardPile::removeTopCard () - New size: " << cards.size () - 1);
 
    Check3 (cards.size () > 0);
+   CardWidget* pCard (cards[cards.size () - 1]);
    remove (*cards[cards.size () - 1]);
    cards.pop_back ();
+
+   if (cards.size ())
+      cards[cards.size () - 1] ->set_usize (-1, 96);
+
+   return pCard;
 }
