@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.4 ($Revision$)\n"
-"POT-Creation-Date: 2003-07-05 20:49-0500\n"
+"POT-Creation-Date: 2003-07-08 12:55-0500\n"
 "PO-Revision-Date: 2003-07-05 21:08-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -22,9 +22,9 @@ msgstr ""
 msgid "Played card must be equal or bigger!"
 msgstr ""
 
-#: src/Rovhult.cpp:413 src/Buraco.cpp:623 src/Buraco.cpp:691
-#: src/Buraco.cpp:933 src/Buraco.cpp:953 src/Buraco.cpp:965 src/Buraco.cpp:982
-#: src/Buraco.cpp:993
+#: src/Rovhult.cpp:413 src/Buraco.cpp:637 src/Buraco.cpp:705
+#: src/Buraco.cpp:947 src/Buraco.cpp:967 src/Buraco.cpp:979 src/Buraco.cpp:999
+#: src/Buraco.cpp:1008
 msgid "Invalid move"
 msgstr ""
 
@@ -92,15 +92,15 @@ msgid ""
 "Reason: %2"
 msgstr ""
 
-#: Common/Game.cpp:221 Common/Game.cpp:232
+#: Common/Game.cpp:224 Common/Game.cpp:235
 msgid "Turn of %1"
 msgstr ""
 
-#: Common/Game.cpp:315
+#: Common/Game.cpp:318
 msgid "Sort by number"
 msgstr ""
 
-#: Common/Game.cpp:318
+#: Common/Game.cpp:321
 msgid "Sort by colour"
 msgstr ""
 
@@ -251,55 +251,54 @@ msgstr ""
 msgid "User canceled"
 msgstr ""
 
-#: src/CardCol.cpp:1047
+#: src/CardCol.cpp:1048
 msgid "Loading cardimages ..."
 msgstr ""
 
-#: src/CardCol.cpp:1061
+#: src/CardCol.cpp:1062
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr ""
 
-#: src/CardCol.cpp:1105
+#: src/CardCol.cpp:1106
 msgid ""
 "Collection of cardgames\n"
 "\n"
 "Usage: "
 msgstr ""
 
-#: src/CardCol.cpp:1106
+#: src/CardCol.cpp:1107
 msgid ""
 " [OPTIONS]\n"
 "\n"
 msgstr ""
 
-#: src/CardCol.cpp:1108
+#: src/CardCol.cpp:1109
 msgid "[GAME] Select game to start (default: Rovhult)\n"
 msgstr "[GAME] Select game to start (default: Røvhult)\n"
 
-#: src/CardCol.cpp:1109
+#: src/CardCol.cpp:1110
 msgid "[FILE] Use file as INI file\n"
 msgstr ""
 
-#: src/CardCol.cpp:1110
+#: src/CardCol.cpp:1111
 msgid "[NAME] Browser to use to display the help\n"
 msgstr ""
 
-#: src/CardCol.cpp:1111
+#: src/CardCol.cpp:1112
 msgid "[DIR] Directory to search for help\n"
 msgstr ""
 
-#: src/CardCol.cpp:1112
+#: src/CardCol.cpp:1113
 msgid "Output version information and exit\n"
 msgstr ""
 
-#: src/CardCol.cpp:1113
+#: src/CardCol.cpp:1114
 msgid ""
 "Displays this help and exit\n"
 "\n"
 msgstr ""
 
-#: src/CardCol.cpp:1116
-#, fuzzy
+#: src/CardCol.cpp:1117
 msgid ""
 "Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco or "
 "the\n"
@@ -313,39 +312,39 @@ msgstr ""
 "The INI file can have the following entries:\n"
 "\n"
 
-#: src/CardCol.cpp:1149
+#: src/CardCol.cpp:1150
 msgid "-warning: Invalid game type `%1'"
 msgstr ""
 
-#: src/CardCol.cpp:1155
+#: src/CardCol.cpp:1156
 msgid "-warning: No game specified! Ignoring option `g'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1163
+#: src/CardCol.cpp:1164
 msgid "-warning: No directory specified! Ignoring option `d'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1171
+#: src/CardCol.cpp:1172
 msgid "-warning: No browser specified! Ignoring option `b'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1179
+#: src/CardCol.cpp:1180
 msgid "-warning: No file specified! Ignoring option `f'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1226
+#: src/CardCol.cpp:1227
 msgid "Human"
 msgstr ""
 
-#: src/CardCol.cpp:1227
+#: src/CardCol.cpp:1228
 msgid "Player 1"
 msgstr ""
 
-#: src/CardCol.cpp:1228
+#: src/CardCol.cpp:1229
 msgid "Player 2"
 msgstr ""
 
-#: src/CardCol.cpp:1229
+#: src/CardCol.cpp:1230
 msgid "Player 3"
 msgstr ""
 
@@ -353,7 +352,7 @@ msgstr ""
 msgid "Select 3 cards to exchange with %1"
 msgstr ""
 
-#: src/Hearts.cpp:378 src/Buraco.cpp:1475
+#: src/Hearts.cpp:378 src/Buraco.cpp:1492
 msgid "Round ended"
 msgstr ""
 
@@ -385,58 +384,58 @@ msgstr ""
 msgid "Score"
 msgstr ""
 
-#: src/Buraco.cpp:62
+#: src/Buraco.cpp:60
 msgid "New pile"
 msgstr ""
 
-#: src/Buraco.cpp:489
+#: src/Buraco.cpp:503
 msgid ""
 "You can sort the cards in your hand with drag and drop or put them on the "
 "table - click card to dump to end turn"
 msgstr ""
 
-#: src/Buraco.cpp:621
+#: src/Buraco.cpp:635
 msgid "Every pile on the table must have at least 3 cards!"
 msgstr ""
 
-#: src/Buraco.cpp:688
+#: src/Buraco.cpp:702
 msgid "You need a fitting pair to pick up the pile of dumped cards!"
 msgstr ""
 
-#: src/Buraco.cpp:931
+#: src/Buraco.cpp:945
 msgid "You need to fill up other piles first!"
 msgstr ""
 
-#: src/Buraco.cpp:950 src/Buraco.cpp:991
+#: src/Buraco.cpp:964 src/Buraco.cpp:997
 msgid "You can't end the game (there's no \"cerrado\")!"
 msgstr ""
 
-#: src/Buraco.cpp:951
+#: src/Buraco.cpp:965
 msgid "Not enough cards to make new pile!"
 msgstr ""
 
-#: src/Buraco.cpp:963
+#: src/Buraco.cpp:977
 msgid "There are no cards to make three of a kind!"
 msgstr ""
 
-#: src/Buraco.cpp:980
+#: src/Buraco.cpp:1006
 msgid "This card does not fit on that pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1141
+#: src/Buraco.cpp:1156
 msgid "%1 picked up the pile with the dumped cards"
 msgstr ""
 
-#: src/Buraco.cpp:1285
+#: src/Buraco.cpp:1301
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr ""
 
-#: src/Buraco.cpp:1432
+#: src/Buraco.cpp:1449
 msgid ""
 "Team %1\n"
 "%2/%3"
 msgstr ""
 
-#: src/Buraco.cpp:1481
+#: src/Buraco.cpp:1498
 msgid "Game ended; Team %1 won"
 msgstr ""
