@@ -320,6 +320,10 @@ void Hearts::cardSelected (unsigned int iCard) {
                   exchangeCards ();
                   startPlaying ();
                }
+               else {
+                  status.pop ();
+                  status.push (_("Waiting for other player to exchange their cards ..."));
+               }
             }
             disableHuman ();
             return;
@@ -353,7 +357,8 @@ void Hearts::startPlaying () {
 
    setNextPlayer (nextPlayer);
    ConnectionMgr& cmgr (getConnectionMgr ());
-   if ((cmgr.getMode () == ConnectionMgr::NONE)
+   if (((cmgr.getMode () == ConnectionMgr::NONE)
+        && nextPlayer)
        || ((cmgr.getMode () == ConnectionMgr::SERVER)
            && (nextPlayer > getConnectionMgr ().getClients ().size ())))
       flipCards2Play (players[nextPlayer].hand, pos1Play = 0, pos2Play = 0);
