@@ -32,6 +32,7 @@
 #include <gtk/gtkdnd.h>
 
 #include <gtkmm/statusbar.h>
+#include <gtkmm/messagedialog.h>
 
 #define CHECK 9
 #define TRACELEVEL 9
@@ -84,15 +85,15 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    table.pack_start (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
    for (unsigned int i (0); i < (sizeof (piles) / sizeof (piles[0])); ++i) {
-      piles[i].set_size_request (-1, height + 5);
+      piles[i].set_size_request (-1, height);
       piles[i].show ();
       table.pack_start (piles[i], Gtk::PACK_EXPAND_WIDGET, 5);
    }
 
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      attach (hands[i], (i << 2) - 4, (i << 2) - 2, 3, 4,
+      attach (hands[i], (i << 2) - 4, (i << 2), 3, 4,
               Gtk::EXPAND, Gtk::SHRINK, 5, 5);
-      attach (names[i], (i << 2) - 4, (i << 2) - 2, 4, 5,
+      attach (names[i], (i << 2) - 4, (i << 2), 4, 5,
               Gtk::EXPAND, Gtk::SHRINK, 0);
    }
    hands[0].setStyle (ICardPile::COMPRESSED);
@@ -100,10 +101,10 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Attach widgets");
-   attach (hands[0], 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
-   attach (names[0], 3, 10, 1, 2, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
+   attach (hands[0], 3, 12, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
+   attach (names[0], 3, 12, 1, 2, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
    attach (staple, 0, 1, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 5);
-   attach (scrlTable, 0, 10, 2, 3, Gtk::EXPAND | Gtk::FILL,
+   attach (scrlTable, 0, 12, 2, 3, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
 
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
@@ -140,7 +141,7 @@ void Machiavelli::start () {
    if (randomizeCardsToPile (staple)) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
           for (unsigned int j (0); j < 7; ++j)
-             hands[(i - posServer) & 0x3].setTopCard (staple.removeTopCard ());
+             hands[(i - posServer) & 0x3].append (staple.removeTopCard ());
 
           hands[i].sortByColour ();
       }
@@ -156,7 +157,7 @@ void Machiavelli::start () {
 
       // Set random startplayer (if not already set)
       if (startPlayer == -1U)
-         startPlayer = 0; // TODO: Set to: rand () & 0x3;
+         startPlayer = rand () & 0x3;
       setStartPlayer ();
    }
 }
@@ -369,6 +370,7 @@ void Machiavelli::setStartPlayer () {
       }
    }
 
+   hands[startPlayer].append (staple.removeTopCard ());
    displayTurn (startPlayer++);
    startPlayer &= 0x3;
    makeNextMoves ();
@@ -632,8 +634,6 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
 
       // Find row where to create new pile
       for (unsigned int i (1); i < (sizeof (piles) / sizeof (piles[0])); ++i) {
-         iPile += piles[i].children ().size ();
-
          GtkRequisition req1, req2;
          piles[i].size_request (&req1);
          TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Width: " << req1.width);
@@ -643,21 +643,31 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
             iRow = i;
       }
 
+      iCard = 0;
+      iPile = (iRow << 4) + piles[iRow].children ().size ();
+
       pile = new MachiPile ();
       piles[iRow].pack_start (*pile, Gtk::PACK_SHRINK, 5);
-
       pile->show ();
-      iCard = 0;
-      iPile += (iRow << 4);
    }
    else {
       // Else check pile to use
       Check1 ((iCard >> 12) < (sizeof (piles) / sizeof (piles[0])));
-      iPile = (iCard >> 8) & 0xff;
+      iPile = (iCard >> 8) & 0xf;
       Check1 (iPile < piles[iCard >> 12].children ().size ());
 
       Gtk::Box_Helpers::Child& child (piles[iCard >> 12].children ()[iPile]);
       pile = dynamic_cast<MachiPile*> (child.get_widget ());
+
+      iCard = pile->getPosition4Card (moved);
+      if (iCard == -1U) {
+         context->drag_finish (true, false, time);
+         Gtk::MessageDialog dlg (_("This card does not fit on that pile!"),
+                                 Gtk::MESSAGE_ERROR);
+         dlg.set_title (_("Invalid move"));
+         dlg.run ();
+         return;
+      }
    }
    Check3 (pile);
 
@@ -679,12 +689,12 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    unregisterHandDND (moved);
 
    // Insert card into pile and register it for DND
-   iCard = pile->getPosition4Card (moved);
+   TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Insert to: " << iPile);
    Check3 (iCard <= pile->size ());
    pile->insert (moved, iCard);
    registerTableDND (moved, (iPile << 8) + iCard);
    if (iCard < (pile->size () - 1))
-      registerTableDND (iPile, iCard + 1, pile->size () - 1);
+      registerTableDND ((iPile << 8), iCard + 1, pile->size () - 1);
 
    // Player has won, if he does not have any cards left
    if (hands[0].empty ()) {
