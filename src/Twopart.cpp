@@ -461,6 +461,20 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
          }
       }
 
+      // Try to get the cards if you don't have any close to the end of part 1
+      // and you are the last or the pile really sucks and just one is left
+      // (of course only if there are no doubles).
+      if (!players[player].won.numberOfCards ()
+          && (staple.numberOfCards () < 13)
+          && (posMaxEqual == -1)
+          && (((!(bfPlayers & ~(1 << player)))
+               || (!(bfPlayers & ~((1 << player)
+                                   | (1 << findNextPlayer ((player + 1) & 0x3))))
+                   && (points < CardWidget::SIX)))
+              && (maxNr < players[player].hand.at
+                  (players[player].hand.numberOfCards () - 1).number ())))
+         return end = start = 2;
+
       // We don't want the pile; so try not to get it:
       TRACE5 ("Twopart::findPos2Play (unsigned int) - Avoiding pile");
       start = ((players[player].hand.numberOfCards () > 1)
@@ -504,12 +518,20 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
 
             if (!start)
                end = findEndOfSerie (player, 0);
-            else
-               return ((start == players[player].hand.numberOfCards ())
-                       ? -1 : (int)(end = start));
+            else {
+               end = players[player].hand.numberOfCards () - 1;
+               // Take up pile if no trump was found or if only a "small amount"
+               // of trumps are left (like less than 4 or less than the half)
+               // and you are not the last player
+               return (((start == players[player].hand.numberOfCards ())
+                        || ((bfPlayers & ~(1 << player))
+                            && (((end - start) < 4)
+                                || (start < (end - start)))))
+                       ? (end = (unsigned int)-1) : (end = start));
+            }
          }
          else
-            return -1;
+            return end = (unsigned int)-1;
       }
       else
          // Card was found; now search for last card to play (only if not trump
@@ -764,7 +786,7 @@ void Twopart::analyzeLastPlayed (unsigned int startPos, unsigned int cards,
 //Parameters: player: Number of player to start with
 //Returns   : int: Number of next player (or -1)
 /*--------------------------------------------------------------------------*/
-int Twopart::findNextPlayerWithCards (unsigned int player) {
+int Twopart::findNextPlayerWithCards (unsigned int player) const {
    unsigned int i (player);
    do {
       i = (i + 1) & 0x3;
@@ -781,7 +803,7 @@ int Twopart::findNextPlayerWithCards (unsigned int player) {
 //Parameters: player: Number of player to start with
 //Returns   : int: Number of next player (or -1)
 /*--------------------------------------------------------------------------*/
-int Twopart::findNextPlayer (unsigned int player) {
+int Twopart::findNextPlayer (unsigned int player) const {
    if (!bfPlayers)                                // No players left: Return -1
       return -1;
 
