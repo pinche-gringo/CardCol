@@ -261,7 +261,8 @@ int Buraco::makeMove (unsigned int player) {
 /// \returns \c ID for target (32 Bit: Pile << 16 + Position)
    TRACE2 ("Buraco::showCardsToPlay (unsigned int) - " << player << " ("
            << gStatus.startGame << '/' << gStatus.startTurn << ')');
-   TRACE2 ("Buraco::showCardsToPlay (unsigned int) - " << player);
+
+   if (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco)
        == (player >> 1))
       ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = 0x3;
 
@@ -279,7 +280,8 @@ int Buraco::makeMove (unsigned int player) {
              || getFittingCard (playerPile, dumpedCard) != playerPile.end ())
           : (!isJoker (dumpedCard)
                  || reserve[player & 1].size ()
-             && ((points[player & 1] > 100) || !reserve[player & 1].empty ()
+                 || (dumped.size () + playerPile.size () > 4)))) {
+         if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
                  || (dumped.size () + playerPile.size () > 3)))) {
          if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
             msg << "Play=" << dumpedCard.id () << ";Target=3";
@@ -299,6 +301,10 @@ int Buraco::makeMove (unsigned int player) {
             unsigned int nrs (playerPile.getSeries (dumpedCard, aPos, aOrder,
                                                     &cardDistance));
             unsigned int nrs (getSeries (playerPile, dumpedCard, aPos, aOrder));
+            Check3 ((nrs >= 3) || (aPos.size () >= 3));
+
+            if (nrs > 7)
+               nrs = 7;
                            playerPile.sortColourSerie (aPos, aOrder))
                         : playerPile.find (dumpedCard, compByNumberWithJokers));
                            sortColourSerie (playerPile, aPos, aOrder))
@@ -480,14 +486,16 @@ unsigned int Buraco::sortColourSerie (ICardPile& playerPile,
           TRACE9 ("Buraco::sortColourSeries (...) - Moving " << v->second
                   << " to end " << ((*p < 2) ? *p : 0));
           Check3 ((p - aOrder.rbegin ()) >= 0);
-          // Move the card to the end of the staple; If it belongs
-          // before the first card (which can only happen with aces)
-          // move it before the other cards.
+          // Move the card to the end of the staple; If it belongs before the
+          // first card move it before the other cards.
           playerPile.move (playerPile.size () - pos, v->second);
-          if (*p >= 2)
+          unsigned int oldOrder (*p);
+          if (((p + 1) != aOrder.rend ()) && (*(p + 1) < oldOrder))
              ++pos;
       }
    }
+   TRACE9 ("Buraco::sortColourSeries (...) - Moved "
+           << playerPile.size () - aPos.size () << " cards");
    return playerPile.size () - aPos.size ();
 }
 
@@ -502,6 +510,7 @@ unsigned int Buraco::sortColourSerie (ICardPile& playerPile,
 unsigned int Buraco::getSeries (ICardPile& playerPile, CardWidget& card,
                                 std::map<unsigned int, unsigned int>& aPos,
                                 std::vector<unsigned int>& aOrder) {
+   TRACE3 ("Buraco::getSeries (...) for " << card);
    unsigned int nrs (1);
    unsigned int bCols (0x4);
 
@@ -792,7 +801,8 @@ void Buraco::cardSelected (unsigned int iCard) {
 
    gStatus.startTurn = 1;
    gStatus.startGame = 0;
-   gStatus.startTurn = gStatus.startGame = 0;
+   setNextPlayer (1);
+   displayTurn (1);
    makeNextMoves ();
 }
 
@@ -1768,12 +1778,10 @@ bool Buraco::canGetRidOfCards (unsigned int player) {
    unsigned int piles (0);
    for (ICardPile::const_iterator i (pile.begin ()); i != pile.end (); ++i) {
       if (used[i - pile.begin ()])
-   CardVPile::const_iterator i (pile.begin ());
-   if (isJoker (**i)) {
-      cJokers = 1;
-      used.set (0);
-   }
-   for (++i; i != pile.end (); ++i) {
+         continue;
+
+      if (isJoker (**i)) {
+         used.set (i - pile.begin ());
          ++cJokers;
          continue;
       }
@@ -1782,13 +1790,11 @@ bool Buraco::canGetRidOfCards (unsigned int player) {
       // used: Mark both card as used
       ICardPile::const_iterator o (pile.getFittingCard (**i, i + 1, &cardDistance));
       if ((o != pile.end ()) && !used[o - pile.begin ()]) {
-      if (!used[i - pile.begin ()]
-          && (((*i)->number () == (*(i - 1))->number ())
-              || (((*i)->number () == ((*(i - 1))->number () + 1))
-                  && ((*i)->colour () == (*(i - 1))->colour ())))) {
+      ICardPile::const_iterator o (getFittingCard (pile, **i, i + 1));
+         used.set (i - pile.begin ());
          used.set (o - pile.begin ());
       }
-         used.set (i - pile.begin () - 1);
+   }
 
    TRACE9 ("Buraco::canGetRidOfCards (unsigned int) -  " << used.count ()
            << '/' << hands[player].size () << "; " << cJokers << " Joker for "
@@ -1854,14 +1860,14 @@ ICardPile::const_iterator Buraco::getFittingCard (const ICardPile& pile,
       ++start;
    }
 
-#if TRACELEVEL > 9
+#if TRACELEVEL > 8
    if (start == pile.end ()) {
       TRACE ("Buraco::getFittingCard (const ICardPile&, const CardWidget*,"
              " iterator) - End");
    }
    else {
       TRACE ("Buraco::getFittingCard (const ICardPile&, const CardWidget*,"
-             " iterator) - " << **start);
+             " iterator) - Found " << **start);
    }
 #endif
    return start;
