@@ -54,7 +54,7 @@ class CardgameCollection : public XApplication {
    CardSet& getCards () { return cards; }
    const std::vector<Player*>& getPlayer () const;
    ConnectionMgr& getConnectionMgr () { return cmgr; };
-   Mutex& getClientMutex () { return mxSerMsgs; }
+   Mutex& getClientMutex () { return mxThreadCmd; }
    const unsigned int getPlayerPosition () const { return playerPos; }
 
  private:
@@ -75,8 +75,9 @@ class CardgameCollection : public XApplication {
 
    void* changeCards (void* opt);
    void* loadCards (void*);
-   void userWants2End ();
+   bool restartGame ();
    void startGame ();
+   void doStartGame ();
 
    void changeDecks (const ICarddeckSelectDlg& dialog);
    void changePlayernames ();
@@ -84,6 +85,7 @@ class CardgameCollection : public XApplication {
    void initCommunication ();
    void makePlayer ();
    void* waitForMessages (void*);
+   bool handleGameMessage (char* msg) throw (std::string);
    bool handleErrorMessage (unsigned int player, char* msg);
    bool handleMessage (unsigned int player, char* msg);
    bool showMessage (char* msg);
@@ -103,7 +105,8 @@ class CardgameCollection : public XApplication {
    THRDAPPL* pCommThread;
 
    Options& options;
-   Mutex mxSerMsgs;
+   Mutex mxThreadCmd;
+   Mutex mxGuiCmd;
    ConnectionMgr cmgr;
    std::vector<Player*> aPlayer;
 

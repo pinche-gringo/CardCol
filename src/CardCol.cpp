@@ -707,6 +707,7 @@ CardgameCollection::CardgameCollection (Options& opts)
       CardgameCollection::loadCards (NULL);
    }
 
+   mxGuiCmd.lock ();
    makePlayer ();
 
    if (options.port.size ()) {
@@ -854,7 +855,7 @@ void CardgameCollection::command (int menu) {
          dlg.set_title (PACKAGE);
          if (dlg.run () == Gtk::RESPONSE_YES) {
             restart = true;
-            userWants2End ();
+            restartGame ();
          }
       }
       else {
@@ -881,7 +882,7 @@ void CardgameCollection::command (int menu) {
       dlg.set_title (PACKAGE);
       if (dlg.run () == Gtk::RESPONSE_YES) {
          restart = false;
-         userWants2End ();
+         restartGame ();
       }
       break; }
 
@@ -1104,9 +1105,10 @@ void CardgameCollection::closeDialog (int, const Gtk::Dialog* dlg) {
 //-----------------------------------------------------------------------------
 /// Checks the user-input after asking if he wants to end the game; depending
 /// on the answer either stops or continues
+/// \returns bool: Flag, if the game has already been started
 //-----------------------------------------------------------------------------
-void CardgameCollection::userWants2End () {
-   TRACE8 ("CardgameCollection::userWants2End ()");
+bool CardgameCollection::restartGame () {
+   TRACE8 ("CardgameCollection::restartGame () - Restart: " << restart);
    Check1 (game);
 
    if (game->isRunning ()) {
@@ -1114,20 +1116,24 @@ void CardgameCollection::userWants2End () {
       status.push (_("User canceled"));
 
       if (game->canBeStopped ()) {
+         TRACE9 ("CardgameCollection::restartGame () - Game can be stopped");
          game->stop ();
          if (restart)
             startGame ();
       }
       else {
+         TRACE9 ("CardgameCollection::restartGame () - Delaying stop of game");
          game->end ((options.type == oldGame) ? restart : false);
          if (options.type == oldGame)
             restart = false;
+         return false;
       }
    }
    else {
       restart = false;
       startGame ();
    }
+   return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -1186,11 +1192,12 @@ void CardgameCollection::gameEvents (unsigned int status) {
       apMenus[END]->set_sensitive (false);
       apMenus[CONNECT]->set_sensitive (true);
 
-      if (restart == 1)
+      if (restart == 1) {
          // (Re)start the (new) game, when the event queue is empty (and
          // therefore the old game has ended).
          Glib::signal_idle ().connect
-             (bind_return (slot (*this, &CardgameCollection::startGame), false));
+             (bind_return (slot (*this, &CardgameCollection::doStartGame), false));
+      }
       else if (restart == -1U)
          Glib::signal_idle ().connect
              (bind_return (slot (*this, &CardgameCollection::destroy_), false));
@@ -1228,7 +1235,7 @@ void* CardgameCollection::waitForMessages (void*) {
 
             cmgr.getClients ()[actClient++]->read (input);
          }
-         TRACE7 ("CardgameCollection::waitForMessage (void*) - `" << input <<'\'');
+         TRACE7 ("CardgameCollection::waitForMessage (void*) - `" << input << '\'');
          if (input.empty ()) {
             std::string msg (_("Lost connection to %1!"));
             Check3 (actClient < aPlayer.size ());
@@ -1246,12 +1253,17 @@ void* CardgameCollection::waitForMessages (void*) {
             strcpy (msg, message.c_str ());
 
             TRACE9 ("CardgameCollection::waitForMessages (void*) - Lock (thread)");
-            mxSerMsgs.lock ();      // Wait til last message has been processed
-            mxSerMsgs.unlock ();
+            mxThreadCmd.lock ();    // Wait til last message has been processed
+            mxThreadCmd.unlock ();
+            TRACE9 ("CardgameCollection::waitForMessages (void*) - Perform cmd");
             Glib::signal_idle ().connect
                 (bind (slot (*this, &CardgameCollection::handleMessage),
                        actClient, msg));
-            sleep (0);
+
+            TRACE9 ("CardgameCollection::waitForMessages (void*) - Wait 4 GUI");
+            mxGuiCmd.lock ();
+            mxGuiCmd.unlock ();
+            TRACE9 ("CardgameCollection::waitForMessages (void*) - GUI finsished");
          }
       }
    }
@@ -1276,15 +1288,65 @@ void* CardgameCollection::waitForMessages (void*) {
 }
 
 //----------------------------------------------------------------------------
+/// Handles received game messages; which are send to (re)start a (new) game
+/// \param msg: Received message to handle
+/// \remarks An error message is in the following format:
+///    <pre>  <b>Game</b>=<tt>Name</tt>;
+/// \returns bool: True: Message was a game message and has been processed; else false
+//----------------------------------------------------------------------------
+bool CardgameCollection::handleGameMessage (char* msg) throw (std::string) {
+   TRACE5 ("CardgameCollection::handleGameMessage (char*) - " << msg);
+
+   AttributeParse ap;
+   std::string  nameGame;
+   ATTRIBUTE (ap, std::string, nameGame, "Game");
+
+   try {
+      ap.assignValues (msg);
+   }
+   catch (std::string& error) {
+      return false;
+   }
+
+   games type (CardgameAppl::convertToGameType (nameGame.c_str ()));
+   if (type == NONE) {
+      std::string msg (_("Invalid game type: `%1'"));
+      msg.replace (msg.find ("%1"), 2, nameGame);
+      throw msg;
+   }
+
+   options.type = type;
+   if (game) {
+      restart = true;
+      if (restartGame ())
+         mxThreadCmd.unlock ();
+   }
+   else {
+      startGame ();
+      mxThreadCmd.unlock ();
+   }
+   cmgr.getSocket ()->write ("Error=0");
+   return true;
+}
+
+//----------------------------------------------------------------------------
+/// Starts the game and unlocks a (locked) msg-handling mutex
+//----------------------------------------------------------------------------
+void CardgameCollection::doStartGame () {
+   startGame ();
+   mxThreadCmd.unlock ();
+}
+
+//----------------------------------------------------------------------------
 /// Handles received error messages
 /// \param player: Player sending the message (relative to server)
 /// \param msg: Received message to handle
 /// \remarks An error message is in the following format:
 ///    <pre>  <b>Error</b>=<tt>Number</tt>;<b>Msg</b>="<tt>message</tt>"</pre>
-/// \returns bool: True: Message was error message and has been processed; else false
+/// \returns bool: True: Message was an error message and has been processed; else false
 //----------------------------------------------------------------------------
 bool CardgameCollection::handleErrorMessage (unsigned int player, char* msg) {
-   TRACE5 ("CardgameCollection::handleErrorMessage (char*) - " << msg);
+   TRACE5 ("CardgameCollection::handleErrorMessage (unsigned int, char*) - " << msg);
 
    AttributeParse ap;
    unsigned int error (0);
@@ -1309,8 +1371,9 @@ bool CardgameCollection::handleErrorMessage (unsigned int player, char* msg) {
       }
       return true;
    }
-   catch (std::string& e) { }
-   return false;
+   catch (std::string& e) {
+      return false;
+   }
 }
 
 //----------------------------------------------------------------------------
@@ -1321,57 +1384,44 @@ bool CardgameCollection::handleErrorMessage (unsigned int player, char* msg) {
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
 bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
-   TRACE5 ("CardgameCollection::handleMessage (unsigned int player, char*) - " << msg);
-   mxSerMsgs.lock ();                               // Block message processing
-   TRACE9 ("CardgameCollection::waitForMessages (void*) - Locked (main)");
+   TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - " << msg);
+
+   mxThreadCmd.lock ();                               // Block message processing
+   TRACE9 ("CardgameCollection::handleMessage (unsigned int, char*) - Locked (main)");
+
+   TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - Unlocking GUI");
+   mxGuiCmd.unlock ();
+   mxGuiCmd.lock ();
+   TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - Locking GUI");
 
    bool unlock (true);
-   if (!handleErrorMessage (player, msg)) {
-      try {
-         if (game) {
-            if (!game->handleMessage (player, msg))
+   if (!handleErrorMessage (player, msg))
+      if (handleGameMessage (msg))
+         unlock = false;
+      else {
+         try {
+            if (game && !game->handleMessage (player, msg))
                unlock = false;
          }
-         else {
-            std::string game;
-            if (cmgr.getMode () == ConnectionMgr::SERVER)
-               throw std::string (_("Unexpected message in server mode"));
-
-            AttributeParse ap;
-            ATTRIBUTE (ap, std::string, game, "Game");
-            ap.assignValues (msg);
-
-            games type (CardgameAppl::convertToGameType (game.c_str ()));
-            if (type == NONE) {
-               std::string msg (_("Invalid game type: `%1'"));
-               msg.replace (msg.find ("%1"), 2, game);
-               throw msg;
+         catch (std::string& error) {
+            std::string msg ("Error=99;Msg=\"" + error);
+            msg += '"';
+            try {
+               cmgr.getSocket ()->write (msg);
             }
+            catch (std::string& e) { }
 
-            options.type = type;
-            startGame ();
-            cmgr.getSocket ()->write ("Error=0");
+            Gtk::MessageDialog* dlg (new Gtk::MessageDialog (error, Gtk::MESSAGE_ERROR));
+            dlg->set_title (PACKAGE);
+            dlg->signal_response ().connect
+                (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
+            dlg->show ();
          }
       }
-      catch (std::string& error) {
-         std::string msg ("Error=99;Msg=\"" + error);
-         msg += '"';
-         try {
-            cmgr.getSocket ()->write (msg);
-         }
-         catch (std::string& e) { }
 
-         Gtk::MessageDialog* dlg (new Gtk::MessageDialog (error, Gtk::MESSAGE_ERROR));
-         dlg->set_title (PACKAGE);
-         dlg->signal_response ().connect
-             (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
-         dlg->show ();
-      }
-   }
-   if (unlock) {
-      TRACE9 ("CardgameCollection::waitForMessages (void*) - Unlock (main)");
-      mxSerMsgs.unlock ();
-   }
+   TRACE9 ("CardgameCollection::handleMessages (unsigned int, char*) - Unlock (main): " << int(unlock));
+   if (unlock)
+      mxThreadCmd.unlock ();
 
    delete [] msg;
    return false;
