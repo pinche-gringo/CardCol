@@ -66,13 +66,15 @@
     <p>Both the program and the documentation have been written by Markus
       Schwab.</p>
 
+    <p>The carddecks are very likely borrowed from the KDE cardgames.</p>
+
     <h2>Games</h2>
     <p>Currently there are the following games:</p>
 
     <table>
       <!--#exec cmd='
       /usr/bin/awk \'/title.*title/ \
-      { if (FILENAME !~ /CardCol\..*/) \
+      { if (FILENAME !~ /index\..*/) \
       { sub (/<\/title>/, "")
       sub (/<title>/, "")
       $1 = "<tr><td>&nbsp;&nbsp;<a href=\"" FILENAME "\">" $1 "</a></td><td>"
@@ -86,6 +88,10 @@
 
     <p>Thanks to Ann-Karin, Arne, B&aring;rn and Solveing for introducing
       me to <tt>Twopart</tt>.</p>
+
+    <p>A big hug to Ingrid del Carmen and Jonathan for sharing all the tipps
+      and tricks Buraco has to offer with me. Not to mention the hours we
+      spent playing it.</p>
 
     <p>Hearts is distributed along with Windows 98 (and maybe other versions).</p>
 
