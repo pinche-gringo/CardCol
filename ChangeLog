@@ -1,3 +1,144 @@
+2002-07-19  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog: Actualized
+
+	* po/POTFILES.in: CardImgs.cpp + CardPile.h added
+
+	* po/de.po, po/en.po, po/es.po: Revisited for V0.1.01
+
+	* Common/CardWidget.cpp, Common/CardWidget.h:
+	  *visible methods renamed to showFace; Cards are displayed without border
+
+	* Common/CardPile.cpp, Common/CardPile.h:
+	  *visible methods renamed to showFace
+
+	* configure.in:
+	  Version to 0.1.01; MICRO_VERSION replaced with PRG_RELEASE
+
+	* Rovhult/Rovhult.h:
+	  Trace in makeComputerMoves
+
+	* Rovhult/Rovhult.cpp:
+	  Computer player works!!! Traces improved
+
+2002-07-18  Markus Schwab  <g17m0@lycos.com>
+
+	* acconfig.h:
+	  Replaced MICRO_VERSION with PRG_RELEASE; ngettext defined (if no libintl)
+
+	* README: First 'real' version
+
+	* NEWS: Changes for V0.1.01 documented
+
+	* AUTHORS: Designers of cards added
+
+	* Rovhult/Rovhult.h: Methods *2play renamed to *2Play
+	  Prototypes changed; Size of window changed
+
+	* Common/CardPile.h: Show-option QUITE_COMPRESSED added
+
+	* Common/CardPile.cpp: Fixed bug in insert method
+
+	* Rovhult/Rovhult.cpp:
+	  - Plays high cards, if all lower cards are special
+	  - New menu to enable debug (plays with visible cards)
+	  - Computer player has "quite compressed" cards in hand
+	  - Sanity check for timer for computer moves (exists if still in old move)
+	  - Display cards which are going to be played
+	  - Reuseable functions extracted (cardAtPos, numberOfEqualTopCards, ...)
+	  - Fixes within computer player
+	  - Fixed bug in playing from pile (still doesn't work, though)
+	  - Staple of played cards is displayed VERY_COMPRESSED
+	  - Finally (*really*!) fixed mysterious trap in event handlers (timing problem)
+	  - Improvments in code reusing
+	  - If human plays hidden card from pile, card is displayed before played
+	  - Further fixes playing from pile for computer player (we're getting close)
+	  - Minor optimizations
+
+	* Rovhult/Rovhult.h: Tooltips removed; New menu 'debug'; New prottypes
+
+2002-07-17  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.cpp, Common/CardPile.h:
+	  Unused access-flag removed; show-option (back, face, ?) added; Tooltip in class
+
+2002-06-30  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp: Various bugfixes for computer-player
+
+2002-06-29  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h:
+	  Fixes; Staples display number of cards as tooltip
+
+	* Common/CardPile.cpp: insertSorted-method added
+
+	* Common/CardPile.h:
+	  insertSorted-method added; Specialication of piles with number as tooltip
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h:
+	  Using timer to play from pile; Computer playes from pile; Fixes
+
+2002-06-28  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h: Using timer to perform computer-moves
+
+2002-05-31  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.cpp:
+	  DEBUGLEVEL renamed to TRACELEVEL; Style renamed to PileStyle
+
+	* Common/CardWidget.h: (color) Minor change
+
+	* Common/CardWidget.cpp: Fixed operator<<
+
+	* Common/CardPile.cpp, Common/CardPile.h:
+	  New template CardInfoPile<t> which displays cardnumber as tooltip
+
+	* Rovhult/Rovhult.cpp:
+	  Computerplayer playes special cards intelligently
+
+2002-05-28  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h:
+	  Computer considers special cards while playing; Traces improved
+
+	* Common/CardWidget.cpp: Print of not-number cards fixed
+
+	* Common/CardPile.cpp, Common/CardPile.h: find-Methods added; Traces improved
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h: First draft of computer player
+
+	* Common/CardWidget.cpp, Common/CardWidget.h: Operator<< added
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h:
+	  Fixed sizes of piles (to avoid redrawing); Player-data put into one struct
+
+2002-05-27  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardWidget.h: Methods to query size of pixmap added
+
+	* Common/CardPile.cpp: Declaration of (unused) cardsize removed
+
+	* Common/CardPile.h: Resize (to full size) according to size of card-picture
+
+2002-05-26  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp: Fixed bug picking up pile; Traces added
+
+2002-05-25  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp:
+	  Fixed ugly wrong sequence in add/remove when played from (invisible) staple
+
+2002-05-23  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.h: Method topCardVisible added
+
+	* Common/CardWidget.h: Method visible added
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h: Thread-safety increased
+
 2002-05-21  Markus Schwab  <g17m0@lycos.com>
 
 	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h:
