@@ -26,16 +26,23 @@
 
 #include <cardgames-cfg.h>
 
+#include <cstdlib>
+
 #include <bitset>
+#include <sstream>
 
 #include <gtk/gtkdnd.h>
 
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/messagedialog.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
+#include <ConnMgr.h>
 #include <ANumeric.h>
+#include <Tokenize.h>
 #include <ScoreDlg.h>
 #include <ComputerPlayer.h>
 
@@ -60,7 +67,7 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10)
                 unsigned int posPlayer, Mutex& mxSerialize)
      , staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK)
-     , startPlayer (0)
+     , startPlayer (-1U)
      , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
      , newPile (_("New pile")), target (-1U)
@@ -262,37 +269,43 @@ int Buraco::makeMove (unsigned int player) {
    if (gStatus.startTurn) {
       gStatus.startTurn = 0;
 
+      CardWidget& dumpedCard (dumped.getTopCard ());
 
       ICardPile& playerPile (hands[player]);
+      if (gStatus.startGame
           ? (isJoker (dumpedCard)
-      // Check if there are equal cards as the last dumped one
-      int start (playerPile.find (dumped.getTopCard ().number ()));
-      int end ((start == -1) ? -1 : playerPile.findLastEqual (start));
-      Check3 ((start != -1) ? (start <= end) : (start == end));
-      Check3 ((end == -1) || (end < playerPile.size ()));
-
-      if ((!isJoker (dumped.getTopCard ())) && ((end - start) >= 1)
-          && ((points[player & 1] > 100) || !reserve[player & 1].empty ()
-              || (dumped.size () + playerPile.size () > 3))) {
-         CardVPile& pile (makeNewPile (player & 1));         // Create new pile
-         pile.setTopCard (dumped.removeTopCard ());      // with picked up card
-         movePile (pile, playerPile, start, end);
-            std::map<unsigned int, unsigned int> aPos;
-         if (dumped.size ())
-            movePile (playerPile, dumped);
+      if (gStatus.startGame) {
+         gStatus.startGame = 0;
+         // Take dumped at start of game, if its a joker or one has a
+         // matching card
+         Check2 (dumped.size () == 1);
+         if (isJoker (dumpedCard)
+             || getFittingCard (playerPile, dumpedCard) != playerPile.end ())
+            playerPile.insertSorted (dumped.removeTopCard (), compByNumberWithJokers);
+      }
+      else
+         // Check if there are equal cards as the last dumped one
+         if (!isJoker (dumpedCard)
+                 || reserve[player & 1].size ()
+             && ((points[player & 1] > 100) || !reserve[player & 1].empty ()
+                 || (dumped.size () + playerPile.size () > 3))) {
+         movePile (playerPile, dumped);
          playerPile.sort (compByNumberWithJokers);
+            std::map<unsigned int, unsigned int> aPos;
+         std::map<unsigned int, unsigned int> aPos;
+         std::vector<unsigned int> aOrder;
+         unsigned int nrs (getSeries (playerPile, dumpedCard, aPos, aOrder));
+         if (nrs < aPos.size ())
+            pos1Play = sortColourSerie (playerPile, aPos, aOrder);
+
+         CardVPile& pile (makeNewPile (player & 1));
+         flipCards2Play (playerPile, pos1Play, pos2Play = pos1Play + nrs - 1);
+         return (tablePiles[player & 1].size () - 1) << 16;
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
             // Send played card to all clients (if any)
          dumped.getTopCard ().show ();
 
-         // TODO: Implent analysis of the dumped card
-         playerPile.insertSorted
-             (((gStatus.startGame) && isJoker (dumped.getTopCard ()))
-              ? dumped.removeTopCard () : staple.removeTopCard (),
-              compByNumberWithJokers);
       gStatus.startGame = 0;
-
-      gStatus.startTurn = gStatus.startGame = 0;
    if (target == -1U)
       target = executeMove (player);
    return executeMove (player);
@@ -323,62 +336,10 @@ int Buraco::executeMove (unsigned int player) {
       TRACE8 ("Buraco::executeMove (unsigned int) - Analyzing card " << *playerPile[i]);
 
       TRACE8 ("Buraco::executeMove (player) - Analyzing card " << *playerPile[i]);
-      unsigned int nrs (1);
-      unsigned int bCols (0x4);
       std::vector<unsigned int> aOrder;
       unsigned int nrs (playerPile.getSeries (*playerPile[i], aPos, aOrder,
                                               &cardDistance));
-      for (ICardPile::const_iterator p (playerPile.begin ());
-           ((p = getFittingCard (playerPile, *playerPile[i], p)) 
-             != playerPile.end ()); ++p) {
-         if (*p == playerPile[i]) {
-            aPos[2] = i;
-            aOrder.push_back (2);
-         }
-         else {
-            int diff (cardDistance (**p, *playerPile[i]));
-            TRACE9 ("Buraco::executeMove (unsigned int) - " << **p
-                    << " differs " << diff);
-            // Only consider series of colours for cards lower than ace, to
-            // avoid the problem with 3-K-A of one colour (the ace should
-            // haven been found from the 3 anyway).
-            if (diff) {
-               if (playerPile[i]->number () != CardWidget::ACE) {
-                  diff += 2;
-                  Check3 (diff <= 4);
-                  if (!(bCols & (1 << diff))) {
-                     Check3 (aPos.find (diff) == aPos.end ());
-                     bCols |= (1 << diff);
-                     aPos[diff] = p - playerPile.begin ();
-                     aOrder.push_back (diff);
-                     if (aPos.size () == 7)
-                         break;
-                  }
-               }
-            }
-            else
-               if (++nrs == 7)
-                  break;
-         }
-      }
-
-      // Check if the series of colors is a valid one
-      TRACE9 ("Buraco::executeMove (unsigned int) - Serie: " << std::hex
-              << bCols << std::dec);
-      Check3 (aPos.find (2) != aPos.end ());
-      Check3 (bCols & 0x4);
-
-      // Delete cards having no direct access to the analyzed one
-      if ((bCols & 0x3) == 0x1) {
-         Check3 (aPos.find (0) != aPos.end ());
-         Check3 (aPos.find (1) == aPos.end ());
-         aPos.erase (aPos.find (0));
-      }
-      if ((bCols & 0x18) == 0x10) {
-         Check3 (aPos.find (4) != aPos.end ());
-         Check3 (aPos.find (3) == aPos.end ());
-         aPos.erase (aPos.find (4));
-      }
+      unsigned int nrs (getSeries (playerPile, *playerPile[i], aPos, aOrder));
       //   - Play jokers if there are at least 5 and the team has still the
       //     reserve and the other team has no burraco and the reserve
       //   - Play the bigger of the found matching cards, if there are >= 3
@@ -389,26 +350,8 @@ int Buraco::executeMove (unsigned int player) {
                  || (nrs > 6)
              && (points[(player + 1) & 1] < 100))
          if (nrs < aPos.size ()) {
-          if (nrs < aPos.size ()) {
-             unsigned int pos (1);
-             for (std::vector<unsigned int>::reverse_iterator p (aOrder.rbegin ());
-                  p != aOrder.rend (); ++p) {
-                std::map<unsigned int, unsigned int>::const_iterator v;
-                if ((v = aPos.find (*p)) != aPos.end ()) {
-                   TRACE9 ("Buraco::executeMove (unsigned int) - Moving "
-                           << v->second << " to end "
-                           << ((*p < 2) ? *p : 0));
-                   Check3 ((p - aOrder.rbegin ()) >= 0);
-                   // Move the card to the end of the staple; If it belongs
-                   // before the first card (which can only happen with aces)
-                   // move it before the other cards.
-                   playerPile.move (playerPile.size () - pos, v->second);
-                   if (*p >= 2)
-                      ++pos;
-                }
-             }
-             i = playerPile.size () - (nrs = aPos.size ());
-          }
+         if (nrs < aPos.size ())
+            i = sortColourSerie (playerPile, aPos, aOrder);
          if (!unfinishedMonoPiles[player & 1]
          if (canDumpCards (player, nrs) || (nrs-- > 3)) {
             pos1Play = firstPos;
@@ -494,6 +437,101 @@ int Buraco::executeMove (unsigned int player) {
    return 0xffff << 16;
 //-----------------------------------------------------------------------------
 /// Starts the game by dealing the cards
+//----------------------------------------------------------------------------
+/// Sorts a series of matching cards to the end of the pile
+/// \param playerPile: Pile to inspect
+/// \param aPos: Map holding the positions of the cards in the pile
+/// \param aOrder: Sorted order of the cards
+/// \returns unsigned int: Position of start of sorted serie
+//----------------------------------------------------------------------------
+unsigned int Buraco::sortColourSerie (ICardPile& playerPile,
+                                      std::map<unsigned int, unsigned int>& aPos,
+                                      std::vector<unsigned int>& aOrder) {
+   unsigned int pos (1);
+   for (std::vector<unsigned int>::reverse_iterator p (aOrder.rbegin ());
+        p != aOrder.rend (); ++p) {
+      std::map<unsigned int, unsigned int>::const_iterator v;
+      if ((v = aPos.find (*p)) != aPos.end ()) {
+          TRACE9 ("Buraco::sortColourSeries (...) - Moving " << v->second
+                  << " to end " << ((*p < 2) ? *p : 0));
+          Check3 ((p - aOrder.rbegin ()) >= 0);
+          // Move the card to the end of the staple; If it belongs
+          // before the first card (which can only happen with aces)
+          // move it before the other cards.
+          playerPile.move (playerPile.size () - pos, v->second);
+          if (*p >= 2)
+             ++pos;
+      }
+   }
+   return playerPile.size () - aPos.size ();
+}
+
+//----------------------------------------------------------------------------
+/// Gets a series of matching cards
+/// \param playerPile: Pile to inspect
+/// \param card: Card to compare
+/// \param aPos: Map holding the positions of the cards in the pile
+/// \param aOrder: Sorted order of the cards
+/// \returns unsigned int: The number of matching cards in a row
+//----------------------------------------------------------------------------
+unsigned int Buraco::getSeries (ICardPile& playerPile, CardWidget& card,
+                                std::map<unsigned int, unsigned int>& aPos,
+                                std::vector<unsigned int>& aOrder) {
+   unsigned int nrs (1);
+   unsigned int bCols (0x4);
+
+   for (ICardPile::const_iterator p (playerPile.begin ());
+        ((p = getFittingCard (playerPile, card, p)) != playerPile.end ()); ++p) {
+      if (*p == &card) {
+         aPos[2] = p - playerPile.begin ();
+         aOrder.push_back (2);
+      }
+      else {
+         int diff (cardDistance (**p, card));
+         TRACE9 ("Buraco::getSeries (...) - " << **p << " differs " << diff);
+         // Only consider series of colours for cards lower than ace, to
+         // avoid the problem with 3-K-A of one colour (the ace should
+         // haven been found from the 3 anyway).
+         if (diff) {
+            if (card.number () != CardWidget::ACE) {
+               diff += 2;
+               Check3 (diff <= 4);
+               if (!(bCols & (1 << diff))) {
+                  Check3 (aPos.find (diff) == aPos.end ());
+                  bCols |= (1 << diff);
+                  aPos[diff] = p - playerPile.begin ();
+                  aOrder.push_back (diff);
+                  if (aPos.size () == 7)
+                     break;
+               }
+            }
+         }
+         else
+            if (++nrs == 7)
+                break;
+      }
+   }
+
+   // Check if the series of colors is a valid one
+   TRACE9 ("Buraco::getSeries (...) - Serie: " << std::hex << bCols << std::dec);
+   Check3 (aPos.find (2) != aPos.end ());
+   Check3 (bCols & 0x4);
+
+   // Delete cards having no direct access to the analyzed one
+   if ((bCols & 0x3) == 0x1) {
+      Check3 (aPos.find (0) != aPos.end ());
+      Check3 (aPos.find (1) == aPos.end ());
+      aPos.erase (aPos.find (0));
+   }
+   if ((bCols & 0x18) == 0x10) {
+      Check3 (aPos.find (4) != aPos.end ());
+      Check3 (aPos.find (3) == aPos.end ());
+      aPos.erase (aPos.find (4));
+   }
+
+   return nrs;
+}
+
 //-----------------------------------------------------------------------------
 void Buraco::start () {
    TRACE9 ("Buraco::start ()");
@@ -517,18 +555,15 @@ void Buraco::start () {
          for (unsigned int i (0); i < NUM_PLAYERS; ++i)
             hands[(i - posServer) & 0x3].setTopCard (staple.removeTopCard ());
 
-            hands[i].setTopCard (staple.removeTopCard ());
+         for (unsigned int i (0); i < (sizeof (reserve) / sizeof (reserve[0])); ++i)
             reserve[(i - posServer) & 1].push_back (&staple.removeTopCard ());
       }
-            reserve[i].push_back (&staple.removeTopCard ());
+      for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          hands[i].sort (compByNumberWithJokers);
       for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
           hands[i].setStyle (ICardPile::QUITE_COMPRESSED);
 
-      CardWidget& dumpedCard (staple.removeTopCard ());
-      if (startPlayer)
-          dumpedCard.hide ();
-      dumped.setTopCard (dumpedCard);
+      gStatus.startTurn = gStatus.startGame = 1;
       hands[0].show ();
       hands[1].setShowOption (ICardPile::SHOWBACK);
       gStatus.team1Buraco = gStatus.team2Buraco = 0x3;
@@ -541,12 +576,47 @@ void Buraco::start () {
       unfinishedMonoPiles[0] = unfinishedMonoPiles[1] = 0;
       updateInfo ();
       // Set random startplayer (if not already set)
-      hands[startPlayer ? startPlayer : 1].show ();
+      if (startPlayer == -1U)
+         startPlayer = rand () & 0x3;
+      setStartPlayer ();
+
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+         dumped.getTopCard ().hide ();
+      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+}
+
+//----------------------------------------------------------------------------
+/// Sets the startplayer; including showing it in the status bar
+/// \param player: Player to start the game
+//----------------------------------------------------------------------------
+void Buraco::setStartPlayer () {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
+      setNextPlayer (startPlayer);
+   if (getConnectionMgr ().getMode () != ConnectionMgr::CLIENT) {
    }
-      displayTurn (startPlayer++);
-      startPlayer &= 0x3;
-      makeNextMoves ();
+
+      // Send startplayer to the clients
+      if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+         const std::vector<Socket*>& clients (getConnectionMgr ().getClients ());
+         unsigned int player ((currentPlayer () - 1) & 0x3);
+         for (std::vector<Socket*>::const_iterator i (clients.begin ());
+              i != clients.end (); ++i) {
+            std::ostringstream msg;
+            msg << "ActPlayer=" << player;
+            writeMessage (**i, msg.str ());
+            player = (player + 1) & 0x3;
+         }
+      }
    if (startPlayer)
+      dumped.getTopCard ().hide ();
+   else
+      dumped.getTopCard ().show ();
+   displayTurn (startPlayer++);
+   startPlayer &= 0x3;
+   hands[startPlayer ? startPlayer : 1].show ();
+   makeNextMoves ();
+}
+
 //-----------------------------------------------------------------------------
 /// Remove cards from everything which can hold them
 //-----------------------------------------------------------------------------
@@ -673,6 +743,16 @@ void Buraco::cardSelected (unsigned int iCard) {
 
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
+   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+      msg << "Play=" << hands[0][iCard]->id () << ";Target=1";
+
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+         ignoreNextMsg = true;
+      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+   }
+
+   unregisterHandDND (*hands[0][iCard]);
+   dumped.append (hands[0].remove (iCard));
    menuUndo->set_sensitive (false);
 
    // reserve
@@ -701,6 +781,16 @@ void Buraco::stapleSelected () {
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
+   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+      msg << "Play=" << staple.getTopCard ().id () << ";Target=2";
+
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+         ignoreNextMsg = true;
+      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+   }
+
+   dumpedTop.disconnect ();
+   stapleTop.disconnect ();
 
    // Move top card to human and enable the cards in his hand, when idle
    // (means: *after* this signalhandler termintes)
@@ -718,8 +808,10 @@ void Buraco::doStapleSelected () {
    Check2 (dumped.size ());
    Check3 (staple.size ());
    unsigned int player (currentPlayer ());
-   hands[0].append (staple.removeTopCard ());
-   enableHumanHand ();
+   if (!player)
+      enableHumanHand ();
+}
+
 //-----------------------------------------------------------------------------
 /// Callback after clicking on the dumped staple
 //-----------------------------------------------------------------------------
@@ -741,6 +833,16 @@ void Buraco::dumpedSelected () {
       return;
    }
       // Send played card to all clients (if any)
+   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+      msg << "Play=" << dumped.getTopCard ().id () << ";Target=3";
+
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+         ignoreNextMsg = true;
+      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+   }
+
+   dumpedTop.disconnect ();
+   stapleTop.disconnect ();
 
    // Special handling of player starting the game and can choose one of the
    // first two cards
@@ -757,23 +859,25 @@ void Buraco::dumpedSelected () {
    TRACE5 ("Buraco::doDumpedSelected ()");
    unsigned int player (currentPlayer ());
 
+  unsigned int player (currentPlayer ());
 
-   // Special handling of human starts the game and can choose one of the
+   // Special handling of player starting the game and can choose one of the
    // first two cards
    if (gStatus.startGame) {
       Check3 (dumped.size () == 1);
-      hands[0].append (dumped.removeTopCard ());
+      hands[player].append (dumped.removeTopCard ());
    }
    else {
-      Check3 (pileHasFittingPair (hands[0], dumped.getTopCard ()));
-      CardVPile& pile (makeNewPile (0));                     // Create new pile
+      Check3 (pileHasFittingPair (hands[player], dumped.getTopCard ()));
+      CardVPile& pile (makeNewPile (player));                // Create new pile
       pile.setTopCard (dumped.removeTopCard ());         // with picked up card
 
       while (dumped.size ())
-          hands[0].append (dumped.removeTopCard ());
+          hands[player].append (dumped.removeTopCard ());
    }
 
-   enableHumanHand ();
+   if (!player)
+      enableHumanHand ();
 //-----------------------------------------------------------------------------
 /// Enables a card in the hand of the player
 //-----------------------------------------------------------------------------
@@ -1818,4 +1922,67 @@ void Buraco::changeNames (const std::vector<Player*>& newPlayer) {
 //----------------------------------------------------------------------------
    if (((pile > 3) && (pile < 100)) || (player >= NUM_PLAYERS))
 ICardPile& Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
-   return hands[player];
+   Check1 (player < NUM_PLAYERS);
+   Check1 (pile < 4);
+   return ((pile <= 1) ? static_cast<ICardPile&> (hands[player])
+           : static_cast<ICardPile&> (((pile == 2) ? staple : dumped)));
+//----------------------------------------------------------------------------
+/// Handles the messages the server might send for the Buraco cardgame
+/// \param player: ID of the player sending the message
+/// Handles the messages the server might send for the twopart cardgame
+/// \param player: ID of player sending the message
+/// \throw std::string: In case of an error an describing text
+/// \returns bool: True, if message has completey processed
+   TRACE1 ("Buraco::handleMessage (unsigned int player, const std::string&) - "
+bool Buraco::handleMessage (unsigned int player, const char* message) {
+   TRACE1 ("Buraco::handleMessage (unsigned int player, const char*) - "
+   YGP::Tokenize command (message);
+    
+   Tokenize command (message);
+   bool rc (true);
+   if (cmd == "Undo") {
+   bool rc (Game::handleMessage (player, message));
+   if (cmd == "ActPlayer") {
+      TRACE1 ("Buraco::handleMessage (unsigned int player, const char*) - "
+              "Next player: " << currentPlayer ());
+      startPlayer = currentPlayer ();
+      setStartPlayer ();
+}
+
+//----------------------------------------------------------------------------
+/// Executes the remote move locally
+/// \param pile: Pile to move to/from
+/// \param dest: ID of target as send by the partner
+/// \returns bool: True, if the timer to execute the move should be set
+/// \param target: ID of target as send by the partner
+///    - \c dest == 0: Computerplayer playing its card
+///    - \c dest == 1: Play from hand to dumped
+///    - \c dest == 2: Pick up from staple
+///    - \c dest == 3: Pick up from dumped pile
+///    - \c dest == 100 + pile/card: Played from hand to table pile \c pile
+//----------------------------------------------------------------------------
+   TRACE8 ("Buraco::executeRemoteMove (ICardPile&, unsigned int) - " << dest
+           << "; Target: " << target);
+   TRACE8 ("Buraco::executeRemoteMove (ICardPile&, unsigned int) - " << dest);
+   Check1 (dest < 4);
+
+   switch (dest) {
+   case 1:
+      target = 0xffff0000;
+      gStatus.startGame = gStatus.startTurn = 0;
+      break;
+   case 2:
+      Check3 (staple.size ());
+      pos1Play = pos2Play = -1U;
+      doStapleSelected ();
+      hands[currentPlayer ()].append (staple.removeTopCard ());
+   case 3:
+      Check3 (dumped.size ());
+      pos1Play = pos2Play = -1U;
+      doDumpedSelected ();
+      Check3 (pileHasFittingPair (hands[currentPlayer ()],
+                                  dumped.getTopCard ()));
+      doStapleSelected ();
+   default:
+   return Game::executeRemoteMove (pile, dest);
+}
