@@ -67,7 +67,7 @@ void CardSet::shuffle () {
 
    unsigned int nr;
    for (int i (numberOfCards ()); i > 0;) {
-      nr = rand () & --i;
+      nr = rand () % i--;
       TRACE2 ("CardSet::shuffle () - " << i << " = " << nr);
       swap (cards_[i], cards_[nr]);
    }
