@@ -54,7 +54,7 @@ if test $ac_cv_lib_pthread_main = no; then
 fi
 
 PKG_CHECK_MODULES(CARDGAME, gtkmm-2.4 >= 2.4.0 gthread-2.0 > 2.2.0
-                  YGP >= 0.6.40 XGP >= 0.6.50)
+                  YGP >= 0.6.40 XGP >= 0.6.47)
 AC_SUBST(CARDGAME_CFLAGS)
 AC_SUBST(CARDGAME_LIBS)
 
