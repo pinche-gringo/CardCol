@@ -18,6 +18,11 @@ LIBRELEASE=0:1:0
 AC_SUBST(LIBVERSION)
 AC_SUBST(LIBRELEASE)
 
+DEFS=-'DLOCALEDIR="$(localedir)"'
+INCLUDES='-I. -I$(top_srcdir)'
+AC_SUBST(DEFS)
+AC_SUBST(INCLUDES)
+
 dnl AC_CANONICAL_SYSTEM
 
 AC_LANG_C
@@ -25,9 +30,12 @@ AC_LANG_CPLUSPLUS
 
 AC_C_BIGENDIAN
 
-AM_INIT_AUTOMAKE(Cardgames, $RELEASE)
-dnl AM_CONFIG_HEADER(config.h)
+ALL_LINGUAS="de en es"
 
+AM_INIT_AUTOMAKE(Cardgames, $RELEASE)
+AM_CONFIG_HEADER(cardgames-cfg.h)
+
+dnl Checks for programs.
 AC_PROG_CXX
 AC_LANG_CPLUSPLUS
 AC_PROG_RANLIB
@@ -35,7 +43,8 @@ AM_PROG_LIBTOOL
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
-dnl Checks for programs.
+AM_GNU_GETTEXT
+
 
 dnl Checks for libraries.
 AC_CHECK_LIB(stdc++, main)
@@ -43,7 +52,6 @@ AC_CHECK_LIB(gmp, main)
 AC_CHECK_LIB(Attr, main)
 
 dnl Checks for header files.
-AC_HEADER_DIRENT
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
@@ -52,4 +60,4 @@ dnl Checks for library functions.
 dnl Enable special features
 
 AC_OUTPUT([Makefile Common/Makefile Rovhult/Makefile Twopart/Makefile \
-	   Tarok/Makefile Common/Grafix/Makefile])
+	   Tarok/Makefile Common/Grafix/Makefile intl/Makefile po/Makefile.in])
