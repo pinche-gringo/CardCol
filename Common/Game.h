@@ -58,7 +58,8 @@ class Game : public Gtk::Table {
          YGP::Mutex& mxSerialize, unsigned int rows, unsigned int columns);
    virtual ~Game ();
 
-   // Managing
+   /// \name Managing
+   //@{
    virtual void start ();
    virtual void stop ();
    virtual void end (bool startNew);
@@ -69,6 +70,13 @@ class Game : public Gtk::Table {
    virtual void clean ();
    virtual const char* name () = 0;
    virtual void changeNames (const std::vector<Player*>& newPlayer);
+   //@}
+
+   /// \name Carddeck information
+   //@{
+   virtual unsigned int numberOfDecks () const { return 1; }
+   virtual unsigned int numberOfJokers () const { return 0; }
+   //@}
 
    virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
    bool ignoreMessage ();
