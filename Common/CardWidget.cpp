@@ -24,12 +24,15 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include <Check.h>
-#include <Trace_.h>
 
-#include <gtk--/pixmap.h>
+#include <gdkmm/pixmap.h>
+
+#include <gtkmm/misc.h>
 
 #include <cardgames-cfg.h>
+
+#include <Check.h>
+#include <Trace_.h>
 
 #include "CardWidget.h"
 
@@ -43,14 +46,21 @@ CardWidget::COLORS CardWidget::transColor[4] = { CLUBS, SPADES, HEARTS, DIAMONDS
 //            card: Number of image inside the set to display
 //            visible: Flag, if card should be displayed visible
 /*--------------------------------------------------------------------------*/
-CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible = true)
+CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible)
    : isVisible (visible), nrCard (card), deck (set) {
    TRACE3 ("CardWidget::CardWidget (const CardImages&, unsinged int, bool) - "
            << card << " (" << visible << ')');
+   
+   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
+            Glib::RefPtr<Gdk::Bitmap> (NULL));
+   img.set_alignment (0.0, 0.0);
+   img.show ();
 
-   add_pixmap (visible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
-               NULL);
-   set_relief (GTK_RELIEF_NONE);
+   add (img);
+   add_events (Gdk::EXPOSURE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK
+               | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
+
+   signal_clicked ().connect (SigC::slot (*this, &CardWidget::on_clicked));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -62,9 +72,17 @@ CardWidget::CardWidget (const CardWidget& other)
    TRACE3 ("CardWidget::CardWidget (const CardWidget&) - "
            << nrCard << " (" << isVisible << ')');
 
-   add_pixmap (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
-               NULL);
-   set_relief (GTK_RELIEF_NONE);
+   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
+            Glib::RefPtr<Gdk::Bitmap> (NULL));
+   img.set_alignment (0.0, 0.0);
+   img.set_padding (0, 0);
+   img.show ();
+
+   add (img);
+   add_events (Gdk::EXPOSURE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK
+               | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
+
+   signal_clicked ().connect (SigC::slot (*this, &CardWidget::on_clicked));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -81,7 +99,6 @@ CardWidget::~CardWidget () {
 void CardWidget::showFace (bool visible) {
    isVisible = visible;
    update ();
-   Check3 (get_child ()); Check3 (Gtk::Pixmap::isA (get_child ()));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -93,7 +110,6 @@ char CardWidget::numberStr () const {
    return ((number () >= CardWidget::TEN)
            ? specialCards[number ()  - CardWidget::TEN]
            : number () + '2');
-
 }
 
 /*--------------------------------------------------------------------------*/
@@ -113,9 +129,32 @@ char CardWidget::colorStr () const {
 void CardWidget::update () {
    TRACE3 ("CardWidget::update () - Card " << nrCard);
 
-   remove ();
-   add_pixmap (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
-               NULL);
+   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
+            Glib::RefPtr<Gdk::Bitmap> (NULL));
+}
 
-   dynamic_cast <Gtk::Pixmap*> (get_child ())->set_alignment (0.0, 0.0);
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback after clicking a CardWidget
+/*--------------------------------------------------------------------------*/
+void CardWidget::on_clicked () {
+   TRACE9 ("CardWidget::on_clicked ()");
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback after clicking a CardWidget
+/*--------------------------------------------------------------------------*/
+bool CardWidget::on_button_release_event (GdkEventButton* ev) {
+   Check1 (ev);
+   TRACE9 ("CardWidget::on_button_release_event (GdkEventButton*) - "
+           << ev->button << "; X: " << ev->x - 1 << "; Y: " << ev->y - 1
+           << "; W: " << get_width () << "; H: " << get_height ());
+
+   // It the button 1 is released within the image: Generate a clicked signal
+   if ((ev->button == 1)
+       && ((ev->x - 1) < get_width ()) && ((ev->y - 1) < get_height ())) {
+      clicked ();
+      return true;
+   }
+   return false;
 }
