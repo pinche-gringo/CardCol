@@ -38,7 +38,7 @@
 // Class to display a pile of cards on the screen
 class ICardPile {
  public:
-   typedef enum { NORMAL = 0, COMPRESSED, VERY_COMPRESSED, LAST } PileStyle;
+   typedef enum { NORMAL = 0, COMPRESSED, QUITE_COMPRESSED, VERY_COMPRESSED, LAST } PileStyle;
    typedef enum { SHOWBACK = 0, SHOWFACE, DONT_CHANGE } ShowOpt;
 
    ICardPile (PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE);
@@ -85,14 +85,17 @@ class ICardPile {
       int pos (findFirstEqualOrBigger (nr));
       return (pos != -1) && (at (pos).number () == nr); }
    bool exists (CardWidget& card) const { exists (&card); }
- bool exists (CardWidget* card) const {
+   bool exists (CardWidget* card) const {
       return find (cards.begin (), cards.end (), card) != cards.end (); }
 
    // General management-functions
+   // - resize is actually a virtual static method but as this does
+   //   not exist and static alone does not work neither: virtual
    virtual void resize (CardWidget& card, PileStyle s) const = 0;
    unsigned int numberOfCards () const { return cards.size (); }
    void clear ();
    void setStyle (PileStyle s);
+   PileStyle getStyle () const { return style; }
    void setShowOption (ShowOpt show);
    ShowOpt getShowOption () const { return showOpt; }
 
@@ -184,13 +187,13 @@ typedef CardPile<Gtk::HBox>  CardHPile;
 
 
 void CardVPile::resize (CardWidget& card, PileStyle s) const {
-   static unsigned int height[(int)LAST] = { card.getImageHeight (), 15, 1 };
+   static unsigned int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
    TRACE5 ("CardVPile::resize (CardWidget&, PileStyle) - " << (int)s << " (" << height[0] << ')');
    card.set_usize (-1, height[(int)s]);
 }
 
 void CardHPile::resize (CardWidget& card, PileStyle s) const {
-   static unsigned int width[(int)LAST] = { card.getImageWidth (), 18, 1 };
+   static unsigned int width[(int)LAST] = { card.getImageWidth (), 18, 7, 1 };
    TRACE5 ("CardHPile::resize (CardWidget&, PileStyle) - " << (int)s << " (" << width[0] << ')');
    card.set_usize (width[(int)s], -1);
 }
