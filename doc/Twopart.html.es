@@ -100,7 +100,7 @@
       abajo):</p>
 
     <ul>
-      <li>El estaple de reserva: Una colecci&oacute;n de cartas tapadas), de
+      <li>El estaple de reserva: Una colecci&oacute;n de cartas tapadas, de
         donde se saca cartas nuevas (si se pone la rata por encima, aparece una
         ventana mostrando su n&uacute;mero de las cartas). En el segundo parte
         la carta que determina el palo especial est&aacute; mostrado aqua.</li>
@@ -120,5 +120,5 @@
 Last modified: Tue Feb 11 19:13:47 PET 2003
 <!-- hhmts end -->
           - $Revision$
-</body>
+  </body>
 </html>

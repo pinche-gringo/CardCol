@@ -25,15 +25,14 @@
   <head>
     <title>R&oslash;vhult - Ein international bekanntes Spiel (alias Arsehole, ...)</title>
     <meta name="description" content="Documentation of the R&oslash;vhult cardgame">
-    <meta name="keywords" content="Documentation, Docu, Rovhult, R&oslash;vhult; game, card, cardgame">
+    <meta name="keywords" content="Documentation, Docu, Rovhult, R&oslash;vhult, game, card, cardgame">
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2002-07-20">
     <meta name="DC.Rights" content="Anticopyright (A) 2002, distributed under the GNU Free Documentation License">
   </head>
 
-<body>
-
+  <body>
     <h1 align="center">R&oslash;vhult</h1>
     <hr size=2>
 
@@ -59,7 +58,7 @@
     <p>Im Uhrzeigersinn werden dann die Karten gespielt, die gleich oder
       gr&ouml;&szlig;er als die zuletzt gespielte sein mu&szlig;. Man kann eine
       beliebige Anzahl von Karten mit der gleichen Nummer spielen (z.B.: die
-      Pik-5 und die Herz-5). Nach dem Zug mu&szlig; der Spieler Karten vom
+      &spades;-5 und die &clubs;-5). Nach dem Zug mu&szlig; der Spieler Karten vom
       Reservestapel aufnehmen, bis er wieder drei Karten in der Hand hat oder
       der Reservestapel leer ist.</p>
 
@@ -131,8 +130,8 @@
     </address>
     <!-- Created: Thu Jul  4 16:36:50 PET 2002 -->
     <!-- hhmts start -->
-Last modified: Mon Feb 10 23:53:14 PET 2003
+Last modified: Tue Feb 11 20:02:57 PET 2003
 <!-- hhmts end -->
     - $Revision$
-</body>
+  </body>
 </html>

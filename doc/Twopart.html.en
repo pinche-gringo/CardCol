@@ -32,8 +32,7 @@
     <meta name="DC.Rights" content="Anticopyright (A) 2002, distributed under the GNU Free Documentation License">
   </head>
 
-<body>
-
+  <body>
     <h1 align="center">Twopart</h1>
     <hr size=2>
 
@@ -90,7 +89,7 @@
       can start a new round (if he has cards left; else the next one
       with cards).</p>
 
-    <p>If a player can not continue, he must pick up all the cards
+    <p>If a player can (or will) not continue, he must pick up all the cards
       the last player had played.</p>
 
     <p>The last player having cards left has lost.</p>
@@ -119,7 +118,7 @@
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
 <!-- hhmts start -->
-Last modified: Mon Feb 10 22:57:55 PET 2003
+Last modified: Tue Feb 11 18:27:32 PET 2003
 <!-- hhmts end -->
           - $Revision$
 </body>

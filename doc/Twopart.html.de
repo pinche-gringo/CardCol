@@ -37,7 +37,7 @@
     <hr size=2>
 
     <p>Twopart ist a Kartenspiel, das ich von vier Norwegern gelernt habe.
-      Ich kann mich nicht mal erinnern, ob sie mir den norwegischen Namen
+      Ich kann mich nicht einmal erinnern, ob sie mir den norwegischen Namen
       genannt haben; wenn dem so w&auml;re, habe ich ihn schneller vergessen,
       als George W. Bush ben&ouml;tigt, seinen n&auml;chsten Bl&ouml;dsinn
       zu sagen (oder einen Krieg anzufangen).</p>
@@ -93,8 +93,9 @@
       Spieler startet eine neue Runde (wenn er noch Karten hat, sonst
       der N&auml;chste mit Karten).</p>
 
-    <p>Wenn ein Spieler nicht fortsetzen kann, mu&szlig; er alle Karten, die
-      der letzte Spieler abgelegt hat, aufnehmen.</p>
+    <p>Wenn ein Spieler nicht fortsetzen kann (oder will), mu&szlig;
+      er alle Karten, die der letzte Spieler abgelegt hat,
+      aufnehmen.</p>
 
     <p>Die letzte Person, die noch Karten &uuml;brig hat, hat verloren.</p>
 
@@ -125,7 +126,7 @@
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
 <!-- hhmts start -->
-Last modified: Mon Feb 10 23:04:20 PET 2003
+Last modified: Tue Feb 11 19:07:22 PET 2003
 <!-- hhmts end -->
           - $Revision$
 </body>
