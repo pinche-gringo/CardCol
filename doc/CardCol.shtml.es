@@ -99,7 +99,9 @@
     <p>Un abrazo fuerte a Ingrid y Jonathan, que me ense&ntilde;aron todos los
       trucos de <tt>Buraco</tt> y lo jugaron conmigo por horas.</p>
 
-    <p>Saludos a Andreas, Jakob y Janus, que me han ese&ntilde;ado los reglas de
+    <p>Un "Gr&uuml;etzi" a Michael (Miguel) Suttner para <tt>Machiavelli</tt>.</p>
+
+    <p>Saludos a Andreas, Jakob y Janus, que me han ese&ntilde;ado las reglas de
       <tt>R&oslash;vhult</tt>.</p>
 
     <p>Gracias a Ann-Karin, Arne, B&aring;rn y Solveing por introducirme a
