@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.7.00, [g17m0@lycos.com], CardCol)
+AC_INIT(Cardgames, 0.7.01, [g17m0@lycos.com], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
 VERSION=AC_PACKAGE_VERSION
@@ -53,8 +53,8 @@ if test $ac_cv_lib_pthread_main = no; then
    AC_MSG_WARN(libpthread is not installed! Disabling network features)
 fi
 
-PKG_CHECK_MODULES(CARDGAME, gtkmm-2.0 >= 2.2.0 gthread-2.0 > 2.2.0
-                  YGP >= 0.6.40 XGP >= 0.6.45)
+PKG_CHECK_MODULES(CARDGAME, gtkmm-2.4 >= 2.4.0 gthread-2.0 > 2.2.0
+                  YGP >= 0.6.40 XGP >= 0.6.50)
 AC_SUBST(CARDGAME_CFLAGS)
 AC_SUBST(CARDGAME_LIBS)
 
