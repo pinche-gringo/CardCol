@@ -20,10 +20,6 @@
 
 #include <vector>
 
-#include <gtk--/table.h>
-#include <gtk--/button.h>
-#include <gtk--/statusbar.h>
-
 #include <Thread.h>
 #include <PathSrch.h>
 
@@ -32,33 +28,33 @@
 #include <CardImgs.h>
 #include <DeckSelect.h>
 
-#include <XApplication.h>
+#include <Game.h>
 
+
+namespace Gtk {
+   class Box;
+};
+
+using namespace Gtk;
 
 // Class to handle the Twopart-cardgame
-class Twopart : public XApplication {
+class Twopart : public Game {
  public:
    // Manager functions
-   Twopart ();
+   Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset);
    ~Twopart ();
 
  private:
-   // IDs for menus
-   enum { NEW, END, EXIT, DEBUG, CHGDECKS, SAVESET, ABOUT };
-
    // Status of game
-   enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, PLAYING2 };
-   int statGame;
+   enum { PLAYING2 = Game::LAST};
 
    // Protected manager functions
    Twopart (const Twopart&);
    const Twopart& operator= (const Twopart&);
 
    // Event-handling
-   virtual void command (int menu);
    void cardSelected (unsigned int player, unsigned int iCard);
    void playedSelected (unsigned int player);
-   void changeDecks (ICarddeckSelectDlg::commands cmd);
 
    // Helper functions
    void executeMove (unsigned int player, unsigned int iCard);
@@ -79,7 +75,8 @@ class Twopart : public XApplication {
             ++cPlayers;
       return cPlayers; }
    unsigned int removePlayersWithoutCards ();
-   void startGame ();
+
+   virtual void start ();
    void cleanTable ();
    void dealCards ();
    void fillStaple ();
@@ -92,36 +89,15 @@ class Twopart : public XApplication {
    unsigned int findSmallestCard (unsigned int player) const;
    unsigned int findEndOfSerie (unsigned int player, unsigned int start) const;
 
-
    int startPartTwoTimerFnc ();
-   void startPartTwo (unsigned int player) {
-      TRACE9 ("Twopart::startPartTwo () - *** Start timer ***");
-      // Delay starting of part two, in case of human player; as re-enabling a
-      // signal (button-callback) inside the signal handler wreaks quite a bit
-      // of havoc
-      if (actPlayer = player)
-         startPartTwoTimerFnc ();
-      else
-         Gtk::Main::timeout.connect (slot (this, &Twopart::startPartTwoTimerFnc), 100); }
+   void startPartTwo (unsigned int player);
 
    int makeNextMove ();
-   void makeNextMoves () {
-      TRACE9 ("Twopart::makeComputerMoves () - *** Start timer ***");
-      Check3 ((statGame == PLAYING) || (statGame == PLAYING2));
-      Gtk::Main::timeout.connect (slot (this, actPlayer
-                                        ? &Twopart::makeNextMove
-                                        : &Twopart::enableActPlayer),
-                                  actPlayer ? 700 : 50); }
-
+   void makeNextMoves ();
    int endRound ();
 
    static char sortOrder[4];
    static bool compByColorAccTrumps (const CardWidget* a, const CardWidget* b);
-
-   void loadCards ();
-   void changeCards (void* opt);
-
-   static XApplication::MenuEntry Twopart::menuItems[];
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
@@ -141,14 +117,6 @@ class Twopart : public XApplication {
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
 
-   static const char* xpmAuthor[];
-   static const char* xpmTwopart[];
-
-   Gtk::Statusbar status;
-   Gtk::Table     tblTable;
-
-   CardImages cardFaces;
-   CardSet cards;
    CardWidget* pTrump;
 
    CardHInfoPile played;
@@ -166,18 +134,6 @@ class Twopart : public XApplication {
 
    Widget* pMenuNew;
    Widget* pMenuEnd;
-
-   ICarddeckSelectDlg* dlgChgDecks;
-
-   std::string pathDeck;
-   std::string pathBack;
-
-   static const std::string NAME_INIFILE;
-
-   static const unsigned int USED_CARDS = 52;
-
-   static const unsigned int WIDTH = 760;
-   static const unsigned int HEIGHT = 690;
 };
 
 #endif
