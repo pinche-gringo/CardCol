@@ -33,7 +33,7 @@
 
 #include <glib.h>
 
-#define DEBUG 0
+#define DEBUG 1
 #include <Check.h>
 #include <Trace_.h>
 
@@ -41,6 +41,10 @@
 
 #include <CardWidget.h>
 #include "Rovhult.h"
+
+
+
+GtkTargetEntry RovhultAppl::dndTypes = { "icon/cardface", GTK_TARGET_SAME_APP, 0 };
 
 
 const unsigned int RovhultAppl::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
@@ -472,6 +476,9 @@ void RovhultAppl::fillStaple () {
 void RovhultAppl::dealCards () {
    TRACE9 ("RovhultAppl::dealCards ()");
 
+   Gdk_Bitmap bitmap;
+   Gdk_Colormap color (get_colormap ());
+
    // Show cards on table: For all players put 6 cards on table (only the
    // (upper visible) and 3 (visible ones) in hand
    for (int i (0); i < NUM_PLAYERS; ++i)
@@ -483,6 +490,15 @@ void RovhultAppl::dealCards () {
             reserve[i][j].setTopCard (card, k);
             card.clicked.connect (SigC::bind (SigC::slot (this, &RovhultAppl::pileSelected),
                                               &reserve[i][j], card.id ()));
+
+            if (k) {                     // Enable drag-n-drop for the top-card
+               card.drag_dest_set (GTK_DEST_DEFAULT_ALL, &dndTypes, 1, GDK_ACTION_MOVE);
+               card.drag_source_set (GDK_BUTTON1_MASK, &dndTypes, 1, GDK_ACTION_MOVE);
+               card.drag_source_set_icon
+                  (color, const_cast<Gdk_Pixmap&> (cardFaces.getCardImage (card.id ())),
+                   bitmap);
+               card.drag_data_received.connect (slot (this, &RovhultAppl::cardDropped));
+            }
          } // end-for two cards pro pile (in reserve)
 
          CardWidget& card (staple.removeTopCard ());
@@ -490,14 +506,38 @@ void RovhultAppl::dealCards () {
          hands[i].addCard (card);
          card.clicked.connect (SigC::bind (SigC::slot (this, &RovhultAppl::handSelected),
                                            &hands[i], card.id ()));
+
+         // Enable drag-n-drop for the cards in the hand
+         card.drag_dest_set (GTK_DEST_DEFAULT_ALL, &dndTypes, 1, GDK_ACTION_MOVE);
+         card.drag_source_set (GDK_BUTTON1_MASK, &dndTypes, 1, GDK_ACTION_MOVE);
+         card.drag_source_set_icon
+            (color, const_cast<Gdk_Pixmap&> (cardFaces.getCardImage (card.id ())),
+             bitmap);
+         card.drag_data_received.connect (slot (this, &RovhultAppl::cardDropped));
       }
 
-   // Show cards in hand
-   for (int i (0); i < NUM_PLAYERS; ++i) {
-      for (int j (0); j < 3; ++j) {
+   status.pop (1);
+   status.push (1, _("Exchange the cards in your hand with the one on the"
+                     "table (with drag and drop - press space if finished)"));
+}
 
-      }
-   } // endfor all players
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback after dropping a card
+//Parameters: pContext: Context of the drag (contains things like source,
+//                      target, action, ...)
+//            pData: Describes the thing which was dropped
+//            time: Timestamp of the drag
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::cardDropped (GdkDragContext* pContext, gint, gint,
+                  GtkSelectionData* pData, guint, guint32 time) {
+   Check3 (pContext); Check3 (pData);
+   Check3 (!pContext->is_source);
+
+   TRACE ("RovhultAppl::cardDropped (GdkDragContext*, gint, gint, GtkSelectionData*"
+           ", guint, guint32) - Data = " << pData->length << '/' << pData->format);
+
+   Gdk_DragContext gdc (pContext);
+   drag_finish (gdc, false, false, time);
 }
 
 /*--------------------------------------------------------------------------*/
