@@ -27,8 +27,6 @@
 #include <cardgames-cfg.h>
 
 #include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
 
 #include <fstream>
 
@@ -311,12 +309,9 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { _("Change _names ..."), _("<ctl>C"), CHGNAMES, ITEM },
     { _("_Save settings"),    _("<ctl>S"), SAVESET,  ITEM },
 #if TRACELEVEL >= 1
-    { "_Debug",               "<ctl>G",    DEBUG,    CHECKITEM },
+    { "_Debug",               "<ctl>G",    DEBUG,    CHECKITEM }
 #endif
-    { _("_Help"),             _("<alt>H"), 0,        LASTBRANCH },
-    { _("_Content..."),       _("F1"),     CONTENT,  ITEM },
-    { _("_About..."),         _("<ctl>A"), ABOUT,    ITEM } };
-
+};
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Defaultconstructor; all widget are created
@@ -329,6 +324,7 @@ CardgameCollection::CardgameCollection ()
 
    // Create controls
    addMenus (menuItems, sizeof (menuItems) / sizeof (menuItems[0]));
+   showHelpMenu ();
    Check3 (apMenus[NEW]);
    apMenus[NEW]->set_sensitive (false);
 
@@ -461,23 +457,13 @@ void CardgameCollection::command (int menu) {
       TRACE2 ("CardgameCollection::command (int) - Save file " << NAME_INIFILE);
       ofstream inifile (NAME_INIFILE.c_str ());
       
-      inifile << "[Game]\nDefault=" << typeGame << "\n\n[Decks]\nFront="
-              << pathDeck << "\nBack=" << pathBack << "\n\n[Players]\n";
+      inifile << "[Game]\nDefault=" << typeGame << "Helpbrowser=" << helpBrowser
+              << "\n\n[Decks]\nFront=" << pathDeck << "\nBack=" << pathBack
+               << "\n\n[Players]\n";
       for (unsigned int i (0); i < names.size (); ++i)
          inifile << i << '=' << names[i] << '\n';
       break;
    }
-
-   case ABOUT: {
-      string ver (_("Anticopyright (A) 2002 Markus Schwab"
-                    "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
-      ver.replace (ver.find ("%1"), 2, __DATE__);
-      ver.replace (ver.find ("%2"), 2, __TIME__);
-
-      XAbout* about (new XAbout (ver, PACKAGE " V" VERSION));
-      about->setIconProgram (xpmGame);
-      about->setIconAuthor (xpmAuthor); }
-      break;
 
    case EXIT:
       if (game && game->isRunning ()
@@ -487,35 +473,6 @@ void CardgameCollection::command (int menu) {
             break;
 
       Main::quit ();
-      break;
-
-   case CONTENT: {
-      pid_t pid (fork ());
-      
-      switch (pid) {
-      case 0: {                                         // Child: Start browser
-         string file (DOCUDIR);
-         if (game && game->isRunning ()) {
-            file += game->name ();
-            file += ".html";
-         }
-         else
-            file += "index.html";
-
-         TRACE9 ("CardgameCollection::command (int) - Show help " << file);
-         execlp ("galeon", "galeon", "-w", file.c_str (), NULL);
-         perror (_("Error starting browser for help! Reason"));
-         _exit (1); }
-
-      case -1: {
-         string errMsg (_("Error starting browser for help!\n\nReason: "));
-         errMsg += strerror (errno);
-         gdk_threads_enter ();
-         XMessageBox::Show (errMsg, XMessageBox::ERROR | XMessageBox::OK); }
-         gdk_threads_leave ();
-         break;
-      }
-      } // end-switch
       break;
 
 #if TRACELEVEL >= 0
@@ -528,8 +485,32 @@ void CardgameCollection::command (int menu) {
 #endif
 
    default:
-      Check3 (0);
+      XApplication::command (menu);
    } // end-switch
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Returns the name of the file to display in the help
+//Returns   : Name of file to display
+/*--------------------------------------------------------------------------*/
+const char* CardgameCollection::getHelpfile () {
+   string file (DOCUDIR);
+   file += game ? (string (game->name ()) + ".html") : "index.html";
+   return file.c_str ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Shows the about box for the program
+/*--------------------------------------------------------------------------*/
+void CardgameCollection::showAboutbox () {
+   string ver (_("Anticopyright (A) 2002 Markus Schwab"
+                 "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
+   ver.replace (ver.find ("%1"), 2, __DATE__);
+   ver.replace (ver.find ("%2"), 2, __TIME__);
+
+   XAbout* about (new XAbout (ver, PACKAGE " V" VERSION));
+   about->setIconProgram (xpmGame);
+   about->setIconAuthor (xpmAuthor);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -636,6 +617,8 @@ void CardgameCollection::loadCards () {
    pathDeck = CARDSET_PATH "/Deck1";
    pathBack = CARDSET_PATH "/back1.xpm";
 
+   helpBrowser = "galeon";
+
    try {
       INIFILE (NAME_INIFILE.c_str ());
       INISECTION (Decks);
@@ -643,6 +626,7 @@ void CardgameCollection::loadCards () {
       INIATTR2 (Decks, std::string, pathBack, Back);
       INISECTION (Game);
       INIATTR2 (Game, unsigned int, (unsigned int)typeGame, Default);
+      INIATTR2 (Game, std::string, helpBrowser, Helpbrowser);
       INILIST2 (Players, std::string, names);
 
       unsigned int rc (INIFILE_READ ());
@@ -653,7 +637,8 @@ void CardgameCollection::loadCards () {
    }
 
    // This code needs the game-IDs in a sequence starting with 0!
-   Check (apMenus[ROVHULT + typeGame]);
+   if (GLAST <= (unsigned int)typeGame)
+      typeGame = GROVHULT;
    dynamic_cast<CheckMenuItem*> (apMenus[ROVHULT + typeGame])->set_active ();
 
    cardFaces.load (get_window (), pathDeck, pathBack);
