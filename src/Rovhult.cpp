@@ -309,7 +309,7 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
 RovhultAppl::RovhultAppl ()
    : XApplication (PACKAGE " - Rovhult V" PRG_RELEASE), status (), actPlayer (0)
      , tblTable (16, 19), cardFaces (USED_CARDS), cards (), pThread (NULL)
-     , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::COMPRESSED) {
+     , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::VERY_COMPRESSED) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
@@ -557,7 +557,7 @@ int RovhultAppl::makeComputerMove () {
 //Parameters: player: Player to enable
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::enablePlayer (unsigned int player) {
-   Check3 (activeCards.empty ());
+   disableLastPlayer (); Check3 (activeCards.empty ());
 
    if (players[player].hand.numberOfCards ()) {
       TRACE2 ("RovhultAppl::enablePlayer (unsigned int) - Hand of player "
@@ -623,7 +623,6 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
       if (players[player].reserve[pile].numberOfCards () > 1)   // Visible? Ret
          return;
       
-      disableLastPlayer ();
       players[player].reserve[pile].removeTopCard ();
       card.set_relief (GTK_RELIEF_NORMAL);
       played.append (card);
@@ -631,17 +630,22 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
          makeComputerMoves ();
       return;
    }
-   disableLastPlayer ();
 
-   Gtk::Main::timeout.connect (bind (slot (this, &RovhultAppl::doPileSelected),
-                                     player, pile), 1000);
+   actPlayer = doPileSelected (player, pile);
+
+   if (actPlayer > 0)
+      // Start a timer to perform the computer-moves
+      makeComputerMoves ();
+   else
+      if (!actPlayer)
+         enablePlayer (0);
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Executes the move from a pile: Moves the cards and enables next
 //Parameters: player: ID of player
 //            pile: Offset of selected pile
-//Returns   : int: 0
+//Returns   : int: player to continue
 /*--------------------------------------------------------------------------*/
 int RovhultAppl::doPileSelected (unsigned int player, unsigned int pile) {
    TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - " 
@@ -672,16 +676,7 @@ int RovhultAppl::doPileSelected (unsigned int player, unsigned int pile) {
       }
    }
 
-   actPlayer = executeMove (player, card.number ());
-
-   if (!(player || actPlayer))
-      enablePlayer (0);
-   else
-      if (actPlayer > 0)
-         // Start a timer to perform the computer-moves
-         makeComputerMoves ();
-
-   return actPlayer > 0;
+   return executeMove (player, card.number ());
 }
 
 
@@ -743,14 +738,15 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
 
    if (!cardValid (card.number ()))
        return;
+
    playCardsFromHand (player, pos);
 
    actPlayer = executeMove (player, card.number ());
-   disableLastPlayer ();
 
-   if (actPlayer > 0)
+   if (actPlayer > 0) {
       // Start a timer to perform the computer-moves
       makeComputerMoves ();
+   }
    else
       if (!actPlayer)
          enablePlayer (0);
@@ -848,7 +844,6 @@ int RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 void RovhultAppl::takeCards (unsigned int player) {
    TRACE2 ("RovhultAppl::takeCards (unsigned int) - " << player);
    actPlayer = executeMove (player, CardWidget::UNREACHABLE);
-   disableLastPlayer ();
 
    // Start a timer to perform the computer-moves
    makeComputerMoves ();
@@ -980,21 +975,10 @@ unsigned int RovhultAppl::numberOfEqualTopCards () const {
 /*--------------------------------------------------------------------------*/
 bool RovhultAppl::clearPlayedIf4Equal () {
    TRACE8 ("Rovhult::clearPlayedIf4Equal ()");
-   unsigned int nrCards (played.numberOfCards ());
-   if (nrCards < 4)
-      return false;
 
-   int i (2);
-   CardWidget& card (played.getTopCard ());
-   for (; i < 5; ++i) {
-      TRACE9 ("Rovhult::clearPlayedIf4Equal () - Checking "
-              << played.at (nrCards - i) << " with " << card);
-      
-      if (played.at (nrCards - i).number () != card.number ()) {
-         TRACE8 ("Rovhult::clearPlayedIf4Equal () - found " << i - 1);
-         return false;
-      }
-   }
+   int cards (numberOfEqualTopCards ()); Check3 (cards <= 4);
+   if (cards < 4)
+      return false;
 
    TRACE7 ("Rovhult::clearPlayedIf4Equal () - found 4");
    played.clear ();
@@ -1361,8 +1345,8 @@ CardWidget& RovhultAppl::cardAtPos (unsigned int player, unsigned int pos) const
 //Parameters: player: Player in turn
 //            pos: Position of (last) card to play
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::flipCards2play (unsigned int player, unsigned int pos) {
-   TRACE2 ("RovhultAppl::flipCards2splay (unsigned int, unsigned int) - "
+void RovhultAppl::flipCards2Play (unsigned int player, unsigned int pos) {
+   TRACE2 ("RovhultAppl::flipCards2Pplay (unsigned int, unsigned int) - "
            " For player " << player << " at position " << pos);
    Check3 (player < NUM_PLAYERS);
    Check3 ((players[player].hand.numberOfCards ())
@@ -1385,16 +1369,18 @@ void RovhultAppl::flipCards2play (unsigned int player, unsigned int pos) {
 /*--------------------------------------------------------------------------*/
 int RovhultAppl::makeTurn (unsigned int player) {
    TRACE2 ("RovhultAppl::makeTurn (unsigned int) - Player " << player);
-   static int pos2play (-1);
+   static int pos2Play (-1);
 
-   if (pos2play == -1) {
-      pos2play = findCard2play (player);
-      flipCards2play (player, pos2play);
+   if (pos2Play == -1) {
+      pos2Play = findCard2Play (player);
+      flipCards2Play (player, pos2Play);
       return player;
    }
    else {
-      unsigned int pos (pos2play);
-      pos2play = -1;
+      TRACE2 ("RovhultAppl::makeTurn (unsigned int) - play card " << pos2Play);
+
+      unsigned int pos (pos2Play);
+      pos2Play = -1;
       if (players[player].hand.numberOfCards ()) {
          if (players[player].hand.at (pos).number () == CardWidget::TEN)
             played.clear ();
@@ -1404,8 +1390,10 @@ int RovhultAppl::makeTurn (unsigned int player) {
       }
       else {
          // If cards are visible
-         if (players[player].reserve[pos].numberOfCards () > 1)
+         if (players[player].reserve[pos].numberOfCards () > 1) {
             doPileSelected (player, pos);                       // Execute move
+            return actPlayer;
+         }
          else {
             // If card is valid: Play it
             CardWidget& card (players[player].reserve[pos].getTopCard ());
@@ -1454,8 +1442,8 @@ bool RovhultAppl::existOnlySpecialCards (unsigned int player, unsigned int pos) 
 //Parameters: player: Player to inspect
 //Returns   : int: Position of card to play
 /*--------------------------------------------------------------------------*/
-int RovhultAppl::findCard2play (unsigned int player) const {
-   TRACE2 ("RovhultAppl::findCard2play (unsigned int) - Player " << player);
+int RovhultAppl::findCard2Play (unsigned int player) const {
+   TRACE2 ("RovhultAppl::findCard2Play (unsigned int) - Player " << player);
    Check3 (player < NUM_PLAYERS);
 
    // Search for minimal card to play; this is either a card equal or bigger
@@ -1467,7 +1455,7 @@ int RovhultAppl::findCard2play (unsigned int player) const {
        && (played.getTopCard ().number () != CardWidget::TWO))
       cardMin = played.getTopCard ().number ();
 
-   TRACE5 ("RovhultAppl::findCard2play (unsigned int) - Card to beat " << cardMin);
+   TRACE5 ("RovhultAppl::findCard2Play (unsigned int) - Card to beat " << cardMin);
 
    // Check if to play from hand or to play from reserve
    unsigned int nrCards (players[player].hand.numberOfCards ());
@@ -1491,7 +1479,7 @@ int RovhultAppl::findCard2play (unsigned int player) const {
          }
       }
       else {
-         TRACE5 ("RovhultAppl::findCard2play (unsigned int) - Continuing with card "
+         TRACE5 ("RovhultAppl::findCard2Play (unsigned int) - Continuing with card "
                  << players[player].hand.at (pos) << " at pos " << pos);
    
          Check3 ((cardMin == CardWidget::SEVEN)
