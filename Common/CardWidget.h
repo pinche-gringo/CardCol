@@ -45,6 +45,8 @@ class CardWidget : public Gtk::Button {
    NUMBERS number () const {
       return static_cast <NUMBERS> ((deck.numberOfCards () - 1 - nrCard) >> 2); }
 
+   bool visible () const { return isVisible; }
+
  private:
    CardWidget ();
    CardWidget (const CardWidget&);
