@@ -3,11 +3,13 @@ Prerequisites
 
 The following packages are needed
 
-  - My YMP library; also availabe as a Sourceforge project
+  - My YGP library; also availabe as a Sourceforge project
     (http://libymp.sourceforge.net)
   - Gtkmm-2.0 (which itself needs GTK+-2.0). Available via http://www.gktmm.org
   - Carddecks; e.g. the KDE cardgames provide a huge collection. See also the
     README.
+  - An installed libpthreads enables the network ability (and loading of the
+    carddecks in the background)
 
 
 How to build (if extracted from an (tar-)archive)
@@ -32,13 +34,15 @@ Additional prerequiste software:
 
   - CVS (obviously, duh)
   - GNU gettext
+  - libtool
   - autoconf
   - automake
 
 
 Inside the directory containing the source code type
 
-  gettextize
+  gettextize --intl --no-changelog
+  libtoolize
   aclocal && automake -a && autoconf
   ./configure [configure-options]
   make [make-options]
