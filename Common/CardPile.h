@@ -221,7 +221,6 @@ typedef CardPile<Gtk::HBox>  CardHPile;
 inline void CardVPile::resize (unsigned int pos, PileStyle s) {
    ICardPile::resize (pos, s); }
 inline void CardVPile::resize (CardWidget& card, PileStyle s) {
-   TRACE1 ("CardVPile::resize (CardWidget&, PileStyle) - " << card);
    if (s == TOTALLY_COMPRESSED)
       card.hide ();
    else {
