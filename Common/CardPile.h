@@ -40,7 +40,7 @@
 class ICardPile : public std::vector<CardWidget*> {
  public:
    typedef enum { NORMAL = 0, COMPRESSED, QUITE_COMPRESSED, VERY_COMPRESSED,
-                  LAST } PileStyle;
+                  TOTALLY_COMPRESSED, LAST } PileStyle;
    typedef enum { SHOWBACK = 0, SHOWFACE, DONT_CHANGE } ShowOpt;
 
    typedef bool (*CMPFUNC) (const CardWidget*, const CardWidget*);
@@ -210,15 +210,28 @@ typedef CardPile<Gtk::HBox>  CardHPile;
 inline void CardVPile::resize (unsigned int pos, PileStyle s) {
    ICardPile::resize (pos, s); }
 inline void CardVPile::resize (CardWidget& card, PileStyle s) {
-   int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
-   card.set_size_request (-1, height[s]);
+   TRACE1 ("CardVPile::resize (CardWidget&, PileStyle) - " << card);
+   if (s == TOTALLY_COMPRESSED)
+      card.hide ();
+   else {
+      int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
+      card.set_size_request (-1, height[s]);
+      if (style == TOTALLY_COMPRESSED)
+         card.show ();
+   }
 }
 
 inline void CardHPile::resize (unsigned int pos, PileStyle s) {
    ICardPile::resize (pos, s); }
 inline void CardHPile::resize (CardWidget& card, PileStyle s) {
-   int width[(int)LAST] = { card.getImageWidth(), 18, 7, 1 };
-   card.set_size_request (width[s], -1);
+   if (s == TOTALLY_COMPRESSED)
+      card.hide ();
+   else {
+      int width[(int)LAST] = { card.getImageWidth(), 18, 7, 1 };
+      card.set_size_request (width[s], -1);
+      if (style == TOTALLY_COMPRESSED)
+         card.show ();
+   }
 }
 
 
@@ -288,96 +301,5 @@ template <class T> class CardInfoPile : public CardPile<T> {
 
 typedef CardInfoPile<Gtk::VBox>  CardVInfoPile;
 typedef CardInfoPile<Gtk::HBox>  CardHInfoPile;
-
-
-// Specializations of ICardPile to display. Implements a totally compressed
-// cardpile (which does not work; every child in a box must have a height of
-// at least one).
-class PseudoPile : public Gtk::Button, public ICardPile {
- public:
-   PseudoPile (ShowOpt show = DONT_CHANGE)
-      : ICardPile (VERY_COMPRESSED, show) {
-      Gtk::Button::add (*Gtk::manage (new Gtk::Image ()));
-      Gtk::Button::get_child ()->show (); }
-   virtual ~PseudoPile () { }
-
-   virtual void resize (CardWidget&, PileStyle) { }
-   virtual void resize (unsigned int pos, PileStyle) {
-      if (size ()) {
-         dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->set
-            (back ()->getShownImage ());
-      }
-      else
-         dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->clear (); }
-   virtual void sort (CMPFUNC fnSort) {
-      if (size ()) {
-         resize (size () - 1, style);
-         ICardPile::sort (fnSort);
-         dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->set
-            (back ()->getShownImage ()); }
-   }
-};
-
-// Specializations of CardPile, displaying the number of cards as tooltip
-// (especially usefull, if the pile is (very) compressed ;) )
-class PseudoInfoPile : public PseudoPile {
- public:
-   PseudoInfoPile (ShowOpt show = DONT_CHANGE)
-      : PseudoPile (show) { setTooltips (); }
-   virtual ~PseudoInfoPile () { }
-
-   virtual void setTopCard (CardWidget& newCard) {
-      PseudoPile::setTopCard (newCard);
-      setTooltips (); }
-   void setTopCard (CardWidget& newCard, bool visible) {
-      PseudoPile::setTopCard (newCard, visible); }
-
-   virtual CardWidget& removeTopCard () {
-      CardWidget& card (PseudoPile::removeTopCard ());
-      tt.unset_tip (card);
-      setTooltips ();
-      return card; }
-
-   virtual void insert (CardWidget& card, unsigned int pos) {
-      PseudoPile::insert (card, pos);
-      setTooltips (); }
-
-   virtual CardWidget& remove (CardWidget& card) {
-      ICardPile::remove (card);
-      tt.unset_tip (card);
-      setTooltips ();
-      return card; }
-   CardWidget& remove (CardWidget& card, bool visible) {
-      ICardPile::remove (card);
-      card.showFace (visible);
-      return card; }
-   virtual CardWidget& remove (unsigned int pos) {
-      CardWidget& card (ICardPile::remove (pos));
-      tt.unset_tip (card);
-      setTooltips ();
-      return card; }
-   virtual CardWidget& remove (unsigned int pos, bool visible) {
-      CardWidget& card (ICardPile::remove (pos));
-      card.showFace (visible);
-      return card; }
-
-   virtual CardWidget& move (unsigned int dest, unsigned int source) {
-      PseudoPile::move (dest, source);
-      setTooltips (); }
-
-
-   void showTips (bool on = true) { on ? tt.enable () : tt.disable (); }
-
- protected:
-   virtual void setTooltips () {
-      std::string tip (ngettext ("%1 card", "%1 cards", size ()));
-      tip.replace (tip.find ("%1"), 2,
-                   ANumeric::toString (size ()));
-      tt.set_tip (*this, tip);
-   }
-
- private:
-    Gtk::Tooltips tt;
-};
 
 #endif
