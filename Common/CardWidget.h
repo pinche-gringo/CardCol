@@ -38,7 +38,7 @@ class CardWidget : public Gtk::Button {
 
    typedef enum { CLUBS = 0, DIAMONDS, HEARTS, SPADES } COLORS;
    typedef enum { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
-                  JACK, QUEEN, KING, ACE } NUMBERS;
+                  JACK, QUEEN, KING, ACE, UNREACHABLE } NUMBERS;
 
    unsigned int id () const { return nrCard; }
    COLORS color () const { return transColor[nrCard % 4]; }
