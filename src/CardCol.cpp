@@ -47,6 +47,7 @@
 #include "Hearts.h"
 #include "Rovhult.h"
 #include "Twopart.h"
+#include "Burazno.h"
 #include "Options.h"
 #include <PlayerDlg.h>
 
@@ -412,7 +413,8 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { _("_Change game"),      _("<alt>C"), 0,        SUBMENU },
     {    _("_Røvhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
     {    _("_Twopart"),       _("<ctl>T"), TWOPART,  RADIOITEM },
-    {    _("_Hearts"),        _("<ctl>H"), HEARTS,   LASTRADIOITEM },
+    {    _("_Hearts"),        _("<ctl>H"), HEARTS,   RADIOITEM },
+    {    _("_Burazno"),       _("<ctl>B"), BURAZNO,  LASTRADIOITEM },
     { "",                     "",          0,        SUBMENUEND },
     { _("Change _decks ..."), _("<ctl>D"), CHGDECKS, ITEM },
     { _("Change _names ..."), _("<ctl>C"), CHGNAMES, ITEM },
@@ -467,6 +469,7 @@ class CardgameAppl : public IVIOApplication {
 
 const IVIOApplication::longOptions CardgameAppl::lo[] = {
    { IVIOAPPL_HELP_OPTION },
+   { "game", 'g' },
    { "browser", 'b' },
    { "help-dir", 'd' },
    { "file", 'f' },
@@ -548,6 +551,11 @@ void CardgameCollection::startGame () {
             (*this, &CardgameCollection::gameEvents);
          break;
 
+      case GBURAZNO:
+         game = new TGame<Burazno, CardgameCollection>
+            (*this, &CardgameCollection::gameEvents);
+         break;
+
       default:
          Check (0);
       }
@@ -608,6 +616,10 @@ void CardgameCollection::command (int menu) {
 
    case HEARTS:
       options.type = GHEARTS;
+      break;
+
+   case BURAZNO:
+      options.type = GBURAZNO;
       break;
 
    case CHGDECKS:
@@ -831,27 +843,28 @@ void CardgameCollection::gameEvents (unsigned int status) {
 //Purpose   : Displays the help
 /*--------------------------------------------------------------------------*/
 void CardgameAppl::showHelp () const {
-   cout << "Collection of cardgames\n\nUsage: " PACKAGE " [OPTIONS]\n\n"
-      "  -g, --game ....... [GAME] Select game to start (default: Rovhult)\n"
-      "  -f, --file ....... [FILE] Use file as INI file\n"
-      "  -b, --browser .... [NAME] Browser to use to display the help\n"
-      "  -d, --help-dir ... [DIR] Directory to search for help\n"
-      "  -V, --version .... Output version information and exit\n"
-      "  -h, -?, --help ... Displays this help and exit\n\n"
-      "Valid values for GAME are Rovhult, Røvhult, Twopart and Hearts or the numbers\n"
-      "0, 1 and 2 (corresponding to the games in the above order).\n\n"
-      "The INI file can have the following entries:\n\n"
-      "  [Game]\n"
-      "  Type=Twopart\n"
-      "  Helpbrowser=galeon\n"
-      "  Helpdir=/usr/share/doc/Cardgames/\n"
-      "  CardFront=/usr/local/share/Cardsets/Deck1\n"
-      "  CardBack=/usr/local/share/Cardsets/back1.xpm\n\n"
-      "  [Players]\n"
-      "  0=Human\n"
-      "  1=Computer 1\n"
-      "  2=Computer 2\n"
-      "  3=Computer 3\n";
+   cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
+        << _(" [OPTIONS]\n\n"
+             "  -g, --game ....... [GAME] Select game to start (default: Røvhult)\n"
+             "  -f, --file ....... [FILE] Use file as INI file\n"
+             "  -b, --browser .... [NAME] Browser to use to display the help\n"
+             "  -d, --help-dir ... [DIR] Directory to search for help\n"
+             "  -V, --version .... Output version information and exit\n"
+             "  -h, -?, --help ... Displays this help and exit\n\n"
+             "Valid values for GAME are Rovhult, Røvhult, Twopart, Hearts and Burazno or the\n"
+             "numbers 0 - 3 (corresponding to the games in the above order).\n\n"
+             "The INI file can have the following entries:")
+        << ("  [Game]\n"
+            "  Type=Twopart\n"
+            "  Helpbrowser=galeon\n"
+            "  Helpdir=/usr/share/doc/Cardgames/\n"
+            "  CardFront=/usr/local/share/Cardsets/Deck1\n"
+            "  CardBack=/usr/local/share/Cardsets/back1.xpm\n\n"
+            "  [Players]\n"
+            "  0=Human\n"
+            "  1=Computer 1\n"
+            "  2=Computer 2\n"
+            "  3=Computer 3\n");
 }
 
 /*--------------------------------------------------------------------------*/
@@ -870,12 +883,14 @@ bool CardgameAppl::handleOption (const char option) {
          CardgameCollection::games type (convertToGameType (game));
          if (type != CardgameCollection::NONE)
             options.type = type;
-         else
-            cerr << PACKAGE "-warning: INI-file contains invalid game type `"
-                 << game << "'\n";
+         else {
+            string err (_("-warning: INI-file contains invalid game type `%1'"));
+            err.replace (err.find ("%1"), 2, game);
+            cerr << PACKAGE << err << '\n';
+         }
       }
       else
-         cerr << PACKAGE "-warning: No game specified! Ignoring option `g'\n";
+         cerr << PACKAGE << _("-warning: No game specified! Ignoring option `g'\n");
       break; }
 
    case 'd': {
@@ -883,7 +898,7 @@ bool CardgameAppl::handleOption (const char option) {
       if (pDir)
          options.helpPath = pDir;
       else
-         cerr << PACKAGE "-warning: No directory specified! Ignoring option `d'\n";
+         cerr << PACKAGE << _("-warning: No directory specified! Ignoring option `d'\n");
       break; }
 
    case 'b': {
@@ -891,7 +906,7 @@ bool CardgameAppl::handleOption (const char option) {
       if (pBrowser)
          options.browser = pBrowser;
       else
-         cerr << PACKAGE "-warning: No browser specified! Ignoring option `b'\n";
+         cerr << PACKAGE << _("-warning: No browser specified! Ignoring option `b'\n");
       break; }
 
    case 'f': {
@@ -899,11 +914,12 @@ bool CardgameAppl::handleOption (const char option) {
       if (pFile)
          readINIFile (pFile);
       else
-         cerr << PACKAGE "-warning: No file specified! Ignoring option `f'\n";
+         cerr << PACKAGE << _("-warning: No file specified! Ignoring option `f'\n");
       break; }
 
    case 'V':
-      cout << description () << '\n'; exit (0);
+      cout << description () << '\n';
+      exit (0);
       break;
    }
 
@@ -923,9 +939,11 @@ CardgameCollection::games CardgameAppl::convertToGameType (const char* pText) {
                   { "Røvhult", CardgameCollection::GROVHULT },
                   { "Twopart", CardgameCollection::GTWOPART },
                   { "Hearts", CardgameCollection::GHEARTS },
+                  { "Burazno", CardgameCollection::GBURAZNO },
                   { "0", CardgameCollection::GROVHULT },
                   { "1", CardgameCollection::GTWOPART },
-                  { "2", CardgameCollection::GHEARTS } };
+                  { "2", CardgameCollection::GHEARTS },
+                  { "3", CardgameCollection::GBURAZNO } };
 
    for (unsigned int i (0); i < (sizeof (values) / sizeof (values[0])); ++i)
       if (!strcmp (values[i].pText, pText))
@@ -959,16 +977,20 @@ void CardgameAppl::readINIFile (const char* pFile) {
       unsigned int rc (INIFILE_READ ());
    }
    catch (std::string& error) {
-      cerr << PACKAGE "-warning: Error reading INI-file '" << pFile << "'\n"
-           << error << '\n';
+      string err ("-warning: Error reading INI-file `%1'");
+      err.replace (err.find ("%1"), 2, pFile);
+      cerr << PACKAGE << err << '\n';
    }
 
    CardgameCollection::games type (convertToGameType (options.strType.c_str ()));
    if (type != CardgameCollection::NONE)
       options.type = type;
-   else
-      cerr << PACKAGE "-warning: INI-file contains invalid game type `"
-           << options.strType << "'\n";
+   else {
+      string err ("-warning: INI-file `%1' contains invalid game type `%2'");
+      err.replace (err.find ("%1"), 2, pFile);
+      err.replace (err.find ("%2"), 2, options.strType);
+      cerr << PACKAGE << err << '\n';
+   }
 }
 
 /*--------------------------------------------------------------------------*/
