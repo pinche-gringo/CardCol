@@ -37,6 +37,13 @@ class CardWidget : public Gtk::Button {
    void setVisible (bool visible = true);
    void setInvisible ()  { setVisible (false); }
 
+   typedef enum { CLUBS = 0, DIAMONDS, HEARTS, SPADES } COLORS;
+   typedef enum { ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
+                  JACK, QUEEN, KING, ACE } NUMBERS;
+
+   COLORS color () const { transColor[nrCard % 4]; }
+   NUMBERS number () const { (52 - nrCard) >> 2; }
+
  private:
    CardWidget ();
    CardWidget (const CardWidget&);
@@ -44,6 +51,8 @@ class CardWidget : public Gtk::Button {
    bool isVisible;
    unsigned int nrCard;
    const CardImages& deck;
+
+   static COLORS transColor[4];
 };
 
 #endif
