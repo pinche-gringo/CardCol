@@ -57,7 +57,7 @@ Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
      , cards (cardset), restart (false), pWonPile (NULL), pMenuPopSort (NULL)
      , names (playerNames) {
    TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, unsinged int, unsigned int)");
-   Check3 (cardset.numberOfCards ());
+   Check3 (cardset.size ());
 
    show ();
    set_col_spacings (2);
@@ -116,7 +116,7 @@ void Game::end (bool startNew) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Disables the cards of the human player
+//Purpose   : Disables the cards the human player can select
 /*--------------------------------------------------------------------------*/
 void Game::disableHuman () {
    TRACE2 ("Game::disableHuman () - " << activeCards.size () << " cards");
@@ -145,12 +145,12 @@ void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start,
                      int end) {
    TRACE3 ("Game::movePile (ICardPile&, ICardPile&, unsigned int, int) - "
            "moving from pos " << start << " to " << end);
-   Check3 (source.numberOfCards ());
-   Check3 (start < source.numberOfCards ());
+   Check3 (source.size ());
+   Check3 (start < source.size ());
    
    if (end == -1)
-      end = source.numberOfCards () - 1;
-   Check1 (end < source.numberOfCards ()); Check1 (start <= end);
+      end = source.size () - 1;
+   Check1 (end < source.size ()); Check1 (start <= end);
 
    do {
       dest.append (source.remove (start));
@@ -194,7 +194,6 @@ bool Game::enableHuman () {
 /*--------------------------------------------------------------------------*/
 bool Game::makeComputerMove () {
    TRACE5 ("Game::makeComputerMove () - Turn of player " << actPlayer);
-   Check3 (actPlayer);
 
    if (statGame == TOSTOP) {
       TRACE8 ("Game::makeCompuerMove () - End game ");
@@ -254,27 +253,27 @@ void Game::setGameStatus (unsigned int newStatus) {
 void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end) {
    TRACE2 ("Game::flipCards2Play (ICardPile&, unsigned int, unsigned int) - "
            "Cards from " << start << " to " << end);
-   Check3 (end < pile.numberOfCards ());
+   Check3 (end < pile.size ());
    Check3 (start <= end);
 
    unsigned int s (start);
    unsigned int e (end);
    bool bFollow (false);
    do {
-      CardWidget& card (pile.at (s));
-      pile.move (pile.numberOfCards () - 1, s);
+      CardWidget& card (*pile[s]);
+      pile.move (pile.size () - 1, s);
       card.showFace ();
 
       if ((pile.getStyle () != ICardPile::NORMAL)
           && bFollow) {
-         Check3 (pile.numberOfCards () > 1);
-         pile.resize (pile.numberOfCards () - 2, ICardPile::COMPRESSED);
+         Check3 (pile.size () > 1);
+         pile.resize (pile.size () - 2, ICardPile::COMPRESSED);
       }
       bFollow = true;
    } while (e-- && (s <= e));
 
-   start = pile.numberOfCards () - 1 - (end - start);
-   end =  pile.numberOfCards () - 1;
+   start = pile.size () - 1 - (end - start);
+   end =  pile.size () - 1;
    TRACE8 ("Game::flipCards2Play (ICardPile&, unsigned int, unsigned int) - "
            "New positions " << start << " and " << end);
 }
@@ -359,11 +358,11 @@ bool Game::enableActWonCards () {
    disableWonCards ();
 
    Check3 (pWonPile);
-   TRACE9 ("Game::enableActWonCards () - Enabling " << pWonPile->numberOfCards ()
+   TRACE9 ("Game::enableActWonCards () - Enabling " << pWonPile->size ()
            << " cards");
-   for (int i (pWonPile->numberOfCards ()); i;)
+   for (int i (pWonPile->size ()); i;)
       wonCards.push_back
-         (pWonPile->at (--i).signal_event ().connect
+         ((*pWonPile)[--i]->signal_event ().connect
           (slot (*this, (&Game::wonCardsSelected))));
    return false;
 }
