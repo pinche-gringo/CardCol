@@ -270,8 +270,7 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
              && (getType () == COLOUR)
              && (((int)(size () - 4) > diffTable)
                  || ((int)(size () - 1) == diffTable))
-             && (Check3 (diffTable < (int)size ()),
-                 pair.find (operator[] (diffTable)->id ()) == -1)) {
+             && (pair.find (operator[] (diffTable)->id ()) == -1)) {
             match = begin () + diffTable;
             nr = end () - match;
             if ((int)(size () - 4) > diffTable)
