@@ -27,14 +27,17 @@
 #define DEBUG 0
 #include <Trace_.h>
 
-#include "CardImgs.h"
 #include "CardWidget.h"
+
+
+CardWidget::COLORS CardWidget::transColor[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
 
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Constructor; adds all controls to the dialog
-//Parameters: parent: Parent-window
-//            image: Image to display
+//Parameters: set: Images of cards
+//            card: Number of image inside the set to display
+//            visible: Flag, if card should be displayed visible
 /*--------------------------------------------------------------------------*/
 CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible = true)
    : isVisible (visible), nrCard (card), deck (set) {
