@@ -23,6 +23,8 @@
 #include <gtk--/table.h>
 #include <gtk--/statusbar.h>
 
+#include <Thread.h>
+
 #include <CardSet.h>
 #include <CardPile.h>
 #include <CardImgs.h>
@@ -54,6 +56,8 @@ class RovhultAppl : public XApplication {
    void dealCards ();
    void fillStaple ();
 
+   void loadCards ();
+
    virtual void size_allocate_impl (GtkAllocation* size); 
  
    static XApplication::MenuEntry RovhultAppl::menuItems[];
@@ -74,6 +78,9 @@ class RovhultAppl : public XApplication {
    CardImages cardFaces;
 
    CardSet cards;
+
+   typedef OThread<RovhultAppl> THRDAPPL;
+   THRDAPPL* pThread;
 
    static const unsigned int USED_CARDS = 52;
 
