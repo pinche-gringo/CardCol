@@ -6,3 +6,4 @@
 Rovhult/Rovhult.cpp
 Common/CardImgs.cpp
 Common/CardPile.h
+Twopart/Twopart.cpp
