@@ -309,8 +309,6 @@ int Buraco::makeMove (unsigned int player) {
             CardVPile& pile (makeNewPile (player & 1));
       }
       else {
-
-         gStatus.startGame = 0;
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
             // Send played card to all clients (if any)
          if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
@@ -326,6 +324,8 @@ int Buraco::makeMove (unsigned int player) {
       }
 
       gStatus.startGame = 0;
+   }
+
    if (target == -1U)
       target = executeMove (player);
    flipCards2Play (playerPile, pos1Play, pos2Play);
