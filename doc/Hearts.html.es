@@ -98,7 +98,7 @@
         </td>
         <td><a href="Buraco.html.es">Anterior</a><br>(Buraco)</td>
         <td><a href="CardCol.html.es">Contenido</a></td>
-        <td><a href="Røvhult.html.es">Pr&oacute;ximo</a><br>(R&oslash;vhult)</td>
+        <td><a href="Machiavelli.html.es">Pr&oacute;ximo</a><br>(Machiavelli)</td>
       </tr>
     </table>
   </body>
