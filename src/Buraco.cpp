@@ -82,8 +82,6 @@ static unsigned int CARDS_AT_START (137);
    hands[0].setShowOption (ICardPile::SHOWFACE);
    hands[0].show ();
    names[0].show ();
-   hands[0].show ();
-   hands[1].show ();
            "std::vector<Glib::ustring>&) - Attach widgets");
    attach (hands[0], 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
            "std::vector<std::string>&) - Attach widgets");
@@ -384,6 +382,8 @@ static unsigned int CARDS_AT_START (137);
    setNextPlayer (startPlayer);
    displayTurn (startPlayer++);
    startPlayer &= 0x3;
+   hands[0].show ();
+   hands[startPlayer ? startPlayer : 1].show ();
    makeNextMoves ();
 //-----------------------------------------------------------------------------
 /// Remove cards from everything which can hold them
@@ -393,8 +393,10 @@ static unsigned int CARDS_AT_START (137);
    disableHuman ();
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       hands[i].clear ();
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
    staple.clear ();
+      hands[i].hide ();
+   }
    dumped.clear ();
 
    for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
@@ -1194,7 +1196,7 @@ int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
    // Check if pile contains only jokers; if so for piles with only 1 joker
    // every card is valid; for piles having >= 2 jokers, only jokers
    if (first == -1U)
-      return (pile.size () == 1) ? true : isJoker (card);
+      return ((pile.size () == 1) || isJoker (card)) ? 0 : -1;
 
    // Else check if the pile is a numberd or a coloured one
    Check3 (first <= last); Check3 (last < pile.size ());
@@ -1339,7 +1341,6 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards) const {
 //Parameters: pile: Pile to inspect
 //            card: Card where to find a pair to
 //Returns   : True, if the pile contains a matching pair
-//TODO: Repair for series of colours
 /*--------------------------------------------------------------------------*/
 bool Buraco::pileHasFittingPair (const ICardPile& pile, 
                                  const CardWidget& card) {
@@ -1368,15 +1369,15 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile,
             TRACE9 ("Buraco::pileHasFittingPair (const ICardPile&, const "
                     "CardWidget*) - " << **p << " differs " << diff);
             if ((diff < 5) && !(bCols & (1 << diff))) {
-               bCols |= (1 << diff);
-               if ((bCols == 0x18) || (bCols == 0x03) || (bCols == 0x82))
+               if (bCols & ((diff > 1) ? (0x5 << (diff - 2)) : 0x1 << diff))
                   return true;
+               bCols |= (1 << diff);
             }
          }
       }
    }
    TRACE9 ("Buraco::pileHasFittingPair (const ICardPile&, const "
-           "CardWidget*) - " << card << " matches " << nr << '/'
+           "CardWidget*) - " << card << " matches " << nrs << '/'
            << std::hex << bCols << std::dec);
    return false;
 //-----------------------------------------------------------------------------
