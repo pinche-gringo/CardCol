@@ -25,10 +25,11 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#define CHECK 9
-#define TRACELEVEL 9
+#include <cardgames-cfg.h>
+
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
+#include <YGP/ANumeric.h>
 
 #include "MachiPile.h"
 
@@ -132,7 +133,9 @@ CardWidget& MachiPile::remove (unsigned int pos, bool visible) {
 //----------------------------------------------------------------------------
 unsigned int MachiPile::getPosition4Card (const CardWidget& card) const {
    TRACE1 ("MachiPile::getPosition4Card (const CardWidget&) const - " << card);
-   Check1 (size ());
+
+   if (empty ())
+      return 0;
 
    // First test numbered piles (btw. undefined piles)
    if (type != COLOUR) {
@@ -180,7 +183,7 @@ int MachiPile::cardDistance (const CardWidget& a, const CardWidget& b,
                "Checking for Ace");
      if (a.number () == CardWidget::ACE) {
         if ((aceIsOne == ONE) || (b.number () < CardWidget::FOUR))
-           return static_cast<int> (b.number ()) - 1;
+           return -static_cast<int> (b.number ()) - 1;
      }
      else if (b.number () == CardWidget::ACE)
         if ((aceIsOne == ONE) || (a.number () < CardWidget::FOUR))
@@ -190,4 +193,38 @@ int MachiPile::cardDistance (const CardWidget& a, const CardWidget& b,
    TRACE9 ("MachiPile::cardDistance (const CardWidget&, const CardWidget&, ACEFLAG) - "
            "Distance: " << a.number () - b.number ());
    return a.number () - b.number ();
+}
+
+//----------------------------------------------------------------------------
+/// Analyzes the pile and stores its characteristics
+//----------------------------------------------------------------------------
+void MachiPile::analyzePile () {
+   if (size () == 2)
+      type = ((operator[] (0)->number () == operator[] (1)->number ())
+              ? NUMBER : COLOUR);
+   else if (size () < 2)
+      type = UNDEFINED;
+}
+
+//----------------------------------------------------------------------------
+/// Checks the integrity of the object
+/// \throw std::string describing the error 
+//----------------------------------------------------------------------------
+void MachiPile::checkIntegrity () throw (Glib::ustring) {
+   if (size () < 3)
+      throw _("Not enough cards (must be at least 3)!");
+
+   if (type == UNDEFINED)
+      throw _("Invalid type!");
+
+   for (const_iterator i (begin ()); (i + 1) != end (); ++i)
+      if ((type == COLOUR)
+          ? (((*i)->colour () != (*(i + 1))->colour ())
+             || (cardDistance (**(i + 1), **i) != 1))
+          : ((*i)->number () != (*(i + 1))->number ())) {
+         Glib::ustring error (_("Card %1 does not fit!"));
+         error.replace (error.find ("%1"), 2,
+                        YGP::ANumeric::toString ((i + 1) - begin ()));
+         throw error;
+      }
 }
