@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 27.09.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2004
+//COPYRIGHT   : Copyright (C) 2003 - 2005
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -208,8 +208,8 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
                                (*operator[] (status.posFirst), card,
                                 operator[] (status.posFirst)->number ()
                                 < CardWidget::FIVE));
-            TRACE9 ("BuracoPile::getPosition4Card (const CardWidget&, unsigned "
-                    "int&, int&) - Diff: " << diff << "; max: " << maxDiff);
+            TRACE9 ("BuracoPile::getPosition4Card (const CardWidget&, 2x unsigned "
+                    "int&) - Diff: " << diff << "; max: " << maxDiff);
             Check3 (diff);
 
             if (diff && (diff <= maxDiff)) {
@@ -225,8 +225,7 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
                             ? operator[] (status.posFirst)->number ()
                             : card.number ()) == CardWidget::ACE)
                           ? status.posLast : 0);
-                  if (move)
-                     ++pos;
+		  ++pos;
                }
                return true;
             }
@@ -235,8 +234,8 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
          // Test if card fits at other end
          unsigned int diff (Buraco::cardDistance (card, *operator[] (status.posLast),
                                                   status.posFirst == status.posLast));
-         TRACE9 ("BuracoPile::getPosition4Card (const CardWidget&, unsigned "
-                 "int&, int&) - Diff (end): " << diff << "; max: " << maxDiff);
+         TRACE9 ("BuracoPile::getPosition4Card (const CardWidget&, 2x unsigned "
+                 "int&) - Diff (end): " << diff << "; max: " << maxDiff);
          if (diff && (diff <= maxDiff)) {
             pos = status.posLast + diff;
             if ((diff == 2) && (status.posJoker < status.posLast)) {
@@ -282,7 +281,7 @@ void BuracoPile::analyzePile () {
    if (status.posFirst > 6) {
       if (size () > 1)        // Only set type, if there are at least two cards
 	 status.type = NUMBER;
-      Check2 (status.posJoker < 7);
+      Check2 (size () ? (status.posJoker < 7) : 1);
       status.points = 2000;
 
       // Correct points if it is "sucio"
