@@ -6,7 +6,7 @@ AC_INIT()
 
 MAJOR_VERSION=0
 MINOR_VERSION=5
-MICRO_VERSION=05
+MICRO_VERSION=10
 RELEASE=$MAJOR_VERSION.$MINOR_VERSION
 VERSION=$RELEASE.$MICRO_VERSION
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -84,6 +84,13 @@ AC_ARG_ENABLE(checks,
                   CXXFLAGS="$CXXFLAGS -DCHECK=$enableval";
               else
                   CXXFLAGS="$CXXFLAGS -DNDEBUG -UCHECK"; fi)
+AC_ARG_ENABLE(saving,
+              AC_HELP_STRING([[[[[--enable-saving]]]]],
+                             [Enables saving and loading games (for testing)]),
+              if test "$enableval" != "no"; then
+                  test "$enableval" == "yes" && enableval=0
+                  CXXFLAGS="$CXXFLAGS -DSAVE_GAME";
+              fi)
 
 AC_ARG_WITH(carddeck-dir,
             AC_HELP_STRING([--with-carddeck-dir=DIR], [Path to the carddecks]),
