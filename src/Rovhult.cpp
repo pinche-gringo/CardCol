@@ -33,8 +33,6 @@
 
 #include <glib.h>
 
-#define CHECK 3
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -307,7 +305,7 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
 RovhultAppl::RovhultAppl ()
    : XApplication (PACKAGE " - Rovhult V" VERSION), status (), actPlayer (0)
      , tblTable (16, 19), cardFaces (USED_CARDS), cards (), pThread (NULL)
-     , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::COMPRESSED, true) {
+     , staple (tt, ICardPile::VERY_COMPRESSED), played (tt, ICardPile::COMPRESSED, true) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
@@ -594,7 +592,7 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
       card.setVisible ();
       
    if (!cardValid (card.number ())) {                 // Check if card is valid
-      if (players[player].reserve[pile].numberOfCards () > 1)   // Visible card? Return
+      if (players[player].reserve[pile].numberOfCards () > 1)   // Visible? Ret
          return;
       
       disableLastPlayer ();
@@ -605,11 +603,11 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    }
    disableLastPlayer ();
 
-   if (players[player].reserve[pile].numberOfCards () == 1)
-      Gtk::Main::timeout.connect (bind (slot (this, &RovhultAppl::doPileSelected),
-                                        player, pile), 1000);
-   else
-      doPileSelected (player, pile);
+   Gtk::Main::timeout.connect (bind (slot (this, &RovhultAppl::doPileSelected),
+                                     player, pile), 1000);
+
+   // Start a timer to perform the computer-moves
+   makeComputerMoves ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -630,7 +628,8 @@ int RovhultAppl::doPileSelected (unsigned int player, unsigned int pile) {
    if (card.number () != CardWidget::TEN)
       played.append (card);
    while (pile--) {
-      if ((players[player].reserve[pile].topCardVisible ())
+      if (players[player].reserve[pile].numberOfCards ()
+          && players[player].reserve[pile].topCardVisible ()
           && (players[player].reserve[pile].getTopCard ().number () == card.number ())) {
          CardWidget& movedCard (players[player].reserve[pile].removeTopCard ());
          if (movedCard.number () != CardWidget::TEN)
@@ -639,13 +638,8 @@ int RovhultAppl::doPileSelected (unsigned int player, unsigned int pile) {
    }
 
    actPlayer = executeMove (player, card.number ());
-
-   if (actPlayer > 0)
-      // Start a timer to perform the computer-moves
-      makeComputerMoves ();
-   else
-      if (!actPlayer)
-         enablePlayer (0);
+   if (!(player || actPlayer))
+      enablePlayer (0);
 
    return 0;
 }
@@ -659,9 +653,10 @@ int RovhultAppl::doPileSelected (unsigned int player, unsigned int pile) {
 //              - 8: Skips the next player
 //              -10: Clears the staple; the same player can continue with cards in hand
 //Parameters: nr: Card to check
+//            silent: Flag, if error should be displayed
 //Returns   : bool: True, if card can be played
 /*--------------------------------------------------------------------------*/
-bool RovhultAppl::cardValid (CardWidget::NUMBERS nr) {
+bool RovhultAppl::cardValid (CardWidget::NUMBERS nr, bool silent) {
    switch (nr) {
    case CardWidget::TWO:
       break;
@@ -676,15 +671,17 @@ bool RovhultAppl::cardValid (CardWidget::NUMBERS nr) {
 
          if (lastPlayed.number () == CardWidget::SEVEN) {
             if (nr > CardWidget::SEVEN) {
-               XMessageBox::Show (_("After a 7, the played card must be equal or smaller!"),
-                                  _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
+               if (!silent)
+                  XMessageBox::Show (_("After a 7, the played card must be equal or smaller!"),
+                                     _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
                return false;
             }
          }
          else
             if (nr < played.getTopCard ().number ()) {
-               XMessageBox::Show (_("Played card must be equal or bigger!"),
-                                  _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
+               if (!silent)
+                  XMessageBox::Show (_("Played card must be equal or bigger!"),
+                                     _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
                return false;
             }
       }
@@ -809,7 +806,7 @@ int RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::takeCards (unsigned int player) {
    TRACE2 ("RovhultAppl::takeCards (unsigned int) - " << player);
-   executeMove (player, CardWidget::UNREACHABLE);
+   actPlayer = executeMove (player, CardWidget::UNREACHABLE);
    disableLastPlayer ();
 
    // Start a timer to perform the computer-moves
@@ -925,7 +922,7 @@ bool RovhultAppl::clearPlayedIf4Equal () {
          return false;
       }
 
-   TRACE8 ("Rovhult::clearPlayedIf4Equal () - found 4");
+   TRACE7 ("Rovhult::clearPlayedIf4Equal () - found 4");
    played.clear ();
    return true;
 }
@@ -1337,29 +1334,48 @@ int RovhultAppl::makeTurn (unsigned int player) {
    else {
       // Play first visible cards
       bool cardVisible (false);
-      for (int i (0); i < 3; ++i) {
+      unsigned int i (0);
+      for (; i < 3; ++i) {
          if (players[player].reserve[i].numberOfCards () > 1) {
             cardVisible = true;
 
             // If card can be played: Search for last equal card
             CardWidget& actCard (players[player].reserve[i].getTopCard ());
-            if (actCard.number () > cardMin) {
+            if (cardValid (actCard.number (), true)) {
                while ((i < 2)
                       && (players[player].reserve[i + 1].getTopCard ().number ()
                           == actCard.number ()))
                   ++i;
             }
 
-            // Execute move
-            return doPileSelected (player, i);
+            // Execute move (if valid card found)
+            if (i != 3) {
+               doPileSelected (player, i);
+               return actPlayer;
+            }
          }
       }
 
       // No card visible: Play the first
       if (!cardVisible) {
-         for (int i (0); i < 3; ++i)
-            if (players[player].reserve[i].numberOfCards ())
-               return doPileSelected (player, i);
+         for (int i (0); i < 3; ++i) {
+            if (players[player].reserve[i].numberOfCards ()) {
+               CardWidget& card (players[player].reserve[i].getTopCard ());
+               card.setVisible ();
+
+               // If card is valid: Play it
+               if (cardValid (card.number (), true)) {
+                  doPileSelected (player, i);
+                  return actPlayer;
+               }
+               else {
+                  // Card is not valid: Take up pile
+                  players[player].reserve[i].removeTopCard ();
+                  played.append (card);
+                  return executeMove (player, CardWidget::UNREACHABLE);
+               }
+            }
+         }
       }
 
       Check3 (0);

@@ -97,7 +97,7 @@ class RovhultAppl : public XApplication {
 
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
 
-   bool cardValid (CardWidget::NUMBERS nr);
+   bool cardValid (CardWidget::NUMBERS nr, bool silent = false);
    int executeMove (unsigned int player, CardWidget::NUMBERS nr);
 
    void loadCards ();
@@ -119,13 +119,13 @@ class RovhultAppl : public XApplication {
 
    Widget* pMenuNew;
 
-   unsigned int actPlayer;
+   int actPlayer;
 
    CardImages cardFaces;
    CardSet cards;
 
-   CardHPile played;
-   CardVPile staple;                                         // Cards on staple
+   CardHInfoPile played;
+   CardVInfoPile staple;                                     // Cards on staple
    struct {
       CardHPile hand;                         // For players: Cards in the hand
       CardVPile reserve[3];                     // Reserve-cards (for end-game)
