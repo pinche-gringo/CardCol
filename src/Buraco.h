@@ -18,6 +18,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -61,9 +62,12 @@ class Burazno : public Game {
    void randomizeClonedCardsToPile (ICardPile& pile);
 
    //@Section DND
-   void registerDND (unsigned int start, unsigned int end);
-   void registerDND (unsigned int iCard);
-   void unregisterDND (unsigned int card) const;
+   void registerTableDND (unsigned int pile, unsigned int start, unsigned int end);
+   void registerTableDND (CardWidget& card, unsigned int nr);
+   void unregisterTableDND (CardWidget& card, unsigned int offset);
+   void registerHandDND (unsigned int start, unsigned int end);
+   void registerHandDND (unsigned int iCard);
+   void unregisterHandDND (unsigned int card);
    void getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
                      GtkSelectionData* pData, guint info, guint32 time,
                      unsigned int cardPos);
@@ -71,9 +75,11 @@ class Burazno : public Game {
                      GtkSelectionData* pData, guint info, guint32 time,
                      unsigned int card);
    void cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& pContext, gint,
-                            gint, GtkSelectionData* pData, guint, guint32 time);
+                            gint, GtkSelectionData* pData, guint, guint32 time,
+                            unsigned int cardPile);
 
-   CardHPile hands[NUM_PLAYERS];              // For players: Cards in the hand
+   CardHPile handHuman;
+   ICardPile hands[NUM_PLAYERS - 1]; // For computer players: Cards in the hand
    std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];
 
    unsigned int startPlayer;
@@ -86,6 +92,10 @@ class Burazno : public Game {
    SigC::Connection dumpedTop;
    SigC::Connection stapleTop;
 
+   std::vector<SigC::Connection> aDNDHand;
+   std::map<unsigned int, SigC::Connection> aDNDTable;
+
+   std::vector<CardVPile*>  aPiles;
    std::vector<CardWidget*> deck;
 
    static std::vector<Gtk::TargetEntry> dndType;

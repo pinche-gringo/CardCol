@@ -3,7 +3,7 @@
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Burazno
 //REFERENCES  :
-//TODO        :
+//TODO        : - Shuffle staple; - Disconnect get_drop_data signal
 //BUGS        :
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
@@ -51,6 +51,7 @@ unsigned int Buraco::ENDPOINTS (2000);
 Burazno::Burazno (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                   CardSet& cardset, const std::vector<std::string>& names)
    : Game (parent, statusbar, cardset, names, 3, 3), startPlayer (0)
+     , staple (ICardPile::SHOWBACK), dumped (ICardPile::SHOWFACE)
      , newPile (_("New pile")) {
    TRACE9 ("Burazno::Burazno (Box&, Statusbar&, CardSet&, const "
            "std::vector<std::string>&)");
@@ -63,28 +64,25 @@ Burazno::Burazno (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    boxTeam[0].pack_end (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
    boxTeam[0].set_size_request (-1, height + 5 * 15);
-   staple.setShowOption (ICardPile::SHOWBACK);
-   dumped.setShowOption (ICardPile::SHOWFACE);
-
    TRACE9 ("Burazno::Burazno (Box&, Statusbar&, CardSet&, const "
            "std::vector<std::string>&) - Init cards in hand");
-   hands[0].setStyle (ICardPile::COMPRESSED);
-   hands[0].setShowOption (ICardPile::SHOWFACE);
+   handHuman.setStyle (ICardPile::COMPRESSED);
+   handHuman.setShowOption (ICardPile::SHOWFACE);
 
    boxTeam[0].pack_end (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
            "std::vector<Glib::ustring>&) - Attach widgets");
    TRACE9 ("Burazno::Burazno (Box&, Statusbar&, CardSet&, const "
            "std::vector<std::string>&) - Attach widgets");
-   attach (hands[0], 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
+   attach (handHuman, 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1);
    attach (*scrlTable[0], 0, 10, 2, 3, Gtk::EXPAND | Gtk::FILL,
-   attach (dumped, 1, 2, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 1);
+           Gtk::EXPAND | Gtk::FILL, 0, 5);
    attach (boxTeam[0], 0, 10, 1, 2);
    attach (boxTeam[1], 0, 10, 2, 3);
            "std::vector<Glib::ustring>&) - Show widgets");
    TRACE9 ("Burazno::Burazno (Box&, Statusbar&, CardSet&, const "
            "std::vector<std::string>&) - Show widgets");
    dumped.show ();
-   hands[0].show ();
+   handHuman.show ();
    boxTeam[0].show ();
    boxTeam[1].show ();
 
@@ -136,18 +134,20 @@ void Burazno::start () {
    randomizeClonedCardsToPile (staple);
    randomizeCardsToPile (staple);
             reserve[(i - posServer) & 1].push_back (&staple.removeTopCard ());
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      for (unsigned int j (0); j < 13; ++j)
+   for (unsigned int j (0); j < 13; ++j) {
+      for (unsigned int i (0); i < NUM_PLAYERS - 1; ++i)
          hands[i].setTopCard (staple.removeTopCard ());
+      handHuman.setTopCard (staple.removeTopCard ());
    if (startPlayer)
-   hands[0].sortByNumber ();
+   handHuman.sortByNumber ();
 
-   Check3 (hands[0].numberOfCards ());
-   registerDND (0, hands[0].numberOfCards () - 1);
+   Check3 (handHuman.numberOfCards ());
+   for (unsigned int i (0); i < handHuman.numberOfCards (); ++i)
+      registerHandDND (i);
 
    status.pop ();
-   status.push (_("You can sort the cards in your hand with drag and drop ("
-                  "with button 2 or 3)"));
+   status.push (_("You can sort the cards in your hand with drag and drop or drop"
+                  " them on the table - click card to dump to end turn"));
 
    setNextPlayer (startPlayer);
    displayTurn (startPlayer++);
@@ -160,13 +160,19 @@ void Burazno::start () {
 /*--------------------------------------------------------------------------*/
 void Burazno::clean () {
    TRACE9 ("Burazno::clean ()");
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+   handHuman.clear ();
+   for (unsigned int i (0); i < NUM_PLAYERS - 1; ++i)
    staple.clear ();
    dumped.clear ();
 
    for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
    disableHuman ();
 
+
+   for (std::vector<CardVPile*>::iterator i (aPiles.begin ());
+        i != aPiles.end (); ++i)
+      delete *i;
+   aPiles.clear ();
 //-----------------------------------------------------------------------------
 /// Enables the cards the human can pick up.
 /*--------------------------------------------------------------------------*/
@@ -179,15 +185,15 @@ bool Burazno::enableHuman () {
 
    Check3 (hands[0].size ());
    for (unsigned int i (0); i < hands[0].size (); ++i) {
-   Check3 (hands[0].numberOfCards ());
-   registerDND (0, hands[0].numberOfCards () - 1);
+   Check3 (handHuman.numberOfCards ());
+   registerHandDND (0, handHuman.numberOfCards () - 1);
            << " cards");
-   TRACE2 ("Burazno::enableHuman () - Human has " << hands[0].numberOfCards ()
+   TRACE2 ("Burazno::enableHuman () - Human has " << handHuman.numberOfCards ()
    newPile.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    aDNDTable[NULL] = newPile.signal_drag_data_received ().connect
-   for (int i (hands[0].numberOfCards ()); i;)
+   for (int i (handHuman.numberOfCards ()); i;)
       activeCards.push_back
-         (hands[0].at (--i).signal_clicked ().connect
+         (handHuman.at (--i).signal_clicked ().connect
            (bind (slot (*this, (&Burazno::cardSelected)), i)));
 
    if (staple.numberOfCards ())
@@ -198,8 +204,8 @@ bool Burazno::enableHuman () {
          (slot (*this, (&Burazno::dumpedSelected)));
 
    newPile.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
-   newPile.signal_drag_data_received ().connect
-      (slot (*this, &Burazno::cardDroppedOnTable));
+   aDNDTable[-1U] = newPile.signal_drag_data_received ().connect
+      (bind (slot (*this, &Burazno::cardDroppedOnTable), -1U));
       Check3 (tablePiles[0][i]);
    return Game::enableHuman ();
 //-----------------------------------------------------------------------------
@@ -215,6 +221,14 @@ void Burazno::disableHuman () {
    stapleTop.disconnect ();
       for (unsigned int i (0); i < tablePiles[0].size (); ++i) {
    newPile.drag_dest_unset ();
+   for (std::vector<SigC::Connection>::iterator i (aDNDHand.begin ());
+        i != aDNDHand.end (); ++i)
+      i->disconnect ();
+   aDNDHand.clear ();
+   for (std::map<unsigned int, SigC::Connection>::iterator i (aDNDTable.begin ());
+        i != aDNDTable.end (); ++i)
+      i->second.disconnect ();
+   aDNDTable.clear ();
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card in the hand
 /*--------------------------------------------------------------------------*/
@@ -223,10 +237,10 @@ void Burazno::disableHuman () {
 /*--------------------------------------------------------------------------*/
 void Burazno::cardSelected (unsigned int iCard) {
    TRACE5 ("Burazno::cardSelected (unsigned int) - Position " << iCard);
-   Check1 (iCard < hands[0].numberOfCards ());
+   Check1 (iCard < handHuman.numberOfCards ());
    // Check if all piles are valid
    if (!humanPilesOK ()) {
-   dumped.append (hands[0].remove (iCard));
+   dumped.append (handHuman.remove (iCard));
 
    return;
 //-----------------------------------------------------------------------------
@@ -238,7 +252,7 @@ void Burazno::stapleSelected () {
    TRACE5 ("Burazno::stapleSelected ()");
    Check2 (dumped.size ());
    // (means: *after* this signalhandler termintes)
-   hands[0].append (staple.removeTopCard ());
+   handHuman.append (staple.removeTopCard ());
    makeNextMoves ();
    return;
 //-----------------------------------------------------------------------------
@@ -250,7 +264,7 @@ void Burazno::dumpedSelected () {
    TRACE5 ("Burazno::dumpedSelected ()");
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
 
-   hands[0].append (dumped.removeTopCard ());
+   handHuman.append (dumped.removeTopCard ());
    makeNextMoves ();
    return;
 //-----------------------------------------------------------------------------
@@ -272,14 +286,14 @@ void Burazno::randomizeClonedCardsToPile (ICardPile& pile) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Prepares the card for drag´n´drop
-//Parameters: pile: Number of card in hand
+//Parameters: iCard: Number of card in hand
 /*--------------------------------------------------------------------------*/
-void Burazno::registerDND (unsigned int iCard) {
-   TRACE9 ("Burazno::registerDND (unsigned int) - Card: " << iCard << " ("
-           << hands[0].at (iCard) << ')');
+void Burazno::registerHandDND (unsigned int iCard) {
+   TRACE9 ("Burazno::registerHandDND (unsigned int) - Card: " << iCard << " ("
+           << handHuman.at (iCard) << ')');
    Check3 (aDNDHand.find (&card) == aDNDHand.end ());
    static Glib::RefPtr<Gdk::Bitmap> bitmap;
-   CardWidget& card (hands[0].at (iCard));
+   CardWidget& card (handHuman.at (iCard));
    card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    card.drag_source_set
    card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
@@ -287,8 +301,8 @@ void Burazno::registerDND (unsigned int iCard) {
       (dndType, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK));
    aDNDHand[&card].connReceive = card.signal_drag_data_received ().connect
    card.drag_source_set_icon (get_colormap (), card.getImage (), bitmap);
-   card.signal_drag_data_received ().connect
-      (bind (slot (*this, &Burazno::cardDropped), iCard));
+   aDNDHand.push_back (card.signal_drag_data_received ().connect
+                       (bind (slot (*this, &Burazno::cardDropped), iCard)));
    card.signal_drag_data_get ().connect
       (bind (slot (*this, &Burazno::getDropData), iCard));
 //-----------------------------------------------------------------------------
@@ -297,14 +311,63 @@ void Burazno::registerDND (unsigned int iCard) {
 //Purpose   : Stops the drag´n´drop abilities of the passed card
 //Parameters: iCard: Offset of card to unregister of dnd
 /*--------------------------------------------------------------------------*/
-void Burazno::unregisterDND (unsigned int iCard) const {
-   TRACE9 ("Burazno::unregisterDND (unsigned int) - Card: " << iCard << " ("
-           << hands[0].at (iCard) << ')');
-   Check1 (iCard < hands[0].numberOfCards ());
+void Burazno::unregisterHandDND (unsigned int iCard) {
+   TRACE9 ("Burazno::unregisterHandDND (unsigned int) - Card: " << iCard << " ("
+           << handHuman.at (iCard) << ')');
+   Check1 (iCard < handHuman.numberOfCards ());
    card.drag_source_unset ();
-   CardWidget& card (hands[0].at (iCard));
+   CardWidget& card (handHuman.at (iCard));
    i->second.connReceive.disconnect ();
    i->second.connGet.disconnect ();
+   aDNDHand[iCard].disconnect ();
+//-----------------------------------------------------------------------------
+/// Prepares the passed region of cards for drag´n´drop
+/*--------------------------------------------------------------------------*/
+//Purpose   : Prepares the passed region of cards for drag´n´drop
+//Parameters: pile: Pile whose cards should be registered
+//            start: Number of first card to prepare for DND
+//            end: Number of last card to prepare for DND
+//Requieres : start < end; end <= cards
+/*--------------------------------------------------------------------------*/
+void Burazno::registerTableDND (unsigned int pile, unsigned int start, unsigned int end) {
+   TRACE9 ("Burazno::registerTableDND (unsigned int, unsigned int, unsigned int)"
+           << " - Pile " << pile << '[' << start << '-' << end << ']');
+   Check1 (pile < aPiles.size ());
+
+   Check1 (end < aPiles[pile]->numberOfCards ());
+   pile <<= 8;
+      unregisterTableDND (card);
+      CardWidget& card (aPiles[pile]->at (start));
+      unregisterTableDND (card, start);
+      registerTableDND (card, (pile << 8) + start);
+
+//-----------------------------------------------------------------------------
+/// Prepares the card for drag´n´drop
+/*--------------------------------------------------------------------------*/
+//Purpose   : Prepares the card for drag´n´drop
+//Parameters: pile: Pile where a cards should be registered
+//            nr: Number of card in pile
+/*--------------------------------------------------------------------------*/
+void Burazno::registerTableDND (CardWidget& card, unsigned int nr) {
+   TRACE9 ("Burazno::registerTableDND (CardWidget&, unsigned int) - Card: "
+           << card << " = " << nr);
+   card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
+   aDNDTable[&card] = card.signal_drag_data_received ().connect
+   card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
+   aDNDTable[nr] = card.signal_drag_data_received ().connect
+      (bind (slot (*this, &Burazno::cardDroppedOnTable), nr));
+//-----------------------------------------------------------------------------
+/// Stops the drag´n´drop abilities of the passed card
+/*--------------------------------------------------------------------------*/
+//Purpose   : Stops the drag´n´drop abilities of the passed card
+//Parameters: card: Card to de-register
+//            offset: Offset of card to unregister of dnd 
+/*--------------------------------------------------------------------------*/
+void Burazno::unregisterTableDND (CardWidget& card, unsigned int offset) {
+   TRACE9 ("Burazno::unregisterTableDND (unsigned int) - Card: " << card);
+   i->second.disconnect ();
+   aDNDTable.erase (i);
+   aDNDTable[offset].disconnect ();
 //-----------------------------------------------------------------------------
 /// Callback after dropping a card (within the hand)
 /*--------------------------------------------------------------------------*/
@@ -320,26 +383,21 @@ void Burazno::unregisterDND (unsigned int iCard) const {
 void Burazno::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
                            gint, gint, GtkSelectionData* pData, guint info,
                            guint32 time, unsigned int card) {
-   static bool second (true);
-   second = !second;
-   if (second)
-      return;
 
    Check3 (pData);
    Check3 (data.get_format () == 8);
    Check3 (pData->length == sizeof (int));
    Check3 (pData->format == 8);
-
-   Check3 (card < hands[0].numberOfCards ());
+   Check3 (card < handHuman.numberOfCards ());
                          (const_cast<guint8*> (data.get_data ())));
    unsigned int* pValue (reinterpret_cast <unsigned int*> (pData->data));
    TRACE1 ("Buraco::cardDropped (...) - Inserting card " << *pValue
-   Check3 (*pValue < hands[0].numberOfCards ());
+   Check3 (*pValue < handHuman.numberOfCards ());
    TRACE1 ("Burazno::cardDropped (...) - Inserting card " << *pValue
    if (acceptCards != -1U) {
       context->drag_finish (false, false, time);
-   CardWidget& cardTarget (hands[0].at (card));
-   CardWidget& cardMoved (hands[0].remove (*pValue));
+   CardWidget& cardTarget (handHuman.at (card));
+   CardWidget& cardMoved (handHuman.remove (*pValue));
    if (*pValue > card)
       ++card;
 
@@ -347,7 +405,7 @@ void Burazno::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
    context->drag_finish (true, false, time);
 
    // Insert moved card
-   hands[0].insert (cardMoved, card);
+   handHuman.insert (cardMoved, card);
    if (*pValue < card) {
       unsigned int temp (card);
       card = *pValue;
@@ -355,7 +413,7 @@ void Burazno::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
    }
 
    Glib::signal_idle ().connect
-   registerDND (card, *pValue);
+   registerHandDND (card, *pValue);
 //-----------------------------------------------------------------------------
 /// Checks if the piles on the table are valid (have at least 3 cards)
 /*--------------------------------------------------------------------------*/
@@ -365,11 +423,13 @@ void Burazno::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
 //            pData: Describes the thing which was dropped
 //            info: Describes the type of pData (should be 0)
 //            time: Timestamp of the drag
+//            iCard: Combination of card and pile on which card was dropped
 //Requieres : pContext, pData not NULL;
 /*--------------------------------------------------------------------------*/
 void Burazno::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
                                   gint, gint, GtkSelectionData* pData,
-                                  guint, guint32 time) {
+                                  guint, guint32 time, unsigned int iCard) {
+   TRACE1 ("Burazno::cardDroppedOnTable (...) - Card dropped on " << (int)iCard);
    Check3 (pData);
    Check3 (data.get_format () == 8);
    Check3 (pData->length == sizeof (int));
@@ -377,26 +437,43 @@ void Burazno::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
                          (const_cast<guint8*> (data.get_data ())));
    unsigned int* pValue (reinterpret_cast <unsigned int*> (pData->data));
            << " in pile");
-   Check3 (*pValue < hands[0].numberOfCards ());
+   Check3 (*pValue < handHuman.numberOfCards ());
    TRACE1 ("Burazno::cardDroppedOnTable (...) - Inserting card " << *pValue
            << " in new pile");
    if (!humanPilesOK (iCard >> 8)) {
    // End old DND
    context->drag_finish (true, false, time);
+   unregisterHandDND (*pValue);
 
    // Move dropped card to a new pile on the table
-   CardVPile* pile (Gtk::manage (new CardVPile ()));
-   CardWidget moved (hands[0].remove (*pValue));
-   moved.drag_dest_unset ();
+   unsigned int iPile;
+   CardVPile* pile (NULL);
+   CardWidget& moved (handHuman.remove (*pValue));
    TRACE4 ("Burazno::cardDroppedOnTable (...) - Card dropped: " << moved);
        && isJoker (moved) || (*pValue >= acceptCards)) {
-   pile->setShowOption (ICardPile::SHOWFACE);
-   pile->setStyle (ICardPile::COMPRESSED);
-   pile->setTopCard (moved);
-   pile->set_size_request (50, 50);
+   if (iCard == -1U) {
+      int width, height;
+      moved.getImageSize (width, height);
+      iPile = aPiles.size ();
+      aPiles.push_back (pile = (new CardVPile (ICardPile::COMPRESSED,
+                                               ICardPile::SHOWFACE)));
+      pile->set_size_request (width, height + 6 * 15);
+      boxTeam[0].pack_start (*pile, Gtk::PACK_SHRINK, 5);
+      pile->show ();
+   else {
+      // Else check pile to use
+      Check1 ((iCard >> 8) < tablePiles[0].size ());
+      Check1 ((iCard >> 8) < aPiles.size ());
+      pile = aPiles[iPile = (iCard++ >> 8)];
+      iCard &= 0xff;
+      Check1 (iCard <= pile->numberOfCards ());
+   // End old drag
+   if (iCard < (pile->size () - 1))
+   registerTableDND (moved, iCard);
+   registerTableDND (iPile, iCard, pile->numberOfCards () - 1);
 	   << "; " << *pValue << ": " << acceptCards);
-   boxTeam[0].pack_start (*pile, Gtk::PACK_SHRINK, 5);
-   pile->show ();
+   if (*pValue < (handHuman.numberOfCards () - 1))
+      registerHandDND (*pValue, handHuman.numberOfCards () - 1);
 //-----------------------------------------------------------------------------
 /// Callback to query the data to drop
 /*--------------------------------------------------------------------------*/
@@ -411,8 +488,6 @@ void Burazno::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 void Burazno::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
                            GtkSelectionData* pData, guint info, guint32 time,
                            unsigned int cardPos) {
-   TRACE9 ("Burazno::getDropData (...) - Nummer " << cardPos << " for "
-           << hands[0].at (cardPos));
    Check1 (pData); Check1 (!info);
    data.set (data.get_target (), 8, reinterpret_cast <guchar*> (&cardPos),
              sizeof (cardPos));
@@ -426,13 +501,13 @@ void Burazno::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
 //            end: Number of last card to prepare for DND
 //Requieres : start < end; end <= cards
 /*--------------------------------------------------------------------------*/
-void Burazno::registerDND (unsigned int start, unsigned int end) {
+void Burazno::registerHandDND (unsigned int start, unsigned int end) {
    Check1 (end < activeCards.size ());
-   Check1 (end < hands[0].numberOfCards ());
+   Check1 (end < handHuman.numberOfCards ());
       TRACE9 ("Buraco::registerHandDND (unsigned int, unsigned int) - Handling card " << start);
 
-      unregisterDND (start);
-      registerDND (start);
+      unregisterHandDND (start);
+   TRACE9 ("Buraco::registerHandDND (unsigned int, unsigned int) - End ");
 }
 }
 
