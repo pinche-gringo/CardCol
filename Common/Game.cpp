@@ -146,7 +146,7 @@ void Game::disableHuman () {
 
    for (int i (activeCards.size ()); i > 0;)
       activeCards[--i].disconnect ();
-   
+
    activeCards.clear ();
 }
 
@@ -158,7 +158,7 @@ void Game::disableHuman () {
 bool Game::randomizeCardsToPile (ICardPile& pile) const {
    // Randomize and put cards onto staple
    YGP::ConnectionMgr& cmgr (getConnectionMgr ());
-   
+
    if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT) {
       Check3 (data && *data);
       std::string input (data);
@@ -229,7 +229,7 @@ void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start,
            "moving from pos " << start << " to " << end);
    Check3 (source.size ());
    Check3 (start < source.size ());
-   
+
    if (end == -1)
       end = source.size () - 1;
    Check1 (end < static_cast<int> (source.size ()));
@@ -550,7 +550,7 @@ void Game::disableWonCards () {
    TRACE8 ("Game::disableWonCards () - Disabling " << wonCards.size () << " cards");
    for (int i (wonCards.size ()); i > 0;)
       wonCards[--i].disconnect ();
-   
+
    wonCards.clear ();
 }
 
@@ -729,8 +729,8 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (s
 //----------------------------------------------------------------------------
 /// Converts a string into a number
 /// \param number: Target of conversion
-/// \param text: String to convert 
-/// \returns bool: False, if conversion succeeded (\c text contained a number) 
+/// \param text: String to convert
+/// \returns bool: False, if conversion succeeded (\c text contained a number)
 //----------------------------------------------------------------------------
 bool Game::stringToNumber (unsigned long& number, const char* text) {
    Check1 (text);
