@@ -19,7 +19,7 @@
 
 #include <string>
 
-#include <gdkmm/pixmap.h>
+#include <gdkmm/pixbuf.h>
 
 #include <gtkmm/image.h>
 #include <gtkmm/eventbox.h>
@@ -51,11 +51,11 @@ class CardWidget : public Gtk::EventBox {
    char numberStr () const;
    char colorStr () const;
 
-   const Glib::RefPtr<Gdk::Pixmap> getShownImage () const {
+   const Glib::RefPtr<Gdk::Pixbuf> getShownImage () const {
       return isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (); }
-   const Glib::RefPtr<Gdk::Pixmap> getImage () const { return deck.getCardImage (nrCard); }
-   unsigned int getImageSize (int& width, int& height) const {
-      deck.getCardImage (nrCard)->get_size (width, height); }
+   const Glib::RefPtr<Gdk::Pixbuf> getImage () const { return deck.getCardImage (nrCard); }
+   unsigned int getImageWidth () const { return deck.getCardImage (nrCard)->get_width (); }
+   unsigned int getImageHeight () const { return deck.getCardImage (nrCard)->get_height (); }
 
    int compareNumber (CardWidget& other) const { return number () - other.number (); }
 

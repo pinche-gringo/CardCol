@@ -25,6 +25,7 @@
 #include <algorithm>
 
 #include <gtkmm/box.h>
+#include <gtkmm/image.h>
 #include <gtkmm/button.h>
 #include <gtkmm/tooltips.h>
 
@@ -207,21 +208,17 @@ typedef CardPile<Gtk::HBox>  CardHPile;
 
 
 void CardVPile::resize (unsigned int pos, PileStyle s) {
-   if (pos != -1) {
+   if (pos != -1U) {
       CardWidget& card (*cards[pos]);
-      int width;
-      int height[(int)LAST] = { 0, 15, 7, 1 };
-      card.getImageSize (width, height[0]);
+      int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
       card.set_size_request (-1, height[s]);
    }
 }
 
 void CardHPile::resize (unsigned int pos, PileStyle s) {
-   if (pos != -1) {
+   if (pos != -1U) {
       CardWidget& card (*cards[pos]);
-      int height;
-      int width[(int)LAST] = { 0, 18, 7, 1 };
-      card.getImageSize (width[0], height);
+      int width[(int)LAST] = { card.getImageWidth(), 18, 7, 1 };
       card.set_size_request (width[s], -1);
    }
 }
@@ -301,21 +298,24 @@ typedef CardInfoPile<Gtk::HBox>  CardHInfoPile;
 class PseudoPile : public Gtk::Button, public ICardPile {
  public:
    PseudoPile (ShowOpt show = DONT_CHANGE)
-      : ICardPile (NORMAL, show) { }
+      : ICardPile (NORMAL, show) {
+      Gtk::Button::add (*Gtk::manage (new Gtk::Image ()));
+      Gtk::Button::get_child ()->show (); }
    virtual ~PseudoPile () { }
 
    virtual void resize (unsigned int pos, PileStyle s) {
-      Gtk::Button::remove ();
-      if (pos == (cards.size () - 1))
-         add_pixmap (cards.back ()->getShownImage (),
-                     Glib::RefPtr<Gdk::Bitmap> (NULL));
-   }
+      if ((pos == (cards.size () - 1)) || !cards.size ()) {
+         dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->clear ();
+         if (cards.size ())
+            dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->set
+               (cards.back ()->getShownImage ());
+      } }
    virtual void sort (CMPFUNC fnSort) {
       if (cards.size ()) {
          resize (cards.size () - 1, style);
          ICardPile::sort (fnSort);
-         add_pixmap (cards.back ()->getShownImage (),
-                     Glib::RefPtr<Gdk::Bitmap> (NULL)); }
+         dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->set
+            (cards.back ()->getShownImage ()); }
    }
 };
 

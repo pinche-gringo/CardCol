@@ -25,8 +25,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <gdkmm/pixmap.h>
-
 #include <gtkmm/misc.h>
 
 #include <cardgames-cfg.h>
@@ -51,8 +49,7 @@ CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible)
    TRACE3 ("CardWidget::CardWidget (const CardImages&, unsinged int, bool) - "
            << card << " (" << visible << ')');
    
-   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
-            Glib::RefPtr<Gdk::Bitmap> (NULL));
+   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground ());
    img.set_alignment (0.0, 0.0);
    img.show ();
 
@@ -72,8 +69,7 @@ CardWidget::CardWidget (const CardWidget& other)
    TRACE3 ("CardWidget::CardWidget (const CardWidget&) - "
            << nrCard << " (" << isVisible << ')');
 
-   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
-            Glib::RefPtr<Gdk::Bitmap> (NULL));
+   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground ());
    img.set_alignment (0.0, 0.0);
    img.set_padding (0, 0);
    img.show ();
@@ -129,8 +125,7 @@ char CardWidget::colorStr () const {
 void CardWidget::update () {
    TRACE3 ("CardWidget::update () - Card " << nrCard);
 
-   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
-            Glib::RefPtr<Gdk::Bitmap> (NULL));
+   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground ());
 }
 
 
