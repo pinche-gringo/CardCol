@@ -27,8 +27,8 @@
 
 #define CHECK 9
 #define TRACELEVEL 9
-#include <Check.h>
-#include <Trace_.h>
+#include <YGP/Check.h>
+#include <YGP/Trace.h>
 
 #include "MachiPile.h"
 
@@ -146,10 +146,16 @@ unsigned int MachiPile::getPosition4Card (const CardWidget& card) const {
    // Now check for matching colour
    TRACE9 ("MachiPile::getPosition4Card (const CardWidget&) const - Checking colour");
    if (operator[] (0)->colour () == card.colour ()) {
-      if (cardDistance (card, *operator[] (0)) == -1)
+      CardWidget* cmp (operator[] (0));
+      if (cardDistance (card, *cmp,
+                        ((cmp->number () == CardWidget::ACE)
+                         && (size () > 1) ? ONE : BOTH)) == -1)
          return 0;
       
-      if (cardDistance (card, *operator[] (size () - 1)) == 1)
+      cmp = operator[] (size () - 1);
+      if (cardDistance (card, *cmp,
+                        ((cmp->number () == CardWidget::ACE)
+                         && (size () > 1) ? ACE : BOTH)) == 1)
          return size ();
    }
 
@@ -164,22 +170,24 @@ unsigned int MachiPile::getPosition4Card (const CardWidget& card) const {
 /// \param aceIsOne: Flag, if aces should (also) be treated as one
 /// \returns \c int: Distance of the two passed cards (a - b)
 //----------------------------------------------------------------------------
-int MachiPile::cardDistance (const CardWidget& a, const CardWidget& b, bool aceIsOne) {
-   TRACE9 ("MachiPile::cardDistance (const CardWidget&, const CardWidget&, bool) - "
+int MachiPile::cardDistance (const CardWidget& a, const CardWidget& b,
+                             ACEFLAG aceIsOne) {
+   TRACE9 ("MachiPile::cardDistance (const CardWidget&, const CardWidget&, ACEFLAG) - "
            << a << "<->" << b);
    
-   if (aceIsOne) {                        // Special handling of the ace like 1
-      TRACE9 ("MachiPile::cardDistance (const CardWidget&, const CardWidget&) - "
+   if (aceIsOne != ACE) {                 // Special handling of the ace like 1
+      TRACE9 ("MachiPile::cardDistance (const CardWidget&, const CardWidget&, ACEFLAG) - "
                "Checking for Ace");
-      if ((a.number () == CardWidget::ACE)
-          && (b.number () < CardWidget::FOUR))
-         return 1 - static_cast<int> (b.number ());
-      else if ((b.number () == CardWidget::ACE)
-               && (a.number () < CardWidget::FOUR))
-         return static_cast<int> (a.number ()) - 1;
+     if (a.number () == CardWidget::ACE) {
+        if ((aceIsOne == ONE) || (b.number () < CardWidget::FOUR))
+           return static_cast<int> (b.number ()) - 1;
+     }
+     else if (b.number () == CardWidget::ACE)
+        if ((aceIsOne == ONE) || (a.number () < CardWidget::FOUR))
+           return static_cast<int> (a.number ()) + 1;
    }
 
-   TRACE9 ("MachiPile::cardDistance (const CardWidget&, const CardWidget&, bool) - "
+   TRACE9 ("MachiPile::cardDistance (const CardWidget&, const CardWidget&, ACEFLAG) - "
            "Distance: " << a.number () - b.number ());
    return a.number () - b.number ();
 }

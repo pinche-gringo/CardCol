@@ -41,12 +41,18 @@ class MachiPile : public CardHPile {
 
    unsigned int getPosition4Card (const CardWidget& card) const;
 
+   typedef enum { ACE, BOTH, ONE } ACEFLAG;
+   static int cardDistance (const CardWidget& a, const CardWidget& b) {
+       return cardDistance (a, b, BOTH); }
+   static int cardDistance (const CardWidget& a, const CardWidget& b,
+                            ACEFLAG aceIsOne);
+
  private:
    MachiPile (const MachiPile& other);
    const MachiPile& operator= (const MachiPile& other);
 
    void MachiPile::analyzePile () {
-      if (size () == 3)
+      if (size () == 2)
           type = ((operator[] (0)->number () == operator[] (1)->number ())
                   ? NUMBER : COLOUR);
    }
