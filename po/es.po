@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.6 ($Revision$)\n"
-"POT-Creation-Date: 2004-04-18 20:55-0500\n"
+"POT-Creation-Date: 2004-04-18 21:15-0500\n"
 "PO-Revision-Date: 2004-04-18 21:00-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -326,7 +326,7 @@ msgstr "Un juego está activo. ¿Seguro que quieres cerrar?"
 msgid "Waiting for the server to start the game ..."
 msgstr "Esperando que el servidor empieza un juego ..."
 
-#: src/CardCol.cpp:1083
+#: src/CardCol.cpp:1094
 msgid ""
 "Copyright (C) 2002 - 2004 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
@@ -338,23 +338,23 @@ msgstr ""
 "\n"
 "Compilado el %1 a las %2"
 
-#: src/CardCol.cpp:1193
+#: src/CardCol.cpp:1204
 msgid "User canceled"
 msgstr "Usario terminó"
 
-#: src/CardCol.cpp:1221
+#: src/CardCol.cpp:1232
 msgid "Loading cardimages ..."
 msgstr "Abriendo las imágenes de las cartas ..."
 
-#: src/CardCol.cpp:1240
+#: src/CardCol.cpp:1251
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Comienca un juego nuevo con Ctrl+N (o Juego -> Nuevo)"
 
-#: src/CardCol.cpp:1312 src/CardCol.cpp:1344
+#: src/CardCol.cpp:1323 src/CardCol.cpp:1355
 msgid "Lost connection to %1!"
 msgstr "¡Perdí la coneción con %1!"
 
-#: src/CardCol.cpp:1337
+#: src/CardCol.cpp:1348
 msgid ""
 "Error receiving data!\n"
 "\n"
@@ -364,15 +364,15 @@ msgstr ""
 "\n"
 "Causa: %1"
 
-#: src/CardCol.cpp:1392
+#: src/CardCol.cpp:1403
 msgid "Invalid game type: `%1'"
 msgstr "Tipo de juego invalido: '%1'"
 
-#: src/CardCol.cpp:1418
+#: src/CardCol.cpp:1429
 msgid "Unspecified error"
 msgstr "Error no especificado"
 
-#: src/CardCol.cpp:1420
+#: src/CardCol.cpp:1431
 msgid ""
 "%1 send error %2\n"
 "\n"
@@ -382,11 +382,11 @@ msgstr ""
 "\n"
 "%3"
 
-#: src/CardCol.cpp:1423
+#: src/CardCol.cpp:1434
 msgid "The server"
 msgstr "El servidor"
 
-#: src/CardCol.cpp:1481
+#: src/CardCol.cpp:1492
 msgid ""
 "Error processing command `%1'!\n"
 "\n"
@@ -396,7 +396,7 @@ msgstr ""
 "\n"
 "%2"
 
-#: src/CardCol.cpp:1520
+#: src/CardCol.cpp:1531
 msgid ""
 "Collection of cardgames\n"
 "\n"
@@ -406,7 +406,7 @@ msgstr ""
 "\n"
 "Modo de empleo: "
 
-#: src/CardCol.cpp:1521
+#: src/CardCol.cpp:1532
 msgid ""
 " [OPTIONS]\n"
 "\n"
@@ -414,43 +414,43 @@ msgstr ""
 " [OPCIONES]\n"
 "\n"
 
-#: src/CardCol.cpp:1523
+#: src/CardCol.cpp:1534
 msgid "[GAME] Select game to start (default: Rovhult)\n"
 msgstr "[JUEGO] Selecta juego para empezar (por defecto: Røvhult)\n"
 
-#: src/CardCol.cpp:1524
+#: src/CardCol.cpp:1535
 msgid "[FILE] Use file as INI file\n"
 msgstr "[FICHERO] Use fichero como archivo de initializar\n"
 
-#: src/CardCol.cpp:1525
+#: src/CardCol.cpp:1536
 msgid "[NAME] Browser to use to display the help\n"
 msgstr "[NOMBRE] Browser para mostrar la ayuda\n"
 
-#: src/CardCol.cpp:1526
+#: src/CardCol.cpp:1537
 msgid "[DIR] Directory to search for help\n"
 msgstr "[DIR] Directorio donde se busca la ayuda\n"
 
-#: src/CardCol.cpp:1528
+#: src/CardCol.cpp:1539
 msgid "[PORT] Awaits connections on port PORT\n"
 msgstr "[PUERTO] Espera a coneciones a puerto PUERTO\n"
 
-#: src/CardCol.cpp:1529
+#: src/CardCol.cpp:1540
 msgid "[SERVER[:PORT]] Connects to SERVER:PORT\n"
 msgstr "[SERVIDOR][:PUERTO] Conecta a SERVIDOR:PUERTO\n"
 
-#: src/CardCol.cpp:1532
+#: src/CardCol.cpp:1543
 msgid "[FILE] Saves game into FILE\n"
 msgstr "[FICHERO] Guarda juego en FICHERO\n"
 
-#: src/CardCol.cpp:1533
+#: src/CardCol.cpp:1544
 msgid "[FILE] Load game from FILE\n"
 msgstr "[FICHERO] Abre juego de FICHERO\n"
 
-#: src/CardCol.cpp:1535
+#: src/CardCol.cpp:1546
 msgid "Output version information and exit\n"
 msgstr "Informa de la versión y finaliza\n"
 
-#: src/CardCol.cpp:1536
+#: src/CardCol.cpp:1547
 msgid ""
 "Displays this help and exit\n"
 "\n"
@@ -458,18 +458,20 @@ msgstr ""
 "Muestra esta ayuda y finaliza\n"
 "\n"
 
-#: src/CardCol.cpp:1539
+#: src/CardCol.cpp:1550
 msgid ""
 "Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts, Buraco,\n"
 "Machiavelli, SgtMayor or the numbers 0 - 5 (corresponding to the games in "
 "the above order).\n"
 "\n"
 msgstr ""
-"Valores validos por JUEGO son Rovhult, Røvhult, Hearts, Buraco, Machiavelli y\n"
-"SgtMayor o los números 0 - 4 (de acuerdo con el juego en el orden de arriba).\n"
+"Valores validos por JUEGO son Rovhult, Røvhult, Hearts, Buraco, Machiavelli "
+"y\n"
+"SgtMayor o los números 0 - 4 (de acuerdo con el juego en el orden de "
+"arriba).\n"
 "\n"
 
-#: src/CardCol.cpp:1541
+#: src/CardCol.cpp:1552
 msgid ""
 "The INI file can have the following entries:\n"
 "\n"
@@ -477,35 +479,35 @@ msgstr ""
 "El archivo de inicialicación puede tener las siguentes propiedades:\n"
 "\n"
 
-#: src/CardCol.cpp:1572
+#: src/CardCol.cpp:1583
 msgid "-warning: Invalid game type `%1'"
 msgstr "-aviso: Tipo de juego '%1' invalido"
 
-#: src/CardCol.cpp:1578
+#: src/CardCol.cpp:1589
 msgid "-warning: No game specified! Ignoring option `g'\n"
 msgstr "-aviso: No juego especificado! Ignora opción 'g'\n"
 
-#: src/CardCol.cpp:1586
+#: src/CardCol.cpp:1597
 msgid "-warning: No directory specified! Ignoring option `d'\n"
 msgstr "-aviso: No directorio especificado! Ignora opción 'd'\n"
 
-#: src/CardCol.cpp:1594
+#: src/CardCol.cpp:1605
 msgid "-warning: No browser specified! Ignoring option `b'\n"
 msgstr "-aviso: No browser especificado! Ignora opción 'b'\n"
 
-#: src/CardCol.cpp:1602
+#: src/CardCol.cpp:1613
 msgid "-warning: No file specified! Ignoring option `f'\n"
 msgstr "-aviso: No fichero especificado! Ignora opción 'f'\n"
 
-#: src/CardCol.cpp:1611
+#: src/CardCol.cpp:1622
 msgid "-warning: No port specified! Ignoring option `l'\n"
 msgstr "-aviso: No puerto especificado! Ignora opción 'l'\n"
 
-#: src/CardCol.cpp:1628
+#: src/CardCol.cpp:1639
 msgid "-warning: No target specified! Ignoring option `c'\n"
 msgstr "-aviso: No destincación especificado! Ignora opción 'c'\n"
 
-#: src/CardCol.cpp:1643
+#: src/CardCol.cpp:1654
 msgid ""
 "-warning: Option `%1' has already been specified!\n"
 "Overwriting old setting\n"
@@ -513,23 +515,23 @@ msgstr ""
 "-avios: Opción '%1' ya especificado!\n"
 "Sobreescribo propiedad antigua\n"
 
-#: src/CardCol.cpp:1653
+#: src/CardCol.cpp:1664
 msgid "-warning: No file specified! Ignoring option `%1'\n"
 msgstr "-aviso: No fichero especificado! Ignora opción '%1'\n"
 
-#: src/CardCol.cpp:1709
+#: src/CardCol.cpp:1720
 msgid "Human"
 msgstr "Persona"
 
-#: src/CardCol.cpp:1710
+#: src/CardCol.cpp:1721
 msgid "Player 1"
 msgstr "Jugador 1"
 
-#: src/CardCol.cpp:1711
+#: src/CardCol.cpp:1722
 msgid "Player 2"
 msgstr "Jugador 2"
 
-#: src/CardCol.cpp:1712
+#: src/CardCol.cpp:1723
 msgid "Player 3"
 msgstr "Jugador 3"
 
@@ -734,4 +736,6 @@ msgstr "Juego terminó; %1 tiene %2 bazas; %3 %4 y %5 %6 bazas"
 msgid ""
 "You can give away %1 bad cards (which are exchanged with good ones). Click "
 "on each of them!"
-msgstr "Puede cambiar %1 cartas (malas, cuales están cambiado por mejores). Haz clic en ellas!"
+msgstr ""
+"Puede cambiar %1 cartas (malas, cuales están cambiado por mejores). Haz clic "
+"en ellas!"
