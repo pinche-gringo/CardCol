@@ -524,30 +524,41 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
       }
    } // end-switch
 
-   // Move card from player to played staple (except 10s)
-   hands[player].remove (pos);
+   // Move card (and cards with equal number below) from player to played staple
+   do {
+      CardWidget& movedCard (hands[player].remove (pos));
+      if (movedCard.number () != CardWidget::TEN)
+         played.append (movedCard);
+   } while (pos && (hands[player].at (--pos).number () == card.number ()));
 
    // If staple contains cards and no 10 was played (except if hand is empty):
    // Fill up cards til player has 3 (or one, in case of a ten)
    if ((card.number () != CardWidget::TEN) || (!hands[player].numberOfCards ()))
       fillUpPile (hands[player], card.number () != CardWidget::TEN ? 3 : 1);
 
-   if (card.number () != CardWidget::TEN)
-      played.append (card);
-
    disablePlayer (player);
    // If last 4 cards have the same number or ten was played: Don't increase player
    if (!clearPlayedIf4Equal () || (card.number () != CardWidget::TEN)) {
-      player = player + ((card.number () == CardWidget::EIGHT) ? 2 : 1);
+      ++player;
+      player &= 0x3;
+
+      if (card.number () == CardWidget::EIGHT) {
+         std::string stat (_("Skipping player %1"));
+         stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+         status.pop (1);
+         status.push (1, stat);
+         ++player;
+         player &= 0x3;
+      }
 
       // Check if next player has fitting card
       if (!playerCanContinue (hands[player], card.number ())) {
          movePlayedCardsToLooser (player++);
-         
+         player &= 0x3;
       }
    }
 
-   enablePlayer (player & 0x3);
+   enablePlayer (player);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -592,7 +603,7 @@ void RovhultAppl::fillUpPile (ICardPile& pile, unsigned int minCards) {
       newCard.setVisible ();
       pile.append (newCard);
 
-      TRACE8 ("Rovhult::fillUpPile (ICardPile&, unsinged int) - Appended card"
+      TRACE8 ("Rovhult::fillUpPile (ICardPile&, unsinged int) - Appended card "
               << newCard.id ());
    }
    pile.sortByNumber ();
@@ -622,11 +633,18 @@ bool RovhultAppl::clearPlayedIf4Equal () {
 //Parameters: nrLooser: Nr. of player getting all played cards
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::movePlayedCardsToLooser (unsigned int nrLooser) {
-   TRACE8 ("Rovhult::movePlayedCardsToWinner () - " << played.numberOfCards ());
+   TRACE8 ("Rovhult::movePlayedCardsToLooser () - " << played.numberOfCards ());
    Check3 (nrLooser < NUM_PLAYERS);
 
    while (played.numberOfCards ())
       hands[nrLooser].append (played.remove (0));
+
+   hands[nrLooser].sortByNumber ();
+
+   status.pop (1);
+   std::string stat (_("Player %1 can't continue -> Getting whole pile"));
+   stat.replace (stat.find ("%1"), 2, (char)(nrLooser + '0'));
+   status.push (1, stat);
 }
 
 /*--------------------------------------------------------------------------*/
