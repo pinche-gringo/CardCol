@@ -32,16 +32,13 @@
 
 namespace Gtk {
    class Box;
-   class MenuItem;
 };
-
-using namespace Gtk;
 
 
 // Class to handle the Hearts cardgame
 class Hearts : public Game {
  public:
-   Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset,
+   Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
            const vector<string>& names);
    virtual ~Hearts ();
 

@@ -33,7 +33,6 @@
 #include <gdk/gdk.h>
 
 #include <gtk--/menu.h>
-#include <gtk--/menuitem.h>
 #include <gtk--/statusbar.h>
 
 #include <XMessageBox.h>
@@ -52,7 +51,7 @@ const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 //            cardset: Cardset to use
 //            names: Vector of player-names
 /*--------------------------------------------------------------------------*/
-Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset,
+Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
                 const vector<string>& names)
    : Game (parent, statusbar, cardset, names, 14, 10)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
@@ -380,7 +379,7 @@ unsigned int  Hearts::calcNextPlayer (unsigned int player) {
       string stat (_("Round ended"));
       unsigned int player, points;
       pScoreDlg->getMaxPoints (points, player);
-      if (points > 100) {
+      if (points >= 100) {
          stat = _("Game ended; %1 won");
          pScoreDlg->getMinPoints (points, player);
          stat.replace (stat.find ("%1"), 2, names[player]);
