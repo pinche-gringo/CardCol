@@ -114,7 +114,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 
       Gtk::Button* temp (createButton (file));
       temp->signal_clicked ().connect
-         (bind (slot (*this, &ICarddeckSelectDlg::deckSelect), ++offset));
+         (bind (slot (*this, &ICarddeckSelectDlg::deckSelect), offset));
       aDecks.push_back (temp);
 
       decks.resize ((offset >> 2) + 1, 4);
@@ -127,6 +127,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
          deckSelect (offset);
 
       dir = ds.next ();
+      ++offset;
    }
    if (offDeck == -1)
       deckSelect (1);
@@ -206,9 +207,9 @@ void ICarddeckSelectDlg::deckSelect (unsigned int offset) {
            << offset);
    Check3 (offset < aFiles.size ());
    TRACE3 ("ICarddeckSelectDlg::deckSelect (const std::string&) - Selected "
-           << aFiles[0] << aFiles[offset]);
+           << aFiles[0] << aFiles[offset + 1]);
 
-   setButtonImage (selDeck, aFiles[0] + aFiles[offDeck = offset]
+   setButtonImage (selDeck, aFiles[0] + aFiles[offDeck = offset + 1]
                    + '/' + DEFAULTFILE);
 }
 
