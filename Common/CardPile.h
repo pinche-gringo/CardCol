@@ -25,6 +25,7 @@
 #include <algorithm>
 
 #include <gtkmm/box.h>
+#include <gtkmm/button.h>
 #include <gtkmm/tooltips.h>
 
 #include <Check.h>
@@ -208,16 +209,20 @@ typedef CardPile<Gtk::HBox>  CardHPile;
 void CardVPile::resize (unsigned int pos, PileStyle s) {
    if (pos != -1) {
       CardWidget& card (*cards[pos]);
-      unsigned int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
-      card.set_size_request (-1, height[(int)s]);
+      int width;
+      int height[(int)LAST] = { 0, 15, 7, 1 };
+      card.getImageSize (width, height[0]);
+      card.set_size_request (-1, height[s]);
    }
 }
 
 void CardHPile::resize (unsigned int pos, PileStyle s) {
    if (pos != -1) {
       CardWidget& card (*cards[pos]);
-      unsigned int width[(int)LAST] = { card.getImageWidth (), 18, 7, 1 };
-      card.set_size_request (width[(int)s], -1);
+      int height;
+      int width[(int)LAST] = { 0, 18, 7, 1 };
+      card.getImageSize (width[0], height);
+      card.set_size_request (width[s], -1);
    }
 }
 
