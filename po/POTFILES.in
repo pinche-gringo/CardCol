@@ -4,3 +4,5 @@
 #     
 # Package source files
 Rovhult/Rovhult.cpp
+Common/CardImgs.cpp
+Common/CardPile.h
