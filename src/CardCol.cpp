@@ -1398,17 +1398,15 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
                 ? message.getNextNode (';')
                 : static_cast<std::string> (_("Unspecified error")));
 
-         try {
-            cmd.replace (cmd.find ("%1"), 2, 
-                         (cmgr.getMode () == YGP::ConnectionMgr::CLIENT
-                          ? _("The server")
-                          : aPlayer[player]->getName ()));
-            cmd.replace (cmd.find ("%2"), 2, param);
-            cmd.replace (cmd.find ("%3"), 2, cmd);
-         }
-         catch (std::out_of_range&) { }
+         Glib::ustring err (_("%1 send error %2\n\n%3"));
+         err.replace (err.find ("%1"), 2, 
+                      (cmgr.getMode () == YGP::ConnectionMgr::CLIENT
+                       ? _("The server")
+                       : aPlayer[player]->getName ()));
+         err.replace (err.find ("%2"), 2, param);
+         err.replace (err.find ("%3"), 2, cmd);
 
-         Gtk::MessageDialog* dlg (new Gtk::MessageDialog (cmd, Gtk::MESSAGE_ERROR));
+         Gtk::MessageDialog* dlg (new Gtk::MessageDialog (err, Gtk::MESSAGE_ERROR));
          dlg->set_title (PACKAGE);
          dlg->signal_response ().connect
              (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
@@ -1442,11 +1440,22 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
          unlock = false;
    }
    catch (std::string& error) {
-      std::string msg ("Error=99;Msg=\"" + error + '\0');
-      msg += '"';
+      TRACE9 ("CardgameCollection::handleMessage (unsigned int, const std::string)"
+              " - Error " << error);
+      std::string msg ("Error=99;Msg=\"");
+      msg += error;
+      msg += "\"\0";
       try {
-         if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT)
+         if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
+            for (std::vector<YGP::Socket*>::const_iterator i (cmgr.getClients ().begin ());
+                 i != cmgr.getClients ().end (); ++i) {
+               Check (*i);
+               (*i)->write (msg);
+            }
+         else {
+            Check3 (cmgr.getSocket ());
             cmgr.getSocket ()->write (msg);
+         }
       }
       catch (std::string& e) { }
 
