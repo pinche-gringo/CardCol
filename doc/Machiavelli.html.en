@@ -1,0 +1,115 @@
+<!-- -*-HTML-*- -->
+<!-- $Id$ -->
+
+<!--
+  Anti-Copyright (A) 2003 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <title>Machiavelli - Sort carts til you have no more</title>
+    <meta name="description" content="Documentation of the Machiavelli cardgame">
+    <meta name="keywords" content="Documentation, Docu, Machiavelli, game, card, cardgame">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2003-11-30">
+    <meta name="DC.Rights" content="Anticopyright (A) 2003, distributed under the GNU Free Documentation License">
+  </head>
+
+  <body>
+    <h1 align="center">Machiavelli</h1>
+    <hr size=2>
+
+    <p>I learned Machiavelli from a suiss guy, who itself learned it from
+      italiens (which in turn might have learned it from someone else). And
+      actually I'm not even sure, if the name is right ...</p>
+
+    <p>Anyway - the rules:</p>
+
+    <p>It's all about putting down "matching" cards and that way getting rid
+      of its cards. "Matching" means that either the numbers must be equal
+      (independend of the colour, but each colour only once) or the colour and
+      the numbers are in a sequence (Ace (as one), two, three, ..., ten,
+      jack, queen, king, ace).</p>
+
+    <p>Every pile on the table must contain at least 3 cards.</p>
+
+    <p>Every player starts its turn by taking a new card from the pile of
+      reserve (this happens automatically by the computer). Then he can either
+      put his cards to existing piles, re-sort them however he likes, build
+      new piles (even with cards from existing piles) - in a nutshell doing as
+      he likes, as long as at the end of its turn all piles follow the rules
+      above.</p>
+
+    <p>The cards are played and/or sorted with drag and drop<a
+      href="Machiavelli.html.en#Note1"><sup>1</sup></a>.
+
+    <p>If the player can't or won't continue, continues the next player still
+      having cards (clockwise). This end of the turn is indicated by clicking
+      in the pile of the reserve. If there are piles in an invalid condition
+      appears a window with an error message. This window also allows an undo
+      of the last or all actions in the actual turn.</p>
+
+    <p>Tge last player still having cards has lost.</p>
+
+    <p>The status line gives some information about what's going on!</p>
+
+    <h2>Note to the layout</h2>
+    <p>After starting a game you have (from left to right and from top to
+      bottom):</p>
+
+    <ul>
+      <li>The pile of reserve: A heap of cards (with face down), from where
+        you put up new cards (if you put the mouse over it you are informed
+        about the remaining cards).</li>
+
+      <li>The cards of the player. Presorted by colour, but re-sortable with
+        drag and drop<a href="Machiavelli.html.en#Note1"><sup>1</sup></a>.</li>
+
+      <li>The piles on the table. Cards can be added to that piles
+        with drag und drop<a href="Buraco.html.en#Note1"><sup>1</sup></a> (if
+        it is the turn of the player). Note that both cards from the hand of
+        the player as cards already on the table can be moved.</li>
+
+      <li>In the last row are the cards of the other (computer) player.</li>
+     </ul>
+
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      Drag and drop means clicking with the <em>right</em> (or the middle)
+      mouse button on the card, holding the button and then dragging the card
+      to its destination. The end of this activity is signaled by releasing
+      the button.</p>
+
+    <hr size=3 noshade>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td><a href="Hearts.html.en">Previous</a><br>(Hearts)</td>
+        <td><a href="CardCol.html.en">Cardgames</a></td>
+        <td><a href="Røvhult.html.en">Next</a><br>(Røvhult)</td>
+      </tr>
+    </table>
+  </body>
+</html>
