@@ -41,8 +41,6 @@ class RovhultAppl : public XApplication {
    RovhultAppl ();
    ~RovhultAppl ();
 
-   static void initI18n ();
-
  private:
    // IDs for menus
    enum { NEW, EXIT, ABOUT };
@@ -77,12 +75,14 @@ class RovhultAppl : public XApplication {
    // Helper functions
    void movePlayedCardsToLooser (unsigned int nrLooser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;
-   void threadedEnablePlayer (void* pThread);
+   void makeComputerMoves (void* player);
    void enablePlayer (unsigned int player);
    void disableLastPlayer ();
    void cleanTable ();
    void dealCards ();
    void fillStaple ();
+   void playCardsFromHand (unsigned int player, unsigned int pos);
+   void exchangeAutoplayerCards ();
 
    void waitForThread ();
 
@@ -91,9 +91,13 @@ class RovhultAppl : public XApplication {
 
    bool playerCanContinue (unsigned int player, CardWidget::NUMBERS card) const;
    bool playerHandCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const;
+   
+   int makeTurn (unsigned int player);
+
+   static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
 
    bool cardValid (CardWidget::NUMBERS nr);
-   void executeMove (unsigned int player, CardWidget::NUMBERS nr);
+   int executeMove (unsigned int player, CardWidget::NUMBERS nr);
 
    void loadCards ();
 
@@ -120,7 +124,7 @@ class RovhultAppl : public XApplication {
 
    CardVPile staple;                                         // Cards on staple
    struct {
-      CardHPile hands;                        // For players: Cards in the hand
+      CardHPile hand;                         // For players: Cards in the hand
       CardVPile reserve[3];                     // Reserve-cards (for end-game)
    } players[NUM_PLAYERS];
 
