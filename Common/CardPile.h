@@ -117,7 +117,7 @@ class ICardPile {
       return ::find (cards.begin (), cards.end (), card) != cards.end (); }
 
    // General management-functions
-   virtual void resize (unsigned int pos, PileStyle s) const;
+   virtual void resize (unsigned int pos, PileStyle s);
    unsigned int numberOfCards () const { return cards.size (); }
    void clear ();
    void setStyle (PileStyle s);
@@ -184,7 +184,7 @@ template <class T> class CardPile : public T, public ICardPile {
       card.showFace (visible);
       return card; }
 
-   virtual void resize (unsigned int pos, PileStyle s) const { Check (0); }
+   virtual void resize (unsigned int pos, PileStyle s) { Check (0); }
    virtual void sort (CMPFUNC fnSort) {
       if (cards.size ()) {
          resize (cards.size () - 1, style);
@@ -205,16 +205,20 @@ typedef CardPile<Gtk::VBox>  CardVPile;
 typedef CardPile<Gtk::HBox>  CardHPile;
 
 
-void CardVPile::resize (unsigned int pos, PileStyle s) const {
-   CardWidget& card (*cards[pos]);
-   unsigned int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
-   card.set_usize (-1, height[(int)s]);
+void CardVPile::resize (unsigned int pos, PileStyle s) {
+   if (pos != -1) {
+      CardWidget& card (*cards[pos]);
+      unsigned int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
+      card.set_usize (-1, height[(int)s]);
+   }
 }
 
-void CardHPile::resize (unsigned int pos, PileStyle s) const {
-   CardWidget& card (*cards[pos]);
-   unsigned int width[(int)LAST] = { card.getImageWidth (), 18, 7, 1 };
-   card.set_usize (width[(int)s], -1);
+void CardHPile::resize (unsigned int pos, PileStyle s) {
+   if (pos != -1) {
+      CardWidget& card (*cards[pos]);
+      unsigned int width[(int)LAST] = { card.getImageWidth (), 18, 7, 1 };
+      card.set_usize (width[(int)s], -1);
+   }
 }
 
 
@@ -273,7 +277,7 @@ template <class T> class CardInfoPile : public CardPile<T> {
    virtual void setTooltips () {
       std::string tip (ngettext ("%1 card", "%1 cards", cards.size ()));
       tip.replace (tip.find ("%1"), 2,
-                   ANumeric::toString ((unsigned long)cards.size ()));
+                   ANumeric::toString (cards.size ()));
       for (int i (0); i < cards.size (); ++i)
          tt.set_tip (*cards[i], tip);
    }
@@ -282,9 +286,96 @@ template <class T> class CardInfoPile : public CardPile<T> {
     Gtk::Tooltips tt;
 };
 
-
 typedef CardInfoPile<Gtk::VBox>  CardVInfoPile;
 typedef CardInfoPile<Gtk::HBox>  CardHInfoPile;
+
+
+// Specializations of ICardPile to display. Implements a totally compressed
+// cardpile (which does not work; every child in a box must have a height of
+// at least one).
+class PseudoPile : public Gtk::Button, public ICardPile {
+ public:
+   PseudoPile (ShowOpt show = DONT_CHANGE)
+      : ICardPile (NORMAL, show) { }
+   virtual ~PseudoPile () { }
+
+   virtual void resize (unsigned int pos, PileStyle s) {
+      Gtk::Button::remove ();
+      if (pos == (cards.size () - 1))
+         add_pixmap (cards.back ()->getShownImage (), NULL);
+   }
+   virtual void sort (CMPFUNC fnSort) {
+      if (cards.size ()) {
+         resize (cards.size () - 1, style);
+         ICardPile::sort (fnSort);
+         add_pixmap (cards.back ()->getShownImage (), NULL); }
+   }
+};
+
+// Specializations of CardPile, displaying the number of cards as tooltip
+// (especially usefull, if the pile is (very) compressed ;) )
+class PseudoInfoPile : public PseudoPile {
+ public:
+   PseudoInfoPile (ShowOpt show = DONT_CHANGE)
+      : PseudoPile (show) {
+      tt.set_delay (2);
+      setTooltips (); }
+   virtual ~PseudoInfoPile () { }
+
+   virtual void setTopCard (CardWidget& newCard) {
+      PseudoPile::setTopCard (newCard);
+      setTooltips (); }
+   void setTopCard (CardWidget& newCard, bool visible) {
+      PseudoPile::setTopCard (newCard, visible); }
+
+   virtual CardWidget& removeTopCard () {
+      CardWidget& card (PseudoPile::removeTopCard ());
+      tt.set_tip (card);
+      setTooltips ();
+      return card; }
+
+   virtual void insert (CardWidget& card, unsigned int pos) {
+      PseudoPile::insert (card, pos);
+      setTooltips (); }
+
+   virtual CardWidget& remove (CardWidget& card) {
+      ICardPile::remove (card);
+      tt.set_tip (card);
+      setTooltips ();
+      return card; }
+   CardWidget& remove (CardWidget& card, bool visible) {
+      ICardPile::remove (card);
+      card.showFace (visible);
+      return card; }
+   virtual CardWidget& remove (unsigned int pos) {
+      CardWidget& card (ICardPile::remove (pos));
+      tt.set_tip (card);
+      setTooltips ();
+      return card; }
+   virtual CardWidget& remove (unsigned int pos, bool visible) {
+      CardWidget& card (ICardPile::remove (pos));
+      card.showFace (visible);
+      return card; }
+
+   virtual CardWidget& move (unsigned int dest, unsigned int source) {
+      PseudoPile::move (dest, source);
+      setTooltips (); }
+
+
+   void showTips (bool on = true) { on ? tt.enable () : tt.disable (); }
+
+ protected:
+   virtual void setTooltips () {
+      std::string tip (ngettext ("%1 card", "%1 cards", cards.size ()));
+      tip.replace (tip.find ("%1"), 2,
+                   ANumeric::toString (cards.size ()));
+      tt.set_tip (*this, tip);
+   }
+
+ private:
+    Gtk::Tooltips tt;
+};
+
 
 
 #endif
