@@ -62,8 +62,8 @@ class Twopart : public Game {
                                   unsigned int end);
    void enablePlayer (unsigned int player);
    unsigned int pickUpPlayedPile (unsigned int player);
-   int  findNextPlayer (unsigned int player);
-   int  findNextPlayerWithCards (unsigned int player);
+   int  findNextPlayer (unsigned int player) const;
+   int  findNextPlayerWithCards (unsigned int player) const;
    void removePlayer (unsigned int player) { bfPlayers &= ~(1 << player); }
    void addPlayer (unsigned int player) { bfPlayers |= 1 << player; }
    static unsigned int playersInBitfield (unsigned int bfPlayers) {
