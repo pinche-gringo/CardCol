@@ -101,6 +101,9 @@
 
     <p>Un "Gr&uuml;etzi" a Michael (Miguel) Suttner para <tt>Machiavelli</tt>.</p>
 
+    <p>Un fuerte &iexclHola! a Tanja y Graham para ense&ntilde;arme el juego
+      <tt>Sgt. Mayor</tt>.</p>
+
     <p>Saludos a Andreas, Jakob y Janus, que me han ese&ntilde;ado las reglas de
       <tt>R&oslash;vhult</tt>.</p>
 
