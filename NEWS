@@ -1,3 +1,8 @@
+Overview of changes in version 0.7.00:
+
+  - New game: Sergeant Mayor (with a quite d(r)aft computer player)
+  - Fixed Buraco ending the game without cerrado when picking up dumped cards
+
 Overview of changes in version 0.6.22:
 
   - Translating error messages received via network
@@ -14,6 +19,7 @@ Overview of changes in version 0.6.21:
   - Improved usability of Machiavelli (Enter to end turn)
   - Machiavelli actualizes information about wrong piles during undo
   - Fixed some bugs in Machiavelli
+  - Needs libYGP 0.6.45
 
 Overview of changes in version 0.6.20:
 
@@ -39,7 +45,7 @@ Overview of changes in version 0.6.00:
 Overview of changes in version 0.5.10:
 
   - Games can be loaded and saved (if enabled while configuring) - this is
-    just an option for testing rare situations.
+    just an option to test rare situations.
 
 Overview of changes in version 0.5.05:
 
@@ -57,7 +63,7 @@ Overview of changes in version 0.5.04:
   - Fixed and enhanced test for KDE carddecks
   - Fixed positionating the joker in colour series
   - After picking up dumped pile only allow to play the cards already in hand
-  - Fixed making first "cerrado" with last cards - hopefully; hard to test ;)
+  - Fixed making first "cerrado" with last cards
   - Fixed computer player not playing pile of 7 joker in some cases
 
 Overview of changes in version 0.5.03:
@@ -66,7 +72,7 @@ Overview of changes in version 0.5.03:
   - Fixed bug where the fitting last two cards in hand can't make a cerrado
   - Fixed bug analyzing the validity of colour piles (for the human player)
   - Fixed bug replacing a joker in a coloured pile
-  - Fixed jokers not playing on joker-pile (in some cases)
+  - Fixed jokers not being played on joker-piles (in some cases)
   - Fixed computer player taking up dumped pile with joker
   - Needs libYGP 0.6.30
 
@@ -87,7 +93,7 @@ Overview of changes in version 0.5.00:
   - Added network ability
   - Improved Buraco's layout (table shows scrollbars, when needed)
   - Improved Buracos computer player
-  - Twopart, Røvhult and Buraco starts with a random player
+  - Twopart, Røvhult and Buraco start with a random player
   - Fixed Røvhult checking of humans playing from piles on the table
   - Fixed Twopart's calcuation of next player (equal cards at end of part I)
   - Fixed Buraco's computer player taking dumped pile with series of colour
@@ -133,7 +139,7 @@ Overview of changes in version 0.3.00:
 
 Overview of changes in version 0.2.00:
 
-  - Combined the games in one application
+  - Combined the games into one application
   - Security check if the user terminates while a game is running
   - Playing of computer improved (both games)
   - Computer-player moves cards to the end of the staple before playing

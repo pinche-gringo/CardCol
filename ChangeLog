@@ -1,3 +1,68 @@
+2004-04-19  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.00 commented
+
+	* CardCol.cpp:
+	  Removed blanks from game names for help files; Changed Sgt. Mayor shortcut
+
+2004-04-18  Markus Schwab  <g17m0@lycos.com>
+
+	* Machiavelli.cpp: Adapted to new CardPile interface
+
+	* SgtMayor.cpp, SgtMayor.h:
+	  Improved computer player; implemented exchanging of won ticks
+
+	* BuracoPile.cpp, BuracoPile.h, MachiPile.cpp, MachiPile.h:
+	  Adapted to new CardPile interface
+
+2004-04-16  Markus Schwab  <g17m0@lycos.com>
+
+	* SgtMayor.cpp, SgtMayor.h: First version of computer player
+
+2004-04-14  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart.cpp: Removing the trump-card from the table
+
+	* Hearts.cpp, Hearts.h: Cosmetical changes
+
+	* SgtMayor.h: First draft of playing
+
+	* CardCol.cpp: Fixed preparing carddecks
+
+	* SgtMayor.cpp: First draft of playing
+
+2004-04-12  Markus Schwab  <g17m0@lycos.com>
+
+	* SgtMayor.cpp, SgtMayor.h: Initial revision; draws the playing area
+
+2004-04-11  Markus Schwab  <g17m0@lycos.com>
+
+	* CardCol.cpp, CardCol.h, Makefile.am: Sgt. Mayor added
+
+	* Buraco.h, Machiavelli.h: Returning number of needed decks/joker
+
+	* CardCol.cpp:
+	  Number of carddecks/jokers is retrieved from the games itself
+
+	* Rovhult.cpp: Disabled traces/checks
+
+2004-02-01  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp:
+	  Fixed computer finishing when taking dumped pile without having a cerrado
+
+2004-01-31  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp:
+	  Improved (and fixed) picking up played pile; Fixed canGetRidofCards
+
+	* BuracoPile.cpp:
+	  Fixed replacing the joker in a (coloured) serie starting with an ace
+
+	* Buraco.h: Added status-flag, if dumped pile should be picked up
+
+	* Machiavelli.cpp: getPileOfPlayer returns NULL, if pile is not valid
+
 2004-01-31  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.6.22 commented
