@@ -52,7 +52,7 @@ CardSet::~CardSet () {
 void CardSet::addPacket (const CardImages& decks) {
    TRACE9 ("CardSet::addPacket (const CardImages&)");
 
-   for (int i (0); i < decks.numberOfCards (); ++i) {
+   for (int i (0); i < decks.size (); ++i) {
       CardWidget* card (new CardWidget (decks, i, true)); Check3 (card);
 
       cards_.push_back (card);
@@ -67,7 +67,7 @@ void CardSet::shuffle () {
    TRACE1 ("CardSet::shuffle ()");
 
    unsigned int nr;
-   for (int i (numberOfCards ()); i > 0;) {
+   for (int i (size ()); i > 0;) {
       nr = rand () % i--;
       TRACE2 ("CardSet::shuffle () - " << i << " = " << nr);
       std::swap (cards_[i], cards_[nr]);
@@ -80,7 +80,7 @@ void CardSet::shuffle () {
 /*--------------------------------------------------------------------------*/
 CardWidget& CardSet::getCard (unsigned int nr) const {
    TRACE3 ("CardSet::getCard (unsigned int) - " << nr);
-   Check3 (nr < numberOfCards ()); Check3 (cards_[nr]);
+   Check3 (nr < size ()); Check3 (cards_[nr]);
 
    return *cards_[nr];
 }
