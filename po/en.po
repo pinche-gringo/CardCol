@@ -1,11 +1,11 @@
 # English translation of the cardgames
-# Anticopyright (A) 2002, 2003 Markus Schwab
-# Markus Schwab <g17m0@lycos.com>, 2003.
+# Copyright (A) 2002 - 2004 Markus Schwab
+# Markus Schwab <g17m0@lycos.com>, 2004.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.6 ($Revision$)\n"
-"POT-Creation-Date: 2003-12-06 18:44-0500\n"
+"POT-Creation-Date: 2004-01-15 00:58-0500\n"
 "PO-Revision-Date: 2003-12-06 18:46-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -25,7 +25,8 @@ msgstr ""
 #: src/Rovhult.cpp:380 src/Rovhult.cpp:515 src/Buraco.cpp:708
 #: src/Buraco.cpp:803 src/Buraco.cpp:1010 src/Buraco.cpp:1079
 #: src/Buraco.cpp:1095 src/Buraco.cpp:1109 src/Buraco.cpp:1121
-#: src/Buraco.cpp:1141 src/Buraco.cpp:1150 src/Machiavelli.cpp:782
+#: src/Buraco.cpp:1141 src/Buraco.cpp:1150 src/Machiavelli.cpp:734
+#: src/Machiavelli.cpp:756
 msgid "Invalid move"
 msgstr ""
 
@@ -37,7 +38,7 @@ msgstr ""
 msgid "Played card must be equal or bigger!"
 msgstr ""
 
-#: src/Rovhult.cpp:617 src/Twopart.cpp:425 src/Machiavelli.cpp:1398
+#: src/Rovhult.cpp:617 src/Twopart.cpp:425 src/Machiavelli.cpp:1450
 msgid "%1 lost"
 msgstr ""
 
@@ -101,37 +102,37 @@ msgid ""
 "Reason: %2"
 msgstr ""
 
-#: Common/Game.cpp:182
+#: Common/Game.cpp:186
 msgid "Not a number: `%1'"
 msgstr ""
 
-#: Common/Game.cpp:197
+#: Common/Game.cpp:199
 msgid ""
 "Received invalid input from the server!\n"
 "\n"
 "Reason: %1"
 msgstr ""
 
-#: Common/Game.cpp:328 Common/Game.cpp:339
+#: Common/Game.cpp:330 Common/Game.cpp:341
 msgid "Turn of %1"
 msgstr ""
 
-#: Common/Game.cpp:494
+#: Common/Game.cpp:496
 msgid "Sort by number"
 msgstr ""
 
-#: Common/Game.cpp:497
+#: Common/Game.cpp:499
 msgid "Sort by colour"
 msgstr ""
 
-#: Common/Game.cpp:602
+#: Common/Game.cpp:604
 msgid ""
 "Can't write message!\n"
 "\n"
 "Reason: %1"
 msgstr ""
 
-#: Common/Game.cpp:655
+#: Common/Game.cpp:657
 msgid ""
 "Error processing command `%1'!\n"
 "\n"
@@ -150,252 +151,259 @@ msgstr ""
 msgid "Player _%1:"
 msgstr ""
 
-#: src/CardCol.cpp:592
+#: src/CardCol.cpp:595
 msgid "_Game"
 msgstr ""
 
-#: src/CardCol.cpp:592
+#: src/CardCol.cpp:595
 msgid "<alt>G"
 msgstr ""
 
-#: src/CardCol.cpp:593
+#: src/CardCol.cpp:596
 msgid "_New"
 msgstr ""
 
-#: src/CardCol.cpp:593
+#: src/CardCol.cpp:596
 msgid "<ctl>N"
 msgstr ""
 
-#: src/CardCol.cpp:594
+#: src/CardCol.cpp:597
 msgid "_End"
 msgstr ""
 
-#: src/CardCol.cpp:594
+#: src/CardCol.cpp:597
 msgid "<ctl>E"
 msgstr ""
 
-#: src/CardCol.cpp:597
+#: src/CardCol.cpp:600
 msgid "_Connect ..."
 msgstr ""
 
-#: src/CardCol.cpp:597
+#: src/CardCol.cpp:600
 msgid "<shft><ctl>C"
 msgstr ""
 
-#: src/CardCol.cpp:600
+#: src/CardCol.cpp:603
 msgid "E_xit"
 msgstr ""
 
-#: src/CardCol.cpp:600
+#: src/CardCol.cpp:603
 msgid "<ctl>Q"
 msgstr ""
 
-#: src/CardCol.cpp:601
+#: src/CardCol.cpp:604
 msgid "_Options"
 msgstr ""
 
-#: src/CardCol.cpp:601
+#: src/CardCol.cpp:604
 msgid "<alt>O"
 msgstr ""
 
-#: src/CardCol.cpp:602
+#: src/CardCol.cpp:605
 msgid "_Change game"
 msgstr ""
 
-#: src/CardCol.cpp:604
+#: src/CardCol.cpp:607
 msgid "_Rovhult"
 msgstr "_Røvhult"
 
-#: src/CardCol.cpp:604
+#: src/CardCol.cpp:607
 msgid "<ctl>R"
 msgstr ""
 
-#: src/CardCol.cpp:605
+#: src/CardCol.cpp:608
 msgid "_Twopart"
 msgstr ""
 
-#: src/CardCol.cpp:605
+#: src/CardCol.cpp:608
 msgid "<ctl>T"
 msgstr ""
 
-#: src/CardCol.cpp:606
+#: src/CardCol.cpp:609
 msgid "_Hearts"
 msgstr ""
 
-#: src/CardCol.cpp:606
+#: src/CardCol.cpp:609
 msgid "<ctl>H"
 msgstr ""
 
-#: src/CardCol.cpp:607
+#: src/CardCol.cpp:610
 msgid "_Buraco"
 msgstr ""
 
-#: src/CardCol.cpp:607
+#: src/CardCol.cpp:610
 msgid "<ctl>B"
 msgstr ""
 
-#: src/CardCol.cpp:608
+#: src/CardCol.cpp:611
 msgid "_Machiavelli"
 msgstr ""
 
-#: src/CardCol.cpp:608
+#: src/CardCol.cpp:611
 msgid "<ctl>M"
 msgstr ""
 
-#: src/CardCol.cpp:610
+#: src/CardCol.cpp:613
 msgid "Change _decks ..."
 msgstr ""
 
-#: src/CardCol.cpp:610
+#: src/CardCol.cpp:613
 msgid "<ctl>D"
 msgstr ""
 
-#: src/CardCol.cpp:611
+#: src/CardCol.cpp:614
 msgid "Change _names ..."
 msgstr ""
 
-#: src/CardCol.cpp:611
+#: src/CardCol.cpp:614
 msgid "<ctl>C"
 msgstr ""
 
-#: src/CardCol.cpp:612
+#: src/CardCol.cpp:615
 msgid "_Save settings"
 msgstr ""
 
-#: src/CardCol.cpp:612
+#: src/CardCol.cpp:615
 msgid "<ctl>S"
 msgstr ""
 
-#: src/CardCol.cpp:641
+#: src/CardCol.cpp:644
 msgid "Compiled on"
 msgstr ""
 
-#: src/CardCol.cpp:643
+#: src/CardCol.cpp:646
 msgid ""
 "Author: Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
 msgstr ""
 
-#: src/CardCol.cpp:883
+#: src/CardCol.cpp:895
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 
-#: src/CardCol.cpp:895
+#: src/CardCol.cpp:907
 msgid "Stop waiting for the server to start the game and start a local one?"
 msgstr ""
 
-#: src/CardCol.cpp:915
+#: src/CardCol.cpp:927
 msgid "Do you really want to end the game?"
 msgstr ""
 
-#: src/CardCol.cpp:979
+#: src/CardCol.cpp:993
 msgid "A game is running. Do you really want to quit?"
 msgstr ""
 
-#: src/CardCol.cpp:1021
+#: src/CardCol.cpp:1035
 msgid "Waiting for the server to start the game ..."
 msgstr ""
 
-#: src/CardCol.cpp:1051
+#: src/CardCol.cpp:1065
 msgid ""
-"Anticopyright (A) 2002, 2003 Markus Schwab\n"
+"Copyright (C) 2002 - 2004 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
 "\n"
 "Compiled on %1 at %2"
 msgstr ""
 
-#: src/CardCol.cpp:1157
+#: src/CardCol.cpp:1175
 msgid "User canceled"
 msgstr ""
 
-#: src/CardCol.cpp:1185
+#: src/CardCol.cpp:1203
 msgid "Loading cardimages ..."
 msgstr ""
 
-#: src/CardCol.cpp:1200
+#: src/CardCol.cpp:1222
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr ""
 
-#: src/CardCol.cpp:1266 src/CardCol.cpp:1303
+#: src/CardCol.cpp:1294 src/CardCol.cpp:1326
 msgid "Lost connection to %1!"
 msgstr ""
 
-#: src/CardCol.cpp:1294
+#: src/CardCol.cpp:1319
 msgid ""
 "Error receiving data!\n"
 "\n"
 "Reason: %1"
 msgstr ""
 
-#: src/CardCol.cpp:1350
+#: src/CardCol.cpp:1374
 msgid "Invalid game type: `%1'"
 msgstr ""
 
-#: src/CardCol.cpp:1373
+#: src/CardCol.cpp:1397
 msgid "Unspecified error"
 msgstr ""
 
-#: src/CardCol.cpp:1378
+#: src/CardCol.cpp:1399
+msgid ""
+"%1 send error %2\n"
+"\n"
+"%3"
+msgstr ""
+
+#: src/CardCol.cpp:1402
 msgid "The server"
 msgstr ""
 
-#: src/CardCol.cpp:1467
+#: src/CardCol.cpp:1495
 msgid ""
 "Collection of cardgames\n"
 "\n"
 "Usage: "
 msgstr ""
 
-#: src/CardCol.cpp:1468
+#: src/CardCol.cpp:1496
 msgid ""
 " [OPTIONS]\n"
 "\n"
 msgstr ""
 
-#: src/CardCol.cpp:1470
+#: src/CardCol.cpp:1498
 msgid "[GAME] Select game to start (default: Rovhult)\n"
 msgstr "[GAME] Select game to start (default: Røvhult)\n"
 
-#: src/CardCol.cpp:1471
+#: src/CardCol.cpp:1499
 msgid "[FILE] Use file as INI file\n"
 msgstr ""
 
-#: src/CardCol.cpp:1472
+#: src/CardCol.cpp:1500
 msgid "[NAME] Browser to use to display the help\n"
 msgstr ""
 
-#: src/CardCol.cpp:1473
+#: src/CardCol.cpp:1501
 msgid "[DIR] Directory to search for help\n"
 msgstr ""
 
-#: src/CardCol.cpp:1474
+#: src/CardCol.cpp:1503
 msgid "[PORT] Awaits connections on port PORT\n"
 msgstr ""
 
-#: src/CardCol.cpp:1475
+#: src/CardCol.cpp:1504
 msgid "[SERVER[:PORT]] Connects to SERVER:PORT\n"
 msgstr ""
 
-#: src/CardCol.cpp:1477
+#: src/CardCol.cpp:1507
 msgid "[FILE] Saves game into FILE\n"
 msgstr ""
 
-#: src/CardCol.cpp:1478
+#: src/CardCol.cpp:1508
 msgid "[FILE] Load game from FILE\n"
 msgstr ""
 
-#: src/CardCol.cpp:1480
+#: src/CardCol.cpp:1510
 msgid "Output version information and exit\n"
 msgstr ""
 
-#: src/CardCol.cpp:1481
+#: src/CardCol.cpp:1511
 msgid ""
 "Displays this help and exit\n"
 "\n"
 msgstr ""
 
-#: src/CardCol.cpp:1484
+#: src/CardCol.cpp:1514
 msgid ""
 "Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco,\n"
 "Machiavelli or the numbers 0 - 4 (corresponding to the games in the above "
@@ -407,63 +415,63 @@ msgstr ""
 "order).\n"
 "\n"
 
-#: src/CardCol.cpp:1486
+#: src/CardCol.cpp:1516
 msgid ""
 "The INI file can have the following entries:\n"
 "\n"
 msgstr ""
 
-#: src/CardCol.cpp:1517
+#: src/CardCol.cpp:1547
 msgid "-warning: Invalid game type `%1'"
 msgstr ""
 
-#: src/CardCol.cpp:1523
+#: src/CardCol.cpp:1553
 msgid "-warning: No game specified! Ignoring option `g'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1531
+#: src/CardCol.cpp:1561
 msgid "-warning: No directory specified! Ignoring option `d'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1539
+#: src/CardCol.cpp:1569
 msgid "-warning: No browser specified! Ignoring option `b'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1547
+#: src/CardCol.cpp:1577
 msgid "-warning: No file specified! Ignoring option `f'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1555
+#: src/CardCol.cpp:1586
 msgid "-warning: No port specified! Ignoring option `l'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1570
+#: src/CardCol.cpp:1603
 msgid "-warning: No target specified! Ignoring option `c'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1584
+#: src/CardCol.cpp:1618
 msgid ""
 "-warning: Option `%1' has already been specified!\n"
 "Overwriting old setting\n"
 msgstr ""
 
-#: src/CardCol.cpp:1594
+#: src/CardCol.cpp:1628
 msgid "-warning: No file specified! Ignoring option `%1'\n"
 msgstr ""
 
-#: src/CardCol.cpp:1648
+#: src/CardCol.cpp:1682
 msgid "Human"
 msgstr ""
 
-#: src/CardCol.cpp:1649
+#: src/CardCol.cpp:1683
 msgid "Player 1"
 msgstr ""
 
-#: src/CardCol.cpp:1650
+#: src/CardCol.cpp:1684
 msgid "Player 2"
 msgstr ""
 
-#: src/CardCol.cpp:1651
+#: src/CardCol.cpp:1685
 msgid "Player 3"
 msgstr ""
 
@@ -503,7 +511,7 @@ msgstr ""
 msgid "Score"
 msgstr ""
 
-#: src/Buraco.cpp:69 src/Machiavelli.cpp:74
+#: src/Buraco.cpp:69 src/Machiavelli.cpp:75
 msgid "New pile"
 msgstr ""
 
@@ -546,7 +554,7 @@ msgstr ""
 msgid "There are no cards to make a valid new pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1148 src/Machiavelli.cpp:780
+#: src/Buraco.cpp:1148 src/Machiavelli.cpp:732
 msgid "This card does not fit on that pile!"
 msgstr ""
 
@@ -576,48 +584,48 @@ msgstr ""
 msgid "Game ended; Team %1 won"
 msgstr ""
 
-#: src/Machiavelli.cpp:157
+#: src/Machiavelli.cpp:160
 msgid ""
 "You can sort the cards in your hand with drag and drop or put them on the "
 "table - click the staple to end turn"
 msgstr ""
 
-#: src/Machiavelli.cpp:473
-msgid "The piles are not valid!"
+#: src/Machiavelli.cpp:428
+msgid "Can't end turn: The piles are not valid!"
 msgstr ""
 
-#: src/Machiavelli.cpp:475
-msgid "Can't end turn"
-msgstr ""
-
-#: src/Machiavelli.cpp:479
+#: src/Machiavelli.cpp:434
 msgid "_Undo all"
 msgstr ""
 
-#: src/Machiavelli.cpp:480
+#: src/Machiavelli.cpp:435
 msgid "Undo _last"
 msgstr ""
 
-#: src/Machiavelli.cpp:1285
+#: src/Machiavelli.cpp:754
+msgid "Card is not on the edge of the origen - try splitting the origin first!"
+msgstr ""
+
+#: src/Machiavelli.cpp:1328
 msgid "Taking last card! Solve the game (somehow) ..."
 msgstr ""
 
-#: src/Machiavelli.cpp:1287
+#: src/Machiavelli.cpp:1330
 msgid "Game over"
 msgstr ""
 
-#: src/Machiavelli.cpp:1309
+#: src/Machiavelli.cpp:1352
 msgid "Pile %1: %2\n"
 msgstr ""
 
-#: src/MachiPile.cpp:215
+#: src/MachiPile.cpp:219
 msgid "Not enough cards (must be at least 3)!"
 msgstr ""
 
-#: src/MachiPile.cpp:218
+#: src/MachiPile.cpp:222
 msgid "Invalid type!"
 msgstr ""
 
-#: src/MachiPile.cpp:225
+#: src/MachiPile.cpp:230
 msgid "Card %1 does not fit!"
 msgstr ""
