@@ -488,10 +488,10 @@ bool Game::wonCardsSelected (GdkEvent* event) {
             TRACE9 ("Game::wonCardsSelected (GdkEvent*) - Creating menu");
             pMenuPopSort = new Gtk::Menu;
             pMenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem
-                                              (_("Sort by number"),
+                                              (_("Sort by _number"),
                                                mem_fun (*this, &Game::sortWonByNumber)));
             pMenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem
-                                              (_("Sort by colour"),
+                                              (_("Sort by _colour"),
                                                mem_fun (*this, &Game::sortWonByColour)));
          }
          pMenuPopSort->popup (bev->button, bev->time);
@@ -508,11 +508,12 @@ bool Game::wonCardsSelected (GdkEvent* event) {
 //-----------------------------------------------------------------------------
 void Game::sortWonByNumber () {
    TRACE8 ("Game::sortWonByNumber ()");
-   Check3 (pWonPile);
-   pWonPile->sortByNumber ();
-   showWonCards ();
-   Glib::signal_timeout ().connect (mem_fun (*this, &Game::enableActWonCards), 50);
-   disableWonCards ();
+   if (pWonPile) {
+      pWonPile->sortByNumber ();
+      showWonCards ();
+      Glib::signal_idle ().connect (mem_fun (*this, &Game::enableActWonCards));
+      disableWonCards ();
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -520,11 +521,12 @@ void Game::sortWonByNumber () {
 //-----------------------------------------------------------------------------
 void Game::sortWonByColour () {
    TRACE8 ("Game::sortWonByColour ()");
-   Check3 (pWonPile);
-   pWonPile->sortByColour ();
-   showWonCards ();
-   Glib::signal_timeout ().connect (mem_fun (*this, &Game::enableActWonCards), 50);
-   disableWonCards ();
+   if (pWonPile) {
+      pWonPile->sortByColour ();
+      showWonCards ();
+      Glib::signal_idle ().connect (mem_fun (*this, &Game::enableActWonCards));
+      disableWonCards ();
+   }
 }
 
 //-----------------------------------------------------------------------------
