@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.1 ($Revision$)\n"
-"POT-Creation-Date: 2002-07-18 21:28-0500\n"
+"POT-Creation-Date: 2002-08-21 12:44-0500\n"
 "PO-Revision-Date: 2002-04-28 00:15-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -14,63 +14,80 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: Rovhult/Rovhult.cpp:294
+#: Rovhult/Rovhult.cpp:294 Twopart/Twopart.cpp:292
 msgid "_Game"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:294
+#: Rovhult/Rovhult.cpp:294 Twopart/Twopart.cpp:292
 msgid "<alt>G"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:295
+#: Rovhult/Rovhult.cpp:295 Twopart/Twopart.cpp:293
 msgid "_New"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:295
+#: Rovhult/Rovhult.cpp:295 Twopart/Twopart.cpp:293
 msgid "<ctl>N"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:297
+#: Rovhult/Rovhult.cpp:296 Twopart/Twopart.cpp:294
+msgid "_End"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:296 Twopart/Twopart.cpp:294
+msgid "<ctl>E"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:298 Twopart/Twopart.cpp:296
 msgid "E_xit"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:297
+#: Rovhult/Rovhult.cpp:298 Twopart/Twopart.cpp:296
 msgid "<ctl>Q"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:298
+#: Rovhult/Rovhult.cpp:300 Twopart/Twopart.cpp:298
 msgid "_Options"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:298
+#: Rovhult/Rovhult.cpp:300 Twopart/Twopart.cpp:298
 msgid "<alt>O"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:299
+#: Rovhult/Rovhult.cpp:301 Twopart/Twopart.cpp:299
 msgid "_Debug"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:299
+#: Rovhult/Rovhult.cpp:301 Twopart/Twopart.cpp:299
 msgid "<ctl>D"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:300
+#: Rovhult/Rovhult.cpp:303 Twopart/Twopart.cpp:301
 msgid "_Help"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:300
+#: Rovhult/Rovhult.cpp:303 Twopart/Twopart.cpp:301
 msgid "<alt>H"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:301
+#: Rovhult/Rovhult.cpp:304 Twopart/Twopart.cpp:302
 msgid "_About..."
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:301
-msgid "<ctl>a"
+#: Rovhult/Rovhult.cpp:304 Twopart/Twopart.cpp:302
+msgid "<ctl>A"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:392
+#: Rovhult/Rovhult.cpp:405 Twopart/Twopart.cpp:403
+msgid ""
+"A game is already running. Do you really want to end it and start another?"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:418 Twopart/Twopart.cpp:416
+msgid "Do you really want to end the game?"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:424 Twopart/Twopart.cpp:422
 #, ycp-format
 msgid ""
 "Anticopyright (A) 2002 Markus Schwab\n"
@@ -79,51 +96,55 @@ msgid ""
 "Compiled on %1 at %2"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:738
+#: Rovhult/Rovhult.cpp:469 Twopart/Twopart.cpp:467
+msgid "User canceled"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:806
 msgid "After a 7, the played card must be equal or smaller!"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:739 Rovhult/Rovhult.cpp:747
-msgid "Invalid move"
-msgstr ""
-
-#: Rovhult/Rovhult.cpp:746
+#: Rovhult/Rovhult.cpp:810
 msgid "Played card must be equal or bigger!"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:838
+#: Rovhult/Rovhult.cpp:814
+msgid "Invalid move"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:907 Twopart/Twopart.cpp:676
 #, ycp-format
 msgid "Player %1 lost"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:845
+#: Rovhult/Rovhult.cpp:916
 #, ycp-format
 msgid "Skipping player %1; "
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:853
+#: Rovhult/Rovhult.cpp:924
 #, ycp-format
 msgid "Player %1 can't continue -> Getting whole pile. "
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:862
+#: Rovhult/Rovhult.cpp:933
 msgid "Pile cleared; "
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:864
+#: Rovhult/Rovhult.cpp:935 Twopart/Twopart.cpp:503
 #, c-format, ycp-format
 msgid "Turn of player %1"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:1059
+#: Rovhult/Rovhult.cpp:1130 Twopart/Twopart.cpp:943
 msgid "Loading cardimages ..."
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:1071
+#: Rovhult/Rovhult.cpp:1139 Twopart/Twopart.cpp:952
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:1209
+#: Rovhult/Rovhult.cpp:1301
 msgid ""
 "Exchange the cards in your hand with the one on the table (with drag and "
 "drop) - press space (or click on staple) if finished"
@@ -136,9 +157,19 @@ msgid ""
 "Reason: %2"
 msgstr ""
 
-#: Common/CardPile.h:248
+#: Common/CardPile.h:246
 #, ycp-format
 msgid "%1 card"
 msgid_plural "%1 cards"
 msgstr[0] ""
 msgstr[1] ""
+
+#: Twopart/Twopart.cpp:603
+msgid ""
+"Played card(s) must have the same color and must be bigger (or be a trump)!"
+msgstr ""
+
+#: Twopart/Twopart.cpp:675
+#, c-format, ycp-format
+msgid "First part ended; Part 2 starts player %1"
+msgstr ""
