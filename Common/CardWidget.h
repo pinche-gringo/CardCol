@@ -20,13 +20,15 @@
 #include <string>
 
 #include <gdkmm/pixmap.h>
-#include <gtkmm/button.h>
+
+#include <gtkmm/image.h>
+#include <gtkmm/eventbox.h>
 
 #include <CardImgs.h>
 
 
 // Class to display a card on the screen
-class CardWidget : public Gtk::Button {
+class CardWidget : public Gtk::EventBox {
  public:
    CardWidget (const CardImages& set, unsigned int card, bool showFace = true);
    CardWidget (const CardWidget&);
@@ -52,14 +54,8 @@ class CardWidget : public Gtk::Button {
    const Glib::RefPtr<Gdk::Pixmap> getShownImage () const {
       return isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (); }
    const Glib::RefPtr<Gdk::Pixmap> getImage () const { return deck.getCardImage (nrCard); }
-   unsigned int getImageHeight () const {
-      int x, y;
-      deck.getCardImage (nrCard)->get_size (x, y);
-      return y; }
-   unsigned int getImageWidth () const {
-      int x, y;
-      deck.getCardImage (nrCard)->get_size (x, y);
-      return x; }
+   unsigned int getImageSize (int& width, int& height) const {
+      deck.getCardImage (nrCard)->get_size (width, height); }
 
    int compareNumber (CardWidget& other) const { return number () - other.number (); }
 
@@ -69,8 +65,18 @@ class CardWidget : public Gtk::Button {
 
    void update ();
 
+   SigC::Signal0<void> signal_clicked () { return clicked_; }
+   void clicked () { clicked_.emit (); }
+
+ protected:
+  virtual void on_clicked ();
+  virtual bool on_button_release_event (GdkEventButton* ev);
+
  private:
    CardWidget ();
+
+   SigC::Signal0<void> clicked_;
+   Gtk::Image img;
 
    bool isVisible;
    unsigned int nrCard;
