@@ -50,8 +50,8 @@ class CardgameCollection : public XApplication {
 
  private:
    // IDs for menus
-   enum { NEW = 1, END, EXIT, DEBUG, ROVHULT, TWOPART, CHGDECKS, SAVESET, ABOUT,
-          CONTENT};
+   enum { NEW = 1, END, EXIT, DEBUG, ROVHULT, TWOPART, HEARTS, CHGDECKS,
+          SAVESET, ABOUT, CONTENT};
 
    // Protected manager functions
    CardgameCollection (const CardgameCollection&);
@@ -60,6 +60,9 @@ class CardgameCollection : public XApplication {
    // Event-handling
    virtual void command (int menu);
    virtual void gameEvents (unsigned int status);
+   virtual gint delete_event_impl (_GdkEventAny*) {
+      command (EXIT);
+      return 1; }
 
    void changeCards (void* opt);
    void loadCards ();
@@ -85,7 +88,7 @@ class CardgameCollection : public XApplication {
    std::string pathDeck;
    std::string pathBack;
 
-   typedef enum { NONE = -1, GROVHULT = 0, GTWOPART } games;
+   typedef enum { NONE = -1, GROVHULT = 0, GTWOPART, GHEARTS } games;
    games typeGame;
    games oldGame;
    bool restart;
