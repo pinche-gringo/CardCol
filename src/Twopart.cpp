@@ -526,11 +526,16 @@ void Twopart::userWants2End (unsigned int input) {
          status.pop (1);
          status.push (1, _("User canceled"));
 
-         statGame = actPlayer ? TOSTOP : STOPPED;
-         if (restart)
-            startGame ();
-         else
-            cleanTable ();
+         if (actPlayer)
+            statGame = TOSTOP;
+         else {
+            statGame = STOPPED;
+         
+            if (restart)
+               startGame ();
+            else
+               disableLastPlayer ();
+         }
       }
    }
 }
@@ -728,7 +733,7 @@ void Twopart::cardSelected (unsigned int player, unsigned int pos) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Callback after clicking on a card in hand
+//Purpose   : Executes a move out of a hand
 //Parameters: player: ID of player
 //            iCard: Offset of card in hand
 /*--------------------------------------------------------------------------*/
@@ -793,6 +798,7 @@ void Twopart::executeMove (unsigned int player, unsigned int pos) {
 //Returns   : int: Flag for timer, if it should continue (0: no; else: yes)
 /*--------------------------------------------------------------------------*/
 int Twopart::makeNextMove () {
+   TRACE5 ("Twopart::makeNextMove () - Turn of player " << actPlayer);
    Check3 (actPlayer); Check3 (actPlayer < NUM_PLAYERS);
    if (statGame == TOSTOP) {
       TRACE8 ("Twopart::makeNextMove () - End game ");
@@ -802,7 +808,6 @@ int Twopart::makeNextMove () {
       return 0;
    }
 
-   TRACE5 ("Twopart::makeNextMove () - Turn of player " << actPlayer);
    Check3 (statGame >= PLAYING);
    if (pos2Play == -1) {
       pos2Play = findPos2Play (actPlayer);
@@ -891,11 +896,11 @@ int Twopart::findPos2Play (unsigned int player) const {
       analyzeLastPlayed (*startPos, played.numberOfCards () - *startPos,
                          maxNr, posMax, maxEqualNr, posMaxEqual);
 
-      // Try to get the cards if there are loads of high cards (third or more)
+      int pos (-1);
+      // Try to get the cards if there are loads of high cards (a third or more)
       // or if the average card played is at least a 8
       if (((played.numberOfCards () / 3) < cHigh)
           || (points >= CardWidget::EIGHT)) {
-         int pos;
          // Search for card whose number you own
          for (unsigned int i (*startPos);
               i < players[player].hand.numberOfCards (); ++i)
@@ -916,8 +921,11 @@ int Twopart::findPos2Play (unsigned int player) const {
              // or the staple is being fighted for and player has high cards
              || (*startPos
                  && ((pos = players[player].hand.numberOfCards () - 1),
-                     players[player].hand.at (pos).number ()
-                     == CardWidget::ACE))) {
+                     ((players[player].hand.at (pos).number ()
+                       == CardWidget::ACE))
+                     || ((playersInBitfield (bfOldPlayers) < *startPos)
+                         && (players[player].hand.at (pos).number () >= maxNr)
+                         && (posMaxEqual == -1))))) {
             TRACE2 ("Twopart::findPos2Play (unsigned int) - Playing highest card at "
                     << pos);
             return pos;
@@ -926,14 +934,24 @@ int Twopart::findPos2Play (unsigned int player) const {
 
       // We don't want the pile; so try not to get it:
       TRACE5 ("Twopart::findPos2Play (unsigned int) - Avoiding pile");
-      return (players[player].hand.numberOfCards () > 1
-              && ((played.exists (players[player].hand.at (0).number (), *startPos)
-                   && (players[player].hand.at (1).number () < CardWidget::SIX)
-                   && !played.exists (players[player].hand.at (1).number (), *startPos))
-                  || ((players[player].hand.at (0).number () == maxEqualNr)
-                      && !played.exists (players[player].hand.at (1).number (),
-                                         *startPos)
-                      && (players[player].hand.at (1).number () < CardWidget::SIX))));
+      pos = ((players[player].hand.numberOfCards () > 1)
+             && ((played.exists (players[player].hand.at (0).number (), *startPos)
+                  && (players[player].hand.at (1).number () < CardWidget::SIX)
+                  && !played.exists (players[player].hand.at (1).number (), *startPos))
+                 || ((players[player].hand.at (0).number () == maxEqualNr)
+                     && !played.exists (players[player].hand.at (1).number (),
+                                        *startPos)
+                     && (players[player].hand.at (1).number () < CardWidget::SIX))));
+
+      // Final check: If you have to pick up the pile and you're the last,
+      // use at least a high card
+      if (!pos
+          && !(bfPlayers & ~(1 << player))
+          && (players[player].hand.numberOfCards () > 1)
+          && (players[player].hand.at (pos).number () > maxNr)
+          && (posMaxEqual == -1))
+         pos = 1;
+      return pos;
    }
    else {
       // Find first fitting card
@@ -982,12 +1000,18 @@ int Twopart::findPos2Play (unsigned int player) const {
 unsigned int Twopart::findSmallestCard (unsigned int player) const {
    TRACE5 ("Twopart::findSmallestCard (unsigned int) - Inspecting player " << player);
    Check3 (player < NUM_PLAYERS);
+   Check3 (pTrump);
 
    unsigned int nrMin (CardWidget::UNREACHABLE);
    unsigned int cSerie (0);
    unsigned int pos (0);
    for (unsigned int i (0); i < players[player].hand.numberOfCards (); ++i) {
       CardWidget& card (players[player].hand.at (i));
+
+      // Stop searching if a trump was found
+      if ((card.color () == pTrump->color ()) && i)
+         break;
+          
       if (nrMin >= card.number ()) {
          TRACE9 ("Twopart::findSmallestCard (unsigned int) - New smallest card at "
                  << i << "; Cards: " << (findEndOfSerie (player, i) - i));
@@ -1041,102 +1065,100 @@ int Twopart:: endRound () {
    TRACE8 ("Twopart::endRound ()");
    Check3 (!bfPlayers);
 
+   unsigned int nextPlayer (NUM_PLAYERS);
+
    if (statGame == PLAYING2) {
       played.clear ();
       bfPlayers = (1 << NUM_PLAYERS) - 1;
       removePlayersWithoutCards ();
       offPos = 0;
-      if (!players[actPlayer].hand.numberOfCards ())
-         actPlayer = findNextPlayer (actPlayer);
-      return startPlayer = actPlayer;
+      nextPlayer = (!players[actPlayer].hand.numberOfCards ())
+         ? findNextPlayer (actPlayer) : actPlayer;
    }
+   else {
+      bfPlayers = bfOldPlayers;
+      unsigned int cPlayers (playersInBitfield (bfPlayers));
 
-   bfPlayers = bfOldPlayers;
-   unsigned int cPlayers (0);
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      if (bfPlayers & (1 << i))
-         ++cPlayers;
+      TRACE8 ("Twopart::endRound () - Round has " << cPlayers << " players; Start = "
+              << *startPos << " of " << played.numberOfCards () << " cards");
+      Check3 ((*startPos + cPlayers) <= played.numberOfCards ());
 
-   unsigned int nextPlayer (NUM_PLAYERS);
+      int maxNr (-1);
+      int maxEqualNr (-1);
+      int posMax (-1);
+      int posMaxEqual (-1);
+      analyzeLastPlayed (*startPos, cPlayers, maxNr, posMax, maxEqualNr, posMaxEqual);
 
-   TRACE8 ("Twopart::endRound () - Round has " << cPlayers << " players; Start = "
-           << *startPos << " of " << played.numberOfCards () << " cards");
-   Check3 ((*startPos + cPlayers) <= played.numberOfCards ());
+      TRACE4 ("Twopart::endRound () - Player starting round: " << startPlayer
+              << "; players: " << cPlayers);
+      Check3 ((*startPos + cPlayers) == played.numberOfCards ());
 
-   int maxNr (-1);
-   int maxEqualNr (-1);
-   int posMax (-1);
-   int posMaxEqual (-1);
-   analyzeLastPlayed (*startPos, cPlayers, maxNr, posMax, maxEqualNr, posMaxEqual);
+      // Equal cards found
+      if (posMaxEqual >= 0) {
+         unsigned int bfPlayersOut (0);
+         cPlayers = 0;
 
-   TRACE4 ("Twopart::endRound () - Player starting round: " << startPlayer
-           << "; players: " << cPlayers);
-   Check3 ((*startPos + cPlayers) == played.numberOfCards ());
-
-   // Equal cards found
-   if (posMaxEqual >= 0) {
-      unsigned int bfPlayersOut (0);
-      cPlayers = 0;
-
-      // Add players having equal cards and having still cards left
-      nextPlayer = startPlayer;
-      for (unsigned int i (*startPos); i < played.numberOfCards (); ++i) {
-         if ((played.at (i).number () == maxEqualNr)
-             && players[pos2Player (i - *startPos)].hand.numberOfCards ()) {
-            if (!cPlayers)
-               // Start player is the first who played the highest cards
-               nextPlayer = pos2Player (posMaxEqual - *startPos);
-
-            TRACE5 ("Twopart::endRound () - Found equal cards; Player "
-                    << pos2Player (i - *startPos)
-                    << (cPlayers ? " still in round" : " is winner"));
-            ++cPlayers;
+         // Add players having equal cards and having still cards left
+         nextPlayer = startPlayer;
+         for (unsigned int i (*startPos); i < played.numberOfCards (); ++i) {
+            if ((played.at (i).number () == maxEqualNr)
+                && players[pos2Player (i - *startPos)].hand.numberOfCards ()) {
+               if (!cPlayers)
+                  // Start player is the first who played the highest cards
+                  nextPlayer = pos2Player (posMaxEqual - *startPos);
+               
+               TRACE5 ("Twopart::endRound () - Found equal cards; Player "
+                       << pos2Player (i - *startPos)
+                       << (cPlayers ? " still in round" : " is winner"));
+               ++cPlayers;
             }
             else
                bfPlayersOut |= (1 << pos2Player (i - *startPos));
          } // endfor check for equal cards
-      bfPlayers &= ~bfPlayersOut;
-      TRACE5 ("Twopart::endRound () - Found equal cards; " << cPlayers
-              << " player(s) still in round (" << hex << bfPlayers << dec << ')');
+         bfPlayers &= ~bfPlayersOut;
+         TRACE5 ("Twopart::endRound () - Found equal cards; " << cPlayers
+                 << " player(s) still in round (" << hex << bfPlayers << dec << ')');
 
-      // Find player to continue
-      if (!players[nextPlayer].hand.numberOfCards ())
-         nextPlayer = findNextPlayer (nextPlayer);
-      TRACE6 ("Twopart::endRound () - Try to continue with player " << nextPlayer);
-      if (cPlayers < 2) {                   // Less than two found: 
-         bfPlayers = (1 << NUM_PLAYERS) - 1;
-         cPlayers = removePlayersWithoutCards ();
+         // Find player to continue
+         if (!players[nextPlayer].hand.numberOfCards ())
+            nextPlayer = findNextPlayer (nextPlayer);
+         TRACE6 ("Twopart::endRound () - Try to continue with player " << nextPlayer);
+         if (cPlayers < 2) {                   // Less than two found: 
+            bfPlayers = (1 << NUM_PLAYERS) - 1;
+            cPlayers = removePlayersWithoutCards ();
 
-         if (nextPlayer == -1) {
-            nextPlayer = bfPlayers ? findNextPlayer (nextPlayer) : ~startPlayer;
-            movePlayedCardsToPlayer (startPlayer);
+            if (nextPlayer == -1) {
+               nextPlayer = bfPlayers ? findNextPlayer (nextPlayer) : ~startPlayer;
+               movePlayedCardsToPlayer (startPlayer);
+            }
+            else
+               movePlayedCardsToPlayer (nextPlayer);
          }
-         else
-            movePlayedCardsToPlayer (nextPlayer);
-      }
 #if CHECK > 0
-      else
-         Check (cPlayers > 1);
+         else
+            Check (cPlayers > 1);
 #endif
-   }
-   // All played cards are differnt: Winner is the one with highest card
-   else {
-      startPlayer = nextPlayer = pos2Player (posMax - *startPos);
-      movePlayedCardsToPlayer (nextPlayer);
-      TRACE5 ("Twopart::endRound () - Found winner: " << nextPlayer);
+      }
+      // All played cards are differnt: Winner is the one with highest card
+      else {
+         startPlayer = nextPlayer = pos2Player (posMax - *startPos);
+         movePlayedCardsToPlayer (nextPlayer);
+         TRACE5 ("Twopart::endRound () - Found winner: " << nextPlayer);
 
-      bfPlayers = (1 << NUM_PLAYERS) - 1;     // Set all players (having cards)
-      removePlayersWithoutCards ();
-      bfOldPlayers = bfPlayers;
+         bfPlayers = (1 << NUM_PLAYERS) - 1;   // Set all players (having cards)
+         removePlayersWithoutCards ();
+         bfOldPlayers = bfPlayers;
 
-      if (!players[nextPlayer].hand.numberOfCards ())
-         nextPlayer = findNextPlayer (nextPlayer);
-      if (nextPlayer == -1)
-         nextPlayer = ~startPlayer;
+         if (!players[nextPlayer].hand.numberOfCards ())
+            nextPlayer = findNextPlayer (nextPlayer);
+         if (nextPlayer == -1)
+            nextPlayer = ~startPlayer;
+      }
+      *startPos = played.numberOfCards ();
    }
 
    bfOldPlayers = bfPlayers;
-   *startPos = played.numberOfCards ();
+   TRACE8 ("Twopart::endRound () - Continuing with player " << nextPlayer);
    return startPlayer = nextPlayer;
 }
 
