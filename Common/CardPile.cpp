@@ -277,6 +277,8 @@ void ICardPile::setStyle (PileStyle s) {
       Check3 (cards[i]);
       resize (*cards[i], style);
    }
+   if (cards.size ())
+      resize (*cards[cards.size () - 1], NORMAL);
 }
 
 /*--------------------------------------------------------------------------*/
