@@ -52,6 +52,9 @@ The images for the front side must be put in a directory called cards-NAME
 and the images for the back in a directory called decks (and must be called
 deck#.png).
 
+The path of the card decks to use can be specified with an option to
+configure. If it is missing, the script tries to figure it out by itself.
+
 Principally front and back of the cards should have the same size (as
 otherwise flipping a card looks a bit weired).
 
