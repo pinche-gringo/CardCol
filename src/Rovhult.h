@@ -104,8 +104,8 @@ class Rovhult : public Game {
    bool playerHandCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const;
    
    int makeTurn (unsigned int player);
-   int findCard2Play (unsigned int player, unsigned int& start, unsigned int& end) const;
-   unsigned int showCards2Play (unsigned int player);
+   void findCard2Play (unsigned int player, unsigned int& start, unsigned int& end) const;
+   void showCards2Play (unsigned int player);
 
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
    bool getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
