@@ -90,7 +90,7 @@ class CarddeckSelectDlg : public ICarddeckSelectDlg {
    static CarddeckSelectDlg* create (T& parent, PCALLBACK callback, const char* path,
                                      const std::string& deck, const std::string& back) {
       CarddeckSelectDlg<T>* dlg (new CarddeckSelectDlg (parent, callback,
-                                                     path, deck, back));
+							path, deck, back));
       dlg->signal_response ().connect (mem_fun (*dlg, &CarddeckSelectDlg<T>::free));
       dlg->get_window ()->set_transient_for (parent.get_window ());
       return dlg;
@@ -107,7 +107,7 @@ class CarddeckSelectDlg : public ICarddeckSelectDlg {
    }
 
  private:
-   T& obj;
+   T&        obj;
    PCALLBACK pCallback;
 };
 
