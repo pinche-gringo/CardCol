@@ -573,18 +573,6 @@ void Buraco::setStartPlayer () {
       broadcastStartPlayer (startPlayer);
    }
 
-      // Send startplayer to the clients
-      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
-         const std::vector<YGP::Socket*>& clients (getConnectionMgr ().getClients ());
-         unsigned int player ((currentPlayer () - 1) & 0x3);
-         for (std::vector<YGP::Socket*>::const_iterator i (clients.begin ());
-              i != clients.end (); ++i) {
-            std::ostringstream msg;
-            msg << "ActPlayer=" << player;
-            writeMessage (**i, msg.str ());
-            player = (player + 1) & 0x3;
-         }
-      }
    if (startPlayer)
       dumped.getTopCard ().hide ();
    else
@@ -2035,7 +2023,7 @@ ICardPile* Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
 //----------------------------------------------------------------------------
 /// Handles the messages the server might send for the Buraco cardgame
 /// \param player: ID of the player sending the message
-/// Handles the messages the server might send for the twopart cardgame
+/// \param message: Message received from the server
 /// \returns bool: True, if message has been processed completey
 /// \throw std::string: In case of an error an describing text
 //----------------------------------------------------------------------------
@@ -2227,8 +2215,15 @@ void Buraco::undoLast (unsigned int player) {
    BuracoPile& src (*tablePiles[player & 1][undo.destPile]);
    Check3 (undo.destPos < src.size ());
 
+   if (src.size () == 7) {
+      src.show ();
+      Check3 (static_cast<int> (src.getPotentialPoints ()) == src.getPoints ());
+      points[player & 1] -= src.getPoints ();
+      updateInfo ();
+   }
 
-   Check3 (undo.destPos < src.size ());
+   hands[player].insert (src.remove (undo.destPos), undo.srcPos);
+
    acceptCards = (undo.blocked == 0x7f) ? -1U : undo.blocked;
    if (acceptCards != -1U) {
       menuSort->set_sensitive (false);
@@ -2237,13 +2232,6 @@ void Buraco::undoLast (unsigned int player) {
 
    if (src.size () == 0) {
       tablePiles[player & 1].erase (tablePiles[player & 1].begin () + undo.destPile);
-   if (src.size () == 6) {
-      src.show ();
-      Check3 (static_cast<int> (src.getPotentialPoints ()) == src.getPoints ());
-      points[player & 1] -= src.getPoints ();
-      updateInfo ();
-   }
-
       boxTeam[player & 1].remove (src);
       delete &src;
    }
