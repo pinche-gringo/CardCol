@@ -54,6 +54,7 @@ class CardgameCollection : public XApplication {
    CardSet& getCards () { return cards; }
    const std::vector<Player*>& getPlayer () const;
    ConnectionMgr& getConnectionMgr () { return cmgr; };
+   const unsigned int getPlayerPosition () const { return playerPos; }
 
  private:
    // IDs for menus
@@ -81,8 +82,8 @@ class CardgameCollection : public XApplication {
 
    void makePlayer ();
    void* waitForMessages (void*);
-   bool handleErrorMessage (char* msg);
-   bool handleMessage (char* msg);
+   bool handleErrorMessage (unsigned int player, char* msg);
+   bool handleMessage (unsigned int player, char* msg);
    bool showMessage (char* msg);
 
    static XApplication::MenuEntry CardgameCollection::menuItems[];
@@ -102,6 +103,8 @@ class CardgameCollection : public XApplication {
    Options& options;
    ConnectionMgr cmgr;
    std::vector<Player*> player;
+
+   unsigned int playerPos;
 
    games oldGame;
    unsigned int restart;
