@@ -168,7 +168,7 @@ void Hearts::start () {
    if (pScoreDlg) {
       unsigned int player, points;
       pScoreDlg->getMaxPoints (points, player);
-      if (points > 100) {
+      if (points >= 100) {
          delete pScoreDlg;
          pScoreDlg = NULL;
       }
@@ -453,13 +453,13 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
          if ((card.color () == CardWidget::SPADES)
              && (card.number () == CardWidget::QUEEN)) {
             XMessageBox::Show (_("The queen of spades can't be played in the first"
-                                 " round"), PACKAGE " - Hearts", XMessageBox::ERROR);
+                                 " round!"), PACKAGE " - Hearts", XMessageBox::ERROR);
             return false;
          }
 
          if (((playColor == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
               && (players[player].hand.at (0).color () != CardWidget::HEARTS)) {
-            XMessageBox::Show (_("Hearts can't be played in the first round"),
+            XMessageBox::Show (_("Hearts can't be played in the first round!"),
                                PACKAGE " - Hearts", XMessageBox::ERROR);
             return false;
          }
@@ -596,7 +596,7 @@ void Hearts::getPositionOfColors (ICardPile& pile, int result[4]) {
 //            color: Color whose number should be calculated
 //Returns   : int: Number of cards for color
 /*--------------------------------------------------------------------------*/
-unsigned int Hearts::numberOfCards (int aPositions[4], CardWidget::COLORS color) {
+unsigned int Hearts::numberOfCards (const int aPositions[4], CardWidget::COLORS color) {
    Check1 (color <= CardWidget::HEARTS);
    unsigned int nr (0);
    if (aPositions[color] != -1) {
@@ -621,135 +621,27 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
    Check1 (player < NUM_PLAYERS);
    TRACE8 ("Hearts::findPos2Play (unsigned int)");
 
-   int aPos[4];
-   getPositionOfColors (players[player].hand, aPos);
-
    ICardPile& pile (players[player].hand);
+   int aPos[4];
+   getPositionOfColors (pile, aPos);
+
    if (played.numberOfCards ()) {
-      CardWidget::COLORS color (played.at (0).color ());
       // Check if cards of the same color are available
-      if (aPos[color] == -1) {
-         // Player doesn't have color -> Play queen of spades or hearts
-         // or a high card.
-         unsigned int cardsPlayed (0);
-         for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-            cardsPlayed += players[i].won.numberOfCards ();
-
-         if (cardsPlayed) {
-            TRACE5 ("Hearts::findPos2Play (unsigned int) - Searching for SQ");
-            if (aPos[2] > 0)
-               for (unsigned int pos ((aPos[1] >= 0)
-                                      ? aPos[1] + 1
-                                      : ((aPos[0] >= 0) ? aPos[0] + 1: 0));
-                    pos <= aPos[2]; ++pos) {
-                  TRACE9 ("Hearts::findPos2Play (unsigned int) - Searching for "
-                          "SQ at position " << pos);
-                  Check3 (pile.at (pos).color () == CardWidget::SPADES);
-                  TRACE5 ("Hearts::findPos2Play (unsigned int) - Searching for SQ");
-                  if (pile.at (pos).number () >= CardWidget::QUEEN)
-                     return pos;
-               }
-
-            // No high spade found: Try to play a heart (after the first round)
-            TRACE5 ("Hearts::findPos2Play (unsigned int) - Searching for hearts");
-            if (pile.at (pile.numberOfCards () - 1).color () == CardWidget::HEARTS)
-               return pile.numberOfCards () - 1;
-         }
-
-         // If everything else failes: Play a high card
-         TRACE5 ("Hearts::findPos2Play (unsigned int) - Searching for high cards");
-         int pos (0);
-         for (int card (CardWidget::ACE); card >= CardWidget::TWO;
-              --card) {
-            pos = 0;
-            while ((pos = pile.find (CardWidget::NUMBERS (card), pos))
-                   != -1) {
-               CardWidget::COLORS color (pile.at (pos).color ());
-               TRACE2 ("Hearts::findPos2Play (unsigned int) - Checking card "
-                       << pile.at (pos) << " at pos " << pos << " against "
-                       << aPlayed[color] << " cards");
-               if (((aPlayed[color] + numberOfCards (aPos, color))
-                    < (cards.numberOfCards () / NUM_PLAYERS))
-                   // ... but a heart or the queen of spades in round 1
-                   && (cardsPlayed
-                       || (color != CardWidget::HEARTS)
-                       || ((color == CardWidget::SPADES)
-                           && card != CardWidget::QUEEN)))
-                  return pos;
-               ++pos;
-            }
-         }
-      }
-      else {                              // Player has cards of the same color
-         unsigned int posWinner (check4Winner ());
-         // Play queen of spades, if there's already a higher card in the pile
-         if ((color == CardWidget::SPADES)
-             && (played.at (posWinner).number () > CardWidget::QUEEN))
-            return ((pile.at (aPos[CardWidget::SPADES]).number () == CardWidget::QUEEN)
-                    || (numberOfCards (aPos, CardWidget::SPADES) == 1)
-                    || (pile.at (aPos[CardWidget::SPADES] - 1).number ()
-                        != CardWidget::QUEEN)
-                    ? aPos[CardWidget::SPADES] : aPos[CardWidget::SPADES] - 1);
-
-         // Play high card of the color, if last player and pile contains no
-         // counting card, except if that would mean to play the queen of spades.
-         if ((played.numberOfCards () == (NUM_PLAYERS - 1))
-             && !pointsOfPile (played))
-            return ((color != CardWidget::SPADES)
-                    || (players[player].hand.at (aPos[CardWidget::SPADES]).number ()
-                        != CardWidget::QUEEN)
-                    || numberOfCards (aPos, CardWidget::SPADES) == 1)
-               ? aPos[color] : aPos[color] - 1;
-         else {
-            // Play highest card lower than the previously played ones
-            int card (0);
-            Check3 (played.numberOfCards ());
-            CardWidget::NUMBERS highest (played.at (posWinner).number ());
-            TRACE9 ("Hearts::findPos2Play (unsigned int) - Try to be below "
-                    << played.at (posWinner));
-
-            // Search for a lower card
-            unsigned int nrCards (numberOfCards (aPos, color));
-            card = aPos[color] + 1; Check3 (card >= 1);
-            do {
-               Check3 (pile.at (card - 1).color () == color);
-               if (pile.at (--card).number () < highest) {
-                  // Found a lower card; test if the highest is the ace of
-                  // spades and you have the queen and are about to play the king
-                  if ((color == CardWidget::SPADES)
-                      && (highest == CardWidget::ACE)
-                      && card
-                      && (pile.at (card - 1).number () == CardWidget::QUEEN)
-                      && (pile.at (card - 1).color () == CardWidget::SPADES))
-                     --card;
-
-                  TRACE5 ("Hearts::findPos2Play (unsigned int) - Playing card at "
-                          << card  << ": " << pile.at (card));
-                  return card;
-               }
-            } while (--nrCards);
-
-            // Try to not play the queen of spades, if possible
-            if ((color == CardWidget::SPADES)
-                && card
-                && (pile.at (card).number () == CardWidget::QUEEN)
-                && (pile.at (card - 1).color () == CardWidget::SPADES))
-                --card;
-
-            if (played.numberOfCards () == (NUM_PLAYERS - 1))
-               card = aPos[color];
-            TRACE5 ("Hearts::findPos2Play (unsigned int) - Forced to play card at "
-                    << card << ": " << pile.at (card));
-            return card;
-         }
-      }
+      return (aPos[played.at (0).color ()] == -1) 
+         ? findWorstCard (pile, aPos) : findLowerCard (pile, aPos);
    }
    else {
       // Player starts the round: If he has loads of spades: Play them
-      if (!playedSQ
-          && (numberOfCards (aPos, CardWidget::SPADES)
-              > (((cards.numberOfCards () / NUM_PLAYERS) - aPlayed[CardWidget::SPADES])
-                 / NUM_PLAYERS - 1))) {
+      unsigned int nrSpades (numberOfCards (aPos, CardWidget::SPADES));
+      unsigned int missingSpades (cards.numberOfCards () - nrSpades
+                                  - aPlayed[CardWidget::SPADES]);
+      // If there are still spades left (with other players) and either the
+      // player has no high spades or loads of spades: Play them
+      if (missingSpades && (!playedSQ)
+          && (((aPos[CardWidget::SPADES] != -1)
+               && (pile.at (aPos[CardWidget::SPADES]).number ()
+                   < CardWidget::QUEEN))
+              || (((missingSpades / 3) + 1) < nrSpades))) {
          unsigned int pos ((aPos[1] >= 0)
                            ? aPos[1] + 1
                            : ((aPos[0] >= 0) ? aPos[0] + 1: 0));
@@ -792,12 +684,147 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
 }
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Find a lower card than the previously played ones
+//Parameters: pile: Pile from which to play
+//            aPositions: Array with positions of cards
+//Returns   : Position of card to play
+/*--------------------------------------------------------------------------*/
+unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[4]) {
+   TRACE9 ("Hearts::findLowerCard (const ICardPile&, const int[4]");
+   CardWidget::COLORS color (played.at (0).color ());
+   unsigned int posWinner (check4Winner ());
+
+   // Play queen of spades, if there's already a higher card in the pile
+   if ((color == CardWidget::SPADES)
+       && (played.at (posWinner).number () > CardWidget::QUEEN))
+      return ((pile.at (aPositions[CardWidget::SPADES]).number () == CardWidget::QUEEN)
+              || (numberOfCards (aPositions, CardWidget::SPADES) == 1)
+              || (pile.at (aPositions[CardWidget::SPADES] - 1).number ()
+                  != CardWidget::QUEEN)
+              ? aPositions[CardWidget::SPADES] : aPositions[CardWidget::SPADES] - 1);
+
+   // Play high card of the color, if last player and pile contains no
+   // counting card, except if that would mean to play the queen of spades.
+   if ((played.numberOfCards () == (NUM_PLAYERS - 1))
+       && !pointsOfPile (played))
+      return ((color != CardWidget::SPADES)
+              || (pile.at (aPositions[CardWidget::SPADES]).number ()
+                  != CardWidget::QUEEN)
+              || numberOfCards (aPositions, CardWidget::SPADES) == 1)
+         ? aPositions[color] : aPositions[color] - 1;
+   else {
+      // Play highest card lower than the previously played ones
+      int card (0);
+      Check3 (played.numberOfCards ());
+      CardWidget::NUMBERS highest (played.at (posWinner).number ());
+      TRACE9 ("Hearts::findLowerCard (const ICardPile&, unsigned int[4]) - Try to"
+              " be below " << played.at (posWinner));
+
+      // Search for a lower card
+      unsigned int nrCards (numberOfCards (aPositions, color));
+      card = aPositions[color] + 1; Check3 (card >= 1);
+      do {
+         Check3 (pile.at (card - 1).color () == color);
+         if (pile.at (--card).number () < highest) {
+            // Found a lower card; test if the highest is the ace of
+            // spades and you have the queen and are about to play the king
+            if ((color == CardWidget::SPADES)
+                && (highest == CardWidget::ACE)
+                && card
+                && (pile.at (card - 1).number () == CardWidget::QUEEN)
+                && (pile.at (card - 1).color () == CardWidget::SPADES))
+               --card;
+
+            TRACE5 ("Hearts::findLowerCard (const ICardPile&, unsigned int[4]) - "
+                    "Playing card at " << card  << ": " << pile.at (card));
+            return card;
+         }
+      } while (--nrCards);
+
+      // Try to not play the queen of spades, if possible
+      if ((color == CardWidget::SPADES)
+          && (card < aPositions[CardWidget::SPADES])
+          && (pile.at (card).number () == CardWidget::QUEEN)) {
+         Check3 (pile.at (card + 1).color () == CardWidget::SPADES);
+         ++card;
+      }
+
+      if (played.numberOfCards () == (NUM_PLAYERS - 1))
+         card = aPositions[color];
+      TRACE5 ("Hearts::findLowerCard (const ICardPile&, unsigned int[4]) - "
+              "Forced to play card at " << card << ": " << pile.at (card));
+      return card;
+   }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Find the worst card to play (defined as having the highest
+//            number of bad points (like the queen of spades with 13 points
+//            and every heart with 1 point) or the highest numbered card).
+//Parameters: pile: Pile from which to play
+//            aPositions: Array with positions of cards
+//Returns   : Position of card to play
+/*--------------------------------------------------------------------------*/
+unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[4]) {
+   TRACE9 ("Hearts::findWorstCard (const ICardPile&, const int[4]");
+
+   // Search for queen of spades or any heart or a high card
+   unsigned int cardsPlayed (0);
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+      cardsPlayed += players[i].won.numberOfCards ();
+
+   if (cardsPlayed) {
+      TRACE5 ("Hearts::findWorstCard (const ICardPile&, const int[4]) - Searching"
+              " for SQ");
+      if (aPositions[2] > 0)
+         for (unsigned int pos ((aPositions[1] >= 0)
+                                ? aPositions[1] + 1
+                                : ((aPositions[0] >= 0) ? aPositions[0] + 1: 0));
+              pos <= aPositions[2]; ++pos) {
+            TRACE9 ("Hearts::findWorstCard (const ICardPile&, const int[4]) - "
+                    "Searching for SQ at position " << pos);
+            Check3 (pile.at (pos).color () == CardWidget::SPADES);
+            if (pile.at (pos).number () >= CardWidget::QUEEN)
+               return pos;
+         }
+
+      // No high spade found: Try to play a heart (after the first round)
+      TRACE5 ("Hearts::findWorstCard (const ICardPile&, unsigned int[4]) - "
+              "Searching for hearts");
+      if (aPositions[CardWidget::HEARTS] != -1)
+         return aPositions[CardWidget::HEARTS];
+   }
+
+   // If everything else failes: Play a high card
+   TRACE5 ("Hearts::findWorstCard (const ICardPile&, unsigned int[4]) - Searching "
+           "for high cards");
+   int pos (0);
+   for (int card (CardWidget::ACE); card >= CardWidget::TWO;
+        --card) {
+      pos = 0;
+      while ((pos = pile.find (CardWidget::NUMBERS (card), pos))
+             != -1) {
+         CardWidget::COLORS color (pile.at (pos).color ());
+         TRACE2 ("Hearts::findWorstCard (const ICardPile&, unsigned int[4]) - "
+                 "Checking card " << pile.at (pos) << " at pos " << pos
+                 << " against " << aPlayed[color] << " cards");
+         if (cardsPlayed
+             || (color != CardWidget::HEARTS)
+             || ((color == CardWidget::SPADES)
+                 && card != CardWidget::QUEEN))
+            return pos;
+         ++pos;
+      }
+   }
+   Check3 (0);
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Counts the points in the passed pile.
 //
 //            The queen of spades counts 13 points and every heart 1 point
 //Parameters: pile: Pile to inspect
 //Returns   : unsigned int: Number of points
-
 /*--------------------------------------------------------------------------*/
 unsigned int Hearts::pointsOfPile (ICardPile& pile) {
    unsigned int points (0);
