@@ -97,9 +97,6 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
    played.show ();
    attach (played, 3, 11, 5, 8, 0, 0, 0, 5);
 
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-   }
-
    played.set_usize (width + 150, height);
    staple.set_usize (width, height);
 }
@@ -226,8 +223,8 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player,
                                         unsigned int start, unsigned int end) {
    TRACE5 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsigned int) - Player: "
            << player << " at position " << start << " to " << end);
-   Check3 (player <= NUM_PLAYERS);
-   Check3 (end <= players[player].hand.numberOfCards ());
+   Check3 (player < NUM_PLAYERS);
+   Check3 (end < players[player].hand.numberOfCards ());
    Check3 (start <= end);
    Check3 (gameStatus () >= PLAYING);
 
@@ -287,13 +284,13 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player,
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card in hand
 //Parameters: player: ID of player
-//            iCard: Offset of card in hand
+//            pos: Offset of card in hand
 /*--------------------------------------------------------------------------*/
 void Twopart::cardSelected (unsigned int player, unsigned int pos) {
    TRACE5 ("Twopart::cardSelected (unsigned int, unsigned int) - Player: "
            << player << " at position " << pos);
-   Check3 (player <= NUM_PLAYERS);
-   Check3 (pos <= players[player].hand.numberOfCards ());
+   Check3 (player < NUM_PLAYERS);
+   Check3 (pos < players[player].hand.numberOfCards ());
    Check3 (gameStatus () >= PLAYING);
 
    setNextPlayer (executeMove (player, 
@@ -313,9 +310,9 @@ void Twopart::cardSelected (unsigned int player, unsigned int pos) {
 int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int end) {
    TRACE5 ("Twopart::executeMove (unsigned int, unsigned int) - Player: "
            << player << " at position " << start << " to " << end);
-   Check3 (player <= NUM_PLAYERS);
+   Check3 (player < NUM_PLAYERS);
    Check3 (start <= end);
-   Check3 (end <= players[player].hand.numberOfCards ());
+   Check3 (end < players[player].hand.numberOfCards ());
 
    if (!moveSelectedCardToPlayed (player, start, end))
       return player;
