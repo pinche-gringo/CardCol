@@ -29,9 +29,6 @@
 #include "CardPile.h"
 
 
-static const int SIZE_COMPRESSED = 17;
-
-
 /*--------------------------------------------------------------------------*/
 //Purpose   : Constructor; adds all controls to the dialog
 //Parameters: set: Specifier for type of cardset
