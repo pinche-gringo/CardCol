@@ -25,6 +25,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <string.h>
+
 #define CHECK 9
 #define TRACELEVEL 9
 #include <Check.h>
@@ -35,6 +37,8 @@
 #include <XMessageBox.h>
 
 #include "Hearts.h"
+
+#include <ANumeric.h>
 
 
 const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = { 3, 9, 3,  1 };
@@ -120,6 +124,21 @@ int Hearts::makeMove (unsigned int player) {
       movePile (played, players[player].hand, pos2Play, pos2Play);
       player = check4Winner (player);
       pos2Play = -1U;
+      if (!players[player].hand.numberOfCards ()) {
+         player = -1U;
+         status.pop (1);
+         string msg (_("End of round: Bad points: %1 %2 %3 %4"));
+         msg.replace (msg.find ("%1"), 2,
+                      ANumeric::toString ((unsigned long)pointsOfPile (players[0].won)));
+         msg.replace (msg.find ("%2"), 2,
+                      ANumeric::toString ((unsigned long)pointsOfPile (players[1].won)));
+         msg.replace (msg.find ("%3"), 2,
+                      ANumeric::toString ((unsigned long)pointsOfPile (players[2].won)));
+         msg.replace (msg.find ("%4"), 2,
+                      ANumeric::toString ((unsigned long)pointsOfPile (players[3].won)));
+         status.push (1, msg);
+         setGameStatus (STOPPED);
+      }
    }
    return player;
 }
@@ -207,8 +226,6 @@ void Hearts::cardSelected (unsigned int player, unsigned int iCard) {
    Check1 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
 
    if (moveSelectedCardToPlayed (player, iCard)) {
-      disableLastPlayer ();
-
       if (gameStatus () == PLAYING) {
          player = check4Winner (player);
          setNextPlayer (player);
@@ -230,6 +247,8 @@ void Hearts::cardSelected (unsigned int player, unsigned int iCard) {
             for (unsigned int i (1); i < NUM_PLAYERS; ++i)
                if ((players[i].hand.at (0).number () == CardWidget::TWO)
                    && (players[i].hand.at (0).color () == CardWidget::CLUBS)) {
+                  TRACE7 ("Hearts::cardSelected (unsigned int, unsigned int) - "
+                          "Start with player " << i);
                   setNextPlayer (player = i);
                   flipCards2Play (players[i].hand, pos2Play = 0, pos2Play);
                   break;
@@ -300,7 +319,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
       }
       else
          // One can start with a heart only if there has been one played before
-         if (!aPlayed[CardWidget::HEARTS] && (playColor == CardWidget::HEARTS)
+         if ((!aPlayed[CardWidget::HEARTS] && (playColor == CardWidget::HEARTS))
              && (players[player].hand.at (0).color () != CardWidget::HEARTS)) {
             XMessageBox::Show (_("You can't start with a heart, if they have"
                                  " not been played before!"), PACKAGE " - Hearts",
@@ -339,7 +358,7 @@ void Hearts::exchangeCards () {
          TRACE3 ("Hearts::exchangeCards () - Getting rid of all clubs: 0 - "
                  << cCards - 1);
          movePile (players[(i + 1) & 0x3].hand, pile, 0, posColors[0]);
-         moved = posColors[0];
+         moved = cCards;
       }
       cCards = numberOfCards (posColors, CardWidget::DIAMONDS);
       if (cCards && (cCards) < (3 - moved)) {
@@ -367,19 +386,19 @@ void Hearts::exchangeCards () {
                    ? 3 : posColors[2] - moved - start);
          TRACE3 ("Hearts::exchangeCards () - Getting rid of all high spades: "
                  << start << " - " << start + cCards - 1);
-         movePile (players[(i + 1) & 0x3].hand, pile, start, start + cCards - 1);
-         moved += cCards;
+         movePile (players[(i + 1) & 0x3].hand, pile, start, start + cCards);
+         moved += cCards + 1;
       }
 
       // Get rid of high cards
       int cardPos;
-      for (unsigned int nr (CardWidget::ACE);
-           (moved < 3) && (nr > (unsigned int)CardWidget::NINE); --nr) {
+      for (unsigned int nr (CardWidget::ACE); moved < 3; --nr) {
+         Check3 (nr > CardWidget::TWO);
          TRACE8 ("Hearts::exchangeCards () - Getting rid of high cards");
          if ((cardPos = pile.find (CardWidget::NUMBERS (nr))) != -1) {
-            movePile (players[(i + 1) & 0x3].hand, pile, cardPos, cardPos);
             TRACE3 ("Hearts::exchangeCards () - Getting rid of all high card at "
                     << cardPos);
+            movePile (players[(i + 1) & 0x3].hand, pile, cardPos, cardPos);
             moved++;
          }
       }
@@ -394,9 +413,6 @@ void Hearts::exchangeCards () {
 /*--------------------------------------------------------------------------*/
 void Hearts::getPositionOfColors (ICardPile& pile, int result[4]) {
    memset (result, (char)-1, sizeof (int[4]));
-   TRACE9 ("Hearts::getPositionOfColors (ICardPile&, unsigned int) - Pos.1 of "
-           "cards: " << result[0] << ", " << result[1]
-           << ", " << result[2] << ", " << result[3]);
    for (unsigned int i (0); i < (pile.numberOfCards () - 1); ++i)
       if (pile.at (i).color () != pile.at (i + 1).color ())
          result[pile.at (i).color ()] = i;
