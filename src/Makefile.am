@@ -9,7 +9,8 @@ INCLUDES = @INCLUDES@ -I../Common `gtkmm-config --cflags`
 
 CardCol_LDFLAGS=-L../Common -lCard  `gtkmm-config --libs` -lgthread
 
-EXTRA_DIST=Options.meta Twopart.h Rovhult.h Hearts.h HeartsScore.h Options.h
+EXTRA_DIST=Options.meta Twopart.h Rovhult.h Hearts.h HeartsScore.h Options.h\
+	   CardCol.h
 
 Options.meta: Options.h
 	mgeni Options.h Options.meta
