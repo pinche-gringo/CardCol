@@ -78,10 +78,10 @@ class Buraco : public Game {
    static bool cardFitsNext (ICardPile::const_iterator i);
    bool canGetRidOfCards (unsigned int player);
    bool canDumpCards (unsigned int player, unsigned int cards) const;
-   static bool pileHasFittingPair (const ICardPile& pile,
-                                   const CardWidget& card,
-                                   bool pileHoldsCard = false);
+   static bool pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
+                                   bool pileHoldsCard = false, bool withJokers = false);
    static bool pileHasFittingPair (const ICardPile& pile);
+   static bool compByNumberWithJokers (const CardWidget* a, const CardWidget* b);
 
    //@Section to handle piles on table
    CardVPile& makeNewPile (unsigned int team);
@@ -131,8 +131,10 @@ class Buraco : public Game {
 
    static std::vector<Gtk::TargetEntry> dndType;
 
-   enum turnStatus { START_TURN = 0x1, START_GAME = 0x2 };
-   unsigned int startTurn;
+   struct {
+      unsigned int startGame : 1;
+      unsigned int startTurn : 1;
+   } gStatus;
    unsigned int target;
    unsigned int pos1;
    unsigned int pos2;
