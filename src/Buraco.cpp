@@ -450,7 +450,8 @@ int Buraco::executeMove (unsigned int player) {
                         && ((*p)->getPotentialPoints ()
                             > tablePiles[player & 1][bestPile]->getPotentialPoints ()))
                     || ((*p)->getPotentialPoints ()) >= 1000)) {
-                            > tablePiles[player & 1][bestPile]->getPotentialPoints ())))) {
+               bestPile = p - tablePiles[player & 1].begin ();
+               size = (*p)->size ();
             }
          }
 
@@ -1101,6 +1102,15 @@ void Buraco::unregisterTableDND (CardWidget& card) {
 
    if (acceptCards != -1U) {
       context->drag_finish (false, false, time);
+      Gtk::MessageDialog dlg (_("Can't move cards before completing the pile!"),
+                              Gtk::MESSAGE_ERROR);
+      dlg.set_title (_("Invalid move"));
+      dlg.run ();
+      return;
+   }
+
+   context->drag_finish (true, false, time);                     // End old DND
+
    CardWidget& cardMoved (hands[0].remove (*pValue));
    hands[0].insert (cardMoved, card);                     // Insert moved card
 
@@ -1203,7 +1213,7 @@ bool Buraco::humanPilesOK (unsigned int except) const {
       // Check validity of drop
       if (!(isJoker (moved)
             ? pileHasFittingPair (hands[0])
-            : pileHasFittingPair (hands[0], moved, true, true))) {
+            : pileHasFittingPair (hands[0], moved, true, acceptCards == -1U))) {
                                     ? N_("You can't end the game (there's no \"cerrado\")!")
          Gtk::MessageDialog dlg (_("There are no cards to make three of a kind!"),
          dlg.run ();
@@ -1285,6 +1295,9 @@ bool Buraco::humanPilesOK (unsigned int except) const {
       acceptCards = -1U;
    else
       if (acceptCards != -1U)
+         --acceptCards;
+
+   // If the player has no more cards left (except of joker): Give him the reserve
    if (containsOnlyJoker (hands[0]) && humanPilesOK ())
       if (!reserve[0].empty ()) {
          addBuraco (0);
@@ -1487,7 +1500,8 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
 	 if ((*p)->getPotentialPoints () >= 1000) {
                  && (maxPoints < (*p)->getPotentialPoints ()))) {
             size = (*p)->size ();
-                 && (maxPoints < (*p)->getPotentialPoints ()))) {
+                 && (maxPoints < (*p)->getPotentialPoints ()))
+             || ((*p)->getPotentialPoints ()) >= 1000) {
             bestPile = p - tablePiles[player & 1].begin ();
          }
       }
