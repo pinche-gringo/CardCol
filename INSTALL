@@ -3,9 +3,9 @@ Prerequisites
 
 The following packages are needed
 
-  - My General library; should be available from the same place where you got
-    this software).
-  - Gtkmm (which itself needs GTK+)
+  - My YMP library; also availabe as a Sourceforge project
+    (http://libymp.sourceforge.net)
+  - Gtkmm-2.0 (which itself needs GTK+-2.0). Available via http://www.gktmm.org
   - Carddecks; e.g. the KDE cardgames provide a huge collection. See also the
     README.
 
@@ -30,7 +30,7 @@ As there is no public CVS server, these are just notes for me.
 
 Additional prerequiste software:
 
-  - CVS (obviously)
+  - CVS (obviously, duh)
   - GNU gettext
   - autoconf
   - automake
@@ -39,7 +39,7 @@ Additional prerequiste software:
 Inside the directory containing the source code type
 
   gettextize
-  aclocal && automake -a && autoconf    # Create configure.in
+  aclocal && automake -a && autoconf
   ./configure [configure-options]
   make [make-options]
 
@@ -118,5 +118,3 @@ Common options/targets for make
   - clean                       # Deletes the files created during the make
   - uninstall                   # Uninstalls (after you found out what crap
                                   this package actually contains)
-  - doc-install                 # Installs the documentation (only in doc dir)
-  - doc-uninstall               # Uninstalls the documentation (only in doc dir)
