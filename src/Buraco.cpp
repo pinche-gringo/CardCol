@@ -44,8 +44,6 @@ std::vector<Gtk::TargetEntry> Buraco::dndType;
 
 
 unsigned int Buraco::ENDPOINTS (2000);
-static unsigned int CARDS_AT_START (141);
-
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Constructor
@@ -59,8 +57,8 @@ static unsigned int CARDS_AT_START (141);
    : Game (parent, statusbar, cardset, names, 3, 10), startPlayer (0)
      , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
-     , newPile (_("New pile")), startTurn (true), target (-1U)
-     , pos1 (0), pos2 (0) {
+     , newPile (_("New pile")), startTurn (START_GAME | START_TURN)
+     , target (-1U), pos1 (0), pos2 (0) {
 
            "std::vector<std::string>&)");
        scrlTable[i] = new Gtk::ScrolledWindow ();
@@ -178,7 +176,7 @@ static unsigned int CARDS_AT_START (141);
 
          gStatus.startTurn = 1;
          ++player &= 0x3;
-         startTurn = true;
+         startTurn = START_TURN;
       }
       else {
 
@@ -222,7 +220,6 @@ static unsigned int CARDS_AT_START (141);
            << gStatus.startGame << '/' << gStatus.startTurn << ')');
    TRACE2 ("Buraco::showCardsToPlay (unsigned int) - " << player);
    if (startTurn) {
-      startTurn = false;
       ICardPile& playerPile (hands[player]);
           ? (isJoker (dumpedCard)
       Check3 (dumped.size ());
@@ -244,7 +241,11 @@ static unsigned int CARDS_AT_START (141);
          playerPile.sortByNumber ();
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       else
-         playerPile.insertSorted (staple.removeTopCard ());
+         playerPile.insertSorted
+             (((startTurn & START_GAME) && isJoker (dumped.getTopCard ()))
+              ? dumped.removeTopCard () : staple.removeTopCard ());
+
+      startTurn = 0;
    if (target == -1U)
       target = executeMove (player);
    return executeMove (player);
@@ -357,8 +358,8 @@ static unsigned int CARDS_AT_START (141);
       --i;
    if (i == playerPile.size ())
       --i;
-   while (isJoker (*playerPile[i]) && i--)            // Try to not dump jokers
-      ;
+   while (isJoker (*playerPile[i]) && i)              // Try to not dump jokers
+      --i;
    pos1Play = pos2Play = i;
    return 0xffff0000;
    flipCards2Play (playerPile, pos1 = i, pos2 = i);
@@ -374,7 +375,7 @@ static unsigned int CARDS_AT_START (141);
       unsigned int player;
    randomizeCardsToPile (staple);
             reserve[(i - posServer) & 1].push_back (&staple.removeTopCard ());
-   for (unsigned int j (0); j < 13; ++j) {
+   for (unsigned int j (0); j < 11; ++j) {
       for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
          hands[i].setTopCard (staple.removeTopCard ());
       gStatus.team1Buraco = gStatus.team2Buraco = 0x3;
@@ -391,6 +392,7 @@ static unsigned int CARDS_AT_START (141);
    status.push (_("You can sort the cards in your hand with drag and drop or put"
                   " them on the table - click card to dump to end turn"));
 
+   startTurn = START_TURN | START_GAME;
    cerrados[0] = cerrados[1] = 0;
    updateInfo ();
    setNextPlayer (startPlayer);
@@ -572,6 +574,16 @@ static unsigned int CARDS_AT_START (141);
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
 
       try {
+   if (!((startTurn & START_GAME)
+         || pileHasFittingPair (hands[0], dumped.getTopCard ()))) {
+      Gtk::MessageDialog dlg (_("You need a fitting pair to pick up the"
+                                " pile of dumped cards!"),
+                              Gtk::MESSAGE_ERROR);
+      dlg.set_title (_("Invalid move"));
+      dlg.run ();
+      return;
+   }
+      // Send played card to all clients (if any)
 
    // Special handling of player starting the game and can choose one of the
    // first two cards
@@ -591,26 +603,17 @@ static unsigned int CARDS_AT_START (141);
 
    // Special handling of human starts the game and can choose one of the
    // first two cards
-   if (staple.size () == CARDS_AT_START) {
+   if (startTurn & START_GAME) {
       Check3 (dumped.size () == 1);
       hands[0].append (dumped.removeTopCard ());
    }
    else {
-      if (pileHasFittingPair (hands[0], dumped.getTopCard ())) {
-         CardVPile& pile (makeNewPile (0));                  // Create new pile
-         pile.setTopCard (dumped.removeTopCard ());      // with picked up card
+      Check3 (pileHasFittingPair (hands[0], dumped.getTopCard ()));
+      CardVPile& pile (makeNewPile (0));                     // Create new pile
+      pile.setTopCard (dumped.removeTopCard ());         // with picked up card
 
-         while (dumped.size ())
-             hands[0].append (dumped.removeTopCard ());
-      }
-      else {
-          Gtk::MessageDialog dlg (_("You need a fitting pair to pick up the"
-                                    " pile of dumped cards!"),
-                                  Gtk::MESSAGE_ERROR);
-          dlg.set_title (_("Invalid move"));
-          dlg.run ();
-          return;
-      }
+      while (dumped.size ())
+          hands[0].append (dumped.removeTopCard ());
    }
 
    enableHumanHand ();
@@ -816,7 +819,7 @@ static unsigned int CARDS_AT_START (141);
    // is still the reserve
    if (!canDumpCards (0, 1)) {
       context->drag_finish (false, false, time);
-      Gtk::MessageDialog dlg (_("You can't end the game!"),
+      Gtk::MessageDialog dlg (_("You can't end the game (there's no \"cerrado\")!"),
                               Gtk::MESSAGE_ERROR);
       dlg.set_title (_("Invalid move"));
       dlg.run ();
@@ -912,7 +915,7 @@ static unsigned int CARDS_AT_START (141);
       pile = tablePiles[0][iPile = (iCard++ >> 8)];
       if ((iCard = cardFitsOnPile (*pile, moved)) == -1) {
                                  Gtk::MESSAGE_ERROR);
-         Gtk::MessageDialog dlg (_("This card does not fit on the dropped pile!"),
+         Gtk::MessageDialog dlg (_("This card does not fit on that pile!"),
          dlg.run ();
          return;
       }
@@ -1062,7 +1065,7 @@ void Buraco::addReserve (unsigned int player, bool show) {
    Check3 (actPlayers[player]);
    if (show) {
       status.pop ();
-      std::string stat (_("%1 picked up the played pile"));
+      std::string stat (_("%1 picked up the pile with the dumped cards"));
       stat.replace (stat.find ("%1"), 2, names[player]);
       status.push (stat);
    status.pop ();

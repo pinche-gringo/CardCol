@@ -127,7 +127,8 @@ class Buraco : public Game {
 
    static std::vector<Gtk::TargetEntry> dndType;
 
-   bool startTurn;
+   enum turnStatus { START_TURN = 0x1, START_GAME = 0x2 };
+   unsigned int startTurn;
    unsigned int target;
    unsigned int pos1;
    unsigned int pos2;
