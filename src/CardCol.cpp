@@ -56,8 +56,6 @@
 #include "CardCol.h"
 
 
-const unsigned int CardgameCollection::USED_CARDS = 52;
-
 const unsigned int CardgameCollection::WIDTH = 760;
 const unsigned int CardgameCollection::HEIGHT = 750;
 
@@ -659,7 +657,7 @@ const IVIOApplication::longOptions CardgameAppl::lo[] = {
 /*--------------------------------------------------------------------------*/
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE)
-     , cardFaces (USED_CARDS), pThread (NULL), game (NULL)
+     , pThread (NULL), game (NULL)
      , options (opts), oldGame (NONE), restart (false) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
 

@@ -98,8 +98,6 @@ class CardgameCollection : public XApplication {
 
    Game* game;
 
-   static const unsigned int USED_CARDS;
-
    static const unsigned int WIDTH;
    static const unsigned int HEIGHT;
 };
