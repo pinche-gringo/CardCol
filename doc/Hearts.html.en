@@ -1,6 +1,26 @@
 <!-- -*-HTML-*- -->
 <!-- $Id$ -->
 
+<!--
+  Anti-Copyright (A) 2003 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <html>
   <head>
     <title>Hearts - A game where you better don't get them</title>
@@ -18,22 +38,26 @@
     <p>Hearts is a game included with some version(s) of a quite popular
       operating system. Enough said about where I got the idea for it ...</p>
 
-    <p>Every one of the 4 players start with 13 cards. The goal is either to
+    <p>Every one of the four players start with thirteen cards. The goal is either to
       get rid of them without getting any of the hearts or the queen of spades
       or to collect all of them.</p>
 
-    <p>The game is started by selecting 3 cards which should be given to the
-      player on your right. After that exchange it starts the player having
-      the two of clubs.</p>
+    <p>The game is started by selecting three cards which should be given to some
+      other player (except every fourth turn, where one don't exchange cards).
+      After that exchange it starts the player having the two of clubs (with
+      exactly that card).</p>
 
     <p>The player continue clockwise. At the end of the turn the player who played
-      the highest card starts the next turn.</p>
+      the highest card (with the color of the first one) gets the played pile
+      starts the next turn.</p>
 
     <p>If there are no cards left the number of (bad) points are counted. Each
-      heart counts as one point and the queen of spade counts 13 points. If a
+      heart counts as one point and the queen of spade counts thirteen points. If a
       player happens to have got all of them (and therefore would have 26
       points), the score is reversed, meaning he got 0 points and all of the
       others 26.</p>
+
+    <p>The game ends (or restarts), if one of the player reaches 100 points.</p>
 
     <p>There are a few rules during the game:</p>
 
@@ -56,12 +80,11 @@
 
     <ul>
       <li>The cards of the human player. On top his won cards, below the cards in
-        his hand. The won cards become visible, if they are clicked into;
+        his hand. The won cards can be inspected by clicking on them;
         right-clicking allows to sort them.</li>
-      <li>In the next line it's the same with computer players 1 and 3. In
-        between them there's the played pile (which also shows the number of
-        the cards inside, is the mouse rests over it).</li>
-      <li>In the last line there's computer player 2</li>
+      <li>In the next line it's the same with computer players 3 and 1. In
+        between them there's the played pile.</li>
+      <li>In the last line there are the cards of computer player 2</li>
     </ul>
 
     <hr size=2 noshade>
@@ -69,7 +92,7 @@
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
 <!-- hhmts start -->
-Last modified: Sun Jan 12 22:34:43 PET 2003
+Last modified: Mon Feb 10 18:36:00 PET 2003
 <!-- hhmts end -->
           - $Revision$
 </body>

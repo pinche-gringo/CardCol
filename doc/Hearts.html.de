@@ -14,9 +14,9 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   General Public License for more details.
 
-  You should have received a copy of the GNU General Public
-  License along with this library; if not, write to the Free
-  Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 -->
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//DE">
@@ -24,7 +24,7 @@
 <html>
   <head>
     <title>Hearts - Ein Spiel, in dem man sie besser nicht bekommt</title>
-    <meta name="description" content="Documentation of the Hearts cardgame">
+    <meta name="description" content="Dokumentation des Hearts Kartenspiels">
     <meta name="keywords" content="Documentation, Docu, Hearts; game, card, cardgame, kartenspiel">
 
     <meta name="DC.Creator" content="Markus Schwab">
@@ -57,7 +57,7 @@
       werden die Punkte umgedreht: Keinen f&uuml;r ihn und jeweils 26 f&uuml;r
       alle anderen.</p>
 
-    <p>Das Spiel endet, wenn einer der Spiele 100 Punkte erreicht.</p>
+    <p>Das Spiel endet, wenn einer der Spieler 100 Punkte erreicht hat.</p>
 
     <p>W&auml;hrend des Spieles gibt es einige Regeln:</p>
 
@@ -93,7 +93,7 @@
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
 <!-- hhmts start -->
-Last modified: Mon Feb 10 18:51:45 PET 2003
+Last modified: Mon Feb 10 20:57:48 PET 2003
 <!-- hhmts end -->
           - $Revision$
 </body>

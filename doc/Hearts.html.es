@@ -14,9 +14,9 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   General Public License for more details.
 
-  You should have received a copy of the GNU General Public
-  License along with this library; if not, write to the Free
-  Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 -->
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//ES">
@@ -38,7 +38,7 @@
     <p>Corazones es un juego incluido con alguna(s) version(es) de un sistema
       operativa popular.  ...</p>
 
-    <p>Todos de los cuatro jugadores tiene tiene cartas. El objectivo es terminar
+    <p>Todos de los cuatro jugadores tiene trece cartas. El objectivo es terminar
       la partida sin conseguir ni un coraz&oacute;n ni siquiera la reina de
       espadas (o conseguir todas de esas cartas).</p>
 
@@ -47,12 +47,12 @@
       Despu&eacute;s del intercambio lo comienza el jugador que tenga el dos
       de tr&eacute;boles (con esa carta misma).</p>
 
-    <p>Los jugadores siguen en la direcci&oacte;n de las aguajas de reloj. Lo
-      que jug&oacute; la carta m&aacute;s alta consiege el estaple jugado y
-      comenzar&aacute; el proximo turno.</p>
+    <p>Los jugadores siguen en la direcci&oacute;n de las aguajas de reloj. Lo
+      que jug&oacute; la carta m&aacute;s alta (con el palo de la primera carta)
+      consiege el estaple jugado y comenzar&aacute; el proximo turno.</p>
 
-    <p>Si no hay m&aacute;s cartas, se cuenta el n&uacte;mer de los puntos (malos).
-      Cada coraz&oacute;n cuenta un punto recibido y trece puntos para la reina
+    <p>Si no hay m&aacute;s cartas, se cuenta el n&uacute;mer de los puntos (malos).
+      Cada coraz&oacute;n recibido cuenta un punto y trece puntos para la reina
       de espadas. Si un jugador recib&oacute; todas de esas cartas (y por eso
       tendr&iacute;a 26 puntos), los puntos se invertan y el consegur&aacute;
       ningun punto, sino los dem&aacute;s 26.</p>
@@ -65,16 +65,17 @@
       <li>La carta jugada tiene que tener el mismo palo como la primera (si hay).</li>
       <li>Una mano no se puede comenzer con un carz&oacute;n, si no han jugado
         en turnos anteriores.</li>
-      <li>En la primera mano no se puede jugar ni un coraz&oacute;n ni la reine
+      <li>En la primera mano no se puede jugar ni un coraz&oacute;n ni la reina
         de espadas.</li>
     </ul>
 
-    <p>El jugador que tiene los menores puntes si alguno alcanza a cien puntos gana.</p>
+    <p>El jugador que tiene los puntes menores cuando alguno alcanza a cien
+      puntos gana.</p>
 
-    <p>La barra de estandardo muestra que est&aacute; pasando!</p>
+    <p>La barra de estatos muestra que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
-    <p>Despu&eacute;s iniciar se encuentra (de izquiera a derecho y de arriba a
+    <p>Despu&eacute;s iniciar se encuentra (de izquierda a derecha y de arriba a
       abajo):</p>
 
     <ul>
@@ -91,7 +92,7 @@
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
 <!-- hhmts start -->
-Last modified: Mon Feb 10 18:25:09 PET 2003
+Last modified: Mon Feb 10 18:40:31 PET 2003
 <!-- hhmts end -->
           - $Revision$
 </body>
