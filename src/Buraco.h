@@ -61,15 +61,17 @@ class Buraco : public Game {
 
    //@Section helper methods
    void enableCard (unsigned int pos);
-   bool containsOnlyJoker (std::vector<CardWidget*>& pile) const;
-   bool containsNoJoker (std::vector<CardWidget*>& pile) const;
+   static bool containsOnlyJoker (std::vector<CardWidget*>& pile);
+   static bool containsNoJoker (std::vector<CardWidget*>& pile);
    void addReserve (unsigned int player);
-   bool isJoker (CardWidget& card) const;
+   static bool isJoker (CardWidget& card);
    unsigned int showCardsToPlay (unsigned int player);
    int  executeMove (unsigned int player);
    void endGame ();
    bool canGetRidOfCards (unsigned int player);
    bool canDumpCards (unsigned int player, unsigned int cards) const;
+   static bool pileHasFittingPair (const ICardPile& pile, const CardWidget& card);
+   static bool pileHasFittingPair (const ICardPile& pile);
 
    //@Section to handle piles on table
    CardVPile& makeNewPile (unsigned int team);
@@ -96,11 +98,10 @@ class Buraco : public Game {
                             gint, GtkSelectionData* pData, guint, guint32 time,
                             unsigned int cardPile);
 
-   CardHPile handHuman;
-   CardHPile hands[NUM_PLAYERS - 1];     // For computer players: Cards in hand
+   CardHPile hands[NUM_PLAYERS];              // For all players: Cards in hand
    std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];      // Piles on table
    std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
-   unsigned int buracos[NUM_PLAYERS >> 1];            // Number of buracos/team
+   unsigned int cerrados[NUM_PLAYERS >> 1];           // Number of buracos/team
 
    unsigned int startPlayer;
 
