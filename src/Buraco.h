@@ -61,10 +61,10 @@ class Buraco : public Game {
 
    //@Section helper methods
    void enableCard (unsigned int pos);
-   static bool containsOnlyJoker (std::vector<CardWidget*>& pile);
-   static bool containsNoJoker (std::vector<CardWidget*>& pile);
+   static bool containsOnlyJoker (const std::vector<CardWidget*>& pile);
+   static bool containsNoJoker (const std::vector<CardWidget*>& pile);
    void addReserve (unsigned int player);
-   static bool isJoker (CardWidget& card);
+   static bool isJoker (const CardWidget& card);
    unsigned int showCardsToPlay (unsigned int player);
    int  executeMove (unsigned int player);
    void endGame ();
@@ -76,7 +76,7 @@ class Buraco : public Game {
    //@Section to handle piles on table
    CardVPile& makeNewPile (unsigned int team);
    unsigned int cardFitsOnPlayedPile (unsigned int player, unsigned int card);
-   int  cardFitsOnPile (ICardPile& pile, CardWidget& card) const;
+   int  cardFitsOnPile (ICardPile& pile, const CardWidget& card) const;
    void removeBuraco (unsigned int player, CardVPile& pile);
    void updateInfo ();
    bool humanPilesOK (unsigned int except = -1U) const;
