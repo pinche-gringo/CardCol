@@ -25,10 +25,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#define CHECK 9
-#define TRACELEVEL 9
-#include <YGP/Trace_.h>
-
 #include "CardPile.h"
 
 
