@@ -284,7 +284,7 @@ bool Game::endRemoteMove (unsigned int player) {
 /// Enables the cards of the human player
 //-----------------------------------------------------------------------------
 bool Game::enableHuman () {
-   TRACE9 ("Game::enableHuman () - enabling player " << actPlayer);
+   TRACE9 ("Game::enableHuman () - enabling " << actPlayers[actPlayer]->getName ());
    return false;
 }
 
@@ -368,11 +368,9 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
       std::ostringstream msg;
       msg << "Play=";
       for (unsigned int i (start); i < end; ++i)
-         msg << i << ' ';
-      msg << end << ";Target=0";
+         msg << pile[i]->id () << ' ';
+      msg << pile[end]->id () << ";Target=0";
 
-      if (!actPlayer)
-         ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
 
@@ -650,15 +648,16 @@ bool Game::performCommand (unsigned int player, const char* msg) {
       ICardPile& pile (getPileOfPlayer (correctPlayer (actPlayer), target));
 
       command = cmd;
-      unsigned int cards (0);
       unsigned long lCard (0);
       unsigned int card (0);
       while (command.getNextNode (' ').size ()) {
          if (stringToNumber (lCard, command.getActNode ().c_str ()))
             return false;
 
-         card = lCard - cards++;
-         flipCards2Play (pile, pos1Play = card, pos2Play = card);
+         card = pile.find (static_cast <unsigned int> (lCard));
+         Check3 (card < pile.size ());
+         if (card != -1U)
+            flipCards2Play (pile, pos1Play = card, pos2Play = card);
       }
 
       TRACE9 ("Game::performCommand (unsigned int, const char*) - Get lock");
