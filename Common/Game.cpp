@@ -231,7 +231,8 @@ void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start,
    
    if (end == -1)
       end = source.size () - 1;
-   Check1 (end < source.size ()); Check1 (start <= end);
+   Check1 (end < static_cast<int> (source.size ()));
+   Check1 (static_cast<int> (start) <= end);
 
    do {
       dest.append (source.remove (start));
@@ -252,7 +253,7 @@ void Game::clean () {
 void Game::makeNextMoves () {
    if (actPlayer >= 0) {
       TRACE8 ("Game::makeNextMoves () - " << actPlayer);
-      Check3 (actPlayer < actPlayers.size ());
+      Check3 (actPlayer < static_cast<int> (actPlayers.size ()));
       Check3 (!stati.pendingTurn);
       unsigned int timeout (actPlayers[actPlayer]->timeout ());
       if (timeout) {
@@ -305,7 +306,7 @@ bool Game::makeComputerMove () {
 
    unsigned int newPlayer (makeMove (actPlayer));
    TRACE7 ("Game::makeComputerMove () - Next player: " << newPlayer);
-   if (newPlayer == actPlayer)
+   if (static_cast<int> (newPlayer) == actPlayer)
       return true;
    else {
       actPlayer = newPlayer;
