@@ -27,7 +27,11 @@
 #include <CardImgs.h>
 
 
-// Class to display a card on the screen
+/**Class to display a card on the screen.
+
+  This is actually an event-box and not a button, to avoid
+  side-effects caused by the theme.
+ */
 class CardWidget : public Gtk::EventBox {
  public:
    CardWidget (const CardImages& set, unsigned int card, bool showFace = true);
@@ -69,6 +73,7 @@ class CardWidget : public Gtk::EventBox {
 
  protected:
   virtual void on_clicked ();
+  virtual bool on_button_press_event (GdkEventButton* ev);
   virtual bool on_button_release_event (GdkEventButton* ev);
 
  private:
@@ -82,6 +87,7 @@ class CardWidget : public Gtk::EventBox {
    const CardImages& deck;
 
    static COLOURS transColour[4];
+   static gdouble saveX, saveY;
 };
 
 #endif

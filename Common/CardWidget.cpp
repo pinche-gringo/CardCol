@@ -1,14 +1,14 @@
 //$Id$
 
 //PROJECT     : Cardgames
-//SUBSYSTEM   : Common
+//SUBSYSTEM   : libCard
 //REFERENCES  :
 //TODO        :
 //BUGS        :
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 27.03.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2004
+//COPYRIGHT   : Copyright (C) 2002 - 2005
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,6 +37,9 @@
 
 CardWidget::COLOURS CardWidget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
 
+gdouble CardWidget::saveX (-1);
+gdouble CardWidget::saveY (-1);
+
 
 //-----------------------------------------------------------------------------
 /// Constructor; creates a cardwidget with the passed index of a pixmap
@@ -48,7 +51,7 @@ CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible)
    : isVisible (visible), nrCard (card), deck (set) {
    TRACE3 ("CardWidget::CardWidget (const CardImages&, unsinged int, bool) - "
            << card << " (" << visible << ')');
-   
+
    img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground ());
    img.set_alignment (0.0, 0.0);
    img.show ();
@@ -86,7 +89,7 @@ CardWidget::~CardWidget () {
 
 
 //-----------------------------------------------------------------------------
-/// Shows either the cardimage of the image of the deck
+/// Shows either the cardimage or the image of the deck
 //-----------------------------------------------------------------------------
 void CardWidget::showFace (bool visible) {
    isVisible = visible;
@@ -132,7 +135,7 @@ void CardWidget::on_clicked () {
 }
 
 //-----------------------------------------------------------------------------
-/// Callback after clicking a CardWidget
+/// Callback after releasing the button on a CardWidget
 //-----------------------------------------------------------------------------
 bool CardWidget::on_button_release_event (GdkEventButton* ev) {
    Check1 (ev);
@@ -142,9 +145,27 @@ bool CardWidget::on_button_release_event (GdkEventButton* ev) {
 
    // It button 1 is released within the image: Generate a clicked signal
    if ((ev->button == 1)
-       && ((ev->x - 1) < get_width ()) && ((ev->y - 1) < get_height ())) {
+       && (((ev->x - saveX) < 3) && ((ev->y - saveY) < 3))) {
       clicked_.emit ();
       on_clicked ();
+   }
+   return false;
+}
+
+//-----------------------------------------------------------------------------
+/// Callback after pressing a button on a CardWidget
+//-----------------------------------------------------------------------------
+bool CardWidget::on_button_press_event (GdkEventButton* ev) {
+   Check1 (ev);
+   TRACE9 ("CardWidget::on_button_press_event (GdkEventButton*) - "
+           << ev->button << "; X: " << ev->x - 1 << "; Y: " << ev->y - 1
+           << "; W: " << get_width () << "; H: " << get_height ());
+
+   // It button 1 is pressed within the image: store position
+   if ((ev->button == 1)
+       && ((ev->x - 1) < get_width ()) && ((ev->y - 1) < get_height ())) {
+      saveX = ev->x - 1;
+      saveY = ev->y - 1;
    }
    return false;
 }
