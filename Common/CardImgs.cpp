@@ -61,12 +61,16 @@ const Gdk_Pixmap& CardImages::getCardImage (unsigned int nr) const {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Constructor; adds all controls to the dialog
 //Parameters: parent: Parent window
-//            path: Path to files; NULL for defaultpath (in datadir)
+//            path: Path to files
+//            back: File containing background picture
 /*--------------------------------------------------------------------------*/
-void CardImages::load (const Gdk_Window& parent, const char* path) throw (std::string) {
+void CardImages::load (const Gdk_Window& parent, const std::string& path,
+                       const std::string& back) throw (std::string) {
    TRACE1 ("CardImages::load (const Gdk_Window&, const char*) - " << path);
 
-   std::string file (makeDirString (path));
+   std::string file (path);
+   if (file[file.size () - 1] != File::DIRSEPARATOR)
+      file += File::DIRSEPARATOR;
 
    std::string temp;
    ANumeric nr;
@@ -86,11 +90,10 @@ void CardImages::load (const Gdk_Window& parent, const char* path) throw (std::s
    }
 
    if (!errno) {
-      temp = file + "back.xpm";
-      TRACE3 ("CardImages::load (const Gdk_Window&, const char*) - File " << temp);
+      TRACE3 ("CardImages::load (const Gdk_Window&, const char*) - File " << back);
 
       gdk_threads_enter ();
-      back_.create_from_xpm (parent, color, temp);
+      back_.create_from_xpm (parent, color, back);
       gdk_threads_leave ();
    }
    if (errno) {
@@ -99,20 +102,4 @@ void CardImages::load (const Gdk_Window& parent, const char* path) throw (std::s
       error.replace (error.find ("%2"), 2, strerror (errno));
       throw (error);
    }
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Creates a string for the directory containing the pixmaps
-//Paramaters: path: Suggestion for the path (may be NULL)
-//Returns   : Path to icons (including trailing backlslash)
-/*--------------------------------------------------------------------------*/
-std::string CardImages::makeDirString (const char* path) {
-   std::string dir (path ? path : PKGDIR);
-   if (dir.empty ())
-      dir = ".";
-
-   if (dir[dir.size () - 1] != File::DIRSEPARATOR)
-      dir += File::DIRSEPARATOR;
-
-   return dir;
 }

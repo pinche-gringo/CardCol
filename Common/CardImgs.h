@@ -34,11 +34,12 @@ class CardImages {
    const Gdk_Pixmap& getCardBackground () const { return back_; }
    void setCardBackground (const Gdk_Pixmap& back) { back_ = back; }
 
-   void load (const Gdk_Window& parent, const char* path = NULL) throw (std::string);
+   void load (const Gdk_Window& parent, const std::string& path,
+              const std::string& back) throw (std::string);
    void load (unsigned int cards, const Gdk_Window& parent,
-              const char* path = NULL) throw (std::string) {
+              const std::string& path, const std::string& back) throw (std::string) {
       cards_.reserve (cards);
-      load (parent, path); }
+      load (parent, path, back); }
 
    unsigned int numberOfCards () const { return cards_.size (); }
 
@@ -47,8 +48,6 @@ class CardImages {
    Gdk_Pixmap back_;
 
    void unload ();
-
-   static std::string makeDirString (const char* path);
 };
 
 #endif
