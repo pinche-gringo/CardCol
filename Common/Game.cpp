@@ -24,6 +24,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#include <cardgames-cfg.h>
 
 #include <gtk--/box.h>
 #include <gtk--/main.h>
@@ -48,9 +49,10 @@
 /*--------------------------------------------------------------------------*/
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             unsigned int rows, unsigned int columns)
-   : Gtk::Table (rows, columns), statGame (STOPPED), status (statusbar)
+   : Gtk::Table (rows, columns), statGame (INITIALIZING), status (statusbar)
    , cards (cardset), reStart (false) {
    TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, unsinged int, unsigned int)");
+   Check3 (cardset.numberOfCards ());
 
    show ();
    set_col_spacings (2);
@@ -64,7 +66,6 @@ Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
 /*--------------------------------------------------------------------------*/
 Game::~Game () {
    TRACE9 ("Game::~Game ()");
-
    clean ();
 }
 
@@ -82,8 +83,8 @@ void Game::start () {
 //Purpose   : Starts the game
 /*--------------------------------------------------------------------------*/
 void Game::stop () {
-   statGame = STOPPED;
    clean ();
+   statGame = STOPPED;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -121,6 +122,7 @@ void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start) {
 //Purpose   : Cleans the table
 /*--------------------------------------------------------------------------*/
 void Game::clean () {
+   TRACE9 ("Game::clean ()");
 }
 
 /*--------------------------------------------------------------------------*/
@@ -169,4 +171,26 @@ int Game::makeComputerMove () {
    if (!actPlayer)
       enablePlayer (0);
    return actPlayer > 0;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Displays information about whose turn it is
+//Parameters: player: Player in turn
+/*--------------------------------------------------------------------------*/
+void Game::displayTurn (unsigned int player) {
+   status.pop (1);
+   std::string stat (_("Turn of player %1"));
+   stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+   status.push (1, stat);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Displays information about whose turn it is
+//Parameters: player: Player in turn
+/*--------------------------------------------------------------------------*/
+void Game::displayTurn (unsigned int player, const std::string& preText) {
+   status.pop (1);
+   std::string stat (_("Turn of player %1"));
+   stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+   status.push (1, preText + stat);
 }
