@@ -361,7 +361,6 @@ bool Machiavelli::enableHuman () {
        activeCards.push_back (staple.getTopCard ().signal_clicked ().connect
                               (slot (*this, (&Machiavelli::stapleSelected))));
 
-   Check3 (hands[0].size ());
    for (unsigned int i (0); i < hands[0].size (); ++i)
       registerHandDND (i);
    Check3 (aDNDHand.size () == hands[0].size ());
@@ -471,7 +470,7 @@ void Machiavelli::stapleSelected () {
    YGP::StatusObject obj;
    checkPiles (obj);
    if (obj.getType () != YGP::StatusObject::UNDEFINED) {
-      obj.abstract (_("The piles are not valid!"));
+      obj.generalize (_("The piles are not valid!"));
       undoDlg = XGP::MessageDlg::create (obj);
       undoDlg->set_title (_("Can't end turn"));
       undoDlg->get_window ()->set_transient_for (this->get_window ());
@@ -830,7 +829,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    if (hands[0].empty ()) {
       YGP::StatusObject obj;
       checkPiles (obj);
-      if (obj.getType () != YGP::StatusObject::UNDEFINED) {
+      if (obj.getType () == YGP::StatusObject::UNDEFINED) {
          unsigned int nextPlayer (findNextPlayer (0));
          if (nextPlayer == findNextPlayer (nextPlayer))
             endGame (nextPlayer);
