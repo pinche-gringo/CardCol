@@ -1,0 +1,137 @@
+2002-05-15  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp:
+	  Validy-checks for d´n´d added; exchange of cards when moved from hand to table
+
+	* Common/CardColl.cpp: Fixed bug in insertCard
+
+	* Common/CardWidget.cpp: Comments++; Defined transColor-values
+
+2002-05-14  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h: Drag´n´drop exchanges some information
+
+	* Rovhult/Rovhult.h: Declarations of callbacks for card-selection and drag´n´drop
+
+	* Rovhult/Rovhult.cpp: First draft of drag´n´drop
+
+	* Rovhult/Rovhult.cpp: Cards in hand and on pile have separate callback
+
+	* Common/CardSet.cpp, Common/CardSet.h: Method cards renamed to numberOfCards
+
+	* Common/CardWidget.h: Method id added; Fixes
+
+	* Common/CardImgs.cpp, Common/CardImgs.h: Method cards renamed to numberOfCards
+
+	* Common/CardColl.h, Common/CardPile.cpp, Common/CardPile.h, Common/CardColl.cpp:
+	  Method getCard added
+
+2002-05-13  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.h, Rovhult/Rovhult.cpp: Showing of cards finished
+
+	* Common/Makefile.am: CardColl added
+
+	* Common/CardPile.h: getCardNumber renamed to numberOfCards
+
+	* Common/CardColl.cpp, Common/CardColl.h: New file.
+
+	* Common/CardWidget.h: Methods to get type of card added
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h:
+	  Load of icons in background without blocking main-(GTK-)thread
+
+	* Rovhult/Makefile.am: Library gthread added
+
+	* Common/CardPile.cpp, Common/CardPile.h: Method to remove all cards added
+
+	* Common/CardImgs.cpp: Load of card-icons can be done in background
+
+2002-05-09  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h: 
+	  Prg-icon changed; Cards loaded in background
+
+	* Common/Makefile.am: CardSet added
+
+	* Common/Grafix/back.xpm: New file.
+
+	* Common/Grafix/Makefile.am: back.xpm added
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h: I18n started; Display of cards works
+
+	* Common/CardPile.cpp, Common/CardPile.h:
+	  Methods to add vector of CardWidgets; Working with CardWidget& externally
+
+	* Common/CardWidget.cpp, Common/CardWidget.h: CardSet renamend to CardImages
+
+	* Common/CardSet.cpp, Common/CardSet.h: New file.
+
+	* Common/CardImgs.cpp, Common/CardImgs.h: 
+	  Renamed to CardImages; Hardcoded size of set removed
+
+2002-05-08  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.cpp, Common/CardPile.h: Adapted to new CardWidget/-Set interfaces
+
+	* Common/CardImgs.cpp, Common/CardImgs.h:
+	  Stores only bitmaps (not whole widets); Gets info from search-path from caller
+
+	* Common/CardWidget.cpp, Common/CardWidget.h: Responsible for showing right face
+
+2002-04-28  Markus Schwab  <g17m0@lycos.com>
+
+	* po/POTFILES.in, po/de.po, po/en.po, po/es.po: New file.
+
+	* configure.in: Settings for gettext fixed
+
+	* Rovhult/Rovhult.cpp:
+	  Menus adapted to new style; I18n prepared; Dealing of cards fixed
+
+	* Rovhult/Makefile.am, Common/Makefile.am:
+	  INCLUDES and DEFS got values from configure.in
+
+	* Common/CardWidget.cpp, Common/CardWidget.h:
+	  Constructor has parent of card as parameter
+
+	* Common/CardImgs.cpp, Common/CardImgs.h: 
+	  load-method has parent of card as parameter
+
+	* Common/CardPile.cpp: removeTopCard fixed
+
+	* configure.in: gettext-settings added; cfg-header added
+
+	* Makefile.am: I18n-subdirs added
+
+	* acconfig.h: New file.
+
+2002-04-04  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.in: Versionnumber for libraray added
+
+	* Common/Makefile.am: CardPile added; Versioninfo on lib
+
+2002-04-03  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.cpp, Common/CardPile.h: New file.
+
+2002-04-01  Markus Schwab  <g17m0@lycos.com>
+
+	* Makefile.am, configure.in, NEWS, README, AUTHORS: New file.
+
+	* Common/CardImgs.cpp, Common/CardImgs.h: Initial revision
+
+	* Common/CardWidget.cpp, Common/CardWidget.h:
+	  CardWidget throws exception if pic-file not found
+
+	* Common/Makefile.am: Cardset added; INCLUDES defined
+
+	* Rovhult/Makefile.am, Rovhult/Rovhult.cpp, Rovhult/Rovhult.h: New file.
+
+2002-03-28  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/Grafix/5.xpm, Common/Grafix/50.xpm, Common/Grafix/51.xpm, Common/Grafix/52.xpm, Common/Grafix/6.xpm, Common/Grafix/7.xpm, Common/Grafix/8.xpm, Common/Grafix/9.xpm, Common/Grafix/Makefile.am, Common/CardWidget.cpp, Common/CardWidget.h, Common/Grafix/1.xpm, Common/Grafix/10.xpm, Common/Grafix/11.xpm, Common/Grafix/12.xpm, Common/Grafix/13.xpm, Common/Grafix/14.xpm, Common/Grafix/15.xpm, Common/Grafix/16.xpm, Common/Grafix/17.xpm, Common/Grafix/18.xpm, Common/Grafix/19.xpm, Common/Grafix/2.xpm, Common/Grafix/20.xpm, Common/Grafix/21.xpm, Common/Grafix/22.xpm, Common/Grafix/23.xpm, Common/Grafix/24.xpm, Common/Grafix/25.xpm, Common/Grafix/26.xpm, Common/Grafix/27.xpm, Common/Grafix/28.xpm, Common/Grafix/29.xpm, Common/Grafix/3.xpm, Common/Grafix/30.xpm, Common/Grafix/31.xpm, Common/Grafix/32.xpm, Common/Grafix/33.xpm, Common/Grafix/34.xpm, Common/Grafix/35.xpm, Common/Grafix/36.xpm, Common/Grafix/37.xpm, Common/Grafix/38.xpm, Common/Grafix/39.xpm, Common/Grafix/4.xpm, Common/Grafix/40.xpm, Common/Grafix/41.xpm, Common/Grafix/42.xpm, Common/Grafix/43.xpm, Common/Grafix/44.xpm, Common/Grafix/45.xpm, Common/Grafix/46.xpm, Common/Grafix/47.xpm, Common/Grafix/48.xpm, Common/Grafix/49.xpm, Common/Makefile.am:
+	  New file.
+
+2002-03-27  Markus Schwab  <g17m0@lycos.com>
+	* Project created
