@@ -3,32 +3,14 @@
 
 <html>
   <head>
-    <title>R&oslash;vhult - Documentation</title>
+    <title>R&oslash;vhult - An internationally know cardgame (aka Arsehole, ...)</title>
     <meta name="description" content="Documentation of the R&oslash;vhult cardgame">
     <meta name="keywords" content="Documentation, Docu, Rovhult, R&oslash;vhult; game, card, cardgame">
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2002-07-20">
-    <meta name="DC.Rights" content="Anticopyright (A) 2002, distributed under the GNU General Public License">
+    <meta name="DC.Rights" content="Anticopyright (A) 2002, distributed under the GNU Free Documentation License">
   </head>
-
-<!--
-  Anti-Copyright (A) 2002 Markus Schwab (g17m0@lycos.com)
-
-  This is free software; you can redistribute it and/or
-  modify it under the terms of the GNU General Public
-  License as published by the Free Software Foundation; either
-  version 2 of the License, or (at your option) any later version.
- 
-  This is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  General Public License for more details.
- 
-  You should have received a copy of the GNU General Public
-  License along with this library; if not, write to the Free
-  Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//-->
 
 <body>
 
@@ -36,12 +18,12 @@
     <hr size=2>
 
         <p>R&oslash;vhult is a cardgame I learned from 3 danes I was travelling
-          with. R&oslash;vhult is the danish word for arsehole (hope you're not
-          neither minor nor offended ;) ).</p>
+          with. R&oslash;vhult is the danish word for arsehole (ans as such it
+          is know in other parts of the world).</p>
 
         <p>The goal of the game is to get rid of all your cards, according to
-          the following - of course quite simple as it's a danish game ;) -
-          rules:</p>
+          the following - of course quite simple as also Yankees are playing it
+          ;) - rules:</p>
 
         <p>Every player starts with tree cards in his hand, and two times three
           cards on the table (where the lower three are face down (hidden) and
@@ -51,25 +33,27 @@
           the hand. Generally people try to put "good" cards (according to the
           rules below) on the table, but your milage might vary.</p>
 
-        <p>In a clockwise turn the players put down their cards, which must be
-          equal or bigger than the last played one. Note that you can put down
-          any amount of cards with equal numbers (e.g. the spade 5 and the heart
-          5). After playing the player must pick up cards from the staple until
-          he has again 3 cards in the hand (or the staple is empty).</p>
+        <p>In a clockwise turn the players put down their cards, which
+          must be equal or bigger than the last played one. Note that
+          you can put down any amount of cards with equal numbers
+          (e.g. the &spades; 5 and the &clubs; 5). After playing the
+          player must pick up cards from the staple until he has again 3
+          cards in the hand (or the staple is empty).</p>
 
         <p>There are a few special cards and exceptions:</p>
         <dl>
           <dt><b>2's</b></dt>
           <dd><p>Can be played always; the next player can continue with every
             card</p></dd>
-          <dt><b>7 is the last played card</b></dt>
+          <dt><b>7 is the last card played</b></dt>
           <dd><p>The next card must be equal or smaller</p></dd>
           <dt><b>8's</b></dt>
           <dd><p>The next player is skipped</p></dd>
           <dt><b>10's</b></dt>
           <dd><p>Can be played always (as 2's), but additionally the staple of
-              played cards is removed and the player must continue with cards from
-              the hand (if possible).</p></dd>
+              played cards is removed and the player can continue (though he may
+              not pick up cards from the staple (except he has no more cards to
+              play).</p></dd>
           <dt><b>4 equal cards played</b></dt>
           <dd><p>If the last 4 played cards are equal the whole played staple is
               removed and the same player can continue (having an effect similar to
@@ -89,7 +73,7 @@
           removed - with the invisible ones.</p>
 
         <p>Note that if you have to pick up the played pile while playing from
-          hand you can't move none of the visible cards from the table into
+          hand you can't move none of your visible cards from the table into
           those in your hand and that you have to play first the (new) cards
           in your hand before you can (again) play the card from the table.</p>
 
@@ -121,7 +105,7 @@
     </address>
 <!-- Created: Thu Jul  4 16:36:50 PET 2002 -->
 <!-- hhmts start -->
-Last modified: Sun Aug 18 22:53:45 PET 2002
+Last modified: Tue Oct  1 13:02:17 PET 2002
 <!-- hhmts end -->
           - $Revision$
 </body>

@@ -3,32 +3,14 @@
 
 <html>
   <head>
-    <title>Twopart - Documentation</title>
+    <title>Twopart - A norwegian cardgame (in two parts)</title>
     <meta name="description" content="Documentation of the Twopart cardgame">
     <meta name="keywords" content="Documentation, Docu, Twopart; game, card, cardgame">
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2002-08-18">
-    <meta name="DC.Rights" content="Anticopyright (A) 2002, distributed under the GNU General Public License">
+    <meta name="DC.Rights" content="Anticopyright (A) 2002, distributed under the GNU Free Documentation License">
   </head>
-
-<!--
-  Anti-Copyright (A) 2002 Markus Schwab (g17m0@lycos.com)
-
-  This is free software; you can redistribute it and/or
-  modify it under the terms of the GNU General Public
-  License as published by the Free Software Foundation; either
-  version 2 of the License, or (at your option) any later version.
- 
-  This is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  General Public License for more details.
- 
-  You should have received a copy of the GNU General Public
-  License along with this library; if not, write to the Free
-  Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//-->
 
 <body>
 
@@ -66,7 +48,7 @@
           The colour of the last card of the staple defines the trump for
           part two; this card is demonstrated after the end of the round.</p>
 
-        <p>The first part ends, if there are no more cards left. If a player
+        <p>The first part ends, if no player has cards left anymore. If a player
           didn't collect any cards in the first round, he gets all the
           low cards to (including) 5 from the others; if there are 2 or more
           of such unlucky creatures, they share the stuff (more or less randomly).</p>
@@ -110,7 +92,7 @@
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
 <!-- hhmts start -->
-Last modified: Sun Aug 18 23:26:38 PET 2002
+Last modified: Tue Oct  1 13:07:04 PET 2002
 <!-- hhmts end -->
           - $Revision$
 </body>
