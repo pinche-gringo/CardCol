@@ -138,27 +138,4 @@ class Rovhult : public Game {
    unsigned int pos1Play;
 };
 
-
-// Specialized Rovhult to inform parent about status-changes
-// The template must support a statusbar (accessed by getStatusbar), a cardset
-// (accessed by getCards) and a Gtk::Box, which can be accessed by getClient ()
-template <class T>
-class TRovhult : public Rovhult {
- public:
-   typedef void (T::*PCALLBACK) (unsigned int);
-
-   TRovhult  (T& parent, PCALLBACK callback)
-      : Rovhult (parent.getClient (), parent.getStatusbar (), parent.getCards ())
-      , obj (parent), pCallback (callback) { }
-   virtual ~TRovhult () { }
-
-   virtual void control (unsigned int status) const {
-      (obj.*pCallback) (status);
-   }
-
- private:
-   T& obj;
-   PCALLBACK pCallback;
-};
-
 #endif
