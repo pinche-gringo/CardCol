@@ -152,7 +152,7 @@ void Twopart::start () {
       players[0].hand.setStyle (ICardPile::NORMAL);
       players[0].won.setStyle (ICardPile::QUITE_COMPRESSED);
 
-      pos1Play = pos2Play = (unsigned int)-1;
+      pos1Play = pos2Play = -1U;
 
       if (getConnectionMgr ().getMode () != ConnectionMgr::CLIENT) {
          setNextPlayer (startPlayer = rand () & 0x3);
@@ -160,7 +160,7 @@ void Twopart::start () {
          // Send startplayer to the clients
          if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
             const std::vector<Socket*>& clients (getConnectionMgr ().getClients ());
-            unsigned int player (currentPlayer () - 1);
+            unsigned int player ((currentPlayer () - 1) & 0x3);
             for (std::vector<Socket*>::const_iterator i (clients.begin ());
                  i != clients.end (); ++i) {
                std::ostringstream msg;
@@ -353,7 +353,7 @@ void Twopart::cardSelected (unsigned int pos) {
       msg << players[0].hand[pos]->id () << ";Target=0";
 
       if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
-         ignoreNextMsg = true;
+         ignoreNextMsg = pos - start + 1;
       broadcastMessage (msg.str ());
    }
 
@@ -433,7 +433,7 @@ int Twopart::makeMove (unsigned int player) {
    TRACE5 ("Twopart::makeMove () - Turn of player " << player);
    Check3 (gameStatus () >= PLAYING);
 
-   if (pos2Play == (unsigned int)-1) {
+   if (pos2Play == -1U) {
       if (findPos2Play (player, pos1Play, pos2Play) != -1) {
          // Flip card(s) to play
          flipCards2Play (players[player].hand, pos1Play, pos2Play);
@@ -452,7 +452,7 @@ int Twopart::makeMove (unsigned int player) {
    }
    else {
       player = executeMove (player, pos1Play, pos2Play);
-      pos2Play = (unsigned int)-1;
+      pos1Play = pos2Play = -1U;
    }
 
    return player;
@@ -499,7 +499,7 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
       analyzeLastPlayed (*startPos, played.size () - *startPos,
                          maxNr, posMax, maxEqualNr, posMaxEqual, trumps);
 
-      start = (unsigned int)-1;
+      start = -1U;
       // Try to get the cards if there are loads of high cards (a third or more)
       // or if the average card played is at least a 8 or there are trumps inside
       if (((played.size () / 3) < cHigh)
@@ -601,7 +601,7 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
       TRACE5 ("Twopart::findPos2Play (unsigned int) - First try (II): " << start);
 
       Check3 (pTrump);
-      if ((start == (unsigned int)-1)
+      if ((start == -1U)
           || (played.size ()
               && (played.getTopCard ().colour ()
                   != players[player].hand[start]->colour ()))) {
@@ -623,11 +623,11 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
                         || ((bfPlayers & ~(1 << player))
                             && (((end - start) < 4)
                                 || (start < (end - start)))))
-                       ? (end = (unsigned int)-1) : (end = start));
+                       ? (end = -1U) : (end = start));
             }
          }
          else
-            return end = (unsigned int)-1;
+            return end = -1U;
       }
       else
          // Card was found; now search for last card to play (only if not trump
@@ -973,6 +973,13 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start
    Check3 (receiver < NUM_PLAYERS);
    Check3 (start < played.size ());
 
+   if ((gameStatus () == PLAYING2)
+       && (getConnectionMgr ().getMode () != ConnectionMgr::NONE)) {
+      std::ostringstream msg;
+      msg << "Play=" << played[start]->id () << ";Target=1";
+      ignoreNextMsg = true;
+      broadcastMessage (msg.str ());
+   }
    movePile (((gameStatus () == PLAYING)
               ? players[receiver].won : players[receiver].hand),
              played, start);
@@ -1023,7 +1030,7 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
       sortOrder[i] = (i - pTrump->colour () + 3) & 0x3;
    Check3 (sortOrder[pTrump->colour ()] == 3);
 
-   startPlayer = (unsigned int)-1;
+   startPlayer = -1U;
 
    unsigned int nrPlayers (0);
    // Check if there are players without cards
@@ -1059,7 +1066,7 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
    }
    
    bfPlayers = (1 << NUM_PLAYERS) - 1;
-   pos2Play = (unsigned int)-1;
+   pos1Play = pos2Play = -1U;
 
    setNextPlayer (player);
    makeNextMoves ();
@@ -1160,7 +1167,7 @@ void Twopart::changeNames (const std::vector<Player*>& newPlayer) {
 ICardPile& Twopart::getPileOfPlayer (unsigned int player, unsigned int pile) {
    Check1 (player < NUM_PLAYERS);
    Check1 (!pile);
-   return players[player].hand;
+   return pile ? played : players[player].hand;
 }
 
 //----------------------------------------------------------------------------
@@ -1182,4 +1189,23 @@ void Twopart::handleMessage (unsigned int player, const char* message) {
       startPlayer = currentPlayer ();
       makeNextMoves ();
    }
+}
+
+//----------------------------------------------------------------------------
+/// Executes the remote move locally
+/// \param pile: Pile to move to/from
+/// \param card: Card which to use from pile
+//----------------------------------------------------------------------------
+bool Twopart::executeRemoteMove (ICardPile& pile, unsigned int card) {
+   if (&pile == &played) {
+      Check3 (gameStatus () == PLAYING2);
+      pos1Play = pos2Play = -1U;
+      setNextPlayer (pickUpPlayedPile (currentPlayer ()));
+      return false;
+   }
+   else
+      Game::executeRemoteMove (pile, card);
+      if (pos2Play != pos1Play)
+         pile.resize (pos2Play - 1, ICardPile::COMPRESSED);
+      return true;
 }
