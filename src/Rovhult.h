@@ -18,10 +18,14 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <vector>
+
 #include <gtk--/table.h>
 #include <gtk--/statusbar.h>
 
 #include <CardSet.h>
+#include <CardPile.h>
+#include <CardImgs.h>
 
 #include <XApplication.h>
 
@@ -31,7 +35,9 @@ class RovhultAppl : public XApplication {
  public:
    // Manager functions
    RovhultAppl ();
-   ~RovhultAppl () { }
+   ~RovhultAppl ();
+
+   static void initI18n ();
 
  protected:
    // IDs for menus
@@ -46,6 +52,7 @@ class RovhultAppl : public XApplication {
    virtual void command (int menu);
 
    void dealCards ();
+   void fillStaple ();
 
    virtual void size_allocate_impl (GtkAllocation* size); 
  
@@ -60,12 +67,15 @@ class RovhultAppl : public XApplication {
    static const char* xpmAuthor[];
    static const char* xpmRovhult[];
 
-   unsigned int cardsOnStaple;
-
    Gtk::Statusbar status;
    Gtk::Table     tblTable;
 
+   CardPile staple;
+   CardImages cardFaces;
+
    CardSet cards;
+
+   static const unsigned int USED_CARDS = 52;
 
    static const unsigned int WIDTH = 720;
    static const unsigned int HEIGHT = 670;

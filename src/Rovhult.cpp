@@ -36,6 +36,7 @@
 
 #include <XAbout.h>
 
+#include <CardWidget.h>
 #include "Rovhult.h"
 
 
@@ -191,7 +192,7 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
     { "",             "",          0,     SEPARATOR },
     { _("E_xit"),     _("<ctl>Q"), EXIT,  ITEM },
     { _("_Help"),     _("<alt>H"), 0,     LASTBRANCH },
-    { _("_About..."), _("<alt>a"), ABOUT, ITEM } };
+    { _("_About..."), _("ctlt>a"), ABOUT, ITEM } };
 
 
 /*--------------------------------------------------------------------------*/
@@ -199,7 +200,8 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
 /*--------------------------------------------------------------------------*/
 RovhultAppl::RovhultAppl ()
    : XApplication (PACKAGE " - Rovhult V" VERSION), status ()
-     , tblTable (16, 19), cards (), staple (CardPile::VERY_COMPRESSED) {
+     , tblTable (16, 19), cardFaces (USED_CARDS), cards ()
+     , staple (CardPile::VERY_COMPRESSED) {
    set_usize (WIDTH, HEIGHT);
 
    addMenus (menuItems, sizeof (menuItems) / sizeof (menuItems[0]));
@@ -213,11 +215,12 @@ RovhultAppl::RovhultAppl ()
    getClient ()->pack_start (status, false);
 
    staple.show ();
-   tblTable.attach (staple, 3, 4, 2, 4, 0, 0);
+   tblTable.attach (staple, 3, 4, 2, 5, 0, 0);
 
    show ();
-   cards.load (staple.get_window ());   // Cards need an realized (!) parent be loaded
-      fillStaple ();
+   cardFaces.load (staple.get_window ());  // Cards need an realized (!) parent
+   cards.addPacket (cardFaces);
+   fillStaple ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -243,10 +246,12 @@ void RovhultAppl::command (int menu) {
    }
 
    case ABOUT: {
-      XAbout* about (new XAbout ("Anticopyright (A) 2002 Markus Schwab"
-                                 "\ne-mail: g17m0@lycos.com\n\n"
-                                 "Compiled on " __DATE__ " - " __TIME__,
-                                 PACKAGE " - Rovhult V" VERSION "." MICRO_VERSION));
+      string ver (_("Anticopyright (A) 2002 Markus Schwab"
+                    "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
+      ver.replace (ver.find ("%1"), 2, __DATE__);
+      ver.replace (ver.find ("%2"), 2, __TIME__);
+
+      XAbout* about (new XAbout (ver, PACKAGE " - Rovhult V" VERSION "." MICRO_VERSION));
       about->setIconProgram (xpmRovhult);
       about->setIconAuthor (xpmAuthor); }
       break;
@@ -261,27 +266,17 @@ void RovhultAppl::command (int menu) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Shuffles (Randomizes) and deals the cards
+//Purpose   : Shuffles (Randomizes) the cards onto the staple
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::fillStaple () {
-   // Randomize cards into staple
-   for (int i (cards.getCardNumber () - 1); i >= 0;) {
-      int nr (rand () % cards.getCardNumber ());
 
-      // Search if card already exist in staple (TODO?: Optimize?)
-      CardWidget* card (cards.getCard (nr)); Check3 (card);
-      if (staple.existCard (card))
-         continue;
-
-      TRACE9 ("RovhultAppl::fillStaple () - Add to staple: " << nr);
-      staple.setTopCard (card, false);
-      card->show ();
-      --i;
-   }
+   // Randomize and put cards onto staple
+   cards.shuffle ();
+   staple.setTopCards (cards.getCards (), false);
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Shuffles (Randomizes) and deals the cards
+//Purpose   : Deals the cards
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::dealCards () {
    TRACE9 ("RovhultAppl::dealCards ()");
@@ -289,10 +284,11 @@ void RovhultAppl::dealCards () {
    // Show cards on table
    for (int i (0); i < NUM_PLAYERS; ++i) {
       for (int j (0); j < 3; ++j) {
-         CardWidget* pCard (staple.removeTopCard ()); Check3 (pCard);
-         //         pCard->set_sensitive (false);
+         CardWidget& card (staple.removeTopCard ());
+         card.set_sensitive (false);
+         card.setVisible ();
 
-         tblTable.attach (*pCard, COLS_PLAYER[i]  + (j << 1),
+         tblTable.attach (card, COLS_PLAYER[i]  + (j << 1),
                           COLS_PLAYER[i] + 1 + (j << 1), ROWS_PLAYER[i],
                           ROWS_PLAYER[i] + 2, 0, 0, 1);
          TRACE9 ("RovhultAppl::dealCards () - 1st set at: "
@@ -303,9 +299,10 @@ void RovhultAppl::dealCards () {
    // Show cards in hand
    for (int i (0); i < NUM_PLAYERS; ++i) {
       for (int j (0); j < 3; ++j) {
-         CardWidget* pCard (staple.removeTopCard ()); Check3 (pCard);
-         pCard->show ();
-         tblTable.attach (*pCard, COLS_PLAYER[i] + (j << 1),
+         CardWidget& card (staple.removeTopCard ());
+         card.setVisible ();
+
+         tblTable.attach (card, COLS_PLAYER[i] + (j << 1),
                           COLS_PLAYER[i] + (j << 1)  + 1,
                           ROWS_PLAYER[i] + (i ? 3 : -3),
                           ROWS_PLAYER[i] + (i ? 3 : -3) + 2
