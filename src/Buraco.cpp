@@ -94,21 +94,27 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       attach (hands[i], (i << 2) - 4, (i << 2) - 2, 4, 5,
               Gtk::EXPAND, Gtk::SHRINK, 5, 5);
-      attach (hands[i], 0, 10, 3, 4, Gtk::EXPAND, Gtk::SHRINK, 0);
-      hands[i].setStyle (ICardPile::COMPRESSED);
-      hands[i].setShowOption (ICardPile::SHOWBACK);
+      attach (names[i], (i << 2) - 4, (i << 2) - 2, 5, 6,
+              Gtk::EXPAND, Gtk::SHRINK, 0);
+      hands[i].show ();
+      names[i].show ();
+   }
+   hands[0].setStyle (ICardPile::COMPRESSED);
    hands[0].setShowOption (ICardPile::SHOWFACE);
    hands[0].show ();
    names[0].show ();
+
+   TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Attach widgets");
    attach (hands[0], 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
    attach (names[0], 3, 10, 1, 2, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
-   attach (hands[0], 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1);
+   attach (staple, 0, 1, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 5);
+   attach (dumped, 1, 2, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 1, 5);
    attach (*scrlTable[0], 0, 10, 2, 3, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
-   attach (*scrlTable[0], 0, 10, 1, 2, Gtk::EXPAND | Gtk::FILL,
+   attach (*scrlTable[1], 0, 10, 3, 4, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
-   attach (*scrlTable[1], 0, 10, 2, 3, Gtk::EXPAND | Gtk::FILL,
+
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Show widgets");
    newPile.show ();
@@ -128,7 +134,7 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    statusbar.pack_end (info, Gtk::PACK_SHRINK, 5);
 
 }
-   makeTeamNames (nameTeams);
+
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
@@ -214,10 +220,6 @@ int Buraco::makeMove (unsigned int player) {
          displayTurn (player);
       }
       else {
-
-         // Make next player continue
-         source.hide ();
-         hands[player ? player : 1].show ();
          TRACE4 ("Buraco::makeMove (unsigned int) - Moving cards to pile " << target);
          Check3 (target < tablePiles[player & 1].size ());
          dest = tablePiles[player & 1][target];
@@ -630,10 +632,12 @@ void Buraco::start () {
          hands[i].sort (compByNumberWithJokers);
       for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
           hands[i].setStyle (ICardPile::QUITE_COMPRESSED);
+          hands[i].setShowOption (ICardPile::SHOWBACK);
+      }
+
+      dumped.setTopCard (staple.removeTopCard ());
 
       gStatus.startTurn = gStatus.startGame = 1;
-      hands[0].show ();
-      hands[1].setShowOption (ICardPile::SHOWBACK);
       gStatus.team1Buraco = gStatus.team2Buraco = 0x3;
       status.pop ();
       status.push (_("You can sort the cards in your hand with drag and drop or put"
@@ -681,7 +685,6 @@ void Buraco::setStartPlayer () {
       dumped.getTopCard ().show ();
    displayTurn (startPlayer++);
    startPlayer &= 0x3;
-   hands[startPlayer ? startPlayer : 1].show ();
    makeNextMoves ();
 }
 
@@ -693,10 +696,8 @@ void Buraco::clean () {
    disableHuman ();
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       hands[i].clear ();
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+
    staple.clear ();
-      hands[i].hide ();
-   }
    dumped.clear ();
 
    for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
@@ -1722,14 +1723,10 @@ void Buraco::endGame () {
    // Move cards of partners to first player and show them
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       hands[i].setStyle (ICardPile::COMPRESSED);
-   if (hands[2].size ())
-      movePile (hands[0], hands[2]);
-   if (hands[3].size ())
-      movePile (hands[1], hands[3]);
-   hands[2].hide ();
-   hands[3].hide ();
-   hands[1].show ();
-   hands[1].setShowOption (ICardPile::SHOWFACE);
+      hands[i].setShowOption (ICardPile::SHOWFACE);
+   }
+
+   status.pop ();
    status.push (stat);
 
    setGameStatus (STOPPED);
@@ -1991,6 +1988,11 @@ void Buraco::changeNames (const std::vector<Player*>& newPlayer) {
 
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       TRACE1 ("Buraco::changeNames () " << i << ": " << newPlayer[i]->getName ());
+      names[i].set_text (newPlayer[i]->getName ());
+   }
+
+   if (pScoreDlg)
+      pScoreDlg->update (nameTeams);
 }
 
 //----------------------------------------------------------------------------
@@ -2034,8 +2036,6 @@ bool Buraco::handleMessage (unsigned int player, const char* message) {
    Tokenize command (message);
    bool rc (true);
    if (cmd == "Undo") {
-   unsigned int oldPlayer (currentPlayer ());
-
       // Inform clients about cards to play
    if (cmd == "Move") {
       AttributeParse ap;
@@ -2059,7 +2059,6 @@ bool Buraco::handleMessage (unsigned int player, const char* message) {
          TRACE1 ("Buraco::handleMessage (unsigned int player, const char*) - "
          startPlayer = currentPlayer ();
          setStartPlayer ();
-         hands[oldPlayer ? oldPlayer : 1].hide ();
       }
    }
    return rc;

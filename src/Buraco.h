@@ -145,6 +145,7 @@ class Buraco : public Game {
                             gint, GtkSelectionData* pData, guint, guint32 time,
                             unsigned int cardPile);
 
+   Gtk::Label names[NUM_PLAYERS];                        // Names of the player
    CardHPile hands[NUM_PLAYERS];              // For all players: Cards in hand
    std::vector<BuracoPile*> tablePiles[NUM_PLAYERS >> 1];     // Piles on table
    std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
@@ -152,7 +153,7 @@ class Buraco : public Game {
 
    Gtk::ScrolledWindow* scrlTable[NUM_PLAYERS >> 1];   // Scroll-ctrls for table
 
-   std::vector <Player*> nameTeams;
+   std::vector<Player*> nameTeams;
    unsigned int startPlayer;
 
    Gtk::Statusbar info;
