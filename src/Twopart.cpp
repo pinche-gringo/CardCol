@@ -117,8 +117,6 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    played.set_size_request (width + 150, height);
    staple.set_size_request (width, height);
-
-   srand (time (NULL));
 }
 
 //-----------------------------------------------------------------------------
@@ -953,7 +951,7 @@ unsigned int Twopart::removePlayersWithoutCards () {
 /// \returns unsigned int: Number of player
 //-----------------------------------------------------------------------------
 unsigned int Twopart::pos2Player (unsigned int pos) const {
-   TRACE8 ("Twopart::pos2Player (unsigned int) - Pos to convert: " << pos
+   TRACE9 ("Twopart::pos2Player (unsigned int) - Pos to convert: " << pos
            << "; starting with player " << startPlayer);
 
    unsigned int start (startPlayer);
@@ -963,7 +961,7 @@ unsigned int Twopart::pos2Player (unsigned int pos) const {
          --pos;
    }
    
-   TRACE8 ("Twopart::pos2Player (unsigned int) - Calculated player: " << start);
+   TRACE9 ("Twopart::pos2Player (unsigned int) - Calculated player: " << start);
    return start;
 }
 
