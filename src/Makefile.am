@@ -15,4 +15,4 @@ DEFS = @DEFS@ -Wall
 EXTRA_DIST=Options.meta
 
 Options.meta: Options.h
-	mgeni Options.h Options.meta
+	mgeni.pl Options.h>Options.meta
