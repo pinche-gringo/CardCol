@@ -488,9 +488,6 @@ void RovhultAppl::dealCards () {
             card.set_sensitive (k);
 
             reserve[i][j].setTopCard (card, k);
-            card.clicked.connect (SigC::bind (SigC::slot (this, &RovhultAppl::pileSelected),
-                                              &reserve[i][j], card.id ()));
-
             if (k) {                     // Enable drag-n-drop for the top-card
                card.drag_dest_set (GTK_DEST_DEFAULT_ALL, &dndTypes, 1, GDK_ACTION_MOVE);
                card.drag_source_set (GDK_BUTTON1_MASK, &dndTypes, 1, GDK_ACTION_MOVE);
@@ -498,6 +495,8 @@ void RovhultAppl::dealCards () {
                   (color, const_cast<Gdk_Pixmap&> (cardFaces.getCardImage (card.id ())),
                    bitmap);
                card.drag_data_received.connect (slot (this, &RovhultAppl::cardDropped));
+               card.drag_data_get.connect (bind (slot (this, &RovhultAppl::getDropData),
+                                                 card.id ()));
             }
          } // end-for two cards pro pile (in reserve)
 
@@ -514,6 +513,8 @@ void RovhultAppl::dealCards () {
             (color, const_cast<Gdk_Pixmap&> (cardFaces.getCardImage (card.id ())),
              bitmap);
          card.drag_data_received.connect (slot (this, &RovhultAppl::cardDropped));
+         card.drag_data_get.connect (bind (slot (this, &RovhultAppl::getDropData),
+                                           card.id ()));
       }
 
    status.pop (1);
@@ -526,18 +527,40 @@ void RovhultAppl::dealCards () {
 //Parameters: pContext: Context of the drag (contains things like source,
 //                      target, action, ...)
 //            pData: Describes the thing which was dropped
+//            info: Describes the type of pData (should be 0)
 //            time: Timestamp of the drag
+//Requieres : pContext, pData not NULL; Expects info to be 0
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::cardDropped (GdkDragContext* pContext, gint, gint,
-                  GtkSelectionData* pData, guint, guint32 time) {
-   Check3 (pContext); Check3 (pData);
+                  GtkSelectionData* pData, guint info, guint32 time) {
+   Check3 (pContext); Check3 (pData); Check3 (!info);
    Check3 (!pContext->is_source);
-
-   TRACE ("RovhultAppl::cardDropped (GdkDragContext*, gint, gint, GtkSelectionData*"
-           ", guint, guint32) - Data = " << pData->length << '/' << pData->format);
+   Check3 (pData->length == sizeof (int));
+   Check3 (pData->format == 8);
+   
+   TRACE1 ("RovhultAppl::cardDropped (...) - Data = "
+           << *reinterpret_cast <unsigned int*> (pData->data));
 
    Gdk_DragContext gdc (pContext);
    drag_finish (gdc, false, false, time);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback to query the data to drop
+//Parameters: pContext: Context of the drag (contains things like source,
+//                      target, action, ...)
+//            pData: Describes the thing which was dropped
+//            time: Timestamp of the drag
+//            iCard: ID of draged card
+//Requieres : pContext, pData not NULL; Expects info to be 0
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::getDropData (GdkDragContext* pContext, GtkSelectionData* pData,
+                               guint info, guint32 time, unsigned int iCard) {
+   Check3 (pContext); Check3 (pData); Check3 (!info);
+   Check3 (pContext->is_source);
+
+   gtk_selection_data_set (pData, pData->target, 8, reinterpret_cast <guchar*> (&iCard),
+                           sizeof (iCard));
 }
 
 /*--------------------------------------------------------------------------*/

@@ -49,6 +49,8 @@ class RovhultAppl : public XApplication {
    void pileSelected (CardPile* parent, unsigned int card);
    void handSelected (CardCollection* parent, unsigned int card);
 
+   void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
+                     guint info, guint32 time, unsigned int iCard);
    void cardDropped (GdkDragContext* pContext, gint x, gint y,
                      GtkSelectionData* pData, guint info, guint32 time);
 
