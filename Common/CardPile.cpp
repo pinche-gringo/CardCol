@@ -40,6 +40,7 @@
 /*--------------------------------------------------------------------------*/
 CardPile::CardPile (Style s) : style (s) {
    TRACE3 ("CardPile::CardPile (Style) - " << (int)style);
+   Check3 (s < LAST);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -56,12 +57,11 @@ CardPile::~CardPile () {
 void CardPile::setTopCard (CardWidget& card) {
    TRACE5 ("CardPile::setTopCard (CardWidget&) - New size: " << cards.size () + 1);
 
-   card.show ();
    pack_start (card, false);
 
    if ((style > NORMAL) && cards.size ()) {
-      CardWidget* lastCard (cards[cards.size () - 1]); Check3 (lastCard);
-      lastCard->set_usize (-1, style == COMPRESSED ? 15 : 1);
+      Check3 (cards[cards.size () - 1]);
+      cards[cards.size () - 1]->set_usize (-1, style == COMPRESSED ? 15 : 1);
    }
 
    card.show ();
@@ -107,27 +107,39 @@ void CardPile::setTopCardVisible (bool visible) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Adds various cards to the staple
+//Purpose   : Adds various cards to the pile
 //Parameters: visible: Flag if cardface should be shown or back
 /*--------------------------------------------------------------------------*/
 void CardPile::setTopCards (const vector<CardWidget*>& staple) {
    vector<CardWidget*>::const_iterator i;
 
    for (i = staple.begin (); i != staple.end (); ++i) {
-      Check3 (*i); Check3 (**i);
+      Check3 (*i);
       setTopCard (**i);
    }
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Adds various cards to the staple
+//Purpose   : Adds various cards to the pile
 //Parameters: visible: Flag if cardface should be shown or back
 /*--------------------------------------------------------------------------*/
 void CardPile::setTopCards (const vector<CardWidget*>& staple, bool visible) {
    vector<CardWidget*>::const_iterator i;
 
    for (i = staple.begin (); i != staple.end (); ++i) {
-      Check3 (*i); Check3 (**i);
+      Check3 (*i);
       setTopCard (**i, visible);
+   }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Removes all cards from pile
+/*--------------------------------------------------------------------------*/
+void CardPile::clear () {
+   vector<CardWidget*>::const_iterator i;
+
+   while (cards.size ()) {
+      remove (*cards[cards.size () - 1]);
+      cards.pop_back ();
    }
 }
