@@ -57,13 +57,16 @@ class Hearts : public Game {
 
    //@Section Helper methods
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int card);
+   unsigned int findPos2Play (unsigned int player);
    void exchangeCards ();
-   static void getNumberOfColors (ICardPile& pile, unsigned int result[4]);
+   static void getPositionOfColors (ICardPile& pile, int result[4]);
+   static unsigned int numberOfCards (int aPositions[4], CardWidget::COLORS color);
+   static unsigned int pointsOfPile (ICardPile& pile);
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
-   bool         heartsPlayed;
-   unsigned int startPlayer;
+   unsigned int aPlayed[4];         // Array holding played cars for each color
+   unsigned int pos2Play;                                   // Position to play
 
    struct {
       CardHPile hand;                         // For players: Cards in the hand
