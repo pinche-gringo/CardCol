@@ -25,8 +25,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <Check.h>
-#include <Trace_.h>
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
 
 #include <CardWidget.h>
 
@@ -36,11 +36,9 @@
 
 //-----------------------------------------------------------------------------
 /// Constructor
-/// @param style: Display style of pile
-/// @param show: Flag, if cards should display its face or its back
 //-----------------------------------------------------------------------------
-BuracoPile::BuracoPile (PileStyle style, ShowOpt show)
-    : CardVPile (style, show) {
+BuracoPile::BuracoPile ()
+    : CardVPile (COMPRESSED, SHOWFACE) {
    status.type = UNDEFINED;
    status.posFirst = status.posLast = status.posJoker = -1U;
    status.points = 0;
@@ -130,7 +128,7 @@ CardWidget& BuracoPile::remove (unsigned int pos, bool visible) {
 //----------------------------------------------------------------------------
 /// Returns the position in the pile where the card can be played to.
 /// - Card played on an empty pile -> Valid (but check for fitting tripple or
-///   pair with joker
+///   pair with joker)
 /// - Joker played on a pile without joker -> Valid (but check for fitting
 ///    card, if the pile has only one card)
 /// - Ordinary card: Check if the card "fits": Either the same number as the
