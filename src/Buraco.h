@@ -22,7 +22,6 @@
 #include <vector>
 
 #include <gtkmm/label.h>
-#include <gtkmm/button.h>
 
 #include <CardSet.h>
 #include <CardPile.h>
@@ -40,6 +39,7 @@ class Burazno : public Game {
    virtual void start ();
    virtual void clean ();
    virtual const char* name () { return "Burazno"; }
+   virtual void updateCards ();
 
  private:
    Burazno (const Burazno& other);
@@ -50,9 +50,12 @@ class Burazno : public Game {
    //@Section Virtual methods
    virtual int makeMove (unsigned int player);
    virtual bool enableHuman ();
+   virtual void disableHuman ();
 
    //@Section Event handling
    void cardSelected (unsigned int iCard);
+   void dumpedSelected ();
+   void stapleSelected ();
 
    //@Section helper methods
    void randomizeClonedCardsToPile (ICardPile& pile);
@@ -67,12 +70,21 @@ class Burazno : public Game {
    void cardDropped (const Glib::RefPtr<Gdk::DragContext>& pContext, gint, gint,
                      GtkSelectionData* pData, guint info, guint32 time,
                      unsigned int card);
+   void cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& pContext, gint,
+                            gint, GtkSelectionData* pData, guint, guint32 time);
 
    CardHPile hands[NUM_PLAYERS];              // For players: Cards in the hand
    std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];
 
+   unsigned int startPlayer;
+
+   Gtk::HBox boxTeam[2];
+
+   Gtk::Label     newPile;
    PseudoInfoPile staple;
    PseudoInfoPile dumped;
+   SigC::Connection dumpedTop;
+   SigC::Connection stapleTop;
 
    std::vector<CardWidget*> deck;
 
