@@ -29,7 +29,6 @@
 #include <CardSet.h>
 #include <CardPile.h>
 #include <CardImgs.h>
-#include <CardColl.h>
 
 #include <XApplication.h>
 
@@ -47,7 +46,7 @@ class RovhultAppl : public XApplication {
    // IDs for menus
    enum { NEW, EXIT, ABOUT };
 
-   void pileSelected (CardPile* parent);
+   void pileSelected (CardVPile* parent);
    void handSelected (unsigned int player, unsigned int iCard);
 
    void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
@@ -71,11 +70,9 @@ class RovhultAppl : public XApplication {
    void cleanTable ();
    void dealCards ();
    void fillStaple ();
-   void moveCardsToWinner (unsigned int nrWinner);
+   void moveCardsToLooser (unsigned int nrLooser);
 
    void loadCards ();
-
-   int getWinner () const;
 
    void registerHandDND (CardWidget& card, unsigned int player, unsigned int card);
    void registerTableDND (CardWidget& card, unsigned int player, unsigned int pile);
@@ -98,12 +95,11 @@ class RovhultAppl : public XApplication {
    CardImages cardFaces;
    CardSet cards;
 
-   CardCollection played;
+   CardHPile played;
 
-   CardPile staple;                                          // Cards on staple
-   CardCollection hands[NUM_PLAYERS];         // For players: Cards in the hand
-   CardPile reserve[NUM_PLAYERS][3];            // Reserve-cards (for end-game)
-   CardPile won[NUM_PLAYERS];             // Cards which player won during game
+   CardVPile staple;                                         // Cards on staple
+   CardHPile hands[NUM_PLAYERS];              // For players: Cards in the hand
+   CardVPile reserve[NUM_PLAYERS][3];           // Reserve-cards (for end-game)
 
    Widget* pMenuNew;
 

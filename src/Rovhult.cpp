@@ -38,6 +38,7 @@
 #include <Trace_.h>
 
 #include <XAbout.h>
+#include <XMessageBox.h>
 
 #include <CardWidget.h>
 #include "Rovhult.h"
@@ -306,7 +307,7 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
 RovhultAppl::RovhultAppl ()
    : XApplication (PACKAGE " - Rovhult V" VERSION), status ()
      , tblTable (16, 19), cardFaces (USED_CARDS), cards (), pThread (NULL)
-     , staple (CardPile::VERY_COMPRESSED), played (CardCollection::COMPRESSED) {
+     , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::VERY_COMPRESSED) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
@@ -327,6 +328,7 @@ RovhultAppl::RovhultAppl ()
 
    show ();
 
+
    // Load cards in background
    pThread = THRDAPPL::create  (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::loadCards,
                                 NULL);
@@ -338,7 +340,7 @@ RovhultAppl::RovhultAppl ()
    // Show and attach card-piles
    for (int i (0); i < NUM_PLAYERS; ++i) {
       for (int j (0); j < 3; ++j) {
-         reserve[i][j].setStyle (CardPile::COMPRESSED);
+         reserve[i][j].setStyle (ICardPile::COMPRESSED);
          reserve[i][j].show ();
          tblTable.attach (reserve[i][j], COLS_PLAYER[i] + (j << 1),
                           COLS_PLAYER[i] + 1 + (j << 1), ROWS_PLAYER[i],
@@ -414,10 +416,10 @@ void RovhultAppl::finishedExchange () {
 
    // Remove drag´n´drop abilities and compress cards
    for (int i (0); i < NUM_PLAYERS; ++i) {
-      hands[i].setStyle (CardCollection::COMPRESSED);
+      hands[i].setStyle (ICardPile::COMPRESSED);
 
       for (int j (0); j < 3; ++j) {
-         CardWidget& card (hands[i].cardAt (j));
+         CardWidget& card (hands[i].at (j));
          unregisterDND (card);
          unregisterDND (reserve[i][j].getTopCard ());
 
@@ -434,91 +436,67 @@ void RovhultAppl::finishedExchange () {
 //Purpose   : Callback after clicking on a card on table
 //Parameters: parent: Pile of card
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::pileSelected (CardPile* parent) {
+void RovhultAppl::pileSelected (CardVPile* parent) {
    Check3 (parent);
 
    // TODO: Implement for end-game
    CardWidget& card (parent->removeTopCard ());
-   TRACE1 ("Rovhult::pileSelected (CardPile*, unsinged int) - "
+   TRACE1 ("Rovhult::pileSelected (CardVPile*, unsinged int) - "
            << card.color () << '/' << card.number ());
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card in hand
 //Parameters: player: ID of player
-//            iCard: (Internal) ID of card
+//            iCard: Offset of card in hand
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::handSelected (unsigned int player, unsigned int iCard) {
+void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
    Check3 (pos <= cards.numberOfCards ());
-   Check3 (player <= NUM_PLAYER);
+   Check3 (player <= NUM_PLAYERS);
 
-   CardWidget& card (hands[player].removeCard (iCard));
-   TRACE1 ("Rovhult::handSelected (CardCollection*, unsinged int) - " << iCard << " = "
+   CardWidget& card (hands[player].at (pos));
+   TRACE1 ("Rovhult::handSelected (unsigned int, unsinged int) - " << pos << " = "
            << card.color () << '/' << card.number ());
 
-   played.addCard (card);
+   //   card.clicked.disconnect ();
+
+   switch (card.number ()) {
+   case CardWidget::TWO:
+      break;
+
+   case CardWidget::TEN:
+      played.clear ();
+      break;
+
+   default:
+      if (played.numberOfCards ()
+          && (card.number () < played.getTopCard ().number ())) {
+         XMessageBox::Show (_("Played card must be equal or bigger!"),
+                            _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
+         return;
+      }
+   } // end-switch
+
+   hands[player].remove (pos);
+   played.append (card);
    if (staple.numberOfCards ()) {
       CardWidget& newCard (staple.removeTopCard ());
       newCard.setVisible ();
-      hands[player].addCard (newCard);
+      hands[player].append (newCard);
    }
-
-   unsigned int winner (getWinner ());
-   if (winner >= 0)
-      moveCardsToWinner (winner);
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Method to move the cards of the actual round to the winner
-//Parameters: nrWinner: Nr. of player winning the round
+//Parameters: nrLooser: Nr. of player getting all played cards
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::moveCardsToWinner (unsigned int nrWinner) {
+void RovhultAppl::moveCardsToLooser (unsigned int nrLooser) {
    TRACE8 ("Rovhult::moveCardsToWinner () - " << played.numberOfCards ());
    Check3 (played.numberOfCards () >= NUM_PLAYERS);
-   Check3 (nrWinner < NUM_PLAYERS);
-}
+   Check3 (nrLooser < NUM_PLAYERS);
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Calculates the winner (if any) out of the played cards
-//Returns   : int: Number of winner or -1 if round not finished
-/*--------------------------------------------------------------------------*/
-int RovhultAppl::getWinner () const {
-   TRACE8 ("Rovhult::roundFinished () const - " << played.numberOfCards ());
-
-   if (played.numberOfCards () >= NUM_PLAYERS) {
-      unsigned int players (NUM_PLAYERS);
-      unsigned int handledCards (0);
-
-      CardWidget::NUMBERS bestCard (CardWidget::TWO);
-      unsigned int bestPlayers[NUM_PLAYERS] = { 0, 1, 2, 3 };
-
-      do {
-         for (int i (0); i < players; ++i) {
-            CardWidget::NUMBERS actCard (played.cardAt (handledCards).number ());
-            if (actCard >= bestCard) {
-               bestCard = actCard;
-               bestPlayers[NUM_PLAYERS - players--] = bestPlayers[i];
-
-               TRACE5 ("Rovhult::roundFinished () const - Best card "
-                       << actCard << " of player " << bestPlayers[i]);
-            }
-         }
-         players = NUM_PLAYERS - players;
-         ++handledCards;
-
-         TRACE5 ("Rovhult::roundFinished () const - " 
-                 << played.numberOfCards () - handledCards << " emaining cards for "
-                 << players << " players");
-      } while ((played.numberOfCards () - handledCards) >= players);
-
-      // Are cards left in pile? Round not finsished
-      if (played.numberOfCards () - handledCards)
-          return -1;
-
-      return bestPlayers[0];
-
-   }
-   return -1;
+   while (played.numberOfCards ())
+      hands[nrLooser].append (played.remove (0));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -563,9 +541,8 @@ void RovhultAppl::cleanTable () {
          reserve[i][j].clear ();
       }
 
-      hands[i].setStyle (CardCollection::NORMAL);
+      hands[i].setStyle (ICardPile::NORMAL);
       hands[i].clear ();
-      won[i].clear ();
    }
    played.clear ();
 }
@@ -648,7 +625,7 @@ void RovhultAppl::dealCards () {
          // Put card into hand
          CardWidget& card (staple.removeTopCard ());
          card.setVisible ();
-         hands[i].addCard (card);
+         hands[i].append (card);
 
          registerHandDND (card, i, j);
       }
@@ -707,7 +684,7 @@ void RovhultAppl::cardDroppedOnTable (GdkDragContext* pContext, gint, gint,
       drag_finish (gdc, false, false, time);
    else {
       CardWidget& cardTable (reserve[player][pile].removeTopCard ());
-      CardWidget& cardHand (hands[player].removeCard (pValues[1]));
+      CardWidget& cardHand (hands[player].remove (pValues[1]));
 
       TRACE1 ("RovhultAppl::cardDroppedOnTable (...) - Exchanging cards "
               << cardHand.id () << "<->" << cardTable.id ());
@@ -720,7 +697,7 @@ void RovhultAppl::cardDroppedOnTable (GdkDragContext* pContext, gint, gint,
 
       // Swap cards
       reserve[player][pile].setTopCard (cardHand);
-      hands[player].insertCard (cardTable, pValues[1]);
+      hands[player].insert (cardTable, pValues[1]);
 
       registerHandDND (cardTable, player, pValues[1]);
       registerTableDND (cardHand, player, pile);
@@ -768,7 +745,7 @@ void RovhultAppl::cardDroppedOnHand (GdkDragContext* pContext, gint, gint,
       drag_finish (gdc, false, false, time);
    else {
       CardWidget& cardTable (reserve[player][pValues[1]].removeTopCard ());
-      CardWidget& cardHand (hands[player].removeCard (card));
+      CardWidget& cardHand (hands[player].remove (card));
 
       TRACE1 ("RovhultAppl::cardDroppedOnHand (...) - Exchanging cards "
               << cardHand.id () << "<->" << cardTable.id ());
@@ -780,7 +757,7 @@ void RovhultAppl::cardDroppedOnHand (GdkDragContext* pContext, gint, gint,
 
       // Swap cards
       reserve[player][pValues[1]].setTopCard (cardHand);
-      hands[player].insertCard (cardTable, card);
+      hands[player].insert (cardTable, card);
 
       // Adapt dnd-settigns
       registerHandDND (cardTable, player, card);
