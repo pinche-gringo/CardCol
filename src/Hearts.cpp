@@ -158,34 +158,35 @@ void Hearts::start () {
       showWonCards (false);
 
    Check2 (!played.size ());
-   cards.shuffle ();
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      for (unsigned int j (0); j < (cards.size () / NUM_PLAYERS); ++j)
-         players[i].hand.insertColourSorted
-            (cards.getCard (i * (cards.size () / NUM_PLAYERS) + j));
+   ICardPile pile;
+   if (randomizeCardsToPile (pile)) {
+      for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+         for (unsigned int j (0); j < (cards.size () / NUM_PLAYERS); ++j)
+            players[i].hand.insertColourSorted (pile.getTopCard ());
 
-   if (pScoreDlg) {
-      unsigned int player;
-      int points;
-      pScoreDlg->getMaxPoints (points, player);
-      if (points >= 100) {
-         delete pScoreDlg;
-         pScoreDlg = NULL;
+      if (pScoreDlg) {
+         unsigned int player;
+         int points;
+         pScoreDlg->getMaxPoints (points, player);
+         if (points >= 100) {
+             delete pScoreDlg;
+             pScoreDlg = NULL;
+         }
       }
-   }
 
-   if (player2Exchange) {
-      Glib::ustring stat (_("Select 3 cards to exchange with %1"));
-      Check3 (actPlayers.size () > player2Exchange);
-      Check3 (actPlayers[player2Exchange]);
-      stat.replace (stat.find ("%1"), 2, actPlayers[player2Exchange]->getName ());
-      status.pop ();
-      status.push (stat);
-      setGameStatus (EXCHANGE);
-      enableHuman ();
-   }
+      if (player2Exchange) {
+         Glib::ustring stat (_("Select 3 cards to exchange with %1"));
+         Check3 (actPlayers.size () > player2Exchange);
+         Check3 (actPlayers[player2Exchange]);
+         stat.replace (stat.find ("%1"), 2, actPlayers[player2Exchange]->getName ());
+         status.pop ();
+         status.push (stat);
+         setGameStatus (EXCHANGE);
+         enableHuman ();
+      }
    else
       startPlaying ();
+   }
 }
 
 /*--------------------------------------------------------------------------*/

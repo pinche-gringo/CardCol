@@ -121,17 +121,18 @@ Twopart::~Twopart () {
 //-----------------------------------------------------------------------------
 void Twopart::start () {
    Game::start ();
-   randomizeCardsToPile (staple);
-   dealCards ();
+   if (randomizeCardsToPile (staple)) {
+      dealCards ();
 
-   for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      players[i].hand.setStyle (ICardPile::COMPRESSED);
-      players[i].won.setStyle (ICardPile::VERY_COMPRESSED);
+      for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
+          players[i].hand.setStyle (ICardPile::COMPRESSED);
+          players[i].won.setStyle (ICardPile::VERY_COMPRESSED);
+      }
+      players[0].hand.setStyle (ICardPile::NORMAL);
+      players[0].won.setStyle (ICardPile::QUITE_COMPRESSED);
+
+      pos1Play = pos2Play = (unsigned int)-1;
    }
-   players[0].hand.setStyle (ICardPile::NORMAL);
-   players[0].won.setStyle (ICardPile::QUITE_COMPRESSED);
-
-   pos1Play = pos2Play = (unsigned int)-1;
 }
 
 //-----------------------------------------------------------------------------
@@ -953,7 +954,7 @@ void Twopart::clean () {
 void Twopart::dealCards () {
    TRACE9 ("Twopart::dealCards ()");
 
-   // Show cards on table: For all players put 3 cards in hand
+   // Show cards on the table: For all players put 3 cards in hand
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       for (unsigned int j (0); j < 3; ++j)
          players[i].hand.insertSorted (staple.removeTopCard ());

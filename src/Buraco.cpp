@@ -492,35 +492,35 @@ void Buraco::start () {
    pos1 = pos2 = 0;
    if (randomizeCardsToPile (staple)) {
       for (unsigned int j (0); j < 11; ++j) {
-   randomizeCardsToPile (staple);
+         for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+            hands[(i - posServer) & 0x3].setTopCard (staple.removeTopCard ());
+
+            hands[i].setTopCard (staple.removeTopCard ());
             reserve[(i - posServer) & 1].push_back (&staple.removeTopCard ());
-   for (unsigned int j (0); j < 11; ++j) {
+      }
+            reserve[i].push_back (&staple.removeTopCard ());
+         hands[i].sort (compByNumberWithJokers);
       for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-         hands[i].setTopCard (staple.removeTopCard ());
+          hands[i].setStyle (ICardPile::QUITE_COMPRESSED);
+
+      dumped.setTopCard (staple.removeTopCard ());
+      hands[0].show ();
       gStatus.team1Buraco = gStatus.team2Buraco = 0x3;
-      for (unsigned int i (0); i < (sizeof (reserve) / sizeof (reserve[0])); ++i)
-         reserve[i].push_back (&staple.removeTopCard ());
+      status.pop ();
+      status.push (_("You can sort the cards in your hand with drag and drop or put"
+                     " them on the table - click card to dump to end turn"));
+
+      gStatus.pickUpPlayed = 0;
+
+      unfinishedMonoPiles[0] = unfinishedMonoPiles[1] = 0;
+      updateInfo ();
+      // Set random startplayer (if not already set)
+      hands[startPlayer ? startPlayer : 1].show ();
+   }
+      displayTurn (startPlayer++);
+      startPlayer &= 0x3;
+      makeNextMoves ();
    if (startPlayer)
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-       hands[i].sort (compByNumberWithJokers);
-
-   dumped.setTopCard (staple.removeTopCard ());
-   hands[0].show ();
-
-   status.pop ();
-   status.push (_("You can sort the cards in your hand with drag and drop or put"
-                  " them on the table - click card to dump to end turn"));
-
-   gStatus.startTurn = gStatus.startGame = 1;
-   gStatus.team1Buraco = gStatus.team2Buraco = 0x3;
-
-   points[0] = points[1] = 0;
-   updateInfo ();
-   hands[startPlayer ? startPlayer : 1].show ();
-   setNextPlayer (startPlayer);
-   displayTurn (startPlayer++);
-   startPlayer &= 0x3;
-   makeNextMoves ();
 //-----------------------------------------------------------------------------
 /// Remove cards from everything which can hold them
 //-----------------------------------------------------------------------------

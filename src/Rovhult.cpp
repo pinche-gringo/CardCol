@@ -142,10 +142,11 @@ void Rovhult::start () {
    Game::start ();
 
    setGameStatus (PREPLAYING);
-   randomizeCardsToPile (staple);
-   dealCards ();
+   if (randomizeCardsToPile (staple)) {
+      dealCards ();
 
-   pos1Play = pos2Play = -1U;
+      pos1Play = pos2Play = -1U;
+   }
 }
 
 /*--------------------------------------------------------------------------*/
