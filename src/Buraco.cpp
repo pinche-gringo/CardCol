@@ -476,7 +476,7 @@ int Buraco::executeMove (unsigned int player) {
             Check3 (bestPile < tablePiles[player & 1].size ());
             tablePiles[player & 1][bestPile]->getPosition4Card
                 (*playerPile[playerPile.size () - 1], pos, move);
-            tablePiles[player & 1][bestPile]->getPosition4Card 
+            return (bestPile << 16) + pos;
          }
       }
    }
@@ -1092,8 +1092,8 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
    TRACE1 ("Buraco::cardDroppedOnTable (...) - Inserting card " << *pValue
            << " in pile");
    Check3 (*pValue < hands[0].size ());
-   Check3 (*pValue < hands[0].size ());
 
+   // Check if all piles (except those to which card is dropped) are valid
    if (!humanPilesOK (iCard >> 8)) {
       context->drag_finish (false, false, time);
       Gtk::MessageDialog dlg (_("You need to fill up other piles first!"),
@@ -1128,7 +1128,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
                                  Gtk::MESSAGE_ERROR);
          Gtk::MessageDialog dlg ((_((hands[0].size () <= 5)
                                     ? N_("You can't end the game (there's no \"cerrado\")!")
-                                    : N_("Not enough cards to make new pile!"))).c_str (),
+                                    : N_("Not enough cards to make new pile!"))),
          dlg.run ();
          return;
       }
@@ -1405,7 +1405,7 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
       Check3 (*p);
       if ((*p)->size () == 7) {                         // Skip finished piles
          Check3 (!(*p)->is_visible ());
-      if ((*p)->size () == 7) {     // Skip hidden piles (as they are finished)
+         continue;
       }
       Check3 ((*p)->size () >= 3);
       Check3 ((*p)->size () < 7);
@@ -1427,10 +1427,14 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
              != -1)) {
 	 // Always play on a joker pile (don't bother checking for a second one)
 	 if ((*p)->getPotentialPoints () >= 1000) {
+            bestPile = p - tablePiles[player & 1].begin ();
+	    break;
+	 }
+         if ((size < (*p)->size ())
+             || ((size == (*p)->size ())
                  && (maxPoints < (*p)->getPotentialPoints ()))) {
             size = (*p)->size ();
-                 && (maxPoints < (*p)->getPotentialPoints ()))
-             || ((*p)->getPotentialPoints ()) >= 1000) {
+            maxPoints = (*p)->getPotentialPoints ();
             bestPile = p - tablePiles[player & 1].begin ();
          }
       }
@@ -1901,7 +1905,7 @@ int Buraco::cardDistance (const CardWidget& a, const CardWidget& b) {
 int Buraco::cardDistance (const CardWidget& a, const CardWidget& b, bool aceIsOne) {
    TRACE9 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
            << a << "<->" << b);
-   TRACE9 ("Buraco::cardDistance (const CardWidget&, const CardWidget&, bool) - "
+   // Special handling of jokers
    bool aJoker (isJoker (a));
    bool bJoker (isJoker (b));
    if (aJoker || bJoker)
@@ -1909,9 +1913,11 @@ int Buraco::cardDistance (const CardWidget& a, const CardWidget& b, bool aceIsOn
 
    if (a.colour () != b.colour ())
       return (a.number () == b.number ()) ? 0 : 99;
+
+   if (aceIsOne) {                        // Special handling of the ace like 1
+      TRACE9 ("Buraco::cardDistance (2x const CardWidget&, bool) - Ace");
       if ((a.number () == CardWidget::ACE)
-      TRACE9 ("Buraco::cardDistance (const CardWidget&, const CardWidget&, bool) - "
-              "Checking for Ace");
+      TRACE9 ("Buraco::cardDistance (2x const CardWidget&, bool) - Ace`");
          return -static_cast<int> (b.number ());
       else if ((b.number () == CardWidget::ACE)
                && (a.number () < CardWidget::EIGHT))
@@ -1920,7 +1926,7 @@ int Buraco::cardDistance (const CardWidget& a, const CardWidget& b, bool aceIsOn
 
    TRACE4 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
            "Distance: " << a.number () - b.number ());
-   TRACE9 ("Buraco::cardDistance (const CardWidget&, const CardWidget&, bool) - "
+   return a.number () - b.number ();
 }
 
 //----------------------------------------------------------------------------
