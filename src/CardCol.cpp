@@ -33,12 +33,15 @@
 
 #include <gtkmm/messagedialog.h>
 
+#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
+#include <Socket.h>
 
 #include <File.h>
 #include <INIFile.h>
 #include <PathSrch.h>
+#include <AttrParse.h>
 
 #include <XAbout.h>
 #include <XAttribute.h>
@@ -616,6 +619,8 @@ class CardgameAppl : public IVIOApplication {
       : IVIOApplication (argc, argv, lo) { }
    ~CardgameAppl () { }
 
+   static CardgameCollection::games convertToGameType (const char* pText);
+
  protected:
    virtual void readINIFile (const char* pFile);
    virtual bool handleOption (const char option);
@@ -644,8 +649,6 @@ class CardgameAppl : public IVIOApplication {
    const CardgameAppl& operator= (const CardgameAppl&);
 
    Options options;
-
-   static CardgameCollection::games convertToGameType (const char* pText);
 
    static const longOptions lo[];
 };
@@ -678,8 +681,9 @@ CardgameCollection::CardgameCollection (Options& opts)
    // Create controls
    addMenus (menuItems, sizeof (menuItems) / sizeof (menuItems[0]));
    showHelpMenu ();
-   Check3 (apMenus[NEW]);
+   Check3 (apMenus[NEW]); Check3 (apMenus[CONNECT]); Check3 (apMenus[END]);
    apMenus[NEW]->set_sensitive (false);
+   apMenus[CONNECT]->set_sensitive (false);
    apMenus[END]->set_sensitive (false);
 
    status.show ();
@@ -689,16 +693,24 @@ CardgameCollection::CardgameCollection (Options& opts)
 
    // Load cards in background
    try {
-      pThread = THRDAPPL::create (this, (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::loadCards,
+      pThread = THRDAPPL::create (this, &CardgameCollection::loadCards,
                                   NULL);
       TRACE9 ("CardgameCollection::CardgameCollection () - Thread-ID = " << pThread->getID ());
    }
    catch (std::string& e) {
       TRACE1 ("Error starting the thread to load the card images\n\t->"
               << e);
-      CardgameCollection::loadCards ();
+      CardgameCollection::loadCards (NULL);
    }
 
+   makePlayer ();
+}
+
+//----------------------------------------------------------------------------
+/// Creates the default player in the game; basing on the names read from the
+/// INI file
+//----------------------------------------------------------------------------
+void CardgameCollection::makePlayer () {
    Check3 (options.name.size ());
    std::vector<Glib::ustring>::iterator i (options.names.begin ());
    player.push_back (new Human (*i));
@@ -818,8 +830,20 @@ void CardgameCollection::command (int menu) {
             userWants2End ();
          }
       }
-      else
+      else {
+          if (pThread) {
+             Gtk::MessageDialog dlg (_("Stop waiting for the server to start the game and start a local one?"),
+                                     Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+             dlg.set_title (PACKAGE);
+             if (dlg.run () == Gtk::RESPONSE_YES) {
+                pThread->cancel ();
+                pThread = NULL;
+             }
+             else
+                break;
+          }
          startGame ();
+      }
       break;
 
    case END: {
@@ -834,7 +858,16 @@ void CardgameCollection::command (int menu) {
       break; }
 
    case CONNECT:
-      PlayerConnectDlg::perform (options.names, PORT, cmgr);
+      PlayerConnectDlg::perform (player, PORT, cmgr);
+      TRACE1 ("CardgameCollection::command (int) - " << cmgr.getMode ());
+      if (cmgr.getMode () == ConnectionMgr::CLIENT) {
+          status.pop ();
+          status.push (_("Waiting for the server to start the game ..."));
+          pThread = THRDAPPL::create
+              (this, &CardgameCollection::waitForServerMessage,
+               NULL);
+          pThread->allowCancelation ();
+      }
       break;
 
    case TWOPART:
@@ -968,7 +1001,7 @@ void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
    }
 
    pThread = THRDAPPL::create (this,
-                               (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::changeCards,
+                               &CardgameCollection::changeCards,
                                (void*)option);
    TRACE9 ("CardgameCollection::changeDecks (const ICarddeckSelectDlg) - Thread-ID = "
            << pThread->getID ());
@@ -977,9 +1010,9 @@ void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
 //-----------------------------------------------------------------------------
 /// Loads the cards (from xpm-files)
 /// \param opt: Actually a bit field! Option indicationg what to load
-/// \returns \c bool: Status; true when loading was OK, false otherwise
+/// \returns \c void*: Status; Not NULL when loading was OK, NULL otherwise
 //-----------------------------------------------------------------------------
-bool CardgameCollection::changeCards (void* opt) {
+void* CardgameCollection::changeCards (void* opt) {
    TRACE2 ("CardgameCollection::changeCards (void*) - Option: " << opt);
 
    // Cards need an realized (!) parent, so ensure that the window is already
@@ -1001,7 +1034,7 @@ bool CardgameCollection::changeCards (void* opt) {
            : cards.update ();
       gdk_threads_leave ();
       pThread = NULL;
-      return true;
+      return this;
    }
    catch (std::string& e) {
       gdk_threads_enter ();
@@ -1013,10 +1046,13 @@ bool CardgameCollection::changeCards (void* opt) {
       dlg->signal_response ().connect
           (bind (slot (*this, &CardgameCollection::closeProgram), dlg));
       dlg->show ();
+
+      Check3 (apMenus[NEW]); Check3 (apMenus[CONNECT]);
       apMenus[NEW]->set_sensitive (false);
+      apMenus[CONNECT]->set_sensitive (false);
       gdk_threads_leave ();
    }
-   return false;
+   return NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -1060,11 +1096,12 @@ void CardgameCollection::userWants2End () {
 }
 
 //-----------------------------------------------------------------------------
-/// Loads the cards (from xpm-files)
+/// Loads the cards (from png-files)
+/// \remarks Cards need an realized (!) parent, so make somehow sure, that the
+///      window already exists
 //-----------------------------------------------------------------------------
-void CardgameCollection::loadCards () {
-   // Cards need an realized (!) parent, so make somehow sure, that the window
-   // already exists
+void* CardgameCollection::loadCards (void*) {
+   // 
 
    gdk_threads_enter ();
    Check3 (is_realized ());
@@ -1076,11 +1113,13 @@ void CardgameCollection::loadCards () {
    dynamic_cast<Gtk::CheckMenuItem*> (apMenus[ROVHULT + options.type])->set_active ();
    gdk_threads_leave ();
 
-   bool rc (changeCards ((void*)-1));
-
+   void* rc (changeCards ((void*)-1));
    if (rc) {
       gdk_threads_enter ();
+      Check3 (apMenus[NEW]); Check3 (apMenus[CONNECT]);
       apMenus[NEW]->set_sensitive (true);
+      apMenus[CONNECT]->set_sensitive (true);
+
       status.pop ();
       status.push (_("Start a new game with Ctrl+N (or Game -> New)"));
       gdk_threads_leave ();
@@ -1101,12 +1140,16 @@ void CardgameCollection::gameEvents (unsigned int status) {
    switch (status) {
    case Game::PLAYING:
       Check3 (apMenus[END]);
+      Check3 (apMenus[CONNECT]);
       apMenus[END]->set_sensitive (true);
+      apMenus[CONNECT]->set_sensitive (false);
       break;
 
    case Game::STOPPED:
       Check3 (apMenus[END]);
+      Check3 (apMenus[CONNECT]);
       apMenus[END]->set_sensitive (false);
+      apMenus[CONNECT]->set_sensitive (true);
 
       if (restart == 1)
          // (Re)start the (new) game, when the event queue is empty (and
@@ -1120,6 +1163,46 @@ void CardgameCollection::gameEvents (unsigned int status) {
       break;
    }
 }
+
+//----------------------------------------------------------------------------
+/// Waits for the server to start the game
+//----------------------------------------------------------------------------
+void* CardgameCollection::waitForServerMessage (void*) {
+   std::string input;
+   cmgr.getSocket ()->read (input);
+   TRACE7 ("CardgameCollection::waitForServerMessage (void*) - " << input);
+   gdk_threads_enter ();
+   status.pop ();
+   gdk_threads_leave ();
+
+   std::string game;
+   AttributeParse ap;
+   ATTRIBUTE (ap, std::string, game, "Game");
+   try {
+      ap.assignValues (input);
+      cmgr.getSocket ()->write ("Error=0");
+
+      games type (CardgameAppl::convertToGameType (game.c_str ()));
+      if (type != NONE) {
+         options.type = type;
+         gdk_threads_enter ();
+         Glib::signal_idle  ().connect 
+             (bind_return (slot (*this, &CardgameCollection::startGame), false));
+         gdk_threads_leave ();
+      }
+   }
+   catch (std::string& error) {
+      std::string msg ("Error=98;Msg=\"" + error);
+      msg += '"';
+      cmgr.getSocket ()->write (msg);
+
+      gdk_threads_enter ();
+      status.push ("Received invalid message from server; continue waiting ... ");
+      gdk_threads_leave ();
+   }
+   pThread = NULL;
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -1218,6 +1301,8 @@ bool CardgameAppl::handleOption (const char option) {
 /// \returns \c Type of game as understood by the CardgameCollection
 //-----------------------------------------------------------------------------
 CardgameCollection::games CardgameAppl::convertToGameType (const char* pText) {
+   TRACE9 ("CardgameAppl::convertToGameType (const char*) - " << pText);
+
    static struct {
       const char* pText;
       CardgameCollection::games value;
@@ -1232,8 +1317,11 @@ CardgameCollection::games CardgameAppl::convertToGameType (const char* pText) {
                   { "3", CardgameCollection::GBURACO } };
 
    for (unsigned int i (0); i < (sizeof (values) / sizeof (values[0])); ++i)
-      if (!strcmp (values[i].pText, pText))
+      if (!strcmp (values[i].pText, pText)) {
+         TRACE9 ("CardgameAppl::convertToGameType (const char*) - Result:  "
+                 << values[i].value);
          return values[i].value;
+      }
 
    return CardgameCollection::NONE;
 }
@@ -1247,12 +1335,13 @@ void CardgameAppl::readINIFile (const char* pFile) {
    TRACE5 ("CardgameAppl::readINIFile (const char*) - " << pFile);
    Check3 (pFile);
 
-   options.names.push_back (_("Human"));
-   options.names.push_back (_("Player 1"));
-   options.names.push_back (_("Player 2"));
-   options.names.push_back (_("Player 3"));
-
-   options.pNameINIFile = pFile;
+   if (options.names.empty ()) {
+      options.names.push_back (_("Human"));
+      options.names.push_back (_("Player 1"));
+      options.names.push_back (_("Player 2"));
+      options.names.push_back (_("Player 3"));
+      options.pNameINIFile = pFile;
+   }
 
    try {
       INIFILE (pFile);
