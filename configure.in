@@ -5,7 +5,7 @@ AC_REVISION($Revision$)
 AC_INIT()
 
 MAJOR_VERSION=0
-MINOR_VERSION=4
+MINOR_VERSION=5
 MICRO_VERSION=00
 RELEASE=$MAJOR_VERSION.$MINOR_VERSION
 VERSION=$RELEASE.$MICRO_VERSION
@@ -13,6 +13,9 @@ AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
                    [Define to the release of the program])
 AC_SUBST(VERSION)
 AC_SUBST(RELEASE)
+
+AC_DEFINE_UNQUOTED(PROTOCOLL, "1", [Version of the communication protocoll])
+AC_DEFINE_UNQUOTED(VARIANT, "0", [Variant of the verstion of the communication protocoll])
 
 LIBRELEASE=$RELEASE
 AC_SUBST(LIBRELEASE)
