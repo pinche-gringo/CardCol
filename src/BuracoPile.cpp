@@ -150,7 +150,10 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
 
    // Joker played on a pile without joker: Valid
    if (Buraco::isJoker (card) && ((status.posFirst > 6) || (status.posJoker > 6))) {
-      pos = (status.type == NUMBER) ? 1 : 0;
+      pos = (status.type == NUMBER) ? 1
+          : (((status.posFirst < 7)
+              && (operator[] (status.posFirst)->number () == CardWidget::ACE))
+             ? (status.posLast + 1) : 0);
       return true;
    }
 
@@ -183,9 +186,9 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
                  == static_cast<int> (status.posJoker))) {
             if (status.posJoker)
                 move = ((((status.posJoker > status.posFirst)
-                          ? operator[] (status.posFirst) ->number ()
+                          ? operator[] (status.posFirst)->number ()
                           : card.number ()) == CardWidget::ACE)
-                        ? status.posLast : 0);
+                        ? (status.posLast + 1): 0);
             pos = status.posJoker;
             if (!move)
                ++pos;
