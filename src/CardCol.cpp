@@ -1249,7 +1249,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
       apMenus[END]->set_sensitive (false);
 #ifdef HAVE_LIBPTHREAD
       Check3 (apMenus[CONNECT]);
-      apMenus[CONNECT]->set_sensitive (false);
+      apMenus[CONNECT]->set_sensitive (true);
 #endif
 
       if (restart == 1) {
@@ -1391,10 +1391,13 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
    }
    else if (cmd == "Error") {
       if (param != "0") {
-         cmd = message.getNextNode ('=');
-         cmd = ((cmd == "Msg")
-                ? message.getNextNode (';')
-                : static_cast<std::string> (_("Unspecified error")));
+         cmd.clear ();
+         YGP::AttributeParse ap;
+         ATTRIBUTE (ap, std::string, param, "Error");
+         ATTRIBUTE (ap, std::string, cmd, "Msg");
+
+         if (cmd.empty ())
+            cmd = static_cast<std::string> (_("Unspecified error"));
 
          Glib::ustring err (_("%1 send error %2\n\n%3"));
          err.replace (err.find ("%1"), 2, 
@@ -1402,7 +1405,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
                        ? _("The server")
                        : aPlayer[player]->getName ()));
          err.replace (err.find ("%2"), 2, param);
-         err.replace (err.find ("%3"), 2, cmd);
+         err.replace (err.find ("%3"), 2, _(cmd.c_str ()));
 
          Gtk::MessageDialog* dlg (new Gtk::MessageDialog (err, Gtk::MESSAGE_ERROR));
          dlg->set_title (PACKAGE);
@@ -1456,6 +1459,10 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
          }
       }
       catch (std::string& e) { }
+
+      Glib::ustring message (_("Error processing command `%1'!\n\n%2"));
+      message.replace (message.find ("%1"), 2, msg);
+      message.replace (message.find ("%2"), 2, _(error.c_str ()));
 
       Gtk::MessageDialog* dlg (new Gtk::MessageDialog (error, Gtk::MESSAGE_ERROR));
       dlg->set_title (PACKAGE);
