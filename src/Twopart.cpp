@@ -284,7 +284,10 @@ void Twopart::cardSelected (unsigned int player, unsigned int pos) {
    Check3 (pos <= players[player].hand.numberOfCards ());
    Check3 (gameStatus () >= PLAYING);
 
-   setNextPlayer (executeMove (player, findStartOfSerie (player, pos), pos));
+   setNextPlayer (executeMove (player, 
+                               ((gameStatus () == PLAYING2)
+                                ? findStartOfSerie (player, pos) : pos),
+                               pos));
    makeNextMoves ();
 }
 
@@ -488,7 +491,7 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
       TRACE5 ("Twopart::findPos2Play (unsigned int) - First try: " << start);
 
       Check3 (pTrump);
-      if ((start == -1)
+      if ((start == (unsigned int)-1)
           || (played.numberOfCards ()
               && (played.getTopCard ().color ()
                   != players[player].hand.at (start).color ()))) {
@@ -503,7 +506,7 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
                end = findEndOfSerie (player, 0);
             else
                return ((start == players[player].hand.numberOfCards ())
-                       ? -1 : (int)start);
+                       ? -1 : (int)(end = start));
          }
          else
             return -1;
@@ -511,6 +514,7 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
       else
          // Card was found; now search for last card to play (only if not trump
          // or only trump left)
+         end = start;
          if (!start
              || (players[player].hand.at (start).color () != pTrump->color ()))
             end = findEndOfSerie (player, start);
@@ -549,7 +553,8 @@ unsigned int Twopart::findSmallestCard (unsigned int player) const {
 
          cSerie = (endPos - i);
          nrMin = card.number ();
-         pos = endPos;
+         pos = i;
+         i = endPos - 1;
       }
    }
 
