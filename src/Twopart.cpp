@@ -1182,21 +1182,24 @@ ICardPile& Twopart::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// Handles the messages the server might send for the twopart cardgame
 /// \param player: ID of player sending the message
 /// \param message: Message received from the server
+/// \returns bool: True, if message has completey processed
 //----------------------------------------------------------------------------
-void Twopart::handleMessage (unsigned int player, const char* message) {
+bool Twopart::handleMessage (unsigned int player, const char* message) {
    TRACE1 ("Twopart::handleMessage (unsigned int player, const char*) - "
            << message << " (" << player << ')');
     
    Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
-   Game::handleMessage (player, message);
+   bool rc (Game::handleMessage (player, message));
    if (cmd == "ActPlayer") {
       TRACE1 ("Twopart::handleMessage (unsigned int player, const char*) - "
               "Next player: " << currentPlayer ());
       startPlayer = currentPlayer ();
       makeNextMoves ();
+      return true;
    }
+   return rc;
 }
 
 //----------------------------------------------------------------------------
