@@ -45,7 +45,6 @@ class Game : public Gtk::Table {
  public:
    /// Stati of the game
    enum { NONE = 0,                        ///< Class created; game not started
-          TERMINATED,                         //< Game is going to be destroyed
           INITIALIZING,          ///< Initialization phase (dealing cards, ...)
           STOPPED,                                     ///< Game has been ended
           TOSTOP,        ///< Game should be ended (but can't be at the moment)
@@ -94,6 +93,12 @@ class Game : public Gtk::Table {
    //@{
    virtual bool enableHuman ();
    bool makeComputerMove ();
+   //@}
+
+   /// \name Methods to make the game load/save before dealing
+   //@{
+   void setCardOrder (const char* order) { cardOrder = order; data = cardOrder.data (); }
+   const char* getCardOrder () const { return cardOrder.data (); }
    //@}
 
  protected:
@@ -175,6 +180,8 @@ class Game : public Gtk::Table {
    std::vector<SigC::Connection> wonCards;     // Connections to show won cards
    ICardPile*                    pWonPile;
    Gtk::Menu*                    pMenuPopSort;
+
+   std::string cardOrder;
 };
 
 
