@@ -1,0 +1,168 @@
+ <!-- -*-HTML-*- -->
+<!-- $Id$ -->
+
+<!--
+  Anti-Copyright (A) 2003 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//DE">
+
+<html>
+  <head>
+    <title>Buraco - Canasta mit lateinamerikanischen Einschlag</title>
+    <meta name="description" content="Documentation of the Buraco cardgame">
+    <meta name="keywords" content="Documentation, Docu, Buraco, game, card, cardgame">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2003-06-22">
+    <meta name="DC.Rights" content="Anticopyright (A) 2003, distributed under the GNU Free Documentation License">
+  </head>
+
+  <body>
+    <h1 align="center">Buraco</h1>
+    <hr size=2>
+
+    <p>Buraco stammt aus meiner Zeit in Venezuela. Es ist ähnlich wie Canasta
+      oder Romme in Europa; allerdings etwas schneller zu Ende, Dank der
+      "Buracos" (Reservekarten, die man aufnimmt, sobald einer des Teams keine
+      Karten mehr hat).</p>
+
+    <p>Kurz zusammengefa&szlig;t geht es darum, mit Hilfe seines Partners
+      Stapel von "zusammenpassenden" Karten abzulegen und und so alle seine
+      Karten loszuwerden.  Zusammenpassend bedeutet, da&szlig; entweder die
+      Nummer (unabh&auml;ngig von der Farbe) oder die Farbe gleich ist, und
+      die Nummern in einer fortlaufenden Serie sind.</p>
+
+    <p>Um diese Karten allerdings wirklich ablegen zu k&ouml;nnen, mu&szlig;
+      der Spieler mindestens 3 dieser Karten haben; beziehungsweise 2 davon,
+      die mit einem Joker oder einer (beliebigf&auml;rbigen) 2 erg&auml;zt
+      werden.</p>
+
+    <p>Jeder Spieler startet mit 11 Karten in der Hand. Am Beginn seines Zuges
+      mu&szlig; er entweder eine Karte vom Stapel aufnehmen oder er kann den
+      gesamten Stapel der abgeworfenen Karten aufheben, wenn er ein zur
+      obersten Karte passendes Paar (allerdings ohne Joker oder 2)
+      besitzt. Als Ausnahme dazu kann der das Spiel startende Spieler die
+      Karte dieses Stapels aufnehmen, auch wenn er kein dazu passend Paar
+      besitzt.</p>
+
+    <p>Dannach kann er Karten ablegen (mit Ziehen und Ablegen - drag and drop
+        <a href="Buraco.html.de#Note1"><sup>1</sup></a>) (wenn er will - eine
+        m&ouml;gliche Taktik ist auch, die Karten in der hand zu halten, um so
+        eventuell den Stapel der abgeworfenen Karten aufnehmen zu
+        k&ouml;nnen). Um einen neuen Stapel ablegen zu k&ouml;nnen, mu&szlig;
+        er - wie bereits erw&auml;hnt - mindestens eine Serie von 3 gleichen
+        Karten haben. Oder er kann (auch einzelne) "zusammenpassende" Karten
+        (nach den obigen Regeln) zu bereits bestehenden Stapeln
+        hinzuf&uuml;gen.</p>
+
+    <p>Kann/will der Spieler keine Karten ablegen, mu&szlig; er eine abwerfen
+      (durch anklicken) und der n&auml;chste Spieler setzt (im Uhrzeigersinn)
+      fort.</p>
+
+    <p>Weitere Regeln sind:</p>
+    <ul>
+      <li>Jeder abgelegte Stapel darf nur einen Joker (oder 2'er) enthalten -
+        au&szlig;er, wenn es ein Stapel von Jokern (und/oder 2'ern ist). Dabei
+        nennt man "cerrados" (= geschlossener Stapel) ohne Joker oder 2'er
+        <em>sauber</em> und solche mit <em>schmutzig</em>. Das Spiel kann nur
+        beendet werden, wenn das Team mindestens einen dieser "cerrados"
+        besitzt.</li>
+
+      <li>Wird zu einem Stapel eine siebente Karte hinzugef&uuml;gt, wird
+        dieser geschlossen und vom Tisch genommen.</li>
+
+      <li>Hat ein Spieler keine Karten (au&szlig;er Joker oder 2'er) mehr,
+        nimmt er den "Buraco" auf (weitere 11 Karten eines voher zur Seite
+        gelegten Reservestapels (ein Stapel pro Team)). Danach kann er normal
+        fortsetzen (d.h., er ist noch immer am Zug, wenn er noch keine Karte
+        abgeworfen hat).</li>
+
+      <li>Gibt es keinen "Buraco"  mehr und hat das Team noch keinen
+        <em>cerrado</em>, kann ein Spieler nicht seine letzte Karte
+        abwerfen.</li>
+
+      <li>In einem Stapel befindliche Joker oder 2'er k&ouml;nnen verschoben,
+        aber nicht wieder aufgenommen werden. Das bedeutet: Hat man
+        beispielsweise eine Reihe von &hearts; 5, 6 und Joker, kann man den
+        Joker nach unten verschieben und so einen &hearts; 3 anlegen, aber man
+        kann nicht ein &hearts; 7 ablegen und daf&uuml;r den Joker in seine
+        Hand aufnehmen (allerdings kann man den 7'er ablegen und der Joker
+        wird zum 8'er oder 4'er).</li>
+    </ul>
+
+    <p>Ist das Spiel beendet, werden die Punkte gez&auml;hlt. Jeder "cerrado"
+      ohne Joker oder 2'er z&auml;hlt 400 Punkte (sonst 200); au&szlig;er der
+      der Asse - diese bringen 500 beziehungsweise 300 Punkte. Ein "cerrado"
+      aus Jokern und 2'er sind 1.000 Punkte. Aber <b>Achtung</b>: Wird ein ein
+      solcher Stapel angefangen, aber nicht geschlossen, bringt er 1.000
+      Minuspunkte!</p>
+
+    <p>Weitere (jeweils) 100 Punkte gibt es f&uuml;r das Aufnehmen des Buraco
+      und das Beenden des Spiels.</p>
+
+    <p>Abschlie&szlig;end werden die Punkte der Karten ber&uuml;cksichtigt:
+      Die Karten am Tisch positiv und die in der Hand negativ. Ein Joker
+      z&auml;hlt 50 Punkte, ein 2'er 25, ein As 20, Karten bis zur 7 bringen 5
+      Punkte und die restlichen dar&uuml;ber 10.</p>
+
+    <p>Das Spiel endet, sobald ein Team mehr als 2.000 Punkte hat.</p>
+
+    <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
+
+    <h2>Anmerkungen zum Layout</h2>
+    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+      unten):</p>
+
+    <ul>
+      <li>Den Reservestapel: Ein Haufen von (verdeckten) Karten, von dem
+        neue Karten aufgenommen werden. Wird die Mauszeiger darauf
+        positioniert, erscheint ein kleines Fenster, das &uuml;ber die
+        Anzahl der &uuml;brigen Karten informiert.</li>
+      <li>Die von den Spieler abgeworfenen Karten. Auch dieser Staple zeigt
+        die Anzahl der Karten, wenn der Mauszeiger darauf positioniert
+        wird.</li>
+      <li>Die Karten des Spielers. Anfangs sortiert nach Nummern, aber mit
+        Ziehen und Ablegen (drag und drop)<a
+        href="Buraco.html.de#Note1"><sup>1</sup></a> sortierbar.</li>
+      <li>Die Stapel am Tisch von Team 1. Zu diese Karten k&ouml;nn mit Ziehen
+        und Ablegen (drag und drop)<a
+        href="Buraco.html.de#Note1"><sup>1</sup></a> weitere Karten
+        hinzugef&uuml;gt werden.</li>
+      <li>Die Stapel am Tisch von Team 2.</li>
+      <li>In der letzten Reihe sind die Karten des jeweils aktiven
+        Computer-Spieler 2.</li>
+    </ul>
+    
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      Ziehen und Ablegen bedeutet, eine Karte mit der <em>rechten</em> (oder
+      mittleren) Maustaste anzuklicken, diese Taste festzuhalten un dann das
+      Objekt (die Karte, in unserem Fall) zu seinem Ziel zu ziehen. Das Ende
+      dieser Aktion wird durch Loslassen der Maustaste signalisiert.</p>
+
+    <hr size=3 noshade>
+    <address>
+      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+    </address>
+    <!-- Created: Thu Jul  4 16:36:50 PET 2002 -->
+    <!-- hhmts start -->
+Last modified: Mon Jun 23 11:45:32 PET 2003
+<!-- hhmts end -->
+    - $Revision$
+  </body>
+</html>
