@@ -25,7 +25,8 @@ class CardWidget;
 class CardImages;
 
 
-// Class to hold the cards used in a game
+/**Class to hold the cards used in a game
+*/
 class CardSet {
  public:
    CardSet () { }
@@ -37,6 +38,7 @@ class CardSet {
    unsigned int size () const { return cards_.size (); }
 
    void shuffle ();
+   void set (unsigned int pos, unsigned int nrCard);
 
    void clear ();
    void addPacket (const CardImages& decks);

@@ -25,8 +25,10 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <stdlib.h>
+#include <cstdlib>
 
+#define CHECK 9
+#define TRACELEVEL 2
 #include <Check.h>
 #include <Trace_.h>
 
@@ -36,19 +38,19 @@
 #include "CardSet.h"
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Destructor
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Destructor
+//-----------------------------------------------------------------------------
 CardSet::~CardSet () {
    TRACE9 ("CardSet::~CardSet ()");
    clear ();
 }
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Adds a set of cards (with images specified by decks) to set
-//Parameters: decks: Class holding the images to add
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Adds a set of cards (with images specified by decks) to set
+/// \param decks: Class holding the images to add
+//-----------------------------------------------------------------------------
 void CardSet::addPacket (const CardImages& decks) {
    TRACE9 ("CardSet::addPacket (const CardImages&)");
 
@@ -60,11 +62,11 @@ void CardSet::addPacket (const CardImages& decks) {
 
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shuffles the cards in the deck
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Shuffles the cards in the deck
+//-----------------------------------------------------------------------------
 void CardSet::shuffle () {
-   TRACE1 ("CardSet::shuffle ()");
+   TRACE2 ("CardSet::shuffle ()");
 
    unsigned int nr;
    for (int i (size ()); i > 0;) {
@@ -74,10 +76,30 @@ void CardSet::shuffle () {
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Retrieves the specified card
-//Returns   : CardWidget&: Reference to CardWidget
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Sets the specified card in the passed slot of the set
+/// \param pos: Slot (position) of the card to set
+/// \param card: Card to swap
+/// \pre The \c card must not be in a position before \c pos.
+//-----------------------------------------------------------------------------
+void CardSet::set (unsigned int pos, unsigned int card) {
+   TRACE2 ("CardSet::set (unsigned int, unsigned int) - [" << pos << "] = " << card);
+   Check1 (card < cards_.size ());
+
+   for (std::vector<CardWidget*>::iterator i (cards_.begin () + pos);
+        i != cards_.end (); ++i)
+      if ((*i)->id () == card) {
+         std::vector<CardWidget*>::iterator t (cards_.begin () + pos);
+         std::swap (*t, *i);
+         return;
+       }
+   Check3 (0);
+}
+
+//-----------------------------------------------------------------------------
+/// Retrieves the specified card
+/// \returns \c CardWidget&: Reference to CardWidget
+//-----------------------------------------------------------------------------
 CardWidget& CardSet::getCard (unsigned int nr) const {
    TRACE3 ("CardSet::getCard (unsigned int) - " << nr);
    Check3 (nr < size ()); Check3 (cards_[nr]);
@@ -85,9 +107,9 @@ CardWidget& CardSet::getCard (unsigned int nr) const {
    return *cards_[nr];
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Actualizes the card set (after changes of the images)
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Actualizes the card set (after changes of the images)
+//-----------------------------------------------------------------------------
 void CardSet::update () const {
    TRACE3 ("CardSet::update () const");
 
@@ -96,9 +118,9 @@ void CardSet::update () const {
       (*i)->update ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Removes all cards from the set
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Removes all cards from the set
+//-----------------------------------------------------------------------------
 void CardSet::clear () {
    for (std::vector<CardWidget*>::iterator i (cards_.begin ());
         i != cards_.end (); ++i)
