@@ -34,6 +34,8 @@ class ICardPile;
 // Class to select the card decks to use
 class Game : public Gtk::Table {
  public:
+   enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, LAST };
+
    Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
          unsigned int rows, unsigned int columns);
    virtual ~Game ();
@@ -41,16 +43,18 @@ class Game : public Gtk::Table {
    // Managing
    virtual void start ();
    virtual void stop ();
-   void end (bool restart = false) { reStart = restart; statGame = TOSTOP; }
+   virtual void end (bool startNew);
    virtual void playOpen (bool) { }
+   virtual void control (unsigned int status) const { }
 
    // Status handling
    bool isRunning () const { return statGame >= PLAYING; }
-   virtual bool canBeStopped () const { return true; }
+   virtual bool canBeStopped () const { return !actPlayer; }
+
+   unsigned int gameStatus () const { return statGame; }
+   void setGameStatus (unsigned int newStatus);
 
  protected:
-   enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, LAST };
-
    virtual int enableActPlayer ();
    virtual void enablePlayer (unsigned int player);
    virtual void disableLastPlayer ();
@@ -68,9 +72,6 @@ class Game : public Gtk::Table {
    static void movePile (ICardPile& dest, ICardPile& source,
                          unsigned int start = 0);
 
-   unsigned int statGame;
-   bool reStart;
-
    Gtk::Statusbar& status;
    CardSet& cards;
 
@@ -79,7 +80,10 @@ class Game : public Gtk::Table {
  private:
    int makeComputerMove ();
 
+   unsigned int statGame;
+
    int actPlayer;                   // Player who is in turn (needed for timer)
+   bool restart;
 };
 
 #endif
