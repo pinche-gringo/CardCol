@@ -43,7 +43,7 @@ class ICarddeckSelectDlg;
 // Class to handle the Rovhult-cardgame
 class CardgameCollection : public XApplication {
  public:
-   typedef enum { NONE = -1, GROVHULT = 0, GTWOPART, GHEARTS, GBURAZNO, GLAST } games;
+   typedef enum { NONE = -1, GROVHULT = 0, GTWOPART, GHEARTS, GBURACO, GLAST } games;
 
    // Manager functions
    CardgameCollection (Options& opts);
@@ -56,7 +56,7 @@ class CardgameCollection : public XApplication {
 
  private:
    // IDs for menus
-   enum { NEW = LAST, END, EXIT, DEBUG, ROVHULT, TWOPART, HEARTS, BURAZNO,
+   enum { NEW = LAST, END, EXIT, DEBUG, ROVHULT, TWOPART, HEARTS, BURACO,
           CHGDECKS, CHGNAMES, SAVESET };
 
    // Protected manager functions
@@ -75,7 +75,7 @@ class CardgameCollection : public XApplication {
 
    void changeCards (void* opt);
    void loadCards ();
-   void userWants2End (int input);
+   void userWants2End ();
    void startGame ();
 
    void changeDecks (const ICarddeckSelectDlg& dialog);
