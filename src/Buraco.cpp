@@ -540,9 +540,6 @@ void Buraco::clean () {
       reserve[i].clear ();
 
    Game::clean ();
-
-   delete pScoreDlg;
-   pScoreDlg = NULL;
 }
 
 //-----------------------------------------------------------------------------
