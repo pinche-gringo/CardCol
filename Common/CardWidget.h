@@ -22,8 +22,7 @@
 #include <gdk--/pixmap.h>
 #include <gtk--/button.h>
 
-
-class CardImages;
+#include <CardImgs.h>
 
 
 // Class to display a card on the screen
@@ -38,11 +37,13 @@ class CardWidget : public Gtk::Button {
    void setInvisible ()  { setVisible (false); }
 
    typedef enum { CLUBS = 0, DIAMONDS, HEARTS, SPADES } COLORS;
-   typedef enum { ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
+   typedef enum { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
                   JACK, QUEEN, KING, ACE } NUMBERS;
 
-   COLORS color () const { transColor[nrCard % 4]; }
-   NUMBERS number () const { (52 - nrCard) >> 2; }
+   unsigned int id () const { return nrCard; }
+   COLORS color () const { return transColor[nrCard % 4]; }
+   NUMBERS number () const {
+      return static_cast <NUMBERS> ((deck.numberOfCards () - 1 - nrCard) >> 2); }
 
  private:
    CardWidget ();
