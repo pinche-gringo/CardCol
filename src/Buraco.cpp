@@ -487,7 +487,7 @@ int Buraco::executeMove (unsigned int player) {
                                                               &cardDistance));
       if (static_cast<unsigned int> (p - playerPile.begin ()) == i)
          p = playerPile.getFittingCard (*playerPile[i], ++p, &cardDistance);
-      if ((p - playerPile.begin ()) == i)
+      if (p == playerPile.end ())
          break;
    }
 
@@ -1116,7 +1116,7 @@ bool Buraco::humanPilesOK (unsigned int except) const {
             ? pileHasFittingPair (hands[0])
             : pileHasFittingPair (hands[0], moved, acceptCards == -1U))) {
                                     ? N_("You can't end the game (there's no \"cerrado\")!")
-         Gtk::MessageDialog dlg (_("There are no cards to make three of a kind!"),
+         Gtk::MessageDialog dlg (_("There are no cards to make a valid new pile!"),
          dlg.run ();
          return;
       }
