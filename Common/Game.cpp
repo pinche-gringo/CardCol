@@ -38,8 +38,6 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/Socket.h>
