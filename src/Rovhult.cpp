@@ -435,7 +435,7 @@ void RovhultAppl::finishedExchange () {
 //Parameters: void*: Not really a pointer, but the number of the player
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::threadedEnablePlayer (void* player) {
-   Check1 (player);
+   Check1 (((unsigned int)player) <= NUM_PLAYERS);
    TRACE2 ("RovhultAppl::threadedEnablePlayer (void*)" - (unsigned int)player);
    assert ((unsigned int)player <= NUM_PLAYERS);
 
@@ -453,29 +453,36 @@ void RovhultAppl::enablePlayer (unsigned int player) {
 
    if (hands[player].numberOfCards ()) {
       TRACE2 ("RovhultAppl::enablePlayer (unsigned int) - Hand of player "
-           << player << " has " << hands[player].numberOfCards () << " cards");
+           << player << " has " << hands[player].numberOfCards () << " card(s)");
 
-      for (int i (hands[player].numberOfCards ()); i;)
+      for (int i (hands[player].numberOfCards ()); i;) {
+         TRACE8 ("RovhultAppl::enablePlayer (unsigned int) - Card " << i - 1);
          activeCards.push_back
             (hands[player].at (--i).clicked.connect_after
              (bind (slot (this, &RovhultAppl::handSelected), player, i)));
+      }
    }
    else {
       TRACE2 ("RovhultAppl::enablePlayer (unsigned int) - Enable reserve of player "
               << player);
 
-      for (int i (0); i < 3; ++i) {
-         if (reserve[player][i].numberOfCards ())
+      for (int i (0); i < 3; ++i)
+         if (reserve[player][i].numberOfCards ()) {
+            TRACE8 ("RovhultAppl::enablePlayer (unsigned int) - Pile " << i << " has "
+                    << reserve[player][i].numberOfCards () << " card(s)");
             activeCards.push_back
                (reserve[player][i].getTopCard ().clicked.connect_after
                 (bind (slot (this, &RovhultAppl::pileSelected), player, i)));
-      }
+         }
    }
 
-   if (played.numberOfCards ())
+   if (played.numberOfCards ()) {
+      TRACE2 ("RovhultAppl::enablePlayer (unsigned int) - Enable last played card for "
+              "player " << player);
       activeCards.push_back (played.getTopCard ().clicked.connect_after
                              (bind (slot (this, &RovhultAppl::takeCards),
-                                    nextAvailablePlayer (player))));
+                                    player)));
+   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -550,6 +557,7 @@ void RovhultAppl::doPileSelected (void* playerPile) {
    TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - " 
            << player << '/' << pile);
 
+   assert (reserve[player][pile].numberOfCards ());
    if (reserve[player][pile].numberOfCards () == 1)
       sleep (1);
 
@@ -721,7 +729,7 @@ void RovhultAppl::takeCards (unsigned int player) {
 
    TRACE2 ("RovhultAppl::takeCards (unsigned int) - " << player);
    disableLastPlayer ();
-   executeMove ((player - 1) & 0x3, CardWidget::UNREACHABLE);
+   executeMove (player, CardWidget::UNREACHABLE);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -745,7 +753,8 @@ bool RovhultAppl::playerCanContinue (unsigned int player, CardWidget::NUMBERS ca
    for (int i (0); i < 3; ++i)
       if (reserve[player][i].numberOfCards () > 1) {
          TRACE5 ("RovhultAppl::playerCanContinue (unsigned int, CardWidget::NUMBERS) const"
-                 " - Checking pile " << i);
+                 " - Checking pile " << i << "; " << reserve[player][i].numberOfCards ()
+                 << " cards");
          hasNoVisibleCards = false;
 
          CardWidget::NUMBERS nr (reserve[player][i].getTopCard ().number ());
@@ -757,8 +766,8 @@ bool RovhultAppl::playerCanContinue (unsigned int player, CardWidget::NUMBERS ca
          default:
             TRACE7 ("RovhultAppl::playerCanContinue (unsigned int, CardWidget::NUMBERS) const"
                     " - Value of card: " << nr);
-            if (((card == CardWidget::SEVEN) && (nr <= CardWidget::SEVEN))
-                || ((card != CardWidget::SEVEN) && (nr >= card)))
+            if ((card == CardWidget::SEVEN)
+                ? (nr <= CardWidget::SEVEN) : (nr >= card))
                return true;
          } // end-switch card
       } // endif pile contains cards
@@ -773,7 +782,7 @@ bool RovhultAppl::playerCanContinue (unsigned int player, CardWidget::NUMBERS ca
 /*--------------------------------------------------------------------------*/
 bool RovhultAppl::playerHandCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const {
    TRACE3 ("RovhultAppl::playerHandCanContinue (const ICardPile&, CardWidget::NUMBERS) const"
-           << " - Card: " << card);
+           << " - Card: " << card << " in " << pile.numberOfCards () << " cards");
    Check3 (pile.numberOfCards ());
 
    // Check if first/last is smaller/bigger then passed one
@@ -843,7 +852,8 @@ bool RovhultAppl::clearPlayedIf4Equal () {
 //Parameters: nrLooser: Nr. of player getting all played cards
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::movePlayedCardsToLooser (unsigned int nrLooser) {
-   TRACE8 ("Rovhult::movePlayedCardsToLooser () - " << played.numberOfCards ());
+   TRACE8 ("Rovhult::movePlayedCardsToLooser () - " << nrLooser << " gets "
+           << played.numberOfCards () << " cards");
    Check3 (nrLooser < NUM_PLAYERS);
 
    while (played.numberOfCards ())
