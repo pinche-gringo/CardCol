@@ -59,6 +59,7 @@ Common options for configure
   --disable-nls                 # Disable national language support
   --enable-checks[=level]	# Adds asserts and Checks
   --enable-debug[=level]	# Sets tracelevel & generation of debuginfo
+  --enable-saving               # Games can be saved and loaded (for testing)
   --with-carddeck-dir=[DIR]     # Path to the carddecks
 
 If you're using `csh' on an old version of System V, you might need to type
