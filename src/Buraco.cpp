@@ -30,6 +30,7 @@
 
 #include <gtk/gtkdnd.h>
 
+#include <gtkmm/scrolledwindow.h>
 #include <gtkmm/messagedialog.h>
 
 #include <Check.h>
@@ -63,6 +64,13 @@ unsigned int Buraco::ENDPOINTS (2000);
 
    for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
        scrlTable[i] = new Gtk::ScrolledWindow ();
+       scrlTable[i]->add (boxTeam[i]);
+       scrlTable[i]->set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+       scrlTable[i]->show ();
+   }
+
+   int width (cards.getCard (0).getImageWidth ());
+   int height (cards.getCard (0).getImageHeight ());
 
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Init common staples");
@@ -72,8 +80,8 @@ unsigned int Buraco::ENDPOINTS (2000);
    boxTeam[0].pack_end (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
    boxTeam[0].set_size_request (-1, height + 5 * 15);
    boxTeam[1].set_size_request (-1, height + 5 * 15);
-   boxTeam[0].set_size_request (width, height + 5 * 15);
-   boxTeam[1].set_size_request (width, height + 5 * 15);
+
+   for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       attach (hands[i], (i << 2) - 4, (i << 2) - 2, 4, 5,
               Gtk::EXPAND, Gtk::SHRINK, 5, 5);
       attach (hands[i], 0, 10, 3, 4, Gtk::EXPAND, Gtk::SHRINK, 0);
@@ -88,8 +96,8 @@ unsigned int Buraco::ENDPOINTS (2000);
    attach (hands[0], 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1);
    attach (*scrlTable[0], 0, 10, 2, 3, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
-   attach (boxTeam[0], 0, 10, 1, 2);
-   attach (boxTeam[1], 0, 10, 2, 3);
+   attach (*scrlTable[0], 0, 10, 1, 2);
+   attach (*scrlTable[1], 0, 10, 2, 3);
            "std::vector<Glib::ustring>&) - Show widgets");
    newPile.show ();
    staple.show ();
@@ -122,6 +130,9 @@ Buraco::~Buraco () {
       delete *i;
 
        delete *i;
+      delete scrlTable[i];
+}
+       delete scrlTable;
 
 //-----------------------------------------------------------------------------
 /// Removes a cerrado from the table
@@ -244,9 +255,10 @@ void Buraco::cleanCerrado (unsigned int player) {
       (player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco = 0x3;
    if (gStatus.startTurn) {
       gStatus.startTurn = 0;
+
+
       ICardPile& playerPile (hands[player]);
           ? (isJoker (dumpedCard)
-      Check3 (dumped.size ());
       // Check if there are equal cards as the last dumped one
       int start (playerPile.find (dumped.getTopCard ().number ()));
       int end ((start == -1) ? -1 : playerPile.findLastEqual (start));
@@ -264,11 +276,14 @@ void Buraco::cleanCerrado (unsigned int player) {
             movePile (playerPile, dumped);
          playerPile.sort (compByNumberWithJokers);
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-      else
+            // Send played card to all clients (if any)
+         dumped.getTopCard ().show ();
+
          playerPile.insertSorted
              (((gStatus.startGame) && isJoker (dumped.getTopCard ()))
               ? dumped.removeTopCard () : staple.removeTopCard (),
               compByNumberWithJokers);
+      gStatus.startGame = 0;
 
       gStatus.startTurn = gStatus.startGame = 0;
    if (target == -1U)
@@ -503,8 +518,12 @@ void Buraco::start () {
       for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
           hands[i].setStyle (ICardPile::QUITE_COMPRESSED);
 
-      dumped.setTopCard (staple.removeTopCard ());
+      CardWidget& dumpedCard (staple.removeTopCard ());
+      if (startPlayer)
+          dumpedCard.hide ();
+      dumped.setTopCard (dumpedCard);
       hands[0].show ();
+      hands[1].setShowOption (ICardPile::SHOWBACK);
       gStatus.team1Buraco = gStatus.team2Buraco = 0x3;
       status.pop ();
       status.push (_("You can sort the cards in your hand with drag and drop or put"
@@ -1311,9 +1330,9 @@ void Buraco::updateInfo () {
    strInfo.replace (strInfo.find ("%1"), 2, YGP::ANumeric::toString (points[0]));
    strInfo.replace (strInfo.find ("%2"), 2, (reserve[0].empty () ? _("N") : _("Y")));
    strInfo.replace (strInfo.find ("%1"), 2, ANumeric::toString (points[0]));
-   strInfo.replace (strInfo.find ("%2"), 2, 1, (reserve[0].empty () ? 'N' : 'Y'));
+   strInfo.replace (strInfo.find ("%4"), 2, (reserve[1].empty () ? _("N") : _("Y")));
    strInfo.replace (strInfo.find ("%3"), 2, ANumeric::toString (points[1]));
-   strInfo.replace (strInfo.find ("%4"), 2, 1, (reserve[1].empty () ? 'N' : 'Y'));
+   strInfo.replace (strInfo.find ("%4"), 2, (reserve[0].empty () ? _("N") : _("Y")));
 }
    info.pop ();
    info.push (strInfo);
@@ -1491,7 +1510,10 @@ void Buraco::endGame () {
            p != tablePiles[i].end (); ++p) {
       for (std::vector<CardVPile*>::const_iterator p (tablePiles[i].begin ());
          Check3 ((*p)->size () > 2);
+
          (*p)->show ();
+         // Substract 1000 points for every started cerrado of monos
+         if ((*p)->getPoints () < 0)
             monoPile += 1000;
          if (((*p)->size () < 7) && (containsOnlyJoker (**p)))
             monoPile += 1000;
@@ -1525,6 +1547,16 @@ void Buraco::endGame () {
    }
 
    // Move cards of partners to first player and show them
+   for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
+      hands[i].setStyle (ICardPile::COMPRESSED);
+   if (hands[2].size ())
+      movePile (hands[0], hands[2]);
+   if (hands[3].size ())
+      movePile (hands[1], hands[3]);
+   hands[2].hide ();
+   hands[3].hide ();
+   hands[1].show ();
+   hands[1].setShowOption (ICardPile::SHOWFACE);
    status.push (stat);
 
    setGameStatus (STOPPED);

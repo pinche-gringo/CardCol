@@ -32,6 +32,10 @@
 #include <Game.h>
 
 
+namespace Gtk {
+   class ScrolledWindow;
+}
+
 class ScoreDlg;
 
 
@@ -125,8 +129,9 @@ class Buraco : public Game {
    std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
    int points[NUM_PLAYERS >> 1];                       // Number of points/team
 
-   std::vector <Player*> nameTeams;
+   Gtk::ScrolledWindow* scrlTable[NUM_PLAYERS >> 1];   // Scroll-ctrls for table
 
+   std::vector <Player*> nameTeams;
    unsigned int startPlayer;
 
    Gtk::Statusbar info;
