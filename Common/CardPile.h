@@ -110,7 +110,7 @@ class ICardPile : public std::vector<CardWidget*> {
    int findFirstEqual (unsigned int pos) const;
    int find (CardWidget::NUMBERS nr, unsigned int start = 0) const;
    int find (CardWidget::COLOURS colour, unsigned int start = 0) const;
-   int find (unsigned int id) const;
+   int find (unsigned int id, unsigned int start = 0) const;
 
    bool exists (CardWidget::NUMBERS nr, unsigned int start = 0) const {
       return find (nr, start) != -1; }

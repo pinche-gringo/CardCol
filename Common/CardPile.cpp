@@ -447,10 +447,12 @@ int ICardPile::find (CardWidget::COLOURS colour, unsigned int start) const {
 //-----------------------------------------------------------------------------
 /// Searches for the first card having the passed id
 /// \param id: ID of card to search for
+/// \param id: ID of card to search for
 /// \returns \c int: Offset of found card or -1
 //-----------------------------------------------------------------------------
-int ICardPile::find (unsigned int id) const {
-   for (const_iterator i (begin ()); i != end (); ++i)
+int ICardPile::find (unsigned int id, unsigned int start) const {
+   Check1 (start < size ());
+   for (const_iterator i (begin () + start); i != end (); ++i)
       if ((*i)->id () == id)
          return i - begin ();
    return -1;
