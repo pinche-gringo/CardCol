@@ -1,3 +1,11 @@
+Overview of changes in version 0.2.00:
+
+  - Combined the games in one application
+  - Security check if user terminates while a game is running
+  - Playing of computer improved (both games)
+  - Computer-player moves cards to the end of the staple before playing
+  - Dialog to select carddecks improved (adapts size to show all decks)
+
 Overview of changes in version 0.1.03:
 
   - Twopart got computer-player
