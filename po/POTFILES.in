@@ -1,0 +1,6 @@
+# $Id$
+#
+# List of source files containing translatable strings.
+#     
+# Package source files
+Rovhult/Rovhult.cpp

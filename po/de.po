@@ -1,0 +1,54 @@
+# Deutsche Übersetzung der Kartenspiele
+# Anticopyright (A) 2002 Markus Schwab
+# Markus Schwab <g17m0@lycos.com>, 2002.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Cardgames V0.1 ($Revision$)\n"
+"POT-Creation-Date: 2002-04-27 23:11-0500\n"
+"PO-Revision-Date: 2002-04-28 00:15-0500\n"
+"Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
+"Language-Team: ??? <???@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8-bit\n"
+
+#: Rovhult/Rovhult.cpp:186
+msgid "_Game"
+msgstr "_Spiel"
+
+#: Rovhult/Rovhult.cpp:186
+msgid "<alt>G"
+msgstr "<alt>s"
+
+#: Rovhult/Rovhult.cpp:187
+msgid "_New"
+msgstr "_Neu"
+
+#: Rovhult/Rovhult.cpp:187
+msgid "<ctl>N"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:189
+msgid "E_xit"
+msgstr "_Beenden"
+
+#: Rovhult/Rovhult.cpp:189
+msgid "<ctl>Q"
+msgstr "<ctl>x"
+
+#: Rovhult/Rovhult.cpp:190
+msgid "_Help"
+msgstr "_Hilfe"
+
+#: Rovhult/Rovhult.cpp:190
+msgid "<alt>H"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:191
+msgid "_About..."
+msgstr "_Über"
+
+#: Rovhult/Rovhult.cpp:191
+msgid "<alt>a"
+msgstr "<alt>i"
