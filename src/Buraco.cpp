@@ -1785,9 +1785,9 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
 /// \return bool: True, if the remaining cards of the player can make a
 ///        cerrado for this pile
 /// \remarks: - The player must have only two cards; the pile 5
-///        cerrado for this pile 
-/// \remarks: - The player must have only two cards; the pile 5 
-//---------------------------------------------------------------------------- 
+//----------------------------------------------------------------------------
+bool Buraco::canClosePile (unsigned int player, unsigned int pile) const {
+   TRACE7 ("Buraco::canClosepile (2x unsigned int) - Player "
            << player << " closes pile " << pile);
    Check1 (tablePiles[player & 1].size () > pile);
 
@@ -1812,11 +1812,14 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
           }
 	  copy.insert (*new CardWidget (*hands[player][i]), pos);
 
+          if (copy.getPosition4Card (*hands[player][!i], pos, move)) {
              isOK = true;
              break;
           }
 	  else
 	     delete &copy.remove (pos);
+       }
+   }
 
    // Free the copy
    for (BuracoPile::const_iterator i (copy.begin ()); i != copy.end (); ++i)
