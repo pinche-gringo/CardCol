@@ -27,12 +27,12 @@ class CardSet {
  public:
    typedef enum { NORMAL } CardSets;
 
-   CardSet (CardSets set = NORMAL) throw (std::string);
+   CardSet () { }
    ~CardSet ();
 
    CardWidget* getCard (unsigned int nr) const;
 
-   void load (CardSets set = NORMAL) throw (std::string);
+   void load (const Gdk_Window& parent, CardSets set = NORMAL) throw (std::string);
 
    unsigned int getCardNumber () const { return CARDS; }
 

@@ -25,7 +25,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#define DEBUG 0
+#define DEBUG 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -36,20 +36,10 @@
 
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Constructor; adds all controls to the dialog
-//Parameters: set: Specifier for type of cardset
-/*--------------------------------------------------------------------------*/
-CardSet::CardSet (CardSets set) throw (std::string) : cards (CARDS) {
-   TRACE3 ("CardSet::CardSet (CardSets) - " << (int)set);
-
-   load (set);
-}
-
-/*--------------------------------------------------------------------------*/
 //Purpose   : Destructor
 /*--------------------------------------------------------------------------*/
 CardSet::~CardSet () {
-   TRACE9 ("CardSet::~CardSet");
+   TRACE9 ("CardSet::~CardSet ()");
 
    for (int i = CARDS; i > 0;) {
       delete cards[--i];
@@ -70,9 +60,10 @@ CardWidget* CardSet::getCard (unsigned int nr) const {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Constructor; adds all controls to the dialog
-//Parameters: set: Specifier for type of cardset
+//Parameters: parent: Parent window
+//            set: Specifier for type of cardset
 /*--------------------------------------------------------------------------*/
-void CardSet::load (CardSets set = NORMAL) throw (std::string) {
+void CardSet::load (const Gdk_Window& parent, CardSets set = NORMAL) throw (std::string) {
    std::string file (PKGDIR);
    if (file.empty ())
       file = ".";
@@ -86,6 +77,6 @@ void CardSet::load (CardSets set = NORMAL) throw (std::string) {
       nr = i + 1;
       temp = file + nr.toUnformatedString () + ".xpm";
 
-      cards[i] = new CardWidget (temp);
+      cards.push_back (new CardWidget (parent, temp));
    }
 }
