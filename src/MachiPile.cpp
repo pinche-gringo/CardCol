@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Anticopyright (A) 2003
+//COPYRIGHT   : Copyright (C) 2003 - 2004
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -182,11 +182,15 @@ int MachiPile::cardDistance (const CardWidget& a, const CardWidget& b,
       TRACE9 ("MachiPile::cardDistance (const CardWidget&, const CardWidget&, ACEFLAG) - "
                "Checking for Ace");
      if (a.number () == CardWidget::ACE) {
-        if ((aceIsOne == ONE) || (b.number () < CardWidget::FOUR))
+        if ((aceIsOne == ONE)
+            || ((b.number () < CardWidget::FOUR)
+                && (b.number () != CardWidget::ACE)))
            return -static_cast<int> (b.number ()) - 1;
      }
      else if (b.number () == CardWidget::ACE)
-        if ((aceIsOne == ONE) || (a.number () < CardWidget::FOUR))
+        if ((aceIsOne == ONE)
+            || ((a.number () < CardWidget::FOUR)
+                && (a.number () != CardWidget::ACE)))
            return static_cast<int> (a.number ()) + 1;
    }
 
@@ -220,7 +224,8 @@ void MachiPile::checkIntegrity () throw (Glib::ustring) {
    for (const_iterator i (begin ()); (i + 1) != end (); ++i)
       if ((type == COLOUR)
           ? (((*i)->colour () != (*(i + 1))->colour ())
-             || (cardDistance (**(i + 1), **i) != 1))
+             || (cardDistance (**(i + 1), **i,
+                               (i == begin ()) ? ONE : ACE) != 1))
           : ((*i)->number () != (*(i + 1))->number ())) {
          Glib::ustring error (_("Card %1 does not fit!"));
          error.replace (error.find ("%1"), 2,
