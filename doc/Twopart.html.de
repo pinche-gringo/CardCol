@@ -1,0 +1,132 @@
+ <!-- -*-HTML-*- -->
+<!-- $Id$ -->
+
+<!--
+  Anti-Copyright (A) 2003 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//DE">
+
+<html>
+  <head>
+    <title>Twopart - A norwegian cardgame (in two parts)</title>
+    <meta name="description" content="Dokumentation des Twopart Kartenspiels">
+    <meta name="keywords" content="documentation, docu, dokumentation, doku, Twopart, game, card, cardgame, spiel, karte, kartenspiel">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2003-02-10">
+    <meta name="DC.Rights" content="Anticopyright (A) 2003, distributed under the GNU Free Documentation License">
+  </head>
+
+  <body>
+    <h1 align="center">Twopart</h1>
+    <hr size=2>
+
+    <p>Twopart ist a Kartenspiel, das ich von vier Norwegern gelernt habe.
+      Ich kann mich nicht mal erinnern, ob sie mir den norwegischen Namen
+      genannt haben; wenn dem so w&auml;re, habe ich ihn schneller vergessen,
+      als George W. Bush ben&ouml;tigt, seinen n&auml;chsten Bl&ouml;dsinn
+      zu sagen (oder einen Krieg anzufangen).</p>
+
+    <p>Das Spiel ist in zwei Teile unterteilt (daher auch der - nicht sehr
+      einfallsreiche - Name).</p>
+
+    <p>Den ersten Teil startet jeder Spieler mit drei Karten in der Hand,
+      die sie im Uhrzeigersinn spielen.</p>
+
+    <p>Nachdem jeder Spieler (mit &uuml;brigen Karten) seine Zug
+      gemacht hat, bekommt derjenige der die h&ouml;chste Karte
+      (unabh&auml;ngig von der Farbe) gespielt hat, den ganzen
+      gespielten Stapel. Wurden mehrere Karten mit der gleichen Nummer
+      (nicht unbedingt die h&ouml;chste) gespielt, spielen die Spieler
+      dieser Karten in einer weiteren Runde (nach den gleichen Regeln)
+      um den ganzen Stapel, bis ein eindeutiger Gewinner
+      feststeht. Sollten gleiche Karten vorhanden sein und einer deren
+      Spieler keine Karten mehr haben, ist er nicht in der n&auml;chsten
+      Runde dabei und lediglich die anderen setzen fort (beziehungsweise
+      der einzig &uuml;brige bekommt den Stapel). Sollten alle Spieler
+      mit gleichen Karten keine weiteren mehr haben, bekommt derjenige,
+      der die erste (gleiche) Karte gespielt hat, den ganzen Stapel.</p>
+
+    <p>Der Gewinner des Stapels startet die n&auml;chste Runde; au&szlig;er,
+      wenn er keine Karten mehr &uuml;brig hat, dann startet der n&auml;chste
+      Spieler (nach ihm), der noch Karten hat.</p>
+
+    <p>Nach jedem Zug mu&szlig; der Spieler eine Karte vom Reservestapel
+      aufnehmen. Die Farbe der letzten Karte dieses Stapels bestimmt die
+      Trumpfarbe f&uuml;r den zweiten Teil; diese Karte wird allerdings
+      erst am Ende der Runde angezeigt.</p>
+
+    <p>Der erste Teil endet, wenn keiner der Spieler Karten
+      &uuml;brighat.  Wenn ein Spieler dabei keine Karten gesammelt hat,
+      bekommt er alle niedrigen Karten bis (inklusive) der 5 von den
+      anderen; gibt es zwei oder mehr Ungl&uuml;ckliche, teilen sie sich
+      diese (mehr oder weniger zuf&auml;llig).</p>
+
+    <p>Im zweiten Teil versuchen die Spieler, die gesammelten Karten wieder
+      loszuwerden.</p>
+
+    <p>Eine Karte (oder eine Serie von Karten mit der gleichen Nummer,
+      wenn die &auml;&szlig;erst rechte ausgew&auml;hlt wird) kann gespielt
+      werden, wenn sie gr&ouml;&szlig;er als die zuletzt gespielte ist und
+      die gleiche Farbe hat. Weiters kann jederzeit eine Karte der
+      Trumpffarbe gespielt werden (nat&uuml;rlich eine h&ouml;here, wenn
+      die letzte gespielte Karte ebenfalls ein Trump ist).</p>
+
+    <p>Wird so eine Runde vollendet wurde (es gibt soviele Karten am
+      Tisch wie es Spieler mit Karten gab, als die erste Karte abgelegt
+      wurde), werden die gespielten Karten entfernt und der letzte
+      Spieler startet eine neue Runde (wenn er noch Karten hat, sonst
+      der n&aauml;chste mit Karten.</p>
+
+    <p>Wenn ein Spieler nicht fortsetzen kann, mu&szlig; er alle Karten, die
+      der letzte Spieler abgelegt hat, aufnehmen.</p>
+
+    <p>Die letzte Person, die noch Karten &uuml;brig hat, hat verloren.</p>
+
+    <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
+
+    <h2>Anmerkungen zum Layout</h2>
+    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+      unten):</p>
+
+    <ul>
+      <li>Den Reservestapel: Ein Haufen von (verdeckten) Karten, von dem
+        neue Karten aufgenommen werden. Wird die Mauszeiger darauf
+        positioniert, erscheint ein kleines Fenster, das &uuml;ber die
+        Nummer der &uuml;brigen Karten informiert. Im zweiten Teil wird hier
+        &uuml;ber die Trumpf-Farbe informiert.</li>
+      <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb, darunter die in
+        seiner Hand. Die gewonnenen Karten k&ouml;nnen durch Anklicken betrachtet
+        werden; ein Rechts-Klick erm&ouml;glicht zu&auml;tzlich sortieren.</li>
+      <li>In der n&auml;chsten Reihe befinden sich die Karten der Computer-Spieler
+        3 und 1. Zwischen ihnen ist der Stapel der gespielten Karten (der
+        ebenfalls die Nummer der gespielten Karten anzeigt, wenn der Mauszeiger
+        dar&uuml;ber positioniert wird)..</li>
+      <li>In der letzten Reihe sind die Karten von Computer-Spieler 2.</li>
+    </ul>
+
+    <hr size=2 noshade>
+    <address>
+      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+    </address>
+<!-- hhmts start -->
+Last modified: Mon Feb 10 23:00:38 PET 2003
+<!-- hhmts end -->
+          - $Revision$
+</body>
+</html>
