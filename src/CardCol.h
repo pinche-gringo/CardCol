@@ -81,13 +81,15 @@ class CardgameCollection : public XGP::XApplication {
 
    void changeDecks (const ICarddeckSelectDlg& dialog);
    void changePlayernames ();
-
-   void initCommunication ();
    void makePlayer ();
+
+#ifdef HAVE_LIBPTHREAD
+   void initCommunication ();
    void* waitForMessages (void*);
-   int handleGlobalMessage (unsigned int player, char* msg) throw (std::string);
-   bool handleMessage (unsigned int player, char* msg);
+   int handleGlobalMessage (unsigned int player, const std::string& msg) throw (std::string);
+   bool handleMessage (unsigned int player, const std::string msg);
    bool showMessage (char* msg);
+#endif
 
    static XGP::XApplication::MenuEntry CardgameCollection::menuItems[];
 
