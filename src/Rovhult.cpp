@@ -287,8 +287,7 @@ void Rovhult::pileSelected (unsigned int player, unsigned int pile) {
    if (!cardValid (card.number ()))  { // If selected card is not valid: Return
       actPile.removeTopCard ();
       played.append (card);
-      setNextPlayer (executeMove (player, CardWidget::UNREACHABLE) > 0);
-      makeNextMoves ();
+      takeCards (player);
       return;
    }
 
@@ -506,10 +505,7 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 void Rovhult::takeCards (unsigned int player) {
    TRACE2 ("Rovhult::takeCards (unsigned int) - " << player);
 
-   movePlayedCardsToLooser (player);
-   executeMove (player, CardWidget::UNREACHABLE);
-   setNextPlayer (nextAvailablePlayer (player));
-
+   setNextPlayer (movePlayedCardsToLooser (player));
    makeNextMoves ();
 }
 
@@ -646,14 +642,19 @@ bool Rovhult::clearPlayedIf4Equal () {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Method to move the cards of the actual round to the winner
 //Parameters: nrLooser: Nr. of player getting all played cards
+//Returns   : unsigned int: Next player
 /*--------------------------------------------------------------------------*/
-void Rovhult::movePlayedCardsToLooser (unsigned int nrLooser) {
+unsigned int Rovhult::movePlayedCardsToLooser (unsigned int nrLooser) {
    TRACE8 ("Rovhult::movePlayedCardsToLooser () - Player " << nrLooser << " gets "
            << played.numberOfCards () << " cards");
    Check3 (nrLooser < NUM_PLAYERS);
 
    movePile (players[nrLooser].hand, played);
    players[nrLooser].hand.sortByNumber ();
+   std::string stat (_("Player %1 can't continue -> Takeing whole pile. "));
+   stat.replace (stat.find ("%1"), 2, (char)(nrLooser + '0'));
+   displayTurn (nrLooser =  nextAvailablePlayer (nrLooser), stat);
+   return nrLooser;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -985,10 +986,8 @@ int Rovhult::makeMove (unsigned int player) {
    if (pos2Play == -1U) {
       if (!playerCanContinue (player,
                               (played.numberOfCards ()
-                               ? played.getTopCard ().number () : CardWidget::TWO))) {
-         movePlayedCardsToLooser (player);
-         player = nextAvailablePlayer (player);
-      }
+                               ? played.getTopCard ().number () : CardWidget::TWO)))
+         player = movePlayedCardsToLooser (player);
       else
          showCards2Play (player);
    }
@@ -1038,16 +1037,19 @@ int Rovhult::makeMove (unsigned int player) {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Checks if there are only special cards up to the passed position
 //Parameters: pile: Pile to inspect
-//            pos: Upper position of cards to inspect
+//            start: Lower position of cards to inspect
+//            end: Upper position of cards to inspect
 //Returns   : bool: True, if there are only special cards
 /*--------------------------------------------------------------------------*/
-bool Rovhult::existOnlySpecialCards (const ICardPile& pile, unsigned int pos) const {
-   Check3 (pile.numberOfCards () > pos);
+bool Rovhult::existOnlySpecialCards (const ICardPile& pile, unsigned int start,
+                                     unsigned int end) const {
+   Check3 (start <= end);
+   Check3 (end < pile.numberOfCards ());
 
    do {
-      if (!isSpecialCard (pile.at (pos).number ()))
+      if (!isSpecialCard (pile.at (start).number ()))
          return false;
-   } while (pos--);
+   } while (++start <= end);
 
    TRACE9 ("Rovhult::existOnlySpecialCards (const ICardPile&, unsigned int) - Yes");
    return true;
@@ -1143,9 +1145,12 @@ int Rovhult::findCard2Play (unsigned int player, unsigned int& start,
             // The search of CardWidget does not know (and shall not know anything)
             // about the special meaning of tens, so skip them by yourself,
             // but use a TWO (if available) in case a TEN is/are the last card(s)
-            if (((start = skip (CardWidget::TEN, players[player].hand, start)) == -1U)
-                && (players[player].hand.at (0).number () == CardWidget::TWO))
-               start = 0;
+            if ((end = skip (CardWidget::TEN, players[player].hand, start)) == -1U) {
+               if (players[player].hand.at (0).number () == CardWidget::TWO)
+                  start = 0;
+            }
+            else
+               start = end;
 
          TRACE5 ("Rovhult::findCard2Play (unsigned int) -  Playing "
                  << players[player].hand.at (start) << " at pos " << start);
@@ -1164,10 +1169,15 @@ int Rovhult::findCard2Play (unsigned int player, unsigned int& start,
               << " cards)");
       Check3 (last < players[player].hand.numberOfCards ());
       end = (((numberOfEqualTopCards () + last - start) == 3)
-             || !start
-             || existOnlySpecialCards (players[player].hand, start - 1)
+             || ((start
+                  ? existOnlySpecialCards (players[player].hand, 0, start - 1) : 1)
+                 && ((last < (players[player].hand.numberOfCards () - 1))
+                     ? existOnlySpecialCards (players[player].hand, last + 1,
+                                              players[player].hand.numberOfCards () - 1)
+                     : 1))
              || ((!isSpecialCard (players[player].hand.at (start).number ()))
                  && ((last != (players[player].hand.numberOfCards () - 1))
+                     || !start
                      || (players[player].hand.at (start).number () < CardWidget::TEN))))
          ? last : start;
 
@@ -1251,18 +1261,19 @@ bool Rovhult::getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
       const ICardPile* pPile (&players[player].reserve[i]);
       if (pPile->numberOfCards ()) {
          CardWidget& card (pPile->getTopCard ());
-         if (card.showsFace ())
+         if (card.showsFace ()) {
+            if (isSpecialCard (card.number ()))
+                break;
+
             if (cardFound)
                max = card.number ();
             else {
                min = max = card.number ();
                cardFound = true;
             }
+         }
       }
    }
-
-   if (isSpecialCard (max))
-      max = CardWidget::ACE;
 
    TRACE5 ("Rovhult::getPileInfo (unsigned int, unsigned int&, unsigned int&)"
            " - Limits found: " << int (cardFound ? min : -1) << '/'
