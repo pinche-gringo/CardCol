@@ -124,5 +124,3 @@ Common options/targets for make
   - clean                       # Deletes the files created during the make
   - uninstall                   # Uninstalls (after you found out what crap
                                   this package actually contains)
-  - doc-install                 # Installs the documentation
-  - doc-uninstall               # Uninstalls the documentation
