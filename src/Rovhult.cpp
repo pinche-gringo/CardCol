@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 28.3.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2004
+//COPYRIGHT   : Copyright (C) 2002 - 2005
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -506,7 +506,7 @@ bool Rovhult::cardValid (CardWidget::NUMBERS nr, bool silent) const {
          }
          else
             if (nr < lastPlayed.number ())
-               error = _("Played card must be equal or bigger!");
+               error = _("The played card must be equal or bigger!");
 
          if (error.size ()) {
             if (!silent) {
