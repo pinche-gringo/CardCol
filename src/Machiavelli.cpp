@@ -33,8 +33,6 @@
 
 #include <gtkmm/statusbar.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -48,10 +46,7 @@
 #include <Player.h>
 #include <CardSet.h>
 #include <CardWidget.h>
-
-#if CHECK > 2
-#  include <ComputerPlayer.h>
-#endif
+#include <ComputerPlayer.h>
 
 #include "SigCExt.h"
 
@@ -720,7 +715,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       // Else check pile to use
       iPile = iCard >> 8;
 
-      // Ignore dnd from a pile to itselve
+      // Ignore dnd from a pile to itself
       if ((info == TABLE) && (iPile == nrpile)) {
          context->drag_finish (true, false, time);
          return;
@@ -738,6 +733,24 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
          dlg.run ();
          return;
       }
+
+      if (info == TABLE)
+         // Check if only cards from an edge are moved to a numbered pile
+         if ((pile->getType () == MachiPile::NUMBER)
+             || ((tablePiles[nrpile]->getType () != MachiPile::NUMBER)
+                 && !iCard)) {
+            if ((off != (src.size () - 1)) && off) {
+               context->drag_finish (true, false, time);
+               Gtk::MessageDialog dlg (_("Card is not on the edge of the origen - try splitting the origin first!"),
+                                       Gtk::MESSAGE_ERROR);
+               dlg.set_title (_("Invalid move"));
+               dlg.run ();
+               return;
+            }
+            // Also move only one card, if the target is a numbered pile
+            nr = 1;
+         }
+      nr = 1;
    }
    Check3 (pile);
 
@@ -758,14 +771,15 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
 
       msg << ";Target=" << (iPile << 16) + iCard;
       if (info ==TABLE)
-         msg << ";Now=1";;
+         msg << ";Now=1";
 
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
           ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
 
-   while (nr--) {
+
+   for (unsigned int i (1); i <= nr; i++) {
       TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Insert to: " << iPile
               << "; Pos: " << iCard);
       Check3 (iCard != -1U);
@@ -782,9 +796,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
          registerTableDND (iPile, iCard + 1, pile->size () - 1);
 
       moved = src[off];
-      iCard = pile->getPosition4Card (*moved);
-      if (iCard == -1U)
-         break;
+      iCard++;
    }
 
    // Check if game has been ended
@@ -862,6 +874,22 @@ MachiPile& Machiavelli::makeNewPile () {
    piles.add (*pile);
    tablePiles.push_back (pile);
    TRACE9 ("Machiavelli::makeNewPile () - Pile " << tablePiles.size ());
+   return *pile;
+}
+
+//-----------------------------------------------------------------------------
+/// Makes a new pile in a certain position
+/// \param pos: Position of pile on the table
+/// \returns MachiPile&: New created pile
+//-----------------------------------------------------------------------------
+MachiPile& Machiavelli::makeNewPile (unsigned int pos) {
+   TRACE9 ("Machiavelli::makeNewPile ()");
+
+   MachiPile* pile (new MachiPile ());
+   pile->show ();
+   Check3 (pos <= tablePiles.size ());
+   piles.insert (*pile, pos);
+   tablePiles.insert (tablePiles.begin () + pos, pile);
    return *pile;
 }
 
@@ -1340,13 +1368,8 @@ void Machiavelli::undoMove (unsigned int number) {
       undoValue move (undo.top ());
       undo.pop ();
 
-      if (move.create) {
-         MachiPile* pile (new MachiPile ());
-         pile->show ();
-         Check3 (move.srcPile <= tablePiles.size ());
-         piles.insert (*pile, move.srcPile);
-         tablePiles.insert (tablePiles.begin () + move.srcPile, pile);
-      }
+      if (move.create)
+         makeNewPile (move.srcPile);
 
       TRACE9 ("Machiavelli::undoMove (unsigned int) - Undo " << move.number
               << "; " << move.destPile << '/' << move.destPos << "-> "
@@ -1370,6 +1393,8 @@ void Machiavelli::undoMove (unsigned int number) {
          msg << "Move=" << move.destPile << ";From=" << move.destPos << ";To="
              << (move.destPos + move.number - 1) << ";Target=" << move.srcPile
              << ";At=" << move.srcPos;
+         if (move.create)
+            msg << ";Create=1";
          broadcastMessage (msg.str ());
       }
 
@@ -1421,9 +1446,10 @@ void Machiavelli::endGame (unsigned int looser) {
 }
 
 //----------------------------------------------------------------------------
-/// Returns the passed pile of the player
+/// Converts the pile-number to the actual pile
 /// \param player: Number of player
 /// \param pile: ID of the pile to return
+/// \returns ICardPile&: Pile corresponding to the passed number
 //----------------------------------------------------------------------------
 ICardPile& Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile) {
    Check1 (player < NUM_PLAYERS);
@@ -1524,35 +1550,49 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
    }
    else if (cmd == "Move") {
       YGP::AttributeParse ap;
-      unsigned int card1 (-1U), card2 (-1U), dest (-1U), src (-1U), destPos (0);
+      unsigned int card1 (-1U), card2 (-1U), dest (-1U), src (-1U),
+         destPos (0), create (0);
       ATTRIBUTE (ap, unsigned int, src, "Move");
       ATTRIBUTE (ap, unsigned int, card1, "From");
       ATTRIBUTE (ap, unsigned int, card2, "To");
       ATTRIBUTE (ap, unsigned int, dest, "Target");
       ATTRIBUTE (ap, unsigned int, destPos, "At");
+      ATTRIBUTE (ap, unsigned int, create, "Create");
       ap.assignValues (message);
-
-      if (src >= tablePiles.size ())
-         throw std::string ("Invalid source pile!");
-      ICardPile& srcPile (*tablePiles[src]);
-      if ((card2 < card1) || (card2 >= srcPile.size ()))
-         throw std::string ("Invalid cards!");
 
       if ((dest >= tablePiles.size ()) && (dest != 255))
          throw std::string ("Invalid destination pile!");
+      if (create) {
+         Check3 (dest != 255);
+         makeNewPile (dest);
+      }
       ICardPile& pile ((dest == 255) ? hands[player] : *tablePiles[dest]);
+      ICardPile* srcPile (NULL);
+      try {
+         if (destPos > pile.size ())
+            throw std::string ("Invalid position in destination pile!");
 
-      if (destPos >= pile.size ())
-         throw std::string ("Invalid position in destination pile!");
+         if (src >= tablePiles.size ())
+            throw std::string ("Invalid source pile!");
+          srcPile = tablePiles[src];
+         if ((card2 < card1) || (card2 >= srcPile->size ()))
+            throw std::string ("Invalid cards!");
+      }
+      catch (std::string& error) {
+         if (create)
+            removePile (dest);
+         throw error;
+      }
 
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
          broadcastMessage (message);
 
+      Check3 (srcPile);
       do {
-         pile.insert (srcPile.remove (card1), destPos++);
+         pile.insert (srcPile->remove (card1), destPos++);
       } while (card1 < card2--);
 
-      if (srcPile.empty ())
+      if (srcPile->empty ())
          removePile (src);
    }
    else {
