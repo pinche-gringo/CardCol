@@ -53,11 +53,11 @@ class Twopart : public XApplication {
 
    // Event-handling
    virtual void command (int menu);
-   void handSelected (unsigned int player, unsigned int iCard);
-   void wonSelected (unsigned int player, unsigned int iCard);
+   void cardSelected (unsigned int player, unsigned int iCard);
 
    // Helper functions
-   void movePlayedCardsToPlayer (unsigned int nrLooser);
+   void movePlayedCardsToPlayer (unsigned int nrPlayer);
+   bool moveSelectedCardToPlayed (unsigned int player, unsigned int iCard);
    void enablePlayer (unsigned int player);
    void disableLastPlayer ();
    int  findNextPlayer (unsigned int player);

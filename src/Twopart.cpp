@@ -366,8 +366,10 @@ Twopart::Twopart ()
    played.show ();
    tblTable.attach (played, 3, 11, 5, 8, 0, 0, 0, 5);
 
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.setShowOption (ICardPile::SHOWBACK);
+      players[i].hand.setShowOption (ICardPile::SHOWFACE);
+   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -483,17 +485,13 @@ void Twopart::enablePlayer (unsigned int player) {
    Check3 (statGame >= PLAYING);
 
    TRACE2 ("Twopart::enablePlayer (unsigned int) - player "
-           << player << " has "
-           << ((statGame == PLAYING) ? players[player].hand.numberOfCards ()
-               : players[player].won.numberOfCards ()) << " cards");
+           << player << " has " << players[player].hand.numberOfCards ()
+           << " cards");
 
-   for (int i ((statGame == PLAYING) ? players[player].hand.numberOfCards ()
-               : players[player].won.numberOfCards ()); i;)
+   for (int i (players[player].hand.numberOfCards ()); i;)
       activeCards.push_back
-         (((statGame == PLAYING) ? players[player].hand.at (--i)
-           : players[player].won.at (--i)).clicked.connect_after
-          (bind (slot (this, ((statGame == PLAYING) ? &Twopart::handSelected
-                              : &Twopart::wonSelected)), player, i)));
+         (players[player].hand.at (--i).clicked.connect_after
+          (bind (slot (this, (&Twopart::cardSelected)), player, i)));
 
    status.pop (1);
    std::string stat ( _("Turn of player %1"));
@@ -518,32 +516,80 @@ void Twopart::disableLastPlayer () {
 //Purpose   : Callback after clicking on a card in hand
 //Parameters: player: ID of player
 //            iCard: Offset of card in hand
+//Returns   : bool: Status of moving; true: Card could be moved; false else
 /*--------------------------------------------------------------------------*/
-void Twopart::handSelected (unsigned int player, unsigned int pos) {
+bool Twopart::moveSelectedCardToPlayed (unsigned int player, unsigned int pos) {
    Check3 (player <= NUM_PLAYERS);
    Check3 (pos <= players[player].hand.numberOfCards ());
 
-   CardWidget& card (players[player].hand.remove (pos));
-   TRACE3 ("Twopart::handSelected (unsigned int, unsinged int) - Player "
-           << player << "; Card at " << pos << " = " << card);
+   if (statGame == PLAYING) {
+      CardWidget& card (players[player].hand.remove (pos));
+      TRACE3 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int) - Player "
+              << player << "; Card at " << pos << " = " << card);
+      played.append (card);
 
-   played.append (card);
+      if (staple.numberOfCards ()) {
+         CardWidget& card (staple.removeShownTopCard ());
+         players[player].hand.insertSorted (card);
 
-   if (staple.numberOfCards ()) {
-      CardWidget& card (staple.removeShownTopCard ());
-      players[player].hand.insertSorted (card);
-
-      if (!staple.numberOfCards ()) {
-         pTrump = new CardWidget (card); Check3 (pTrump);
-         pTrump->show ();
-         staple.hide ();
-         tblTable.attach (*pTrump, 2, 3, 2, 3, 0, 0, 5, 5);
+         if (!staple.numberOfCards ()) {
+            pTrump = new CardWidget (card); Check3 (pTrump);
+            pTrump->show ();
+            staple.hide ();
+            tblTable.attach (*pTrump, 2, 3, 2, 3, 0, 0, 5, 5);
+         }
       }
    }
+   else {
+      CardWidget* card (&players[player].hand.at (pos));
+      unsigned int nr (card->number ());
+      CardWidget::COLORS  color (card->color ());
+      
+      // Perform validity-check in part 2: Card must have the same color and be
+      // bigger than the last played card
+      if ((statGame == PLAYING2)
+          && played.numberOfCards ()
+          && ((played.getTopCard ().color () != color)
+              || (played.getTopCard ().number () > nr))) {
+         XMessageBox::Show (_("Played card(s) must have the same color and must be "
+                              "bigger!"), PACKAGE " - Twopart",
+                            XMessageBox::ERROR);
+         return false;
+      }
+
+      played.append (players[player].hand.remove (pos));
+      TRACE3 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int) - Player "
+              << player << "; Card at " << pos << " = " << *card);
+
+      while (pos
+             && ((card = &players[player].hand.at (--pos)),
+                 (card->number ()) == (nr - 1))
+             && (card->color () == color)) {
+         TRACE3 ("Twopart::cardSelected (unsigned int, unsinged int) - Player "
+                 << player << "; Card at " << pos << " = " << *card);
+
+         nr = card->number ();
+         played.append (players[player].hand.remove (pos));
+      }
+   }
+   return true;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback after clicking on a card in hand
+//Parameters: player: ID of player
+//            iCard: Offset of card in hand
+/*--------------------------------------------------------------------------*/
+void Twopart::cardSelected (unsigned int player, unsigned int pos) {
+   Check3 (player <= NUM_PLAYERS);
+   Check3 (pos <= players[player].hand.numberOfCards ());
+
+   if (!moveSelectedCardToPlayed (player, pos))
+      return;
 
    // Check if every player still in game or has already played; end round if so
    // or calculate next player if not
-   TRACE7 ("Twopart::handSelected (unsigned int, unsigned int) - Players: "
+   TRACE7 ("Twopart::cardSelected (unsigned int, unsigned int) - Players: "
            << hex << bfPlayers);
    actPlayer = player;
    removePlayer (actPlayer);
@@ -559,6 +605,7 @@ void Twopart::handSelected (unsigned int player, unsigned int pos) {
 
       std::string str (_("First part ended; Part 2 starts player %1"));
       str.replace (str.find ("%1"), 2, (char)(actPlayer + '0'));
+
       status.pop (1);
       status.push (1, str);
 
@@ -569,35 +616,6 @@ void Twopart::handSelected (unsigned int player, unsigned int pos) {
       actPlayer = newPlayer;
       makeComputerMoves ();
       disableLastPlayer ();
-   }
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback after clicking on a card in won-pile
-//Parameters: player: ID of player
-//            iCard: Offset of card in pile
-/*--------------------------------------------------------------------------*/
-void Twopart::wonSelected (unsigned int player, unsigned int pos) {
-   Check3 (player <= NUM_PLAYERS);
-   Check3 (pos <= players[player].won.numberOfCards ());
-
-   CardWidget* card (&players[player].won.remove (pos));
-   played.append (*card);
-   unsigned int nr (card->number () + 1);
-   CardWidget::COLORS  color (card->color ());
-
-   TRACE3 ("Twopart::wonSelected (unsigned int, unsinged int) - Player "
-           << player << "; Card at " << pos << " = " << *card);
-
-   while (pos
-          && ((card = &players[player].won.at (--pos)),
-              (card->number ()) == (nr - 1))
-          && (card->color () == color)) {
-      TRACE3 ("Twopart::wonSelected (unsigned int, unsinged int) - Player "
-              << player << "; Card at " << pos << " = " << *card);
-
-      nr = card->number ();
-      played.append (players[player].won.remove (pos));
    }
 }
 
@@ -627,6 +645,13 @@ int Twopart::makeComputerMove () {
 int Twopart:: endRound () {
    TRACE8 ("Twopart::endRound ()");
    Check3 (!bfPlayers);
+
+   if (statGame == PLAYING2) {
+      played.clear ();
+      bfPlayers = (1 << NUM_PLAYERS) - 1;
+      removePlayersWithoutCards ();
+      return startPlayer = actPlayer;
+   }
 
    bfPlayers = bfOldPlayers;
    unsigned int cPlayers (0);
@@ -874,12 +899,8 @@ void Twopart::dealCards () {
 
    // Show cards on table: For all players put 3 cards in hand
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      for (unsigned int j (0); j < 3; ++j) {
-         // Put card into hand
-         CardWidget& card (staple.removeTopCard ());
-         card.showFace ();
-         players[i].hand.insertSorted (card);
-      }
+      for (unsigned int j (0); j < 3; ++j)
+         players[i].hand.insertSorted (staple.removeTopCard ());
 
    bfPlayers = bfOldPlayers = (1 << NUM_PLAYERS) - 1;
    enablePlayer (startPos = actPlayer = startPlayer = 0);
@@ -890,14 +911,43 @@ void Twopart::dealCards () {
 //Returns   : int: Value indicating if timer should continue
 /*--------------------------------------------------------------------------*/
 int Twopart::startPartTwoTimerFnc () {
+   TRACE8 ("Twopart::startPartTwoTimerFnc ()");
+   Check3 (!bfPlayers);
    statGame = PLAYING2;
+
+   startPlayer = 0;
+
+   unsigned int nrPlayers (0);
+   unsigned int victim (0);
+   // Check if there are players without cards
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+      if (!players[i].won.numberOfCards ()) {
+         TRACE5 ("Twopart::startPartTwoTimerFnc () - Player " << i << " has no cards");
+         bfPlayers |= 1 << i;
+         ++nrPlayers;
+      }
+
+   // Now move the cards from the played pile to the hand; if there are
+   // players without cards give them the cards up to 5
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      players[i].won.sortByColor ();
-      players[i].won.setStyle (ICardPile::COMPRESSED);
-      players[i].won.setShowOption (ICardPile::SHOWFACE);
+      for (unsigned int j (players[i].won.numberOfCards ()); j; --j) {
+         CardWidget& card (players[i].won.removeTopCard ());
+         TRACE9 ("Twopart::startPartTwoTimerFnc () - Moving cards " << card
+                 << " for player " << i);
+         if (bfPlayers) {
+            players[pos2Player (victim++)].hand.append (card);
+            victim &= nrPlayers;
+         }
+         else
+            players[i].hand.append (card);
+      }
+
+      players[i].hand.sortByColor ();
+      players[i].hand.setStyle (ICardPile::COMPRESSED);
    }
 
-   enablePlayer (actPlayer);
+   enablePlayer (startPlayer = actPlayer);
+   bfPlayers = (1 << NUM_PLAYERS) - 1;
 }
 
 
