@@ -91,9 +91,10 @@ class SgtMayor : public Game {
    CardWidget* pExchange;
    CardWidget* pTrump;
 
+   unsigned int bfColours;
+
    unsigned int startPlayer;
-   std::bitset<52> playedCards;
-   unsigned int playedColours[4];
+   std::bitset<13>playedCards[4];
    int diffTicks[NUM_PLAYERS];
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];

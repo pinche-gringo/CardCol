@@ -44,7 +44,7 @@
 #include "SgtMayor.h"
 
 
-const unsigned int SgtMayor::COLS_PLAYER[NUM_PLAYERS] = { 1, 5, 0 };
+const unsigned int SgtMayor::COLS_PLAYER[NUM_PLAYERS] = { 1, 4, 0 };
 const unsigned int SgtMayor::ROWS_PLAYER[NUM_PLAYERS] = { 1, 6, 6 };
 
 
@@ -73,25 +73,25 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardse
    changeNames (player);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].name.show ();
-      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 2 : 5),
+      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 3 : 5),
               ROWS_PLAYER[i] + 1, ROWS_PLAYER[i] + 2, Gtk::EXPAND,
               Gtk::SHRINK, 1, 2);
 
       players[i].neededTicks.show ();
       attach (players[i].neededTicks, COLS_PLAYER[i],
-              COLS_PLAYER[i] + (i ? 2 : 5), ROWS_PLAYER[i] + 2,
+              COLS_PLAYER[i] + (i ? 3 : 5), ROWS_PLAYER[i] + 2,
               ROWS_PLAYER[i] + 3, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
 
       players[i].won.show ();
-      attach (players[i].won, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 2 : 5),
+      attach (players[i].won, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 3 : 5),
               ROWS_PLAYER[i] - 1, ROWS_PLAYER[i], Gtk::EXPAND,
               Gtk::SHRINK, 1, 5);
 
       players[i].hand.show ();
-      attach (players[i].hand, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 2 : 5),
+      attach (players[i].hand, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 3 : 5),
               ROWS_PLAYER[i], ROWS_PLAYER[i] + 1, Gtk::EXPAND, Gtk::EXPAND, 5);
       TRACE9 ("SgtMayor::SgtMayor () - Attach at: " << COLS_PLAYER[i] << '/'
-              << COLS_PLAYER[i] + (i ? 2 : 5) << " - " << ROWS_PLAYER[i] << '/'
+              << COLS_PLAYER[i] + (i ? 3 : 5) << " - " << ROWS_PLAYER[i] << '/'
               << ROWS_PLAYER[i] + 1);
 
       players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::COMPRESSED);
@@ -166,8 +166,9 @@ void SgtMayor::start () {
       if ((diffTicks[0] > 5) || (diffTicks[1] > 5) || (diffTicks[2] > 5))
          memset (diffTicks, '\0', sizeof (diffTicks));
 
-      playedCards.reset ();
-      memset (playedColours, '\0', sizeof (playedColours));
+      for (unsigned int i (0); i < (sizeof (playedCards) / sizeof (playedCards[0])); ++i)
+	 playedCards[i].reset ();
+      bfColours = 0;
       makeExchange ();
    }
 }
@@ -255,12 +256,15 @@ void SgtMayor::cardSelected (unsigned int iCard) {
    if (played.size ()) {
       // The same colour must be played again (if available)
       CardWidget::COLOURS colour (played[0]->colour ());
-      if ((playColour != colour) && players[0].hand.exists (colour)) {
-         Gtk::MessageDialog dlg (_("Play a card with an equal colour as "
-                                   "the first played one!"), Gtk::MESSAGE_ERROR);
-         dlg.set_title (PACKAGE " - SgtMayor");
-         dlg.run ();
-         return;
+      if (playColour != colour) {
+	 if (players[0].hand.exists (colour)) {
+	    Gtk::MessageDialog dlg (_("Play a card with an equal colour as "
+				      "the first played one!"), Gtk::MESSAGE_ERROR);
+	    dlg.set_title (PACKAGE " - SgtMayor");
+	    dlg.run ();
+	    return;
+	 }
+	 bfColours |= (1 << played[0]->colour ());
       }
    }
 
@@ -415,60 +419,137 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
    TRACE8 ("SgtMayor::findPos2Play (unsigned int) - Player " << player);
 
    unsigned int pos (0);
+   ICardPile& pile (players[player].hand);
+   // Get the number of cards of each colour
+   unsigned int cColours[] = { 0, 0, 0, 0 };
+   unsigned int posColours[] = { -1U, -1U, -1U, -1U };
+   for (unsigned int i (0); i < (pile.size () - 1); ++i) {
+      ++cColours[pile[i]->colour ()];
+      if (pile[i]->colour () != pile[i + 1]->colour ())
+	 posColours[pile[i]->colour ()] = i;
+   }
+   posColours[pile[pile.size () - 1]->colour ()] = pile.size () - 1;
+   ++cColours[pile[pile.size () - 1]->colour ()];
+   TRACE8 ("SgtMayor::findPos2Play (unsigned int) - Nr: " << cColours[0] << '/'
+	   << cColours[1] << '/' << cColours[2] << '/' << cColours[3]);
+   TRACE9 ("SgtMayor::findPos2Play (unsigned int) - Pos: " << (int)posColours[0] << '/'
+	   << (int)posColours[1] << '/' << (int)posColours[2] << '/' << (int)posColours[3]);
+
    switch (played.size ()) {
-   case 0:
-      // Try to find a highest card
-      while (pos < players[player].hand.size ()) {
-         pos = players[player].hand.findLastEqualColour (pos);
-         if (isHighest (*players[player].hand[pos]))
-             break;
+   case 0: {
+      // - Play trumps?
+      Check3 (pTrump);
+      unsigned int trumpsLeft (13 - playedCards[pTrump->colour ()].count ());
+      TRACE8 ("SgtMayor::findPos2Play (unsigned int) - Trumps: " << trumpsLeft
+	      << '/' << playedCards[pTrump->colour ()].count ());
+      Check3 (trumpsLeft <= 13);
+      // If others have trumps left, but we have more
+      if ((trumpsLeft >  cColours[pTrump->colour ()])
+	  && ((trumpsLeft / 3) < cColours[pTrump->colour ()])) {
+	 Check3 (pile.size () > posColours[pTrump->colour ()]);
+	 pos = posColours[pTrump->colour ()];
+	 if (!isHighest (*pile[posColours[pTrump->colour ()]]))
+	    pos -= cColours[pTrump->colour ()] - 1;
+	 break;
+      }
+      trumpsLeft -= cColours[pTrump->colour ()];
+
+      // - Have dead cards?
+      int maxDiff (0);
+      CardWidget::COLOURS maxCards (CardWidget::HEARTS);
+      for (unsigned int i (0); i < (sizeof (cColours) / sizeof (*cColours)); ++i) {
+	 int diff (cColours[i] - (13 - playedCards[i].count ()) / 3);
+	 if ((diff > maxDiff) && ((int)i != pTrump->colour ())) {
+	    maxDiff = diff;
+	    maxCards = (CardWidget::COLOURS)i;
+	 }
+      }
+      TRACE8 ("SgtMayor::findPos2Play (unsigned int) - Dead cards: " << maxDiff
+	      << ": " << (int)maxCards);
+      if (maxDiff) {
+	 Check3 (posColours[maxCards] != -1U);
+	 pos = posColours[maxCards];
+	 if (!isHighest (*pile[posColours[maxCards]])
+	     || (trumpsLeft && (bfColours & (0x110 << maxCards))))
+	    pos -= cColours[maxCards] - 1;
+	 break;
+      }
+
+      // Try to find the highest card
+      pos = 0;
+      while (pos < pile.size ()) {
+         pos = pile.findLastEqualColour (pos);
+         if (isHighest (*pile[pos])
+	     && (!trumpsLeft && (bfColours & (0x110 << pile[pos]->colour ()))))
+	    break;
          ++pos;
       }
 
-      if (pos >= players[player].hand.size ())
-         pos = players[player].hand.findLowestCard (pTrump->colour ());
-      break;
+      if (pos >= pile.size ())
+         pos = pile.findLowestCard (pTrump->colour ());
+      break; }
 
-   case 1:
-      pos = players[player].hand.find1EqualOrBiggerByColour (*played[0]);
-      if ((pos == -1U)
-          || (players[player].hand[pos]->colour () != played[0]->colour ()))
-         pos = (players[player].hand.exists (played[0]->colour ())
-                ? players[player].hand.find (played[0]->colour ())
-                : tryToGetTickWithTrump (players[player].hand));
-      else {
-         unsigned int highest (players[player].hand.findLastEqualColour (pos));
-         pos = (isHighest (*players[player].hand[highest])
-                ? highest : players[player].hand.findFirstEqualColour (pos));
+   case 1: {
+      bool nextHasntColour ((bfColours & ((1 << played[0]->colour ())
+					  << (calcNextPlayer (player) << 4)))
+			    || (playedCards[played[0]->colour ()].count ()
+				+ cColours[played[0]->colour ()] == 13));
+      pos = posColours[played[0]->colour ()];
+      TRACE9 ("SgtMayor::findPos2Play (unsigned int) - Play: " << (int)pos
+	      << "; Next: " << nextHasntColour);
+
+      if (pos == -1U) {
+	 pos = posColours[pTrump->colour ()];
+	 if ((pos == -1U)
+	     || (nextHasntColour
+		 && !isHighest (*pile[pos])
+		 && ((cColours[pTrump->colour ()] - 1) >
+		     (13 - playedCards[pTrump->colour ()].count ()) / 3)))
+	    pos = pile.findLowestCard (pTrump->colour ());
+	 else
+	    pos -= cColours[pTrump->colour ()] - 1;
       }
-      break;
+      else
+	 // If the next is know to not have the colour or player has not the
+	 // highest left of this colour, play a low one
+	 if (nextHasntColour
+	     || !isHighest (*pile[pos])
+	     || played[0]->number () > pile[pos]->number ())
+	    pos -= cColours[played[0]->colour ()] - 1;
+      break; }
 
    case 2:
       // The tick is taken by the second player with a trump. Either play a
       // small card or use a bigger trump.
       if ((played[0]->colour () != pTrump->colour ())
           && (played[1]->colour () == pTrump->colour ())) {
-         pos = players[player].hand.find (played[0]->colour ());
+         pos = pile.find (played[0]->colour ());
          if (pos == -1U) {
-            pos = players[player].hand.find1EqualOrBiggerByColour (*played[1]);
-            if (pos == -1U)
-               pos = players[player].hand.findLowestCard (pTrump->colour ());
+            pos = pile.find1EqualOrBiggerByColour (*played[1]);
+            if (pos == -1U) {
+	       bfColours |= ((1 << played[0]->colour ()) << (player << 4));
+               pos = pile.findLowestCard (pTrump->colour ());
+	    }
          }
       }
       else {
-         pos = players[player].hand.find1EqualOrBiggerByColour (*played[0]);
+         pos = pile.find1EqualOrBiggerByColour
+	    (((played[0]->colour () != played[1]->colour ())
+	      || (played[0]->number () > played[1]->number ()))
+	     ? *played[0] : *played[1]);
          if ((pos == -1U)
-             || (players[player].hand[pos]->colour () != played[0]->colour ()))
-            pos = (players[player].hand.exists (played[0]->colour ())
-                   ? players[player].hand.find (played[0]->colour ())
-                   : tryToGetTickWithTrump (players[player].hand));
+             || (pile[pos]->colour () != played[0]->colour ()))
+            pos = (pile.exists (played[0]->colour ())
+                   ? pile.find (played[0]->colour ())
+                   : (bfColours |= ((1 << played[0]->colour ()) << (player << 4)),
+		      tryToGetTickWithTrump (pile)));
       }
       break;
 
    default:
       Check3 (0);
    }
-   Check3 (pos < players[player].hand.size ());
+   Check3 (pos < pile.size ());
    return pos;
 }
 
@@ -509,7 +590,7 @@ bool SgtMayor::handleMessage (unsigned int player, const std::string& message) t
 
 //----------------------------------------------------------------------------
 /// Shows the special colour on the board (the ace with that colour)
-/// \param colour: The special colour to display 
+/// \param colour: The special colour to display
 //----------------------------------------------------------------------------
 void SgtMayor::showTrump (CardWidget::COLOURS colour) {
    TRACE9 ("SgtMayor::showTrump (CardWidget::COLOURS) - " << colour);
@@ -532,15 +613,14 @@ void SgtMayor::showTrump (CardWidget::COLOURS colour) {
 /// Plays the passed card; find winner and give him the cards at the end of a
 /// turn.
 /// \param player: Player on turn
-/// \param card: Card to play 
+/// \param card: Card to play
 /// \returns unsigned int: Next player; or -1U, if end of game
 //----------------------------------------------------------------------------
 unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
    TRACE3 ("SgtMayor::playCard (unsigned int, unsigned int) - Player " << player);
 
+   playedCards[players[player].hand[card]->colour ()].set (players[player].hand[card]->number ());
    movePile (played, players[player].hand, card, card);
-   playedCards.set (players[player].hand[card]->id ());
-   ++playedColours[players[player].hand[card]->colour ()];
 
    if (played.size () == NUM_PLAYERS) {
       // Find the winner
@@ -591,6 +671,7 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
       return player;
    }
 
+   Glib::ustring stat (_("Game ended; %1 has %2 ticks, %3 %4 and %5 %6 ticks"));
    unsigned int neededTicks[NUM_PLAYERS] = { 9, 3, 5 };
    player = startPlayer;
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
@@ -599,10 +680,14 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
       TRACE9 ("SgtMayor::playCard (unsigned int, unsigned int) - Player "
               << player << " made " << madeTicks << " = " << diffTicks[player]);
 
+      if (diffTicks[player] > 5) {
+	 Glib::ustring won (_("; %1 won"));
+	 won.replace (won.find ("%1"), 2, actPlayers[player]->getName ());
+	 stat += won;
+      }
       player = calcNextPlayer (player);
    }
 
-   Glib::ustring stat (_("Game ended; %1 has %2 ticks, %3 %4 and %5 %6 ticks"));
    stat.replace (stat.find ("%1"), 2, actPlayers[0]->getName ());
    stat.replace (stat.find ("%3"), 2, actPlayers[1]->getName ());
    stat.replace (stat.find ("%5"), 2, actPlayers[2]->getName ());
@@ -618,19 +703,18 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
 }
 
 //----------------------------------------------------------------------------
-/// Checks if the passed card is the highest card of its colours, which has
+/// Checks if the passed card is the highest card of its colour, which has
 /// not been played.
-/// \param card: Card to inspect 
-/// \return bool: True, if card is the highest unplayed one 
+/// \param card: Card to inspect
+/// \return bool: True, if card is the highest unplayed one
 //----------------------------------------------------------------------------
 bool SgtMayor::isHighest (const CardWidget& card) const {
-   TRACE8 ("SgtMayor::isHighest (const CardWidget&) - " << card << " = " << card.id ());
+   TRACE8 ("SgtMayor::isHighest (const CardWidget&) - " << card);
 
-   int id (card.id () - 4);
-   while (id >= 0) {
-      if (!playedCards[id])
+   int nr (card.number ());
+   while (++nr <= CardWidget::ACE) {
+      if (!playedCards[card.colour ()][nr])
          return false;
-      id -= 4;
    }
    return true;
 }
@@ -642,7 +726,7 @@ bool SgtMayor::isHighest (const CardWidget& card) const {
 /// \return unsigned int: Position of card to play
 //----------------------------------------------------------------------------
 unsigned int SgtMayor::tryToGetTickWithTrump (const ICardPile& pile) const {
-   TRACE8 ("SgtMayor::tryToGetTickWithTrump (const ICardPile&)  - Size" << pile.size ());
+   TRACE8 ("SgtMayor::tryToGetTickWithTrump (const ICardPile&)  - Size " << pile.size ());
    Check3 (pile.size ());
 
    unsigned int pos (pile.find (pTrump->colour ()));
@@ -699,8 +783,8 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int playerGood) {
 
 //----------------------------------------------------------------------------
 /// Exchanges a good card from playerGood with a bad card from player bad
-/// \param playerBad: Player giving away a bad card 
-/// \param playerGood: Player giving away a good card 
+/// \param playerBad: Player giving away a bad card
+/// \param playerGood: Player giving away a good card
 //----------------------------------------------------------------------------
 void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
                               unsigned int playerGood) {
