@@ -35,12 +35,12 @@
 #include <gtkmm/messagedialog.h>
 
 #define CHECK 9
-#define TRACELEVEL 9
-#include <Check.h>
-#include <Trace_.h>
-#include <ConnMgr.h>
-#include <Tokenize.h>
-#include <AttrParse.h>
+//#define TRACELEVEL 9
+#include <YGP/Check.h>
+#include <YGP/Trace_.h>
+#include <YGP/ConnMgr.h>
+#include <YGP/Tokenize.h>
+#include <YGP/AttrParse.h>
 
 #include <Player.h>
 #include <CardSet.h>
@@ -65,16 +65,13 @@ static std::vector<Gtk::TargetEntry> dndType;
 //-----------------------------------------------------------------------------
 Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                 CardSet& cardset, const std::vector<Player*>& player,
-                unsigned int posPlayer, Mutex& mxSerialize)
+                unsigned int posPlayer, YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10)
      , startPlayer (-1U), newPile (_("New pile"))
      , staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK)
      , target (-1U) {
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&)");
-
-   scrlTable.set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
-   scrlTable.add (table);
 
    int width (cards.getCard (0).getImageWidth ());
    int height (cards.getCard (0).getImageHeight ());
@@ -83,17 +80,10 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
            "std::vector<Glib::ustring>&) - Init common staples");
    staple.set_size_request (width, height);
 
-   table.pack_start (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
-   for (unsigned int i (0); i < (sizeof (piles) / sizeof (piles[0])); ++i) {
-      piles[i].set_size_request (-1, height);
-      piles[i].show ();
-      table.pack_start (piles[i], Gtk::PACK_EXPAND_WIDGET, 5);
-   }
-
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      attach (hands[i], (i << 2) - 4, (i << 2), 3, 4,
+      attach (hands[i], (i << 2) - 4, (i << 2), 4, 5,
               Gtk::EXPAND, Gtk::SHRINK, 5, 5);
-      attach (names[i], (i << 2) - 4, (i << 2), 4, 5,
+      attach (names[i], (i << 2) - 4, (i << 2), 5, 6,
               Gtk::EXPAND, Gtk::SHRINK, 0);
    }
    hands[0].setStyle (ICardPile::COMPRESSED);
@@ -104,7 +94,8 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    attach (hands[0], 3, 12, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
    attach (names[0], 3, 12, 1, 2, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
    attach (staple, 0, 1, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 5);
-   attach (scrlTable, 0, 12, 2, 3, Gtk::EXPAND | Gtk::FILL,
+   attach (newPile, 0, 12, 2, 3, Gtk::EXPAND | Gtk::FILL, Gtk::FILL, 0, 5);
+   attach (piles, 0, 12, 3, 4, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
 
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
@@ -173,10 +164,10 @@ void Machiavelli::clean () {
 
    staple.clear ();
 
-   for (unsigned int i (0); i < (sizeof (piles) / sizeof (piles[0])); ++i) {
-      Gtk::Box::BoxList& children (piles[i].children ());
-      children.erase (children.begin (), children.end ());
-   }
+   for (std::vector<MachiPile*>::iterator i (tablePiles.begin ());
+        i != tablePiles.end (); ++i)
+      piles.remove (**i);
+   tablePiles.clear ();
 
    Game::clean ();
 }
@@ -200,26 +191,21 @@ bool Machiavelli::handleMessage (unsigned int player, const char* message) {
    TRACE1 ("Machiavelli::handleMessage (unsigned int player, const char*) - "
            << message << " (" << player << ')');
     
-   Tokenize command (message);
+   YGP::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
    bool rc (true);
    if (cmd == "Move") {
-      AttributeParse ap;
+      YGP::AttributeParse ap;
       unsigned int card (-1U), dest (-1U), iPile (-1U);
       ATTRIBUTE (ap, unsigned int, card, "Move");
       ATTRIBUTE (ap, unsigned int, dest, "To");
       ATTRIBUTE (ap, unsigned int, iPile, "Pile");
       ap.assignValues (message);
 
-      unsigned int iRow (iPile >> 16);
-      unsigned int iColumn (iPile & 0xffff);
-      if ((iRow >= (sizeof (piles) / sizeof (piles[0])))
-          || (iColumn >= piles[iRow].children ().size ()))
+      if (iPile >= tablePiles.size ())
          throw std::string ("Invalid pile!");
-
-      Gtk::Box_Helpers::Child& child (piles[iRow].children ()[iColumn]);
-      ICardPile& pile (*dynamic_cast<ICardPile*> (child.get_widget ()));
+      ICardPile& pile (*tablePiles[iPile]);
       if ((card >= pile.size ()) || (dest >= pile.size ()))
          throw std::string ("Invalid card!");
 
@@ -278,15 +264,11 @@ bool Machiavelli::enableHuman () {
    aDNDTable[NULL] = newPile.signal_drag_data_received ().connect
       (bind (slot (*this, &Machiavelli::cardDroppedOnTable), -1U));
 
-   for (unsigned int i (0); i < (sizeof (piles) / sizeof (piles[0])); ++i)
-      for (unsigned int j (0); j < piles[i].children ().size (); j++) {
-         unsigned int valPile ((i << 12) + (j << 8));
-
-         Gtk::Box_Helpers::Child& child (piles[i].children ()[j]);
-         ICardPile& pile (*dynamic_cast<ICardPile*> (child.get_widget ()));
-
-         for (unsigned int k (0); k < pile.size (); ++k)
-            registerTableDND (*pile[k], (valPile) + k);
+   for (unsigned int i (0); i < tablePiles.size (); ++i) {
+      MachiPile& pile (*tablePiles[i]);
+      unsigned int value (i << 8);
+      for (unsigned int j (0); j < pile.size (); ++j)
+         registerTableDND (*pile[j], value++);
    }
 
    return Game::enableHuman ();
@@ -296,7 +278,7 @@ bool Machiavelli::enableHuman () {
 /// Disables the cards the human player can select
 //-----------------------------------------------------------------------------
 void Machiavelli::disableHuman () {
-   TRACE2 ("Buarzno::disableHuman () - DND: " << aDNDHand.size () << "; "
+   TRACE2 ("Machiavelli::disableHuman () - DND: " << aDNDHand.size () << "; "
            << aDNDTable.size ());
    Game::disableHuman ();
 
@@ -308,23 +290,6 @@ void Machiavelli::disableHuman () {
    Check3 (aDNDHand.empty ());
 
    unregisterTableDND ();
-}
-
-//----------------------------------------------------------------------------
-/// Changes the names of the playing people
-/// \param newPlayer: Array holding the new player
-/// \param pile: ID of the pile to return
-//----------------------------------------------------------------------------
-ICardPile& Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile) {
-   Check1 (player < NUM_PLAYERS);
-
-   unsigned int iRow (pile >> 16);
-   unsigned int iColumn (pile & 0xffff);
-   Check1 (iRow < (sizeof (piles) / sizeof (piles[0])));
-   Check1 (iColumn < piles[iRow].children ().size ());
-
-   Gtk::Box_Helpers::Child& child (piles[iRow].children ()[iColumn]);
-   return (*dynamic_cast<ICardPile*> (child.get_widget ()));
 }
 
 //----------------------------------------------------------------------------
@@ -349,18 +314,30 @@ void Machiavelli::changeNames (const std::vector<Player*>& newPlayer) {
 }
 
 //----------------------------------------------------------------------------
+/// Returns the passed pile of the player
+/// \param player: Number of player
+/// \param pile: ID of the pile to return
+//----------------------------------------------------------------------------
+ICardPile& Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile) {
+   Check1 (player < NUM_PLAYERS);
+   Check1 ((pile < 4) || (pile >= 100));
+
+   return *tablePiles[pile];
+}
+
+//----------------------------------------------------------------------------
 /// Sets the startplayer; including showing it in the status bar
 /// \param player: Player to start the game
 //----------------------------------------------------------------------------
 void Machiavelli::setStartPlayer () {
-   if (getConnectionMgr ().getMode () != ConnectionMgr::CLIENT) {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
       setNextPlayer (startPlayer);
 
       // Send startplayer to the clients
-      if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
-         const std::vector<Socket*>& clients (getConnectionMgr ().getClients ());
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
+         const std::vector<YGP::Socket*>& clients (getConnectionMgr ().getClients ());
          unsigned int player ((currentPlayer () - 1) & 0x3);
-         for (std::vector<Socket*>::const_iterator i (clients.begin ());
+         for (std::vector<YGP::Socket*>::const_iterator i (clients.begin ());
               i != clients.end (); ++i) {
             std::ostringstream msg;
             msg << "ActPlayer=" << player;
@@ -384,12 +361,12 @@ void Machiavelli::stapleSelected () {
    Check1 (gameStatus () == PLAYING);
    Check3 (staple.size ()); Check3 (activeCards.size ());
 
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
       std::ostringstream msg;
       msg << "Play=" << staple.getTopCard ().id () << ";Target=1";
 
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
@@ -476,16 +453,11 @@ void Machiavelli::unregisterHandDND (CardWidget& card) {
 void Machiavelli::registerTableDND (unsigned int pile, unsigned int start, unsigned int end) {
    TRACE9 ("Machiavelli::registerTableDND (unsigned int, unsigned int, unsigned int)"
            << " - " << pile << '[' << start << '-' << end << ']');
-
+   Check1 (pile < tablePiles.size ());
    Check1 (start <= end);
-   unsigned int iRow (pile >> 4);
-   unsigned int iColumn (pile & 0xff);
-   Check1 (iRow < (sizeof (piles) / sizeof (piles[0])));
-   Check1 (iColumn < piles[iRow].children ().size ());
+   Check1 (end < tablePiles[pile]->size ());
 
-   Gtk::Box_Helpers::Child& child (piles[iRow].children ()[iColumn]);
-   ICardPile& tmp (*dynamic_cast<ICardPile*> (child.get_widget ()));
-   Check1 (end < tmp.size ());
+   ICardPile& tmp (*tablePiles[pile]);
 
    pile <<= 8;
    for (; start <= end; ++start) {
@@ -624,40 +596,30 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
            << " in pile");
 
    // Move dropped card to a (new) pile on the table
-   unsigned int iPile (piles[0].children ().size ());
+   unsigned int iPile (0);
    MachiPile* pile (NULL);
    CardWidget& moved (*hands[0][*pValue]);
    TRACE4 ("Machiavelli::cardDroppedOnTable (...) - Card dropped: " << moved);
 
    if (iCard == -1U) {    // If card was dropped on the new label: Create pile
-      unsigned int iRow (0);
-
-      // Find row where to create new pile
-      for (unsigned int i (1); i < (sizeof (piles) / sizeof (piles[0])); ++i) {
-         GtkRequisition req1, req2;
-         piles[i].size_request (&req1);
-         TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Width: " << req1.width);
-
-         piles[iRow].size_request (&req2);
-         if (req1.width < req2.width)
-            iRow = i;
+      if (!hands[0].hasFittingPair (moved, true, &MachiPile::cardDistance)) {
+         context->drag_finish (false, false, time);
+         Gtk::MessageDialog dlg (_("There are no cards to make three of a kind!"),
+                                 Gtk::MESSAGE_ERROR);
+         dlg.set_title (_("Invalid move"));
+         dlg.run ();
+         return;
       }
 
+      iPile = tablePiles.size ();
+      pile = &makeNewPile ();
       iCard = 0;
-      iPile = (iRow << 4) + piles[iRow].children ().size ();
-
-      pile = new MachiPile ();
-      piles[iRow].pack_start (*pile, Gtk::PACK_SHRINK, 5);
-      pile->show ();
    }
    else {
       // Else check pile to use
-      Check1 ((iCard >> 12) < (sizeof (piles) / sizeof (piles[0])));
-      iPile = (iCard >> 8) & 0xf;
-      Check1 (iPile < piles[iCard >> 12].children ().size ());
-
-      Gtk::Box_Helpers::Child& child (piles[iCard >> 12].children ()[iPile]);
-      pile = dynamic_cast<MachiPile*> (child.get_widget ());
+      iPile = iCard >> 8;
+      Check1 (iPile < tablePiles.size ());
+      pile = tablePiles[iPile];
 
       iCard = pile->getPosition4Card (moved);
       if (iCard == -1U) {
@@ -672,11 +634,11 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    Check3 (pile);
 
    // Send move
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       std::ostringstream msg;
       msg << "Play=" << hands[0][*pValue]->id () << ";Target="
           << (iPile << 16) + iCard + 100;
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
@@ -694,7 +656,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    pile->insert (moved, iCard);
    registerTableDND (moved, (iPile << 8) + iCard);
    if (iCard < (pile->size () - 1))
-      registerTableDND ((iPile << 8), iCard + 1, pile->size () - 1);
+      registerTableDND (iPile, iCard + 1, pile->size () - 1);
 
    // Player has won, if he does not have any cards left
    if (hands[0].empty ()) {
@@ -723,4 +685,18 @@ unsigned int Machiavelli::findNextPlayer (unsigned int player) const {
    }
    Check3 (player < NUM_PLAYERS);
    return player;
+}
+
+//-----------------------------------------------------------------------------
+/// Makes a new pile.
+/// \returns MachiPile&: New created pile
+//-----------------------------------------------------------------------------
+MachiPile& Machiavelli::makeNewPile () {
+   TRACE9 ("Machi::makeNewPile ()");
+
+   MachiPile* pile (new MachiPile ());
+   pile->show ();
+   piles.add (*pile);
+   tablePiles.push_back (pile);
+   return *pile;
 }

@@ -19,15 +19,17 @@
 
 
 #include <map>
+#include <vector>
 
 #include <gtkmm/label.h>
 #include <gtkmm/scrolledwindow.h>
 
-#include <CardWidget.h>
-
- #include "MachiPile.h"
+#include <XGP/AutoContainer.h>
 
 #include <Game.h>
+#include <CardWidget.h>
+
+#include "MachiPile.h"
 
 
 // Forward declarations
@@ -45,7 +47,7 @@ class Machiavelli : public Game {
  public:
    Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
                 const std::vector<Player*>& player, unsigned int posPlayer,
-                Mutex& mxSerialize);
+                YGP::Mutex& mxSerialize);
    virtual ~Machiavelli ();
 
    virtual void start ();
@@ -76,8 +78,8 @@ class Machiavelli : public Game {
    /// name Helper methods
    //@{
    void setStartPlayer ();
-   void stapleSelected ();
-   void doStapleSelected ();
+   unsigned int findNextPlayer (unsigned int player) const;
+   MachiPile& makeNewPile ();
    //@}
 
    /// name Drag-and-drop methods
@@ -100,23 +102,21 @@ class Machiavelli : public Game {
                             unsigned int cardPile);
    //@}
 
-   /// name Callback for events
+   /// name Callback from events
    //@{
-   void cardSelected (unsigned int card);
+   void stapleSelected ();
    //@}
 
    Gtk::Label names[NUM_PLAYERS];                        // Names of the player
    CardHPile  hands[NUM_PLAYERS];             // For all players: Cards in hand
-   Gtk::HBox  piles[3];                                   // Piles on the table
 
-   Gtk::VBox  table;
-   Gtk::ScrolledWindow scrlTable;
+   XGP::AutoContainer piles;                              // Piles on the table
+   std::vector<MachiPile*> tablePiles;     // Piles on table; for faster access
 
    unsigned int startPlayer;
 
    Gtk::Label       newPile;
    CardVInfoPile    staple;
-   SigC::Connection stapleTop;
 
    typedef struct {
       SigC::Connection connReceive;
