@@ -44,6 +44,8 @@ class Twopart : public Game {
    virtual const char* name () { return "Twopart"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
+   virtual void handleMessage (unsigned int player, const char* msg);
+
  protected:
    virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
 
@@ -78,7 +80,6 @@ class Twopart : public Game {
       return cPlayers; }
    unsigned int removePlayersWithoutCards ();
 
-   void dealCards ();
    void userWants2End (unsigned int input);
    void analyzeLastPlayed (unsigned int startPos, unsigned int cards, int& max,
                            int& maxPos, int& maxEqual, int& maxEqualPos,
