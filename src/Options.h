@@ -21,8 +21,7 @@
 #include <string>
 #include <vector>
 
-#include <Cardset-config.h>
-
+#include <cardgames-cfg.h>
 #include "CardCol.h"
 
 #include <Entity.h>
@@ -44,8 +43,8 @@ class Options : public Entity {
    unsigned int type;
    std::string  browser;       // %attrib%; Helpbrowser; "galeon"
    std::string  helpPath;      // %attrib%; Helpdir;     DOCUDIR
-   std::string  decks;         // %attrib%; CardFront;   CARDSET_PATH "/Deck1"
-   std::string  back;          // %attrib%; CardBack;    CARDSET_PATH "/back1.xpm"
+   std::string  decks;         // %attrib%; CardFront;   CARDDECKS_DIR "/cards-default"
+   std::string  back;          // %attrib%; CardBack;    CARDDECKS_DIR "/decks/deck1.png"
 
    std::vector<std::string> names;
    const char*    pNameINIFile;
