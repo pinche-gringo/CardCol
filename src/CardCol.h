@@ -85,8 +85,7 @@ class CardgameCollection : public XApplication {
    void initCommunication ();
    void makePlayer ();
    void* waitForMessages (void*);
-   bool handleGameMessage (char* msg) throw (std::string);
-   bool handleErrorMessage (unsigned int player, char* msg);
+   int handleGlobalMessage (unsigned int player, char* msg) throw (std::string);
    bool handleMessage (unsigned int player, char* msg);
    bool showMessage (char* msg);
 
@@ -102,7 +101,7 @@ class CardgameCollection : public XApplication {
 
    typedef OThread<CardgameCollection> THRDAPPL;
    THRDAPPL* pThread;
-   THRDAPPL* pCommThread;
+   std::vector<THRDAPPL*> aCommThreads;
 
    Options& options;
    Mutex mxThreadCmd;
