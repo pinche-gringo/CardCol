@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.6 ($Revision$)\n"
-"POT-Creation-Date: 2003-11-28 18:09-0500\n"
-"PO-Revision-Date: 2003-11-03 12:24-0500\n"
+"POT-Creation-Date: 2003-12-06 18:44-0500\n"
+"PO-Revision-Date: 2003-12-06 18:46-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -25,8 +25,7 @@ msgstr ""
 #: src/Rovhult.cpp:380 src/Rovhult.cpp:515 src/Buraco.cpp:708
 #: src/Buraco.cpp:803 src/Buraco.cpp:1010 src/Buraco.cpp:1079
 #: src/Buraco.cpp:1095 src/Buraco.cpp:1109 src/Buraco.cpp:1121
-#: src/Buraco.cpp:1141 src/Buraco.cpp:1150 src/Machiavelli.cpp:477
-#: src/Machiavelli.cpp:785
+#: src/Buraco.cpp:1141 src/Buraco.cpp:1150 src/Machiavelli.cpp:782
 msgid "Invalid move"
 msgstr ""
 
@@ -38,7 +37,7 @@ msgstr ""
 msgid "Played card must be equal or bigger!"
 msgstr ""
 
-#: src/Rovhult.cpp:617 src/Twopart.cpp:425 src/Machiavelli.cpp:1308
+#: src/Rovhult.cpp:617 src/Twopart.cpp:425 src/Machiavelli.cpp:1398
 msgid "%1 lost"
 msgstr ""
 
@@ -397,16 +396,15 @@ msgid ""
 msgstr ""
 
 #: src/CardCol.cpp:1484
-#, fuzzy
 msgid ""
 "Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco,\n"
 "Machiavelli or the numbers 0 - 4 (corresponding to the games in the above "
 "order).\n"
 "\n"
 msgstr ""
-"Valid values for GAME are Rovhult, Røvhult, Twopart, Hearts and Buraco or "
-"the\n"
-"numbers 0 - 3 (corresponding to the games in the above order).\n"
+"Valid values for GAME are Rovhult, Røvhult, Twopart, Hearts, Buraco and\n"
+"Machiavelli or the numbers 0 - 3 (corresponding to the games in the above\n"
+"order).\n"
 "\n"
 
 #: src/CardCol.cpp:1486
@@ -548,7 +546,7 @@ msgstr ""
 msgid "There are no cards to make a valid new pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1148 src/Machiavelli.cpp:783
+#: src/Buraco.cpp:1148 src/Machiavelli.cpp:780
 msgid "This card does not fit on that pile!"
 msgstr ""
 
@@ -584,27 +582,31 @@ msgid ""
 "table - click the staple to end turn"
 msgstr ""
 
-#: src/Machiavelli.cpp:475
+#: src/Machiavelli.cpp:473
 msgid "The piles are not valid!"
 msgstr ""
 
-#: src/Machiavelli.cpp:480
+#: src/Machiavelli.cpp:475
+msgid "Can't end turn"
+msgstr ""
+
+#: src/Machiavelli.cpp:479
 msgid "_Undo all"
 msgstr ""
 
-#: src/Machiavelli.cpp:481
+#: src/Machiavelli.cpp:480
 msgid "Undo _last"
 msgstr ""
 
-#: src/Machiavelli.cpp:1208
+#: src/Machiavelli.cpp:1285
 msgid "Taking last card! Solve the game (somehow) ..."
 msgstr ""
 
-#: src/Machiavelli.cpp:1210
+#: src/Machiavelli.cpp:1287
 msgid "Game over"
 msgstr ""
 
-#: src/Machiavelli.cpp:1232
+#: src/Machiavelli.cpp:1309
 msgid "Pile %1: %2\n"
 msgstr ""
 
