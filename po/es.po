@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.6 ($Revision$)\n"
-"POT-Creation-Date: 2004-01-25 14:32-0500\n"
+"POT-Creation-Date: 2004-01-31 13:35-0500\n"
 "PO-Revision-Date: 2004-01-25 14:35-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -22,10 +22,10 @@ msgstr "Estoy esperando que los demás jugadores intercambian sus cartas ..."
 msgid "You must first play the visible cards!"
 msgstr "¡Primero se tiene que usar las cartas visibles!"
 
-#: src/Rovhult.cpp:382 src/Rovhult.cpp:517 src/Buraco.cpp:708
-#: src/Buraco.cpp:803 src/Buraco.cpp:1010 src/Buraco.cpp:1079
-#: src/Buraco.cpp:1095 src/Buraco.cpp:1109 src/Buraco.cpp:1121
-#: src/Buraco.cpp:1141 src/Buraco.cpp:1150 src/Machiavelli.cpp:743
+#: src/Rovhult.cpp:382 src/Rovhult.cpp:517 src/Buraco.cpp:717
+#: src/Buraco.cpp:812 src/Buraco.cpp:1019 src/Buraco.cpp:1088
+#: src/Buraco.cpp:1104 src/Buraco.cpp:1118 src/Buraco.cpp:1130
+#: src/Buraco.cpp:1150 src/Buraco.cpp:1159 src/Machiavelli.cpp:743
 #: src/Machiavelli.cpp:767
 msgid "Invalid move"
 msgstr "¡Juego realizado es invalido!"
@@ -530,7 +530,7 @@ msgstr "Jugador 3"
 msgid "Select 3 cards to exchange with %1"
 msgstr "Selecte 3 cartas para cambiar con %1"
 
-#: src/Hearts.cpp:437 src/Buraco.cpp:1644
+#: src/Hearts.cpp:437 src/Buraco.cpp:1653
 msgid "Round ended"
 msgstr "Turno terminó"
 
@@ -558,7 +558,7 @@ msgstr "¡La reina (Q) de los picas no puede estar jugado en el primer turno!"
 msgid "Hearts can't be played in the first round!"
 msgstr "¡Las corazones no pueden estar jugado en el primer turno!"
 
-#: Common/ScoreDlg.cpp:49
+#: Common/ScoreDlg.cpp:52
 msgid "Score"
 msgstr "Puntos"
 
@@ -566,7 +566,7 @@ msgstr "Puntos"
 msgid "New pile"
 msgstr "Pila nueva"
 
-#: src/Buraco.cpp:542
+#: src/Buraco.cpp:550
 msgid ""
 "You can sort the cards in your hand with drag and drop or put them on the "
 "table - click card to dump to end turn"
@@ -574,65 +574,65 @@ msgstr ""
 "Se puede sortear las cartas en la mano con tirar y depositar o ponerlas a la "
 "mesa - hace click en una para terminar el turno"
 
-#: src/Buraco.cpp:706
+#: src/Buraco.cpp:715
 msgid "Every pile on the table must have at least 3 cards!"
 msgstr "¡Todas las pilas de la mesa necesitan por lo menos 3 cartas!"
 
-#: src/Buraco.cpp:800
+#: src/Buraco.cpp:809
 msgid "You need a fitting pair to pick up the pile of dumped cards!"
 msgstr ""
 "¡Se necesita una pareja semejante para acoger la pila de las cartas echadas!"
 
-#: src/Buraco.cpp:1008
+#: src/Buraco.cpp:1017
 msgid "Can't move cards before completing the pile!"
 msgstr ""
 "¡No se puede sortear las cartas hasta el nueve montón tiene por lo menos 3 "
 "cartas!"
 
-#: src/Buraco.cpp:1077
+#: src/Buraco.cpp:1086
 msgid "You need to fill up other piles first!"
 msgstr "¡Se tiene que cumplir las otras pilas primero!"
 
-#: src/Buraco.cpp:1093
+#: src/Buraco.cpp:1102
 msgid ""
 "You must play your cards (without \"monos\"), when you picked up the pile!"
 msgstr ""
 "¡Después de coger la pila de las cartas echadas se tiene que jugar sus "
 "cartas antiguas!"
 
-#: src/Buraco.cpp:1106 src/Buraco.cpp:1139
+#: src/Buraco.cpp:1115 src/Buraco.cpp:1148
 msgid "You can't end the game (there's no \"cerrado\")!"
 msgstr "¡No puedes terminar el juego (no tienes un cerrado)!"
 
-#: src/Buraco.cpp:1107
+#: src/Buraco.cpp:1116
 msgid "Not enough cards to make new pile!"
 msgstr "¡No suficientes cartas para hacer una nueva pila!"
 
-#: src/Buraco.cpp:1119
+#: src/Buraco.cpp:1128
 msgid "There are no cards to make a valid new pile!"
 msgstr "¡No hay cartas para cumplir tres semejantes!"
 
-#: src/Buraco.cpp:1148 src/Machiavelli.cpp:741
+#: src/Buraco.cpp:1157 src/Machiavelli.cpp:741
 msgid "This card does not fit on that pile!"
 msgstr "¡Esta carta no sirve para esta pila!"
 
-#: src/Buraco.cpp:1329
+#: src/Buraco.cpp:1338
 msgid "%1 picked up the burraco"
 msgstr "%1 tomó el burraco"
 
-#: src/Buraco.cpp:1472
+#: src/Buraco.cpp:1481
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr "Puntos [Buraco]: %1 [%2] / %3 [%4]"
 
-#: src/Buraco.cpp:1474 src/Buraco.cpp:1476
+#: src/Buraco.cpp:1483 src/Buraco.cpp:1485
 msgid "N"
 msgstr ""
 
-#: src/Buraco.cpp:1474 src/Buraco.cpp:1476
+#: src/Buraco.cpp:1483 src/Buraco.cpp:1485
 msgid "Y"
 msgstr "S"
 
-#: src/Buraco.cpp:1589
+#: src/Buraco.cpp:1598
 msgid ""
 "Team %1\n"
 "%2/%3"
@@ -640,7 +640,7 @@ msgstr ""
 "Equipo %1\n"
 "%2/%3"
 
-#: src/Buraco.cpp:1650
+#: src/Buraco.cpp:1659
 msgid "Game ended; Team %1 won"
 msgstr "Juego terminó; Equipo %1 ganó"
 
