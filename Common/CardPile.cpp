@@ -24,7 +24,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#define DEBUG 0
+#define DEBUG 9
 #include <Check.h>
 
 #include "CardPile.h"
@@ -317,8 +317,16 @@ bool ICardPile::exists (CardWidget::NUMBERS nr) const {
          first = middle + 1;
 
       middle = first + ((last - first) >> 1);
+      TRACE5 ("ICardPile::exists (CardWidget::NUMBERS) - Data = [" << first << '-'
+              << middle << '-' << last << ')');
+
+      // Perform sanity-checks; don't wory if DEBUG is not defined or less then
+      // 3 this produces no code
+      Check3 (middle >= 0); Check3 (middle <= cards.size ());
+      Check3 (first >= 0); Check3 (last <= cards.size ());
+      Check3 (first <= middle); Check3 (middle <= last);
    }
-   return !compNr (cards[middle], nr);
+   return (middle != last) && !compNr (cards[middle], nr);
 }
 
 /*--------------------------------------------------------------------------*/
