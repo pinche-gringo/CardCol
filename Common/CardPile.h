@@ -106,8 +106,11 @@ class ICardPile {
 
    bool topCardShowsFace () const { return getTopCard ().showsFace (); }
 
-   virtual void sortByNumber ();
-   virtual void sortByColor ();
+   typedef bool (*CMPFUNC) (const CardWidget*, const CardWidget*);
+
+   virtual void sort (CMPFUNC fnSort);
+   void sortByNumber () { sort (compCardsByNr); }
+   void sortByColor () { sort (compCards); }
 
  protected:
    vector<CardWidget*> cards;
@@ -163,15 +166,10 @@ template <class T> class CardPile : public T, public ICardPile {
       return card; }
 
    virtual void resize (CardWidget& card, PileStyle s) const { }
-   virtual void sortByNumber () {
+   virtual void sort (CMPFUNC fnSort) {
       if (cards.size ()) {
          resize (getTopCard (), style);
-         ICardPile::sortByNumber ();
-         resortGUI (); } }
-   virtual void sortByColor () {
-      if (cards.size ()) {
-         resize (getTopCard (), style);
-         ICardPile::sortByColor ();
+         ICardPile::sort (fnSort);
          resortGUI (); } }
 
  protected:

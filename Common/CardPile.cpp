@@ -290,6 +290,8 @@ bool ICardPile::compCards (const CardWidget* a, const CardWidget* b) {
    bool diff (a->color () < b->color ());
    if (!diff)
       diff = a->number () < b->number ();
+   TRACE9 ("ICardPile::compCards (const CardWidget*, const CardWidget*) - "
+            << *a << " <-> " << *b << " = " << diff);
    return diff;
 }
 
@@ -307,40 +309,10 @@ bool ICardPile::compCardsByNr (const CardWidget* a, const CardWidget* b) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Sorts the cards in the pile without regard of the number
+//Purpose   : Sorts the cards in the pile according the past function
 /*--------------------------------------------------------------------------*/
-void ICardPile::sortByNumber () {
-   sort (cards.begin (), cards.end (), compCardsByNr);
-
-#if CHECK > 0
-   vector<CardWidget*>::const_iterator i (cards.begin ());
-   if (i != cards.end ())
-      Check (*i);
-
-   for (++i; i < cards.end (); ++i) {
-      Check (*i); Check ((*i)->number () >= i[-1]->number ());
-   }
-#endif
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Sorts the cards in the pile without regard of the number
-/*--------------------------------------------------------------------------*/
-void ICardPile::sortByColor () {
-   sort (cards.begin (), cards.end (), compCards);
-
-#if CHECK > 0
-   vector<CardWidget*>::const_iterator i (cards.begin ());
-   if (i != cards.end ())
-      Check (*i);
-
-   for (++i; i < cards.end (); ++i) {
-      Check (*i);
-      Check (((*i)->color () >= i[-1]->color ())
-             || (((*i)->color () == i[-1]->color ())
-                 && ((*i)->number () >= i[-1]->number ())));
-   }
-#endif
+void ICardPile::sort (CMPFUNC fnSort) {
+   std::sort (cards.begin (), cards.end (), fnSort);
 }
 
 /*--------------------------------------------------------------------------*/
