@@ -790,13 +790,14 @@ void CardgameCollection::command (int menu) {
       TRACE7 ("CardgameCollection::command (int) - New; Game running: "
              << (game && game->isRunning () ? "Yes" : "No"));
       if (game && game->isRunning ()) {
-         restart = true;
          Gtk::MessageDialog dlg (_("A game is already running. Do you really"
                                    " want to end it and start another?"),
                                  Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
          dlg.set_title (PACKAGE);
-         if (dlg.run () == Gtk::RESPONSE_YES)
+         if (dlg.run () == Gtk::RESPONSE_YES) {
+            restart = true;
             userWants2End ();
+         }
       }
       else
          startGame ();
@@ -804,12 +805,13 @@ void CardgameCollection::command (int menu) {
 
    case END: {
       Check3 (game && game->isRunning ());
-      restart = false;
       Gtk::MessageDialog dlg (_("Do you really want to end the game?"),
                               Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
       dlg.set_title (PACKAGE);
-      if (dlg.run () == Gtk::RESPONSE_YES)
+      if (dlg.run () == Gtk::RESPONSE_YES) {
+         restart = false;
          userWants2End ();
+      }
       break; }
 
    case TWOPART:
@@ -1028,6 +1030,7 @@ void CardgameCollection::userWants2End () {
    }
    else
       startGame ();
+   restart = false;
 }
 
 /*--------------------------------------------------------------------------*/
