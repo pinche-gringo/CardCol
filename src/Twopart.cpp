@@ -89,10 +89,19 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
    played.show ();
    attach (played, 3, 11, 5, 8, 0, 0, 0, 5);
 
+   unsigned int width (cards.getCard (0).getImageWidth ());
+   unsigned int height (cards.getCard (0).getImageHeight ());
+
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.setShowOption (ICardPile::SHOWBACK);
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
+
+      players[i].won.set_usize (width + 20, height + 5);
+      players[i].hand.set_usize (width * 3, height + 5);
    }
+
+   played.set_usize (width + 150, height);
+   staple.set_usize (width, height);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -100,6 +109,7 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
 /*--------------------------------------------------------------------------*/
 Twopart::~Twopart () {
    TRACE9 ("Twopart::~Twopart ()");
+   cleanTable ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -109,7 +119,7 @@ void Twopart::start () {
    Game::start ();
 
    cleanTable ();
-   fillStaple ();
+   randomizeCardsToPile (staple);
    dealCards ();
 }
 
@@ -125,7 +135,7 @@ int Twopart::enableActPlayer () {
 //Purpose   : Enables the cards of the passed player
 //Parameters: player: Player to enable
 //Remarks   : Depending of the status of the game (PLAYING2) also the top
-//            card of the played pile are enabled
+//            card of the played pile is enabled
 /*--------------------------------------------------------------------------*/
 void Twopart::enablePlayer (unsigned int player) {
    Check3 (activeCards.empty ());
@@ -152,12 +162,7 @@ void Twopart::enablePlayer (unsigned int player) {
 void Twopart::disableLastPlayer () {
    TRACE2 ("Twopart::disableLastPlayer () - " << activeCards.size () << " cards");
 
-   for (int i (activeCards.size ()); i > 0;) {
-      activeCards[--i].disconnect ();
-      activeCards.pop_back ();
-   }
-   Check9 (activeCards.empty ());
-
+   Game::disableLastPlayer ();
    pileTop.disconnect ();
 }
 
@@ -376,6 +381,7 @@ int Twopart::makeNextMove () {
    if (statGame == TOSTOP) {
       TRACE8 ("Twopart::makeNextMove () - End game ");
       statGame = STOPPED;
+      // TODO: Let restarting handle the parent/game
       if (restart)
          start ();
       return 0;
@@ -862,15 +868,6 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start
 
    if (statGame == PLAYING2)
       players[receiver].hand.sort (compByColorAccTrumps);
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shuffles (Randomizes) the cards onto the staple
-/*--------------------------------------------------------------------------*/
-void Twopart::fillStaple () {
-   // Randomize and put cards onto staple
-   cards.shuffle ();
-   staple.setTopCards (cards.getCards (), false);
 }
 
 /*--------------------------------------------------------------------------*/

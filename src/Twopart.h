@@ -20,13 +20,8 @@
 
 #include <vector>
 
-#include <Thread.h>
-#include <PathSrch.h>
-
 #include <CardSet.h>
 #include <CardPile.h>
-#include <CardImgs.h>
-#include <DeckSelect.h>
 
 #include <Game.h>
 
@@ -126,11 +121,7 @@ class Twopart : public Game {
       CardHPile won;                            // Reserve-cards (for end-game)
    } players[NUM_PLAYERS];
 
-   vector<Connection> activeCards;
    Connection pileTop;
-
-   typedef OThread<Twopart> THRDAPPL;
-   THRDAPPL* pThread;
 
    Widget* pMenuNew;
    Widget* pMenuEnd;

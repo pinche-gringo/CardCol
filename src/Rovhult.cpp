@@ -66,7 +66,10 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
      , actPlayer (0), staple (ICardPile::VERY_COMPRESSED)
      , played (ICardPile::VERY_COMPRESSED) {
    staple.show ();
-   attach (staple, 3, 4, 2, 5, 0, 0);
+   attach (staple, 3, 4, 2, 7, 0, 0);
+
+   unsigned int width (cards.getCard (0).getImageWidth ());
+   unsigned int height (cards.getCard (0).getImageHeight ());
 
    // Show and attach card-piles
    for (int i (0); i < NUM_PLAYERS; ++i) {
@@ -79,7 +82,10 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
 
          TRACE9 ("Rovhult::Rovhult () - Set at: "
                  << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
+
+         players[i].reserve[j].set_usize (width, height + 5);
       }
+      players[i].hand.set_usize (width * 3, height);
 
       players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::NORMAL);
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
@@ -94,6 +100,9 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
               << ROWS_PLAYER[i] + (i ? 3 : -3));
    }
 
+   played.set_usize (width, height);
+   staple.set_usize (width, height + 50);
+
    attach (played, 7, 11, 5, 14, 0, 0, 1);
 }
 
@@ -102,6 +111,8 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
 /*--------------------------------------------------------------------------*/
 Rovhult::~Rovhult () {
    TRACE9 ("Rovhult::~Rovhult ()");
+
+   cleanTable ();
 }
 
 
@@ -111,10 +122,10 @@ Rovhult::~Rovhult () {
 void Rovhult::start () {
    Game::start ();
 
+   statGame = PREPLAYING;
    cleanTable ();
    randomizeCardsToPile (staple);
    dealCards ();
-   statGame = PREPLAYING;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -825,15 +836,15 @@ void Rovhult::unregisterDND (CardWidget& card) const {
 //Parameters: card: Card to unregister of dnd
 /*--------------------------------------------------------------------------*/
 void Rovhult::unregisterDND () const {
-   Check3 (players[0].hand.numberOfCards () == 3);
    Check3 (statGame == PREPLAYING);
 
-   for (int i (0); i < 3; ++i) {
-      CardWidget& card (players[0].hand.at (i));
-      unregisterDND (card);
-      Check3 (players[0].reserve[i].numberOfCards () == 2);
-      unregisterDND (players[0].reserve[i].getTopCard ());
-   }
+   if (players[0].hand.numberOfCards () == 3)
+      for (int i (0); i < 3; ++i) {
+         CardWidget& card (players[0].hand.at (i));
+         unregisterDND (card);
+         Check3 (players[0].reserve[i].numberOfCards () == 2);
+         unregisterDND (players[0].reserve[i].getTopCard ());
+      }
 }
 
 /*--------------------------------------------------------------------------*/
