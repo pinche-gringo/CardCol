@@ -2,9 +2,9 @@
 
 bin_PROGRAMS=CardCol
 
-CardCol_SOURCES=CardCol.cpp Twopart.cpp Rovhult.cpp Hearts.cpp HeartsScore.cpp\
-		Buraco.cpp Buraco.h Twopart.h Rovhult.h Hearts.h HeartsScore.h\
-		Options.h CardCol.h SigCExt.h
+CardCol_SOURCES=CardCol.cpp Twopart.cpp Rovhult.cpp Hearts.cpp Buraco.cpp \
+		Buraco.h Twopart.h Rovhult.h Hearts.h Options.h CardCol.h \
+		SigCExt.h
 
 INCLUDES = @INCLUDES@ -I../Common @CARDGAME_CFLAGS@
 
