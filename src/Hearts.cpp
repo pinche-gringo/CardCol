@@ -57,12 +57,14 @@ const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 /// \param cardset: Cardset to use
 /// \param player: Vector of player
 /// \param posPlayer: Position of player for the server
+/// \param mxSerialize: Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-                const std::vector<Player*>& player, unsigned int posPlayer)
-   : Game (parent, statusbar, cardset, player, posPlayer, 14, 10)
+                const std::vector<Player*>& player, unsigned int posPlayer,
+                Mutex& mxSerialize)
+   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 14, 10)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
-     , pos2Play (-1U), playedSQ (false), pScoreDlg (NULL)
+     , playedSQ (false), pScoreDlg (NULL)
      , player2Exchange (3) {
    TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&, const std::vector<Glib::ustring>&)");
 
@@ -129,11 +131,12 @@ int Hearts::makeMove (unsigned int player) {
    TRACE5 ("Hearts::makeMove () - Turn of player " << player);
    Check1 (gameStatus () == PLAYING);
    Check3 (player);
+   Check3 (pos2Play == pos1Play);
 
    if (pos2Play == -1U) {
-      pos2Play = findPos2Play (player);
+      pos2Play = pos1Play = findPos2Play (player);
       TRACE8 ("Hearts::makeMove (unsigned int) - Going to play card at pos " << pos2Play);
-      flipCards2Play (players[player].hand, pos2Play, pos2Play);
+      flipCards2Play (players[player].hand, pos1Play, pos2Play);
    }
    else {
       TRACE9 ("Hearts::makeMove (unsigned int) - Playing card at pos " << pos2Play);
@@ -144,8 +147,8 @@ int Hearts::makeMove (unsigned int player) {
           && (pile[pos2Play]->number () == CardWidget::QUEEN))
           playedSQ = true;
 
-      movePile (played, pile, pos2Play, pos2Play);
-      pos2Play = -1U;
+      movePile (played, pile, pos1Play, pos2Play);
+      pos1Play = pos2Play = -1U;
       player = calcNextPlayer (player);
    }
    return player;
@@ -169,7 +172,7 @@ void Hearts::start () {
    if (randomizeCardsToPile (pile)) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          for (unsigned int j (0); j < (cards.size () / NUM_PLAYERS); ++j)
-            players[(i - posServer) & 0x3].hand.insertColourSorted (pile.removeTopCard ());
+            players[correctPlayer (i)].hand.insertColourSorted (pile.removeTopCard ());
 
       if (pScoreDlg) {
          unsigned int player;
@@ -189,7 +192,6 @@ void Hearts::start () {
          status.pop ();
          status.push (stat);
          setGameStatus (EXCHANGE);
-         setNextPlayer (0);
          enableHuman ();
       }
       else
@@ -308,6 +310,13 @@ void Hearts::cardSelected (unsigned int iCard) {
                    << ' ' << played[2]->id () << ";Player=" << posServer;
                broadcastMessage (msg.str ());
                disableHuman ();
+
+               ConnectionMgr& cmgr (getConnectionMgr ());
+               if ((cmgr.getMode () == ConnectionMgr::SERVER)
+                   && cardsExchanged ((cmgr.getClients ().size () + 1) * 3)) {
+                  exchangeCards ();
+                  startPlaying ();
+               }
             }
             return;
          }
@@ -320,28 +329,33 @@ void Hearts::cardSelected (unsigned int iCard) {
 /// Starts the playing phase of the game
 //-----------------------------------------------------------------------------
 void Hearts::startPlaying () {
-   TRACE7 ("Hearts::startPlaying () - ");
+   TRACE7 ("Hearts::startPlaying ()");
 
    // Clear variables for a new game
    memset (aPlayed, 0, sizeof (aPlayed));
    playedSQ = false;
    setGameStatus (PLAYING);
 
-   // Search for startplayer
-   unsigned int nextPlayer (0);
-   for (unsigned int i (1); i < NUM_PLAYERS; ++i)
-      if ((players[i].hand[0]->number () == CardWidget::TWO)
-          && (players[i].hand[0]->colour () == CardWidget::CLUBS)) {
-         TRACE7 ("Hearts::startPlaying () - Start with player " << i);
-         setNextPlayer (nextPlayer = i);
-         flipCards2Play (players[i].hand, pos2Play = 0, pos2Play);
-         break;
-      }
-   Check3 (nextPlayer < NUM_PLAYERS);
+   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+      // Search for startplayer
+       unsigned int nextPlayer (0);
+       for (unsigned int i (1); i < NUM_PLAYERS; ++i)
+          if ((players[i].hand[0]->number () == CardWidget::TWO)
+              && (players[i].hand[0]->colour () == CardWidget::CLUBS)) {
+              TRACE7 ("Hearts::startPlaying () - Start with player " << i);
+              nextPlayer = i;
+              break;
+          }
+       Check3 (nextPlayer < NUM_PLAYERS);
+
+       setNextPlayer (nextPlayer);
+       if (nextPlayer)
+          flipCards2Play (players[nextPlayer].hand, pos1Play = 0, pos2Play = 0);
+   }
 
    player2Exchange = (player2Exchange - 1) & 0x3;
 
-   displayTurn (nextPlayer);
+   displayTurn (currentPlayer ());
    makeNextMoves ();
 }
 
@@ -899,7 +913,7 @@ void Hearts::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
 
    for (int i (0); i < NUM_PLAYERS; ++i)
-      players[(i - posServer) & 0x3].name.set_text (actPlayers[i]->getName ());
+      players[correctPlayer (i)].name.set_text (actPlayers[i]->getName ());
 
    if (pScoreDlg)
       pScoreDlg->update (newPlayer);
@@ -943,7 +957,7 @@ void Hearts::handleMessage (unsigned int player, const char* message) {
             std::string nextCmd (command.getNextNode ('\0'));
 
             register unsigned int save (lPlayer);
-            lPlayer = (lPlayer - posServer) & 0x3;
+            lPlayer = correctPlayer (lPlayer);
             
             // Don't exchange already exchanged cards
             if (save != posServer) {
@@ -973,8 +987,10 @@ void Hearts::handleMessage (unsigned int player, const char* message) {
 
                if (cardsExchanged (((cmgr.getMode () == ConnectionMgr::SERVER)
                                     ? (cmgr.getClients ().size () + 1)
-                                    : NUM_PLAYERS) * 3))
+                                    : NUM_PLAYERS) * 3)) {
                   exchangeCards ();
+                  startPlaying ();
+               }
             }
 
             if (nextCmd.size ())

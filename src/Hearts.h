@@ -34,7 +34,8 @@ class ScoreDlg;
 class Hearts : public Game {
  public:
    Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-           const std::vector<Player*>& player, unsigned int posPlayer);
+           const std::vector<Player*>& player, unsigned int posPlayer,
+           Mutex& mxSerialize);
    virtual ~Hearts ();
 
    virtual void start ();
@@ -85,7 +86,6 @@ class Hearts : public Game {
 
    bool playedSQ;               // Flag, if the queen of spades has been played
    unsigned int aPlayed[4];        // Array holding played cars for each colour
-   unsigned int pos2Play;                                   // Position to play
 
    unsigned int player2Exchange;  // ID of (next) player to exchange cards with
    ICardPile aExchange[NUM_PLAYERS];        // Cards the players are exchanging
