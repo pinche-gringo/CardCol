@@ -337,7 +337,7 @@ template <class T> class CardInfoPile : public CardPile<T> {
       setTooltips (); }
 
    virtual void setTooltips () {
-      std::string tip (ngettext ("%1 card", "%1 cards", CardPile<T>::size ()));
+      Glib::ustring tip (ngettext ("%1 card", "%1 cards", CardPile<T>::size ()));
       tip.replace (tip.find ("%1"), 2,
                    YGP::ANumeric::toString (CardPile<T>::size ()));
       for (unsigned int i (0); i < CardPile<T>::size (); ++i)
