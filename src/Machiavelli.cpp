@@ -261,16 +261,6 @@ int Machiavelli::makeMove (unsigned int player) {
 
       // No more cards found: Continue with next player
       if (target == -1U) {
-#if CHECK > 2
-          YGP::StatusObject obj;
-          checkPiles (obj);
-          if (obj.getType () != YGP::StatusObject::UNDEFINED) {
-             TRACE ("Machiavelli::makeMove (unsigned int) - Invalid piles!"
-                    << obj.getMessage ());
-             Check (!"Valid piles");
-          }
-#endif
-
          unsigned int nextPlayer (findNextPlayer (player));
          if (nextPlayer == findNextPlayer (nextPlayer)) {
             endGame ();
@@ -289,34 +279,36 @@ int Machiavelli::makeMove (unsigned int player) {
       TRACE4 ("Machiavelli::makeMove (unsigned int) - Moving cards to pile " << target);
       unsigned int pos (target & 0xffff);
       target >>= 16;
-      TRACE9 ("Machiavelli::makeMove (unsigned int) - Pile " << target
+      TRACE8 ("Machiavelli::makeMove (unsigned int) - Pile " << target
               << "; Size: " << tablePiles.size ());
       Check3 (target < tablePiles.size ());
 
       // Check if cards have to be moved from the table
       while (posPiles.size ()) {
-         unsigned int posPile (posPiles.back ());
+         unsigned int posPile (posPiles.top ());
          unsigned int pile ((posPile >> 8) & 0xff);
          unsigned int nr (posPile >> 16);
          pos = posPile & 0xff;
+         TRACE9 ("Machiavelli::makeMove (unsigned int) - Add from " << pile
+                 << " cards " << pos << '-' << (pos + nr));
 
          Check3 (pile < tablePiles.size ());
-         Check3 ((pos + nr) < tablePiles[pile]->size ());
+         Check3 ((pos + nr) <= tablePiles[pile]->size ());
          Check2 (tablePiles[target]->empty ());
 
-         while (--nr) {
+         while (nr--) {
             CardWidget& card (tablePiles[pile]->remove (pos));
             card.unmark ();
             tablePiles[target]->append (card);
          }
 
          // Find pile where to append card from hand
-         if (tablePiles[target]->size () > 2)
+         if (tablePiles[pile]->size () < 3)
             target = pile;
 
          pos = tablePiles[target]->getPosition4Card (*hands[player][pos1Play]);
          Check3 (pos != -1U);
-         posPiles.erase (posPiles.end () - 1);
+         posPiles.pop ();
       }
 
       Check1 (pos1Play <= pos2Play);
@@ -334,6 +326,16 @@ int Machiavelli::makeMove (unsigned int player) {
       for (; (int)pos1Play <= (int)pos2Play; --pos2Play)
          tablePiles[target]->insert (hands[player].remove (pos1Play), pos++);
       target = -1U;
+
+#if CHECK > 2
+      YGP::StatusObject obj;
+      checkPiles (obj);
+      if (obj.getType () != YGP::StatusObject::UNDEFINED) {
+         TRACE ("Machiavelli::makeMove (unsigned int) - Invalid piles!\n"
+                << obj.getMessage ());
+         Check (!"Valid piles");
+      }
+#endif
    }
 
    return player;
@@ -535,7 +537,7 @@ void Machiavelli::registerHandDND (unsigned int start, unsigned int end) {
 void Machiavelli::registerHandDND (unsigned int iCard) {
    Check1 (iCard < hands[0].size ());
    TRACE9 ("Machiavelli::registerHandDND (unsigned int) - Card: " << iCard << " ("
-           << *hands[0][iCard] << " = " << hands[0][iCard] << ')');
+           << *hands[0][iCard]);
 
    CardWidget& card (*hands[0][iCard]);
    Check3 (aDNDHand.find (&card) == aDNDHand.end ());
@@ -558,8 +560,7 @@ void Machiavelli::registerHandDND (unsigned int iCard) {
 /// \param card: Card to unregister of dnd
 //-----------------------------------------------------------------------------
 void Machiavelli::unregisterHandDND (CardWidget& card) {
-   TRACE9 ("Machiavelli::unregisterHandDND (CardWidget&) - Card: " << card
-           << " -> Address: " << &card);
+   TRACE9 ("Machiavelli::unregisterHandDND (CardWidget&) - Card: " << card);
    Check1 (aDNDHand.size ());
 
    std::map<CardWidget*, CONNECTIONS>::iterator i (aDNDHand.find (&card));
@@ -604,7 +605,7 @@ void Machiavelli::registerTableDND (unsigned int pile, unsigned int start, unsig
 //-----------------------------------------------------------------------------
 void Machiavelli::registerTableDND (CardWidget& card, unsigned int nr) {
    TRACE9 ("Machiavelli::registerTableDND (CardWidget&, unsigned int) - " << card
-           << " = " << std::hex << nr << " - " << &card << std::dec);
+           << " = " << std::hex << nr << std::dec);
 
    // Card accepts drops from hand and drags from table
    card.drag_dest_set (dndTypeBoth, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
@@ -786,12 +787,9 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       broadcastMessage (msg.str ());
    }
 
-   // Store undo-info: 4 Bytes: Target-pile, target-card, source-pile,
+   // Store undo-info 4 Bytes: Target-pile, target-card, source-pile,
    // source-card; if played from hand, set source-pile to 0xff
-   undo.push ((iPile << 24) + (iCard << 16)
-              + ((info == HAND) ? (0xff00 | *pValue) : *pValue));
-   TRACE8 ("Machiavelli::cardDroppedOnTable (...) - Undo: " << std::hex
-           << undo.top () << std::dec);
+   undo.push (undoValue (iPile, iCard, (info == HAND) ? 0xff : nrpile, off, nr));
 
    while (nr--) {
       TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Insert to: " << iPile
@@ -915,7 +913,8 @@ bool Machiavelli::hasSerie (ICardPile& playerPile) {
 /// Searches for cards to play and shows them in the hand of the actual player
 /// \param player: Player to inspect
 /// \returns \c ID of the target (32 Bit: Pile << 16 + Position) or -1U;
-/// \remarks: Sets pos1Play and pos2Play approbiatly
+/// \remarks: - Sets pos1Play and pos2Play approbiatly
+///    - Creates a new pile if needed
 //-----------------------------------------------------------------------------
 unsigned int Machiavelli::cardFitsToPile (const CardWidget& card, unsigned int offset) {
    TRACE8 ("Machiavelli::cardFitsToPile (const CardWidget&, unsigned int) - Adding card "
@@ -950,8 +949,8 @@ unsigned int Machiavelli::cardFitsToPile (const CardWidget& card, unsigned int o
           // hand will be added in the next move
           ++diff;
           pos1Play = pos2Play = offset;
-          posPiles.push_back ((((*m)->size () - diff - 1) << 16)
-                              + ((m - tablePiles.begin ()) << 8) + diff);
+          posPiles.push ((((*m)->size () - diff) << 16)
+                         + ((m - tablePiles.begin ()) << 8) + diff);
           TRACE9 ("Machiavelli::showCardsToPlay (unsigned int) - Marked pile: "
                   << std::hex << pos2Play << std::dec);
 
@@ -959,7 +958,8 @@ unsigned int Machiavelli::cardFitsToPile (const CardWidget& card, unsigned int o
              Check3 ((unsigned int)diff < (*m)->size ());
              (**m)[diff]->mark ();
           } while (static_cast<unsigned int> (++diff) < (*m)->size ());
-          return 0xffff0000;
+          makeNewPile ();
+          return (tablePiles.size () - 1) << 16;
        }
    }
    return -1U;
@@ -985,17 +985,8 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
       for (ICardPile::const_iterator p (playerPile.begin ());
            p != playerPile.end (); ++p) {
          unsigned int pos (cardFitsToPile (**p, p - playerPile.begin ()));
-         switch (pos) {
-         case -1U:
-             break;
-
-         case 0xffff0000:
-            makeNewPile ();
-            return (tablePiles.size () - 1) << 16;
-
-         default:
-             return pos;
-         }
+         if (pos != -1U)
+            return pos;
       }
 
       return reorderTableToFit (playerPile);
@@ -1036,10 +1027,10 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
 
              CardWidget *card ((**t)[0]);
              int diffTable (MachiPile::cardDistance (**p, *card));
-             TRACE9 ("Machiavelli::showCardsToPlay (unsigned int) - Differences: "
+             TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Differences: "
                      << diff << '/' << diffTable);
              switch (diff) {
-             case 0:                                        // Equal numbers
+             case 0:                                           // Equal numbers
                 if (!diffTable) {
                    MachiPile::iterator c ((*t)->begin ());
                    if ((*t)->getType () == MachiPile::NUMBER) {
@@ -1057,8 +1048,9 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
                       playerPile.move (pos1Play = p - playerPile.begin (),
                                        h - playerPile.begin ());
                       pos2Play = pos1Play + 1;
-                      posPiles.push_back (((t - tablePiles.begin ()) << 8)
-                                          + 0x010000 + c - (*t)->end ());
+                      posPiles.push (((t - tablePiles.begin ()) << 8)
+                                     + 0x10000 + c - (*t)->begin ());
+                      (*c)->mark ();
                       makeNewPile ();
                       return (tablePiles.size () - 1) << 16;
                    }
@@ -1135,31 +1127,24 @@ void Machiavelli::undoMove (unsigned int number) {
 
    disableHuman ();
    while (number--) {
-      unsigned int move (undo.top ());
+      undoValue move (undo.top ());
       undo.pop ();
-      TRACE3 ("Machiavelli::undoMove (unsigned int) - " << std::hex
-              << (move >> 16) << " -> " << (move & 0xffff) << std::dec);
 
-      unsigned char tmp (move >> 8);
-      ICardPile& dest ((tmp == 0xff)
-                       ? hands[currentPlayer ()] : *tablePiles[tmp]);
-      Check3 ((move & 0xff) <= dest.size ());
+      ICardPile& dest ((move.srcPile == 0xff)
+                       ? hands[currentPlayer ()] : *tablePiles[move.srcPile]);
+      Check3 (move.srcPos <= dest.size ());
 
-      tmp = move >> 24;
-      Check3 (tmp < tablePiles.size ());
-      MachiPile& src (*tablePiles[tmp]);
-
-      tmp = move >> 16;
-      Check3 (tmp < src.size ());
+      Check3 (move.destPile < tablePiles.size ());
+      MachiPile& src (*tablePiles[move.destPile]);
+      Check3 (move.destPos < src.size ());
+      Check3 (move.number);
 
       do {
-         dest.insert (src.remove (tmp), move & 0xff);
-      } while (((move & 0xff00) != 0xff00) && (tmp < src.size ()));
+         dest.insert (src.remove (move.destPos), move.srcPos);
+      } while (--move.number);
 
-      if (src.empty ()) {
-         tmp = move >> 24;
-         removePile (tmp);
-      }
+      if (src.empty ())
+         removePile (move.destPile);
    }
 
    enableHuman ();

@@ -139,8 +139,21 @@ class Machiavelli : public Game {
 
    unsigned int target;       // Target of the last move of the computer player
 
-   std::stack<unsigned int> undo;
-   std::vector<unsigned int> posPiles;
+   typedef struct undoValue {
+      unsigned int destPos : 4;
+      unsigned int srcPos : 4;
+      unsigned int destPile : 8;
+      unsigned int srcPile : 8;
+      unsigned int number : 4;
+
+      undoValue (unsigned int targetPile, unsigned int targetPos,
+                 unsigned int pile, unsigned int pos, unsigned int nr)
+          : destPos (targetPos), srcPos (pos), destPile (targetPile)
+       , srcPile (pile), number (nr) { }
+   } undoValue;
+
+   std::stack<undoValue> undo;
+   std::stack<unsigned int> posPiles;
 };
 
 #endif
