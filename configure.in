@@ -6,7 +6,7 @@ AC_INIT()
 
 MAJOR_VERSION=0
 MINOR_VERSION=5
-MICRO_VERSION=01
+MICRO_VERSION=02
 RELEASE=$MAJOR_VERSION.$MINOR_VERSION
 VERSION=$RELEASE.$MICRO_VERSION
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -52,7 +52,7 @@ dnl Checks for libraries.
 AC_CHECK_LIB(stdc++, main)
 AC_CHECK_LIB(pthread, main)
 
-if test -z $HAVE_LIBPTHREAD; then
+if test $ac_cv_lib_pthread_main = no; then
    AC_MSG_WARN(libpthread is not installed! Disabling network features)
 fi
 
