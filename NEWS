@@ -1,3 +1,7 @@
+Overview of changes in version 0.7.03:
+
+  - Fixed bugs in Buraco
+
 Overview of changes in version 0.7.02:
 
   - Adapted to new automake/-conf

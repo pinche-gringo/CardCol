@@ -1,3 +1,38 @@
+2004-11-25  Markus Schwab  <markus@markus.linuxnet.ve>
+
+	* ChangeLog, NEWS: Changes of V0.7.03 commented
+
+	* po/de.po, po/en.po, po/es.po: Actualized
+
+	* Makefile.am: Removed double space
+
+	* src/CardCol.cpp: Removed empty line
+
+	* Common/PlayerConnDlg.cpp: Renamed VARIANT to PROT_VARIANT
+
+	* Common/DeckSelect.h: Formatting changed
+
+	* Common/CardPile.cpp:
+	  Removed check for equal colours in compare (moved to callbacks)
+
+	* configure.in:
+	  Version to 0.7.03; Defining PROTOCOLL and VARIANT (as strings)
+
+	* INSTALL: Fixed order of auto*-commands
+
+	* src/MachiPile.cpp: Fixed diff-method
+
+	* src/Machiavelli.cpp: Removed unused variables
+
+	* src/BuracoPile.cpp:
+	  Setting type of joker pile only when there are at least 2 cards
+
+	* src/Buraco.cpp: Playing joker always on a joker-pile
+
+2004-10-23  Markus Schwab  <markus@markus.linuxnet.ve>
+
+	* config.h: New file.
+
 2004-10-07  Markus Schwab  <markus@markus>
 
 	* ChangeLog, NEWS: Changes of V0.7.02 commented
@@ -18,7 +53,7 @@
 
 2004-09-18  Markus Schwab  <markus@markus>
 
-	* po/de.po: Changed Sgt.Mayor  message
+	* po/de.po: Changed Sgt.Mayor message
 
 2004-09-17  Markus Schwab  <g17m0@lycos.com>
 
