@@ -62,16 +62,19 @@ class RovhultAppl : public XApplication {
 
    void registerHandDND (CardWidget& card, unsigned int player, unsigned int card);
    void registerTableDND (CardWidget& card, unsigned int player, unsigned int pile);
-   void unregisterDND (CardWidget& card);
+   void unregisterDND (CardWidget& card) const;
  
    // Event-handling
    virtual void command (int menu);
    void pileSelected (unsigned int player, unsigned int pile);
    void handSelected (unsigned int player, unsigned int iCard);
    void finishedExchange ();
-   void movePlayedCardsToLooser (unsigned int nrLooser);
+   void takeCards (unsigned int player);
 
    // Helper functions
+   void movePlayedCardsToLooser (unsigned int nrLooser);
+   int  nextAvailablePlayer (unsigned int actPlayer) const;
+   void threadedEnablePlayer (void* pThread);
    void enablePlayer (unsigned int player);
    void disableLastPlayer ();
    void cleanTable ();
