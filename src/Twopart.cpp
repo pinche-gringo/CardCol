@@ -47,17 +47,21 @@ using SigC::bind;
 
 
 const unsigned int Twopart::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
-const unsigned int Twopart::ROWS_PLAYER[NUM_PLAYERS] = { 4,  7, 8, 7 };
+const unsigned int Twopart::ROWS_PLAYER[NUM_PLAYERS] = { 4,  8, 10, 8 };
 
 char Twopart::sortOrder[4];
 
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Defaultconstructor; all widget are created
-//Parameters: parent: Parent for cardgame
+//Parameters: parent: Parent widget to display the game in
+//            statusbar: Status bar widget to display information about the game
+//            cardset: Cardset to use
+//            names: Vector of player-names
 /*--------------------------------------------------------------------------*/
-Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
-   : Game (parent, statusbar, cardset, 11, 7)
+Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, 
+                  CardSet& cardset, const vector<string>& names)
+   : Game (parent, statusbar, cardset, names, 12, 15)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK)
      , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL), offPos (0)
@@ -70,21 +74,29 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
 
    // Show and attach card-piles
    for (int i (0); i < NUM_PLAYERS; ++i) {
+      players[i].name.show ();
+      players[i].name.set_text (names[i]);
+      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 3,
+              ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
+              ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
+              GTK_EXPAND, GTK_EXPAND, 1);
+      TRACE ("Twopart::Twopart () - Name at: " << COLS_PLAYER[i] << '/'
+             << ROWS_PLAYER[i] + ((i == 2) ? 3 : 1));
+
       players[i].won.show ();
       attach (players[i].won, COLS_PLAYER[i] + 1,
               COLS_PLAYER[i] + 2,
               ROWS_PLAYER[i] + ((i == 2) ? 2 : -2),
-              ROWS_PLAYER[i] + ((i == 2) ? 2 : -2) + 1,
+              ROWS_PLAYER[i] + ((i == 2) ? 3 : -1),
               0, 0, 1);
-
-      TRACE9 ("Twopart::Twopart () - Set at: "
+      TRACE ("Twopart::Twopart () - Won pile at: "
               << COLS_PLAYER[i] + 1 << '/' << ROWS_PLAYER[i] + ((i == 2) ? 2 : -2));
 
       players[i].hand.show ();
       attach (players[i].hand, COLS_PLAYER[i],
               COLS_PLAYER[i] + 3, ROWS_PLAYER[i],
               ROWS_PLAYER[i] + 1, 0, 0, 1);
-      TRACE9 ("Twopart::Twopart () - 2nd set at: "
+      TRACE ("Twopart::Twopart () - Hand at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
 
       players[i].won.setShowOption (ICardPile::SHOWBACK);
@@ -95,7 +107,7 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
    }
 
    played.show ();
-   attach (played, 3, 11, 5, 8, 0, 0, 0, 5);
+   attach (played, 3, 11, 6, 9, 0, 0, 0, 5);
 
    played.set_usize (width + 150, height);
    staple.set_usize (width, height);
@@ -337,9 +349,9 @@ int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int 
       player = (gameStatus () == PLAYING) ? ~newPlayer : newPlayer;
 
       std::string str ((gameStatus () == PLAYING)
-                       ? _("First part ended; Part 2 starts player %1")
-                       : _("Player %1 lost"));
-      str.replace (str.find ("%1"), 2, (char)(player + '0'));
+                       ? _("First part ended; Part 2 starts %1")
+                       : _("%1 lost"));
+      str.replace (str.find ("%1"), 2, names[player]);
       status.pop (1);
       status.push (1, str);
 
@@ -374,8 +386,8 @@ int Twopart::makeMove (unsigned int player) {
          unsigned int oldPlayer (player);
          player = pickUpPlayedPile (player);
 
-         std::string stat ( _("Player %1 can't continue -> Picking up last cards; "));
-         stat.replace (stat.find ("%1"), 2, (char)(oldPlayer + '0'));
+         std::string stat ( _("%1 can't continue -> Picking up last cards; "));
+         stat.replace (stat.find ("%1"), 2, names[oldPlayer]);
          displayTurn (player, stat);
       }
    }
@@ -965,6 +977,8 @@ int Twopart::startPartTwoTimerFnc (unsigned int player) {
    TRACE9 ("Twopart::startPartTwoTimerFnc (unsigned int) - Continuing with " << player);
    Check3 (!bfPlayers);
    setGameStatus (PLAYING2);
+
+   disableWonCards ();
 
    // Prepare array for sorting according to trumps
    Check3 (pTrump);

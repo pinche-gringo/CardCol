@@ -3,8 +3,8 @@
 bin_PROGRAMS=
 bin_PROGRAMS=CardCol
 
-CardCol_SOURCES=CardCol.cpp Twopart.cpp Rovhult.cpp Hearts.cpp
-include_HEADERS=Twopart.h Rovhult.h Hearts.h
+CardCol_SOURCES=CardCol.cpp Twopart.cpp Rovhult.cpp Hearts.cpp HeartsScore.cpp
+include_HEADERS=Twopart.h Rovhult.h Hearts.h HeartsScore.h
 
 
 INCLUDES = @INCLUDES@ -I../Common `gtkmm-config --cflags`

@@ -41,7 +41,7 @@
 #include "Hearts.h"
 
 
-const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = { 3, 9, 3,  1 };
+const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = { 3, 9, 3, 1 };
 const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 
 
@@ -50,9 +50,11 @@ const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 //Parameters: parent: Parent widget to display the game in
 //            statusbar: Status bar widget to display information about the game
 //            cardset: Cardset to use
+//            names: Vector of player-names
 /*--------------------------------------------------------------------------*/
-Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset)
-   : Game (parent, statusbar, cardset, 10, 10)
+Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset,
+                const vector<string>& names)
+   : Game (parent, statusbar, cardset, names, 14, 10)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , pos2Play (-1U), pScoreDlg (NULL) {
    TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&)");
@@ -62,6 +64,13 @@ Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset)
 
    // Show and attach card-piles
    for (int i (0); i < NUM_PLAYERS; ++i) {
+      players[i].name.show ();
+      players[i].name.set_text (names[i]);
+      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + ((i & 1) ? 1 : 5),
+              ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
+              ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
+              GTK_EXPAND, GTK_EXPAND, 1);
+
       players[i].won.show ();
       attach (players[i].won, COLS_PLAYER[i],
               COLS_PLAYER[i] + ((i & 1) ? 1 : 5),
@@ -307,7 +316,7 @@ unsigned int  Hearts::check4Winner (unsigned int player) {
       player = -1U;
       setGameStatus (STOPPED);
       if (!pScoreDlg)
-         pScoreDlg = HeartsScoreDlg::perform ();
+         pScoreDlg = HeartsScoreDlg::perform (names);
 
       unsigned int aScore[NUM_PLAYERS];
       for (unsigned int i (0); i < NUM_PLAYERS; ++i) {

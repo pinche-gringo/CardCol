@@ -20,6 +20,8 @@
 
 #include <vector>
 
+#include <gtk--/label.h>
+
 #include <CardSet.h>
 #include <CardPile.h>
 
@@ -36,7 +38,8 @@ using namespace Gtk;
 class Twopart : public Game {
  public:
    // Manager functions
-   Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset);
+   Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
+            const vector<string>& names);
    ~Twopart ();
 
    virtual void start ();
@@ -124,6 +127,7 @@ class Twopart : public Game {
    struct {
       CardHPile hand;                         // For players: Cards in the hand
       CardHPile won;                            // Reserve-cards (for end-game)
+      Gtk::Label name;
    } players[NUM_PLAYERS];
 
    Widget* pMenuNew;

@@ -20,6 +20,8 @@
 
 #include <vector>
 
+#include <gtk--/label.h>
+
 #include <CardSet.h>
 #include <CardPile.h>
 
@@ -39,7 +41,8 @@ using namespace Gtk;
 // Class to handle the Hearts cardgame
 class Hearts : public Game {
  public:
-   Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset);
+   Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset,
+           const vector<string>& names);
    virtual ~Hearts ();
 
    virtual void start ();
@@ -77,8 +80,9 @@ class Hearts : public Game {
    unsigned int pos2Play;                                   // Position to play
 
    struct {
-      CardHPile hand;                         // For players: Cards in the hand
-      CardHPile won;                            // Reserve-cards (for end-game)
+      CardHPile  hand;                        // For players: Cards in the hand
+      CardHPile  won;                           // Reserve-cards (for end-game)
+      Gtk::Label name;
    } players[NUM_PLAYERS];
    CardHPile played;
 

@@ -28,7 +28,6 @@
 #include <cardgames-cfg.h>
 
 #include <gtk--/label.h>
-#include <gtk--/button.h>
 #include <gtk--/separator.h>
 
 #include <Trace_.h>
@@ -38,26 +37,18 @@
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : (Default-)Constructor; Shows the dialog
+//Parameters: playerNames: Vector with names of players
 /*--------------------------------------------------------------------------*/
-HeartsScoreDlg::HeartsScoreDlg ()
-   : Dialog (), client (new Gtk::HBox), ok (new Gtk::Button (_("OK"))) {
-   TRACE9 ("HeartsScoreDlg::HeartsScoreDlg (4 x unsinged int)");
-   Check3 (ok);
-   ok->set_usize (90, 30);
-   ok->show ();
-   ok->clicked.connect (bind (slot (this, &HeartsScoreDlg::command), OK));
-   get_action_area ()->pack_start (*ok, false, false, 5);
-   ok->set_flags (GTK_CAN_DEFAULT);
-   ok->grab_default ();
+HeartsScoreDlg::HeartsScoreDlg (const vector<string>& playerNames)
+   : XDialog (OK), client (new Gtk::HBox) {
+   TRACE9 ("HeartsScoreDlg::HeartsScoreDlg ()");
+   Check1 ((sizeof (aColumns) / sizeof (aColumns[0])) < playerNames.size ());
 
    set_title (_("Score"));
 
    for (unsigned int i (0);
         i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i) {
-      string player (_("Player %1"));
-      player.replace (player.find ("%1"), 2, (char)(i + '0'));
-
-      aColumns[i].setTitle (player);
+      aColumns[i].setTitle (playerNames[i]);
 
       client->pack_start (aColumns[i].getBox (), true, true, 5);
    }
@@ -102,10 +93,9 @@ void HeartsScoreDlg::addPoints (unsigned int aPoints[4]) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Callback after button-events
-//Parameters: cmd: ID of pressed button
+//Purpose   : Callback after selecting OK; Hides the dialog
 /*--------------------------------------------------------------------------*/
-void HeartsScoreDlg::command (commands cmd) {
+void HeartsScoreDlg::okEvent () {
    hide ();
 }
 
@@ -115,14 +105,14 @@ void HeartsScoreDlg::command (commands cmd) {
 /*--------------------------------------------------------------------------*/
 HeartsScoreDlg::column::column ()
    : pBox (new Gtk::VBox ()) , pTitle (new Gtk::Label ())
-     , pSum (new IntLabel (0)) , pSep (new Gtk::HSeparator ()) {
+     , pSum (new IntLabel (0U)) , pSep (new Gtk::HSeparator ()) {
    pBox->show ();
    pTitle->show ();
    pSum->show ();
    pSep->show ();
 
-   pBox->pack_start (*pTitle, false, false, 0);
-   pBox->pack_end (*pSum, false, false, 0);
+   pBox->pack_start (*pTitle, false, false, 5);
+   pBox->pack_end (*pSum, false, false, 3);
    pBox->pack_end (*pSep, false, false, 0);
 }
 

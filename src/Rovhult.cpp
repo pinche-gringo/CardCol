@@ -53,9 +53,15 @@ using namespace Gtk;
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Defaultconstructor; all widget are created
+//Parameters: parent: Parent widget to display the game in
+//            statusbar: Status bar widget to display information about the game
+//            cardset: Cardset to use
+//            names: Vector of player-names
 /*--------------------------------------------------------------------------*/
-Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
-   : Game (parent, statusbar, cardset, 16, 20), staple (ICardPile::VERY_COMPRESSED)
+Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
+                  CardSet& cardset, const vector<string>& names)
+   : Game (parent, statusbar, cardset, names, 16, 20)
+     , staple (ICardPile::VERY_COMPRESSED)
      , played (ICardPile::VERY_COMPRESSED, ICardPile::SHOWFACE) {
    staple.show ();
    attach (staple, 3, 4, 2, 7, 0, 0);
@@ -78,6 +84,14 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
 
          players[i].reserve[j].set_usize (width, height + 5);
       }
+
+      players[i].name.show ();
+      players[i].name.set_text (names[i]);
+      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 5,
+              ROWS_PLAYER[i] + (i ? 5 : 2),
+              ROWS_PLAYER[i] + (i ? 6 : 3),
+              GTK_EXPAND, GTK_EXPAND, 1);
+
       players[i].hand.set_usize (width * 3, height);
 
       players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::NORMAL);
@@ -468,16 +482,16 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 
       if (nextAvailablePlayer (player) == -1) {
          status.pop (1);
-         stat = _("Player %1 lost");
-         stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+         stat = _("%1 lost");
+         stat.replace (stat.find ("%1"), 2, names[player]);
          status.push (1, stat);
          setGameStatus (STOPPED);
          return -1;
       }
 
       if (nr == CardWidget::EIGHT) {
-         stat = _("Skipping player %1; ");
-         stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+         stat = _("Skipping %1; ");
+         stat.replace (stat.find ("%1"), 2, names[player]);
          player = nextAvailablePlayer (player);
       }
    }
@@ -642,8 +656,8 @@ unsigned int Rovhult::movePlayedCardsToLooser (unsigned int nrLooser) {
 
    movePile (players[nrLooser].hand, played);
    players[nrLooser].hand.sortByNumber ();
-   std::string stat (_("Player %1 can't continue -> Taking whole pile. "));
-   stat.replace (stat.find ("%1"), 2, (char)(nrLooser + '0'));
+   std::string stat (_("%1 can't continue -> Taking whole pile. "));
+   stat.replace (stat.find ("%1"), 2, names[nrLooser]);
    displayTurn (nrLooser =  nextAvailablePlayer (nrLooser), stat);
    return nrLooser;
 }
@@ -803,8 +817,8 @@ void Rovhult::dealCards () {
 
    status.pop (1);
    status.push (1, _("Exchange the cards in your hand with the one on the "
-                     "table (with drag and drop) - press space (or click on staple) "
-                     "if finished"));
+                     "table (with drag and drop) - press space (or click on the"
+                     " staple) if finished"));
 }
 
 /*--------------------------------------------------------------------------*/

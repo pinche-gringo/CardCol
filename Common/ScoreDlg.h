@@ -19,8 +19,9 @@
 
 
 #include <string>
+#include <vector>
 
-#include <gtk--/dialog.h>
+#include <XDialog.h>
 
 #include <Check.h>
 
@@ -31,41 +32,36 @@
 namespace Gtk {
    class HBox;
    class Label;
-   class Button;
    class Widget;
    class Separator;
 }
 
 
 // Class to display the score of the Hearts cardgame
-class HeartsScoreDlg : public Gtk::Dialog {
+class HeartsScoreDlg : public XDialog {
  public:
-   HeartsScoreDlg ();
+   HeartsScoreDlg (const vector<string>& playerNames);
    virtual ~HeartsScoreDlg ();
 
-   static HeartsScoreDlg* perform () {
-      return new HeartsScoreDlg (); }
+   static HeartsScoreDlg* perform (const vector<string>& playerNames) {
+      return new HeartsScoreDlg (playerNames); }
 
    void addPoints (unsigned int points0, unsigned int points1,
                    unsigned int points2, unsigned int points3);
    void addPoints (unsigned int aPoints[4]);
-
- protected:
-   typedef enum { OK } commands;
-   void command (commands cmd);
 
  private:
    //Prohibited manager functions
    HeartsScoreDlg (const HeartsScoreDlg& other);
    const HeartsScoreDlg& operator= (const HeartsScoreDlg& other);
 
+   virtual void okEvent ();
+
    typedef SmartPtr<Gtk::Box>        PBox;
    typedef SmartPtr<Gtk::Label>      PLabel;
-   typedef SmartPtr<Gtk::Button>     PButton;
    typedef SmartPtr<Gtk::Separator>  PSeparator;
 
-   PBox    client;
-   PButton ok;
+   PBox client;
 
    class column {
     public:

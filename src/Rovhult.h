@@ -20,6 +20,8 @@
 
 #include <vector>
 
+#include <gtk--/label.h>
+
 #include <CardSet.h>
 #include <CardPile.h>
 
@@ -36,7 +38,8 @@ using namespace Gtk;
 class Rovhult : public Game {
  public:
    // Manager functions
-   Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset);
+   Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
+            const vector<string>& names);
    ~Rovhult ();
 
    virtual void end (bool restart);
@@ -128,6 +131,7 @@ class Rovhult : public Game {
    struct {
       CardHPile hand;                     // For players: Cards in the hand
       CardVPile reserve[3];                     // Reserve-cards (for end-game)
+      Gtk::Label name;
    } players[NUM_PLAYERS];
 
    Connection pileTop;
