@@ -83,6 +83,7 @@ class Twopart : public XApplication {
    unsigned int bfPlayers;           // Array indicating players still in round
    unsigned int actPlayer;          // Player who is in turn (needed for timer)
    unsigned int startPlayer;  // Player who started round (needed for endRound)
+   unsigned int bfOldPlayers;  // Array indicating players while starting round
 
    // Columns and rows for the cards of the players
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
@@ -116,7 +117,7 @@ class Twopart : public XApplication {
    static const unsigned int USED_CARDS = 52;
 
    static const unsigned int WIDTH = 760;
-   static const unsigned int HEIGHT = 680;
+   static const unsigned int HEIGHT = 690;
 };
 
 #endif
