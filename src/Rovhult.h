@@ -29,12 +29,14 @@
 #include <Game.h>
 
 
-// Class to handle the Rovhult-cardgame
+/**Class to handle the Rovhult-cardgame
+ */
 class Rovhult : public Game {
  public:
    // Manager functions
    Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<Player*>& players);
+            const std::vector<Player*>& players, unsigned int posPlayer,
+            Mutex& mxSerialize);
    ~Rovhult ();
 
    virtual void end (bool restart);
@@ -43,6 +45,9 @@ class Rovhult : public Game {
    virtual void clean ();
    virtual const char* name () { return "Røvhult"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
+
+ protected:
+   virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
 
  private:
    enum { PREPLAYING = Game::LAST };
@@ -142,9 +147,6 @@ class Rovhult : public Game {
    std::map <const CardWidget*, SigC::Connection> aHandDND;
    std::map <const CardWidget*, SigC::Connection> aHandData;
    std::map <const CardWidget*, SigC::Connection> aTableData;
-
-   unsigned int pos2Play;
-   unsigned int pos1Play;
 };
 
 #endif

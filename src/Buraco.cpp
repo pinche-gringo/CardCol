@@ -54,14 +54,16 @@ unsigned int Buraco::ENDPOINTS (2000);
 /// \param posPlayer: Position of player for the server
 /// \param mxSerialize: Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
+Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                 CardSet& cardset, const std::vector<Player*>& player,
                 unsigned int posPlayer, YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10)
-                unsigned int posPlayer)
-   : Game (parent, statusbar, cardset, player, posPlayer, 3, 10), startPlayer (0)
+                unsigned int posPlayer, Mutex& mxSerialize)
+     , staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK)
+     , startPlayer (0)
      , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
-     , newPile (_("New pile")), target (-1U), pos1 (0), pos2 (0)
+     , newPile (_("New pile")), target (-1U)
      , pScoreDlg (NULL) {
 
    for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
@@ -164,7 +166,7 @@ void Buraco::cleanCerrado (unsigned int player) {
 /// \remarks This method expects the target pile to play in the target-member
 ///     and the positions to play in pos1Play and pos2Play
 //-----------------------------------------------------------------------------
-///     and the positions to play in pos1 and pos2
+int Buraco::makeMove (unsigned int player) {
    TRACE5 ("Buraco::makeMove (unsigned int) - Turn of player " << player
            << "; Target: " << std::hex << (int)target << std::dec);
    Check1 (player); Check1 (player < NUM_PLAYERS);
@@ -181,10 +183,10 @@ void Buraco::cleanCerrado (unsigned int player) {
       Check3 (target != -1U);
       Check1 (pos1Play <= pos2Play);
    }
-      Check1 (pos1 <= pos2);
+   else {
       Check1 (pos1Play <= pos2Play);
 
-      Check1 (pos1 <= pos2);
+      // Calculate pile to play cards to: If target = 0xffff0000, append cards
       // to dumped staple; else target specifies offset of pile and card on
       // Calculate pile to play cards to: If target = 0xffff0000, append cards to
       // dumped staple; else target specifies offset of pile and card on table
@@ -197,7 +199,7 @@ void Buraco::cleanCerrado (unsigned int player) {
          TRACE4 ("Buraco::makeMove (unsigned int) - Dumping card");
          Check3 (pos1Play == pos2Play);
          pos = dumped.size ();
-         Check3 (pos1 == pos2);
+         dest = &dumped;
 
          gStatus.startTurn = 1;
          ++player &= 0x3;
@@ -215,7 +217,7 @@ void Buraco::cleanCerrado (unsigned int player) {
 #if CHECK > 2
          for (unsigned int pos (pos1Play); pos < pos2Play; ++pos) {
             int diff (cardDistance (*source[pos + 1], *source[pos]));
-         for (unsigned int pos (pos1); pos < pos2; ++pos) {
+            TRACE1 ("Buraco::makeMove (unsigned int) - Card " << *source[pos]);
             Check3 (isJoker (*source[pos]) || isJoker (*source[pos + 1])
                     ? true : (diff == 0) || (diff == 1));
          }
@@ -225,9 +227,9 @@ void Buraco::cleanCerrado (unsigned int player) {
       // Move played cards to the pile to play
       Check3 (source.size () > pos2Play);
       for (; (int)pos1Play <= (int)pos2Play; --pos2Play)
-      Check3 (source.size () > pos2);
-      for (; (int)pos1 <= (int)pos2; --pos2)
-         dest->insert (source.remove (pos1), pos++);
+         dest->insert (source.remove (pos1Play), pos++);
+      target = -1U;
+
       if (gStatus.pickUpPlayed) {
          Check3 (dumped.size ());
             addBuraco (oldPlayer);
@@ -411,7 +413,7 @@ int Buraco::executeMove (unsigned int player) {
          if (canDumpCards (player, nrs) || (nrs-- > 3)) {
             pos1Play = firstPos;
             CardVPile& pile (makeNewPile (player & 1));
-            flipCards2Play (playerPile, pos1 = i, pos2 = i + nrs - 1);
+            flipCards2Play (playerPile, pos1Play = i, pos2Play = i + nrs - 1);
       }
    }
 
@@ -447,8 +449,8 @@ int Buraco::executeMove (unsigned int player) {
             makeNewPile (player & 1);
             pos1Play = playerPile.size () - 3;
             CardVPile& pile (makeNewPile (player & 1));
-            flipCards2Play (playerPile, pos1 = playerPile.size () - 3,
-                            pos2 = playerPile.size () - 1);
+            flipCards2Play (playerPile, pos1Play = playerPile.size () - 3,
+                            pos2Play = playerPile.size () - 1);
          ++ci;
       }
 
@@ -465,8 +467,8 @@ int Buraco::executeMove (unsigned int player) {
          for (std::vector<CardVPile*>::const_iterator p (tablePiles[player & 1].begin ());
               p != tablePiles[player & 1].end (); ++p)
             if (((*p)->size () < 7) && containsNoJoker (**p)) {
-               pos1 = pos2 = playerPile.size () - 1;
-               flipCards2Play (playerPile, pos1, pos2);
+               pos1Play = pos2Play = playerPile.size () - 1;
+               flipCards2Play (playerPile, pos1Play, pos2Play);
                return (p - tablePiles[player & 1].begin ()) << 16;
 
    if (containsOnlyJoker (playerPile))
@@ -488,7 +490,7 @@ int Buraco::executeMove (unsigned int player) {
    Check3 (i < playerPile.size ());
    pos1Play = pos2Play = i;
    return 0xffff0000;
-   flipCards2Play (playerPile, pos1 = i, pos2 = i);
+   flipCards2Play (playerPile, pos1Play = i, pos2Play = i);
    return 0xffff << 16;
 //-----------------------------------------------------------------------------
 /// Starts the game by dealing the cards
@@ -509,7 +511,7 @@ void Buraco::start () {
 
    pos1Play = pos2Play = 0;
    target = -1U;
-   pos1 = pos2 = 0;
+
    if (randomizeCardsToPile (staple)) {
       for (unsigned int j (0); j < 11; ++j) {
          for (unsigned int i (0); i < NUM_PLAYERS; ++i)
@@ -1256,16 +1258,16 @@ CardVPile& Buraco::makeNewPile (unsigned int team) {
                   || ((reserve[(player + 1) & 1].empty ())
                       && (points[(player + 1) & 1] > 100))))
              || (((*p)->size () > 2) && containsOnlyJoker (**p))) {
-            pos1 = pos2 = iCard;
-            flipCards2Play (hands[player], pos1, pos2);
+            pos1Play = pos2Play = iCard;
+            flipCards2Play (hands[player], pos1Play, pos2Play);
             return ((p - tablePiles[player & 1].begin ()) << 16) + (*p)->size ();
    }
 
       else {
          int pos (cardFitsOnPile (**p, card));
          if (pos != -1) {
-            pos1 = pos2 = iCard;
-            flipCards2Play (hands[player], pos1, pos2);
+            pos1Play = pos2Play = iCard;
+            flipCards2Play (hands[player], pos1Play, pos2Play);
             return ((p - tablePiles[player & 1].begin ()) << 16) + pos;
          }
       pos1Play = pos2Play = iCard;

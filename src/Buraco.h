@@ -44,7 +44,8 @@ class ScoreDlg;
 class Buraco : public Game {
  public:
    Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<Player*>& player, unsigned int posPlayer);
+           const std::vector<Player*>& player, unsigned int posPlayer,
+           Mutex& mxSerialize);
    virtual ~Buraco ();
 
    virtual void start ();
@@ -163,8 +164,6 @@ class Buraco : public Game {
       unsigned int team2Buraco : 2;
    } gStatus;
    unsigned int target;
-   unsigned int pos1;
-   unsigned int pos2;
 
    ScoreDlg* pScoreDlg;
 };

@@ -28,12 +28,14 @@
 #include <Game.h>
 
 
-// Class to handle the Twopart-cardgame
+/**Class to handle the Twopart-cardgame
+ */
 class Twopart : public Game {
  public:
    // Manager functions
    Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<Player*>& players);
+            const std::vector<Player*>& players, unsigned int posPlayer,
+            Mutex& mxSerialize);
    ~Twopart ();
 
    virtual void start ();
@@ -41,6 +43,9 @@ class Twopart : public Game {
    virtual void playOpen (bool open);
    virtual const char* name () { return "Twopart"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
+
+ protected:
+   virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
 
  private:
    // Status of game
@@ -108,8 +113,6 @@ class Twopart : public Game {
    unsigned int bfOldPlayers;  // Array indicating players while starting round
 
    bool restart;
-   unsigned int pos2Play;
-   unsigned int pos1Play;
 
    // Columns and rows for the cards of the players
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];

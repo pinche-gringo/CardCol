@@ -54,14 +54,17 @@ char Twopart::sortOrder[4];
 /// \param statusbar: Status bar widget to display information about the game
 /// \param cardset: Cardset to use
 /// \param players: Vector of player
+/// \param posPlayer: Position of player for the server
+/// \param mxSerialize: Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, 
-                  CardSet& cardset, const std::vector<Player*>& player)
-   : Game (parent, statusbar, cardset, player, 12, 15)
+                  CardSet& cardset, const std::vector<Player*>& player,
+                  unsigned int posPlayer, Mutex& mxSerialize)
+   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 12, 15)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK)
      , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL), offPos (0)
-        , bfOldPlayers (bfPlayers) {
+     , bfOldPlayers (bfPlayers) {
    staple.show ();
    attach (staple, 2, 3, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
 
@@ -1114,4 +1117,15 @@ void Twopart::changeNames (const std::vector<Player*>& newPlayer) {
 
    for (int i (0); i < NUM_PLAYERS; ++i)
       players[i].name.set_text (actPlayers[i]->getName ());
+}
+
+//----------------------------------------------------------------------------
+/// Changes the names of the playing people
+/// \param newPlayer: Array holding the new player
+/// \param pile: ID of the pile to return
+//----------------------------------------------------------------------------
+ICardPile& Twopart::getPileOfPlayer (unsigned int player, unsigned int pile) {
+   Check1 (player < NUM_PLAYERS);
+   Check1 (!pile);
+   return players[player].hand;
 }
