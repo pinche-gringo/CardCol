@@ -43,12 +43,12 @@ class RovhultAppl : public XApplication {
 
    static void initI18n ();
 
- protected:
+ private:
    // IDs for menus
    enum { NEW, EXIT, ABOUT };
 
    void pileSelected (CardPile* parent);
-   void handSelected (CardCollection* parent, unsigned int pos);
+   void handSelected (unsigned int player, unsigned int iCard);
 
    void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
                      guint info, guint32 time, unsigned int player, unsigned int cardPos);
@@ -61,7 +61,6 @@ class RovhultAppl : public XApplication {
 
    void finishedExchange ();
 
- private:
    // Protected manager functions
    RovhultAppl (const RovhultAppl&);
    const RovhultAppl& operator= (const RovhultAppl&);
@@ -69,10 +68,14 @@ class RovhultAppl : public XApplication {
    // Event-handling
    virtual void command (int menu);
 
+   void cleanTable ();
    void dealCards ();
    void fillStaple ();
+   void moveCardsToWinner (unsigned int nrWinner);
 
    void loadCards ();
+
+   int getWinner () const;
 
    void registerHandDND (CardWidget& card, unsigned int player, unsigned int card);
    void registerTableDND (CardWidget& card, unsigned int player, unsigned int pile);
@@ -100,6 +103,7 @@ class RovhultAppl : public XApplication {
    CardPile staple;                                          // Cards on staple
    CardCollection hands[NUM_PLAYERS];         // For players: Cards in the hand
    CardPile reserve[NUM_PLAYERS][3];            // Reserve-cards (for end-game)
+   CardPile won[NUM_PLAYERS];             // Cards which player won during game
 
    Widget* pMenuNew;
 
@@ -109,7 +113,7 @@ class RovhultAppl : public XApplication {
    static const unsigned int USED_CARDS = 52;
 
    static const unsigned int WIDTH = 760;
-   static const unsigned int HEIGHT = 710;
+   static const unsigned int HEIGHT = 735;
 
 
    static GtkTargetEntry dndTypeTable;

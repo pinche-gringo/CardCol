@@ -354,12 +354,12 @@ RovhultAppl::RovhultAppl ()
                        ROWS_PLAYER[i] + (i ? 3 : -3),
                        ROWS_PLAYER[i] + (i ? 3 : -3) + 2
                        , 0, 0, 1);
-      TRACE9 ("RovhultAppl::dealCards () - 2nd set at: "
+      TRACE9 ("RovhultAppl::RovhultAppl () - 2nd set at: "
               << COLS_PLAYER[i] + (i << 1) << '/'
               << ROWS_PLAYER[i] + (i ? 3 : -3));
    }
 
-   tblTable.attach (played, 7, 11, 7, 11, 0, 0, 1);
+   tblTable.attach (played, 7, 11, 5, 14, 0, 0, 1);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -377,6 +377,7 @@ RovhultAppl::~RovhultAppl () {
 void RovhultAppl::command (int menu) {
    switch (menu) {
    case NEW: {
+      cleanTable ();
       fillStaple ();
       dealCards ();
       break;
@@ -420,16 +421,13 @@ void RovhultAppl::finishedExchange () {
          unregisterDND (card);
          unregisterDND (reserve[i][j].getTopCard ());
 
-         card.clicked.connect (bind (slot (this, &RovhultAppl::handSelected),
-                                     &hands[i], j));
-
-         reserve[i][j].getTopCard ().set_sensitive (false);     // Don't access
+         card.clicked.connect (bind (slot (this, &RovhultAppl::handSelected), i, j));
+         reserve[i][j].setAccessable (false);
       }
    }
 
-   CardWidget& card (staple.getTopCard ());
-   card.set_sensitive (false);
-   card.remove_accelerator (*get_accel_group (), ' ', 0);
+   staple.setAccessable (false);
+   staple.getTopCard ().remove_accelerator (*get_accel_group (), ' ', 0);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -439,6 +437,7 @@ void RovhultAppl::finishedExchange () {
 void RovhultAppl::pileSelected (CardPile* parent) {
    Check3 (parent);
 
+   // TODO: Implement for end-game
    CardWidget& card (parent->removeTopCard ());
    TRACE1 ("Rovhult::pileSelected (CardPile*, unsinged int) - "
            << card.color () << '/' << card.number ());
@@ -446,16 +445,80 @@ void RovhultAppl::pileSelected (CardPile* parent) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card in hand
-//Parameters: parent: Pile of card
+//Parameters: player: ID of player
 //            iCard: (Internal) ID of card
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::handSelected (CardCollection* parent, unsigned int pos) {
+void RovhultAppl::handSelected (unsigned int player, unsigned int iCard) {
    Check3 (pos <= cards.numberOfCards ());
-   Check3 (parent); 
+   Check3 (player <= NUM_PLAYER);
 
-   CardWidget& card (parent->cardAt (pos));
-   TRACE1 ("Rovhult::handSelected (CardCollection*, unsinged int) - " << pos << " = "
+   CardWidget& card (hands[player].removeCard (iCard));
+   TRACE1 ("Rovhult::handSelected (CardCollection*, unsinged int) - " << iCard << " = "
            << card.color () << '/' << card.number ());
+
+   played.addCard (card);
+   if (staple.numberOfCards ()) {
+      CardWidget& newCard (staple.removeTopCard ());
+      newCard.setVisible ();
+      hands[player].addCard (newCard);
+   }
+
+   unsigned int winner (getWinner ());
+   if (winner >= 0)
+      moveCardsToWinner (winner);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Method to move the cards of the actual round to the winner
+//Parameters: nrWinner: Nr. of player winning the round
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::moveCardsToWinner (unsigned int nrWinner) {
+   TRACE8 ("Rovhult::moveCardsToWinner () - " << played.numberOfCards ());
+   Check3 (played.numberOfCards () >= NUM_PLAYERS);
+   Check3 (nrWinner < NUM_PLAYERS);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Calculates the winner (if any) out of the played cards
+//Returns   : int: Number of winner or -1 if round not finished
+/*--------------------------------------------------------------------------*/
+int RovhultAppl::getWinner () const {
+   TRACE8 ("Rovhult::roundFinished () const - " << played.numberOfCards ());
+
+   if (played.numberOfCards () >= NUM_PLAYERS) {
+      unsigned int players (NUM_PLAYERS);
+      unsigned int handledCards (0);
+
+      CardWidget::NUMBERS bestCard (CardWidget::TWO);
+      unsigned int bestPlayers[NUM_PLAYERS] = { 0, 1, 2, 3 };
+
+      do {
+         for (int i (0); i < players; ++i) {
+            CardWidget::NUMBERS actCard (played.cardAt (handledCards).number ());
+            if (actCard >= bestCard) {
+               bestCard = actCard;
+               bestPlayers[NUM_PLAYERS - players--] = bestPlayers[i];
+
+               TRACE5 ("Rovhult::roundFinished () const - Best card "
+                       << actCard << " of player " << bestPlayers[i]);
+            }
+         }
+         players = NUM_PLAYERS - players;
+         ++handledCards;
+
+         TRACE5 ("Rovhult::roundFinished () const - " 
+                 << played.numberOfCards () - handledCards << " emaining cards for "
+                 << players << " players");
+      } while ((played.numberOfCards () - handledCards) >= players);
+
+      // Are cards left in pile? Round not finsished
+      if (played.numberOfCards () - handledCards)
+          return -1;
+
+      return bestPlayers[0];
+
+   }
+   return -1;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -487,7 +550,13 @@ void RovhultAppl::loadCards () {
 void RovhultAppl::fillStaple () {
    // Randomize and put cards onto staple
    cards.shuffle ();
+   staple.setTopCards (cards.getCards (), false);
+}
 
+/*--------------------------------------------------------------------------*/
+//Purpose   : Remove cards from everything which can hold them
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::cleanTable () {
    staple.clear ();                                             // Clear staple
    for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
       for (int j (0); j < 3; ++j) {
@@ -496,9 +565,9 @@ void RovhultAppl::fillStaple () {
 
       hands[i].setStyle (CardCollection::NORMAL);
       hands[i].clear ();
+      won[i].clear ();
    }
-
-   staple.setTopCards (cards.getCards (), false);
+   played.clear ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -570,9 +639,8 @@ void RovhultAppl::dealCards () {
       for (unsigned int j (0); j < 3; ++j) {
          for (unsigned int k (0); k < 2; ++k) {           // Set cards on table
             CardWidget& card (staple.removeTopCard ());
-            card.set_sensitive (k);
-
             reserve[i][j].setTopCard (card, k);
+
             if (k)                       // Enable drag-n-drop for the top-card
                registerTableDND (card, i, j);
          } // end-for two cards pro pile (in reserve)
@@ -587,6 +655,7 @@ void RovhultAppl::dealCards () {
 
    played.hide ();
 
+   staple.setAccessable (true);
    CardWidget& card (staple.getTopCard ());
    card.clicked.connect (slot (this, &RovhultAppl::finishedExchange));
    card.add_accelerator ("clicked", *get_accel_group (), ' ', 0, GtkAccelFlags (0));
