@@ -70,8 +70,8 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    attach (staple, 3, 4, 2, 7);
 
    Check3 (cards.numberOfCards ());
-   int width, height;
-   cards.getCard (0).getImageSize (width, height);
+   int width (cards.getCard (0).getImageWidth ());
+   int height (cards.getCard (0).getImageHeight ());
 
    // Show and attach card-piles
    changeNames (names);
@@ -728,14 +728,13 @@ void Rovhult::registerTableDND (CardWidget& card, unsigned int pile) {
    Check1 (pile < 3);
    Check3 (gameStatus () == PREPLAYING);
 
-   static Glib::RefPtr<Gdk::Bitmap> bitmap;
-
    // Card accepts drops from hand and drags from table
-   card.drag_dest_set (dndTypeHand, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
+   card.drag_dest_set (dndTypeHand, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    card.drag_source_set
-      (dndTypeTable, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK));
+      (dndTypeTable, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
+                                        Gdk::ACTION_MOVE);
 
-   card.drag_source_set_icon (get_colormap (), card.getImage (), bitmap);
+   card.drag_source_set_icon (card.getImage ());
    aTableDND.push_back (card.signal_drag_data_received ().connect
                         (bind (slot (*this, &Rovhult::cardDroppedOnTable), pile)));
    card.signal_drag_data_get ().connect
@@ -751,15 +750,13 @@ void Rovhult::registerTableDND (CardWidget& card, unsigned int pile) {
 void Rovhult::registerHandDND (CardWidget& card,  unsigned int iCard) {
    Check3 (gameStatus () == PREPLAYING);
 
-   static Glib::RefPtr<Gdk::Bitmap> bitmap;
-
    // Card accepts drops from table and drags from hand
-   card.drag_dest_set (dndTypeTable, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
+   card.drag_dest_set (dndTypeTable, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    card.drag_source_set
       (dndTypeHand,
-       Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK));
+       Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK), Gdk::ACTION_MOVE);
 
-   card.drag_source_set_icon (get_colormap (), card.getImage (), bitmap);
+   card.drag_source_set_icon (card.getImage ());
    aHandDND.push_back (card.signal_drag_data_received ().connect
                        (bind (slot (*this, &Rovhult::cardDroppedOnHand), iCard)));
    card.signal_drag_data_get ().connect
@@ -853,9 +850,6 @@ void Rovhult::dealCards () {
 void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
                                   gint, gint, GtkSelectionData* pData, guint info,
                                   guint32 time, unsigned int pile) {
-   if (info == TABLE)
-      return;
-
    Check3 (pData);
    Check3 (!context->get_is_source ());
    Check3 (pData->length == sizeof (int));
@@ -905,9 +899,6 @@ void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 void Rovhult::cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
                                  gint, gint, GtkSelectionData* pData, guint info,
                                  guint32 time, unsigned int card) {
-   if (!info)
-      return;
-
    Check3 (pData);
    Check3 (!context->get_is_source ());
    Check3 (pData->length == sizeof (int));
