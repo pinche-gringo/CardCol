@@ -54,6 +54,8 @@ class Buraco : public Game {
    virtual void clean ();
    virtual const char* name () { return "Buraco"; }
    virtual void playOpen (bool);
+   virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
 
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
@@ -90,6 +92,9 @@ class Buraco : public Game {
    void stapleSelected ();
    void doStapleSelected ();
    bool doRegisterHand (unsigned int first, unsigned int last);
+
+   void undoLast ();
+   void sortCards ();
 
    //@Section helper methods
    void enableHumanHand ();
@@ -179,7 +184,29 @@ class Buraco : public Game {
    } gStatus;
    unsigned int target;
 
+   typedef struct undoValue {
+      unsigned int destPile : 8;
+      unsigned int destPos  : 4;
+      unsigned int srcPos   : 7;
+      unsigned int blocked  : 7;
+      unsigned int pickUp   : 1;
+      unsigned int cJokers  : 4;
+
+      void assign (unsigned int targetPile, unsigned int targetPos,
+		   unsigned int pos, unsigned int acceptCard) {
+	 destPile = targetPile;
+	 destPos = targetPos;
+	 srcPos = pos;
+	 blocked = acceptCard;
+	 pickUp = 0;
+	 cJokers = 0; }
+   } undoValue;
+   undoValue undo;
+
    ScoreDlg* pScoreDlg;
+
+   Gtk::UIManager::ui_merge_id idMrg;
+   Gtk::Widget* menuUndo;
 };
 
 #endif
