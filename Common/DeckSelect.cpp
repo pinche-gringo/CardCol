@@ -27,6 +27,8 @@
 
 #include <cardgames-cfg.h>
 
+#include <gtk--/pixmap.h>
+
 #include <Check.h>
 #include <Trace_.h>
 
@@ -45,9 +47,10 @@
 ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& deck,
                                         const std::string& back)
    : Dialog (), txtDecks (_("Available decks")), ok (_("OK"))
-     , apply (_("Apply")), cancel (_("Cancel")), decks (), boxDecks ()
-     , txtBack (_("Available backgrounds")), backs (), boxBack ()
-     , selDeck (), selBack (), offDeck (-1), offBack (-1) {
+   , apply (_("Apply")), cancel (_("Cancel")), decks (), boxDecks ()
+   , txtBack (_("Available backgrounds")), backs (), boxBack ()
+   , selDeck (), selBack (), offDeck (-1), offBack (-1)
+   , box (GTK_BUTTONBOX_END, 5), scrlBack (), scrlDeck () {
    TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (const char*) - " << path
            << " (" << deck << " - " << back << ')');
 
@@ -61,22 +64,29 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    cancel.set_usize (90, -1);
    apply.set_usize (90, -1);
 
-   boxDecks.pack_start (decks, true, true, 50);
-   boxDecks.pack_start (selDeck, true, false, 5);
+   scrlDeck.set_policy (GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+   scrlBack.set_policy (GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
-   boxBack.pack_start (backs, true, true, 50);
-   boxBack.pack_start (selBack, true, false, 5);
+   boxDecks.pack_start (scrlDeck, true, true, 50);
+   boxDecks.pack_start (selDeck, false, false, 5);
+   scrlDeck.add_with_viewport (decks);
+
+   boxBack.pack_start (scrlBack, true, true, 50);
+   boxBack.pack_start (selBack, false, false, 5);
+   scrlBack.add_with_viewport (backs);
 
    Check3 (get_vbox ());
-   get_vbox ()->pack_start (txtDecks, true, false, 5);
+   get_vbox ()->pack_start (txtDecks, false, false, 5);
    get_vbox ()->pack_start (boxDecks, true, true, 5);
-   get_vbox ()->pack_start (txtBack, true, false, 5);
+   get_vbox ()->pack_start (txtBack, false, false, 5);
    get_vbox ()->pack_start (boxBack, true, true, 5);
 
+   box.pack_start (ok, false, false, 5);
+   box.pack_start (apply, false, false, 5);
+   box.pack_start (cancel, false, false, 5);
+
    Check3 (get_action_area ());
-   get_action_area ()->pack_start (ok, false, false, 5);
-   get_action_area ()->pack_start (apply, false, false, 5);
-   get_action_area ()->pack_start (cancel, false, false, 5);
+   get_action_area ()->pack_start (box, true, true);
 
    ok.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), OK));
    apply.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), APPLY));
@@ -98,8 +108,9 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    unsigned int offset (0);
    aFiles.push_back (dir->path ());
 
-
    show_all ();
+
+   Gdk_Pixmap img;
    while (dir) {
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Found dir "
               << dir->name ());
@@ -118,12 +129,13 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
       temp->clicked.connect (bind (slot (this, &ICarddeckSelectDlg::deckSelect), ++offset));
       temp->show ();
 
-      Gdk_Pixmap img;
       img.create_from_xpm (get_window (), color, file);
       temp->add_pixmap (img, NULL);
       aDecks.push_back (temp);
 
-      decks.add (*temp, GTK_SIDE_LEFT, GTK_ANCHOR_CENTER, 0, 5, 2, 2);
+      decks.resize ((offset >> 2) + 1, 4);
+      decks.attach (*temp, offset & 0x3, (offset & 0x3) + 1, offset >> 2,
+                    (offset >> 2) + 1, 0, 0, 5, 5);
 
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Comparing "
               << pathDeck << " with " << deck);
@@ -134,6 +146,13 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    }
    if (offDeck == -1)
       deckSelect (1);
+
+   TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Decksize = "
+           << (img.width () << 2) << '/'
+           << img.height () * ((offset >> 2) + 1));
+   unsigned int height ((img.height () + 20) * ((offset >> 2) + 1));
+   scrlDeck.set_usize ((img.width () + 25) << 2,
+                       height < 250 ? height : 250);
 
    unsigned int offsetBack (offset + 1);
    dir = ds.find (aFiles[0] + "/back*.xpm", IDirectorySearch::FILE_NORMAL
@@ -157,12 +176,23 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
       temp->add_pixmap (img, NULL);
       aBacks.push_back (temp);
 
-      backs.add (*temp, GTK_SIDE_LEFT, GTK_ANCHOR_CENTER, 0, 5, 2, 2);
+      backs.resize (((offset - offsetBack) >> 2) + 1, 4);
+      backs.attach (*temp, (offset - offsetBack) & 0x3, ((offset - offsetBack) & 0x3) + 1,
+                    (offset - offsetBack) >> 2, ((offset - offsetBack) >> 2) + 1,
+                    0, 0, 5, 5);
 
       dir = ds.next ();
    }
    if (offBack == -1)
       backSelect (offsetBack);
+
+   offset -= offBack;
+   TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Decksize = "
+           << (img.width () << 2) << '/'
+           << img.height () * ((offset >> 2) + 1));
+   height = ((img.height () + 20) * ((offset >> 2) + 1));
+   scrlBack.set_usize ((img.width () + 25) << 2,
+                       height < 250 ? height : 250);
 
    ok.grab_default ();
 }
@@ -202,6 +232,8 @@ void ICarddeckSelectDlg::deckSelect (unsigned int offset) {
    img.create_from_xpm (get_window (), color, aFiles[0] + aFiles[offset]
                         + File::DIRSEPARATOR + DEFAULTFILE);
    selDeck.add_pixmap (img, NULL);
+   selDeck.set_relief (GTK_RELIEF_NONE);
+   dynamic_cast <Gtk::Pixmap*> (selDeck.get_child ())->set_alignment (0.0, 0.0);
 
    offDeck = offset;
 }
@@ -224,6 +256,9 @@ void ICarddeckSelectDlg::backSelect (unsigned int offset) {
    Gdk_Pixmap img;
    img.create_from_xpm (get_window (), color, aFiles[0] + aFiles[offset]);
    selBack.add_pixmap (img, NULL);
+   selBack.set_relief (GTK_RELIEF_NONE);
+
+   dynamic_cast <Gtk::Pixmap*> (selBack.get_child ())->set_alignment (0.0, 0.0);
 
    offBack = offset;
 }

@@ -24,8 +24,10 @@
 #include <gtk--/box.h>
 #include <gtk--/label.h>
 #include <gtk--/button.h>
-#include <gtk--/packer.h>
+#include <gtk--/table.h>
 #include <gtk--/dialog.h>
+#include <gtk--/buttonbox.h>
+#include <gtk--/scrolledwindow.h>
 
 
 using namespace Gtk;
@@ -69,12 +71,16 @@ class ICarddeckSelectDlg : public Dialog {
    HBox   boxDecks;
    Label  txtDecks;
    Button selDeck;
-   Packer decks;
+   Table  decks;
+   ScrolledWindow scrlDeck;
 
+   Button selBack;
    HBox   boxBack;
    Label  txtBack;
-   Packer backs;
-   Button selBack;
+   Table  backs;
+   ScrolledWindow scrlBack;
+
+   HButtonBox box;
 
    vector<Button*> aDecks;
    vector<Button*> aBacks;
