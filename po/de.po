@@ -717,7 +717,9 @@ msgstr "Karte %1 paﬂt nicht!"
 
 #: src/SgtMayor.cpp:259
 msgid "Play a card with an equal colour as the first played one!"
-msgstr "Es muﬂ eine Karte mit der gleichen Farbe wie die zuerst gespielte verwendet werden!"
+msgstr ""
+"Es muﬂ eine Karte mit der gleichen Farbe wie die zuerst gespielte verwendet "
+"werden!"
 
 #: src/SgtMayor.cpp:351
 msgid "(needs %1 ticks)"
