@@ -37,7 +37,6 @@ class RemotePlayer : public Player {
    virtual ~RemotePlayer ();
 
    virtual bool makeTurn (Game* game);
-   virtual unsigned int timeout () const;
 
  protected:
    Socket* sock;
