@@ -56,19 +56,18 @@
       mu&szlig; er entweder eine Karte vom Stapel aufnehmen oder er kann den
       gesamten Stapel der abgeworfenen Karten aufheben, wenn er ein zur
       obersten Karte passendes Paar (allerdings ohne Joker oder 2)
-      besitzt. Als Ausnahme dazu kann der das Spiel startende Spieler die
-      Karte dieses Stapels aufnehmen, auch wenn er kein dazu passend Paar
-      besitzt.</p>
+      besitzt. Als Ausnahme dazu kann der das Spiel startende Spieler in der
+      ersten Runde die Karte dieses Stapels aufnehmen, auch wenn er kein dazu
+      passend Paar besitzt.</p>
 
-    <p>Dannach kann er Karten ablegen (mit Ziehen und Ablegen - drag and drop
-        <a href="Buraco.html.de#Note1"><sup>1</sup></a>) (wenn er will - eine
-        m&ouml;gliche Taktik ist auch, die Karten in der hand zu halten, um so
-        eventuell den Stapel der abgeworfenen Karten aufnehmen zu
-        k&ouml;nnen). Um einen neuen Stapel ablegen zu k&ouml;nnen, mu&szlig;
-        er - wie bereits erw&auml;hnt - mindestens eine Serie von 3 gleichen
-        Karten haben. Oder er kann (auch einzelne) "zusammenpassende" Karten
-        (nach den obigen Regeln) zu bereits bestehenden Stapeln
-        hinzuf&uuml;gen.</p>
+    <p>Dannach kann er Karten ablegen (mit Ziehen und Ablegen - drag and
+      drop<a href="Buraco.html.de#Note1"><sup>1</sup></a>) (wenn er will -
+      eine m&ouml;gliche Taktik ist auch, die Karten in der hand zu halten, um
+      so eventuell den Stapel der abgeworfenen Karten aufnehmen zu
+      k&ouml;nnen). Um einen neuen Stapel ablegen zu k&ouml;nnen, mu&szlig; er
+      - wie bereits erw&auml;hnt - mindestens eine Serie von 3 gleichen Karten
+      haben. Oder er kann (auch einzelne) "zusammenpassende" Karten (nach den
+      obigen Regeln) zu bereits bestehenden Stapeln hinzuf&uuml;gen.</p>
 
     <p>Kann/will der Spieler keine Karten ablegen, mu&szlig; er eine abwerfen
       (durch anklicken) und der n&auml;chste Spieler setzt (im Uhrzeigersinn)
@@ -77,14 +76,13 @@
     <p>Weitere Regeln sind:</p>
     <ul>
       <li>Jeder abgelegte Stapel darf nur einen Joker (oder 2'er) enthalten -
-        au&szlig;er, wenn es ein Stapel von Jokern (und/oder 2'ern ist). Dabei
-        nennt man "cerrados" (= geschlossener Stapel) ohne Joker oder 2'er
-        <em>sauber</em> und solche mit <em>schmutzig</em>. Das Spiel kann nur
-        beendet werden, wenn das Team mindestens einen dieser "cerrados"
-        besitzt.</li>
+        au&szlig;er, wenn es ein Stapel von Jokern (und/oder 2'ern ist).</li>
 
-      <li>Wird zu einem Stapel eine siebente Karte hinzugef&uuml;gt, wird
-        dieser geschlossen und vom Tisch genommen.</li>
+      <li>Enth&auml;t ein Staple sieben Karten, wird er geschlossen (und vom
+        Tisch genommen). Dabei nennt man "cerrados" (= geschlossener Stapel)
+        ohne Joker oder 2'er <em>sauber</em> und solche mit
+        <em>schmutzig</em>. Das Spiel kann nur beendet werden, wenn das Team
+        mindestens einen dieser "cerrados" besitzt.</li>
 
       <li>Hat ein Spieler keine Karten (au&szlig;er Joker oder 2'er) mehr,
         nimmt er den "Buraco" auf (weitere 11 Karten eines voher zur Seite
@@ -92,17 +90,23 @@
         fortsetzen (d.h., er ist noch immer am Zug, wenn er noch keine Karte
         abgeworfen hat).</li>
 
-      <li>Gibt es keinen "Buraco"  mehr und hat das Team noch keinen
+      <li>Gibt es keinen "Buraco" mehr und hat das Team noch keinen
         <em>cerrado</em>, kann ein Spieler nicht seine letzte Karte
         abwerfen.</li>
 
-      <li>In einem Stapel befindliche Joker oder 2'er k&ouml;nnen verschoben,
-        aber nicht wieder aufgenommen werden. Das bedeutet: Hat man
-        beispielsweise eine Reihe von &hearts; 5, 6 und Joker, kann man den
-        Joker nach unten verschieben und so einen &hearts; 3 anlegen, aber man
-        kann nicht ein &hearts; 7 ablegen und daf&uuml;r den Joker in seine
-        Hand aufnehmen (allerdings kann man den 7'er ablegen und der Joker
-        wird zum 8'er oder 4'er).</li>
+      <li>In einem Stapel befindliche Joker oder 2'er k&ouml;nnen (innerhalb
+        des Stapels) verschoben, aber nicht wieder aufgenommen werden. Das
+        bedeutet: Hat man beispielsweise eine Reihe von &hearts; 5, 6 und
+        Joker, kann man den Joker nach unten verschieben (wird zu &hearts;4
+        und dannach einen &hearts;3 anlegen<a
+        href="Buraco.html.de#Note2"><sup>2</sup></a> aber man kann nicht ein
+        &hearts;7 ablegen und daf&uuml;r den Joker in seine Hand aufnehmen
+        (allerdings kann man den 7'er ablegen und der Joker wird zum 8'er oder
+        4'er).</li>
+
+      <li>Ein Joker oder 2'er als oberste Karte des abgeworfenen Stapels kann
+        niemals aufgenommen werden; auch nicht, wenn der Spieler zwei gleiche
+        Karten besitzt.</li>
     </ul>
 
     <p>Ist das Spiel beendet, werden die Punkte gez&auml;hlt. Jeder "cerrado"
@@ -115,10 +119,11 @@
     <p>Weitere (jeweils) 100 Punkte gibt es f&uuml;r das Aufnehmen des Buraco
       und das Beenden des Spiels.</p>
 
-    <p>Abschlie&szlig;end werden die Punkte der Karten ber&uuml;cksichtigt:
-      Die Karten am Tisch positiv und die in der Hand negativ. Ein Joker
-      z&auml;hlt 50 Punkte, ein 2'er 25, ein As 20, Karten bis zur 7 bringen 5
-      Punkte und die restlichen dar&uuml;ber 10.</p>
+    <p>Abschlie&szlig;end (nachdem ein Spieler seine letzte Karte entweder
+      gespielt oder abgeworfen hat), werden die Punkte der Karten
+      ber&uuml;cksichtigt: Die Karten am Tisch positiv und die in der Hand
+      negativ. Ein Joker z&auml;hlt 50 Punkte, ein 2'er 25, ein As 20, Karten
+      bis zur 7 bringen 5 Punkte und die restlichen dar&uuml;ber 10.</p>
 
     <p>Das Spiel endet, sobald ein Team mehr als 2.000 Punkte hat.</p>
 
@@ -145,7 +150,7 @@
         hinzugef&uuml;gt werden.</li>
       <li>Die Stapel am Tisch von Team 2.</li>
       <li>In der letzten Reihe sind die Karten des jeweils aktiven
-        Computer-Spieler 2.</li>
+        Computer-Spielers.</li>
     </ul>
     
     <hr size=1 noshade>
@@ -154,6 +159,11 @@
       mittleren) Maustaste anzuklicken, diese Taste festzuhalten un dann das
       Objekt (die Karte, in unserem Fall) zu seinem Ziel zu ziehen. Das Ende
       dieser Aktion wird durch Loslassen der Maustaste signalisiert.</p>
+
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note2"></a>2)
+      Der Joker mu&szlig; nicht manuell im Staple verschoben werden. Wird eine
+      entsprechende Karte auf den Stapel verschoben, wird der Joker notfalls
+      automatisch an die richtige Stelle platziert.</p>
 
     <hr size=3 noshade>
     <address>
