@@ -32,8 +32,8 @@
 
    Leave the following blank line there!!  Autoheader needs it.  */
 
-/* Define the micro-version */
-#undef MICRO_VERSION
+/* Define the release */
+#undef PRG_RELEASE
 
 /* Leave that blank line there!!  Autoheader needs it.
    If you're adding to this file, keep in mind:
@@ -51,6 +51,7 @@
 #else
 #  define _(String)                           (String)
 #  define N_(String)                          (String)
+#  define ngettext(Str1, Str2, flag)          (((flag) == 1) ? (Str1) : (Str2))
 #  define  binddomain(Domain)
 #  define bindtextdomain(Package, Directory)
 #endif
