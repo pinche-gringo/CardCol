@@ -24,13 +24,11 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
 #include "Game.h"
+
 #include "RemotePlayer.h"
 
 
@@ -44,9 +42,11 @@ RemotePlayer::~RemotePlayer () {
 //----------------------------------------------------------------------------
 /// Reads the turn of a remote player.
 /// \param game: Game played
+/// \returns bool: Flag, if the method should be called again in the next turn.
 //----------------------------------------------------------------------------
 bool RemotePlayer::makeTurn (Game* game) {
+   TRACE1 ("RemotePlayer::makeTurn (Game*) - " << name);
    Check1 (game);
    Check1 (sock);
-   return game->readTurn (*sock);
+   return false;
 }
