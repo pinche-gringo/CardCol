@@ -30,7 +30,6 @@
 
 namespace Gtk {
    class Box;
-   class Menu;
    class MenuItem;
 };
 
@@ -57,7 +56,6 @@ class Hearts : public Game {
 
    //@Section Event handling
    void cardSelected (unsigned int iCard);
-   gint wonCardsSelected (GdkEvent *event);
    void takeCard (unsigned int iCard);
 
    //@Section Virtual methods
@@ -72,12 +70,6 @@ class Hearts : public Game {
    static void getPositionOfColors (ICardPile& pile, int result[4]);
    static unsigned int numberOfCards (int aPositions[4], CardWidget::COLORS color);
    static unsigned int pointsOfPile (ICardPile& pile);
-   void showWonCards (bool show = true);
-   int  enableWonCards ();
-   void disableWonCards ();
-
-   void sortWonByNumber ();
-   void sortWonByColor ();
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
@@ -91,9 +83,6 @@ class Hearts : public Game {
    CardHPile played;
 
    HeartsScoreDlg* pScoreDlg;
-
-   vector<Gtk::Connection> wonCards;           // Connections to show won cards
-   Gtk::Menu*              pmenuPopSort;
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];

@@ -32,7 +32,6 @@
 
 #include <gdk/gdk.h>
 
-#include <gtk--/main.h>
 #include <gtk--/menu.h>
 #include <gtk--/menuitem.h>
 #include <gtk--/statusbar.h>
@@ -55,7 +54,7 @@ const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset)
    : Game (parent, statusbar, cardset, 10, 10)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
-     , pos2Play (-1U), pScoreDlg (NULL), pmenuPopSort (new Gtk::Menu ()) {
+     , pos2Play (-1U), pScoreDlg (NULL) {
    TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&)");
 
    unsigned int width (cards.getCard (0).getImageWidth ());
@@ -94,10 +93,6 @@ Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset)
    played.show ();
    attach (played, 3, 4, 5, 8, 0, 0, 0, 5);
    played.set_usize (width + 150, height);
-
-   Check3 (pmenuPopSort);
-   pmenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem (_("Sort by number"), slot (this, &Hearts::sortWonByNumber)));
-   pmenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem (_("Sort by color"), slot (this, &Hearts::sortWonByColor)));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -106,7 +101,6 @@ Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset)
 Hearts::~Hearts () {
    TRACE9 ("Hearts::~Hearts ()");
    delete pScoreDlg;
-   delete pmenuPopSort;
 }
 
 
@@ -175,7 +169,7 @@ void Hearts::clean () {
 
    played.clear ();
    disableHuman ();
-   
+   Game::clean ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -335,7 +329,7 @@ unsigned int  Hearts::check4Winner (unsigned int player) {
       displayTurn (player);
 
    if (!player)
-      enableWonCards ();
+      enableWonCards (players[0].won);
    return player;
 }
 
@@ -693,87 +687,4 @@ unsigned int Hearts::pointsOfPile (ICardPile& pile) {
    }
    TRACE7 ("Hearts::pointsOfPile (ICardPile&) - Number of points: " << points);
    return points;
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shows or hides the won cards
-//Parameters: show: Flag if to show or to hide the cards
-/*--------------------------------------------------------------------------*/
-void Hearts::showWonCards (bool show) {
-   players[0].won.setShowOption (show ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
-   players[0].won.setStyle (show ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
-   Gtk::Main::timeout.connect (slot (this, &Hearts::enableWonCards), 50);
-   disableWonCards ();
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback for any event for the top of the won cards
-//Parameters: event: Caused event
-/*--------------------------------------------------------------------------*/
-gint Hearts::wonCardsSelected (GdkEvent* event) {
-   TRACE2 ("Hearts::wonCardsSelected (GdkEvent*) - " << event->type);
-
-   if (event->type == GDK_BUTTON_PRESS) {
-      GdkEventButton* bev ((GdkEventButton*)(event));
-      switch (bev->button) {
-      case 1:
-         showWonCards (players[0].won.getShowOption () == ICardPile::SHOWBACK);
-         break;
-
-      case 3:
-         Check3 (pmenuPopSort);
-         pmenuPopSort->popup (bev->button, bev->time);
-      }
-      return true;
-   }
-
-   return false;
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shows and sorts the won cards by number
-/*--------------------------------------------------------------------------*/
-void Hearts::sortWonByNumber () {
-   players[0].won.sortByNumber ();
-   showWonCards ();
-   Gtk::Main::timeout.connect (slot (this, &Hearts::enableWonCards), 50);
-   disableWonCards ();
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shows and sorts the won cards by color
-/*--------------------------------------------------------------------------*/
-void Hearts::sortWonByColor () {
-   players[0].won.sortByColor ();
-   showWonCards ();
-   Gtk::Main::timeout.connect (slot (this, &Hearts::enableWonCards), 50);
-   disableWonCards ();
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Enables the won cards
-/*--------------------------------------------------------------------------*/
-int Hearts::enableWonCards () {
-   disableWonCards ();
-
-   TRACE9 ("Hearts::enableWonCards () - Enabling " << players[0].won.numberOfCards ()
-           << " cards");
-   for (int i (players[0].won.numberOfCards ()); i;)
-      wonCards.push_back
-         (players[0].won.at (--i).event.connect
-          (slot (this, (&Hearts::wonCardsSelected))));
-
-   return 0;
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Disables the won cards
-/*--------------------------------------------------------------------------*/
-void Hearts::disableWonCards () {
-   TRACE9 ("Hearts::disableWonCards () - Disabling " << wonCards.size () << " cards");
-   for (int i (wonCards.size ()); i > 0;)
-      wonCards[--i].disconnect ();
-   
-   wonCards.clear ();
-
 }
