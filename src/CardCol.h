@@ -105,7 +105,7 @@ class CardgameCollection : public XApplication {
    Options& options;
    Mutex mxSerMsgs;
    ConnectionMgr cmgr;
-   std::vector<Player*> player;
+   std::vector<Player*> aPlayer;
 
    unsigned int playerPos;
 

@@ -27,6 +27,7 @@
 #include <cardgames-cfg.h>
 
 #include <cstdio>
+#include <cstdlib>
 
 #include <string>
 #include <fstream>
@@ -712,10 +713,10 @@ CardgameCollection::CardgameCollection (Options& opts)
       TRACE9 ("CardgameCollection::CardgameCollection () - Connect: "
               << options.target << '-' << options.port);
       if (options.target.size ())
-         playerPos = PlayerConnectDlg::perform (player, cmgr, options.target,
+         playerPos = PlayerConnectDlg::perform (aPlayer, cmgr, options.target,
                                                 options.port);
       else
-          playerPos = PlayerConnectDlg::perform (player, cmgr, options.port);
+          playerPos = PlayerConnectDlg::perform (aPlayer, cmgr, options.port);
 
       TRACE1 ("CardgameCollection::CardgameCollection (Options&) - "
               << cmgr.getMode () << "; Pos: " << playerPos);
@@ -731,9 +732,9 @@ CardgameCollection::CardgameCollection (Options& opts)
 void CardgameCollection::makePlayer () {
    Check3 (options.names.size ());
    std::vector<Glib::ustring>::iterator i (options.names.begin ());
-   player.push_back (new Human (*i));
+   aPlayer.push_back (new Human (*i));
    while (++i != options.names.end ())
-       player.push_back (new ComputerPlayer (*i));
+       aPlayer.push_back (new ComputerPlayer (*i));
 }
 
 //-----------------------------------------------------------------------------
@@ -746,8 +747,8 @@ CardgameCollection::~CardgameCollection () {
       delete game;
    }
 
-   for (std::vector<Player*>::iterator i (player.begin ());
-        i != player.end (); ++i)
+   for (std::vector<Player*>::iterator i (aPlayer.begin ());
+        i != aPlayer.end (); ++i)
       delete *i;
 
    if (pCommThread)
@@ -823,6 +824,8 @@ void CardgameCollection::startGame () {
 
    if (cmgr.getMode () != ConnectionMgr::CLIENT)
       game->start ();
+   else
+      game->setGameStatus (Game::NONE);
 }
 
 //-----------------------------------------------------------------------------
@@ -831,7 +834,7 @@ void CardgameCollection::startGame () {
 /// \remarks Can't be inline because of cyclic dependencies to Options
 //-----------------------------------------------------------------------------
 const std::vector<Player*>& CardgameCollection::getPlayer () const {
-   return player;
+   return aPlayer;
 }
 
 //-----------------------------------------------------------------------------
@@ -883,7 +886,7 @@ void CardgameCollection::command (int menu) {
       break; }
 
    case CONNECT:
-      playerPos = PlayerConnectDlg::perform (player, PORT, cmgr);
+      playerPos = PlayerConnectDlg::perform (aPlayer, PORT, cmgr);
       TRACE1 ("CardgameCollection::command (int) - Mode: " << cmgr.getMode ()
               << "; Pos: " << playerPos);
       if (cmgr.getMode () != ConnectionMgr::NONE)
@@ -914,7 +917,7 @@ void CardgameCollection::command (int menu) {
 
    case CHGNAMES:
       PlayerDlg<CardgameCollection>
-         ::create (*this, &CardgameCollection::changePlayernames, player);
+         ::create (*this, &CardgameCollection::changePlayernames, aPlayer);
       break;
 
    case SAVESET: {
@@ -923,8 +926,8 @@ void CardgameCollection::command (int menu) {
       if (inifile) {
          options.strType = options.type + '0';
          INIFile::write (inifile, "Game", options);
-         for (unsigned int i (0); i < player.size (); ++i)
-            options.names[i] = player[i]->getName ();
+         for (unsigned int i (0); i < aPlayer.size (); ++i)
+            options.names[i] = aPlayer[i]->getName ();
          INIList<Glib::ustring>::write (inifile, "Player", options.names);
       }
       break;
@@ -1011,7 +1014,7 @@ void CardgameCollection::showAboutbox () {
 void CardgameCollection::changePlayernames () {
    TRACE2 ("CardgameCollection::changePlayernames");
    if (game)
-      game->changeNames (player);
+      game->changeNames (aPlayer);
 }
 
 //-----------------------------------------------------------------------------
@@ -1089,7 +1092,7 @@ void* CardgameCollection::changeCards (void* opt) {
 }
 
 //-----------------------------------------------------------------------------
-/// Terminates the program; also closing the passed dialog
+/// Frees the passed dialog
 /// \param int: Response of dialog (ignored)
 /// \param dlg: Dialog to close additionally
 //-----------------------------------------------------------------------------
@@ -1194,6 +1197,12 @@ void CardgameCollection::gameEvents (unsigned int status) {
 
       restart = false;
       break;
+
+   case Game::TERMINATED:
+      options.type = CardgameAppl::convertToGameType (game->Game::name ());
+      Check3 (options.type != NONE);
+      startGame ();
+      break;
    }
 }
 
@@ -1209,30 +1218,24 @@ void* CardgameCollection::waitForMessages (void*) {
       while (true) {
          static unsigned int actClient (0);
 
-         if (cmgr.getMode () == ConnectionMgr::CLIENT) {
+         if (cmgr.getMode () == ConnectionMgr::CLIENT)
             cmgr.getSocket ()->read (input);
-
-            TRACE9 ("CardgameCollection::waitForMessages (void*) - Locking");
-            mxSerMsgs.lock ();         // Wait til client allows messages again
-            mxSerMsgs.unlock ();
-         }
          else {
             TRACE7 ("CardgameCollection::waitForMessage (void*) - Client: "
                     << actClient);
             if (actClient == cmgr.getClients ().size ())
                actClient = 0;
 
-            cmgr.getClients ()[actClient]->read (input);
-            ++actClient;
+            cmgr.getClients ()[actClient++]->read (input);
          }
          TRACE7 ("CardgameCollection::waitForMessage (void*) - `" << input <<'\'');
          if (input.empty ()) {
             std::string msg (_("Lost connection to %1!"));
-            Check3 ((actClient + 1) < player.size ());
+            Check3 (actClient < aPlayer.size ());
             msg.replace (msg.find ("%1"), 2, 
                          (cmgr.getMode () == ConnectionMgr::CLIENT
                           ? Glib::locale_to_utf8 ("the server")
-                          : player[actClient + 1]->getName ()));
+                          : aPlayer[actClient]->getName ()));
             throw msg;
          }
 
@@ -1241,9 +1244,14 @@ void* CardgameCollection::waitForMessages (void*) {
          while ((message = messages.getNextNode ('\0')).size ()) {
             char* msg (new char [message.length () + 1]);
             strcpy (msg, message.c_str ());
+
+            TRACE9 ("CardgameCollection::waitForMessages (void*) - Lock (thread)");
+            mxSerMsgs.lock ();      // Wait til last message has been processed
+            mxSerMsgs.unlock ();
             Glib::signal_idle ().connect
                 (bind (slot (*this, &CardgameCollection::handleMessage),
                        actClient, msg));
+            sleep (0);
          }
       }
    }
@@ -1288,9 +1296,10 @@ bool CardgameCollection::handleErrorMessage (unsigned int player, char* msg) {
       ap.assignValues (msg);
 
       if (error) {
-         std::string message (_("Client sent an error (%1)!\n\n%2"));
-         message.replace (message.find ("%1"), 2, ANumeric::toString (error));
-         message.replace (message.find ("%2"), 2, errText);
+         std::string message (_("%1 sent an error (%2)!\n\n%3"));
+         message.replace (message.find ("%1"), 2, aPlayer[player]->getName ());
+         message.replace (message.find ("%2"), 2, ANumeric::toString (error));
+         message.replace (message.find ("%3"), 2, errText);
 
          Gtk::MessageDialog* dlg (new Gtk::MessageDialog (message, Gtk::MESSAGE_ERROR));
          dlg->set_title (PACKAGE);
@@ -1313,13 +1322,18 @@ bool CardgameCollection::handleErrorMessage (unsigned int player, char* msg) {
 //----------------------------------------------------------------------------
 bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
    TRACE5 ("CardgameCollection::handleMessage (unsigned int player, char*) - " << msg);
+   mxSerMsgs.lock ();                               // Block message processing
+   TRACE9 ("CardgameCollection::waitForMessages (void*) - Locked (main)");
 
+   bool unlock (true);
    if (!handleErrorMessage (player, msg)) {
-      if (game)
-         game->handleMessage (player, msg);
-      else {
-         std::string game;
-         try {
+      try {
+         if (game) {
+            if (!game->handleMessage (player, msg))
+               unlock = false;
+         }
+         else {
+            std::string game;
             if (cmgr.getMode () == ConnectionMgr::SERVER)
                throw std::string (_("Unexpected message in server mode"));
 
@@ -1338,21 +1352,25 @@ bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
             startGame ();
             cmgr.getSocket ()->write ("Error=0");
          }
-         catch (std::string& error) {
-            std::string msg ("Error=99;Msg=\"" + error);
-            msg += '"';
-            try {
-               cmgr.getSocket ()->write (msg);
-            }
-            catch (std::string& e) { }
-
-            Gtk::MessageDialog* dlg (new Gtk::MessageDialog (error, Gtk::MESSAGE_ERROR));
-            dlg->set_title (PACKAGE);
-            dlg->signal_response ().connect
-                (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
-            dlg->show ();
-         }
       }
+      catch (std::string& error) {
+         std::string msg ("Error=99;Msg=\"" + error);
+         msg += '"';
+         try {
+            cmgr.getSocket ()->write (msg);
+         }
+         catch (std::string& e) { }
+
+         Gtk::MessageDialog* dlg (new Gtk::MessageDialog (error, Gtk::MESSAGE_ERROR));
+         dlg->set_title (PACKAGE);
+         dlg->signal_response ().connect
+             (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
+         dlg->show ();
+      }
+   }
+   if (unlock) {
+      TRACE9 ("CardgameCollection::waitForMessages (void*) - Unlock (main)");
+      mxSerMsgs.unlock ();
    }
 
    delete [] msg;
