@@ -56,6 +56,22 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 dnl Checks for library functions.
 
 dnl Enable special features
+AC_ARG_ENABLE(debug,
+              AC_HELP_STRING([--enable-debug\[=level\]],
+                             [Enables additional traces]),
+              if test "$enableval" != "no"; then
+                  test "$enableval" == "yes" && enableval=0
+                  CXXFLAGS="-g -O2 -DTRACELEVEL=$enableval";
+              else
+                  CXXFLAGS="-O2 -UTRACELEVEL"; fi)
+AC_ARG_ENABLE(checks,
+              AC_HELP_STRING([--enable-checks=\[level\]],
+                             [Enables additional (internal) checks]),
+              if test "$enableval" != "no"; then
+                  test "$enableval" == "yes" && enableval=0
+                  CXXFLAGS="$CXXFLAGS -DCHECK=$enableval";
+              else
+                  CXXFLAGS="$CXXFLAGS -DNDEBUG -UCHECK"; fi)
 
 AC_OUTPUT([Makefile Common/Makefile Rovhult/Makefile Twopart/Makefile \
 	   Tarok/Makefile Common/Grafix/Makefile intl/Makefile po/Makefile.in])
