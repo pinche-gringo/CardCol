@@ -27,8 +27,6 @@
 
 #include <cstdlib>
 
-#define CHECK 9
-#define TRACELEVEL 2
 #include <Check.h>
 #include <Trace_.h>
 
