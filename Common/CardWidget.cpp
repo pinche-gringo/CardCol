@@ -37,9 +37,6 @@
 
 CardWidget::COLOURS CardWidget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
 
-gdouble CardWidget::saveX (-1);
-gdouble CardWidget::saveY (-1);
-
 
 //-----------------------------------------------------------------------------
 /// Constructor; creates a cardwidget with the passed index of a pixmap
@@ -140,32 +137,13 @@ void CardWidget::on_clicked () {
 bool CardWidget::on_button_release_event (GdkEventButton* ev) {
    Check1 (ev);
    TRACE9 ("CardWidget::on_button_release_event (GdkEventButton*) - "
-           << ev->button << "; X: " << ev->x - 1 << "; Y: " << ev->y - 1
+           << ev->button << "; X: " << ev->x << "; Y: " << ev->y
            << "; W: " << get_width () << "; H: " << get_height ());
 
    // It button 1 is released within the image: Generate a clicked signal
-   if ((ev->button == 1)
-       && (((ev->x - saveX) < 3) && ((ev->y - saveY) < 3))) {
+   if ((ev->button == 1) && ((ev->x != 0) && (ev->y != 0))) {
       clicked_.emit ();
       on_clicked ();
-   }
-   return false;
-}
-
-//-----------------------------------------------------------------------------
-/// Callback after pressing a button on a CardWidget
-//-----------------------------------------------------------------------------
-bool CardWidget::on_button_press_event (GdkEventButton* ev) {
-   Check1 (ev);
-   TRACE9 ("CardWidget::on_button_press_event (GdkEventButton*) - "
-           << ev->button << "; X: " << ev->x - 1 << "; Y: " << ev->y - 1
-           << "; W: " << get_width () << "; H: " << get_height ());
-
-   // It button 1 is pressed within the image: store position
-   if ((ev->button == 1)
-       && ((ev->x - 1) < get_width ()) && ((ev->y - 1) < get_height ())) {
-      saveX = ev->x - 1;
-      saveY = ev->y - 1;
    }
    return false;
 }
