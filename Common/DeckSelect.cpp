@@ -177,6 +177,8 @@ void ICarddeckSelectDlg::deckSelect (unsigned int offset) {
    img.create_from_xpm (get_window (), color, aFiles[0] + aFiles[offset]
                         + File::DIRSEPARATOR + DEFAULTFILE);
    selDeck.add_pixmap (img, NULL);
+
+   offDeck = offset;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -197,4 +199,6 @@ void ICarddeckSelectDlg::backSelect (unsigned int offset) {
    Gdk_Pixmap img;
    img.create_from_xpm (get_window (), color, aFiles[0] + aFiles[offset]);
    selBack.add_pixmap (img, NULL);
+
+   offBack = offset;
 }

@@ -39,10 +39,17 @@ class ICarddeckSelectDlg : public Dialog {
 
    typedef enum { OK, APPLY, CANCEL } commands;
 
+   void getSelection (std::string& deck, std::string& back) const {
+      deck = aFiles[0] + aFiles[offDeck];
+      back = aFiles[0] + aFiles[offBack]; }
+
  protected:
    virtual void command (commands action) = 0;
    virtual void deckSelect (unsigned int offset);
    virtual void backSelect (unsigned int offset);
+
+   unsigned int offDeck;
+   unsigned int offBack;
 
  private:
    // Prohibited manager-functions
@@ -89,7 +96,10 @@ class CarddeckSelectDlg : public ICarddeckSelectDlg {
 
  protected:
    virtual void command (commands action) {
-      (obj.*pCallback) (action); }
+      (obj.*pCallback) (action);
+      if (action != APPLY)
+         delete this;
+   }
 
  private:
    T& obj;
