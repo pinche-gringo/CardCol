@@ -50,9 +50,13 @@ class RovhultAppl : public XApplication {
    void handSelected (CardCollection* parent, unsigned int card);
 
    void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
-                     guint info, guint32 time, unsigned int iCard);
-   void cardDropped (GdkDragContext* pContext, gint x, gint y,
-                     GtkSelectionData* pData, guint info, guint32 time);
+                     guint info, guint32 time, unsigned int player, unsigned int cardPos);
+   void cardDroppedOnTable (GdkDragContext* pContext, gint x, gint y,
+                            GtkSelectionData* pData, guint info, guint32 time,
+                            unsigned int playerPile);
+   void cardDroppedOnHand (GdkDragContext* pContext, gint x, gint y,
+                           GtkSelectionData* pData, guint info, guint32 time,
+                           unsigned int playerCard);
 
  private:
    // Protected manager functions
@@ -67,7 +71,11 @@ class RovhultAppl : public XApplication {
 
    void loadCards ();
 
-   virtual void size_allocate_impl (GtkAllocation* size); 
+   virtual void size_allocate_impl (GtkAllocation* size);
+
+   void registerHandDND (CardWidget& card, unsigned int player, unsigned int card);
+   void registerTableDND (CardWidget& card, unsigned int player, unsigned int pile);
+   void unregisterDND (CardWidget& card);
  
    static XApplication::MenuEntry RovhultAppl::menuItems[];
 
@@ -101,7 +109,8 @@ class RovhultAppl : public XApplication {
    static const unsigned int HEIGHT = 690;
 
 
-   static GtkTargetEntry dndTypes;
+   static GtkTargetEntry dndTypeTable;
+   static GtkTargetEntry dndTypeHand;
 };
 
 #endif
