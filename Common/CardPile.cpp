@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 03.04.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2004
+//COPYRIGHT   : Copyright (C) 2002 - 2005
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -808,7 +808,7 @@ unsigned int ICardPile::getSeries (CardWidget& card,
 
 //----------------------------------------------------------------------------
 /// Find the worst (lowest) card in the pile
-/// \return unsigned int: Position of the lowest card in the pile 
+/// \return unsigned int: Position of the lowest card in the pile
 //----------------------------------------------------------------------------
 unsigned int ICardPile::findLowestCard () const {
    TRACE9 ("ICardPile::findLowestCard () const - Analyzing " << size () << " cards");
@@ -827,7 +827,7 @@ unsigned int ICardPile::findLowestCard () const {
 //----------------------------------------------------------------------------
 /// Find the worst (lowest) card in the pile
 /// \param excludeColour: Special colour, which is not included in the search
-/// \return unsigned int: Position of the lowest card in the pile 
+/// \return unsigned int: Position of the lowest card in the pile
 //----------------------------------------------------------------------------
 unsigned int ICardPile::findLowestCard (CardWidget::COLOURS excludeColour) const {
    TRACE9 ("ICardPile::findLowestCard (CardWidget::COLOURS) const - Analyzing "
@@ -847,8 +847,8 @@ unsigned int ICardPile::findLowestCard (CardWidget::COLOURS excludeColour) const
 
 //----------------------------------------------------------------------------
 /// Finds the last card with the passed colour in the pile.
-/// \param col: Colour to search for 
-/// \return int: Position of found card; -1 if there's no bigger card 
+/// \param col: Colour to search for
+/// \return int: Position of found card; -1 if there's no bigger card
 /// \pre The pile must be sorted by colour
 //----------------------------------------------------------------------------
 int ICardPile::findLastEqualOrBiggerColour (CardWidget::COLOURS col) const {
