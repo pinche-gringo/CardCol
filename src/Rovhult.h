@@ -46,11 +46,14 @@ class Rovhult : public Game {
    virtual const char* name () { return "Røvhult"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
+   virtual bool handleMessage (unsigned int player, const char* msg);
+
  protected:
    virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target);
 
  private:
-   enum { PREPLAYING = Game::LAST };
+   enum { EXCHANGE = Game::LAST, EXCHANGED };
    enum { HAND = 0, TABLE = 1 };
 
    // Protected manager functions
@@ -122,6 +125,8 @@ class Rovhult : public Game {
    bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
    int executeMove (unsigned int player, CardWidget::NUMBERS nr);
 
+   void sendExchangedCards (unsigned int player);
+
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
    // Columns and rows for the cards of the players
@@ -135,6 +140,8 @@ class Rovhult : public Game {
       CardVPile reserve[3];                     // Reserve-cards (for end-game)
       Gtk::Label name;
    } players[NUM_PLAYERS];
+
+   unsigned int aExchanged;
 
    static std::vector<Gtk::TargetEntry> dndTypeHand;
    static std::vector<Gtk::TargetEntry> dndTypeTable;
