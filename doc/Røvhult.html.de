@@ -1,0 +1,138 @@
+<!-- -*-HTML-*- -->
+<!-- $Id$ -->
+
+<!--
+  Anti-Copyright (A) 2003 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//DE">
+
+<html>
+  <head>
+    <title>R&oslash;vhult - Ein international bekanntes Spiel (alias Arsehole, ...)</title>
+    <meta name="description" content="Documentation of the R&oslash;vhult cardgame">
+    <meta name="keywords" content="Documentation, Docu, Rovhult, R&oslash;vhult; game, card, cardgame">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2002-07-20">
+    <meta name="DC.Rights" content="Anticopyright (A) 2002, distributed under the GNU Free Documentation License">
+  </head>
+
+<body>
+
+    <h1 align="center">R&oslash;vhult</h1>
+    <hr size=2>
+
+    <p>R&oslash;vhult lernte ich von drei D&auml;nen; daher auch der (recht
+      d&auml;nische Name und dieser h&uuml;bsche, unaussprechliche (klingt etwa
+      wie ein &ldquo;&Ouml;&rdquo;, wenn man sich gerade ankotzt) Buchstabe).
+      R&oslash;vhult bedeutet Arschloch und unter diesem Namen ist es auch in
+      anderen Teilen der Welt bekant.</p>
+
+    <p>Das Zielt des Spieles ist es, alle seine Karten loszuwerden. Dabei gibt
+      es die folgenden - recht einfachen, da auch Yankees dieses Spiel kennen
+      ;) - Regeln:</p>
+
+    <p>Jeder Spieler startet mit drei Kartein in der Hand und zweimal drei
+      Karten auf dem Tisch (die unteren drei jeweils verdeckt und die oberen
+      sichtbar)</p>
+
+    <p>Die sichtbaren Karten auf dem Tisch k&ouml;nnen mit denen in der Hand
+      getauscht werden (mit &ldquo;Ziehen und Ablegen&rdquo; - drag and drop).
+      Normalerweise versucht man, &quot;gute&quot; Karten auf den Tisch zu
+      bekommen, aber das ist nat&uuml;rlich Geschmackssache.</p>
+
+    <p>Im Uhrzeigersinn werden dann die Karten gespielt, die gleich oder
+      gr&ouml;&szlig;er als die zuletzt gespielte sein mu&szlig;. Man kann eine
+      beliebige Anzahl von Karten mit der gleichen Nummer spielen (z.B.: die
+      Pik-5 und die Herz-5). Nach dem Zug mu&szlig; der Spieler Karten vom
+      Reservestapel aufnehmen, bis er wieder drei Karten in der Hand hat oder
+      der Reservestapel leer ist.</p>
+
+    <p>Es gibt einige Spezialkarten und Ausnahmen::</p>
+    <dl>
+      <dt><b>2'er</b></dt>
+      <dd><p>K&ouml;nnen immer gespielt werden; der n&auml;chste Spieler kann
+          mit einer beliebigen Karte fortsetzen.</p></dd>
+      <dt><b>7 ist die letzte gespielte Karte</b></dt>
+      <dd><p>Die n&auml;chste Karte mu&szlig; kleiner oder gleich sein.</p></dd>
+      <dt><b>8'er</b></dt>
+      <dd><p>Der n&auml;chste Spieler wird &uuml;bersprungen.</p></dd>
+      <dt><b>10'er</b></dt>
+      <dd><p>K&ouml;nnen immer gespielt werden (analog zu 2'ern), aber es wird
+          zus&auml;tzlich der Stapel der gespielten Karten entfernt und der
+          gleiche Spieler kann fortsetzen (allerdings ohne vorher Karten
+          aufzunehmen - au&szlig;er, wenn er keine Karten mehr &uuml;brig hat).</p></dd>
+      <dt><b>Vier Karten mit der gleichen Nummer am Stapel</b></dt>
+      <dd><p>Haben die letzten vier Karten am Stapel die gleiche Nummer, wird
+          dieser entfernt und der gleiche Spieler kann fortsetzen (&auml;hnlich
+          wie das Spielen eines 10'ers, nur da&szlig man Karten aufnehmen kann).
+          Beachte auch, da&szlig; der Effekt von "Spezialkarten" aufgehoben wird
+          (d.h. bei vier 8'ern wird der n&auml;chste Spieler nicht &uuml;bersprungen).
+        </p></dd>
+    </dl>
+
+    <p>Wenn ein Spieler nicht nach diesen Regeln fortsetzen kann, mu&szlig; er
+      alle gespielten Karten aufnehemn. Nat&uuml;rlich kann dies auch freiwillig
+      gemacht werden, wodurch dann der n&auml;chste Spieler fortsetzt.</p>
+
+    <p>Wenn ein Spieler keine Karten mehr in der Hand hat (und auch der Stapel
+      bereits leer ist), kann er mit den Karten auf dem Tisch fortsetzen. Diese
+      werden nach den selben Regeln gespielt; zun&auml;chst die sichtbaren und
+      dann - wenn diese auch erfolgreich gespielt wurden - mit den unsichtbaren.</p>
+
+    <p>Beachte, da&szlig;, wenn der gespielte Stapel aufgenommen werden mu&szlig;,
+      die sichtbaren Karten nicht vom Tisch in die Hand genommen werden d&uuml;rfen
+      und da&szlig; danach die (neu aufgenommenen) Karten in der Hand gespielt
+      werden m&uuml;ssen, ehe wieder mit denen auf dem Tisch fortgesetzt werden
+      kann.</p>
+
+    <p>Mit den unsichtbren Karten mu&szlig; auf gut Gl&uuml;ck gespielt werden.
+      Wenn die Karte nicht gem&auml;&szlig; den Regeln, mu&szlig; sie und der
+      ganze Stapel aufgenommen werden.</p>
+
+    <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
+
+    <h2>Anmerkungen zum Layout</h2>
+    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+      unten):</p>
+
+    <ul>
+      <li>Den Reservestapel: Ein Haufen von (verdeckten) Karten, von dem
+        neue Karten aufgenommen werden. Wird die Mauszeiger darauf
+        positioniert, erscheint ein kleines Fenster, das &uuml;ber die
+        Anzahl der &uuml;brigen Karten informiert.</li>
+      <li>Die Karten des Spielers. Die Karten in der Hand oberhalb, darunter die
+        auf dem Tisch.</li>
+      <li>In der n&auml;chsten Reihe befinden sich die Karten der Computer-Spieler
+        3 und 1. Zwischen ihnen ist der Stapel der gespielten Karten (der
+        ebenfalls die Anzahl der gespielten Karten anzeigt, wenn der Mauszeiger
+        dar&uuml;ber positioniert wird)..</li>
+      <li>In der letzten Reihe sind die Karten von Computer-Spieler 2.</li>
+    </ul>
+    
+    <hr size=2 noshade>
+    <address>
+      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+    </address>
+    <!-- Created: Thu Jul  4 16:36:50 PET 2002 -->
+    <!-- hhmts start -->
+Last modified: Mon Feb 10 23:53:14 PET 2003
+<!-- hhmts end -->
+    - $Revision$
+</body>
+</html>
