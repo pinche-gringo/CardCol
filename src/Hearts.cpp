@@ -358,7 +358,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       player = -1U;
       setGameStatus (STOPPED);
       if (!pScoreDlg) {
-         pScoreDlg = ScoreDlg::perform (names);
+         pScoreDlg = ScoreDlg::create (names);
          pScoreDlg->get_window ()->set_transient_for (get_window ());
       }
 

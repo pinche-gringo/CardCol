@@ -1452,7 +1452,7 @@ void Buraco::endGame () {
          name.replace (name.find ("%3"), 2, names[(i << 1) + 1]);
          _names.push_back (name);
       }
-      pScoreDlg = ScoreDlg::perform (_names);
+      pScoreDlg = ScoreDlg::create (_names);
    points[0] += reserve[0].empty () ? 100 : -100;
    points[1] += reserve[1].empty () ? 100 : -100;
    // Sum up all cards on the table
