@@ -27,10 +27,12 @@ class CardWidget;
 // Class to display a pile of cards on the screen
 class CardPile : public Gtk::VBox {
  public:
-   typedef enum { NORMAL, COMPRESSED, VERY_COMPRESSED } Style;
+   typedef enum { NORMAL, COMPRESSED, VERY_COMPRESSED, LAST } Style;
 
    CardPile (Style style = NORMAL);
    virtual ~CardPile ();
+
+   void setStyle (Style s) { style = s; }
 
    void flipTopCard ();
    void setTopCardVisible (bool visible = true);
@@ -54,7 +56,7 @@ class CardPile : public Gtk::VBox {
    bool existCard (CardWidget* card) const {
       return find (cards.begin (), cards.end (), card) != cards.end (); }
 
-   unsigned int getCardNumber () const { return cards.size (); }
+   unsigned int numberOfCards () const { return cards.size (); }
 
  private:
    vector<CardWidget*> cards;
