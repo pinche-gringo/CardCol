@@ -399,7 +399,7 @@ int Buraco::executeMove (unsigned int player) {
    TRACE8 ("Buraco::executeMove (unsigned int) - Playing all?");
    if (!unfinishedMonoPiles[player & 1]
    TRACE8 ("Buraco::executeMove (player) - Playing all?");
-   if ((!reserve[player & 1].empty () && canGetRidOfCards (player))
+   if ((reserve[player & 1].size () && canGetRidOfCards (player))
        || (points[player & 1] > 100)) {
       while (!((ci == playerPile.end ()) || isJoker (**ci))) {
          ICardPile::const_iterator next (playerPile.getFittingCard (**ci, ci + 1,
@@ -1038,10 +1038,12 @@ void Buraco::registerTableDND (unsigned int pile, unsigned int start, unsigned i
 
    ICardPile& tmp (*tablePiles[0][pile]);
    pile <<= 8;
+   for (; start <= end; ++start) {
+      CardWidget& card (*tmp[start]);
       unregisterTableDND (card);
-      CardWidget& card (*(*tablePiles[0][pile])[start]);
+      registerTableDND (card, pile + start);
    }
-      registerTableDND (card, (pile << 8) + start);
+}
 
 //-----------------------------------------------------------------------------
 /// Prepares the card for drag´n´drop
@@ -1444,7 +1446,7 @@ BuracoPile& Buraco::makeNewPile (unsigned int team) {
 
    BuracoPile* pile (new BuracoPile ());
    tablePiles[team].push_back (pile);
-   BuracoPile* pile (new BuracoPile (ICardPile::COMPRESSED, ICardPile::SHOWFACE));
+   boxTeam[team].pack_start (*pile, Gtk::PACK_SHRINK, 5);
 
    pile->show ();
    return *pile;
@@ -1494,7 +1496,8 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
                    || (points[player & 1] > 100))
                   || reserve[(player + 1) & 1].empty ()
                   || (points[(player + 1) & 1] > 100)))
-                  || reserve[(player + 1) & 1].empty ()))
+             || (((*p)->size () > 2) && ((*p)->getPosFirst () > 6)))
+          : ((posPile = cardFitsOnPile (p - tablePiles[player & 1].begin (), card))
              != -1)) {
 	 // Always play on a joker pile (don't bother checking for a second one)
 	 if ((*p)->getPotentialPoints () >= 1000) {
