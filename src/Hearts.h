@@ -34,7 +34,7 @@ class ScoreDlg;
 class Hearts : public Game {
  public:
    Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-           const std::vector<Player*>& player);
+           const std::vector<Player*>& player, unsigned int posPlayer);
    virtual ~Hearts ();
 
    virtual void start ();
@@ -42,6 +42,13 @@ class Hearts : public Game {
    virtual void playOpen (bool open);
    virtual const char* name () { return "Hearts"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
+
+   virtual void handleMessage (unsigned int player, const char* message);
+
+   static void getPositionOfColours (ICardPile& pile, int result[4]);
+
+ protected:
+   virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
 
  private:
    enum Status { EXCHANGE = Game::LAST };
@@ -63,7 +70,7 @@ class Hearts : public Game {
    unsigned int  calcNextPlayer (unsigned int player);
    unsigned int  check4Winner ();
    void exchangeCards ();
-   static void getPositionOfColours (ICardPile& pile, int result[4]);
+   bool cardsExchanged (unsigned int cards);
    static unsigned int numberOfCards (const int aPositions[4], CardWidget::COLOURS colour);
    static unsigned int pointsOfPile (ICardPile& pile);
 
@@ -79,7 +86,9 @@ class Hearts : public Game {
    bool playedSQ;               // Flag, if the queen of spades has been played
    unsigned int aPlayed[4];        // Array holding played cars for each colour
    unsigned int pos2Play;                                   // Position to play
+
    unsigned int player2Exchange;  // ID of (next) player to exchange cards with
+   ICardPile aExchange[NUM_PLAYERS];        // Cards the players are exchanging
 
    struct {
       CardHPile  hand;                        // For players: Cards in the hand
