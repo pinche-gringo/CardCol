@@ -49,6 +49,7 @@ class Game : public Gtk::Table {
    virtual void control (unsigned int status) const { }
    virtual void clean ();
    virtual const char* name () = 0;
+   virtual void changeNames (const vector<string>& newNames);
 
    // Status handling
    bool isRunning () const { return statGame >= PLAYING; }

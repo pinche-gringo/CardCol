@@ -229,8 +229,8 @@ void Game::displayTurn (unsigned int player) {
 /*--------------------------------------------------------------------------*/
 void Game::displayTurn (unsigned int player, const std::string& preText) {
    status.pop (1);
-   std::string stat (_("Turn of player %1"));
-   stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+   std::string stat (_("Turn of %1"));
+   stat.replace (stat.find ("%1"), 2, names[player]);
    status.push (1, preText + stat);
 }
 
@@ -375,4 +375,12 @@ void Game::disableWonCards () {
       wonCards[--i].disconnect ();
    
    wonCards.clear ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Changes the names of the playing people
+//Parameters: newNames: Array holding the new names of the players
+/*--------------------------------------------------------------------------*/
+void Game::changeNames (const vector<string>& newNames) {
+   const_cast<vector<string>&> (names) = newNames;
 }
