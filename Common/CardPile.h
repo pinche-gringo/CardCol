@@ -104,13 +104,11 @@ class ICardPile {
       int pos (findFirstEqualOrBigger (nr));
       return (pos == -1) ? - 1 : findLastEqual (pos); }
    int findLastEqual (unsigned int pos) const;
+   int findFirstEqual (unsigned int pos) const;
+   int find (CardWidget::NUMBERS nr, unsigned int start = 0) const;
 
    bool exists (CardWidget::NUMBERS nr, unsigned int start = 0) const {
-      for (; start < cards.size (); ++start)
-         if (cards[start]->number () == nr)
-            return true;
-      return false;
-   }
+      return find (nr, start) != -1; }
    bool exists (CardWidget& card) const { exists (&card); }
    bool exists (CardWidget* card) const {
       return ::find (cards.begin (), cards.end (), card) != cards.end (); }

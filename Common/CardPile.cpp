@@ -364,7 +364,7 @@ int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
 //Purpose   : Finds the last card having an equal number as the passed card
 //Parameters: pos: Card whose (equal) number has to be found
 //Returns   : int: Position of card in pile
-//Requires  : Cards must be sorted (as the search is binary)
+//Requires  : Cards must be sorted
 /*--------------------------------------------------------------------------*/
 int ICardPile::findLastEqual (unsigned int pos) const {
    Check3 (pos < cards.size ());
@@ -378,6 +378,26 @@ int ICardPile::findLastEqual (unsigned int pos) const {
    TRACE5 ("ICardPile::findLastEqual (CardWidget::NUMBERS) - Card "
            << *cards[pos - 1] << " at position " << pos - 1);
    return pos - 1;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Finds the first card having an equal number as the passed card
+//Parameters: pos: Card whose (equal) number has to be found
+//Returns   : int: Position of card in pile
+//Requires  : Cards must be sorted
+/*--------------------------------------------------------------------------*/
+int ICardPile::findFirstEqual (unsigned int pos) const {
+   Check3 (pos < cards.size ());
+
+   CardWidget::NUMBERS nr (cards[pos]->number ());
+   while (pos--) {
+      if (cards[pos]->number () != nr)
+         break;
+   }
+
+   TRACE5 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Card "
+           << *cards[pos] << " at position " << pos);
+   return pos + 1;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -407,4 +427,18 @@ CardWidget& ICardPile::move (unsigned int dest, unsigned int source) {
            << source << " to " << dest);
 
    insert (remove (source), dest);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Searches for the first card having the passed number
+//Parameters: nr: Number to search for
+//            start: Position of start of search
+//Returns   : int: Offset of found card or -1
+/*--------------------------------------------------------------------------*/
+int ICardPile::find (CardWidget::NUMBERS nr, unsigned int start) const {
+   for (; start < cards.size (); ++start)
+      if (cards[start]->number () == nr)
+         return start;
+
+   return -1;
 }
