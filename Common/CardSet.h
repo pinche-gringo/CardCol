@@ -39,6 +39,7 @@ class CardSet {
    void shuffle ();
 
    void addPacket (const CardImages& decks);
+   void update () const;
 
  private:
    vector<CardWidget*> cards_;

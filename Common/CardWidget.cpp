@@ -24,7 +24,6 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#define DEBUG 0
 #include <Check.h>
 #include <Trace_.h>
 
@@ -39,7 +38,7 @@ CardWidget::COLORS CardWidget::transColor[4] = { CLUBS, SPADES, HEARTS, DIAMONDS
 
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Constructor; creates a cardwidget with the passed pixmap
+//Purpose   : Constructor; creates a cardwidget with the passed index of a pixmap
 //Parameters: set: Images of cards
 //            card: Number of image inside the set to display
 //            visible: Flag, if card should be displayed visible
@@ -80,13 +79,9 @@ CardWidget::~CardWidget () {
 //Purpose   : Shows either the cardimage of the image of the deck
 /*--------------------------------------------------------------------------*/
 void CardWidget::showFace (bool visible) {
-   remove ();
    isVisible = visible;
-   add_pixmap (visible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
-               NULL);
+   update ();
    Check3 (get_child ()); Check3 (Gtk::Pixmap::isA (get_child ()));
-
-   dynamic_cast <Gtk::Pixmap*> (get_child ())->set_alignment (0.0, 0.0);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -109,4 +104,18 @@ char CardWidget::colorStr () const {
    // Letters describing the colors (clubs, spades, hearts, diamonds)
    static char* colors = _("CSHD");
    return colors[nrCard & 0x3];
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Returns the color of the card as character
+//Returns   : char: Character describing color of card
+/*--------------------------------------------------------------------------*/
+void CardWidget::update () {
+   TRACE3 ("CardWidget::update () - Card " << nrCard);
+
+   remove ();
+   add_pixmap (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
+               NULL);
+
+   dynamic_cast <Gtk::Pixmap*> (get_child ())->set_alignment (0.0, 0.0);
 }

@@ -75,11 +75,22 @@ void CardSet::shuffle () {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Retrieves the specified card
-//Retruns   : CardWidget&: Reference to CardWidget
+//Returns   : CardWidget&: Reference to CardWidget
 /*--------------------------------------------------------------------------*/
 CardWidget& CardSet::getCard (unsigned int nr) const {
    TRACE3 ("CardSet::getCard (unsigned int) - " << nr);
    Check3 (nr < numberOfCards ()); Check3 (cards_[nr]);
 
    return *cards_[nr];
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Actualizes the card set (after changes of the images)
+/*--------------------------------------------------------------------------*/
+void CardSet::update () const {
+   TRACE3 ("CardSet::update () const");
+
+   for (vector<CardWidget*>::const_iterator i (cards_.begin ());
+        i != cards_.end (); ++i)
+      (*i)->update ();
 }

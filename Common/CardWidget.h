@@ -28,7 +28,7 @@
 // Class to display a card on the screen
 class CardWidget : public Gtk::Button {
  public:
-   CardWidget (const CardImages& set, unsigned int card, bool visible = true);
+   CardWidget (const CardImages& set, unsigned int card, bool showFace = true);
    CardWidget (const CardWidget&);
    ~CardWidget ();
 
@@ -59,6 +59,8 @@ class CardWidget : public Gtk::Button {
    friend ostream& operator<< (ostream& out, const CardWidget& card) {
       out << card.colorStr () << card.numberStr ();
       return out; }
+
+   void update ();
 
  private:
    CardWidget ();
