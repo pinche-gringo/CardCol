@@ -604,7 +604,7 @@ XGP::XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { _("E_xit"),             _("<ctl>Q"), EXIT,     ITEM },
     { _("_Options"),          _("<alt>O"), 0,        BRANCH },
     { _("_Change game"),      "",          0,        SUBMENU },
-    // For translations: Write the Rovhult with 'ø'
+    // For translations: Write the Rovhult as o-slash
     {    _("_Rovhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
     {    _("_Twopart"),       _("<ctl>T"), TWOPART,  RADIOITEM },
     {    _("_Hearts"),        _("<ctl>H"), HEARTS,   RADIOITEM },
@@ -1530,7 +1530,7 @@ bool CardgameCollection::showMessage (const std::string msg) {
 void CardgameAppl::showHelp () const {
    std::cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
              << _(" [OPTIONS]\n\n")
-       // For translations: Write the Rovhult with 'ø'
+       // For translations: Write the Rovhult as o-slash
              << "  -g, --game ......... " << _("[GAME] Select game to start (default: Rovhult)\n")
              << "  -f, --file ......... " << _("[FILE] Use file as INI file\n")
              << "  -b, --browser ...... " << _("[NAME] Browser to use to display the help\n")
