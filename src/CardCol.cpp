@@ -69,7 +69,9 @@ const unsigned int CardgameCollection::WIDTH (760);
 const unsigned int CardgameCollection::HEIGHT (750);
 
 
-static const unsigned int PORT (31338);
+#define DEFPORT                31338
+#define STRING(nr)             #nr
+static const unsigned int PORT (DEFPORT);
 
 
 // Pixmap for program
@@ -709,7 +711,7 @@ CardgameCollection::CardgameCollection (Options& opts)
    makePlayer ();
 
    if (options.port.size ()) {
-      TRACE9 ("CardgameCollection::CardgameCollection () - Connect: "
+      TRACE9 ("CardgameCollection::CardgameCollection (Options&) - Connect: "
               << options.target << '-' << options.port);
       if (options.target.size ())
          playerPos = PlayerConnectDlg::perform (aPlayer, cmgr, options.target,
@@ -1256,7 +1258,8 @@ void* CardgameCollection::waitForMessages (void* player) {
 
    std::string input;
    YGP::Socket* sock ((iPlayer == -1) ? cmgr.getSocket () : cmgr.getClients ()[iPlayer]);
-   ++iPlayer;
+   Check3 ((iPlayer == -1) ? playerPos : true);
+   iPlayer = (iPlayer == -1) ? (aPlayer.size () - playerPos) : (iPlayer + 1);
    try {
       while (true) {
          sock->read (input);
@@ -1277,14 +1280,14 @@ void* CardgameCollection::waitForMessages (void* player) {
 
             TRACE9 ("CardgameCollection::waitForMessages (void*) - Lock (thread)");
             mxThreadCmd.lock ();    // Wait til last message has been processed
-            TRACE9 ("CardgameCollection::waitForMessages (void*) - Perform cmd");
+            TRACE9 ("CardgameCollection::waitForMessages (void*) - Perform cmd" << msg);
             Glib::signal_idle ().connect
                 (bind (slot (*this, &CardgameCollection::handleMessage),
                        iPlayer, msg));
 
-            TRACE9 ("CardgameCollection::waitForMessages (void*) - Wait 4 GUI");
-            mxGuiCmd.lock ();
+            TRACE9 ("CardgameCollection::waitForMessages (void*) - Wait for GUI");
             mxThreadCmd.unlock ();
+            mxGuiCmd.lock ();
             mxGuiCmd.unlock ();
             TRACE9 ("CardgameCollection::waitForMessages (void*) - GUI finsished");
          }
@@ -1372,13 +1375,15 @@ int CardgameCollection::handleGlobalMessage (unsigned int player, char* msg) thr
                 ? message.getNextNode (';')
                 : static_cast<std::string> (_("Unspecified error")));
 
-         cmd.replace (cmd.find ("%1"), 2, aPlayer[player]->getName ());
-         cmd.replace (cmd.find ("%1"), 2, 
-                      (cmgr.getMode () == YGP::ConnectionMgr::CLIENT
-                       ? _("The server")
-                       : aPlayer[player]->getName ()));
-         cmd.replace (cmd.find ("%2"), 2, param);
-         cmd.replace (cmd.find ("%3"), 2, cmd);
+         try {
+            cmd.replace (cmd.find ("%1"), 2, 
+                         (cmgr.getMode () == YGP::ConnectionMgr::CLIENT
+                          ? _("The server")
+                          : aPlayer[player]->getName ()));
+            cmd.replace (cmd.find ("%2"), 2, param);
+            cmd.replace (cmd.find ("%3"), 2, cmd);
+         }
+         catch (std::out_of_range&) { }
 
          Gtk::MessageDialog* dlg (new Gtk::MessageDialog (cmd, Gtk::MESSAGE_ERROR));
          dlg->set_title (PACKAGE);
@@ -1403,9 +1408,10 @@ bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
 #ifdef HAVE_LIBPTHREAD
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - " << msg);
 
+   TRACE9 ("CardgameCollection::handleMessage (unsigned int, char*) - Locking Cmd (main)");
+   mxThreadCmd.lock ();                               // Block message processing
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - Unlocking GUI");
    mxGuiCmd.unlock ();
-   mxThreadCmd.lock ();                               // Block message processing
    TRACE9 ("CardgameCollection::handleMessage (unsigned int, char*) - Locked (main)");
    mxGuiCmd.lock ();
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - Locking GUI");
@@ -1414,14 +1420,16 @@ bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
    try {
       int rc (handleGlobalMessage (player, msg));
       if ((rc == -1)
-          || (!rc && (game && !game->handleMessage (player, msg))))
+          || (!rc && (game && !game->ignoreMessage ()
+                      && !game->handleMessage (player, msg))))
          unlock = false;
    }
    catch (std::string& error) {
       std::string msg ("Error=99;Msg=\"" + error + '\0');
       msg += '"';
       try {
-          cmgr.getSocket ()->write (msg);
+         if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT)
+            cmgr.getSocket ()->write (msg);
       }
       catch (std::string& e) { }
 
@@ -1472,7 +1480,7 @@ void CardgameAppl::showHelp () const {
              << "  -b, --browser ...... " << _("[NAME] Browser to use to display the help\n")
              << "  -d, --dir-help ..... " << _("[DIR] Directory to search for help\n")
              << "  -l, --listen-at .... " << _("[PORT] Awaits connections on port PORT\n")
-             << "  -l, --connect-to ... " << _("[SERVER[:PORT]] Connects to SERVER:PORT\n")
+             << "  -c, --connect-to ... " << _("[SERVER[:PORT]] Connects to SERVER:PORT\n")
 #ifdef SAVE_GAME
              << "  -S, --save-game .... " << _("[FILE] Saves game into FILE\n")
              << "  -L, --load-game .... " << _("[FILE] Load game from FILE\n")
@@ -1563,8 +1571,10 @@ bool CardgameAppl::handleOption (const char option) {
             options.target.assign (target, port - target);
             options.port = port + 1;
          }
-         else
+         else {
              options.target = target;
+             options.port = STRING (DEFPORT);
+         }
       }
       else
          std::cerr << PACKAGE << _("-warning: No target specified! Ignoring option `c'\n");
