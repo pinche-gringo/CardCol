@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2004
+//COPYRIGHT   : Copyright (C) 2003 - 2005
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -129,7 +129,7 @@ CardWidget& MachiPile::remove (unsigned int pos, bool visible) {
 /// - Card played on an empty pile -> Valid
 /// - Check if the card "fits": Either the same number as the other (first and
 ///   last) card, or the same colour and the number in serie.
-/// \param card: Card to inspect. 
+/// \param card: Card to inspect.
 /// \returns unsigned int: Position of card in pile or -1U
 /// \pre Coloured piles must be sorted strict ascending
 //----------------------------------------------------------------------------
@@ -156,7 +156,7 @@ unsigned int MachiPile::getPosition4Card (const CardWidget& card) const {
                         ((cmp->number () == CardWidget::ACE)
                          && (size () > 1) ? ONE : BOTH)) == -1)
          return 0;
-      
+
       cmp = operator[] (size () - 1);
       if (cardDistance (card, *cmp,
                         ((cmp->number () == CardWidget::ACE)
@@ -179,7 +179,7 @@ int MachiPile::cardDistance (const CardWidget& a, const CardWidget& b,
                              ACEFLAG aceIsOne) {
    TRACE9 ("MachiPile::cardDistance (const CardWidget&, const CardWidget&, ACEFLAG) - "
            << a << "<->" << b);
-   
+
    if (a.colour () != b.colour ())
       return (a.number () == b.number ()) ? 0 : 99;
 
@@ -217,7 +217,7 @@ void MachiPile::analyzePile () {
 
 //----------------------------------------------------------------------------
 /// Checks the integrity of the object
-/// \throw std::string describing the error 
+/// \throw std::string describing the error
 //----------------------------------------------------------------------------
 void MachiPile::checkIntegrity () throw (Glib::ustring) {
    if (size () < 3)
