@@ -53,7 +53,7 @@
 
     <p>Los jugadores empiezan con once cartas en su mano. En cada turno o se
       tiene que cortar una carta de la reserva o se puede acoger tode del
-      mot&oacute;n de los cartas echadas, si se tiene una pareja apropiada
+      mot&oacute;n de las cartas echadas, si se tiene una pareja apropiada
       (sin mono) a la carta de arriba del todas. Como excepci&oacute;n el
       jugador empezando el juego puede cortar esa carta en su primer turno en
       cada modo.</p>
