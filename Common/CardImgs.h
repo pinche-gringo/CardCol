@@ -1,5 +1,5 @@
-#ifndef CARDSET_H
-#define CARDSET_H
+#ifndef CARDIMGS_H
+#define CARDIMGS_H
 
 //$Id$
 
@@ -22,14 +22,12 @@
 
 #include <gdk--/pixmap.h>
 
-#include <SmartPtr.h>
 
-
-// Class to display a card on the screen
-class CardSet {
+// Class to load & store the images of the used cards
+class CardImages {
  public:
-   CardSet () : cards (CARDS) { }
-   ~CardSet ();
+   CardImages (unsigned int cards) : cards_ (cards) { }
+   ~CardImages ();
 
    const Gdk_Pixmap& getCardImage (unsigned int nr) const;
 
@@ -37,14 +35,16 @@ class CardSet {
    void setCardBackground (const Gdk_Pixmap& back) { back_ = back; }
 
    void load (const Gdk_Window& parent, const char* path = NULL) throw (std::string);
+   void load (unsigned int cards, const Gdk_Window& parent,
+              const char* path = NULL) throw (std::string) {
+      cards_.reserve (cards);
+      load (parent, path); }
 
-   unsigned int getCardNumber () const { return CARDS; }
+   unsigned int cards () const { return cards_.size (); }
 
  private:
-   vector<Gdk_Pixmap> cards;
+   vector<Gdk_Pixmap> cards_;
    Gdk_Pixmap back_;
-
-   static const unsigned int CARDS = 52;  // Number of cards in traditional set
 
    void unload ();
 

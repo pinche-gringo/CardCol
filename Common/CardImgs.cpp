@@ -29,7 +29,7 @@
 
 #include <cardgames-cfg.h>
 
-#define DEBUG 3
+#define DEBUG 0
 #include <Check.h>
 #include <Trace_.h>
 
@@ -38,14 +38,14 @@
 #include <File.h>
 #include <ANumeric.h>
 
-#include "CardSet.h"
+#include "CardImgs.h"
 
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Destructor
 /*--------------------------------------------------------------------------*/
-CardSet::~CardSet () {
-   TRACE9 ("CardSet::~CardSet ()");
+CardImages::~CardImages () {
+   TRACE9 ("CardImages::~CardImages ()");
 }
 
 
@@ -53,10 +53,10 @@ CardSet::~CardSet () {
 //Purpose   : Retrieves the specified cardnumber
 //Parameters: nr: Number of card to retrieve
 /*--------------------------------------------------------------------------*/
-const Gdk_Pixmap& CardSet::getCardImage (unsigned int nr) const {
-   Check3 (nr < CARDS);
+const Gdk_Pixmap& CardImages::getCardImage (unsigned int nr) const {
+   Check3 (nr < cards ());
 
-   return cards[nr];
+   return cards_[nr];
 }
 
 /*--------------------------------------------------------------------------*/
@@ -64,8 +64,8 @@ const Gdk_Pixmap& CardSet::getCardImage (unsigned int nr) const {
 //Parameters: parent: Parent window
 //            path: Path to files; NULL for defaultpath (in datadir)
 /*--------------------------------------------------------------------------*/
-void CardSet::load (const Gdk_Window& parent, const char* path) throw (std::string) {
-   TRACE1 ("CardSet::load (const Gdk_Window&, const char*) - " << path);
+void CardImages::load (const Gdk_Window& parent, const char* path) throw (std::string) {
+   TRACE1 ("CardImages::load (const Gdk_Window&, const char*) - " << path);
 
    std::string file (makeDirString (path));
 
@@ -73,19 +73,19 @@ void CardSet::load (const Gdk_Window& parent, const char* path) throw (std::stri
    ANumeric nr;
    Gdk_Color color;
 
-   for (int i = 0; i < CARDS; ++i) {
+   for (int i = 0; i < cards (); ++i) {
       nr = i + 1;
       temp = file + nr.toUnformatedString () + ".xpm";
-      TRACE3 ("CardSet::load (const Gdk_Window&, const char*) - File " << temp);
+      TRACE3 ("CardImages::load (const Gdk_Window&, const char*) - File " << temp);
 
-      cards[i].create_from_xpm (parent, color, temp);
+      cards_[i].create_from_xpm (parent, color, temp);
       if (errno)
          break;
    }
 
    if (!errno) {
       temp = file + "back.xpm";
-      TRACE3 ("CardSet::load (const Gdk_Window&, const char*) - File " << temp);
+      TRACE3 ("CardImages::load (const Gdk_Window&, const char*) - File " << temp);
       back_.create_from_xpm (parent, color, temp);
    }
    if (errno) {
@@ -101,7 +101,7 @@ void CardSet::load (const Gdk_Window& parent, const char* path) throw (std::stri
 //Paramaters: path: Suggestion for the path (may be NULL)
 //Returns   : Path to icons (including trailing backlslash)
 /*--------------------------------------------------------------------------*/
-std::string CardSet::makeDirString (const char* path) {
+std::string CardImages::makeDirString (const char* path) {
    std::string dir (path ? path : PKGDIR);
    if (dir.empty ())
       dir = ".";
