@@ -122,6 +122,8 @@ class Machiavelli : public Game {
    void cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& pContext, gint,
                             gint, const Gtk::SelectionData& data, guint info, guint32 time,
                             unsigned int cardPile);
+
+   bool doRegisterHand (unsigned int first, unsigned int last);
    //@}
 
    /// \name Callback from events

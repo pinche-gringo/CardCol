@@ -1033,27 +1033,40 @@ void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
    TRACE1 ("Rovhult::cardDroppedOnTable (...) - Data = "
            << *pValue << " <-> " << pile);
 
-   // Check if player matches
-   CardWidget& cardTable (players[0].reserve[pile].removeTopCard ());
-   CardWidget& cardHand (players[0].hand.remove (*pValue));
-
-   TRACE1 ("Rovhult::cardDroppedOnTable (...) - Exchanging cards "
-           << cardHand.id () << "<->" << cardTable.id ());
-
    // End old dnd
    context->drag_finish (true, false, time);
 
-   activeCards[*pValue].disconnect ();
+   Glib::signal_idle ().connect
+       (bind (mem_fun (*this, &Rovhult::doSwapCards), pile, *pValue));
+}
+
+//-----------------------------------------------------------------------------
+/// Swaps a card in the hand with one (top-card) on the table
+/// \param pile: Offset of pile whose top-card should be swapped
+/// \param card: Offset of card in the hand which should be swapped
+/// \returns bool: Always false
+//-----------------------------------------------------------------------------
+bool Rovhult::doSwapCards (unsigned int pile, unsigned int card) {
+   CardWidget& cardTable (players[0].reserve[pile].removeTopCard ());
+   CardWidget& cardHand (players[0].hand.remove (card));
+
+   TRACE1 ("Rovhult::doSwapCards (unsigned int, unsigned int) - Exchanging cards "
+           << cardHand.id () << "<->" << cardTable.id ());
+
+   activeCards[card].disconnect ();
    disconnectCardInHand (cardHand);
    disconnectCardOnTable (cardTable);
    unregisterDND (cardHand);
    unregisterDND (cardTable);
 
+   // Swap cards
    players[0].reserve[pile].setTopCard (cardHand);
-   players[0].hand.insert (cardTable, *pValue);
+   players[0].hand.insert (cardTable, card);
 
-   registerHandDND (cardTable, *pValue);
+   // Adapt dnd-settigns
+   registerHandDND (cardTable, card);
    registerTableDND (cardHand, pile);
+   return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1082,28 +1095,11 @@ void Rovhult::cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
    TRACE1 ("Rovhult::cardDroppedOnHand (...) - Data = "
            << *pValue << " <-> " << card);
 
-   CardWidget& cardTable (players[0].reserve[*pValue].removeTopCard ());
-   CardWidget& cardHand (players[0].hand.remove (card));
-
-   TRACE1 ("Rovhult::cardDroppedOnHand (...) - Exchanging cards "
-           << cardHand.id () << "<->" << cardTable.id ());
-
    // End old DND
    context->drag_finish (true, false, time);
 
-   activeCards[card].disconnect ();
-   disconnectCardInHand (cardHand);
-   disconnectCardOnTable (cardTable);
-   unregisterDND (cardHand);
-   unregisterDND (cardTable);
-
-   // Swap cards
-   players[0].reserve[*pValue].setTopCard (cardHand);
-   players[0].hand.insert (cardTable, card);
-
-   // Adapt dnd-settigns
-   registerHandDND (cardTable, card);
-   registerTableDND (cardHand, *pValue);
+   Glib::signal_idle ().connect
+       (bind (mem_fun (*this, &Rovhult::doSwapCards), *pValue, card));
 }
 
 //-----------------------------------------------------------------------------

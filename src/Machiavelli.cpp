@@ -650,8 +650,24 @@ void Machiavelli::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
       card = *pValue;
       *pValue = temp;
    }
-   registerHandDND (card, *pValue);
+
+   Glib::signal_idle ().connect
+       (bind (mem_fun (*this, &Machiavelli::doRegisterHand), card, *pValue));
+}
+
+//-----------------------------------------------------------------------------
+/// Checks if the piles on the table are valid (have at least 3 cards)
+/// \param except: Pile which can be invalid
+/// \returns \c True, if the piles are OK
+//-----------------------------------------------------------------------------
+bool Machiavelli::doRegisterHand (unsigned int first, unsigned int last) {
+   TRACE9 ("Buraco::doRegisterHand (unsigned int, unsigned int) - [" << first << '-' << last);
+   Check1 (last < hands[0].size ());
+   Check1 (first <= last);
+
+   registerHandDND (first, last);
    Check3 (aDNDHand.size () == hands[0].size ());
+   return false;
 }
 
 //-----------------------------------------------------------------------------

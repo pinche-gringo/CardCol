@@ -83,7 +83,8 @@ class Rovhult : public Game {
    void takeCards ();
 
    bool playFromPile (unsigned int pile);
-   int doPileSelected (unsigned int player, unsigned int pile);
+   int  doPileSelected (unsigned int player, unsigned int pile);
+   bool doSwapCards (unsigned int pile, unsigned int card);
 
    // Helper functions
    unsigned int movePlayedCardsToLooser (unsigned int nrLooser);
