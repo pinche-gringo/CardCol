@@ -1291,8 +1291,9 @@ int RovhultAppl::makeTurn (unsigned int player) {
    TRACE5 ("RovhultAppl::makeTurn (unsigned int) - Card to beat " << cardMin);
 
    // Check if to play from hand or to play from reserve
-   if (players[player].hand.numberOfCards ()) {
-      unsigned int pos (players[player].hand.findLastEqualOrBigger (cardMin));
+   unsigned int nrCards (players[player].hand.numberOfCards ());
+   if (nrCards) {
+      unsigned int pos (players[player].hand.findFirstEqualOrBigger (cardMin));
 
       TRACE5 ("RovhultAppl::makeTurn (unsigned int) - Continuing with card "
               << players[player].hand.at (pos) << " at pos " << pos);
@@ -1308,10 +1309,21 @@ int RovhultAppl::makeTurn (unsigned int player) {
             assert (pos != -1);
             assert (players[player].hand.at (pos).number () == CardWidget::TEN);
          }
-      else
+      else {
          assert ((cardMin == CardWidget::SEVEN)
                  ? (players[player].hand.at (pos).number () <= CardWidget::SEVEN)
                  : (players[player].hand.at (pos).number () >= cardMin));
+
+         // The search of CardWidget does not know (and shall not know anything)
+         // about the special meaning of the tens, so skip them by yourself
+         if (players[player].hand.at (pos).number () == CardWidget::TEN) {
+            unsigned int npos = players[player].hand.findLastEqual (pos);
+            if ((npos + 1) < nrCards)
+               pos = players[player].hand.findLastEqual (npos + 1);
+         }
+         else
+            pos = players[player].hand.findLastEqual (pos);
+      }
 
       CardWidget::NUMBERS nr (playCardsFromHand (player, pos));
       sleep (1);
