@@ -106,15 +106,12 @@ class Twopart : public Game {
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
    unsigned int bfPlayers;           // Array indicating players still in round
-   unsigned int actPlayer;          // Player who is in turn (needed for timer)
 
    // Variables to store positions during playing
    unsigned int startPos[NUM_PLAYERS - 1]; // Offset of cards played by players
    unsigned int offPos;                             // Offset in startPos-array
    unsigned int startPlayer;  // Player who started round (needed for endRound)
    unsigned int bfOldPlayers;  // Array indicating players while starting round
-
-   bool restart;
 
    // Columns and rows for the cards of the players
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];

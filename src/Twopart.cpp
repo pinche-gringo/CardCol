@@ -68,10 +68,10 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                   CardSet& cardset, const std::vector<Player*>& player,
                   unsigned int posPlayer, Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 12, 15)
+     , bfPlayers ((1 << NUM_PLAYERS) - 1), offPos (0)
+     , bfOldPlayers (bfPlayers), pTrump (NULL)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
-     , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK)
-     , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL), offPos (0)
-     , bfOldPlayers (bfPlayers) {
+     , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK) {
    staple.show ();
    attach (staple, 2, 3, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
 
@@ -80,7 +80,7 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    // Show and attach card-piles
    changeNames (player);
-   for (int i (0); i < NUM_PLAYERS; ++i) {
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].name.show ();
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 3,
               ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
@@ -334,7 +334,7 @@ void Twopart::cardSelected (unsigned int pos) {
    Check3 (gameStatus () >= PLAYING);
 
    CardWidget& card (*players[0].hand[pos]);
-   unsigned int nr (card.number ());
+   CardWidget::NUMBERS nr (card.number ());
    CardWidget::COLOURS colour (card.colour ());
       
    // Perform validity-check in part 2: Card must have the same colour and be
@@ -668,7 +668,7 @@ unsigned int Twopart::findSmallestCard (unsigned int player) const {
    Check3 (player < NUM_PLAYERS);
    Check3 (pTrump);
 
-   unsigned int nrMin (CardWidget::UNREACHABLE);
+   CardWidget::NUMBERS nrMin (CardWidget::UNREACHABLE);
    unsigned int cSerie (0);
    unsigned int pos (0);
    for (unsigned int i (0); i < players[player].hand.size (); ++i) {
@@ -843,7 +843,7 @@ int Twopart:: endRound (unsigned int player) {
 
          if (players[nextPlayer].hand.empty ())
             nextPlayer = findNextPlayer (nextPlayer);
-         if (nextPlayer == -1)
+         if (nextPlayer == -1U)
             nextPlayer = ~startPlayer;
       }
       *startPos = played.size ();
@@ -1001,7 +1001,7 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start
 //-----------------------------------------------------------------------------
 void Twopart::clean () {
    staple.clear ();                                             // Clear staple
-   for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {   // Clear cards of players
       players[i].hand.clear ();
       players[i].won.clear ();
    }
@@ -1116,7 +1116,7 @@ void Twopart::startPartTwo (unsigned int player) {
 void Twopart::playOpen (bool open) {
    ICardPile::ShowOpt show (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
 
-   for (int i (0); i < NUM_PLAYERS; ++i) {
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.setShowOption (show);
       players[i].won.setStyle (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
       if (i)
@@ -1159,7 +1159,7 @@ int Twopart::findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const {
 void Twopart::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
 
-   for (int i (0); i < NUM_PLAYERS; ++i)
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       players[i].name.set_text (actPlayers[i]->getName ());
 }
 

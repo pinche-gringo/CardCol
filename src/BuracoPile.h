@@ -38,8 +38,9 @@ class BuracoPile : public CardVPile {
 
    unsigned int getCardPoints () const;
    unsigned int getPotentialPoints () const { return status.points; }
-   unsigned int getPoints () const {
-      return ((size () == 7) ? status.points : (status.points >= 1000) ? -1000 : 0); }
+   int getPoints () const {
+      return ((size () == 7) ? status.points : ((status.points >= 1000)
+                                                ? -1000 : 0)); }
 
    unsigned int getPosJoker () const { return status.posJoker; }
    unsigned int getPosFirst () const { return status.posFirst; }

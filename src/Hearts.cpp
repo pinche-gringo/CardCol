@@ -61,9 +61,10 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
                 const std::vector<Player*>& player, unsigned int posPlayer,
                 Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 14, 10)
+     , playedSQ (false) , player2Exchange (3)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
-     , playedSQ (false), pScoreDlg (NULL)
-     , player2Exchange (3) {
+     , pScoreDlg (NULL)
+ {
    TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&, const std::vector<Glib::ustring>&)");
 
    int width (cards.getCard (0).getImageWidth ());
@@ -71,7 +72,7 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
 
    // Show and attach card-piles
    changeNames (player);
-   for (int i (0); i < NUM_PLAYERS; ++i) {
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].name.show ();
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + ((i & 1) ? 1 : 5),
               ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
@@ -219,7 +220,7 @@ void Hearts::clean () {
 /// \param open: Flag if cards should be shown or hidden
 //-----------------------------------------------------------------------------
 void Hearts::playOpen (bool open) {
-   for (int i (1); i < NUM_PLAYERS; ++i) {
+   for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       players[i].hand.setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
       players[i].hand.setStyle (open ? ICardPile::COMPRESSED : ICardPile::QUITE_COMPRESSED);
       players[i].won.setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
@@ -847,7 +848,7 @@ unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[
 /// point) or the highest numbered card).
 /// \param pile: Pile from which to play
 /// \param aPositions: Array with positions of cards
-/// \returns \c Position of card to play
+/// \returns \c Position of card to play or -1
 //-----------------------------------------------------------------------------
 unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[4]) {
    TRACE9 ("Hearts::findWorstCard (const ICardPile&, const int[4]");
@@ -861,15 +862,15 @@ unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[
       TRACE5 ("Hearts::findWorstCard (const ICardPile&, const int[4]) - Searching"
               " for SQ");
       if (aPositions[2] > 0)
-         for (unsigned int pos ((aPositions[1] >= 0)
-                                ? aPositions[1] + 1
-                                : ((aPositions[0] >= 0) ? aPositions[0] + 1: 0));
+         for (int pos ((aPositions[1] >= 0)
+                       ? aPositions[1] + 1
+                       : ((aPositions[0] >= 0) ? aPositions[0] + 1: 0));
               pos <= aPositions[2]; ++pos) {
             TRACE9 ("Hearts::findWorstCard (const ICardPile&, const int[4]) - "
                     "Searching for SQ at position " << pos);
             Check3 (pile[pos]->colour () == CardWidget::SPADES);
             if (pile[pos]->number () >= CardWidget::QUEEN)
-               return pos;
+               return static_cast<unsigned int> (pos);
          }
 
       // No high spade found: Try to play a heart (after the first round)
@@ -901,6 +902,7 @@ unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[
       }
    }
    Check3 (0);
+   return -1U;
 }
 
 //-----------------------------------------------------------------------------
@@ -932,7 +934,7 @@ void Hearts::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
 
    std::vector<Player*> player;
-   for (int i (0); i < NUM_PLAYERS; ++i) {
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       player.push_back (actPlayers[(i + posServer) & 0x3]);
       players[i].name.set_text (actPlayers[i]->getName ());
    }

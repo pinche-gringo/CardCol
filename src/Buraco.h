@@ -158,9 +158,9 @@ class Buraco : public Game {
    Gtk::Statusbar info;
    Gtk::HBox      boxTeam[2];
 
-   Gtk::Label     newPile;
-   CardVInfoPile staple;
-   CardVInfoPile dumped;
+   Gtk::Label       newPile;
+   CardVInfoPile    staple;
+   CardVInfoPile    dumped;
    SigC::Connection dumpedTop;
    SigC::Connection stapleTop;
 

@@ -72,8 +72,9 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                   CardSet& cardset, const std::vector<Player*>& player,
                   unsigned int posPlayer, Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 16, 20)
-     , aExchanged (0), staple (ICardPile::VERY_COMPRESSED)
-     , played (ICardPile::VERY_COMPRESSED, ICardPile::SHOWFACE) {
+     , played (ICardPile::VERY_COMPRESSED, ICardPile::SHOWFACE)
+     , staple (ICardPile::VERY_COMPRESSED)
+     , aExchanged (0) {
     TRACE9 ("Rovhult::Rovhult (Gtk::Box& Gtk::Statusbar&, CardSet&,"
             " const std::vector<Glib::ustring>&)");
 
@@ -86,7 +87,7 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    // Show and attach card-piles
    changeNames (player);
-   for (int i (0); i < NUM_PLAYERS; ++i) {
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       for (int j (0); j < 3; ++j) {
          players[i].reserve[j].setStyle (ICardPile::QUITE_COMPRESSED);
          players[i].reserve[j].show ();
@@ -607,7 +608,7 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
    // If last 4 cards have the same number or ten was played: Don't increase
    // player (except of course, if actual player don't have anymore cards)
    if (!((nr == CardWidget::TEN) || clearPlayedIf4Equal ())
-       || (player != nextAvailablePlayer ((player - 1) & 0x3))) {
+       || (static_cast<int> (player) != nextAvailablePlayer ((player - 1) & 0x3))) {
       player = nextAvailablePlayer (player);
 
       Check3 (actPlayers.size () > player);
@@ -752,7 +753,7 @@ unsigned int Rovhult::numberOfEqualTopCards () const {
    else
       return 0;
 
-   int i (1);
+   unsigned int i (1);
    CardWidget& card (played.getTopCard ());
    while (i <= nrCards) {
       TRACE9 ("Rovhult::numberOfEqualTopCards () const - Checking "
@@ -834,8 +835,8 @@ void Rovhult::clean () {
       unregisterDND ();
 
    staple.clear ();                                             // Clear staple
-   for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
-      for (int j (0); j < 3; ++j)
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {   // Clear cards of players
+      for (unsigned int j (0); j < 3; ++j)
          players[i].reserve[j].clear ();
 
       players[i].hand.clear ();
@@ -927,7 +928,7 @@ void Rovhult::unregisterDND () {
    Check3 (aHandDND.size () == players[0].hand.size ());
    Check3 (aTableDND.size () == players[0].hand.size ());
 
-   for (int i (0); i < players[0].hand.size (); ++i) {
+   for (unsigned int i (0); i < players[0].hand.size (); ++i) {
       CardWidget& card (*players[0].hand[i]);
       unregisterDND (card);
       Check3 (players[0].reserve[i].size () == 2);
@@ -935,7 +936,7 @@ void Rovhult::unregisterDND () {
       disconnectCardInHand (card);
    }
    
-   for (int i (0);
+   for (unsigned int i (0);
         i < (sizeof (players[0].reserve) / sizeof (players[0].reserve[0]));
         ++i) {
       unregisterDND (players[0].reserve[i].getTopCard ());
@@ -1002,7 +1003,6 @@ void Rovhult::dealCards () {
    }
 
    Check3 (staple.size ());
-   CardWidget& card (staple.getTopCard ());
 
    status.pop ();
    status.push (_("Exchange the cards in your hand with the one on the "
@@ -1332,7 +1332,7 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
          // If player would continue with a 6, but has also a 7, play that
          // card instead
          if (players[player].hand[start]->number () == CardWidget::SIX) {
-            if ((end = players[player].hand.find (CardWidget::SEVEN, start)) != -1) {
+            if ((end = players[player].hand.find (CardWidget::SEVEN, start)) != -1U) {
                TRACE8 ("Rovhult::findCard2Play (unsigned int) - Exchanging "
                        << *players[player].hand[start] << " with "
                        << *players[player].hand[end]);
@@ -1484,7 +1484,7 @@ bool Rovhult::getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
 void Rovhult::playOpen (bool open) {
    ICardPile::ShowOpt show (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
 
-   for (int i (1); i < NUM_PLAYERS; ++i) {
+   for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       players[i].hand.setShowOption (show);
       players[i].hand.setStyle ((show == ICardPile::SHOWFACE)
                                 ? ICardPile::COMPRESSED
@@ -1510,7 +1510,7 @@ void Rovhult::end (bool restart) {
 void Rovhult::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
 
-   for (int i (0); i < NUM_PLAYERS; ++i)
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       players[i].name.set_text (actPlayers[i]->getName ());
 }
 

@@ -674,8 +674,8 @@ const IVIOApplication::longOptions CardgameAppl::lo[] = {
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE)
-     , pThread (NULL), game (NULL)
-     , options (opts), oldGame (NONE), restart (false), playerPos (0) {
+     , pThread (NULL), options (opts), playerPos (0), oldGame (NONE)
+     , restart (false), game (NULL) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
 
    setIconProgram (xpmGame);
@@ -771,7 +771,7 @@ void CardgameCollection::startGame () {
            << " -> New: " << options.type);
 
    // Check if the game has been changed; if so destroy the old one
-   if (oldGame != options.type) {
+   if (oldGame != static_cast<int> (options.type)) {
       if (game) {
          getClient ().remove (*game);
          delete game;
@@ -1136,7 +1136,7 @@ bool CardgameCollection::restartGame () {
       }
       else {
          TRACE9 ("CardgameCollection::restartGame () - Delaying stop of game");
-         game->end ((options.type == oldGame) ? restart : false);
+         game->end ((static_cast <int> (options.type) == oldGame) ? restart : false);
          return false;
       }
    }
@@ -1178,7 +1178,7 @@ void* CardgameCollection::loadCards (void*) {
    }
 
    Check3 (cardFaces.size ());
-   pThread = NULL;
+   return pThread = NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -1603,7 +1603,7 @@ void CardgameAppl::readINIFile (const char* pFile) {
       INIOBJ (options, Game);
       INILIST2 (Player, Glib::ustring, options.names);
 
-      unsigned int rc (INIFILE_READ ());
+      INIFILE_READ ();
    }
    catch (std::string& error) {
       Glib::ustring err ("-warning: Error reading INI-file `%1'");

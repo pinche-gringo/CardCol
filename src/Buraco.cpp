@@ -68,10 +68,10 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10)
                 unsigned int posPlayer, Mutex& mxSerialize)
      , staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK)
-     , startPlayer (-1U)
+     , dumped (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWFACE)
      , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
-     , newPile (_("New pile")), target (-1U)
+     , target (-1U)
      , pScoreDlg (NULL) {
 
    for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
@@ -315,7 +315,7 @@ int Buraco::makeMove (unsigned int player) {
 
             makeNewPile (player & 1);
             target = (tablePiles[player & 1].size () - 1) << 16;
-            BuracoPile& pile (makeNewPile (player & 1));
+         }
       }
       else {
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
@@ -389,7 +389,7 @@ int Buraco::executeMove (unsigned int player) {
          if (!unfinishedMonoPiles[player & 1]
          if (canDumpCards (player, nrs) || (nrs-- > 3)) {
             pos1Play = firstPos;
-            BuracoPile& pile (makeNewPile (player & 1));
+            pos2Play = firstPos + nrs - 1;
             pos1Play = i;
             pos2Play = i + nrs - 1;
       }
@@ -426,7 +426,7 @@ int Buraco::executeMove (unsigned int player) {
             // Create a new pile with the found pair and a joker
             makeNewPile (player & 1);
             pos1Play = playerPile.size () - 3;
-            BuracoPile& pile (makeNewPile (player & 1));
+            pos2Play = playerPile.size () - 1;
             return (tablePiles[player & 1].size () - 1) << 16;
          }
          ++ci;
@@ -1090,7 +1090,6 @@ void Buraco::unregisterTableDND (CardWidget& card) {
       context->drag_finish (false, false, time);
    CardWidget& cardMoved (hands[0].remove (*pValue));
    hands[0].insert (cardMoved, card);                     // Insert moved card
-   CardWidget& cardTarget (*hands[0][card]);
 
    // Adapt dnd-settigns
    if (*pValue < card) {
@@ -1113,7 +1112,7 @@ bool Buraco::humanPilesOK (unsigned int except) const {
       Check3 (*p); Check3 (((*p)->size () < 7) || !(*p)->is_visible ());
       if ((p - tablePiles[0].begin ()) == static_cast<int> (except))
          continue;
-      if ((p - tablePiles[0].begin ()) == except)
+
       if ((*p)->size () < 3)
          return false;
    }
@@ -1210,7 +1209,7 @@ bool Buraco::humanPilesOK (unsigned int except) const {
 
       if ((iCard = cardFitsOnPile (iPile, moved)) == -1U) {
          context->drag_finish (false, false, time);
-      if ((iCard = cardFitsOnPile (iPile, moved)) == -1) {
+         Gtk::MessageDialog dlg (_("This card does not fit on that pile!"),
                                  Gtk::MESSAGE_ERROR);
          dlg.set_title (_("Invalid move"));
          dlg.run ();
@@ -1402,8 +1401,7 @@ BuracoPile& Buraco::makeNewPile (unsigned int team) {
    Check1 (team < (sizeof (boxTeam) / sizeof (boxTeam[0])));
    Check1 (team < (sizeof (tablePiles) / sizeof (tablePiles[0])));
 
-   Check1 ((sizeof (tablePiles) / sizeof (tablePiles[0]))
-            == (sizeof (boxTeam) / sizeof (boxTeam[0])));
+   BuracoPile* pile (new BuracoPile ());
    tablePiles[team].push_back (pile);
    BuracoPile* pile (new BuracoPile (ICardPile::COMPRESSED, ICardPile::SHOWFACE));
 
@@ -1523,7 +1521,7 @@ void Buraco::removeCerrado (unsigned int player, BuracoPile& pile) {
    pile.hide ();
    Check3 (static_cast<int> (pile.getPotentialPoints ()) == pile.getPoints ());
    points[team] += pile.getPoints ();
-   Check3 (pile.getPotentialPoints () == pile.getPoints ());
+
    points[team] += pile.getPotentialPoints ();
 
 //-----------------------------------------------------------------------------
@@ -1568,7 +1566,7 @@ int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
    if (pile.getPosition4Card (card, pos, move)) {
       Check3 (pos <= pile.size ());
       if ((pile.size () > 1) || isJoker (card))
-      if (pile.getPosLast () || isJoker (card))
+      else {
          const CardHPile& hand (hands[currentPlayer ()]);
          if (!containsNoJoker (hand))
             return pos;
@@ -1735,7 +1733,7 @@ unsigned int Buraco::getPoints (const CardWidget& card) {
    static char values[] = { 25, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 10, 20, 50 };
    Check3 (card.number () < static_cast<int> (sizeof (values) / sizeof (values[0])));
    return values[card.number ()];
-   Check3 (card.number () < (sizeof (values) / sizeof (values[0])));
+}
 
 //-----------------------------------------------------------------------------
 /// Checks if the player can get rid of all cards in his hand except of the
@@ -1932,8 +1930,8 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
    static char values[] = { 12, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13 };
    Check3 (a->number () < static_cast<int> (sizeof (values) / sizeof (values[0])));
    Check3 (b->number () < static_cast<int> (sizeof (values) / sizeof (values[0])));
-   Check3 (a->number () < (sizeof (values) / sizeof (values[0])));
-   Check3 (b->number () < (sizeof (values) / sizeof (values[0])));
+
+   return values[a->number ()] < values[b->number ()];
 }
 
 //----------------------------------------------------------------------------
