@@ -33,8 +33,6 @@
 
 #include <glib.h>
 
-#define CHECK 3
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -308,7 +306,7 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
 /*--------------------------------------------------------------------------*/
 RovhultAppl::RovhultAppl ()
    : XApplication (PACKAGE " - Rovhult V" PRG_RELEASE), status (), actPlayer (0)
-     , tblTable (16, 19), cardFaces (USED_CARDS), cards (), pThread (NULL)
+     , tblTable (16, 20), cardFaces (USED_CARDS), cards (), pThread (NULL)
      , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::VERY_COMPRESSED) {
    set_usize (WIDTH, HEIGHT);
 
@@ -345,7 +343,7 @@ RovhultAppl::RovhultAppl ()
          players[i].reserve[j].show ();
          tblTable.attach (players[i].reserve[j], COLS_PLAYER[i] + (j << 1),
                           COLS_PLAYER[i] + 1 + (j << 1), ROWS_PLAYER[i],
-                          ROWS_PLAYER[i] + 2, 0, 0, 1);
+                          ROWS_PLAYER[i] + 2, 0, 0, 0);
 
          TRACE9 ("RovhultAppl::RovhultAppl () - Set at: "
                  << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
@@ -358,7 +356,7 @@ RovhultAppl::RovhultAppl ()
                        COLS_PLAYER[i] + 5,
                        ROWS_PLAYER[i] + (i ? 3 : -3),
                        ROWS_PLAYER[i] + (i ? 3 : -3) + 2
-                       , GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 1);
+                       , GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 0);
       TRACE9 ("RovhultAppl::RovhultAppl () - 2nd set at: "
               << COLS_PLAYER[i] + (i << 1) << '/'
               << ROWS_PLAYER[i] + (i ? 3 : -3));
@@ -527,13 +525,14 @@ void RovhultAppl::exchangeAutoplayerCards () {
 //            player is human, enable its cards
 /*--------------------------------------------------------------------------*/
 int RovhultAppl::makeComputerMove () {
+#ifdef CHECKLEVEL
    static bool inTurn (false);
    if (inTurn) {
       Check (!"in Turn");
       return true;
    }
-
    inTurn = true;
+#endif
 
    TRACE2 ("RovhultAppl::makeComputerMove (void*) - Start with player "
            << actPlayer);
@@ -548,7 +547,9 @@ int RovhultAppl::makeComputerMove () {
 
    // Continue with computer-moves (means: let timer enabled), if computer
    // controlled players are on turn
+#ifdef CHECKLEVEL
    inTurn = false;
+#endif
    return actPlayer > 0;
 }
 
@@ -611,24 +612,54 @@ void RovhultAppl::disableLastPlayer () {
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    Check3 (player < NUM_PLAYERS); Check3 (pile < 3);
+   TRACE1 ("Rovhult::pileSelected (unsigned int, unsinged int) - Card "
+           << pile << " of player " << player);
 
-   CardWidget& card (players[player].reserve[pile].getTopCard ());
-   TRACE1 ("Rovhult::pileSelected (unsigned int, unsinged int) - Card " << card);
+   const ICardPile& actPile (players[player].reserve[pile]);
+   CardWidget& card (actPile.getTopCard ());
+   bool showsFace (card.showsFace ());
 
    // If played from bottom of pile (with invisible cards): Flip card first
-   if (players[player].reserve[pile].numberOfCards () == 1)
-      card.setVisible ();
-      
-   if (!cardValid (card.number ())) {                 // Check if card is valid
-      if (players[player].reserve[pile].numberOfCards () > 1)   // Visible? Ret
-         return;
-      
-      players[player].reserve[pile].removeTopCard ();
-      card.set_relief (GTK_RELIEF_NORMAL);
-      played.append (card);
-      if (executeMove (player, CardWidget::UNREACHABLE) > 0)
-         makeComputerMoves ();
+   if (!showsFace)
+      card.showFace ();
+
+   TRACE1 ("Rovhult::pileSelected (unsigned int, unsinged int) - Card " << card);
+
+   if (!cardValid (card.number ()))    // If selected card is not valid: Return
       return;
+
+   // If face of card was visible: Just go on (as the use new what he has
+   // selected); if not: Wait a while to let the GUI update and continue then.
+   if (showsFace)
+      playFromPile (player, pile);
+   else
+      Gtk::Main::timeout.connect (bind (slot (this, &RovhultAppl::playFromPile),
+                                        player, pile), 1000);
+
+   disableLastPlayer ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Performs playing from a pile
+//Parameters: player: ID of player
+//            pile: Offset of selected pile
+//Returns   : int: Always 0 to stop the timer (if called from one, that's it)
+/*--------------------------------------------------------------------------*/
+int RovhultAppl::playFromPile (unsigned int player, unsigned int pile) {
+   Check3 (player < NUM_PLAYERS); Check3 (pile < 3);
+
+   ICardPile& actPile (players[player].reserve[pile]);
+   CardWidget& card (actPile.getTopCard ());
+   TRACE1 ("Rovhult::playFromPile (unsigned int, unsinged int) - Card " << card);
+
+   if (!cardValid (card.number (), true)) {           // Check if card is valid
+      actPile.removeTopCard ();
+      card.set_relief (GTK_RELIEF_NONE);
+      played.append (card);
+      if (executeMove (player, CardWidget::UNREACHABLE) > 0) {
+         makeComputerMoves ();
+      }
+      return 0;
    }
 
    actPlayer = doPileSelected (player, pile);
@@ -637,8 +668,9 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
       // Start a timer to perform the computer-moves
       makeComputerMoves ();
    else
-      if (!actPlayer)
-         enablePlayer (0);
+      enablePlayer (0);
+
+   return 0;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -651,27 +683,30 @@ int RovhultAppl::doPileSelected (unsigned int player, unsigned int pile) {
    TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - " 
            << player << '/' << pile);
 
+   ICardPile* actPile (&players[player].reserve[pile]);
+
    Check3 (player < NUM_PLAYERS); Check3 (pile < 3);
-   Check3 (players[player].reserve[pile].numberOfCards ());
+   Check3 (actPile->numberOfCards ());
 
    // Move card (and visible cards with equal number below) from player to
    // played staple
-   CardWidget& card (players[player].reserve[pile].removeTopCard ());
+   CardWidget& card (actPile->removeTopCard ());
    if (card.number () == CardWidget::TEN)
       played.clear ();
    else {
-      card.set_relief (GTK_RELIEF_NORMAL);
+      card.set_relief (GTK_RELIEF_NONE);
       played.append (card);
    }
 
-   while (pile--) {
-      if (players[player].reserve[pile].numberOfCards ()
-          && players[player].reserve[pile].topCardVisible ()
-          && (players[player].reserve[pile].getTopCard ().number () == card.number ())) {
-         CardWidget& movedCard (players[player].reserve[pile].removeTopCard (true));
-         if (movedCard.number () != CardWidget::TEN) {
-            card.set_relief (GTK_RELIEF_NORMAL);
-            played.append (movedCard);
+   while (pile) {
+      actPile = &players[player].reserve[--pile];
+      if (actPile->numberOfCards ()
+          && actPile->topCardShowsFace ()
+          && (actPile->getTopCard ().number () == card.number ())) {
+         CardWidget& sameCard (actPile->removeShownTopCard (true));
+         if (sameCard.number () != CardWidget::TEN) {
+            sameCard.set_relief (GTK_RELIEF_NONE);
+            played.append (sameCard);
          }
       }
    }
@@ -768,7 +803,7 @@ CardWidget::NUMBERS RovhultAppl::playCardsFromHand (unsigned int player, unsigne
       if (movedCard.number () == CardWidget::TEN)
          played.clear ();
       else {
-         movedCard.set_relief (GTK_RELIEF_NORMAL);
+         movedCard.set_relief (GTK_RELIEF_NONE);
          played.append (movedCard);
       }
    } while (pos-- && (players[player].hand.at (pos).number () == card.number ()));
@@ -933,7 +968,7 @@ void RovhultAppl::fillUpPile (ICardPile& pile, unsigned int minCards) {
 
    while ((pile.numberOfCards () < minCards) && staple.numberOfCards ()) {
       CardWidget& newCard (staple.removeTopCard ());
-      newCard.setVisible ();
+      newCard.showFace ();
       pile.insertSorted (newCard);
 
       TRACE8 ("Rovhult::fillUpPile (ICardPile&, unsinged int) - Appended card "
@@ -1046,7 +1081,7 @@ void RovhultAppl::loadCards () {
 
    for (int i (0); i < NUM_PLAYERS; ++i) {
       for (int j (0); j < 3; ++j)
-         players[i].reserve[j].set_usize (width, height + 20);
+         players[i].reserve[j].set_usize (width, height + 5);
 
       players[i].hand.set_usize (width * 3, height);
    }
@@ -1160,7 +1195,7 @@ void RovhultAppl::dealCards () {
 
          // Put card into hand
          CardWidget& card (staple.removeTopCard ());
-         card.setVisible ();
+         card.showFace ();
          players[i].hand.append (card);
 
          if (!i)
@@ -1327,16 +1362,19 @@ void RovhultAppl::getDropData (GdkDragContext* pContext, GtkSelectionData* pData
 //            hand, they are considered; else the cards in the reserve
 //Parameters: player: Player in turn
 //            pos: Position of (last) card to play
-//Returns   : CardWidget&: Reference to specified card
+//Returns   : CardWidget*: Pointer to specified card or NULL if no card
 /*--------------------------------------------------------------------------*/
-CardWidget& RovhultAppl::cardAtPos (unsigned int player, unsigned int pos) const {
+CardWidget* RovhultAppl::cardAtPos (unsigned int player, unsigned int pos) const {
+   TRACE2 ("RovhultAppl::cardAtPos (unsigned int, unsigned int) - "
+           " For player " << player << " at position " << pos);
    Check3 ((players[player].hand.numberOfCards ())
            ? (pos < players[player].hand.numberOfCards ())
            : (pos < 3));
 
    return ((players[player].hand.numberOfCards ())
-           ? players[player].hand.at (pos)
-           : players[player].reserve[pos].getTopCard ());
+           ? &players[player].hand.at (pos)
+           : (players[player].reserve[pos].numberOfCards ()
+              ? &players[player].reserve[pos].getTopCard () : NULL));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1349,18 +1387,25 @@ void RovhultAppl::flipCards2Play (unsigned int player, unsigned int pos) {
    TRACE2 ("RovhultAppl::flipCards2Pplay (unsigned int, unsigned int) - "
            " For player " << player << " at position " << pos);
    Check3 (player < NUM_PLAYERS);
-   Check3 ((players[player].hand.numberOfCards ())
-           ? (players[player].hand.numberOfCards () > pos)
+
+   bool playFromHand (players[player].hand.numberOfCards ());
+   Check3 (playFromHand
+           ? (pos < players[player].hand.numberOfCards ())
            : (pos < 3));
 
-   CardWidget* card (&cardAtPos (player, pos));
+   CardWidget* card (cardAtPos (player, pos));
+   CardWidget::NUMBERS nr (card->number ());
+   card->showFace ();
    do {
-      card->setVisible ();
-      card->set_relief (GTK_RELIEF_NONE);
-      if (card->width () < card->getImageWidth ())
-         played.resize (*card, ICardPile::COMPRESSED);
+      if (playFromHand || card->showsFace ()) {
+         card->showFace ();
+         card->set_relief (GTK_RELIEF_NORMAL);
+         if (card->width () < card->getImageWidth ())
+            played.resize (*card, ICardPile::COMPRESSED);
+      }
    } while (pos
-            && (card->number () == ((card = &cardAtPos (player, --pos))->number ())));
+            && (card = cardAtPos (player, --pos))
+            && (card->number () == nr));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1373,8 +1418,10 @@ int RovhultAppl::makeTurn (unsigned int player) {
 
    if (pos2Play == -1) {
       pos2Play = findCard2Play (player);
-      flipCards2Play (player, pos2Play);
-      return player;
+      if (pos2Play < 0)
+         pos2Play = -pos2Play;
+      else
+         flipCards2Play (player, pos2Play);
    }
    else {
       TRACE2 ("RovhultAppl::makeTurn (unsigned int) - play card " << pos2Play);
@@ -1386,34 +1433,28 @@ int RovhultAppl::makeTurn (unsigned int player) {
             played.clear ();
 
          CardWidget::NUMBERS nr (playCardsFromHand (player, pos));
-         return executeMove (player, nr);
+         player = executeMove (player, nr);
       }
       else {
          // If cards are visible
-         if (players[player].reserve[pos].numberOfCards () > 1) {
-            doPileSelected (player, pos);                       // Execute move
-            return actPlayer;
-         }
+         if (players[player].reserve[pos].numberOfCards () > 1)
+            return doPileSelected (player, pos);                // Execute move
          else {
             // If card is valid: Play it
             CardWidget& card (players[player].reserve[pos].getTopCard ());
-            if (cardValid (card.number (), true)) {
-               doPileSelected (player, pos);
-               return actPlayer;
-            }
+            if (cardValid (card.number (), true))
+               player = doPileSelected (player, pos);
             else {
                // Card is not valid: Take up pile
                players[player].reserve[pos].removeTopCard ();
-               card.set_relief (GTK_RELIEF_NORMAL);
+               card.set_relief (GTK_RELIEF_NONE);
                played.append (card);
+               player = executeMove (player, CardWidget::UNREACHABLE);
             }
          }
-
-         // Either invisible card was invalid or no visible card is playable
-         // (although you shouldn't then reach this part anyway): Take up pile
-         return executeMove (player, CardWidget::UNREACHABLE);
       }
    }
+   return player;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1429,10 +1470,10 @@ bool RovhultAppl::existOnlySpecialCards (unsigned int player, unsigned int pos) 
            : (pos < 3));
 
    do {
-       CardWidget::NUMBERS nr (cardAtPos (player, pos).number ());
+       CardWidget::NUMBERS nr (cardAtPos (player, pos)->number ());
        if ((nr != CardWidget::TEN) && (nr != CardWidget::TWO))
           return false;
-   } while (--pos);
+   } while (pos--);
 
    return true;
 }
@@ -1440,7 +1481,9 @@ bool RovhultAppl::existOnlySpecialCards (unsigned int player, unsigned int pos) 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Finds the next card to play (for a computer controlled player)
 //Parameters: player: Player to inspect
-//Returns   : int: Position of card to play
+//Returns   : int: Position of card to play; if it is negative, than the cards
+//                 was played from an "hidden" staple (and should not be
+//                 displayed)
 /*--------------------------------------------------------------------------*/
 int RovhultAppl::findCard2Play (unsigned int player) const {
    TRACE2 ("RovhultAppl::findCard2Play (unsigned int) - Player " << player);
@@ -1513,17 +1556,20 @@ int RovhultAppl::findCard2Play (unsigned int player) const {
    }
    else {
       // Play first visible cards
-      bool cardVisible (false);
+      bool cardShowsFace (false);
       unsigned int i (0);
       for (; i < 3; ++i) {
          if (players[player].reserve[i].numberOfCards () > 1) {
-            cardVisible = true;
+            cardShowsFace = true;
 
             // If card can be played: Search for last equal card
             CardWidget& actCard (players[player].reserve[i].getTopCard ());
+            const ICardPile* nextPile;
             if (cardValid (actCard.number (), true)) {
                while ((i < 2)
-                      && (players[player].reserve[i + 1].getTopCard ().number ()
+                      && (nextPile = &players[player].reserve[i + 1])
+                      && nextPile->numberOfCards ()
+                      && (nextPile->getTopCard ().number ()
                           == actCard.number ()))
                   ++i;
 
@@ -1533,13 +1579,13 @@ int RovhultAppl::findCard2Play (unsigned int player) const {
       }
 
       // No card visible: Play the first
-      if (!cardVisible) {
+      if (!cardShowsFace) {
          unsigned int i (0);
          while (!players[player].reserve[i].numberOfCards ())
             ++i;
 
-         players[player].reserve[i].getTopCard ().setVisible ();
-         return i;
+         players[player].reserve[i].getTopCard ().showFace ();
+         return -i;
       }
    }
 }
