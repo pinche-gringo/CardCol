@@ -465,7 +465,7 @@ void Twopart::handSelected (unsigned int player, unsigned int pos) {
    Check3 (pos <= players[player].hand.numberOfCards ());
 
    CardWidget& card (players[player].hand.remove (pos));
-   TRACE3 ("Twopart::handSelected (unsigned int, unsinged int) - Checking player "
+   TRACE3 ("Twopart::handSelected (unsigned int, unsinged int) - Player "
            << player << "; Card at " << pos << " = " << card);
 
    played.append (card);
@@ -514,6 +514,8 @@ unsigned int Twopart:: endRound () {
    unsigned int nextPlayer (NUM_PLAYERS);
    unsigned int i (0);                   // Index of first card for every round
    unsigned int cPlayers (NUM_PLAYERS);
+   unsigned int start (startPlayer);
+
    bfPlayers = (1 << NUM_PLAYERS) - 1;
    do {
       TRACE9 ("Twopart::endRound () - Round has " << cPlayers << " players; Start = "
@@ -524,7 +526,6 @@ unsigned int Twopart:: endRound () {
       int maxEqualNr (-1);
       int posMax (-1);
       int posMaxEqual (-1);
-      unsigned int start (startPlayer);
 
       // Check if card is bigger then all previous
       for (unsigned int j (i); j < (cPlayers + i); ++j) {
@@ -550,29 +551,33 @@ unsigned int Twopart:: endRound () {
                } // endif equal card found
       } // end-for all players still in game
 
+      TRACE4 ("Twopart::endRound () - Player starting round: " << start);
       // Equal cards found
       if (posMaxEqual >= 0) {
          // Start player is the first who played the highest cards
-         start = nextPlayer = pos2Player (posMaxEqual - i, start);
-
-         // Set startplayer
-         bfPlayers = 1 << nextPlayer;
+         nextPlayer = pos2Player (posMaxEqual - i, start);
          TRACE5 ("Twopart::endRound () - Found equal cards; continuing with player "
                  << nextPlayer);
 
          // Increase position of start card of actual round
-         i += cPlayers;
-         cPlayers = 1;
+         unsigned int j (i);
+         unsigned int end (i + cPlayers);
+         unsigned int bfPlayersOut (0);
+         cPlayers = 0;
 
          // Add players having equal cards
-         for (unsigned int j (posMaxEqual + 1); j < i; ++j)
+         for (; j < end; ++j)
             if (played.at (j).number () == maxEqualNr) {
                TRACE5 ("Twopart::endRound () - Found equal cards; Player "
-                       << ((j - posMaxEqual + start) & 0x3) << " also in round");
-               bfPlayers |= (1 << ((j - posMaxEqual + start) & 0x3));;
+                       << pos2Player (j - i, start) << " still in round");
                ++cPlayers;
             }
+            else
+               bfPlayersOut |= (1 << pos2Player (j - i, start));
 
+         bfPlayers &= ~bfPlayersOut;
+         start = nextPlayer;
+         i = end;
          TRACE5 ("Twopart::endRound () - Found equal cards; " << cPlayers
                  << " players still in round (" << hex << bfPlayers << ')');
          Check3 (cPlayers > 1);
@@ -600,7 +605,7 @@ unsigned int Twopart:: endRound () {
 //Returns   : unsigned int: Number of player
 /*--------------------------------------------------------------------------*/
 unsigned int Twopart::pos2Player (unsigned int pos, unsigned int start) const {
-   TRACE2 ("Twopart::pos2Player (unsigned int) - Pos to convert: " << pos
+   TRACE9 ("Twopart::pos2Player (unsigned int) - Pos to convert: " << pos
            << "; starting with player " << start);
    while (pos) {
       ++start &= 0x3;
@@ -608,7 +613,7 @@ unsigned int Twopart::pos2Player (unsigned int pos, unsigned int start) const {
          --pos;
    }
    
-   TRACE2 ("Twopart::pos2Player (unsigned int) - Calculated player: " << start);
+   TRACE9 ("Twopart::pos2Player (unsigned int) - Calculated player: " << start);
    return start;
 }
 
