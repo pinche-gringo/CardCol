@@ -34,7 +34,7 @@
   </head>
 
   <body>
-    <h1 align="center">Buraco</h1>
+    <h1 align="center">Machiavelli</h1>
     <hr size=2>
 
     <p>Aprend&iacute; Machiavelli de un suizo, cual lo aprendi&oacute; de
@@ -50,7 +50,7 @@
       iguales y los n&uacute;meros est&aacute;n en orden (As (como uno), dos,
       tres, ..., diez, J, Q, K, as).</p>
 
-    <p>Cada mot&ooacute;n por la mesa debe que tener por lo menos 3 cartas.</p>
+    <p>Cada mot&oacute;n por la mesa debe que tener por lo menos 3 cartas.</p>
 
     <p>Los jugadores empiezan con siete cartas en su mano. Cada turno empieza
       con cortar una carta de la reserva (pasa automaticamente). 
@@ -62,10 +62,9 @@
     <p>Las cartas se mueve con tirar y depositar - drag and drop<a
       href="Machiavelli.html.es#Note1"><sup>1</sup></a>)</p>
 
-    <p>Si el jugador no puede (o quiere) continuar, sigue el pr&oacute;ximo
-      jugador con todav&iacute;a cartas en su mano (en las auguajas de
-      reloj). El fin del turno se indica con hacer clic en el mot&oacute;n de
-      reserva.</p>
+    <p>Si el jugador no puede (o quiere) continuar, continua el pr&oacute;ximo
+      jugador que sigue con cartas en su mano (en las auguajas de reloj). El
+      fin del turno se indica con hacer clic en el mot&oacute;n de reserva.</p>
 
     <p>El &uacute;ltimo jugador con cartas pierde.</p>
 
