@@ -23,13 +23,13 @@
 #include <gtk--/button.h>
 
 
-class CardSet;
+class CardImages;
 
 
 // Class to display a card on the screen
 class CardWidget : public Gtk::Button {
  public:
-   CardWidget (const CardSet& set, unsigned int card, bool visible = true);
+   CardWidget (const CardImages& set, unsigned int card, bool visible = true);
    ~CardWidget ();
 
    // Methods to show card. Note that just the image is changed
@@ -43,7 +43,7 @@ class CardWidget : public Gtk::Button {
 
    bool isVisible;
    unsigned int nrCard;
-   const CardSet& deck;
+   const CardImages& deck;
 };
 
 #endif

@@ -24,10 +24,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#define DEBUG 5
+#define DEBUG 0
 #include <Trace_.h>
 
-#include "CardSet.h"
+#include "CardImgs.h"
 #include "CardWidget.h"
 
 
@@ -36,9 +36,9 @@
 //Parameters: parent: Parent-window
 //            image: Image to display
 /*--------------------------------------------------------------------------*/
-CardWidget::CardWidget (const CardSet& set, unsigned int card, bool visible = true)
+CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible = true)
    : isVisible (visible), nrCard (card), deck (set) {
-   TRACE3 ("CardWidget::CardWidget (const CardSet&, unsinged int, bool) - "
+   TRACE3 ("CardWidget::CardWidget (const CardImages&, unsinged int, bool) - "
            << card << " (" << visible << ')');
 
    add_pixmap (visible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
