@@ -37,23 +37,26 @@
     <hr size=2>
 
     <p>R&oslash;vhult is a cardgame I learned from three danes I was travelling
-      with; hence also this danish name and this lovely, unpronouncly letter
-      (sounds a bit like the first letters in &ldquot;earth&rdquot;, while you
+      with; hence the danish name and this lovely, unpronounceable letter
+      (sounds a bit like the first letters in &laquo;earth&raquo;, while you
       are vomitting.) R&oslash;vhult means arsehole and as such it is know in
       other parts of the world.</p>
 
-    <p>The goal of the game is to get rid of all your cards, according to
-      the following - of course quite simple as also Yankees are playing it
-      ;) - rules:</p>
+    <p>The goal of the game is to get rid of all your cards, according to the
+      following - quite simple as also Yankees are playing it ;) - rules:</p>
     
     <p>Every player starts with three cards in his hand, and two times three
       cards on the table (where the lower three are face down (hidden) and
       the upper ones are visible).</p>
 
-    <p>The visible cards on the table can be exchanged with the cards
-      in the hand (with drag and drop). Generally people try to put
-      &quot;good&quot; cards (according to the rules below) on the table, but your
-      milage might vary.</p>
+    <p>The visible cards on the table can be exchanged with the cards in the
+      hand (with drag and drop <a
+      href="Røvhult.html.en#Note1"><sup>1</sup></a>). Generally people try to
+      put &quot;good&quot; cards (according to the rules below) on the table,
+      but your milage might vary.</p>
+
+    <p>To actually start the game, click on the card you want to play. The cards
+      are sorted and the clicked card is played.</p>
 
     <p>In a clockwise turn the players put down their cards, which
       must be equal or bigger than the last played one. Note that you
@@ -121,7 +124,14 @@
       <li>In the last line there's computer player 2</li>
     </ul>
 
-    <hr size=2 noshade>
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      Drag and drop means clicking with the <em>right</em> (or the middle)
+      mouse button on the card, holding the button and then dragging the card
+      to its destination. The end of this activity is signaled by releasing
+      the button.</p>
+
+    <hr size=3 noshade>
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>

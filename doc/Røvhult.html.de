@@ -36,9 +36,9 @@
     <h1 align="center">R&oslash;vhult</h1>
     <hr size=2>
 
-    <p>R&oslash;vhult lernte ich von drei D&auml;nen; daher auch der (recht
-      d&auml;nische Name und dieser h&uuml;bsche, unaussprechliche (klingt etwa
-      wie ein &ldquo;&Ouml;&rdquo;, wenn man sich gerade ankotzt) Buchstabe).
+    <p>R&oslash;vhult lernte ich von drei D&auml;nen; daher auch der recht
+      d&auml;nische Name und dieser h&uuml;bsche, unaussprechliche Buchstabe
+      (klingt etwa wie ein &laquo;&Ouml;&raquo;, wenn man sich gerade ankotzt).
       R&oslash;vhult bedeutet Arschloch und unter diesem Namen ist es auch in
       anderen Teilen der Welt bekant.</p>
 
@@ -51,16 +51,20 @@
       sichtbar)</p>
 
     <p>Die sichtbaren Karten auf dem Tisch k&ouml;nnen mit denen in der Hand
-      getauscht werden (mit &ldquo;Ziehen und Ablegen&rdquo; - drag and drop).
-      Normalerweise versucht man, &quot;gute&quot; Karten auf den Tisch zu
-      bekommen, aber das ist nat&uuml;rlich Geschmackssache.</p>
+      getauscht werden (mit &laquo;Ziehen und Ablegen&raquo; - drag and drop
+      <a href="Røvhult.html.de#Note1"><sup>1</sup></a>). Normalerweise
+      versucht man, &quot;gute&quot; Karten auf den Tisch zu bekommen, aber
+      das ist nat&uuml;rlich Geschmackssache.</p>
 
-    <p>Im Uhrzeigersinn werden dann die Karten gespielt, die gleich oder
-      gr&ouml;&szlig;er als die zuletzt gespielte sein mu&szlig;. Man kann eine
-      beliebige Anzahl von Karten mit der gleichen Nummer spielen (z.B.: die
-      &spades;-5 und die &clubs;-5). Nach dem Zug mu&szlig; der Spieler Karten vom
-      Reservestapel aufnehmen, bis er wieder drei Karten in der Hand hat oder
-      der Reservestapel leer ist.</p>
+    <p>Das eigentlich Spiel wird gestart, indem man auf die zu spielende Karte
+      klickt.</p>
+
+    <p>Im Uhrzeigersinn wird dann fortgesetzt; die gespielten Karten
+      m&uuml;ssen gleich oder gr&ouml;&szlig;er als die zuletzt gespielte sein
+      mu&szlig;. Man kann eine beliebige Anzahl von Karten mit der gleichen
+      Nummer spielen (z.B.: die &spades;-5 und die &clubs;-5). Nach dem Zug
+      mu&szlig; der Spieler Karten vom Reservestapel aufnehmen, bis er wieder
+      drei Karten in der Hand hat oder der Reservestapel leer ist.</p>
 
     <p>Es gibt einige Spezialkarten und Ausnahmen::</p>
     <dl>
@@ -124,13 +128,20 @@
       <li>In der letzten Reihe sind die Karten von Computer-Spieler 2.</li>
     </ul>
     
-    <hr size=2 noshade>
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      Ziehen und Ablegen bedeutet, eine Karte mit der <em>rechten</em> (oder
+      mittleren) Maustaste anzuklicken, diese Taste festzuhalten un dann das
+      Objekt (die Karte, in unserem Fall) zu seinem Ziel zu ziehen. Das Ende
+      dieser Aktion wird durch Loslassen der Maustaste signalisiert.</p>
+
+    <hr size=3 noshade>
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
     <!-- Created: Thu Jul  4 16:36:50 PET 2002 -->
     <!-- hhmts start -->
-Last modified: Tue Feb 11 20:02:57 PET 2003
+Last modified: Tue Mar 25 17:03:31 PET 2003
 <!-- hhmts end -->
     - $Revision$
   </body>

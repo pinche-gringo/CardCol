@@ -49,18 +49,23 @@
     <p>Todos los jugadores empiezan con tres cartas en su mano y dos veces
       tres cartas al mesa (los bajas tapadas y las por encima visibles).</p>
 
-    <p>Las cartas visibles de la mesa se puede cambiar con las en la mano
-      (con tirar y depositar - drag and drop). Generalmente se trata de poner
-      cartas &quot;buenas&quot; (de acuerdo de las reglas siguentes) a la mesa,
-      pero eso es una pregunta del gusto.</p>
+    <p>Las cartas visibles de la mesa se puede cambiar con las en la mano (con
+      tirar y depositar - drag and drop <a
+      href="Røvhult.html.es#Note1"><sup>1</sup></a>). Generalmente se trata de
+      poner cartas &quot;buenas&quot; (de acuerdo de las reglas siguentes) a
+      la mesa, pero eso es una pregunta del gusto.</p>
 
-    <p>Se juega en la direcci&oacute;n del las aguajas de reloj. Todos los
-      jugadores ponen sus cartas, que deben que tener un n&uacute;mero igual
-      o mayor que la &uacute;ltima carta jugado. Tiene en cuenta que se puede
-      poner cada n&uacute;mero de cartas con n&uacute;meros iguales (como el
-      &spades; 5 y el &clubs; 5). Despu&eacute;s se tiene que sacar cartas
-      del estaple de reserva hasta se tiene tres cartas de nuevo en la mano
-      (o el estaple est&aacute; vacio).</p>
+    <p>Para empezar el juego, se tiene que hacer clic encima de la carta que
+     se quisiera jugar.</p>
+
+    <p>El juega continua en la direcci&oacute;n del las aguajas de
+      reloj. Todos los jugadores ponen sus cartas, que deben que tener un
+      n&uacute;mero igual o mayor que la &uacute;ltima carta jugado. Tiene en
+      cuenta que se puede poner cada n&uacute;mero de cartas con
+      n&uacute;meros iguales (como el &spades; 5 y el &clubs;
+      5). Despu&eacute;s se tiene que sacar cartas de las de la reserva
+      hasta se tiene tres cartas de nuevo en la mano (o la reserva est&aacute;
+      vac&iacite;o).</p>
 
     <p>Hay unas cartas especiales y excepci&oacute;nes:</p>
     <dl>
@@ -72,14 +77,14 @@
       <dt><b>8's</b></dt>
       <dd><p>El proximo jugadar est&aacute; saltado</p></dd>
       <dt><b>10's</b></dt>
-      <dd><p>Se puede jugarlos siempre (como los 2's), pera adem&aacute;s el
-          estaple de cartas jugadas est&aacute; vaciado. El mismo jugador puede
-          contin&uacute;ar, aunque no puede sacar cartas del estaple de reserva
+      <dd><p>Se puede jugarlos siempre (como los 2's), pera adem&aacute;s las
+          cartas jugadas est&aacute;n vaciadas. El mismo jugador puede
+          contin&uacute;ar, aunque no puede sacar cartas de la reserva
           (excepto si ya no tiene cartas).</p></dd>
-      <dt><b>Cuatro cartas con n&uacute;meros iguales al estaple</b></dt>
-      <dd><p>Entonces todo el estaple est&aacute; vaciado y el jugador puede
+      <dt><b>Cuatro cartas con n&uacute;meros iguales jugadas</b></dt>
+      <dd><p>Entonces todo las cartas est&aacute;n vaciadas y el jugador puede
           contin&uacute;ar (semejante a jugar un diez, excepto que s&iacute; se
-          puede sacar del estaple de reserva). Tiene en cuenta que tambi&eacute;n
+          puede sacar de la reserva). Tiene en cuenta que tambi&eacute;n
           las cartas no tienen "efecto especial" (como cuatro 8's no saltan al
           proximo jugador).</p></dd>
     </dl>
@@ -88,15 +93,15 @@
       tiene que sacar todas las cartas jugadas. Por supuesto lo puede hacer con
       intenci&oacute;n, entonces sigue lo proximo.</p>
 
-    <p>Si un jugador ya no tiene cartas en su mano (y tambi&eacute;n no hay
-      cartas por el estaple de reserva), puede seguir con las de la mesa. Las
-      est&aacute;n jugado de acuerdo de las reglas anteriores; comenziendo
-      con las cartas visibles y despu&eacute;s con las tapadas.</p>
+    <p>Si un jugador ya no tiene cartas en su mano (y tampoco no hay cartas
+      por la reserva), puede seguir con las de la mesa. Las est&aacute;n
+      jugado de acuerdo de las reglas anteriores; comenziendo con las cartas
+      visibles y despu&eacute;s con las tapadas.</p>
 
-    <p>Tiene en cuenta que si se tiene que sacar las cartas del estaple por
-      su manu no se puede sacar tambi&eacute;n una carta visible de la mesa
-      y que se tiene que seguir con esas (nuevas) cartas en su mano antes
-      de usar las cartas de la mesa de nuevo.</p>
+    <p>Tiene en cuenta que si se tiene que sacar las cartas jugadas por su
+      manu no se puede sacar tambi&eacute;n una carta visible de la mesa y que
+      se tiene que seguir con esas (nuevas) cartas en su mano antes de usar
+      las cartas de la mesa de nuevo.</p>
 
     <p>Las cartas tapadas se puede jugar casualmente. Si la carta elejida no
       vale de acuerdo con las reglas, se tiene que sacarla y las dem&aacute;s
@@ -109,17 +114,24 @@
       abajo):</p>
 
     <ul>
-      <li>El estaple de reserva: Una colecci&oacute;n de cartas tapadas, de
-        donde se saca cartas nuevas (si se pone la rata por encima, aparece una
-        ventana mostrando su n&uacute;mero de las cartas).</li>
+      <li>La reserva: Una colecci&oacute;n de cartas tapadas, de donde se saca
+        cartas nuevas (si se pone la rata por encima, aparece una ventana
+        mostrando su n&uacute;mero de las cartas).</li>
       <li>Las cartas del jugador humano. Por arriba sus cartas por la mesa encima de
         sus cartas en su mano.</li>
       <li>En la linea proxima es lo mismo con los jugadores 3 y 1. Entrelos se
-        encuentre el estaple de las cartas jugadas.</li>
+        encuentre el puesto de las cartas jugadas.</li>
       <li>En la linea &uacute;ltima son las cartas del jugador 2.</li>
     </ul>
 
-    <hr size=2 noshade>
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      Tirar y depositar significa hacer clic con el but&oacute;
+      <em>derecho</em> (o el central) de la rata en una carta, sigue empujando
+      el but&oacute;n y tira la carta a su destinaci&oacute;n. El fin de esa
+      actividad se ese&ntilde;a con dejar el but&oacute;n.</p>
+
+    <hr size=3 noshade>
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
