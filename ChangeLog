@@ -1,3 +1,10 @@
+2002-07-20  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog: Actualized for V0.1.01
+	
+	* Rovhult/Rovhult.cpp:
+	  Computer player shows (invisble) card on pile if valid; Debug menu flexible
+
 2002-07-19  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog: Actualized
