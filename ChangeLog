@@ -1,3 +1,46 @@
+2005-01-28  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.03 commented
+
+	* doc/CardCol.shtml.de, doc/CardCol.shtml.es: Minor fixes
+
+	* doc/Buraco.html.en: Formatting changed
+
+	* README: Copyright actualized; minor changes
+
+	* configure.in: Needing libXGP 0.7.01
+
+	* po/de.po, po/en.po, po/es.po: Added game-specific menu-messages
+
+	* Common/Game.cpp: Changed formatting
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Implemented receiving undo-command from partners
+
+	* src/SgtMayor.cpp: Playing in clockwise direction
+
+	* src/BuracoPile.cpp: Improved traces; No check when removing last card
+
+	* src/CardCol.cpp:
+	  Adapted to new menu-style; Handling game-specific menu
+
+	* src/Buraco.cpp, src/Buraco.h: Added undo and sort menu
+
+	* src/CardCol.h: Adapted to new menu style; Handling game-specific menu
+
+	* src/Machiavelli.cpp, src/Machiavelli.h: Added game-specific menu
+
+	* Common/Game.cpp, Common/Game.h:
+	  Added methods to ad/remove a game-specific menu
+
+	* Common/CardPile.cpp: Formatting changed
+
+	* src/Rovhult.cpp: Changed error message
+
+2004-12-22  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp: Fixed terminating game with closing a coloured pile
+
 2004-11-25  Markus Schwab  <markus@markus.linuxnet.ve>
 
 	* ChangeLog, NEWS: Changes of V0.7.03 commented
