@@ -283,6 +283,7 @@ int Machiavelli::makeMove (unsigned int player) {
       TRACE8 ("Machiavelli::makeMove (unsigned int) - Pile " << target
               << "; Size: " << tablePiles.size ());
       Check3 (target < tablePiles.size ());
+      Check2 (posPiles.size () ? tablePiles[target]->empty () : true);
 
       // Check if cards have to be moved from the table
       while (posPiles.size ()) {
@@ -295,7 +296,6 @@ int Machiavelli::makeMove (unsigned int player) {
 
          Check3 (pile < tablePiles.size ());
          Check3 ((pos + nr) <= tablePiles[pile]->size ());
-         Check2 (tablePiles[target]->empty ());
 
          while (nr--) {
             CardWidget& card (tablePiles[pile]->remove (pos));
@@ -504,10 +504,10 @@ void Machiavelli::stapleSelected () {
    disableHuman ();
 
    unsigned int nextPlayer (findNextPlayer (currentPlayer ()));
+   setNextPlayer (nextPlayer);
    if (nextPlayer == findNextPlayer (nextPlayer))
       endGame ();
    else {
-      setNextPlayer (nextPlayer);
       displayTurn (nextPlayer);
       dealCard (nextPlayer);
       makeNextMoves ();
@@ -1044,7 +1044,7 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
                           << (p - playerPile.begin ()) << "; " << h - playerPile.begin ());
                   pos1Play = ((diff < 0) ? h : p) - playerPile.begin ();
                   playerPile.move (pos1Play,
-                                   ((diff < 0) ? p : h) - playerPile.begin ());
+                                   ((diff < 0) ? p : (h - 1)) - playerPile.begin ());
                   pos2Play = pos1Play + 1;
                }
                else
@@ -1064,37 +1064,52 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
          work.clear ();
       } // end-while card has a fitting one
 
+
+      // TODO: Try to get rid of card by moving a card on the table
+
       // Try to find two cards from the table (from different piles)
       for (std::vector<MachiPile*>::const_iterator t (tablePiles.begin ());
            t != tablePiles.end (); ++t) {
          Check2 ((*t)->getType () != MachiPile::UNDEFINED);
          if ((*t)->size () == 3)
             continue;
-
-         TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Single: " << **p);
+         TRACE8 ("Machiavelli::reorderTableToFit (ICardPile&) - Single: " << **p);
 
          for (ICardPile::const_iterator i ((*t)->begin ());
               (i = (*t)->getFittingCard (**p, i, &MachiPile::cardDistance))
                  != (*t)->end (); ++i) {
             if (((*p)->number () == (*i)->number ())
-                &&((*p)->colour () != (*i)->colour ()))
+                &&((*p)->colour () == (*i)->colour ()))
                continue;
 
             int diff (i - (*t)->begin ());
             if (diff && (diff != (int)((*t)->size () - 1))
-                && ((diff < 2) || (diff > (int)((*t)->size () - 3))))
+                && ((diff < 2) || (diff > (int)((*t)->size () - 4))))
                continue;
 
             diff = MachiPile::cardDistance (**p, **i);
+            TRACE ("Machiavelli::reorderTableToFit (ICardPile&) - Matching: " << **i
+                   << "; Diff: " << diff);
             work.append (**p);
             work.append (**i);
 
             for (std::vector<MachiPile*>::const_iterator o (t + 1);
                  o != tablePiles.end (); ++o) {
+               if ((*o)->size () < 4)
+                  continue;
+
                MachiPile::const_iterator c;
                unsigned int nr;
                if ((*o)->hasMatching3rd (work, c, nr)) {
                   Check3 (c != (*o)->end ());
+
+                  // Does the first pile need to be split up?
+                  if ((i != (*t)->begin ()) && (i != ((*t)->end () - 1))) {
+                     work.clear ();
+                     o = t;
+                     c = i + 1;
+                     nr = (*o)->end () - c;
+                  }
 
                   if (work.size ()) {
                      TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Hand "
@@ -1197,7 +1212,7 @@ void Machiavelli::undoMove (unsigned int number) {
       MachiPile& src (*tablePiles[move.destPile]);
       Check3 (move.destPos < src.size ());
       Check3 (move.number);
-      Check3 ((move.number + move.srcPos) < src.size ());
+      Check3 ((move.number + move.destPos) <= dest.size ());
 
       do {
          dest.insert (src.remove (move.destPos), move.srcPos++);
