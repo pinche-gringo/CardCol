@@ -29,6 +29,7 @@
 #include <gtkmm/button.h>
 #include <gtkmm/tooltips.h>
 
+#include <Trace_.h>
 #include <Check.h>
 #include <ANumeric.h>
 
@@ -116,7 +117,10 @@ class ICardPile : public std::vector<CardWidget*> {
       return std::find (begin (), end (), card) != end (); }
 
    // General management-functions
-   virtual void resize (unsigned int pos, PileStyle s);
+   virtual void resize (unsigned int pos, PileStyle s) {
+      if (pos != -1U)
+         resize (*operator[] (pos), s); }
+   virtual void resize (CardWidget& card, PileStyle s);
    void clear ();
    void setStyle (PileStyle s);
    PileStyle getStyle () const { return style; }
@@ -181,7 +185,8 @@ template <class T> class CardPile : public T, public ICardPile {
       card.showFace (visible);
       return card; }
 
-   virtual void resize (unsigned int pos, PileStyle s) { Check (0); }
+   virtual void resize (unsigned int pos, PileStyle s) { ICardPile::resize (pos, s); }
+   virtual void resize (CardWidget& card, PileStyle s) { Check (0); }
    virtual void sort (CMPFUNC fnSort) {
       if (size ()) {
          resize (size () - 1, style);
@@ -202,20 +207,16 @@ typedef CardPile<Gtk::VBox>  CardVPile;
 typedef CardPile<Gtk::HBox>  CardHPile;
 
 
-void CardVPile::resize (unsigned int pos, PileStyle s) {
-   if (pos != -1U) {
-      CardWidget& card (*operator[] (pos));
-      int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
-      card.set_size_request (-1, height[s]);
-   }
+void CardVPile::resize (unsigned int pos, PileStyle s) { ICardPile::resize (pos, s); }
+void CardVPile::resize (CardWidget& card, PileStyle s) {
+   int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
+   card.set_size_request (-1, height[s]);
 }
 
-void CardHPile::resize (unsigned int pos, PileStyle s) {
-   if (pos != -1U) {
-      CardWidget& card (*operator[] (pos));
-      int width[(int)LAST] = { card.getImageWidth(), 18, 7, 1 };
-      card.set_size_request (width[s], -1);
-   }
+void CardHPile::resize (unsigned int pos, PileStyle s) { ICardPile::resize (pos, s); }
+void CardHPile::resize (CardWidget& card, PileStyle s) {
+   int width[(int)LAST] = { card.getImageWidth(), 18, 7, 1 };
+   card.set_size_request (width[s], -1);
 }
 
 
@@ -298,13 +299,16 @@ class PseudoPile : public Gtk::Button, public ICardPile {
       Gtk::Button::get_child ()->show (); }
    virtual ~PseudoPile () { }
 
-   virtual void resize (unsigned int pos, PileStyle s) {
-      if ((pos == (size () - 1)) || !size ()) {
-         dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->clear ();
-         if (size ())
+   virtual void resize (CardWidget&, PileStyle) { }
+   virtual void resize (unsigned int pos, PileStyle) {
+      TRACE1 ("PseudoPile::resize () - Pos: " << pos << "; Size: " << size ());
+      if (size ()) {
+         if (pos == (size () - 1))
             dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->set
                (back ()->getShownImage ());
-      } }
+      }
+      else
+         dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->clear (); }
    virtual void sort (CMPFUNC fnSort) {
       if (size ()) {
          resize (size () - 1, style);
@@ -375,7 +379,6 @@ class PseudoInfoPile : public PseudoPile {
  private:
     Gtk::Tooltips tt;
 };
-
 
 
 #endif
