@@ -1,21 +1,18 @@
 dnl Process this file with autoconf to produce a configure script.
 
+AC_PREREQ(2.52)
 AC_REVISION($Revision$)
+AC_INIT(Cardgames, 0.6.00, [g17m0@lycos.com], CardCol)
 
-AC_INIT()
-
-MAJOR_VERSION=0
-MINOR_VERSION=5
-MICRO_VERSION=10
-RELEASE=$MAJOR_VERSION.$MINOR_VERSION
-VERSION=$RELEASE.$MICRO_VERSION
+RELEASE=${PACKAGE_VERSION%.*}
+VERSION=AC_PACKAGE_VERSION
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
                    [Define to the release of the program])
 AC_SUBST(VERSION)
 AC_SUBST(RELEASE)
 
 PROTOCOLL=1
-VARIANT=0
+VARIANT=1
 AC_DEFINE_UNQUOTED(PROTOCOLL, $PROTOCOLL, [Version of the communication protocoll])
 AC_DEFINE_UNQUOTED(VARIANT, $VARIANT, [Variant of the verstion of the communication protocoll])
 AC_DEFINE_UNQUOTED(STRPROTOCOLL, "$PROTOCOLL", [Version of the communication protocoll - stringified verstion])
@@ -36,7 +33,7 @@ AC_C_BIGENDIAN
 
 ALL_LINGUAS="de en es"
 
-AM_INIT_AUTOMAKE(Cardgames, $VERSION)
+AM_INIT_AUTOMAKE(dist-bzip2)
 AM_CONFIG_HEADER(cardgames-cfg.h)
 
 dnl Checks for programs.
@@ -57,7 +54,7 @@ if test $ac_cv_lib_pthread_main = no; then
 fi
 
 PKG_CHECK_MODULES(CARDGAME, gtkmm-2.0 >= 2.2.0 gthread-2.0 > 2.2.0
-                  YGP >= 0.6.21 XGP >= 0.6.30)
+                  YGP >= 0.6.40 XGP >= 0.6.40)
 AC_SUBST(CARDGAME_CFLAGS)
 AC_SUBST(CARDGAME_LIBS)
 
