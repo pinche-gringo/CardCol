@@ -32,6 +32,8 @@ class ComputerPlayer : public Player {
    virtual bool makeTurn (Game* game);
    virtual unsigned int timeout () const;
 
+   static unsigned int TIMEOUT;
+
  private:
    ComputerPlayer ();
    ComputerPlayer (const ComputerPlayer& other);

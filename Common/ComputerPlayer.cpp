@@ -34,6 +34,9 @@
 #include "ComputerPlayer.h"
 
 
+unsigned int ComputerPlayer::TIMEOUT (700);
+
+
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
@@ -55,5 +58,5 @@ bool ComputerPlayer::makeTurn (Game* game) {
 /// \returns unsigned int: Time to delay: 0 -> execute immediately
 //----------------------------------------------------------------------------
 unsigned int ComputerPlayer::timeout () const {
-   return 700;
+   return TIMEOUT;
 }
