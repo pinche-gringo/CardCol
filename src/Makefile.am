@@ -5,7 +5,7 @@ bin_PROGRAMS=CardCol
 CardCol_SOURCES=CardCol.cpp Twopart.cpp Rovhult.cpp Hearts.cpp Buraco.cpp \
 		Buraco.h Twopart.h Rovhult.h Hearts.h Options.h CardCol.h \
 		SigCExt.h BuracoPile.cpp BuracoPile.h Machiavelli.cpp\
-		Machiavelli.h MachiPile.cpp MachiPile.h
+		Machiavelli.h MachiPile.cpp MachiPile.h SgtMayor.cpp SgtMayor.h 
 
 INCLUDES = @INCLUDES@ -I../Common @CARDGAME_CFLAGS@
 

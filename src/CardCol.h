@@ -43,7 +43,7 @@ class CardgameCollection : public XGP::XApplication {
  public:
    // IDs of games. The games starting with GBURACO get 4 decks!
    typedef enum { NONE = -1, GROVHULT = 0, GTWOPART, GHEARTS, GBURACO,
-                  GMACHIAVELLI, GLAST } games;
+                  GMACHIAVELLI, GSGTMAYOR, GLAST } games;
 
    // Manager functions
    CardgameCollection (Options& opts);
@@ -60,7 +60,7 @@ class CardgameCollection : public XGP::XApplication {
  private:
    // IDs for menus
    enum { NEW = LAST, END, CONNECT, EXIT, DEBUG, ROVHULT, TWOPART, HEARTS,
-          BURACO, MACHIAVELLI, CHGDECKS, CHGNAMES, SAVESET };
+          BURACO, MACHIAVELLI, SGTMAYOR, CHGDECKS, CHGNAMES, SAVESET };
 
    // Protected manager functions
    CardgameCollection (const CardgameCollection&);

@@ -53,9 +53,10 @@
 #include <DeckSelect.h>
 
 #include "Hearts.h"
+#include "Buraco.h"
 #include "Rovhult.h"
 #include "Twopart.h"
-#include "Buraco.h"
+#include "SgtMayor.h"
 #include "Machiavelli.h"
 #include "Options.h"
 
@@ -608,6 +609,7 @@ XGP::XApplication::MenuEntry CardgameCollection::menuItems[] = {
     {    _("_Twopart"),       _("<ctl>T"), TWOPART,  RADIOITEM },
     {    _("_Hearts"),        _("<ctl>H"), HEARTS,   RADIOITEM },
     {    _("_Buraco"),        _("<ctl>B"), BURACO,   RADIOITEM },
+    {    _("_Sgt. Mayor"),    _("<ctl>G"), SGTMAYOR, RADIOITEM },
     {    _("_Machiavelli"),   _("<ctl>M"), MACHIAVELLI, LASTRADIOITEM },
     { "",                     "",          0,        SUBMENUEND },
     { _("Change _decks ..."), _("<ctl>D"), CHGDECKS, ITEM },
@@ -818,6 +820,11 @@ void CardgameCollection::startGame () {
             (*this, &CardgameCollection::gameEvents);
          break;
 
+      case GSGTMAYOR:
+         game = new TGame<SgtMayor, CardgameCollection>
+            (*this, &CardgameCollection::gameEvents);
+         break;
+
       default:
          Check (0);
       }
@@ -965,6 +972,10 @@ void CardgameCollection::command (int menu) {
 
    case MACHIAVELLI:
       options.type = GMACHIAVELLI;
+      break;
+
+   case SGTMAYOR:
+      options.type = GSGTMAYOR;
       break;
 
    case CHGDECKS:
@@ -1523,7 +1534,7 @@ void CardgameAppl::showHelp () const {
 
        // For translations: Write one of the Rovhults with 'ø'
              << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco,\n"
-                  "Machiavelli or the numbers 0 - 4 (corresponding to the games in the above order).\n\n")
+                  "Machiavelli, SgtMayor or the numbers 0 - 5 (corresponding to the games in the above order).\n\n")
              << _("The INI file can have the following entries:\n\n")
              <<  "  [Game]\n"
                  "  Type=Twopart\n"
@@ -1664,11 +1675,13 @@ CardgameCollection::games CardgameAppl::convertToGameType (const char* pText) {
                   { "Hearts", CardgameCollection::GHEARTS },
                   { "Buraco", CardgameCollection::GBURACO },
                   { "Machiavelli", CardgameCollection::GMACHIAVELLI },
+                  { "SgtMayor", CardgameCollection::GSGTMAYOR },
                   { "0", CardgameCollection::GROVHULT },
                   { "1", CardgameCollection::GTWOPART },
                   { "2", CardgameCollection::GHEARTS },
                   { "3", CardgameCollection::GBURACO },
-                  { "4", CardgameCollection::GMACHIAVELLI } };
+                  { "4", CardgameCollection::GMACHIAVELLI },
+                  { "5", CardgameCollection::GSGTMAYOR } };
 
    for (unsigned int i (0); i < (sizeof (values) / sizeof (values[0])); ++i)
       if (!strcmp (values[i].pText, pText)) {
