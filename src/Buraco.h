@@ -69,7 +69,7 @@ class Buraco : public Game {
    void enableCard (unsigned int pos);
    static bool containsOnlyJoker (const std::vector<CardWidget*>& pile);
    static bool containsNoJoker (const std::vector<CardWidget*>& pile);
-   void addReserve (unsigned int player, bool show = true);
+   void addBuraco (unsigned int player, bool show = true);
    static bool isJoker (const CardWidget& card);
    static unsigned int getPoints (const CardWidget& card);
    unsigned int showCardsToPlay (unsigned int player);
@@ -134,6 +134,8 @@ class Buraco : public Game {
    struct {
       unsigned int startGame : 1;
       unsigned int startTurn : 1;
+      unsigned int team1Buraco : 2;
+      unsigned int team2Buraco : 2;
    } gStatus;
    unsigned int target;
    unsigned int pos1;
