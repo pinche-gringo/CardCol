@@ -201,7 +201,7 @@ bool Burazno::enableHuman () {
       dumpedTop = dumped.signal_clicked ().connect
          (slot (*this, (&Burazno::dumpedSelected)));
 
-   newPile.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
+      (bind (mem_fun (*this, &Buraco::cardDroppedOnTable), -1U));
 
       (bind (slot (*this, &Burazno::cardDroppedOnTable), -1U));
       Check3 (tablePiles[0][i]);
@@ -226,20 +226,19 @@ void Burazno::disableHuman () {
    stapleTop.disconnect ();
    if (aDNDHand.size ())
       for (unsigned int i (0); i < hands[0].size (); ++i)
-   if (aDNDHand.size ()) {
+         unregisterHandDND (*hands[0][i]);
       for (unsigned int i (0); i < handHuman.numberOfCards (); ++i)
          unregisterHandDND (handHuman.at (i));
-      aDNDHand.clear ();
-   }
+   if (aDNDTable.size ()) {
       for (unsigned int i (0); i < tablePiles[0].size (); ++i) {
-   aDNDTable[NULL].disconnect ();
-   aDNDTable.erase (NULL);
    for (unsigned int i (0); i < aPiles.size (); ++i) {
       Check3 (aPiles[i]);
-      for (unsigned int (j); j < aPiles[i]->numberOfCards (); ++j)
+      for (unsigned int j (0); j < aPiles[i]->numberOfCards (); ++j)
          unregisterTableDND (aPiles[i]->at (j));
 
-   aDNDTable.clear ();
+   aDNDTable[NULL].disconnect ();
+   aDNDTable.erase (NULL);
+   if (dumpedTop.connected ())
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card in the hand
 /*--------------------------------------------------------------------------*/
@@ -251,6 +250,7 @@ void Burazno::cardSelected (unsigned int iCard) {
    Check1 (iCard < handHuman.numberOfCards ());
    // Check if all piles are valid
    if (!humanPilesOK ()) {
+   unregisterHandDND (handHuman.at (iCard));
    dumped.append (handHuman.remove (iCard));
 
 //-----------------------------------------------------------------------------
@@ -328,9 +328,10 @@ void Burazno::registerHandDND (unsigned int iCard) {
    // Card accepts drops from hand and drags from table
    card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    card.drag_source_set
-   card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
+      (dndType, Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
        Gdk::ACTION_MOVE);
-      (dndType, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK));
+      (dndType, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
+   card.drag_source_set_icon (card.getImage ());
    aDNDHand[&card].connReceive = card.signal_drag_data_received ().connect
    card.drag_source_set_icon (get_colormap (), card.getImage (), bitmap);
    aDNDHand[&card] = card.signal_drag_data_received ().connect
@@ -384,11 +385,11 @@ void Burazno::registerTableDND (unsigned int pile, unsigned int start, unsigned 
 //            nr: Number of card in pile
 /*--------------------------------------------------------------------------*/
 void Burazno::registerTableDND (CardWidget& card, unsigned int nr) {
-   TRACE9 ("Burazno::registerTableDND (CardWidget&, unsigned int) - Card: "
-           << card << " = " << std::hex << nr << " - " << &card << std::dec);
+   TRACE9 ("Burazno::registerTableDND (CardWidget&, unsigned int) - " << card
+   // Card accepts drops from hand and drags from table
    card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    aDNDTable[&card] = card.signal_drag_data_received ().connect
-   card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
+      (bind (mem_fun (*this, &Buraco::cardDroppedOnTable), nr));
 }
       (bind (slot (*this, &Burazno::cardDroppedOnTable), nr));
 //-----------------------------------------------------------------------------
@@ -400,9 +401,10 @@ void Burazno::registerTableDND (CardWidget& card, unsigned int nr) {
 void Burazno::unregisterTableDND (CardWidget& card) {
    TRACE9 ("Burazno::unregisterTableDND (unsigned int) - Card: " << card
 
-   Check1 (aDNDTable.size ());
+   std::map<CardWidget*, SigC::Connection>::iterator i (aDNDTable.find (&card));
    Check1 (i != aDNDTable.end ());
-   std::map<CardWidget*, SigC::Connection>::iterator i (aDNDHand.find (&card));
+   TRACE ("Searching for connection");
+
    card.drag_dest_unset ();
    i->second.disconnect ();
    aDNDTable.erase (i);
