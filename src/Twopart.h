@@ -72,6 +72,12 @@ class Twopart : public XApplication {
    int  findNextPlayerWithCards (unsigned int player);
    void removePlayer (unsigned int player) { bfPlayers &= ~(1 << player); }
    void addPlayer (unsigned int player) { bfPlayers |= 1 << player; }
+   static unsigned int playersInBitfield (unsigned int bfPlayers) {
+      unsigned int cPlayers (0);
+      for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+         if (bfPlayers & (1 << i))
+            ++cPlayers;
+      return cPlayers; }
    unsigned int removePlayersWithoutCards ();
    void startGame ();
    void cleanTable ();
