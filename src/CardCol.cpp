@@ -34,6 +34,7 @@
 
 #include <glib.h>
 
+#define CHECK 1
 #include <Check.h>
 #include <Trace_.h>
 
@@ -46,6 +47,7 @@
 #include <DeckSelect.h>
 
 #include <CardWidget.h>
+#include <Hearts.h>
 #include <Rovhult.h>
 #include <Twopart.h>
 
@@ -302,7 +304,8 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { _("_Options"),          _("<alt>O"), 0,        BRANCH },
     { _("_Change game"),      _("<alt>C"), 0,        SUBMENU },
     {    _("_Røvhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
-    {    _("_Twopart"),       _("<ctl>T"), TWOPART,  LASTRADIOITEM },
+    {    _("_Twopart"),       _("<ctl>T"), TWOPART,  RADIOITEM },
+    {    _("_Hearts"),        _("<ctl>H"), HEARTS,   LASTRADIOITEM },
     { "",                     "",          0,        SUBMENUEND },
     { _("_Change decks ..."), _("<ctl>C"), CHGDECKS, ITEM },
     { _("_Save settings"),    _("<ctl>S"), SAVESET,  ITEM },
@@ -379,6 +382,11 @@ void CardgameCollection::startGame () {
             (*this, &CardgameCollection::gameEvents);
          break;
 
+      case GHEARTS:
+         game = new TGame<Hearts, CardgameCollection>
+            (*this, &CardgameCollection::gameEvents);
+         break;
+
       default:
          Check (0);
       }
@@ -424,6 +432,10 @@ void CardgameCollection::command (int menu) {
       typeGame = GROVHULT;
       break;
 
+   case HEARTS:
+      typeGame = GHEARTS;
+      break;
+
    case CHGDECKS:
       dlgChgDecks = CarddeckSelectDlg<CardgameCollection>
          ::create (*this, &CardgameCollection::changeDecks,
@@ -457,7 +469,7 @@ void CardgameCollection::command (int menu) {
               != XMessageBox::YES))
             break;
 
-      delete_event_impl (0);
+      Main::quit ();
       break;
 
    case CONTENT: {
@@ -473,8 +485,8 @@ void CardgameCollection::command (int menu) {
          else
             file += "index.html";
 
-         TRACE ("CardgameCollection::command (int) - Show help " << file);
-         execlp ("galeon", "galeon", file.c_str (), NULL);
+         TRACE9 ("CardgameCollection::command (int) - Show help " << file);
+         execlp ("galeon", "galeon", "-w", file.c_str (), NULL);
          perror (_("Error starting browser for help! Reason"));
          _exit (1); }
 
