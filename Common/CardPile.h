@@ -17,11 +17,19 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+
+#include <cardgames-cfg.h>
+
+#include <string>
 #include <vector>
-#include <algo.h>
+#include <algorithm>
 
 #include <gtk--/box.h>
+#include <gtk--/tooltips.h>
 
+#include <ANumeric.h>
+
+#include <Check.h>
 #include <Trace_.h>
 
 #include <CardWidget.h>
@@ -30,9 +38,9 @@
 // Class to display a pile of cards on the screen
 class ICardPile {
  public:
-   typedef enum { NORMAL = 0, COMPRESSED, VERY_COMPRESSED, LAST } Style;
+   typedef enum { NORMAL = 0, COMPRESSED, VERY_COMPRESSED, LAST } PileStyle;
 
-   ICardPile (Style style = NORMAL, bool access = true);
+   ICardPile (PileStyle style = NORMAL, bool access = true);
    virtual ~ICardPile ();
 
    // Methods to access pile first-in-last-out
@@ -51,33 +59,39 @@ class ICardPile {
       newCard.setVisible (visible);
       setTopCard (newCard); }
 
-   CardWidget& getTopCard () const { return *cards[cards.size () - 1]; }
+   CardWidget& getTopCard () const {
+      Check3 (cards.size ()); return *cards[cards.size () - 1]; }
    virtual CardWidget& removeTopCard ();
 
    // Methods to random access pile
    virtual void insert (CardWidget& card, unsigned int pos);
+   void insertSorted (CardWidget& card);
    void append (CardWidget& card) { setTopCard (card); }
    virtual CardWidget& remove (CardWidget& card);
    virtual CardWidget& remove (unsigned int pos);
 
    CardWidget* get (unsigned int id) const;
-   CardWidget& at (unsigned int pos) const { return *cards[pos]; }
+   CardWidget& at (unsigned int pos) const {
+      Check3 (pos < cards.size ()); return *cards[pos]; }
 
    int findFirstEqualOrBigger (CardWidget::NUMBERS nr) const;
-   int findLastEqualOrBigger (CardWidget::NUMBERS nr) const;
+   int findLastEqualOrBigger (CardWidget::NUMBERS nr) const {
+      int pos (findFirstEqualOrBigger (nr));
+      return (pos == -1) ? - 1 : findLastEqual (pos); }
+   int findLastEqual (unsigned int pos) const;
 
    bool exists (CardWidget::NUMBERS nr) const {
       int pos (findFirstEqualOrBigger (nr));
       return (pos != -1) && (at (pos).number () == nr); }
    bool exists (CardWidget& card) const { exists (&card); }
-   bool exists (CardWidget* card) const {
+ bool exists (CardWidget* card) const {
       return find (cards.begin (), cards.end (), card) != cards.end (); }
 
    // General management-functions
-   virtual void resize (CardWidget& card, Style s) const = 0;
+   virtual void resize (CardWidget& card, PileStyle s) const = 0;
    unsigned int numberOfCards () const { return cards.size (); }
    void clear ();
-   void setStyle (Style s);
+   void setStyle (PileStyle s);
    void setAccessable (bool access);
 
    bool topCardVisible () const { return getTopCard ().visible (); }
@@ -87,7 +101,7 @@ class ICardPile {
 
  protected:
    vector<CardWidget*> cards;
-   Style style;
+   PileStyle style;
    bool accessable;
 
  private:
@@ -103,8 +117,9 @@ class ICardPile {
 // Designed to be used with the Gtk::?Box-classes
 template <class T> class CardPile : public T, public ICardPile {
  public:
-   CardPile (Style style = NORMAL, bool access = true) : ICardPile (style, access) { }
-   ~CardPile () { }
+   CardPile (PileStyle style = NORMAL, bool access = true)
+      : ICardPile (style, access) { }
+   virtual ~CardPile () { }
 
    virtual void setTopCard (CardWidget& newCard) {
       ICardPile::setTopCard (newCard);
@@ -130,7 +145,7 @@ template <class T> class CardPile : public T, public ICardPile {
       T::remove (card);
       return card; }
 
-   virtual void resize (CardWidget& card, Style s) const { }
+   virtual void resize (CardWidget& card, PileStyle s) const { }
    virtual void sortByNumber () {
       if (cards.size ()) {
          resize (getTopCard (), style);
@@ -142,8 +157,8 @@ template <class T> class CardPile : public T, public ICardPile {
          ICardPile::sortByColor ();
          resortGUI (); } }
 
- private:
-   void resortGUI () {
+ protected:
+   virtual void resortGUI () {
       for (int i (0); i < cards.size (); ++i)
          Gtk::Box::reorder_child (*cards[i], i);
       resize (getTopCard (), NORMAL);
@@ -155,16 +170,86 @@ typedef CardPile<Gtk::VBox>  CardVPile;
 typedef CardPile<Gtk::HBox>  CardHPile;
 
 
-void CardVPile::resize (CardWidget& card, Style s) const {
+void CardVPile::resize (CardWidget& card, PileStyle s) const {
    static unsigned int height[(int)LAST] = { card.getImageHeight (), 15, 1 };
-   TRACE5 ("CardVPile::resize (CardWidget&, Style) - " << (int)s << " (" << height[0] << ')');
+   TRACE5 ("CardVPile::resize (CardWidget&, PileStyle) - " << (int)s << " (" << height[0] << ')');
    card.set_usize (-1, height[(int)s]);
 }
 
-void CardHPile::resize (CardWidget& card, Style s) const {
+void CardHPile::resize (CardWidget& card, PileStyle s) const {
    static unsigned int width[(int)LAST] = { card.getImageWidth (), 18, 1 };
-   TRACE5 ("CardHPile::resize (CardWidget&, Style) - " << (int)s << " (" << width[0] << ')');
+   TRACE5 ("CardHPile::resize (CardWidget&, PileStyle) - " << (int)s << " (" << width[0] << ')');
    card.set_usize (width[(int)s], -1);
 }
+
+
+// Specializations of CardPile, displaying the number of cards as tooltip
+// (especially usefull, if the pile is (very) compressed ;) )
+template <class T> class CardInfoPile : public CardPile<T> {
+ public:
+   CardInfoPile (PileStyle style = NORMAL, bool access = true)
+      : CardPile<T> (style, access), tt (NULL) { }
+   CardInfoPile (Gtk::Tooltips& tips, PileStyle style = NORMAL, bool access = true)
+      : CardPile<T> (style, access), tt (&tips) {
+      tt->set_delay (2); }
+   virtual ~CardInfoPile () { }
+
+   virtual void setTopCard (CardWidget& newCard) {
+      CardPile<T>::setTopCard (newCard);
+      setTooltips (); }
+   void setTopCard (CardWidget& newCard, bool visible) {
+      CardPile<T>::setTopCard (newCard, visible); }
+
+   virtual CardWidget& removeTopCard () {
+      CardWidget& card (CardPile<T>::removeTopCard ());
+      Check (tt);
+      tt->set_tip (card);
+      setTooltips ();
+      return card; }
+
+   virtual void insert (CardWidget& card, unsigned int pos) {
+      CardPile<T>::insert (card, pos);
+      setTooltips (); }
+
+   virtual CardWidget& remove (CardWidget& card) {
+      CardPile<T>::remove (card);
+      Check (tt);
+      tt->set_tip (card);
+      setTooltips ();
+      return card; }
+   virtual CardWidget& remove (unsigned int pos) {
+      CardWidget& card (CardPile<T>::remove (pos));
+      Check (tt);
+      tt->set_tip (card);
+      setTooltips ();
+      return card; }
+
+   void setTooltipObject (Gtk::Tooltips& tips) { tt = &tips; }
+
+ protected:
+   virtual void resortGUI () {
+      CardPile<T>::resortGUI ();
+      setTooltips (); }
+
+   virtual void setTooltips () {
+      Check (tt);
+      for (int i (0); i < cards.size (); ++i) {
+         std::string tip (_("Card number %1 of %2"));
+         tip.replace (tip.find ("%1"), 2,
+                      ANumeric::toString ((unsigned long)(i + 1)));
+         tip.replace (tip.find ("%2"), 2,
+                      ANumeric::toString ((unsigned long)cards.size ()));
+         tt->set_tip (*cards[i], tip);
+      }
+   }
+
+ private:
+    Gtk::Tooltips* tt;
+};
+
+
+typedef CardInfoPile<Gtk::VBox>  CardVInfoPile;
+typedef CardInfoPile<Gtk::HBox>  CardHInfoPile;
+
 
 #endif
