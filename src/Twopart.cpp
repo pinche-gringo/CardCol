@@ -65,6 +65,9 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
    staple.show ();
    attach (staple, 2, 3, 2, 3, 0, 0, 5, 5);
 
+   unsigned int width (cards.getCard (0).getImageWidth ());
+   unsigned int height (cards.getCard (0).getImageHeight ());
+
    // Show and attach card-piles
    for (int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.setStyle (ICardPile::VERY_COMPRESSED);
@@ -84,20 +87,18 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
               ROWS_PLAYER[i] + 1, 0, 0, 1);
       TRACE9 ("Twopart::Twopart () - 2nd set at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
-   }
 
-   played.show ();
-   attach (played, 3, 11, 5, 8, 0, 0, 0, 5);
-
-   unsigned int width (cards.getCard (0).getImageWidth ());
-   unsigned int height (cards.getCard (0).getImageHeight ());
-
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.setShowOption (ICardPile::SHOWBACK);
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
 
       players[i].won.set_usize (width + 20, height + 5);
       players[i].hand.set_usize (width * 3, height + 5);
+   }
+
+   played.show ();
+   attach (played, 3, 11, 5, 8, 0, 0, 0, 5);
+
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
    }
 
    played.set_usize (width + 150, height);
@@ -116,10 +117,14 @@ Twopart::~Twopart () {
 /*--------------------------------------------------------------------------*/
 void Twopart::start () {
    Game::start ();
-
-   clean ();
    randomizeCardsToPile (staple);
    dealCards ();
+
+   for (unsigned int i (1); i < NUM_PLAYERS; ++i)
+      players[i].hand.setStyle (ICardPile::COMPRESSED);
+   players[0].hand.setStyle (ICardPile::NORMAL);
+
+   pos2Play = -1;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -191,7 +196,7 @@ void Twopart::playedSelected (unsigned int player) {
    Check3 (statGame == PLAYING2);
    Check3 (bfPlayers);
 
-   pickUpPlayedPile (player);
+   setNextPlayer (pickUpPlayedPile (player));
    makeNextMoves ();
    disableLastPlayer ();
 }
@@ -342,17 +347,11 @@ int Twopart::executeMove (unsigned int player, unsigned int pos) {
       if (statGame == PLAYING)
          startPartTwo (player);
       else {
-         stop ();
+         end ();
          return -1; }
    }
-   else {
-      player = newPlayer;
-
-      status.pop (1);
-      std::string stat ( _("Turn of player %1"));
-      stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
-      status.push (1, stat);
-   }
+   else
+      displayTurn (player = newPlayer);
 
    return player;
 }
@@ -390,22 +389,19 @@ int Twopart::makeMove (unsigned int player) {
                           == (pos2Play - pos)))
                      && (players[player].hand.at (pos).color ()
                          == players[player].hand.at (pos2Play).color ()));
-         return 1;
+         return player;
       }
       else {
          unsigned int oldPlayer (player);
          player = pickUpPlayedPile (player);
 
-         status.pop (1);
-         std::string stat ( _("Player %1 can't continue -> Picking up last cards;"
-                              " Turn of player %2"));
+         std::string stat ( _("Player %1 can't continue -> Picking up last cards; "));
          stat.replace (stat.find ("%1"), 2, (char)(oldPlayer + '0'));
-         stat.replace (stat.find ("%2"), 2, (char)(player + '0'));
-         status.push (1, stat);
+         displayTurn (player, stat);
       }
    }
    else
-      executeMove (player, pos2Play);
+      player = executeMove (player, pos2Play);
 
    if (statGame >= PLAYING) {
       pos2Play = -1;
@@ -855,7 +851,6 @@ void Twopart::clean () {
    staple.clear ();                                             // Clear staple
    for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
       players[i].hand.clear ();
-      players[i].hand.setStyle (i ? ICardPile::COMPRESSED : ICardPile::NORMAL);
       players[i].won.clear ();
    }
    played.clear ();
@@ -866,8 +861,6 @@ void Twopart::clean () {
       delete pTrump;
       pTrump = NULL;
    }
-
-   pos2Play = -1;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -887,6 +880,8 @@ void Twopart::dealCards () {
 
    bfPlayers = bfOldPlayers = (1 << NUM_PLAYERS) - 1;
    enablePlayer (startPlayer = 0);
+
+   displayTurn (0);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -896,6 +891,7 @@ void Twopart::dealCards () {
 /*--------------------------------------------------------------------------*/
 int Twopart::startPartTwoTimerFnc (unsigned int player) {
    TRACE8 ("Twopart::startPartTwoTimerFnc ()");
+   TRACE9 ("Twopart::startPartTwoTimerFnc (unsigned int) - Continuing with " << player);
    Check3 (!bfPlayers);
    statGame = PLAYING2;
 
@@ -911,7 +907,8 @@ int Twopart::startPartTwoTimerFnc (unsigned int player) {
    // Check if there are players without cards
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       if (!players[i].won.numberOfCards ()) {
-         TRACE5 ("Twopart::startPartTwoTimerFnc () - Player " << i << " has no cards");
+         TRACE5 ("Twopart::startPartTwoTimerFnc (unsigned int) - Player "
+                 << i << " has no cards");
          bfPlayers |= 1 << i;
          ++nrPlayers;
       }
@@ -922,8 +919,8 @@ int Twopart::startPartTwoTimerFnc (unsigned int player) {
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       for (unsigned int j (players[i].won.numberOfCards ()); j; --j) {
          CardWidget& card (players[i].won.removeTopCard ());
-         TRACE9 ("Twopart::startPartTwoTimerFnc () - Moving cards " << card
-                 << " for player " << i);
+         TRACE9 ("Twopart::startPartTwoTimerFnc (unsigned int) - Moving cards "
+                 << card << " for player " << i);
          if (bfPlayers && (card.number () <= CardWidget::FIVE)) {
             players[pos2Player (++victim)].hand.append (card);
             victim %= nrPlayers;
@@ -971,11 +968,11 @@ bool Twopart::compByColorAccTrumps (const CardWidget* a, const CardWidget* b) {
 //Parameters: player: Player to start part II
 /*--------------------------------------------------------------------------*/
 void Twopart::startPartTwo (unsigned int player) {
-   TRACE9 ("Twopart::startPartTwo () - *** Start timer ***");
+   TRACE9 ("Twopart::startPartTwo (unsigned int) - Continuing with " << player);
    // Delay starting of part two, in case of human player; as re-enabling a
    // signal (button-callback) inside the signal handler wreaks quite a bit
    // of havoc
-   if (currentPlayer () == player)
+   if (player)
       startPartTwoTimerFnc (player);
    else
       Gtk::Main::timeout.connect (bind (slot (this, &Twopart::startPartTwoTimerFnc),
@@ -991,9 +988,7 @@ void Twopart::playOpen (bool open) {
 
    for (int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.setShowOption (show);
-      players[i].won.setStyle ((show == ICardPile::SHOWFACE)
-                               ? ICardPile::COMPRESSED
-                               : ICardPile::VERY_COMPRESSED);
+      players[i].won.setStyle (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
       players[i].hand.setShowOption (i ? show : ICardPile::SHOWFACE);
    }
 }
