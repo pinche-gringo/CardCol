@@ -88,6 +88,7 @@ class Game : public Gtk::Table {
    void setPlayerPosition (unsigned int posPlayer) { posServer = posPlayer; }
 
    virtual void disableHuman ();
+   void endTurn () { stati.pendingTurn = 0; }
 
    /// \name Player actions
    //@{

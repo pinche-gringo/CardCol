@@ -97,7 +97,7 @@ Game::~Game () {
 /// Starts the game
 //-----------------------------------------------------------------------------
 void Game::start () {
-   TRACE9 ("Game::start ()");
+   TRACE8 ("Game::start () - Act. status: " << statGame);
    Check3 ((statGame <= INITIALIZING) || (statGame == STOPPED));
    if (statGame == STOPPED)
       clean ();
@@ -107,7 +107,7 @@ void Game::start () {
    if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
       std::string msg ("Game=");
       msg += name ();
-      TRACE9 ("Game::start () - Sending: " << msg);
+      TRACE8 ("Game::start () - Sending: " << msg);
       broadcastMessage (msg);
    }
 }
@@ -116,7 +116,10 @@ void Game::start () {
 /// Terminates the game and cleans the table
 //-----------------------------------------------------------------------------
 void Game::stop () {
-   TRACE9 ("Game::stop ()");
+   TRACE8 ("Game::stop ()");
+   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
+      broadcastMessage ("End");
+
    clean ();
    setGameStatus (STOPPED);
 }
@@ -125,42 +128,16 @@ void Game::stop () {
 /// End the current game as soon as possible
 /// \param startNew: Flag, if game should be restarted
 //-----------------------------------------------------------------------------
-bool Game::endGame (bool startNew) {
-   TRACE8 ("Game::endGame (bool) - End game; Restart: " << (stati.restart ? "Yes" : "No"));
-   Check3 ((statGame == TOSTOP) || (statGame == STOPPED));
-
-   if (!mxSerializeMsgs.trylock ())
-      return true;
-   mxSerializeMsgs.unlock ();
-
-   setGameStatus (STOPPED);
-   if (stati.restart)
-      // Restart the game, when idle (means: *after* this signalhandler
-      // terminates)
-      Glib::signal_idle ().connect
-          (bind_return (slot (*this, &Game::start), false));
-   return false;
-}
-
-//-----------------------------------------------------------------------------
-/// End the current game as soon as possible
-/// \param startNew: Flag, if game should be restarted
-//-----------------------------------------------------------------------------
 void Game::end (bool startNew) {
-   TRACE9 ("Game::end () - Restart: " << (startNew ? "Yes" : "No"));
-   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
-      broadcastMessage ("End");
-
+   TRACE8 ("Game::end () - Restart: " << (startNew ? "Yes" : "No"));
    stati.restart = startNew;
    if (canBeStopped ()) {
-      setGameStatus (STOPPED);
+      stop ();
       actPlayer = 0;
       disableHuman ();
    }
-   else {
+   else
       setGameStatus (TOSTOP);
-      Glib::signal_idle ().connect (bind (slot (*this, &Game::endGame), stati.restart));
-   }
 }
 
 //-----------------------------------------------------------------------------
@@ -193,7 +170,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
          ap.assignValues (input);
 
          Tokenize positions (input);
-         TRACE9 ("Game::randomizeCardsToPile (ICardPile&) - Cards: " << cards.size ());
+         TRACE8 ("Game::randomizeCardsToPile (ICardPile&) - Cards: " << cards.size ());
          for (unsigned int i (0); i < (cards.size () - 1); ++i) {
             unsigned long pos (0);
             std::string token;
@@ -275,13 +252,16 @@ void Game::clean () {
 /// Activates the next player
 //-----------------------------------------------------------------------------
 void Game::makeNextMoves () {
-   if ((actPlayer >= 0) && (statGame != TOSTOP)) {
+   if (actPlayer >= 0) {
       TRACE8 ("Game::makeNextMoves () - " << actPlayer);
-      Check1 (actPlayer < actPlayers.size ());
+      Check3 (actPlayer < actPlayers.size ());
+      Check3 (!stati.pendingTurn);
       unsigned int timeout (actPlayers[actPlayer]->timeout ());
-      if (timeout)
+      if (timeout) {
          Glib::signal_timeout ().connect
              (bind (slot (*actPlayers[actPlayer], &Player::makeTurn), this), timeout);
+         stati.pendingTurn = 1;
+      }
       else
           Glib::signal_idle ().connect
               (bind (slot (*actPlayers[actPlayer], &Player::makeTurn), this));
@@ -319,6 +299,11 @@ bool Game::enableHuman () {
 //-----------------------------------------------------------------------------
 bool Game::makeComputerMove () {
    TRACE5 ("Game::makeComputerMove () - Turn of player " << actPlayer);
+   if (statGame == TOSTOP) {
+      stop ();
+      stati.pendingTurn = 0;
+      return false;
+   }
 
    unsigned int newPlayer (makeMove (actPlayer));
    TRACE7 ("Game::makeComputerMove () - Next player: " << newPlayer);
@@ -326,6 +311,7 @@ bool Game::makeComputerMove () {
       return true;
    else {
       actPlayer = newPlayer;
+      stati.pendingTurn = 0;
       makeNextMoves ();
       return false;
    }
@@ -553,7 +539,7 @@ bool Game::enableActWonCards () {
 /// Disables the won cards
 //-----------------------------------------------------------------------------
 void Game::disableWonCards () {
-   TRACE9 ("Game::disableWonCards () - Disabling " << wonCards.size () << " cards");
+   TRACE8 ("Game::disableWonCards () - Disabling " << wonCards.size () << " cards");
    for (int i (wonCards.size ()); i > 0;)
       wonCards[--i].disconnect ();
    
@@ -618,7 +604,7 @@ void Game::writeMessage (Socket& socket, const std::string& msg) {
 //----------------------------------------------------------------------------
 void Game::writeError (Socket& socket, unsigned int rc, const std::string& msg) {
    std::ostringstream error;
-   error << "Error=" << rc << ";Msg=\"" + msg << '"';
+   error << "Error=" << rc << ";Msg=\"" + msg;
    writeMessage (socket, error.str ());
 }
 
@@ -752,6 +738,8 @@ bool Game::performCommand (unsigned int player, const char* msg) throw (std::str
       if (statGame == PLAYING)
          displayTurn (player);
    }
+   else if (cmd == "End")
+      end (false);
    else
       throw std::string ("Unknown command!");
    return true;
