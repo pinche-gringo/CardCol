@@ -609,7 +609,7 @@ XGP::XApplication::MenuEntry CardgameCollection::menuItems[] = {
     {    _("_Twopart"),       _("<ctl>T"), TWOPART,  RADIOITEM },
     {    _("_Hearts"),        _("<ctl>H"), HEARTS,   RADIOITEM },
     {    _("_Buraco"),        _("<ctl>B"), BURACO,   RADIOITEM },
-    {    _("_Sgt. Mayor"),    _("<ctl>G"), SGTMAYOR, RADIOITEM },
+    {    _("_Sgt. Mayor"),    _("<ctl>Y"), SGTMAYOR, RADIOITEM },
     {    _("_Machiavelli"),   _("<ctl>M"), MACHIAVELLI, LASTRADIOITEM },
     { "",                     "",          0,        SUBMENUEND },
     { _("Change _decks ..."), _("<ctl>D"), CHGDECKS, ITEM },
@@ -1072,7 +1072,18 @@ const char* CardgameCollection::getHelpfile () {
    std::string file (options.helpPath);
    if (file[file.size () - 1] != YGP::File::DIRSEPARATOR)
       file += YGP::File::DIRSEPARATOR;
-   file += game ? (std::string (game->name ()) + ".html") : "CardCol.html";
+
+   if (game) {
+      std::string name (game->name ());
+      unsigned int pos;
+      while ((pos = name.find (" ")) != std::string::npos)
+         name.replace (pos, 1, 0, '\0');
+
+      file += name;
+      file += ".html";
+   }
+   else
+      file += "CardCol.html";
    return file.c_str ();
 }
 
@@ -1536,7 +1547,7 @@ void CardgameAppl::showHelp () const {
              << "  -h, -?, --help ..... " << _("Displays this help and exit\n\n")
 
        // For translations: Write one of the Rovhults with 'ø'
-             << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco,\n"
+             << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts, Buraco,\n"
                   "Machiavelli, SgtMayor or the numbers 0 - 5 (corresponding to the games in the above order).\n\n")
              << _("The INI file can have the following entries:\n\n")
              <<  "  [Game]\n"
