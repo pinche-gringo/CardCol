@@ -1,3 +1,9 @@
+Overview of changes in version 0.1.03:
+
+  - Twopart got computer-player
+  - Carddecks seperated; can be changed during the game
+  - Improved Røvhult's computer player
+
 Overview of changes in version 0.1.02:
 
   - Documentation for Røvhult & Twopart added
