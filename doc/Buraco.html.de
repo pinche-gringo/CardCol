@@ -19,13 +19,14 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//DE">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//DE"
+        "http://www.w3.org/TR/html4/strict.dtd">
 
 <html>
   <head>
     <title>Buraco - Canasta mit lateinamerikanischen Einschlag</title>
-    <meta name="description" content="Documentation of the Buraco cardgame">
-    <meta name="keywords" content="Documentation, Docu, Buraco, game, card, cardgame">
+    <meta name="description" content="Dokumentation des Buraco Kartenspiels">
+    <meta name="keywords" content="Dokumentation, Doku, Buraco, Spiel, Karten, Kartenspiel">
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-06-22">
@@ -45,11 +46,13 @@
       Stapel von "zusammenpassenden" Karten abzulegen und und so alle seine
       Karten loszuwerden.  Zusammenpassend bedeutet, da&szlig; entweder die
       Nummer (unabh&auml;ngig von der Farbe) oder die Farbe gleich ist, und
-      die Nummern in einer fortlaufenden Serie sind.</p>
+      die Nummern in einer fortlaufenden Serie sind (As als Eins, Drei, Vier,
+      ..., Zehn, Bube, Dame, K&ouml;nig, As - Der Zweier ist ein Joker und
+      kommt daher nicht in der Reihe vor).</p>
 
     <p>Um diese Karten allerdings wirklich ablegen zu k&ouml;nnen, mu&szlig;
       der Spieler mindestens 3 dieser Karten haben; beziehungsweise 2 davon,
-      die mit einem Joker oder einer (beliebigf&auml;rbigen) 2 erg&auml;zt
+      die mit einem Joker oder einer (beliebigf&auml;rbigen) 2 erg&auml;nzt
       werden.</p>
 
     <p>Jeder Spieler startet mit 11 Karten in der Hand. Am Beginn seines Zuges
@@ -144,13 +147,12 @@
       <li>Die Karten des Spielers. Anfangs sortiert nach Nummern, aber mit
         Ziehen und Ablegen (drag und drop)<a
         href="Buraco.html.de#Note1"><sup>1</sup></a> sortierbar.</li>
-      <li>Die Stapel am Tisch von Team 1. Zu diese Karten k&ouml;nn mit Ziehen
-        und Ablegen (drag und drop)<a
+      <li>Die Stapel am Tisch von Team 1. Zu diesen Karten k&ouml;nnen mit
+        Ziehen und Ablegen (drag und drop)<a
         href="Buraco.html.de#Note1"><sup>1</sup></a> weitere Karten
         hinzugef&uuml;gt werden.</li>
       <li>Die Stapel am Tisch von Team 2.</li>
-      <li>In der letzten Reihe sind die Karten des jeweils aktiven
-        Computer-Spielers.</li>
+      <li>In der letzten Reihe sind die Karten der weiteren Computer-Spieler.</li>
     </ul>
     
     <hr size=1 noshade>
@@ -164,8 +166,6 @@
       Der Joker mu&szlig; nicht manuell im Staple verschoben werden. Wird eine
       entsprechende Karte auf den Stapel verschoben, wird der Joker notfalls
       automatisch an die richtige Stelle platziert.</p>
-
-    <hr size=1 noshade>
 
     <hr size=3 noshade>
     <table width="100%">
