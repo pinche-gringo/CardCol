@@ -908,6 +908,9 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start
              ? players[receiver].won : players[receiver].hand,
              played, start);
 
+   if (!receiver && (gameStatus () == PLAYING))
+      enableWonCards (players[0].won);
+
    if (gameStatus () == PLAYING2)
       players[receiver].hand.sort (compByColorAccTrumps);
 }
@@ -929,6 +932,7 @@ void Twopart::clean () {
       delete pTrump;
       pTrump = NULL;
    }
+   Game::clean ();
 }
 
 /*--------------------------------------------------------------------------*/
