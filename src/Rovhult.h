@@ -81,8 +81,10 @@ class Rovhult : public Game {
    int  makeMove (unsigned int player);
    void enablePlayer (unsigned int player);
    void dealCards ();
-   CardWidget::NUMBERS playCardsFromHand (unsigned int player, unsigned int pos);
+   CardWidget::NUMBERS playCardsFromHand (unsigned int player, unsigned int start,
+                                          unsigned int end);
    void exchangeAutoplayerCards ();
+   void sortReserve (unsigned int player);
 
    unsigned int numberOfEqualTopCards () const;
    bool clearPlayedIf4Equal ();
@@ -92,13 +94,23 @@ class Rovhult : public Game {
    bool playerHandCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const;
    
    int makeTurn (unsigned int player);
-   int findCard2Play (unsigned int player) const;
-   unsigned int showCards2Play (unsigned int player, unsigned int pos);
+   int findCard2Play (unsigned int player, unsigned int& start, unsigned int& end) const;
+   unsigned int showCards2Play (unsigned int player);
 
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
+   bool getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
+                       CardWidget::NUMBERS& max) const;
    bool existOnlySpecialCards (const ICardPile& pile, unsigned int pos) const;
    bool isSpecialCard (CardWidget::NUMBERS nr) const {
       return (nr == CardWidget::TEN) || (nr == CardWidget::TWO); }
+
+   int skip (CardWidget::NUMBERS nr, const ICardPile& pile, unsigned int pos) const {
+      if (pile.at (pos).number () == nr) {
+         pos = pile.findLastEqual (pos) + 1;
+         return (pos < pile.numberOfCards ()) ? (int)pos : -1; }
+      return pos;
+   }
+
 
    bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
    int executeMove (unsigned int player, CardWidget::NUMBERS nr);
@@ -120,6 +132,9 @@ class Rovhult : public Game {
 
    static GtkTargetEntry dndTypeTable;
    static GtkTargetEntry dndTypeHand;
+
+   unsigned int pos2Play;
+   unsigned int pos1Play;
 };
 
 
