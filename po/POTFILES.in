@@ -16,3 +16,4 @@ Common/ScoreDlg.cpp
 src/Buraco.cpp
 src/Machiavelli.cpp
 src/MachiPile.cpp
+src/SgtMayor.cpp
