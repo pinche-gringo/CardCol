@@ -458,7 +458,12 @@ int Buraco::executeMove (unsigned int player) {
             pos1Play = pos2Play = playerPile.size () - 1;
             unsigned int pos, move;
 
-            return (bestPile << 16) + 1;
+            Check3 (bestPile < tablePiles[player & 1].size ());
+            tablePiles[player & 1][bestPile]->getPosition4Card
+                (*playerPile[playerPile.size () - 1], pos, move);
+            tablePiles[player & 1][bestPile]->getPosition4Card 
+         }
+      }
    }
 
    if (containsOnlyJoker (playerPile))
@@ -1235,6 +1240,16 @@ bool Buraco::humanPilesOK (unsigned int except) const {
    // Insert card into pile and register it for DND
    unsigned int move (-1U);
    pile->getPosition4Card (moved, iCard, move);
+   Check3 (iCard <= pile->size ());
+   if (move != -1U) {
+      Check3 (move <= pile->size ());
+      Check3 (move != pile->getPosJoker ());
+      Check3 (move < pile->size ());
+      sendMoveCard (iPile, pile->getPosJoker (), move);
+   }
+
+   // Send move
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
    if (iCard < (pile->size () - 1))
       registerTableDND (iPile, iCard + 1, pile->size () - 1);
 
@@ -1370,7 +1385,7 @@ void Buraco::addBuraco (unsigned int player, bool show) {
       Check3 (actPlayers[player]);
 
       status.pop ();
-      Glib::ustring stat (_("%1 picked up the pile with the dumped cards"));
+      Glib::ustring stat (_("%1 picked up the burraco"));
       stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
       status.push (stat);
    status.pop ();
@@ -1427,7 +1442,6 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
 
    unsigned int size (0);
    for (std::vector<BuracoPile*>::iterator p (tablePiles[player & 1].begin ());
-   unsigned int pos (0);
         p != tablePiles[player & 1].end (); ++p) {
       TRACE5 ("Buraco::cardFitsOnPlayedPile (unsigned int, unsigned int) - "
               "Checking pile " << (int)(p - tablePiles[player & 1].begin ()));
@@ -1456,13 +1470,12 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
             bestPile = p - tablePiles[player & 1].begin ();
          }
       }
-            pos = posPile;
    }
 
    if (bestPile != -1U) {
       unsigned int pos (0), move (-1U);
       BuracoPile& pile (*tablePiles[player & 1][bestPile]);
-      unsigned int move (-1U);
+      Check3 (pile.getPosition4Card (card, pos, move));
 
       pile.getPosition4Card (card, pos, move);
       Check3 (pos <= pile.size ());
@@ -1533,23 +1546,18 @@ void Buraco::updateInfo () {
 /// \param card: Card to check
 /// \returns Position where card can be played to, or -1 if card does not fit
 //-----------------------------------------------------------------------------
-/// \returns \c Position where card can be played to, or -1 if card does not
-///     fit
+int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
    Check1 (iPile < tablePiles[currentPlayer () & 1].size ());
    BuracoPile& pile (*tablePiles[currentPlayer () & 1][iPile]);
    Check2 (pile.size ()); Check2 (pile.size () < 7);
 
    // Card played on a joker: Valid is:
    //   - A joker; if there are at least 3 jokers (on table + in hand)
-   unsigned int posJoker (pile.getPosJoker ());
-   unsigned int first (pile.getPosFirst ());
-   unsigned int last (pile.getPosLast ());
-
    //   - Any card, which has a pair (if there's only one joker on the table)
    if (pile.getPosFirst () > 6)
       if (pile.getPosJoker ())
-   if (first > 6)
-      if (posJoker)
+         return isJoker (card) ? 0 : -1;
+      else {
          ICardPile::const_iterator pCard
              (hands[currentPlayer ()].getFittingCard (card, &cardDistance));
          ICardPile::const_iterator pCard (getFittingCard (hands[currentPlayer ()], card));
@@ -1559,8 +1567,37 @@ void Buraco::updateInfo () {
    unsigned int pos, move;
    if (pile.getPosition4Card (card, pos, move)) {
       Check3 (pos <= pile.size ());
-   if (pile.getPosition4Card (card, pos, move))
-      return pos;
+      if ((pile.size () > 1) || isJoker (card))
+      if (pile.getPosLast () || isJoker (card))
+         const CardHPile& hand (hands[currentPlayer ()]);
+         if (!containsNoJoker (hand))
+            return pos;
+
+         CardWidget& pileCard (*pile[pile.getPosFirst ()]);
+         int dist (cardDistance (pileCard, card));
+         Check3 ((dist > -2) && (dist < 2));
+         int cmp (0);
+
+         ICardPile::const_iterator pCard (hand.begin ());
+         do {
+            pCard = hand.getFittingCard (pileCard, pCard, &cardDistance);
+            if (*pCard == &card)
+            pCard = getFittingCard (hand, pileCard, pCard);
+            if (pCard == hand.end ())
+               pCard = getFittingCard (hand, card, ++pCard);
+
+            TRACE8 ("Buraco::cardFitsOnPile (unsigned int, const CardWidget&) const -  "
+                    "Dist: " << dist << "<->" << cardDistance (**pCard, card));
+
+            cmp = dist - cardDistance (**pCard, card);
+            ++pCard;
+         }
+         while ((cmp != -dist) & (cmp != (dist << 1)));
+         return pos;
+         while (cmp ? ((cmp == -dist) || (cmp == (dist << 1))) : false);
+   }
+   return -1;
+}
 
 //----------------------------------------------------------------------------
 /// Sends a move-message to the connected machines
@@ -1651,11 +1688,8 @@ void Buraco::endGame () {
       TRACE5 ("Buraco::endGame () - Points of team " << i << " on table: "
               << sum << '/' << monoPile);
       points[i] = ((points[i] < (reserve[i].size () ? 100 : 300)) ? -sum : sum) - monoPile;
-              << sum);
-      if (points[i] < 200)
-         points[i] = -sum - monoPile;
-      else
-         points[i] = sum - monoPile;
+   }
+      points[i] = ((points[i] < 200) ? -sum : sum) - monoPile;
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       for (std::vector<CardWidget*>::const_iterator c (hands[i].begin ());
            c != hands[i].end (); ++c)
@@ -1756,16 +1790,16 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
                            unsigned int pile) const {
    TRACE7 ("Buraco::canDumpCards (3x unsigned int) - Player "
            << player << " playing " << cards << " cards to " << pile);
-   TRACE7 ("Buraco::canDumpCards (unsigned int, unsigned int, unsigned int) - "
-           "Player " << player << " playing " << cards << " cards to " << pile);
+   Check1 ((pile == -1U) || (tablePiles[player & 1].size () > pile));
+   Check1 ((pile == -1U)
            || ((tablePiles[player & 1][pile]->size () + cards) <= 7));
    Check1 (hands[player].size () >= cards);
    Check1 (cards <= 7);
 
    bool enoughCards ((hands[player].size () > (cards + 1))
 		     || reserve[player & 1].size ());
-   unsigned int cPile (hands[player].size ());
-   return (cPile >= (cards + 2) || (points[player & 1] > 100)
+   return ((hands[player].size () > (cards + 1))
+           || (points[player & 1] > 100)
            || reserve[player & 1].size ()
            || ((pile != -1U)
                && ((tablePiles[player & 1][pile]->size () + cards) >= 7))
@@ -1844,9 +1878,15 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
          TRACE8 ("Buraco::pileHasFittingPair (const ICardPile&, const "
                  "CardWidget*, 2x bool) - " << **p << " differs " << diff);
          if ((((unsigned int)diff) < 4) && !(bCols & (1 << diff))) {
-             if (bCols & (diff ? (0x5 << (diff - 1)) : 0x1))
-                 return true;
-             bCols |= (1 << diff);
+            // The card is valid, if either a card bordering the one the
+            // inspect and this one has been found. Note that for aces the
+            // bordering card must be in the same direction as the card to
+            // to inspect (e.g. K-A-3 is not valid; only Q-K-A!)
+            if ((card.number () == CardWidget::ACE)
+                ? (bCols & (0x1 << (diff ^ 0x1)))
+                : (bCols & (diff ? (0x5 << (diff - 1)) : 0x1)))
+               return true;
+            bCols |= (1 << diff);
          }
       }
       else
