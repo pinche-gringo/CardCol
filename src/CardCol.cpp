@@ -31,8 +31,6 @@
 
 #include <glib.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -51,8 +49,6 @@
 #include "CardCol.h"
 
 const std::string CardgameCollection::NAME_INIFILE = PathSearch::expandNode ("~/.cardgames");
-
-CardgameCollection::games CardgameCollection::oldGame = NONE;
 
 // Pixmap for program
 const char* CardgameCollection::xpmGame[] = {
@@ -297,6 +293,7 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { (initI18n (PACKAGE, LOCALEDIR),
       _("_Game")),            _("<alt>G"), 0,        BRANCH },
     { _("_New"),              _("<ctl>N"), NEW,      ITEM },
+    { _("_End"),              _("<ctl>E"), END,      ITEM },
     { "",                     "",          0,        SEPARATOR },
     { _("E_xit"),             _("<ctl>Q"), EXIT,     ITEM },
     { _("_Options"),          _("<alt>O"), 0,        BRANCH },
@@ -319,7 +316,7 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
 CardgameCollection::CardgameCollection ()
    : XApplication (PACKAGE " - Cardgames V" PRG_RELEASE), status ()
      , cardFaces (USED_CARDS), cards (), pThread (NULL), game (NULL)
-     , typeGame (GROVHULT) {
+     , typeGame (GROVHULT), oldGame (NONE), restart (false) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
@@ -327,8 +324,7 @@ CardgameCollection::CardgameCollection ()
    pMenuNew->set_sensitive (false);
 
    status.show ();
-   Check3 (getClient ());
-   getClient ()->pack_end (status, false);
+   getClient ().pack_end (status, false);
 
    show ();
 
@@ -338,7 +334,9 @@ CardgameCollection::CardgameCollection ()
    TRACE9 ("CardgameCollection::CardgameCollection () - Thread-ID = " << pThread->getID ());
 
    // Create controls
-   addMenus (menuItems + 2, sizeof (menuItems) / sizeof (menuItems[0]) - 2);
+   pMenuEnd = dynamic_cast<MenuItem*> (addMenu (menuItems[2])); Check3 (pMenuEnd);
+   pMenuEnd->set_sensitive (false);
+   addMenus (menuItems + 3, sizeof (menuItems) / sizeof (menuItems[0]) - 3);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -358,20 +356,19 @@ void CardgameCollection::startGame () {
 
    // Check if game has been changed; if so destroy the old one
    if (oldGame != typeGame) {
-      Check3 (getClient ());
       if (game) {
-         getClient ()->remove (*game);
+         getClient ().remove (*game);
          delete game;
       }
 
       oldGame = typeGame;
       switch (typeGame) {
       case GROVHULT:
-         game = new Rovhult (*getClient (), status, cards);
+         game = new TRovhult<CardgameCollection> (*this, &CardgameCollection::gameEvents);
          break;
 
       case GTWOPART:
-         game = new Twopart (*getClient (), status, cards);
+         game = new TTwopart<CardgameCollection> (*this, &CardgameCollection::gameEvents);
          break;
 
       default:
@@ -391,6 +388,7 @@ void CardgameCollection::command (int menu) {
    switch (menu) {
    case NEW:
       if (game && game->isRunning ()) {
+         restart = true;
          XMessageDialog<CardgameCollection>
             ::Show (*this, &CardgameCollection::userWants2End,
                     _("A game is already running. Do you really"
@@ -399,6 +397,15 @@ void CardgameCollection::command (int menu) {
       }
       else
          startGame ();
+      break;
+
+   case END:
+      Check3 (game && game->isRunning ());
+      restart = false;
+      XMessageDialog<CardgameCollection>
+         ::Show (*this, &CardgameCollection::userWants2End,
+                 _("Do you really want to end the game?"),
+                 PACKAGE, XMessageBox::QUESTION | XMessageBox::YESNO);
       break;
 
    case TWOPART:
@@ -521,16 +528,22 @@ void CardgameCollection::changeCards (void* opt) {
 void CardgameCollection::userWants2End (unsigned int input) {
    if (input == XMessageBox::YES) {
       Check3 (game);
+      if (game->isRunning ()) {
+         status.pop (1);
+         status.push (1, _("User canceled"));
 
-      status.pop (1);
-      status.push (1, _("User canceled"));
-
-      if (game->canBeStopped ()) {
-         game->stop ();
-         startGame ();
+         if (game->canBeStopped ()) {
+            game->stop ();
+            if (restart)
+               startGame ();
+         }
+         else {
+            game->end ((typeGame == oldGame) ? restart : false);
+            restart = false;
+         }
       }
       else
-         game->end ();
+         startGame ();
    }
 }
 
@@ -575,6 +588,31 @@ void CardgameCollection::loadCards () {
 
    assert (cardFaces.numberOfCards ());
    pThread = NULL;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Handling of game-events
+//Parameters: status: New status of game
+/*--------------------------------------------------------------------------*/
+void CardgameCollection::gameEvents (unsigned int status) {
+   TRACE1 ("CardgameCollection::gameEvents (unsigned int) const - New status: "
+           << status);
+
+   switch (status) {
+   case Game::PLAYING:
+      Check3 (pMenuEnd);
+      pMenuEnd->set_sensitive (true);
+      break;
+
+   case Game::STOPPED:
+      Check3 (pMenuEnd);
+      pMenuEnd->set_sensitive (false);
+
+      if (restart)
+         startGame ();
+      restart = false;
+      break;
+   }
 }
 
 
