@@ -567,7 +567,7 @@ void Game::handleMessage (unsigned int player, const char* msg) {
    Check2 (!data);
 
    if (ignoreNextMsg) {
-      ignoreNextMsg = false;
+      --ignoreNextMsg;
       return;
    }
 
@@ -635,7 +635,7 @@ bool Game::performCommand (unsigned int player, const char* msg) {
       std::string playTo (command.getNextNode ('='));
       std::string strTarget (command.getNextNode (';'));
 
-      unsigned long target;
+      unsigned long target (-1U);
       if (stringToNumber (target, strTarget.c_str ())
           || (playTo != "Target"))
          return false;
@@ -645,6 +645,7 @@ bool Game::performCommand (unsigned int player, const char* msg) {
       command = cmd;
       unsigned long lCard (0);
       unsigned int card (0);
+      bool startTimer (false);
       while (command.getNextNode (' ').size ()) {
          if (stringToNumber (lCard, command.getActNode ().c_str ()))
             return false;
@@ -652,15 +653,19 @@ bool Game::performCommand (unsigned int player, const char* msg) {
          card = pile.find (static_cast <unsigned int> (lCard));
          Check3 (card < pile.size ());
          if (card != -1U)
-            flipCards2Play (pile, pos1Play = card, pos2Play = card);
+            startTimer = executeRemoteMove (pile, card);
       }
 
-      TRACE9 ("Game::performCommand (unsigned int, const char*) - Get lock");
-      mxSerializeMsgs.lock ();
-      TRACE9 ("Game::performCommand (unsigned int, const char*) - Perform move");
-      Glib::signal_timeout ().connect
-          (bind (slot (*this, &Game::endRemoteMove), actPlayer),
-           ComputerPlayer::TIMEOUT);
+      if (startTimer) {
+         TRACE9 ("Game::performCommand (unsigned int, const char*) - Get lock");
+         mxSerializeMsgs.lock ();
+         TRACE9 ("Game::performCommand (unsigned int, const char*) - Perform move");
+         Glib::signal_timeout ().connect
+             (bind (slot (*this, &Game::endRemoteMove), actPlayer),
+              ComputerPlayer::TIMEOUT);
+      }
+      else
+         makeNextMoves ();
    }
    else if (cmd == "ActPlayer") {
       cmd = command.getNextNode (';');
@@ -690,4 +695,33 @@ bool Game::stringToNumber (unsigned long& number, const char* text) {
    errno = 0;
    number = strtoul (text, &pTail, 0);
    return (errno || (pTail && *pTail));
+}
+
+//----------------------------------------------------------------------------
+/// Executes the remote move locally
+/// \param pile: Pile to move to/from
+/// \param card: Card which to use from pile
+/// \returns bool: True, if the timer to execute the move should be set
+//----------------------------------------------------------------------------
+bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) {
+    flipCards2Play (pile, card, card);
+    if (static_cast<int> (pos2Play) < static_cast<int> (card))
+       pos2Play = card;
+    if (pos1Play > card)
+       pos1Play = card;
+    else
+       --pos1Play;
+
+    TRACE9 ("Game::executeRemoteMove (ICardPile&, unsigned int) - " << pos1Play
+            << " - " << pos2Play);
+    return true;
+}
+
+//----------------------------------------------------------------------------
+/// Returns if the game can be stopped imediately. This is true, if there is no
+/// timer activated.
+/// \returns bool: True, if the game can be stopped imediately
+//----------------------------------------------------------------------------
+bool Game::canBeStopped () const {
+   return !actPlayer || mxSerializeMsgs.trylock ();
 }

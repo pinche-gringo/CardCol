@@ -75,7 +75,7 @@ class Game : public Gtk::Table {
    bool isRunning () const { return statGame >= PLAYING; }
    /// Checks if the game can be stopped at the moment (only when it's the
    /// turn of the human)
-   virtual bool canBeStopped () const { return !actPlayer; }
+   virtual bool canBeStopped () const;
 
    /// Handling the actual game status
    unsigned int gameStatus () const { return statGame; }
@@ -95,6 +95,7 @@ class Game : public Gtk::Table {
 
  protected:
    virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile) = 0;
+   virtual bool executeRemoteMove (ICardPile& pile, unsigned int card);
 
    /// \name Communication helper methods
    //@{
@@ -147,7 +148,7 @@ class Game : public Gtk::Table {
    unsigned int pos2Play;                    ///< Upper border of cards to play
    unsigned int pos1Play;                    ///< Lower border of cards to play
 
-   bool ignoreNextMsg;
+   unsigned int ignoreNextMsg;
 
  private:
    bool enableActWonCards ();
