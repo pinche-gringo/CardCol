@@ -51,7 +51,7 @@ class ICardPile {
       newCard.setVisible (visible);
       setTopCard (newCard); }
 
-   CardWidget& getTopCard () { return *cards[cards.size () - 1]; }
+   CardWidget& getTopCard () const { return *cards[cards.size () - 1]; }
    virtual CardWidget& removeTopCard ();
 
    // Methods to random access pile
