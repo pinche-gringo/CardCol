@@ -667,6 +667,10 @@ const IVIOApplication::longOptions CardgameAppl::lo[] = {
    { "listen-at", 'l' },
    { "connect-to", 'c' },
    { "version", 'V' },
+#ifdef SAVE_GAME
+   { "save-game", 'S' },
+   { "load-game", 'L' },
+#endif
    { NULL, '\0' } };
 
 
@@ -819,8 +823,28 @@ void CardgameCollection::startGame () {
    name += " - " PACKAGE " V" PRG_RELEASE;
    set_title (name);
 
-   if (cmgr.getMode () != ConnectionMgr::CLIENT)
+#if SAVE_GAME
+   if (options.gameFile.size () && options.load) {
+      std::ifstream input (options.gameFile.c_str ());
+      char buffer[1024];
+
+      input.getline (buffer, sizeof (buffer));
+      game->setCardOrder (buffer);
+   }
+#endif
+
+   if (cmgr.getMode () != ConnectionMgr::CLIENT) {
       game->start ();
+
+#if SAVE_GAME
+      if (options.gameFile.size () && !options.load) {
+         std::ofstream output (options.gameFile.c_str ());
+         output << game->getCardOrder ();
+      }
+#endif
+
+      game->setCardOrder ("");
+   }
    else
       game->setGameStatus (Game::NONE);
 }
@@ -1199,13 +1223,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
 
       restart = false;
       break;
-
-   case Game::TERMINATED:
-      options.type = CardgameAppl::convertToGameType (game->Game::name ());
-      Check3 (options.type != NONE);
-      startGame ();
-      break;
-   }
+   } 
 }
 
 //----------------------------------------------------------------------------
@@ -1440,6 +1458,10 @@ void CardgameAppl::showHelp () const {
              << "  -d, --dir-help ..... " << _("[DIR] Directory to search for help\n")
              << "  -l, --listen-at .... " << _("[PORT] Awaits connections on port PORT\n")
              << "  -l, --connect-to ... " << _("[SERVER[:PORT]] Connects to SERVER:PORT\n")
+#ifdef SAVE_GAME
+             << "  -S, --save-game .... " << _("[FILE] Saves game into FILE\n")
+             << "  -L, --load-game .... " << _("[FILE] Load game from FILE\n")
+#endif
              << "  -V, --version ...... " << _("Output version information and exit\n")
              << "  -h, -?, --help ..... " << _("Displays this help and exit\n\n")
 
@@ -1537,6 +1559,29 @@ bool CardgameAppl::handleOption (const char option) {
       std::cout << description () << '\n';
       exit (0);
       break;
+
+#ifdef SAVE_GAME
+   case 'L':
+   case 'S':
+      const char* file (getOptionValue ());
+      if (file) {
+         if (options.gameFile.size ()) {
+            std::string info (_("-warning: Option `%1' has already been specified!"
+                                "\nOverwriting old setting\n"));
+            info.replace (info.find ("%1"), 2, 1, (options.load ? 'L' : 'S'));
+            std::cerr << PACKAGE  << info;
+         }
+
+         options.gameFile = file;
+         options.load = (option == 'L');
+      }
+      else {
+         std::string info (_("-warning: No file specified! Ignoring option `%1'\n"));
+         info.replace (info.find ("%1"), 2, 1, option);
+         std::cerr << PACKAGE << info;
+      }
+      break;
+#endif
    }
 
    return true;
