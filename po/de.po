@@ -117,7 +117,6 @@ msgid "Sort by color"
 msgstr "Nach Farben ordnen"
 
 #: Common/PlayerDlg.cpp:58
-#, fuzzy, ycp-format
 msgid "Player %1:"
 msgstr "Spieler %1:"
 
@@ -243,7 +242,7 @@ msgid ""
 "\n"
 "Compiled on %1 at %2"
 msgstr ""
-"Anticopyright (A) 2002 Markus Schwab\n"
+"Anticopyright (A) 2002, 2003 Markus Schwab\n"
 "e-Mail: g17m0@lycos.com\n"
 "\n"
 "Übersetzt am %1 um %2"
