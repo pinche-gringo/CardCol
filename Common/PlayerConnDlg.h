@@ -39,12 +39,16 @@ class PlayerConnectDlg : public ConnectDlg {
                                 ConnectionMgr& cmgr);
    static unsigned int perform (std::vector<Player*>& player, unsigned int port,
                                 ConnectionMgr& cmgr);
+   static unsigned int perform (std::vector<Player*>& player, ConnectionMgr& cmgr,
+                                const Glib::ustring& listenAt);
+   static unsigned int perform (std::vector<Player*>& player, ConnectionMgr& cmgr,
+                                const Glib::ustring& host, const Glib::ustring& hostPort);
 
+ protected:
    /// \name Connection management
    virtual void connect (const Glib::ustring& target, unsigned int port);
    virtual Socket* addClient (int socket);
 
- protected:
    Gtk::Label* connected;
    Gtk::Label* lblConnected;
 

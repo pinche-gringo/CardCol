@@ -27,6 +27,7 @@
 
 #include <sstream>
 
+#include <gtkmm/entry.h>
 #include <gtkmm/label.h>
 #include <gtkmm/table.h>
 #include <gtkmm/messagedialog.h>
@@ -107,6 +108,48 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, const Glib
    unsigned int pos (0);
    PlayerConnectDlg* dlg (new PlayerConnectDlg (player, defPort, connMgr));
    dlg->run ();
+   pos = dlg->posPlayer;
+   delete dlg;
+   return pos;
+}
+
+//----------------------------------------------------------------------------
+/// Performs the dialog (modal)
+/// \param player: The player
+/// \param connMgr: Connection manager; holding the connections to use
+/// \param listenAt: Port the server should listen at
+/// \returns <tt>unsigned int</tt>: The number the player has for the server
+//----------------------------------------------------------------------------
+unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
+                                        ConnectionMgr& cmgr, const Glib::ustring& listenAt) {
+   unsigned int pos (0);
+   PlayerConnectDlg* dlg (new PlayerConnectDlg (player, "0", cmgr));
+   Check3 (dlg->pPort); Check3 (dlg->pWait);
+   dlg->pPort->set_text (listenAt);
+   dlg->pWait->clicked ();
+   dlg->run ();
+   pos = dlg->posPlayer;
+   delete dlg;
+   return pos;
+}
+
+//----------------------------------------------------------------------------
+/// Performs the dialog (modal)
+/// \param player: The player
+/// \param connMgr: Connection manager; holding the connections to use
+/// \param host: Host the client should connect too
+/// \param hostPort: Port the host is listening at
+/// \returns <tt>unsigned int</tt>: The number the player has for the server
+//----------------------------------------------------------------------------
+unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
+                                        ConnectionMgr& cmgr, const Glib::ustring& host,
+                                        const Glib::ustring& hostPort) {
+   unsigned int pos (0);
+   PlayerConnectDlg* dlg (new PlayerConnectDlg (player, "0", cmgr));
+   Check3 (dlg->pPort); Check3 (dlg->pConnect); Check3 (dlg->pTarget);
+   dlg->pTarget->set_text (host);
+   dlg->pPort->set_text (hostPort);
+   dlg->pConnect->clicked ();
    pos = dlg->posPlayer;
    delete dlg;
    return pos;
