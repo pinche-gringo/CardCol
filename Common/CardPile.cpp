@@ -25,8 +25,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#define CHECK 9
-#define TRACELEVEL 8
 #include <Trace_.h>
 
 #include "CardPile.h"
@@ -85,9 +83,8 @@ CardWidget& ICardPile::removeTopCard () {
    TRACE5 ("ICardPile::removeTopCard () - Card " << card
            << " -> new size: " << size ());
 
-   if (size () && (style > NORMAL))
-      CardWidget& card (getTopCard ());
-   resize (size () - 1, NORMAL);
+   if (style > NORMAL)
+      resize (size () - 1, NORMAL);
    return card;
 }
 
@@ -167,7 +164,7 @@ CardWidget* ICardPile::get (unsigned int id) const {
 //            pos: Position of new card
 /*--------------------------------------------------------------------------*/
 void ICardPile::insert (CardWidget& card, unsigned int pos) {
-   TRACE5 ("ICardPile::insertCard (CardWidget, unsigned int&) - Card " << card
+   TRACE5 ("ICardPile::insert (CardWidget, unsigned int&) - Card " << card
            << " at " << pos);
    Check3 (pos <= size ());
 
@@ -178,7 +175,7 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
 
    std::vector<CardWidget*>::insert (begin () + pos, &card);
 
-   if ((style > NORMAL) && size () > 1)         // Cards to display compressed?
+   if (style > NORMAL)                          // Cards to display compressed?
       resize ((pos == (size () - 1)) ? pos - 1 : pos, style);
 }
 
@@ -218,7 +215,7 @@ CardWidget& ICardPile::remove (CardWidget& card) {
    // Check if we have to resize a card
    if (style > NORMAL)
       // If last card was removed: Resize new last card (if any)
-      i == end () ? resize (i - begin () - 1, NORMAL) : resize (card, NORMAL);
+      (i == end ()) ? resize (i - begin () - 1, NORMAL) : resize (card, NORMAL);
 
    return card;
 }
@@ -240,7 +237,7 @@ CardWidget& ICardPile::remove (unsigned int pos) {
    // Check if we have to resize a card
    if (style > NORMAL)
       // If last card was removed: Resize new last card (if any)
-      i == end () ? resize (size () - 1, NORMAL) : resize (*pTemp, NORMAL);
+      (i == end ()) ? resize (size () - 1, NORMAL) : resize (*pTemp, NORMAL);
 
    return *pTemp;
 }
