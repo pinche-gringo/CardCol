@@ -78,6 +78,7 @@ class RovhultAppl : public XApplication {
    int  nextAvailablePlayer (unsigned int actPlayer) const;
    int  makeComputerMove ();
    void makeComputerMoves () {
+      TRACE9 ("RovhultAppl::makeComputerMoves () - *** Start timer ***");
       Gtk::Main::timeout.connect (slot (this, &RovhultAppl::makeComputerMove), 1000);
       disableLastPlayer (); }
    void enablePlayer (unsigned int player);
