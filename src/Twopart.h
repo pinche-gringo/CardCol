@@ -56,7 +56,11 @@ class Twopart : public XApplication {
    void movePlayedCardsToPlayer (unsigned int nrLooser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;
    void enablePlayer (unsigned int player);
+   int  findNextPlayer (unsigned int player);
    void disableLastPlayer ();
+   void removePlayer (unsigned int player) { bfPlayers &= ~(1 << player); }
+   void addPlayer (unsigned int player) { bfPlayers |= 1 << player; }
+   unsigned int removePlayersWithoutCards ();
    void cleanTable ();
    void dealCards ();
    void fillStaple ();
@@ -68,10 +72,7 @@ class Twopart : public XApplication {
       TRACE9 ("Twopart::makeComputerMoves () - *** Start timer ***");
       Gtk::Main::timeout.connect (slot (this, &Twopart::makeComputerMove), 100); }
 
-   unsigned int endRound ();
-
-   bool cardValid (CardWidget::NUMBERS nr);
-   void executeMove (unsigned int player, CardWidget::NUMBERS nr);
+   int endRound ();
 
    void loadCards ();
 
@@ -95,6 +96,7 @@ class Twopart : public XApplication {
 
    CardImages cardFaces;
    CardSet cards;
+   CardWidget* pTrump;
 
    CardHInfoPile played;
    CardVInfoPile staple;                                     // Cards on staple
