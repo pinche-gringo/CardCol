@@ -19,13 +19,14 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//DE">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//DE"
+        "http://www.w3.org/TR/html4/strict.dtd">
 
 <html>
   <head>
     <title>R&oslash;vhult - Ein international bekanntes Spiel (alias Arsehole, ...)</title>
-    <meta name="description" content="Documentation of the R&oslash;vhult cardgame">
-    <meta name="keywords" content="Documentation, Docu, Rovhult, R&oslash;vhult, game, card, cardgame">
+    <meta name="description" content="Dokumentation des R&oslash;vhult Kartenspiels">
+    <meta name="keywords" content="Dokumentation, Doku, Rovhult, R&oslash;vhult, Spiel, Karten, Kartenspiel">
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2002-07-20">

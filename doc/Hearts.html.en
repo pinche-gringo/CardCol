@@ -19,7 +19,8 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
 
 <html>
   <head>
@@ -97,7 +98,7 @@
         </td>
         <td><a href="Buraco.html.en">Previous</a><br>(Buraco)</td>
         <td><a href="CardCol.html.en">Cardgames</a></td>
-        <td><a href="Røvhult.html.en">Next</a><br>(Røvhult)</td>
+        <td><a href="Røvhult.html.en">Next</a><br>(R&oslash;vhult)</td>
       </tr>
     </table>
   </body>

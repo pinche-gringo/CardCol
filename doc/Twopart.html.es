@@ -19,7 +19,8 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//ES">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//ES"
+        "http://www.w3.org/TR/html4/strict.dtd">
 
 <html>
   <head>
@@ -126,7 +127,7 @@
             <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
           </address>
         </td>
-        <td><a href="Røvhult.html.es">Anterior</a><br>(Røvhult)</td>
+        <td><a href="Røvhult.html.es">Anterior</a><br>(R&oslash;vhult)</td>
         <td><a href="CardCol.html.es">Contenido</a></td>
         <td>Next</td>
       </tr>
