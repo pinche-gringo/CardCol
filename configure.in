@@ -14,7 +14,7 @@ AC_SUBST(VERSION)
 AC_SUBST(RELEASE)
 
 LIBVERSION=0:1:0
-LIBRELEASE=0:1:0
+LIBRELEASE=0.2.0
 AC_SUBST(LIBVERSION)
 AC_SUBST(LIBRELEASE)
 
@@ -58,7 +58,7 @@ dnl Checks for library functions.
 
 dnl Enable special features
 AC_ARG_ENABLE(debug,
-              AC_HELP_STRING([--enable-debug\[=level\]],
+              AC_HELP_STRING([[[[[--enable-debug[=LEVEL]]]]]],
                              [Enables additional traces]),
               if test "$enableval" != "no"; then
                   test "$enableval" == "yes" && enableval=0
@@ -66,7 +66,7 @@ AC_ARG_ENABLE(debug,
               else
                   CXXFLAGS="-O2 -UTRACELEVEL"; fi)
 AC_ARG_ENABLE(checks,
-              AC_HELP_STRING([--enable-checks=\[level\]],
+              AC_HELP_STRING([[[[[--enable-checks[=LEVEL]]]]]],
                              [Enables additional (internal) checks]),
               if test "$enableval" != "no"; then
                   test "$enableval" == "yes" && enableval=0
