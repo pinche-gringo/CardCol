@@ -40,7 +40,7 @@ class SgtMayor : public Game {
    virtual void start ();
    virtual void clean ();
    virtual void playOpen (bool open);
-   virtual const char* name () { return "Sergeant Mayor"; }
+   virtual const char* name () { return "Sgt. Mayor"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
    virtual bool handleMessage (unsigned int player, const std::string& message) throw (std::string);
@@ -55,14 +55,19 @@ class SgtMayor : public Game {
 
    //@Section Event handling
    void cardSelected (unsigned int iCard);
+   void cardExchange (unsigned int iCard);
    void cardColourSelect (unsigned int iCard);
+   bool unmark (const CardWidget* card);
 
    //@Section Virtual methods
    virtual int makeMove (unsigned int player);
    virtual bool enableHuman ();
 
    //@Section Helper methods
+   void exchangeCards (unsigned int playerBad, unsigned int posBad, unsigned int playerGood);
+   void exchangeCards (unsigned int playerBad, unsigned int playerGood);
    void showTrump (CardWidget::COLOURS);
+   void makeExchange ();
    void startPlaying ();
    unsigned int playCard (unsigned int player, unsigned int card);
    static unsigned int calcNextPlayer (unsigned int player) {
@@ -89,6 +94,7 @@ class SgtMayor : public Game {
    unsigned int startPlayer;
    std::bitset<52> playedCards;
    unsigned int playedColours[4];
+   int diffTicks[NUM_PLAYERS];
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
