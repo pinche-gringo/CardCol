@@ -83,5 +83,8 @@ void CardWidget::setVisible (bool visible) {
 ostream& operator<< (ostream& out, const CardWidget& card) {
    // Letters describing the colors (clubs, spades, hearts, diamons)
    static char* colors = _("CSHD");
-   out << colors[card.color ()] << (card.number () + 2);
+   static char* specialCards = _("JQKA");
+   out << colors[card.color ()]
+       << (char)((card.number () > CardWidget::TEN)
+                 ? specialCards[card.number ()  - CardWidget::JACK] : card.number () + '2');
 }
