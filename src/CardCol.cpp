@@ -1085,14 +1085,15 @@ void CardgameCollection::gameEvents (unsigned int status) {
 /*--------------------------------------------------------------------------*/
 void CardgameAppl::showHelp () const {
    std::cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
-             << _(" [OPTIONS]\n\n"
-                  "  -g, --game ....... [GAME] Select game to start (default: Røvhult)\n"
-                  "  -f, --file ....... [FILE] Use file as INI file\n"
-                  "  -b, --browser .... [NAME] Browser to use to display the help\n"
-                  "  -d, --help-dir ... [DIR] Directory to search for help\n"
-                  "  -V, --version .... Output version information and exit\n"
-                  "  -h, -?, --help ... Displays this help and exit\n\n"
-                  "Valid values for GAME are Rovhult, Røvhult, Twopart, Hearts and Buracno or the\n"
+             << _(" [OPTIONS]\n\n")
+             << "  -g, --game ....... " << _("[GAME] Select game to start (default: Røvhult)\n")
+             << "  -f, --file ....... " << _("[FILE] Use file as INI file\n")
+             << "  -b, --browser .... " << _("[NAME] Browser to use to display the help\n")
+             << "  -d, --help-dir ... " << _("[DIR] Directory to search for help\n")
+             << "  -V, --version .... " << _("Output version information and exit\n")
+             << "  -h, -?, --help ... " << _("Displays this help and exit\n\n")
+
+             << _("Valid values for GAME are Rovhult, Røvhult, Twopart, Hearts and Buracno or the\n"
                   "numbers 0 - 3 (corresponding to the games in the above order).\n\n"
                   "The INI file can have the following entries:")
              << ("  [Game]\n"
@@ -1202,10 +1203,10 @@ void CardgameAppl::readINIFile (const char* pFile) {
    TRACE5 ("CardgameAppl::readINIFile (const char*) - " << pFile);
    Check3 (pFile);
 
-   options.names.push_back ("Human");
-   options.names.push_back ("Player 1");
-   options.names.push_back ("Player 2");
-   options.names.push_back ("Player 3");
+   options.names.push_back (_("Human"));
+   options.names.push_back (_("Player 1"));
+   options.names.push_back (_("Player 2"));
+   options.names.push_back (_("Player 3"));
 
    options.pNameINIFile = pFile;
 
