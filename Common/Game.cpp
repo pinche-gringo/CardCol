@@ -38,6 +38,8 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/Socket.h>
@@ -158,7 +160,9 @@ void Game::disableHuman () {
 bool Game::randomizeCardsToPile (ICardPile& pile) const {
    // Randomize and put cards onto staple
    YGP::ConnectionMgr& cmgr (getConnectionMgr ());
-   if (data && *data) {
+   
+   if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT) {
+      Check3 (data && *data);
       std::string input (data);
 
       YGP::AttributeParse ap;
@@ -188,9 +192,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
                     << "] = " << pos);
             cards.set (i, pos);
          }
-
-      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-          writeOK (*cmgr.getSocket ());
+         writeOK (*cmgr.getSocket ());
       }
       catch (std::string& error) {
          writeError (*cmgr.getSocket (), 99, error);
@@ -211,7 +213,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
 
       const_cast<Game*> (this)->cardOrder = msg.str ();
 
-      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
+      if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
          broadcastMessage (cardOrder);
    }
 
