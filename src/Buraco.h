@@ -55,6 +55,8 @@ class Buraco : public Game {
 
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
+   virtual bool handleMessage (unsigned int player, const char* msg);
+
  private:
    Buraco (const Buraco& other);
    const Buraco& operator= (const Buraco& other);
@@ -67,6 +69,8 @@ class Buraco : public Game {
    virtual void disableHuman ();
 
    virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target);
+   virtual unsigned int getActTarget () const;
 
    //@Section Event handling
    void cardSelected (unsigned int iCard);
@@ -89,6 +93,13 @@ class Buraco : public Game {
    bool canGetRidOfCards (unsigned int player);
    bool canDumpCards (unsigned int player, unsigned int cards,
                       unsigned int pile = -1U) const;
+
+   unsigned int sortColourSerie (ICardPile& playerPile,
+                                 std::map<unsigned int, unsigned int>& aPos,
+                                 std::vector<unsigned int>& aOrder);
+   unsigned int getSeries (ICardPile& playerPile, CardWidget& card,
+                           std::map<unsigned int, unsigned int>& aPos,
+                           std::vector<unsigned int>& aOrder);
    static ICardPile::const_iterator getFittingCard (const ICardPile& pile,
                                                     const CardWidget& card) {
       return getFittingCard (pile, card, pile.begin ()); }
@@ -102,11 +113,12 @@ class Buraco : public Game {
    static int cardDistance (const CardWidget& a, const CardWidget& b,
                             bool aceIsOne = true);
    void makeTeamNames (std::vector<Player*>& names) const;
+   void Buraco::setStartPlayer ();
 
    //@Section to handle piles on table
    CardVPile& makeNewPile (unsigned int team);
    unsigned int cardFitsOnPlayedPile (unsigned int player, unsigned int card);
-   int  cardFitsOnPile (ICardPile& pile, const CardWidget& card) const;
+   int  cardFitsOnPile (unsigned int pile, const CardWidget& card) const;
    void removeCerrado (unsigned int player, CardVPile& pile);
    void cleanCerrado (unsigned int player);
    void updateInfo ();

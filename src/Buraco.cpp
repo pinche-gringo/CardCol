@@ -276,43 +276,59 @@ int Buraco::makeMove (unsigned int player) {
 
       if (gStatus.startGame
           ? (isJoker (dumpedCard)
-      if (gStatus.startGame) {
-         gStatus.startGame = 0;
-         // Take dumped at start of game, if its a joker or one has a
-         // matching card
-         Check2 (dumped.size () == 1);
-         if (isJoker (dumpedCard)
+             || playerPile.getFittingCard (dumpedCard, &cardDistance) != playerPile.end ())
+          : ((!isJoker (dumpedCard))
              || getFittingCard (playerPile, dumpedCard) != playerPile.end ())
-            playerPile.insertSorted (dumped.removeTopCard (), compByNumberWithJokers);
-      }
-      else
-         // Check if there are equal cards as the last dumped one
-         if (!isJoker (dumpedCard)
+          : (!isJoker (dumpedCard)
                  || reserve[player & 1].size ()
              && ((points[player & 1] > 100) || !reserve[player & 1].empty ()
-                 || (dumped.size () + playerPile.size () > 3))) {
+                 || (dumped.size () + playerPile.size () > 3)))) {
+         if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+            msg << "Play=" << dumpedCard.id () << ";Target=3";
+
+            if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+               ignoreNextMsg = true;
+            if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+         }
+
+         dumpedCard.show ();
+         playerPile.insertSorted (dumped.removeTopCard (), compByNumberWithJokers);
          movePile (playerPile, dumped);
          playerPile.sort (compByNumberWithJokers);
             std::map<unsigned int, unsigned int> aPos;
-         std::map<unsigned int, unsigned int> aPos;
-         std::vector<unsigned int> aOrder;
-         unsigned int nrs (getSeries (playerPile, dumpedCard, aPos, aOrder));
-         if (nrs < aPos.size ())
-            pos1Play = sortColourSerie (playerPile, aPos, aOrder);
-         else
-            pos1Play = playerPile.findByNr (dumpedCard);
+            std::vector<unsigned int> aOrder;
+            unsigned int nrs (playerPile.getSeries (dumpedCard, aPos, aOrder,
+                                                    &cardDistance));
+            unsigned int nrs (getSeries (playerPile, dumpedCard, aPos, aOrder));
+                           playerPile.sortColourSerie (aPos, aOrder))
+                        ? sortColourSerie (playerPile, aPos, aOrder)
+                        : playerPile.findByNr (dumpedCard));
 
-         CardVPile& pile (makeNewPile (player & 1));
-         flipCards2Play (playerPile, pos1Play, pos2Play = pos1Play + nrs - 1);
-         return (tablePiles[player & 1].size () - 1) << 16;
+            target = (tablePiles[player & 1].size () - 1) << 16;
+            CardVPile& pile (makeNewPile (player & 1));
+      }
+      else {
+
+         gStatus.startGame = 0;
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
             // Send played card to all clients (if any)
+         if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+            msg << "Play=" << staple.getTopCard ().id () << ";Target=2";
+
+            if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+               ignoreNextMsg = true;
+            if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+         }
+
+         dumpedCard.show ();
+         playerPile.insertSorted (staple.removeTopCard (), compByNumberWithJokers);
       }
 
       gStatus.startGame = 0;
    if (target == -1U)
       target = executeMove (player);
-   target = executeMove (player);
+   flipCards2Play (playerPile, pos1Play, pos2Play);
+   return target;
 }
 
 //-----------------------------------------------------------------------------
@@ -441,9 +457,8 @@ int Buraco::executeMove (unsigned int player) {
    Check3 (i < playerPile.size ());
    pos1Play = pos2Play = i;
    return 0xffff0000;
-   pos1Play = i;
-   pos2Play = i;
-   return 0xffff << 16;
+}
+
 //-----------------------------------------------------------------------------
 /// Starts the game by dealing the cards
 //----------------------------------------------------------------------------
@@ -776,6 +791,7 @@ void Buraco::cardSelected (unsigned int iCard) {
 
    gStatus.startTurn = 1;
    gStatus.startGame = 0;
+   gStatus.startTurn = gStatus.startGame = 0;
    makeNextMoves ();
 }
 
@@ -885,7 +901,7 @@ void Buraco::dumpedSelected () {
    }
    else {
       Check3 (pileHasFittingPair (hands[player], dumped.getTopCard ()));
-      CardVPile& pile (makeNewPile (player));                // Create new pile
+      CardVPile& pile (makeNewPile (player & 1));            // Create new pile
       pile.setTopCard (dumped.removeTopCard ());         // with picked up card
 
       while (dumped.size ())
@@ -1959,18 +1975,21 @@ ICardPile& Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
    Check1 (player < NUM_PLAYERS);
    Check1 ((pile < 4) || (pile >= 100));
          pile -= 100;
-      pile -= 100;
-      if (((pile >> 16) == 0xffff) || ((pile >> 16) == tablePiles[player & 1].size ())) {
-         TRACE8 ("Buraco::getPileOfPlayer (unsigned int, unsigned int) - Creating pile");
-         makeNewPile (player & 1);
-         target = (tablePiles[player & 1].size () - 1 << 16) + (pile & 0xffff);
-      }
-      else
-         target = pile;
-      return hands[player];
+       if (pile != 0xffff0000) {
+          pile -= 100;
+          if ((pile >> 16) == tablePiles[player & 1].size ()) {
+             TRACE8 ("Buraco::getPileOfPlayer (unsigned int, unsigned int) - Creating pile");
+             makeNewPile (player & 1);
+          }
+       }
+       target = pile;
+       return hands[player];
             ? static_cast<ICardPile&> (staple)
-   return ((pile <= 1) ? static_cast<ICardPile&> (hands[player])
-           : static_cast<ICardPile&> (((pile == 2) ? staple : dumped)));
+   return ((pile == 2)
+           ? static_cast<ICardPile&> (staple)
+           : ((pile == 3)
+              ? static_cast<ICardPile&> (dumped)
+              : static_cast<ICardPile&> (hands[player])));
 //----------------------------------------------------------------------------
 /// Handles the messages the server might send for the Buraco cardgame
 /// \param player: ID of the player sending the message
@@ -2033,19 +2052,13 @@ bool Buraco::handleMessage (unsigned int player, const char* message) {
 bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) {
    TRACE8 ("Buraco::executeRemoteMove (ICardPile&, unsigned int) - " << dest
            << "; Target: " << target);
-   TRACE8 ("Buraco::executeRemoteMove (ICardPile&, unsigned int) - " << dest);
+   Check1 ((dest < 4) || (dest >= 100));
+   Check2 (pos1Play != -1U);
    Check2 (pos2Play != -1U);
 
    switch (dest) {
    case 1:
       target = 0xffff0000;
-   case 0:
-      if (target != 0xffff0000)
-         if (((target & 0xffff) >= hands[currentPlayer ()].size ())
-             || (target >> 16) >= tablePiles[currentPlayer () & 1].size ())
-            throw std::string ("Invalid target specification!");
-      break;
-
       gStatus.startGame = gStatus.startTurn = 0;
       break;
 
@@ -2053,13 +2066,25 @@ bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) {
       Check3 (staple.size ());
       pos1Play = pos2Play = -1U;
       doStapleSelected ();
+      return false;
 
    case 3:
       Check3 (dumped.size ());
       pos1Play = pos2Play = -1U;
       doDumpedSelected ();
+      return false;
 
    default:
+      if (dest != 0xffff0000) {
+         dest -= 100;
+         if (((dest >> 16) >= tablePiles[currentPlayer () & 1].size ())
+             || (tablePiles[currentPlayer () & 1][dest >> 16]->size ()
+                 < (dest & 0xffff)))
+            throw std::string ("Invalid target specification!");
+
+	 Check3 (pos1Play != -1U); Check3 (pos2Play != -1U);
+   }
+
    return Game::executeRemoteMove (pile, dest);
 }
 
@@ -2068,5 +2093,5 @@ bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) {
 /// \returns unsigned int: ID of the target
 //----------------------------------------------------------------------------
 unsigned int Buraco::getActTarget () const {
-   return target;
+   return (target == 0xffff0000) ? 0xffff0000 : (target + 100);
 }
