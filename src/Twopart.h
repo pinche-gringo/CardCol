@@ -25,10 +25,12 @@
 #include <gtk--/statusbar.h>
 
 #include <Thread.h>
+#include <PathSrch.h>
 
 #include <CardSet.h>
 #include <CardPile.h>
 #include <CardImgs.h>
+#include <DeckSelect.h>
 
 #include <XApplication.h>
 
@@ -42,7 +44,7 @@ class Twopart : public XApplication {
 
  private:
    // IDs for menus
-   enum { NEW, END, EXIT, DEBUG, ABOUT };
+   enum { NEW, END, EXIT, DEBUG, CHGDECKS, SAVESET, ABOUT };
 
    // Status of game
    enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, PLAYING2 };
@@ -56,6 +58,7 @@ class Twopart : public XApplication {
    virtual void command (int menu);
    void cardSelected (unsigned int player, unsigned int iCard);
    void playedSelected (unsigned int player);
+   void changeDecks (ICarddeckSelectDlg::commands cmd);
 
    // Helper functions
    void executeMove (unsigned int player, unsigned int iCard);
@@ -110,6 +113,7 @@ class Twopart : public XApplication {
    static bool compByColorAccTrumps (const CardWidget* a, const CardWidget* b);
 
    void loadCards ();
+   void changeCards (void* opt);
 
    static XApplication::MenuEntry Twopart::menuItems[];
 
@@ -156,6 +160,13 @@ class Twopart : public XApplication {
 
    Widget* pMenuNew;
    Widget* pMenuEnd;
+
+   const ICarddeckSelectDlg* dlgChgDecks;
+
+   std::string pathDeck;
+   std::string pathBack;
+
+   static const std::string NAME_INIFILE;
 
    static const unsigned int USED_CARDS = 52;
 

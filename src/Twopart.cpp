@@ -33,18 +33,21 @@
 
 #include <glib.h>
 
-#define CHECK 8
-#define TRACELEVEL 8
+#include <fstream>
+
 #include <Check.h>
 #include <Trace_.h>
 
 #include <XAbout.h>
+#include <INIFile.h>
 #include <XMessageBox.h>
 #include <Cardset-config.h>
 
 #include <CardWidget.h>
 #include "Twopart.h"
 
+
+const std::string Twopart::NAME_INIFILE = PathSearch::expandNode ("~/.cardgames");
 
 const unsigned int Twopart::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
 const unsigned int Twopart::ROWS_PLAYER[NUM_PLAYERS] = { 4,  7, 8, 7 };
@@ -292,18 +295,19 @@ const char* Twopart::xpmAuthor[] = {
 // With a very ugly trick initialize I18n before the first use of gettext)
 XApplication::MenuEntry Twopart::menuItems[] = {
     { (initI18n (PACKAGE, LOCALEDIR),
-      _("_Game")),        _("<alt>G"), 0,        BRANCH },
-    { _("_New"),          _("<ctl>N"), NEW,      ITEM },
-    { _("_End"),          _("<ctl>E"), END,      ITEM },
-    { "",                 "",          0,        SEPARATOR },
-    { _("E_xit"),         _("<ctl>Q"), EXIT,     ITEM },
-    { _("_Options"),      _("<alt>O"), 0,        BRANCH },
-    { _("_Change decks"), _("<ctl>C"), CHGDECKS, ITEM },
+      _("_Game")),            _("<alt>G"), 0,        BRANCH },
+    { _("_New"),              _("<ctl>N"), NEW,      ITEM },
+    { _("_End"),              _("<ctl>E"), END,      ITEM },
+    { "",                     "",          0,        SEPARATOR },
+    { _("E_xit"),             _("<ctl>Q"), EXIT,     ITEM },
+    { _("_Options"),          _("<alt>O"), 0,        BRANCH },
+    { _("_Change decks ..."), _("<ctl>C"), CHGDECKS, ITEM },
+    { _("_Save settings"),    _("<ctl>S"), SAVESET,  ITEM },
 #if TRACELEVEL > 0
-    { _("_Debug"),        _("<ctl>D"), DEBUG,    CHECKITEM },
+    { _("_Debug"),            _("<ctl>D"), DEBUG,    CHECKITEM },
 #endif
-    { _("_Help"),         _("<alt>H"), 0,        LASTBRANCH },
-    { _("_About..."),     _("<ctl>A"), ABOUT,    ITEM } };
+    { _("_Help"),             _("<alt>H"), 0,        LASTBRANCH },
+    { _("_About..."),         _("<ctl>A"), ABOUT,    ITEM } };
 
 
 /*--------------------------------------------------------------------------*/
@@ -441,6 +445,14 @@ void Twopart::command (int menu) {
       dlgChgDecks = CarddeckSelectDlg<Twopart>::create (*this, &Twopart::changeDecks);
       break;
 
+   case SAVESET: {
+      TRACE2 ("Twopart::command () - Save file " << NAME_INIFILE);
+      ofstream inifile (NAME_INIFILE.c_str ());
+      
+      inifile << "[Decks]\nFront=" << pathDeck << "\nBack=" << pathBack << '\n';
+      break;
+      }
+
 #if TRACELEVEL > 0
    case DEBUG: {
       ICardPile::ShowOpt show (players[0].won.getShowOption () == ICardPile::SHOWFACE
@@ -468,6 +480,32 @@ void Twopart::command (int menu) {
 void Twopart::changeDecks (ICarddeckSelectDlg::commands cmd) {
    TRACE2 ("Twopart::changeDecks (ICarddeckSelectDlg::commands) - Command "
            << cmd);
+   Check3 (dlgChgDecks);
+
+   if (cmd != ICarddeckSelectDlg::CANCEL) {
+      std::string deck, back;
+      dlgChgDecks->getSelection (deck, back);
+      TRACE3 ("Twopart::changeDecks (ICarddeckSelectDlg::commands) - Use "
+              << deck << " and " << back);
+
+      unsigned int opt (0);
+      if (deck != pathDeck) {
+         pathDeck = deck;
+         opt |= 1;
+      }
+      if (back != pathBack) {
+         pathBack = back;
+         opt |= 2;
+      }
+      
+      if (opt) {
+         pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&Twopart::changeCards,
+                                     (void*)opt);
+         TRACE9 ("Twopart::Twopart () - Thread-ID = " << pThread->getID ());
+      }
+   }
+   else
+      dlgChgDecks = NULL;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -766,16 +804,20 @@ int Twopart::makeNextMove () {
       pos2Play = findPos2Play (actPlayer);
       if (pos2Play != -1) {
          unsigned int pos (pos2Play);
-         // Flip all cards
-         do {
+         // Flip card(s) to play
+         if (statGame == PLAYING)
             players[actPlayer].hand.at (pos).showFace ();
-            players[actPlayer].hand.resize (pos, ICardPile::COMPRESSED);
-         } while (pos
-                  && ((players[actPlayer].hand.at (pos2Play).number ()
-                       - players[actPlayer].hand.at (--pos).number ()
-                       == (pos2Play - pos)))
-                  && (players[actPlayer].hand.at (pos).color ()
-                      == players[actPlayer].hand.at (pos2Play).color ()));
+         else
+            do {
+               players[actPlayer].hand.at (pos).showFace ();
+               if (pos != (players[actPlayer].hand.numberOfCards () - 1))
+                   players[actPlayer].hand.resize (pos, ICardPile::COMPRESSED);
+            } while (pos
+                     && ((players[actPlayer].hand.at (pos2Play).number ()
+                          - players[actPlayer].hand.at (--pos).number ()
+                          == (pos2Play - pos)))
+                     && (players[actPlayer].hand.at (pos).color ()
+                         == players[actPlayer].hand.at (pos2Play).color ()));
          return 1;
       }
       else {
@@ -793,14 +835,18 @@ int Twopart::makeNextMove () {
    else
       executeMove (actPlayer, pos2Play);
 
-   // If turn of human player: Stop computer playing
-   if (!actPlayer) {
-      TRACE5 ("Twopart::makeNextMove () - Enable human");
-      enablePlayer (0);
-   }
+   if (statGame >= PLAYING) {
+      // If turn of human player: Stop computer playing
+      if (!actPlayer) {
+         TRACE5 ("Twopart::makeNextMove () - Enable human");
+         enablePlayer (0);
+      }
 
-   pos2Play = -1;
-   return actPlayer && (statGame >= PLAYING);
+      pos2Play = -1;
+      return actPlayer;
+   }
+   else
+      return 0;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -882,7 +928,8 @@ int Twopart::findPos2Play (unsigned int player) const {
                    && !played.exists (players[player].hand.at (1).number (), *startPos))
                   || ((players[player].hand.at (0).number () == maxEqualNr)
                       && !played.exists (players[player].hand.at (1).number (),
-                                         *startPos))));
+                                         *startPos)
+                      && (players[player].hand.at (1).number () < CardWidget::SIX))));
    }
    else {
       // Find first fitting card
@@ -1219,7 +1266,7 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Loads the cards (from xpm-files)
+//Purpose   : Loads the cards (from xpm-files) and initializes deck
 /*--------------------------------------------------------------------------*/
 void Twopart::loadCards () {
    Check3 (staple.is_realized ());
@@ -1228,9 +1275,25 @@ void Twopart::loadCards () {
    status.push (1, _("Loading cardimages ..."));
    gdk_threads_leave ();
 
-   // Cards need an realized (!) parent
-   cardFaces.load (staple.get_window (), CARDSET_PATH "/Deck1",
-                   CARDSET_PATH "/back1.xpm");
+   // Cards need an realized (!) parent, so make somehow sure, that the window
+   // already exists
+   INIFILE (NAME_INIFILE.c_str ());
+   INISECTION (Decks);
+   INIATTR2 (Decks, std::string, pathDeck, Front);
+   INIATTR2 (Decks, std::string, pathBack, Back);
+
+   pathDeck = CARDSET_PATH "/Deck1";
+   pathBack = CARDSET_PATH "/back1.xpm";
+
+   try {
+      unsigned int rc (INIFILE_READ ());
+   }
+   catch (std::string& error) {
+      TRACE ("'Twopart::loadCards () - Can't read INI-file '"
+             << NAME_INIFILE << "'\nReason: " << error);
+   }
+
+   cardFaces.load (staple.get_window (), pathDeck, pathBack);
    cards.addPacket (cardFaces);
 
    gdk_threads_enter ();
@@ -1253,6 +1316,28 @@ void Twopart::loadCards () {
    gdk_threads_leave ();
 
    statGame = STOPPED;
+   pThread = NULL;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Loads the cards (from xpm-files)
+//Parameters: opt: Actually a bit field! Option indicationg what to load
+/*--------------------------------------------------------------------------*/
+void Twopart::changeCards (void* opt) {
+   TRACE2 ("Twopart::changeCards (void*) - Option: " << opt);
+
+   // Cards need an realized (!) parent, so ensure that staple is already shown
+   Check3 (staple.is_realized ());
+   unsigned int option ((unsigned int)opt); Check3 (option);
+
+   if (option & 1)
+      cardFaces.loadDecks (staple.get_window (), pathDeck);
+   if (option & 2)
+      cardFaces.loadBack (staple.get_window (), pathBack);
+
+   gdk_threads_enter ();
+   cards.update ();
+   gdk_threads_leave ();
    pThread = NULL;
 }
 
