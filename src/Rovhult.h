@@ -108,9 +108,9 @@ class Rovhult : public Game {
       return (nr == CardWidget::TEN) || (nr == CardWidget::TWO); }
 
    int skip (CardWidget::NUMBERS nr, const ICardPile& pile, unsigned int pos) const {
-      if (pile.at (pos).number () == nr) {
+      if (pile[pos]->number () == nr) {
          pos = pile.findLastEqual (pos) + 1;
-         return (pos < pile.numberOfCards ()) ? (int)pos : -1; }
+         return (pos < pile.size ()) ? (int)pos : -1; }
       return pos;
    }
 
