@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003, 2004
+//COPYRIGHT   : Copyright (C) 2003 - 2005
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -1696,10 +1696,10 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 
    Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
    grpAction->add (Gtk::Action::create ("Machi", _("_Machiavelli")));
-   grpAction->add (Gtk::Action::create ("Undo", Gtk::Stock::UNDO),
+   grpAction->add (undo1 = Gtk::Action::create ("Undo", Gtk::Stock::UNDO),
 		   Gtk::AccelKey ("<ctl>Z"),
 		   bind (mem_fun (*this, &Machiavelli::undoMove), 1));
-   grpAction->add (Gtk::Action::create ("UndoAll", _("Undo _all")),
+   grpAction->add (undoAll = Gtk::Action::create ("UndoAll", _("Undo _all")),
 		   Gtk::AccelKey ("<ctl><alt>Z"),
 		   bind (mem_fun (*this, &Machiavelli::undoMove), -1U));
    grpAction->add (Gtk::Action::create ("EndTurn", _("_End turn")),
@@ -1707,9 +1707,6 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 
    mgrUI->insert_action_group (grpAction);
    idMrg = mgrUI->add_ui_from_string (ui);
-
-   undo1 = mgrUI->get_widget ("/Menu/GameMenu/Machi/Undo"); Check3 (undo1);
-   undoAll = mgrUI->get_widget ("/Menu/GameMenu/Machi/UndoAll"); Check3 (undoAll);
 
    undo1->set_sensitive (false);
    undoAll->set_sensitive (false);
