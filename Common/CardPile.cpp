@@ -40,8 +40,9 @@ static const int SIZE_COMPRESSED = 15;
 /*--------------------------------------------------------------------------*/
 //Purpose   : Constructor; adds all controls to the dialog
 //Parameters: set: Specifier for type of cardset
+//            access: Pile (topmost card) can be accessed
 /*--------------------------------------------------------------------------*/
-CardPile::CardPile (Style s) : style (s) {
+CardPile::CardPile (Style s, bool access) : style (s), accessable (access) {
    TRACE3 ("CardPile::CardPile (Style) - " << (int)style);
    Check3 (s < LAST);
 }
@@ -64,9 +65,10 @@ void CardPile::setTopCard (CardWidget& card) {
 
    if ((style > NORMAL) && cards.size ()) {
       Check3 (cards[cards.size () - 1]);
-      cards[cards.size () - 1]->set_usize (-1, style == COMPRESSED ? SIZE_COMPRESSED : 1);
+      getTopCard ().set_usize (-1, style == COMPRESSED ? SIZE_COMPRESSED : 1);
    }
 
+   card.set_sensitive (accessable);
    card.show ();
    cards.push_back (&card);
 }
@@ -79,13 +81,17 @@ CardWidget& CardPile::removeTopCard () {
    TRACE5 ("CardPile::removeTopCard () - New size: " << cards.size () - 1);
 
    Check3 (cards.size () > 0); Check3 (cards[cards.size () - 1]);
-   CardWidget& card (*cards[cards.size () - 1]);
-   remove (*cards[cards.size () - 1]);
+   CardWidget& card (getTopCard ());
+   remove (card);
    cards.pop_back ();
 
-   if (cards.size () && (style > NORMAL))
-      cards[cards.size () - 1] ->set_usize (-1, 96);
+   if (cards.size () && (style > NORMAL)) {
+      CardWidget& card (getTopCard ());
+      card.set_usize (-1, 96);
+      card.set_sensitive (false);
+   }
 
+   card.set_sensitive (accessable);
    return card;
 }
 
@@ -96,7 +102,7 @@ CardWidget& CardPile::removeTopCard () {
 void CardPile::flipTopCard () {
    Check3 (cards.size () > 0);
 
-   cards[cards.size () - 1]->flip ();
+   getTopCard ().flip ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -106,7 +112,7 @@ void CardPile::flipTopCard () {
 void CardPile::setTopCardVisible (bool visible) {
    Check3 (cards.size () > 0);
 
-   cards[cards.size () - 1]->setVisible (visible);
+   getTopCard ().setVisible (visible);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -140,7 +146,7 @@ void CardPile::setTopCards (const vector<CardWidget*>& staple, bool visible) {
 /*--------------------------------------------------------------------------*/
 void CardPile::clear () {
    while (cards.size ()) {
-      remove (*cards[cards.size () - 1]);
+      remove (getTopCard ());
       cards.pop_back ();
    }
 }
@@ -155,8 +161,21 @@ CardWidget* CardPile::getCard (unsigned int id) const {
 
    for (i = cards.begin (); i != cards.end (); ++i) {
       Check3 (*i);
-      if ((*i)->id () == id)
+      if ((*i)->id () == id) {
+         (*i)->set_sensitive (true);
          return *i;
+      }
    }
    return NULL;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Returns the card with the passed ID
+//Parameters: id: ID of card to return
+//Returns   : CardWidget*: Pointer to card with passed ID (or NULL)
+/*--------------------------------------------------------------------------*/
+void CardPile::setAccessable (bool access) {
+   accessable = access;
+   if (cards.size ())
+      getTopCard ().set_sensitive (access);
 }

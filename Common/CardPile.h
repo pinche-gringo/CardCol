@@ -29,10 +29,11 @@ class CardPile : public Gtk::VBox {
  public:
    typedef enum { NORMAL, COMPRESSED, VERY_COMPRESSED, LAST } Style;
 
-   CardPile (Style style = NORMAL);
+   CardPile (Style style = NORMAL, bool access = true);
    virtual ~CardPile ();
 
    void setStyle (Style s) { style = s; }
+   void setAccessable (bool access);
 
    void flipTopCard ();
    void setTopCardVisible (bool visible = true);
@@ -65,6 +66,7 @@ class CardPile : public Gtk::VBox {
    vector<CardWidget*> cards;
 
    Style style;
+   bool accessable;
 };
 
 #endif
