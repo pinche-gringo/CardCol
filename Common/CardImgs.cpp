@@ -78,7 +78,10 @@ void CardImages::load (const Gdk_Window& parent, const char* path) throw (std::s
       temp = file + nr.toUnformatedString () + ".xpm";
       TRACE3 ("CardImages::load (const Gdk_Window&, const char*) - File " << temp);
 
+      gdk_threads_enter ();
       cards_[i].create_from_xpm (parent, color, temp);
+      gdk_threads_leave ();
+
       if (errno)
          break;
    }
@@ -86,7 +89,10 @@ void CardImages::load (const Gdk_Window& parent, const char* path) throw (std::s
    if (!errno) {
       temp = file + "back.xpm";
       TRACE3 ("CardImages::load (const Gdk_Window&, const char*) - File " << temp);
+
+      gdk_threads_enter ();
       back_.create_from_xpm (parent, color, temp);
+      gdk_threads_leave ();
    }
    if (errno) {
       std::string error (_("Can't create picture from file `%1'!\nReason: %2"));
