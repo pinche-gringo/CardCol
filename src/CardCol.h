@@ -63,7 +63,7 @@ class CardgameCollection : public XGP::XApplication {
 	  CONNECT,
 #endif
 	  ROVHULT, TWOPART, HEARTS, BURACO, MACHIAVELLI, SGTMAYOR, LAST };
-   Gtk::Widget* apMenus[LAST];
+   Glib::RefPtr<Gtk::Action> apMenus[LAST];
 
    // Protected manager functions
    CardgameCollection (const CardgameCollection&);

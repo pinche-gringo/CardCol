@@ -2137,20 +2137,19 @@ void Buraco::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    grpAction->add (Gtk::Action::create ("MB", _("_Buraco")));
    grpAction->add (menuUndo = Gtk::Action::create ("Undo", Gtk::Stock::UNDO),
 		   Gtk::AccelKey (_("<ctl>Z")),
-   grpAction->add (Gtk::Action::create ("Undo", Gtk::Stock::UNDO),
+		   mem_fun (*this, &Buraco::undoMove));
    grpAction->add (menuSort = Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
 						   _("_Sort cards")),
-   grpAction->add (Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
-					_("_Sort cards")),
+		   Gtk::AccelKey ("S"),
+		   mem_fun (*this, &Buraco::sortHand));
 		   Gtk::AccelKey ("<shft><ctl>S"),
    mgrUI->insert_action_group (grpAction);
    idMrg = mgrUI->add_ui_from_string (ui);
 
    menuUndo->set_sensitive (false);
    menuSort->set_sensitive (false);
-   menuUndo = mgrUI->get_widget ("/Menu/GameMenu/MB/Undo"); Check3 (menuUndo);
-   menuSort = mgrUI->get_widget ("/Menu/GameMenu/MB/Sort"); Check3 (menuSort);
 }
+
 //-----------------------------------------------------------------------------
 /// Removes the buraco-specific menus
 /// \param mgrUI: UIManager to remove from

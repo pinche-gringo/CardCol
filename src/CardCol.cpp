@@ -700,14 +700,15 @@ CardgameCollection::CardgameCollection (Options& opts)
 		     "  <placeholder name='GameMenu'/>");
 
    grpAction->add (Gtk::Action::create ("Game", _("_Game")));
-   grpAction->add (Gtk::Action::create ("New", Gtk::Stock::NEW),
+   grpAction->add (apMenus[NEW] = Gtk::Action::create ("New", Gtk::Stock::NEW),
 		   mem_fun (*this, &CardgameCollection::newGame));
-   grpAction->add (Gtk::Action::create ("End", Gtk::Stock::CLOSE, _("_End")),
+   grpAction->add (apMenus[END] = Gtk::Action::create ("End", Gtk::Stock::CLOSE, _("_End")),
 		   mem_fun (*this, &CardgameCollection::endGame));
 #ifdef HAVE_LIBPTHREAD
-   grpAction->add (Gtk::Action::create ("Connect", _("_Connect ...")),
+   grpAction->add (apMenus[CONNECT] = Gtk::Action::create ("Connect", _("_Connect ...")),
 		   Gtk::AccelKey (_("<shft><ctl>C")),
 		   mem_fun (*this, &CardgameCollection::connect));
+   apMenus[CONNECT]->set_sensitive (false);
 #endif
    grpAction->add (Gtk::Action::create ("Quit", Gtk::Stock::QUIT),
 		   mem_fun (*this, &CardgameCollection::exit));
@@ -717,22 +718,22 @@ CardgameCollection::CardgameCollection (Options& opts)
 
    Gtk::RadioButtonGroup grpGames;
    // xgettext: For translations: Write the Rovhult as o-slash
-   grpAction->add (Gtk::RadioAction::create (grpGames, "Rovhult", _("_Rovhult")),
+   grpAction->add (apMenus[ROVHULT] = Gtk::RadioAction::create (grpGames, "Rovhult", _("_Rovhult")),
 		   Gtk::AccelKey (_("<ctl>R")),
 		   bind (mem_fun (*this, &CardgameCollection::changeGame), GROVHULT));
-   grpAction->add (Gtk::RadioAction::create (grpGames, "Twopart", _("_Twopart")),
+   grpAction->add (apMenus[TWOPART] = Gtk::RadioAction::create (grpGames, "Twopart", _("_Twopart")),
 		   Gtk::AccelKey (_("<ctl>T")),
 		   bind (mem_fun (*this, &CardgameCollection::changeGame), GTWOPART));
-   grpAction->add (Gtk::RadioAction::create (grpGames, "Hearts", _("_Hearts")),
+   grpAction->add (apMenus[HEARTS] = Gtk::RadioAction::create (grpGames, "Hearts", _("_Hearts")),
 		   Gtk::AccelKey (_("<ctl>H")),
 		   bind (mem_fun (*this, &CardgameCollection::changeGame), GHEARTS));
-   grpAction->add (Gtk::RadioAction::create (grpGames, "Buraco", _("_Buraco")),
+   grpAction->add (apMenus[BURACO] = Gtk::RadioAction::create (grpGames, "Buraco", _("_Buraco")),
 		   Gtk::AccelKey (_("<ctl>B")),
 		   bind (mem_fun (*this, &CardgameCollection::changeGame), GBURACO));
-   grpAction->add (Gtk::RadioAction::create (grpGames, "SgtMayor", _("_Sgt. Mayor")),
+   grpAction->add (apMenus[SGTMAYOR] = Gtk::RadioAction::create (grpGames, "SgtMayor", _("_Sgt. Mayor")),
 		   Gtk::AccelKey (_("<ctl>Y")),
 		   bind (mem_fun (*this, &CardgameCollection::changeGame), GSGTMAYOR));
-   grpAction->add (Gtk::RadioAction::create (grpGames, "Machiavelli", _("_Machiavelli")),
+   grpAction->add (apMenus[MACHIAVELLI] = Gtk::RadioAction::create (grpGames, "Machiavelli", _("_Machiavelli")),
 		   Gtk::AccelKey (_("<ctl>M")),
 		   bind (mem_fun (*this, &CardgameCollection::changeGame), GMACHIAVELLI));
 
@@ -761,25 +762,9 @@ CardgameCollection::CardgameCollection (Options& opts)
 
    ((Gtk::MenuItem*)(mgrUI->get_widget("/Menu/Help")))->set_right_justified ();
 
-   apMenus[NEW] = mgrUI->get_widget("/Menu/Game/New"); Check3 (apMenus[NEW]);
-   apMenus[END] = mgrUI->get_widget("/Menu/Game/End"); Check3 (apMenus[END]);
-
-   apMenus[ROVHULT]     = mgrUI->get_widget("/Menu/Options/ChgGame/Rovhult"); Check3 (apMenus[ROVHULT]);
-   apMenus[TWOPART]     = mgrUI->get_widget("/Menu/Options/ChgGame/Twopart"); Check3 (apMenus[TWOPART]);
-   apMenus[HEARTS]      = mgrUI->get_widget("/Menu/Options/ChgGame/Hearts"); Check3 (apMenus[HEARTS]);
-   apMenus[BURACO]      = mgrUI->get_widget("/Menu/Options/ChgGame/Buraco"); Check3 (apMenus[BURACO]);
-   apMenus[MACHIAVELLI] = mgrUI->get_widget("/Menu/Options/ChgGame/Machiavelli"); Check3 (apMenus[MACHIAVELLI]);
-   apMenus[SGTMAYOR]    = mgrUI->get_widget("/Menu/Options/ChgGame/SgtMayor"); Check3 (apMenus[SGTMAYOR]);
-
    Check3 (apMenus[NEW]); Check3 (apMenus[END]);
    apMenus[NEW]->set_sensitive (false);
    apMenus[END]->set_sensitive (false);
-
-#ifdef HAVE_LIBPTHREAD
-   apMenus[CONNECT] = mgrUI->get_widget("/Menu/Game/Connect");
-   Check3 (apMenus[CONNECT]);
-   apMenus[CONNECT]->set_sensitive (false);
-#endif
 
    status.show ();
    getClient ().pack_end (status, Gtk::PACK_SHRINK);
@@ -1271,7 +1256,7 @@ void CardgameCollection::loadCards () {
    // This code needs the game-IDs in a sequence starting with 0!
    if (GLAST <= (unsigned int)options.type)
       options.type = GROVHULT;
-   dynamic_cast<Gtk::CheckMenuItem*> (apMenus[ROVHULT + options.type])->set_active ();
+   Glib::RefPtr<Gtk::ToggleAction>::cast_dynamic (apMenus[ROVHULT + options.type])->set_active ();
 
    void* rc (changeCards ((void*)-1));
    if (rc) {

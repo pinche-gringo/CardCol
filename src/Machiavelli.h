@@ -180,8 +180,8 @@ class Machiavelli : public Game {
 
    XGP::MessageDlg* undoDlg;
 
-   Gtk::Widget* undo1;
-   Gtk::Widget* undoAll;
+   Glib::RefPtr<Gtk::Action> undo1;
+   Glib::RefPtr<Gtk::Action> undoAll;
    Gtk::UIManager::ui_merge_id idMrg;
 };
 

@@ -207,8 +207,8 @@ class Buraco : public Game {
    ScoreDlg* pScoreDlg;
 
    Gtk::UIManager::ui_merge_id idMrg;
-   Gtk::Widget* menuUndo;
-   Gtk::Widget* menuSort;
+   Glib::RefPtr<Gtk::Action> menuUndo;
+   Glib::RefPtr<Gtk::Action> menuSort;
 };
 
 #endif
