@@ -64,16 +64,13 @@ class CardgameCollection : public XApplication {
    const CardgameCollection& operator= (const CardgameCollection&);
 
    // Event-handling
+   void closeProgram (int, const Gtk::Dialog* dlg);
    virtual void command (int menu);
    virtual void gameEvents (unsigned int status);
-   virtual gint delete_event_impl (_GdkEventAny*) {
-      command (EXIT);
-      return 1; }
-
    virtual void showAboutbox ();
    virtual const char* getHelpfile ();
 
-   void changeCards (void* opt);
+   bool changeCards (void* opt);
    void loadCards ();
    void userWants2End ();
    void startGame ();

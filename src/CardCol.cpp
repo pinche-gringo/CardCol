@@ -35,7 +35,6 @@
 
 #include <gtkmm/messagedialog.h>
 
-#define TRACELEVEL 1
 #include <Check.h>
 #include <Trace_.h>
 
@@ -674,6 +673,7 @@ CardgameCollection::CardgameCollection (Options& opts)
    showHelpMenu ();
    Check3 (apMenus[NEW]);
    apMenus[NEW]->set_sensitive (false);
+   apMenus[END]->set_sensitive (false);
 
    status.show ();
    getClient ().pack_end (status, Gtk::PACK_SHRINK);
@@ -687,9 +687,9 @@ CardgameCollection::CardgameCollection (Options& opts)
       TRACE9 ("CardgameCollection::CardgameCollection () - Thread-ID = " << pThread->getID ());
    }
    catch (std::string& e) {
-      Gtk::MessageDialog dlg (e, Gtk::MESSAGE_ERROR);
-      dlg.set_title (_("Error starting thread"));
-      dlg.run ();
+      TRACE1 ("Error starting the thread to load the card images\n\t->"
+              << e);
+      CardgameCollection::loadCards ();
    }
 }
 
@@ -828,7 +828,7 @@ void CardgameCollection::command (int menu) {
    case CHGDECKS:
       CarddeckSelectDlg<CardgameCollection>
          ::create (*this, &CardgameCollection::changeDecks,
-                   CARDSET_PATH, options.decks, options.back);
+                   CARDDECKS_DIR, options.decks, options.back);
       break;
 
    case CHGNAMES:
@@ -899,6 +899,7 @@ void CardgameCollection::showAboutbox () {
    XAbout* about (new XAbout (ver, PACKAGE " V" VERSION));
    about->setIconProgram (xpmGame);
    about->setIconAuthor (xpmAuthor);
+   about->get_window ()->set_transient_for (get_window ());
 }
 
 /*--------------------------------------------------------------------------*/
@@ -939,8 +940,9 @@ void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Loads the cards (from xpm-files)
 //Parameters: opt: Actually a bit field! Option indicationg what to load
+//Returns   : bool: Status; true when loading was OK, false otherwise
 /*--------------------------------------------------------------------------*/
-void CardgameCollection::changeCards (void* opt) {
+bool CardgameCollection::changeCards (void* opt) {
    TRACE2 ("CardgameCollection::changeCards (void*) - Option: " << opt);
 
    // Cards need an realized (!) parent, so ensure that the window is already
@@ -950,15 +952,45 @@ void CardgameCollection::changeCards (void* opt) {
    TRACE3 ("CardgameCollection::changeCards (void*) - Use " << options.decks
            << " and " << options.back);
 
-   if ((unsigned int)opt & 1)
-      cardFaces.loadDecks (options.decks);
-   if ((unsigned int)opt & 2)
-      cardFaces.loadBack (options.back);
+   try {
+      if ((unsigned int)opt & 1)
+         cardFaces.loadDecks (options.decks);
+      if ((unsigned int)opt & 2)
+         cardFaces.loadBack (options.back);
 
-   gdk_threads_enter ();
-   cards.update ();
-   gdk_threads_leave ();
-   pThread = NULL;
+      gdk_threads_enter ();
+       ((unsigned int)opt & 0x8000)
+           ? cards.addPacket (cardFaces)
+           : cards.update ();
+      gdk_threads_leave ();
+      pThread = NULL;
+      return true;
+   }
+   catch (std::string& e) {
+      gdk_threads_enter ();
+      std::string msg ("Couldn't load the card images!\n\n"
+                       "Reason: %1");
+      msg.replace (msg.find ("%1"), 2, e);
+      Gtk::MessageDialog* dlg (new Gtk::MessageDialog (e, Gtk::MESSAGE_ERROR));
+      dlg->set_title (PACKAGE);
+      dlg->signal_response ().connect
+          (bind (slot (*this, &CardgameCollection::closeProgram), dlg));
+      dlg->show ();
+      apMenus[NEW]->set_sensitive (false);
+      gdk_threads_leave ();
+   }
+   return false;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Terminates the program; also closing the passed dialog
+//Parameters: int: Response of dialog (ignored)
+//            dlg: Dialog to close additionally
+/*--------------------------------------------------------------------------*/
+void CardgameCollection::closeProgram (int, const Gtk::Dialog* dlg) {
+   Check1 (dlg);
+   delete dlg;
+   // delete this;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1003,14 +1035,15 @@ void CardgameCollection::loadCards () {
    dynamic_cast<Gtk::CheckMenuItem*> (apMenus[ROVHULT + options.type])->set_active ();
    gdk_threads_leave ();
 
-   cardFaces.load (options.decks, options.back);
+   bool rc (changeCards ((void*)-1));
 
-   gdk_threads_enter ();
-   cards.addPacket (cardFaces);
-   apMenus[NEW]->set_sensitive (true);
-   status.pop ();
-   status.push (_("Start a new game with Ctrl+N (or Game -> New)"));
-   gdk_threads_leave ();
+   if (rc) {
+      gdk_threads_enter ();
+      apMenus[NEW]->set_sensitive (true);
+      status.pop ();
+      status.push (_("Start a new game with Ctrl+N (or Game -> New)"));
+      gdk_threads_leave ();
+   }
 
    assert (cardFaces.size ());
    pThread = NULL;
