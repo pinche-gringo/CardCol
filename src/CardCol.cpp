@@ -1013,7 +1013,7 @@ void CardgameCollection::command (int menu) {
 //-----------------------------------------------------------------------------
 void CardgameCollection::initCommunication () {
 #ifdef HAVE_LIBPTHREAD
-   Check2 (cmgr.getMode () != ConnectionMgr::NONE);
+   Check2 (cmgr.getMode () != YGP::ConnectionMgr::NONE);
    Check2 (aCommThreads.empty ());
 
    if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT) {
@@ -1248,11 +1248,11 @@ void CardgameCollection::gameEvents (unsigned int status) {
 void* CardgameCollection::waitForMessages (void* player) {
 #ifdef HAVE_LIBPTHREAD
    TRACE1 ("CardgameCollection::waitForMessage (void*)");
-   Check2 (cmgr.getMode () != ConnectionMgr::NONE);
+   Check2 (cmgr.getMode () != YGP::ConnectionMgr::NONE);
 
    int iPlayer ((int)player);
-   Check2 ((cmgr.getMode () == ConnectionMgr::CLIENT)
-           ? (iPlayer == -1) : (iPlayer < cmgr.getClients ().size ()));
+   Check2 ((cmgr.getMode () == YGP::ConnectionMgr::CLIENT)
+           ? (iPlayer == -1) : (iPlayer < (int)cmgr.getClients ().size ()));
 
    std::string input;
    YGP::Socket* sock ((iPlayer == -1) ? cmgr.getSocket () : cmgr.getClients ()[iPlayer]);
