@@ -55,8 +55,8 @@ class CardgameCollection : public XApplication {
 
  private:
    // IDs for menus
-   enum { NEW = LAST, END, EXIT, DEBUG, ROVHULT, TWOPART, HEARTS, BURACO,
-          CHGDECKS, CHGNAMES, SAVESET };
+   enum { NEW = LAST, END, CONNECT, EXIT, DEBUG, ROVHULT, TWOPART, HEARTS,
+          BURACO, CHGDECKS, CHGNAMES, SAVESET };
 
    // Protected manager functions
    CardgameCollection (const CardgameCollection&);

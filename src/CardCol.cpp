@@ -31,8 +31,6 @@
 #include <string>
 #include <fstream>
 
-#include <glib.h>
-
 #include <gtkmm/messagedialog.h>
 
 #include <Check.h>
@@ -45,8 +43,9 @@
 #include <XAbout.h>
 #include <XAttribute.h>
 
-#include <DeckSelect.h>
 #include <PlayerDlg.h>
+#include <ConnectDlg.h>
+#include <DeckSelect.h>
 
 #include "Hearts.h"
 #include "Rovhult.h"
@@ -59,6 +58,8 @@
 
 const unsigned int CardgameCollection::WIDTH = 760;
 const unsigned int CardgameCollection::HEIGHT = 750;
+
+static const unsigned int PORT (31338);
 
 
 // Pixmap for program
@@ -582,6 +583,8 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { _("_New"),              _("<ctl>N"), NEW,      ITEM },
     { _("_End"),              _("<ctl>E"), END,      ITEM },
     { "",                     "",          0,        SEPARATOR },
+    { _("_Connect ..."),      _("<shft><ctl>C"), CONNECT,ITEM },
+    { "",                     "",          0,        SEPARATOR },
     { _("E_xit"),             _("<ctl>Q"), EXIT,     ITEM },
     { _("_Options"),          _("<alt>O"), 0,        BRANCH },
     { _("_Change game"),      "",          0,        SUBMENU },
@@ -816,6 +819,10 @@ void CardgameCollection::command (int menu) {
       }
       break; }
 
+   case CONNECT:
+      ConnectDlg::perform (options.names.size (), PORT);
+      break;
+
    case TWOPART:
       options.type = GTWOPART;
       break;
@@ -982,8 +989,8 @@ bool CardgameCollection::changeCards (void* opt) {
    }
    catch (std::string& e) {
       gdk_threads_enter ();
-      std::string msg ("Couldn't load the card images!\n\n"
-                       "Reason: %1");
+      Glib::ustring msg ("Couldn't load the card images!\n\n"
+                         "Reason: %1");
       msg.replace (msg.find ("%1"), 2, e);
       Gtk::MessageDialog* dlg (new Gtk::MessageDialog (e, Gtk::MESSAGE_ERROR));
       dlg->set_title (PACKAGE);
