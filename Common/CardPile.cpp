@@ -64,7 +64,6 @@ void ICardPile::setTopCard (CardWidget& card) {
    if (showOpt < DONT_CHANGE)
       card.showFace ((bool)showOpt);
 
-   card.show ();
    push_back (&card);
    resize (size () - 1, NORMAL);
 }
@@ -167,8 +166,6 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
    TRACE5 ("ICardPile::insert (CardWidget, unsigned int&) - Card " << card
            << " at " << pos);
    Check3 (pos <= size ());
-
-   card.show ();
 
    if (showOpt < DONT_CHANGE)
       card.showFace ((bool)showOpt);
