@@ -30,13 +30,6 @@
 #include <gtk--/statusbar.h>
 #include <gtk--/accelgroup.h>
 
-#include <time.h>
-#include <stdlib.h>
-#include <locale.h>
-#include <unistd.h>
-
-#include <glib.h>
-
 #include <Check.h>
 #include <Trace_.h>
 
@@ -63,8 +56,7 @@ using namespace Gtk;
 /*--------------------------------------------------------------------------*/
 Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
    : Game (parent, statusbar, cardset, 16, 20)
-     , actPlayer (0), staple (ICardPile::VERY_COMPRESSED)
-     , played (ICardPile::VERY_COMPRESSED) {
+     , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::VERY_COMPRESSED) {
    staple.show ();
    attach (staple, 3, 4, 2, 7, 0, 0);
 
@@ -111,8 +103,6 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
 /*--------------------------------------------------------------------------*/
 Rovhult::~Rovhult () {
    TRACE9 ("Rovhult::~Rovhult ()");
-
-   cleanTable ();
 }
 
 
@@ -122,8 +112,7 @@ Rovhult::~Rovhult () {
 void Rovhult::start () {
    Game::start ();
 
-   statGame = PREPLAYING;
-   cleanTable ();
+   clean ();
    randomizeCardsToPile (staple);
    dealCards ();
 }
@@ -228,49 +217,6 @@ void Rovhult::exchangeAutoplayerCards () {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Makes a move for a computer controlled player. If the next
-//            player is human, enable its cards
-/*--------------------------------------------------------------------------*/
-int Rovhult::makeComputerMove () {
-#ifdef CHECKLEVEL
-   static bool inTurn (false);
-   if (inTurn) {
-      Check (!"in Turn");
-      return true;
-   }
-   inTurn = true;
-#endif
-
-   if (statGame == TOSTOP) {
-      TRACE8 ("Rovhult::makeComputerMove () - End game ");
-      statGame = STOPPED;
-      if (restart) // TODO: Let parent change
-         start ();
-      return 0;
-   }
-
-   TRACE2 ("Rovhult::makeComputerMove () - Start with player "
-           << actPlayer);
-
-   actPlayer = makeTurn (actPlayer);
-
-   TRACE2 ("Rovhult::makeComputerMove () - Next player: "
-           << actPlayer);
-
-   if (!actPlayer) {
-      statGame = PLAYING;
-      enablePlayer (0);
-   }
-
-   // Continue with computer-moves (means: let timer enabled), if computer
-   // controlled players are on turn
-#ifdef CHECKLEVEL
-   inTurn = false;
-#endif
-   return actPlayer > 0;
-}
-
-/*--------------------------------------------------------------------------*/
 //Purpose   : Enables the cards of the passed player
 //Parameters: player: Player to enable
 /*--------------------------------------------------------------------------*/
@@ -331,11 +277,10 @@ void Rovhult::pileSelected (unsigned int player, unsigned int pile) {
 
    if (!cardValid (card.number ()))  { // If selected card is not valid: Return
       actPile.removeTopCard ();
-      card.set_relief (GTK_RELIEF_NONE);
       played.append (card);
-      if (actPlayer = executeMove (player, CardWidget::UNREACHABLE) > 0) {
-         makeComputerMoves ();
-      }
+      setNextPlayer (executeMove (player, CardWidget::UNREACHABLE) > 0);
+      if (currentPlayer () > 0)
+         makeNextMoves ();
       return;
    }
 
@@ -346,9 +291,6 @@ void Rovhult::pileSelected (unsigned int player, unsigned int pile) {
    else
       Gtk::Main::timeout.connect (bind (slot (this, &Rovhult::playFromPile),
                                         player, pile), 1000);
-
-   if (actPlayer > 0)
-      disableLastPlayer ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -362,14 +304,8 @@ int Rovhult::playFromPile (unsigned int player, unsigned int pile) {
    TRACE1 ("Rovhult::playFromPile (unsigned int, unsinged int) - Card at pos "
            << pile << " for player " << player);
 
-   actPlayer = doPileSelected (player, pile);
-
-   if (actPlayer > 0)
-      // Start a timer to perform the computer-moves
-      makeComputerMoves ();
-   else
-      enablePlayer (0);
-
+   setNextPlayer (doPileSelected (player, pile));
+   makeNextMoves ();
    return 0;
 }
 
@@ -393,10 +329,8 @@ int Rovhult::doPileSelected (unsigned int player, unsigned int pile) {
    CardWidget& card (actPile->removeShownTopCard ());
    if (card.number () == CardWidget::TEN)
       played.clear ();
-   else {
-      card.set_relief (GTK_RELIEF_NONE);
+   else
       played.append (card);
-   }
 
    while (pile) {
       actPile = &players[player].reserve[--pile];
@@ -404,10 +338,8 @@ int Rovhult::doPileSelected (unsigned int player, unsigned int pile) {
           && actPile->topCardShowsFace ()
           && (actPile->getTopCard ().number () == card.number ())) {
          CardWidget& sameCard (actPile->removeShownTopCard ());
-         if (sameCard.number () != CardWidget::TEN) {
-            sameCard.set_relief (GTK_RELIEF_NONE);
+         if (sameCard.number () != CardWidget::TEN)
             played.append (sameCard);
-         }
       }
    }
 
@@ -477,15 +409,11 @@ void Rovhult::handSelected (unsigned int player, unsigned int pos) {
 
    playCardsFromHand (player, pos);
 
-   actPlayer = executeMove (player, card.number ());
+   setNextPlayer (executeMove (player, card.number ()));
 
-   if (actPlayer > 0) {
+   if (currentPlayer () >= 0)
       // Start a timer to perform the computer-moves
-      makeComputerMoves ();
-   }
-   else
-      if (!actPlayer)
-         enablePlayer (0);
+      makeNextMoves ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -503,10 +431,8 @@ CardWidget::NUMBERS Rovhult::playCardsFromHand (unsigned int player, unsigned in
       CardWidget& movedCard (players[player].hand.remove (pos, true));
       if (movedCard.number () == CardWidget::TEN)
          played.clear ();
-      else {
-         movedCard.set_relief (GTK_RELIEF_NONE);
+      else
          played.append (movedCard);
-      }
    } while (pos-- && (players[player].hand.at (pos).number () == card.number ()));
 
    // If staple contains cards and no 10 was played (except if hand is empty):
@@ -543,8 +469,7 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
          stat = _("Player %1 lost");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
          status.push (1, stat);
-         statGame = STOPPED;
-         // TODO: Deactivate menu: pMenuEnd->set_sensitive (false);
+         stop ();
          return -1;
       }
 
@@ -581,10 +506,10 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 /*--------------------------------------------------------------------------*/
 void Rovhult::takeCards (unsigned int player) {
    TRACE2 ("Rovhult::takeCards (unsigned int) - " << player);
-   actPlayer = executeMove (player, CardWidget::UNREACHABLE);
+   setNextPlayer (executeMove (player, CardWidget::UNREACHABLE));
 
    // Start a timer to perform the computer-moves
-   makeComputerMoves ();
+   makeNextMoves ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -732,8 +657,8 @@ void Rovhult::movePlayedCardsToLooser (unsigned int nrLooser) {
            << played.numberOfCards () << " cards");
    Check3 (nrLooser < NUM_PLAYERS);
 
-   while (played.numberOfCards ())
-      players[nrLooser].hand.insertSorted (played.remove (0));
+   movePile (players[nrLooser].hand, played);
+   players[nrLooser].hand.sortByNumber ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -760,7 +685,7 @@ int Rovhult::nextAvailablePlayer (unsigned int actPlayer) const {
 //Purpose   : Remove cards from everything which can hold them and unregister
 //            any signals (DND)
 /*--------------------------------------------------------------------------*/
-void Rovhult::cleanTable () {
+void Rovhult::clean () {
    if (statGame == PREPLAYING)
       unregisterDND ();
 
@@ -787,6 +712,8 @@ void Rovhult::cleanTable () {
 /*--------------------------------------------------------------------------*/
 void Rovhult::registerTableDND (CardWidget& card, unsigned int player,
                                     unsigned int pile) {
+   Check3 (statGame == PREPLAYING);
+
    static Gdk_Colormap color (get_colormap ());
    static Gdk_Bitmap bitmap;
 
@@ -809,6 +736,8 @@ void Rovhult::registerTableDND (CardWidget& card, unsigned int player,
 /*--------------------------------------------------------------------------*/
 void Rovhult::registerHandDND (CardWidget& card, unsigned int player,
                                     unsigned int iCard) {
+   Check3 (statGame == PREPLAYING);
+
    static Gdk_Colormap color (get_colormap ());
    static Gdk_Bitmap bitmap;
 
@@ -868,6 +797,8 @@ void Rovhult::dealCards () {
          card.showFace ();
          players[i].hand.insertSorted (card);
       }
+
+   statGame = PREPLAYING;
 
    // Enable drag-and-drop for cards in hand (of human player)
    for (unsigned int i (0); i < players[i].hand.numberOfCards (); ++i) {
@@ -1073,7 +1004,6 @@ void Rovhult::flipCards2Play (unsigned int player, unsigned int pos) {
    do {
       if (playFromHand || card->showsFace ()) {
          card->showFace ();
-         card->set_relief (GTK_RELIEF_NORMAL);
          if (card->width () < card->getImageWidth ())
             players[player].hand.resize (pos, ICardPile::COMPRESSED);
       }
@@ -1086,8 +1016,8 @@ void Rovhult::flipCards2Play (unsigned int player, unsigned int pos) {
 //Purpose   : Finds an executes the turn of a (computer control.ed) player
 //Returns   : int: The next player
 /*--------------------------------------------------------------------------*/
-int Rovhult::makeTurn (unsigned int player) {
-   TRACE2 ("Rovhult::makeTurn (unsigned int) - Player " << player);
+int Rovhult::makeMove (unsigned int player) {
+   TRACE2 ("Rovhult::makeMove (unsigned int) - Player " << player);
    static int pos2Play (-1);
 
    if (pos2Play == -1) {
@@ -1097,7 +1027,7 @@ int Rovhult::makeTurn (unsigned int player) {
          flipCards2Play (player, pos2Play);
    }
    else {
-      TRACE2 ("Rovhult::makeTurn (unsigned int) - play card " << pos2Play);
+      TRACE2 ("Rovhult::makeMove (unsigned int) - play card " << pos2Play);
       Check3 (pos2Play >= 0);
 
       unsigned int pos (pos2Play);
@@ -1125,7 +1055,6 @@ int Rovhult::makeTurn (unsigned int player) {
             else {
                // Card is not valid: Take up pile
                players[player].reserve[pos].removeTopCard ();
-               card.set_relief (GTK_RELIEF_NONE);
                played.append (card);
                player = executeMove (player, CardWidget::UNREACHABLE);
             }
@@ -1306,12 +1235,17 @@ int Rovhult::findCard2Play (unsigned int player) const {
    }
 }
 
+/*--------------------------------------------------------------------------*/
+//Purpose   : Shows or hides the cards of the computer player
+//Parameters: open: Flag if cards should be shown or hidden
+/*--------------------------------------------------------------------------*/
+void Rovhult::playOpen (bool open) {
+   ICardPile::ShowOpt show (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Activates the computer player
-/*--------------------------------------------------------------------------*/
-void Rovhult::makeComputerMoves () {
-   TRACE9 ("Rovhult::makeComputerMoves () - *** Start timer ***");
-   Gtk::Main::timeout.connect (slot (this, &Rovhult::makeComputerMove), 1000);
-   disableLastPlayer ();
+   for (int i (1); i < NUM_PLAYERS; ++i) {
+      players[i].hand.setShowOption (show);
+      players[i].hand.setStyle ((show == ICardPile::SHOWFACE)
+                                ? ICardPile::COMPRESSED
+                                : ICardPile::QUITE_COMPRESSED);
+   }
 }

@@ -52,13 +52,11 @@ class Twopart : public Game {
    void playedSelected (unsigned int player);
 
    // Helper functions
-   void executeMove (unsigned int player, unsigned int iCard);
+   int executeMove (unsigned int player, unsigned int iCard);
    void movePlayedCardsToPlayer (unsigned int nrPlayer, unsigned int start = 0);
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int iCard);
-   int  enableActPlayer ();
    void enablePlayer (unsigned int player);
-   void disableLastPlayer ();
-   void pickUpPlayedPile (unsigned int player);
+   unsigned int pickUpPlayedPile (unsigned int player);
    int  findNextPlayer (unsigned int player);
    int  findNextPlayerWithCards (unsigned int player);
    void removePlayer (unsigned int player) { bfPlayers &= ~(1 << player); }
@@ -72,9 +70,10 @@ class Twopart : public Game {
    unsigned int removePlayersWithoutCards ();
 
    virtual void start ();
-   void cleanTable ();
+   virtual void clean ();
+   virtual void playOpen (bool open);
+
    void dealCards ();
-   void fillStaple ();
    void userWants2End (unsigned int input);
    void analyzeLastPlayed (unsigned int startPos, unsigned int cards, int& max,
                            int& maxPos, int& maxEqual, int& maxEqualPos) const;
@@ -84,12 +83,11 @@ class Twopart : public Game {
    unsigned int findSmallestCard (unsigned int player) const;
    unsigned int findEndOfSerie (unsigned int player, unsigned int start) const;
 
-   int startPartTwoTimerFnc ();
+   int startPartTwoTimerFnc (unsigned int player);
    void startPartTwo (unsigned int player);
 
-   int makeNextMove ();
-   void makeNextMoves ();
-   int endRound ();
+   int makeMove (unsigned int player);
+   int endRound (unsigned int player);
 
    static char sortOrder[4];
    static bool compByColorAccTrumps (const CardWidget* a, const CardWidget* b);
@@ -120,8 +118,6 @@ class Twopart : public Game {
       CardHPile hand;                         // For players: Cards in the hand
       CardHPile won;                            // Reserve-cards (for end-game)
    } players[NUM_PLAYERS];
-
-   Connection pileTop;
 
    Widget* pMenuNew;
    Widget* pMenuEnd;

@@ -73,12 +73,10 @@ class Rovhult : public Game {
    // Helper functions
    void movePlayedCardsToLooser (unsigned int nrLooser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;
-   int  makeComputerMove ();
-   void makeComputerMoves ();
+   int  makeMove (unsigned int player);
    void enablePlayer (unsigned int player);
-   void cleanTable ();
+   virtual void clean ();
    void dealCards ();
-   void fillStaple ();
    CardWidget::NUMBERS playCardsFromHand (unsigned int player, unsigned int pos);
    void exchangeAutoplayerCards ();
 
@@ -103,17 +101,14 @@ class Rovhult : public Game {
    bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
    int executeMove (unsigned int player, CardWidget::NUMBERS nr);
 
-   void start ();
+   virtual void start ();
+   virtual void playOpen (bool open);
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
    // Columns and rows for the cards of the players
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
-
-   // Variables for makeComputerMove
-   int actPlayer;                                         // Player to continue
-   bool restart;
 
    CardHInfoPile played;
    CardVInfoPile staple;                                     // Cards on staple
