@@ -19,7 +19,8 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
 
 <html>
   <head>
@@ -44,8 +45,10 @@
     <p>In a nutshell it is about putting down a staple of "matching" cards
       (with the help of its partner) and that way getting rid of all of the
       cards. "Matching" means that either the numbers must be equal
-      (independend of the colour) or the colour and the numbers are in a
-      sequence.</p>
+      (independend of the colour, but each colour only once) or the colour and
+      the numbers are in a sequence (Ace (as one), three, four, ..., ten,
+      jack, queen, king, ace - as the two is a joker, it does not belong to
+      the serie).</p>
 
     <p>To actually put down the cards, the player must have at least three of
       them; or two which are extended with a joker or a 2 (of whatever
@@ -140,8 +143,7 @@
 
        <li>The piles on the table of team 2.</li>
 
-      <li>In the last row are the cards of the currently active computer
-        player.</li>
+      <li>In the last row are the cards of the other (computer) player.</li>
      </ul>
 
     <hr size=1 noshade>

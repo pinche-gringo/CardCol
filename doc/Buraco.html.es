@@ -19,7 +19,8 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//ES">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//ES"
+        "http://www.w3.org/TR/html4/strict.dtd">
 
 <html>
   <head>
@@ -44,8 +45,10 @@
     <p>En pocas palabras se trata de descartar de cartas "apropiadas" (con la
       ayuda de su parejea) y por eso quitarse de sus cartas. "Apropiado"
       significa que o los n&uacute;meros est&aacute;n iguales (independente de
-      su color) or los colores est&aacute;n iguales y los n&uacute;meros 
-      est&aacute;n en orden.</p>
+      su color, pero cada color solamente una vez) o los colores est&aacute;n
+      iguales y los n&uacute;meros est&aacute;n en orden (As (como uno), tres,
+      cuatro, ..., diez, J, Q, K, as - sin dos, porque ellos valen como
+      monos).</p>
 
     <p>Para descartarse de las cartas de verdad se necesita por lo menos tres
       de ellas, o dos que est&aacute;n aumentado con un mono o un dos (de
@@ -145,9 +148,8 @@
 
        <li>Las pilas del equipo 2 por la mesa.</li>
 
-      <li>En el &uacute;ltima l&iacute;nea hay las cartas del juegador de la
-        computadora activa.</li>
-     </ul>
+      <li>En el &uacute;ltima l&iacute;nea hay las cartas de los dem&aacute;s
+        juegadores.</li> </ul>
 
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
