@@ -687,6 +687,7 @@ void Twopart::executeMove (unsigned int player, unsigned int pos) {
    else {
       // Show trump if not already visible
       if (pTrump && !pTrump->is_visible ()) {
+         pTrump->showFace ();
          pTrump->show ();
          tblTable.attach (*pTrump, 2, 3, 2, 3, 0, 0, 5, 5);
       }
@@ -721,6 +722,7 @@ void Twopart::executeMove (unsigned int player, unsigned int pos) {
 //Returns   : int: Flag for timer, if it should continue (0: no; else: yes)
 /*--------------------------------------------------------------------------*/
 int Twopart::makeNextMove () {
+   Check3 (actPlayer); Check3 (actPlayer < NUM_PLAYERS);
    if (statGame == TOSTOP) {
       TRACE8 ("Twopart::makeNextMove () - End game ");
       statGame = STOPPED;
@@ -731,10 +733,9 @@ int Twopart::makeNextMove () {
 
 
    TRACE5 ("Twopart::makeNextMove () - Turn of player " << actPlayer);
-   Check3 (actPlayer);
    Check3 ((statGame == PLAYING) || (statGame == PLAYING2));
    if (pos2Play == -1) {
-      pos2Play = 0;
+      pos2Play = findPos2Play (actPlayer); Check3 (pos2Play != -1);
       players[actPlayer].hand.at (pos2Play).showFace ();
       return 1;
    }
@@ -748,6 +749,81 @@ int Twopart::makeNextMove () {
       enablePlayer (0);
    }
    return actPlayer;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Searches for the card(s) to play by analyzing the previously
+//            played cards
+//            to him if so. Else enable the players which can continue
+//Parameters: player: ID of player to analyze
+//Returns   : int: Next player; or -1 if there is no next player
+/*--------------------------------------------------------------------------*/
+unsigned int Twopart::findPos2Play (unsigned int player) {
+   Check3 (actPlayer); Check3 (actPlayer < NUM_PLAYERS);
+   Check3 ((statGame == PLAYING) || (statGame == PLAYING2));
+   TRACE5 ("Twopart::findPos2Play (unsigned int) - Player " << player);
+
+   if (statGame == PLAYING) {
+      unsigned int points (0);
+      unsigned int cHigh (0);
+
+      // Analyze played staple
+      for (unsigned int i(0); i < played.numberOfCards (); ++i) {
+         CardWidget::NUMBERS nr (played.at (i).number ());
+         points += nr;
+         if (nr >= CardWidget::EIGHT)
+            ++cHigh;
+      }
+
+      TRACE2 ("Twopart::findPos2Play (unsigned int) - Points: " << points
+              << "; Avg: " << (played.numberOfCards ()
+                               ? (points / played.numberOfCards ()) : 0)
+              << "; High: " << cHigh);
+      if (played.numberOfCards ())
+         points /= played.numberOfCards ();
+
+      // Try to get the cards if there are loads of high cards (half or more)
+      // or if the average card played is at least a 8
+      if (((played.numberOfCards () >> 1) < cHigh)
+          || (points >= CardWidget::EIGHT)) {
+         int maxNr (-1);
+         int maxEqualNr (-1);
+         int posMax (-1);
+         int posMaxEqual (-1);
+         analyzeLastPlayed (*startPos, played.numberOfCards () - *startPos,
+                            maxNr, posMax, maxEqualNr, posMaxEqual);
+
+         int pos;
+         // Search for card whose number you own
+         for (unsigned int i(0); i < played.numberOfCards (); ++i)
+            if (((pos = players[player].hand.findByNr (played.at (i))) != -1)
+                && ((posMaxEqual != -1) 
+                    || (played.at (i).number () > maxEqualNr))) {
+               TRACE2 ("Twopart::findPos2Play (unsigned int) - Having equal card at "
+                       << pos);
+               return pos;
+            }
+         
+         // Player has no equal card: Play high card if higher (and he is the
+         // last player)
+         // TODO: Add test if there are only a few players inside the game and
+         // player has high cards
+         if ((!bfPlayers & ~(1 << player))
+             && (posMaxEqual == -1)
+             && ((pos = players[player].hand.findFirstEqualOrBigger
+                 (static_cast<CardWidget::NUMBERS> (maxNr))) != -1)) {
+            TRACE2 ("Twopart::findPos2Play (unsigned int) - Playing highest card at "
+                    << pos);
+            return pos;
+         }
+      }
+      return 0;
+   }
+   else {
+      // TODO
+      int pos (players[player].hand.findFirstEqualOrBigger ());
+      return 0;
+   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -785,30 +861,7 @@ int Twopart:: endRound () {
    int maxEqualNr (-1);
    int posMax (-1);
    int posMaxEqual (-1);
-
-   // Check if card is bigger then all previous
-   for (unsigned int i (*startPos); i < (cPlayers + *startPos); ++i) {
-      if ((int)(played.at (i).number ()) > maxNr) {
-         TRACE3 ("TwoPart::endRound () - New highest card " << played.at (i)
-                 << " at position " << i);
-         maxNr = (int)played.at (i).number ();
-         posMax = i;
-         }
-         Check3 (posMax < played.numberOfCards ());
-         Check3 (maxNr == played.at (posMax).number ());
-
-         // Check if card has equal cards
-         for (unsigned int j (i + 1); j < (cPlayers + *startPos); ++j)
-            if (played.at (i).number () == played.at (j).number ())
-               if ((int)(played.at (i).number ()) > maxEqualNr) {
-                  TRACE3 ("TwoPart::endRound () - Found equal "
-                          << played.at (i).numberStr ()
-                          << " at positions " << i << " and " << j);
-                  maxEqualNr = (int)played.at (i).number ();
-                  posMaxEqual = i;
-                  break;
-               } // endif equal card found
-   } // end-for all players still in game
+   analyzeLastPlayed (*startPos, cPlayers, maxNr, posMax, maxEqualNr, posMaxEqual);
 
    TRACE4 ("Twopart::endRound () - Player starting round: " << startPlayer
            << "; players: " << cPlayers);
@@ -879,6 +932,43 @@ int Twopart:: endRound () {
    bfOldPlayers = bfPlayers;
    *startPos = played.numberOfCards ();
    return startPlayer = nextPlayer;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Analyzes the played staple and retrieves the highest card(s)
+//Parameters: startPos: Position from where to start analyzing
+//            max: Highest single card
+//            maxPos: Position of highest single card
+//            maxEqua: Highest pair
+//            maxEquaPos: Position of highest equal card
+/*--------------------------------------------------------------------------*/
+void Twopart::analyzeLastPlayed (unsigned int startPos, unsigned int cards,
+                                 int& max, int& maxPos, int& maxEqual,
+                                 int& maxEqualPos) const {
+   cards += startPos;
+   // Check if card is bigger then all previous
+   for (; startPos < cards; ++startPos) {
+      if ((int)(played.at (startPos).number ()) > max) {
+         TRACE3 ("TwoPart::analyzePlayed () - New highest card " << played.at (startPos)
+                 << " at position " << startPos);
+         max = (int)played.at (startPos).number ();
+         maxPos = startPos;
+         }
+         Check3 (maxPos < played.numberOfCards ());
+         Check3 (max == played.at (maxPos).number ());
+
+         // Check if card has equal cards
+         for (unsigned int j (startPos + 1); j < cards; ++j)
+            if (played.at (startPos).number () == played.at (j).number ())
+               if ((int)(played.at (startPos).number ()) > maxEqual) {
+                  TRACE3 ("TwoPart::analyzePlayed () - Found equal "
+                          << played.at (startPos).numberStr ()
+                          << " at positions " << startPos << " and " << j);
+                  maxEqual = (int)played.at (startPos).number ();
+                  maxEqualPos = startPos;
+                  break;
+               } // endif equal card found
+   } // end-for all players still in game
 }
 
 /*--------------------------------------------------------------------------*/
