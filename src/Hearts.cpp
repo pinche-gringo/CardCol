@@ -134,7 +134,7 @@ int Hearts::makeMove (unsigned int player) {
       aPlayed[pile.at (pos2Play).color ()]++;
       movePile (played, pile, pos2Play, pos2Play);
       pos2Play = -1U;
-      player = check4Winner (player);
+      player = calcNextPlayer (player);
    }
    return player;
 }
@@ -160,6 +160,15 @@ void Hearts::start () {
             (cards.getCard (i * (cards.numberOfCards () / NUM_PLAYERS) + j));
 
    setGameStatus (EXCHANGE);
+
+   if (pScoreDlg) {
+      unsigned int player, points;
+      pScoreDlg->getMaxPoints (points, player);
+      if (points > 100) {
+         delete pScoreDlg;
+         pScoreDlg = NULL;
+      }
+   }
 
    status.pop (1);
    status.push (1, _("Select 3 cards to give away"));
@@ -254,7 +263,7 @@ void Hearts::cardSelected (unsigned int iCard) {
 
    if (moveSelectedCardToPlayed (0, iCard)) {
       if (gameStatus () == PLAYING)
-         setNextPlayer (check4Winner (0));
+         setNextPlayer (calcNextPlayer (0));
       else {
          Check3 (gameStatus () == EXCHANGE);
          if (played.numberOfCards () == 3) {
@@ -285,28 +294,38 @@ void Hearts::cardSelected (unsigned int iCard) {
 }
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Checks who has played the highest card and would therefore win
+//            the played pile
+//Returns   : ID of player with the highest card
+/*--------------------------------------------------------------------------*/
+unsigned int  Hearts::check4Winner () {
+   CardWidget::COLORS color (played.at (0).color ());
+   CardWidget::NUMBERS highest (CardWidget::TWO);
+   unsigned int pos (0);
+   for (unsigned int i (0); i < played.numberOfCards (); ++i)
+      if ((played.at (i).color () == color)
+          && (played.at (i).number () > highest)) {
+         pos = i;
+         highest = played.at (i).number ();
+         TRACE9 ("Hearts::check4Winner (unsinged int, unsinged int) - "
+                 "New high card at " << i);
+      }
+
+   return pos;
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Checks if the round is at end and gives the cards to winner if so
 //Parameters: player: ID of player who did the last turn
 //Returns   : Next player
 /*--------------------------------------------------------------------------*/
-unsigned int  Hearts::check4Winner (unsigned int player) {
+unsigned int  Hearts::calcNextPlayer (unsigned int player) {
    if (played.numberOfCards () == NUM_PLAYERS) {
       // Everyone played its card: Search for winner of played pile;
       // clear it and continue with winner
-      CardWidget::COLORS color (played.at (0).color ());
-      CardWidget::NUMBERS highest (CardWidget::TWO);
-      unsigned int pos (0);
-      for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-         if ((played.at (i).color () == color)
-             && (played.at (i).number () > highest)) {
-            pos = i;
-            highest = played.at (i).number ();
-            TRACE9 ("Hearts::check4Winner (unsinged int, unsinged int) - "
-                    "New high card at " << i);
-         }
-      setNextPlayer (player = ((player - NUM_PLAYERS + pos + 1) & 0x3));;
-      TRACE4 ("Hearts::check4Winner (unsinged int, unsinged int) - "
-              "Continuing with player " << player);
+      setNextPlayer (player = ((player - NUM_PLAYERS + check4Winner () + 1) & 0x3));
+      TRACE4 ("Hearts::calcNextPlayer (unsinged int) - Continuing with player "
+              << player);
       movePile (players[player].won, played);
    }
    else
@@ -331,8 +350,17 @@ unsigned int  Hearts::check4Winner (unsigned int player) {
       pScoreDlg->addPoints (aScore);
       pScoreDlg->show ();
 
+      string stat (_("Round ended"));
+      unsigned int player, points;
+      pScoreDlg->getMaxPoints (points, player);
+      if (points > 100) {
+         stat = _("Game ended; %1 won");
+         pScoreDlg->getMinPoints (points, player);
+         stat.replace (stat.find ("%1"), 2, names[player]);
+      }
+
       status.pop (1);
-      status.push (1, _("Round ended"));
+      status.push (1, stat);
    }
    else
       displayTurn (player);
@@ -440,17 +468,20 @@ void Hearts::exchangeCards () {
       // If nr. of clubs or diamonds are < 3 -> Use them
       if (cCards && (cCards < 3)) {
          TRACE3 ("Hearts::exchangeCards () - Getting rid of all clubs: 0 - "
-                 << cCards - 1);
-         movePile (players[(i + 1) & 0x3].hand, pile, 0, posColors[0]);
+                 << cCards - 1 << "; " << cCards << " cards");
+         movePile (players[(i + 1) & 0x3].hand, pile, 0,
+                   posColors[CardWidget::CLUBS]);
          moved = cCards;
       }
       cCards = numberOfCards (posColors, CardWidget::DIAMONDS);
       if (cCards && (cCards) < (3 - moved)) {
          TRACE3 ("Hearts::exchangeCards () - Getting rid of all diamonds: "
-                 << posColors[1] - moved  - cCards + 1 << " - " 
-                 << posColors[1] - moved);
+                 << posColors[CardWidget::DIAMONDS] - moved  - cCards + 1
+                 << " - " << posColors[CardWidget::DIAMONDS] - moved << "; "
+                 << cCards << " cards");
          movePile (players[(i + 1) & 0x3].hand, pile,
-                   posColors[1] - moved - cCards + 1, posColors[1] - moved);
+                   posColors[CardWidget::DIAMONDS] - moved - cCards + 1,
+                   posColors[CardWidget::DIAMONDS] - moved);
          moved += cCards;
       }
 
@@ -458,20 +489,30 @@ void Hearts::exchangeCards () {
       cCards = numberOfCards (posColors, CardWidget::SPADES);
       if (cCards && (cCards < 5)) {
          // Search for the queen of spades and get rid of cards equal or bigger
-         unsigned int start (posColors[2] - moved - cCards + 1);
-         while (start <= (posColors[2] - moved - 1)
+         unsigned int start (posColors[CardWidget::SPADES] - moved - cCards + 1);
+         while (start <= (posColors[CardWidget::SPADES] - moved - 1)
                 && (pile.at (start).number () < CardWidget::QUEEN)) {
             TRACE9 ("Hearts::exchangeCards () - Checking spades at " << start);
             Check3 (pile.at (start).color () == CardWidget::SPADES);
             ++start;
          }
-         
-         cCards = (((posColors[2] - moved - start) > 3)
-                   ? 3 : posColors[2] - moved - start);
-         TRACE3 ("Hearts::exchangeCards () - Getting rid of all high spades: "
-                 << start << " - " << start + cCards - 1);
-         movePile (players[(i + 1) & 0x3].hand, pile, start, start + cCards);
-         moved += cCards + 1;
+
+         if (pile.at (start).number () == CardWidget::QUEEN) {
+            TRACE3 ("Hearts::exchangeCards () - Getting rid of queen of spades at "
+                    << start);
+            movePile (players[(i + 1) & 0x3].hand, pile, start, start);
+            moved++;
+         }
+
+         if ((moved < 3) && (start < (posColors[CardWidget::SPADES] - moved))) {
+            start = posColors[CardWidget::SPADES] - moved;
+            cCards = 2 - moved;
+            TRACE3 ("Hearts::exchangeCards () - Getting rid of all high spades: "
+                    << start -  cCards << " - " << start << "; " << (cCards + 1)
+                    << " cards");
+            movePile (players[(i + 1) & 0x3].hand, pile, start - cCards, start);
+            moved += cCards + 1;
+         }
       }
 
       // Get rid of high cards
@@ -480,13 +521,15 @@ void Hearts::exchangeCards () {
          Check3 (nr > CardWidget::TWO);
          TRACE8 ("Hearts::exchangeCards () - Getting rid of high cards");
          if ((cardPos = pile.find (CardWidget::NUMBERS (nr))) != -1) {
-            TRACE3 ("Hearts::exchangeCards () - Getting rid of all high card at "
+            TRACE3 ("Hearts::exchangeCards () - Getting rid of high card at "
                     << cardPos);
             movePile (players[(i + 1) & 0x3].hand, pile, cardPos, cardPos);
             moved++;
          }
       }
       players[(i + 1) & 0x3].hand.sortByColor ();
+      Check3 (players[(i + 1) & 0x3].hand.numberOfCards ()
+              == (cards.numberOfCards () / NUM_PLAYERS));
    }
 }
 
@@ -594,43 +637,64 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
             }
          }
       }
-      else {
+      else {                              // Player has cards of the same color
+         unsigned int posWinner (check4Winner ());
+         // Play queen of spades, if there's already a higher card in the pile
+         if ((color == CardWidget::SPADES)
+             && (played.at (posWinner).number () > CardWidget::QUEEN))
+            return ((pile.at (aPos[CardWidget::SPADES]).number () == CardWidget::QUEEN)
+                    || (numberOfCards (aPos, CardWidget::SPADES) == 1)
+                    || (pile.at (aPos[CardWidget::SPADES] - 1).number ()
+                        != CardWidget::QUEEN)
+                    ? aPos[CardWidget::SPADES] : aPos[CardWidget::SPADES] - 1);
+
          // Play high card of the color, if last player and pile contains no
          // counting card, except if that would mean to play the queen of spades.
          if ((played.numberOfCards () == (NUM_PLAYERS - 1))
-             && !pointsOfPile (played)
-             && ((color != CardWidget::SPADES)
-                 || (players[player].hand.at (aPos[CardWidget::SPADES]).number ()
-                     != CardWidget::QUEEN)))
-            return aPos[color];
+             && !pointsOfPile (played))
+            return ((color != CardWidget::SPADES)
+                    || (players[player].hand.at (aPos[CardWidget::SPADES]).number ()
+                        != CardWidget::QUEEN)
+                    || numberOfCards (aPos, CardWidget::SPADES) == 1)
+               ? aPos[color] : aPos[color] - 1;
          else {
-            // Play highest card lower than the previously played onces
-            // First get highest played card (with the color of the first)
+            // Play highest card lower than the previously played ones
             int card (0);
             Check3 (played.numberOfCards ());
-            CardWidget::NUMBERS highest (played.at (0).number ());
-            while (++card < played.numberOfCards ())
-               if ((played.at (card).number () > highest)
-                   && (played.at (card).color () == color)) {
-                  highest = played.at (card).number ();
-                  TRACE9 ("Hearts::findPos2Play (unsigned int) - Try to be below "
-                          << played.at (card));
-               }
+            CardWidget::NUMBERS highest (played.at (posWinner).number ());
+            TRACE9 ("Hearts::findPos2Play (unsigned int) - Try to be below "
+                    << played.at (posWinner));
 
-            // Then search for a lower card
+            // Search for a lower card
             card = aPos[color]; Check3 (card >= 0);
             do {
                if (pile.at (card).number () < highest) {
+                  // Found a lower card; test if the highest is the ace of
+                  // spades and you have the queen and are about to play the king
+                  if ((color == CardWidget::SPADES)
+                      && (highest == CardWidget::ACE)
+                      && card
+                      && (pile.at (card - 1).number () == CardWidget::QUEEN)
+                      && (pile.at (card - 1).color () == CardWidget::SPADES))
+                     --card;
+
                   TRACE5 ("Hearts::findPos2Play (unsigned int) - Playing card at "
                           << card  << ": " << pile.at (card));
                   return card;
                }
                --card;
             } while ((card >= 0) && (pile.at (card).color () == color));
+            ++card;
+
+            // Try to not play the queen of spades, if possible
+            if ((color == CardWidget::SPADES)
+                && (pile.at (card).number () == CardWidget::QUEEN)
+                && (pile.at (card + 1).color () == CardWidget::SPADES))
+                ++card;
+
             TRACE5 ("Hearts::findPos2Play (unsigned int) - Forced to play card at "
-                    << card + 1 << ": " << pile.at (card + 1));
-            return ((played.numberOfCards () == (NUM_PLAYERS - 1))
-                    ? aPos[color] : card + 1);
+                    << card << ": " << pile.at (card));
+            return card;
          }
       }
    }
@@ -656,9 +720,12 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
             // Play the lowest card, if there are still cards of that color
             // owned by other players and - if it is a heart - there are
             // already played hearts.
+            TRACE9 ("Hearts::findPos2Play (unsigned int) - Analyzing "
+                    << pile.at (pos) << "; Played: " << aPlayed[color]
+                    << "; I have: " << numberOfCards (aPos, color));
             if ((aPlayed[color] + numberOfCards (aPos, color))
                 < (cards.numberOfCards () / NUM_PLAYERS)) {
-               TRACE9 ("Hearts::findPos2Play (unsigned int) - Considering to "
+               TRACE8 ("Hearts::findPos2Play (unsigned int) - Considering to "
                        "play " << pile.at (pos) << "; Played: " << aPlayed[color]);
 
                 if ((color != CardWidget::HEARTS)
@@ -682,6 +749,7 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
 //            The queen of spades counts 13 points and every heart 1 point
 //Parameters: pile: Pile to inspect
 //Returns   : unsigned int: Number of points
+
 /*--------------------------------------------------------------------------*/
 unsigned int Hearts::pointsOfPile (ICardPile& pile) {
    unsigned int points (0);
@@ -707,4 +775,7 @@ void Hearts::changeNames (const vector<string>& newNames) {
 
    for (int i (0); i < NUM_PLAYERS; ++i)
       players[i].name.set_text (names[i]);
+
+   if (pScoreDlg)
+      pScoreDlg->update (newNames);
 }
