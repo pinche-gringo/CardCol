@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2004
+//COPYRIGHT   : Copyright (C) 2003, 2004
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -1478,18 +1478,18 @@ void Machiavelli::endGame (unsigned int looser) {
 /// Converts the pile-number to the actual pile
 /// \param player: Number of player
 /// \param pile: ID of the pile to return
-/// \returns ICardPile&: Pile corresponding to the passed number
+/// \returns ICardPile*: Pile corresponding to the passed number or NULL
 //----------------------------------------------------------------------------
-ICardPile& Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile) {
-   Check1 (player < NUM_PLAYERS);
-   Check1 ((pile >> 16) <= tablePiles.size ());
+ICardPile* Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile) {
+   if ((player >= NUM_PLAYERS) || ((pile >> 16) > tablePiles.size ()))
+      return NULL;
 
    target = pile;
    pile >>= 16;
    if (pile == tablePiles.size ())
       makeNewPile ();
 
-   return hands[player];
+   return &hands[player];
 }
 
 //----------------------------------------------------------------------------
