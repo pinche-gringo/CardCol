@@ -312,7 +312,7 @@ Twopart::Twopart ()
      , tblTable (11, 7), cardFaces (USED_CARDS), cards (), pThread (NULL)
      , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
-     , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL)
+     , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL), offPos (0)
      , bfOldPlayers (bfPlayers), statGame (INITIALIZING) {
    set_usize (WIDTH, HEIGHT);
 
@@ -369,7 +369,6 @@ Twopart::Twopart ()
    tblTable.attach (played, 3, 11, 5, 8, 0, 0, 0, 5);
 
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      startPos[i] = 0;
       players[i].won.setShowOption (ICardPile::SHOWBACK);
       players[i].hand.setShowOption (ICardPile::SHOWFACE);
    }
@@ -535,23 +534,25 @@ void Twopart::playedSelected (unsigned int player) {
    Check3 (bfPlayers);
 
    // Move played cards to player
-   movePlayedCardsToPlayer (player, startPos[player]);
+   Check3 (offPos > 0); Check3 (offPos < NUM_PLAYERS);
+   movePlayedCardsToPlayer (player, startPos[--offPos]);
 
-   // Re-enable last player (having cards) and calculate next
-   unsigned int lastPlayer;
-   for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      lastPlayer = (actPlayer - i) & 0x3;
-      if ((!(bfPlayers & (1 << (lastPlayer))))
-          && players[lastPlayer].hand.numberOfCards ()) {
-         TRACE5 ("Twopart::playedSelected (unsigned int) - Re-adding player "
-                 << lastPlayer);
-         addPlayer (lastPlayer);
-         // TODO: Add right amount of players!
-      }
-   }
-
+   // Re-enable next two players (having cards); continue with first of them
    removePlayer (player);
+
+   unsigned int next;
+   unsigned int cAdded (0);
+   for (unsigned int i (1); i < NUM_PLAYERS; ++i)
+      if ((!(bfPlayers & (1 << (next = (actPlayer + i) & 0x3))))
+          && players[next].hand.numberOfCards ()) {
+         TRACE5 ("Twopart::playedSelected (unsigned int) - Re-adding player "
+                 << next);
+         addPlayer (next);
+         if (++cAdded == 2)
+            break;
+      }
    actPlayer = findNextPlayer (player);
+
    TRACE7 ("Twopart::playedSelected (unsigned int) - Continuing with player "
            << actPlayer);
 
@@ -568,6 +569,8 @@ void Twopart::playedSelected (unsigned int player) {
 bool Twopart::moveSelectedCardToPlayed (unsigned int player, unsigned int pos) {
    Check3 (player <= NUM_PLAYERS);
    Check3 (pos <= players[player].hand.numberOfCards ());
+   TRACE5 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsigned int) - Player: "
+           << player << " at position " << pos);
 
    if (statGame == PLAYING) {
       CardWidget& card (players[player].hand.remove (pos));
@@ -580,10 +583,9 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player, unsigned int pos) {
          players[player].hand.insertSorted (card);
 
          if (!staple.numberOfCards ()) {
+            Check3 (!pTrump);
             pTrump = new CardWidget (card); Check3 (pTrump);
-            pTrump->show ();
             staple.hide ();
-            tblTable.attach (*pTrump, 2, 3, 2, 3, 0, 0, 5, 5);
          }
       }
    }
@@ -606,10 +608,13 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player, unsigned int pos) {
          return false;
       }
 
-      unsigned int posIns (startPos[findNextPlayer ((player + 1) & 0x3)]
-                           = played.numberOfCards ());
+      unsigned int posIns (played.numberOfCards ());
+      if (offPos < (NUM_PLAYERS - 1))
+         startPos[offPos++] = posIns;
+      else
+         offPos = 0;
 #if TRACELEVEL > 8
-      for (unsigned int i(0); i < NUM_PLAYERS; ++i)
+      for (unsigned int i(0); i < (NUM_PLAYERS - 1); ++i)
          TRACE ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int) - "
                 << i << ". Position: " << startPos[i]);
 #endif
@@ -637,6 +642,8 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player, unsigned int pos) {
 //            iCard: Offset of card in hand
 /*--------------------------------------------------------------------------*/
 void Twopart::cardSelected (unsigned int player, unsigned int pos) {
+   TRACE5 ("Twopart::cardSelected (unsigned int, unsigned int) - Player: "
+           << player << " at position " << pos);
    Check3 (player <= NUM_PLAYERS);
    Check3 (pos <= players[player].hand.numberOfCards ());
 
@@ -652,8 +659,15 @@ void Twopart::cardSelected (unsigned int player, unsigned int pos) {
    int newPlayer (actPlayer);
    if (bfPlayers)
       newPlayer = findNextPlayer (player);
-   else
+   else {
+      // Show trump if not already visible
+      if (pTrump && !pTrump->is_visible ()) {
+         pTrump->show ();
+         tblTable.attach (*pTrump, 2, 3, 2, 3, 0, 0, 5, 5);
+      }
+
       newPlayer = endRound ();
+   }
 
    if (newPlayer < 0) {
       actPlayer = ~newPlayer;
@@ -962,10 +976,13 @@ void Twopart::dealCards () {
 
    // Show cards on table: For all players put 3 cards in hand
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      for (unsigned int j (0); j < 3; ++j) {
+      for (unsigned int j (0); j < 3; ++j)
          players[i].hand.insertSorted (staple.removeTopCard ());
-         startPos[i] = 0;
-      }
+
+   for (unsigned int i (0); i < (NUM_PLAYERS - 1); ++i)
+      startPos[i] = 0;
+   offPos = 0;
+
 
    bfPlayers = bfOldPlayers = (1 << NUM_PLAYERS) - 1;
    enablePlayer (actPlayer = startPlayer = 0);
