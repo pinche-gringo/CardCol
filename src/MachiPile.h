@@ -25,6 +25,8 @@
  */
 class MachiPile : public CardHPile {
  public:
+   typedef enum { UNDEFINED, NUMBER, COLOUR } TYPE;
+
    MachiPile ();
    virtual ~MachiPile ();
 
@@ -41,6 +43,8 @@ class MachiPile : public CardHPile {
 
    unsigned int getPosition4Card (const CardWidget& card) const;
 
+   TYPE getType () const { return type; }
+
    typedef enum { ACE, BOTH, ONE } ACEFLAG;
    static int cardDistance (const CardWidget& a, const CardWidget& b) {
        return cardDistance (a, b, BOTH); }
@@ -55,7 +59,7 @@ class MachiPile : public CardHPile {
 
    void analyzePile ();
 
-   enum { UNDEFINED, NUMBER, COLOUR } type;
+   TYPE type;
 };
 
 #endif
