@@ -24,7 +24,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include <Check.h>
+#include <Trace_.h>
 
 #include "CardPile.h"
 
@@ -287,12 +287,12 @@ void ICardPile::setStyle (PileStyle s) {
 /*--------------------------------------------------------------------------*/
 bool ICardPile::compCards (const CardWidget* a, const CardWidget* b) {
    Check3 (a); Check3 (b);
-   bool diff (a->color () < b->color ());
-   if (!diff)
-      diff = a->number () < b->number ();
    TRACE9 ("ICardPile::compCards (const CardWidget*, const CardWidget*) - "
-            << *a << " <-> " << *b << " = " << diff);
-   return diff;
+           << *a << " < " << *b << " = "
+           << ((a->color () == b->color ())
+               ? a->number () < b->number () : a->color () < b->color ()));
+   return ((a->color () == b->color ())
+           ? a->number () < b->number () : a->color () < b->color ());
 }
 
 /*--------------------------------------------------------------------------*/
@@ -304,7 +304,8 @@ bool ICardPile::compCards (const CardWidget* a, const CardWidget* b) {
 bool ICardPile::compCardsByNr (const CardWidget* a, const CardWidget* b) {
    Check3 (a); Check3 (b);
    TRACE9 ("ICardPile::compCardsByNr (const CardWidget*, const CardWidget*) - "
-           << a->number () << " <-> " << b->number ());
+           << a->number () << " < " << b->number () << " == "
+           << (a->number () < b->number ()));
    return a->number () < b->number ();
 }
 
