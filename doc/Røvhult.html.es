@@ -141,7 +141,7 @@
         </td>
         <td><a href="Hearts.html.es">Anterior</a><br>(Corazones)</td>
         <td><a href="CardCol.html.es">Contenido</a></td>
-        <td><a href="Sgt. Mayor.html.es">Pr&oacute;ximo</a><br>(Sgt. Mayor)</td>
+        <td><a href="Sgt.Mayor.html.es">Pr&oacute;ximo</a><br>(Sgt. Mayor)</td>
       </tr>
     </table>
   </body>
