@@ -71,12 +71,14 @@ class RovhultAppl : public XApplication {
    void finishedExchange ();
    void takeCards (unsigned int player);
 
-   void doPileSelected (void* playerPile);
+   int doPileSelected (unsigned int player, unsigned int pile);
 
    // Helper functions
    void movePlayedCardsToLooser (unsigned int nrLooser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;
-   int  makeComputerMoves ();
+   int  makeComputerMove ();
+   void makeComputerMoves () {
+      Gtk::Main::timeout.connect (slot (this, &RovhultAppl::makeComputerMove), 1000); }
    void enablePlayer (unsigned int player);
    void disableLastPlayer ();
    void cleanTable ();
@@ -84,8 +86,6 @@ class RovhultAppl : public XApplication {
    void fillStaple ();
    CardWidget::NUMBERS playCardsFromHand (unsigned int player, unsigned int pos);
    void exchangeAutoplayerCards ();
-
-   void waitForThread ();
 
    bool clearPlayedIf4Equal ();
    void fillUpPile (ICardPile& pile, unsigned int minCards);

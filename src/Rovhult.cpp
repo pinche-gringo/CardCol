@@ -33,6 +33,8 @@
 
 #include <glib.h>
 
+#define CHECK 3
+#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -41,7 +43,6 @@
 
 #include <CardWidget.h>
 #include "Rovhult.h"
-
 
 
 GtkTargetEntry RovhultAppl::dndTypeHand  = { "icon/card/hand", GTK_TARGET_SAME_APP, 0 };
@@ -434,7 +435,7 @@ void RovhultAppl::finishedExchange () {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Compares two cards according the rules of Rovhult
 //Parameters: lhs, rhs: Cards to compare
-//Returns   : int: >0, if number is smaller; 0 if equal or >0 if bigger
+//Returns   : int: >0, if number of lhs is smaller; 0 if equal or >0 if bigger
 /*--------------------------------------------------------------------------*/
 int RovhultAppl::compareCards (const CardWidget& lhs, const CardWidget& rhs) {
    unsigned int lhsValue ((lhs.number () == CardWidget::TWO) ? CardWidget::ACE + 1
@@ -475,27 +476,46 @@ void RovhultAppl::exchangeAutoplayerCards () {
             CardWidget& cardPile (players[i].reserve[posPile].removeTopCard ());
             CardWidget& cardHand (players[i].hand.remove (posHand));
 
-            TRACE3 ("RovhultAppl::exchangeCards () - exchanging card " << posHand
-                    << " in hand (" << cardHand << ") with card on pile "
+            TRACE3 ("RovhultAppl::exchangeAutoplayerCards () - exchanging card "
+                    << cardHand << " in hand (" << posHand << ") with card on pile "
                     << posPile << " (" << cardPile << ')');
             // Swap cards
             players[i].reserve[posPile].setTopCard (cardHand);
             players[i].hand.insert (cardPile, posHand);
          }
       }
+
+      // Sort cards on piles
+      for (int j (0); j < 2; ++j) {
+         for (int k (j); k >= 0; --k) {
+            if (compareCards (players[i].reserve[k + 1].getTopCard (),
+                              players[i].reserve[k].getTopCard ()) < 0) {
+               CardWidget& low (players[i].reserve[k + 1].removeTopCard ());
+               CardWidget& high (players[i].reserve[k].removeTopCard ());
+
+               TRACE3 ("RovhultAppl::exchangeAutoplayerCards () - exchanging card "
+                       << low << " on pile " << (k + 1) << " with card " << high
+                       << " on pile " << k);
+
+               players[i].reserve[k + 1].setTopCard (high);
+               players[i].reserve[k].setTopCard (low);
+            }
+         }
+      }
    }
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Makes the computer-moves and enables again player 0
+//Purpose   : Makes a move for a computer controlled player. If the next
+//            player is human, enable its cards
 /*--------------------------------------------------------------------------*/
-int RovhultAppl::makeComputerMoves () {
-   TRACE2 ("RovhultAppl::makeComputerMoves (void*) - Start with player "
+int RovhultAppl::makeComputerMove () {
+   TRACE2 ("RovhultAppl::makeComputerMove (void*) - Start with player "
            << actPlayer);
 
    actPlayer = makeTurn (actPlayer);
 
-   TRACE2 ("RovhultAppl::makeComputerMoves (void*) - Next player: "
+   TRACE2 ("RovhultAppl::makeComputerMove (void*) - Next player: "
            << actPlayer);
 
    if (!actPlayer)
@@ -559,22 +579,11 @@ void RovhultAppl::disableLastPlayer () {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Disables the cards of the passed player
-/*--------------------------------------------------------------------------*/
-void RovhultAppl::waitForThread () {
-   mutexThread.lock ();
-   if (pThread)
-      Thread::waitForThread (*pThread);
-   mutexThread.unlock ();
-}
-
-/*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card on table
 //Parameters: player: ID of player
-//            iCard: Offset of card in hand
+//            pile: Offset of selected pile
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
-   waitForThread ();
    Check3 (player < NUM_PLAYERS); Check3 (pile < 3);
 
    CardWidget& card (players[player].reserve[pile].getTopCard ());
@@ -596,29 +605,25 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    }
    disableLastPlayer ();
 
-   // Create a thread to perform the move from the pile; neccessary to enable
-   // the update of the GUI (for the card-flip, which would not be visible
-   // otherwise).
-   pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::doPileSelected,
-                               (void*)((player << 16) + pile));
+   if (players[player].reserve[pile].numberOfCards () == 1)
+      Gtk::Main::timeout.connect (bind (slot (this, &RovhultAppl::doPileSelected),
+                                        player, pile), 1000);
+   else
+      doPileSelected (player, pile);
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Executes the move from a pile: Moves the cards and enables next
-//Parameters: playerPile: Combination of player-ID and pile number
+//Parameters: player: ID of player
+//            pile: Offset of selected pile
+//Returns   : int: 0
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::doPileSelected (void* playerPile) {
-   unsigned int player ((unsigned int)playerPile >> 16); assert (player < NUM_PLAYERS);
-   unsigned int pile ((unsigned int)playerPile & 0xffff); assert (pile < 3);
-
+int RovhultAppl::doPileSelected (unsigned int player, unsigned int pile) {
    TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - " 
            << player << '/' << pile);
 
-   assert (players[player].reserve[pile].numberOfCards ());
-   if (players[player].reserve[pile].numberOfCards () == 1)
-      sleep (1);
+   Check3 (players[player].reserve[pile].numberOfCards ());
 
-   gdk_threads_enter ();
    // Move card (and visible cards with equal number below) from player to
    // played staple
    CardWidget& card (players[player].reserve[pile].removeTopCard ());
@@ -633,11 +638,16 @@ void RovhultAppl::doPileSelected (void* playerPile) {
       }
    }
 
-   executeMove (player, card.number ());
-   gdk_threads_leave ();
-   mutexThread.lock ();
-   pThread = NULL;
-   mutexThread.unlock ();
+   actPlayer = executeMove (player, card.number ());
+
+   if (actPlayer > 0)
+      // Start a timer to perform the computer-moves
+      makeComputerMoves ();
+   else
+      if (!actPlayer)
+         enablePlayer (0);
+
+   return 0;
 }
 
 
@@ -688,8 +698,6 @@ bool RovhultAppl::cardValid (CardWidget::NUMBERS nr) {
 //            iCard: Offset of card in hand
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
-   waitForThread ();
-
    TRACE3 ("Rovhult::handSelected (unsigned int, unsinged int) - Checking player "
            << player << "; Card at " << pos);
    Check3 (player < NUM_PLAYERS);
@@ -701,14 +709,17 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
 
    if (!cardValid (card.number ()))
        return;
-   disableLastPlayer ();
-
    playCardsFromHand (player, pos);
 
    actPlayer = executeMove (player, card.number ());
+   disableLastPlayer ();
 
-   // Start a timer to perform the computer-moves
-   Gtk::Main::timeout.connect (slot (this, &RovhultAppl::makeComputerMoves), 1000);
+   if (actPlayer > 0)
+      // Start a timer to perform the computer-moves
+      makeComputerMoves ();
+   else
+      if (!actPlayer)
+         enablePlayer (0);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -797,11 +808,12 @@ int RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 //Parameters: player: ID of player picking up the cards
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::takeCards (unsigned int player) {
-   waitForThread ();
-
    TRACE2 ("RovhultAppl::takeCards (unsigned int) - " << player);
-   disableLastPlayer ();
    executeMove (player, CardWidget::UNREACHABLE);
+   disableLastPlayer ();
+
+   // Start a timer to perform the computer-moves
+   makeComputerMoves ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -889,12 +901,11 @@ void RovhultAppl::fillUpPile (ICardPile& pile, unsigned int minCards) {
    while ((pile.numberOfCards () < minCards) && staple.numberOfCards ()) {
       CardWidget& newCard (staple.removeTopCard ());
       newCard.setVisible ();
-      pile.append (newCard);
+      pile.insertSorted (newCard);
 
       TRACE8 ("Rovhult::fillUpPile (ICardPile&, unsinged int) - Appended card "
               << newCard);
    }
-   pile.sortByNumber ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -929,9 +940,7 @@ void RovhultAppl::movePlayedCardsToLooser (unsigned int nrLooser) {
    Check3 (nrLooser < NUM_PLAYERS);
 
    while (played.numberOfCards ())
-      players[nrLooser].hand.append (played.remove (0));
-
-   players[nrLooser].hand.sortByNumber ();
+      players[nrLooser].hand.insertSorted (played.remove (0));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1265,7 +1274,7 @@ void RovhultAppl::getDropData (GdkDragContext* pContext, GtkSelectionData* pData
 /*--------------------------------------------------------------------------*/
 int RovhultAppl::makeTurn (unsigned int player) {
    TRACE2 ("RovhultAppl::makeTurn (unsigned int) - Player " << player);
-   assert (player < NUM_PLAYERS);
+   Check3 (player < NUM_PLAYERS);
 
    // Search for minimal card to play; this is either a card equal or bigger
    // or - if no previous card is played or the last card played was a 7 -
@@ -1285,19 +1294,21 @@ int RovhultAppl::makeTurn (unsigned int player) {
       // Check if no matching normal card is found and use special card instead
       // We know one card must match as "playerCanContinue" reported this player
       // as valid
-      if (pos == (unsigned int)-1)
+      if (pos == (unsigned int)-1) {
          if (players[player].hand.at (0).number () == CardWidget::TWO)
             pos = 0;
          else {
             pos = players[player].hand.findFirstEqualOrBigger (CardWidget::TEN);
-            assert (pos != -1);
-            assert (players[player].hand.at (pos).number () == CardWidget::TEN);
+            Check3 (pos != -1);
+            Check3 (players[player].hand.at (pos).number () == CardWidget::TEN);
+            played.clear ();
          }
+      }
       else {
          TRACE5 ("RovhultAppl::makeTurn (unsigned int) - Continuing with card "
                  << players[player].hand.at (pos) << " at pos " << pos);
    
-         assert ((cardMin == CardWidget::SEVEN)
+         Check3 ((cardMin == CardWidget::SEVEN)
                  ? (players[player].hand.at (pos).number () <= CardWidget::SEVEN)
                  : (players[player].hand.at (pos).number () >= cardMin));
 
@@ -1324,7 +1335,34 @@ int RovhultAppl::makeTurn (unsigned int player) {
       return executeMove (player, nr);
    }
    else {
-      assert (!"implemented yet");
+      // Play first visible cards
+      bool cardVisible (false);
+      for (int i (0); i < 3; ++i) {
+         if (players[player].reserve[i].numberOfCards () > 1) {
+            cardVisible = true;
+
+            // If card can be played: Search for last equal card
+            CardWidget& actCard (players[player].reserve[i].getTopCard ());
+            if (actCard.number () > cardMin) {
+               while ((i < 2)
+                      && (players[player].reserve[i + 1].getTopCard ().number ()
+                          == actCard.number ()))
+                  ++i;
+            }
+
+            // Execute move
+            return doPileSelected (player, i);
+         }
+      }
+
+      // No card visible: Play the first
+      if (!cardVisible) {
+         for (int i (0); i < 3; ++i)
+            if (players[player].reserve[i].numberOfCards ())
+               return doPileSelected (player, i);
+      }
+
+      Check3 (0);
    }
 }
 
