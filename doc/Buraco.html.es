@@ -38,7 +38,7 @@
 
     <p>Buraco es un juego de cartas popular de Venezuela. Es similar a Canasta
       o Romme en Europa; aunque termina m&aacute;s rapido, gracias a los
-      "Buracos" (Cartas de reserve cuales se recoger, si uno del equipo se
+      "Buracos" (Cartas de reserva cuales se recoger, si uno del equipo se
       queda sin cartas).</p>
 
     <p>En pocas palabras se trata de descartar de cartas "apropiadas" (con la
@@ -70,7 +70,7 @@
       botar una (con hacer clic en ella) y el proxima jugador (en las auguajas
       de reloj) continua.</p>
 
-    <p>M&aacute; reglas est&aacute;n:</p>
+    <p>M&aacute;s reglas est&aacute;n:</p>
     <ul>
 
       <li>Todos las piles pueden contener solamente un mono o 2 - excepto si
@@ -127,12 +127,12 @@
 
     <ul>
       <li>La reserva: Una pila de cartas (con cara abaja), dedonde se recoge
-        cartas nuevas (si se pone la rata por encima, aparece una ventana
+        cartas nuevas (si se pone la mouse por encima, aparece una ventana
         mostrando su n&uacute;mero de las cartas).</li>
 
       <li>La pila de las cartas botadas (con cara visible). Esa pila
       tambi&eacute;n muestra el n&uacute;mero de las cartas, si se pone la
-      rata por encima.</li>
+      mouse por encima.</li>
 
       <li>Las cartas del jugador. Presorteado por n&uacute;meros, pero
         sortable con tirar y depositar - drag and drop <a
@@ -151,10 +151,10 @@
 
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
-      Tirar y depositar significa hacer clic con el but&oacute;
-      <em>derecho</em> (o el central) de la rata en una carta, sigue empujando
-      el but&oacute;n y tira la carta a su destinaci&oacute;n. El fin de esa
-      actividad se ese&ntilde;a con dejar el but&oacute;n.</p>
+      Tirar y depositar significa hacer clic con el bot&oacute;n
+      <em>derecho</em> (o el central) de el mouse en una carta, se sigue
+      empujando el but&oacute;n y se tira la carta a su destinaci&oacute;n. El
+      fin de esa actividad se se ejecuta con dejar el bot&oacute;n.</p>
 
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note2"></a>2)
       No se tiene que movir el mono manualmente. Solamente deposita la carta

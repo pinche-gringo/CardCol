@@ -58,26 +58,26 @@
     <p>Para empezar el juego, se tiene que hacer clic encima de la carta que
      se quisiera jugar.</p>
 
-    <p>El juega continua en la direcci&oacute;n del las aguajas de
-      reloj. Todos los jugadores ponen sus cartas, que deben que tener un
-      n&uacute;mero igual o mayor que la &uacute;ltima carta jugado. Tiene en
+    <p>El juego continua en la direcci&oacute;n del las aguajas de
+      reloj. Todos los jugadores ponen sus cartas, que deben tener un
+      n&uacute;mero igual o mayor que la &uacute;ltima carta jugada. Tiene en
       cuenta que se puede poner cada n&uacute;mero de cartas con
       n&uacute;meros iguales (como el &spades; 5 y el &clubs;
-      5). Despu&eacute;s se tiene que sacar cartas de las de la reserva
-      hasta se tiene tres cartas de nuevo en la mano (o la reserva est&aacute;
-      vac&iacite;o).</p>
+      5). Despu&eacute;s se tiene que sacar cartas de la reserva
+      hasta tener tres cartas de nuevo en la mano (o la reserva est&aacute;
+      vac&iacute;a).</p>
 
     <p>Hay unas cartas especiales y excepci&oacute;nes:</p>
     <dl>
       <dt><b>2's</b></dt>
-      <dd><p>Se puede jugarlos siempre; el proximo jugador puede seguir con
+      <dd><p>Se puede jugar siempre; el proximo jugador puede seguir con
           cada carta</p></dd>
       <dt><b>7 es la &uacute;litma carta jugado</b></dt>
       <dd><p>La proxima carta tiene que ser igual o menor</p></dd>
       <dt><b>8's</b></dt>
       <dd><p>El proximo jugadar est&aacute; saltado</p></dd>
       <dt><b>10's</b></dt>
-      <dd><p>Se puede jugarlos siempre (como los 2's), pera adem&aacute;s las
+      <dd><p>Se puede jugar siempre (como los 2's), pera adem&aacute;s las
           cartas jugadas est&aacute;n vaciadas. El mismo jugador puede
           contin&uacute;ar, aunque no puede sacar cartas de la reserva
           (excepto si ya no tiene cartas).</p></dd>
@@ -89,47 +89,47 @@
           proximo jugador).</p></dd>
     </dl>
 
-    <p>Si un jugador no puede contin&uacute;ar de acuerdo de esas reglas, le
+    <p>Si un jugador no puede contin&uacute;ar de acuerdo a estas reglas, se
       tiene que sacar todas las cartas jugadas. Por supuesto lo puede hacer con
-      intenci&oacute;n, entonces sigue lo proximo.</p>
+      intenci&oacute;n, entonces sigue el proximo.</p>
 
     <p>Si un jugador ya no tiene cartas en su mano (y tampoco no hay cartas
       por la reserva), puede seguir con las de la mesa. Las est&aacute;n
-      jugado de acuerdo de las reglas anteriores; comenziendo con las cartas
+      jugado de acuerdo a las reglas anteriores; comenzando con las cartas
       visibles y despu&eacute;s con las tapadas.</p>
 
-    <p>Tiene en cuenta que si se tiene que sacar las cartas jugadas por su
-      manu no se puede sacar tambi&eacute;n una carta visible de la mesa y que
+    <p>Se debe tener en cuenta que si se tiene que sacar las cartas jugadas por su
+      mano no se puede sacar tambi&eacute;n una carta visible de la mesa y
       se tiene que seguir con esas (nuevas) cartas en su mano antes de usar
       las cartas de la mesa de nuevo.</p>
 
     <p>Las cartas tapadas se puede jugar casualmente. Si la carta elejida no
       vale de acuerdo con las reglas, se tiene que sacarla y las dem&aacute;s
-      del estaploe jugado.</p>
+      del mot&oacute;n jugado.</p>
 
     <p>La barra de estado muestra que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
-    <p>Despu&eacute;s iniciar se encuentra (de izquierda a derecha y de arriba a
-      abajo):</p>
+    <p>Despu&eacute;s de iniciar se encuentra desplazadas las cartas (de
+      izquierda a derecha y de arriba a abajo):</p>
 
     <ul>
       <li>La reserva: Una colecci&oacute;n de cartas tapadas, de donde se saca
-        cartas nuevas (si se pone la rata por encima, aparece una ventana
+        cartas nuevas (si se pone el mouse por encima, aparece una ventana
         mostrando su n&uacute;mero de las cartas).</li>
-      <li>Las cartas del jugador humano. Por arriba sus cartas por la mesa encima de
-        sus cartas en su mano.</li>
-      <li>En la linea proxima es lo mismo con los jugadores 3 y 1. Entrelos se
-        encuentre el puesto de las cartas jugadas.</li>
+      <li>Las cartas del jugador humano. Por arriba sus cartas de mano; por
+        abajo las de la mesa.</li>
+      <li>En la linea proxima es lo mismo con los jugadores 3 y 1. Entre ellos
+        se encuentre el puesto de las cartas jugadas.</li>
       <li>En la linea &uacute;ltima son las cartas del jugador 2.</li>
     </ul>
 
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
-      Tirar y depositar significa hacer clic con el but&oacute;
-      <em>derecho</em> (o el central) de la rata en una carta, sigue empujando
-      el but&oacute;n y tira la carta a su destinaci&oacute;n. El fin de esa
-      actividad se ese&ntilde;a con dejar el but&oacute;n.</p>
+      Tirar y depositar significa hacer clic con el bot&oacute;n
+      <em>derecho</em> (o el central) de el mouse en una carta, se sigue
+      empujando el but&oacute;n y se tira la carta a su destinaci&oacute;n. El
+      fin de esa actividad se se ejecuta con dejar el bot&oacute;n.</p>
 
     <hr size=3 noshade>
     <address>

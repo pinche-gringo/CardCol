@@ -102,7 +102,7 @@
 
     <ul>
       <li>El mont&oacute;n de reserva: Una colecci&oacute;n de cartas tapadas, de
-        donde se saca cartas nuevas (si se pone la rata por encima, aparece una
+        donde se saca cartas nuevas (si se pone la mouse por encima, aparece una
         ventana mostrando su n&uacute;mero de las cartas). En la segunda parte
         la carta que determina el palo especial est&aacute; mostrado aqua.</li>
       <li>Las cartas del jugador humano. Por arriba sus cartas ganadas encima de
