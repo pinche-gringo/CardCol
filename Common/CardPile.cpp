@@ -54,7 +54,7 @@ void ICardPile::setTopCard (CardWidget& card) {
            << " -> new size: " << size () + 1);
 
    if ((style > NORMAL) && size ()) {
-      Check3 (operator [] (size () - 1));
+      Check3 (operator[] (size () - 1));
       resize (size () - 1, style);
    }
 
@@ -71,7 +71,7 @@ void ICardPile::setTopCard (CardWidget& card) {
 //-----------------------------------------------------------------------------
 CardWidget& ICardPile::removeTopCard () {
    TRACE5 ("ICardPile::removeTopCard () - Size: " << size ());
-   Check3 (size () > 0); Check3 (operator [] (size () - 1));
+   Check3 (size () > 0); Check3 (operator[] (size () - 1));
 
    CardWidget& card (getTopCard ());
    pop_back ();
@@ -158,8 +158,9 @@ CardWidget* ICardPile::get (unsigned int id) const {
 /// Inserts a card into the pile
 /// \param card: Card to insert
 /// \param pos: Position of new card
+/// \returns unsigned int: Position where card was inserted
 //-----------------------------------------------------------------------------
-void ICardPile::insert (CardWidget& card, unsigned int pos) {
+unsigned int ICardPile::insert (CardWidget& card, unsigned int pos) {
    TRACE5 ("ICardPile::insert (CardWidget, unsigned int&) - Card " << card
            << " at " << pos);
    Check3 (pos <= size ());
@@ -167,20 +168,24 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
    if (showOpt < DONT_CHANGE)
       card.showFace ((bool)showOpt);
 
-   std::vector<CardWidget*>::insert (begin () + pos, &card);
+   std::vector<CardWidget*>::iterator i
+      (std::vector<CardWidget*>::insert (begin () + pos, &card));
 
    if (style > NORMAL)                          // Cards to display compressed?
       resize ((pos == (size () - 1)) ? pos - 1 : pos, style);
+
+   return i - begin ();
 }
 
 //-----------------------------------------------------------------------------
 /// Inserts a card into the pile; sorted by the passed function
 /// \param card: Card to insert
 /// \param fnSort: Function, how to sort
+/// \returns unsigned int: Position where card was inserted
 //-----------------------------------------------------------------------------
-void ICardPile::insertSorted (CardWidget& card, CMPFUNC fnSort) {
+unsigned int ICardPile::insertSorted (CardWidget& card, CMPFUNC fnSort) {
    TRACE5 ("ICardPile::insertSorted (CardWidget&, CMPFUNC) - Card " << card);
-   insert (card, (upper_bound (begin (), end (), &card, fnSort) - begin ()));
+   return insert (card, (upper_bound (begin (), end (), &card, fnSort) - begin ()));
 }
 
 //-----------------------------------------------------------------------------
@@ -342,6 +347,54 @@ int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
 }
 
 //-----------------------------------------------------------------------------
+/// Finds the first card being equal or bigger than the past one
+/// \param nr: Colour of card (club, diamond, ...) to search for
+/// \returns \c int: Position of card in pile (or -1, if none found)
+/// \pre Cards must be sorted (as the search is binary)
+//-----------------------------------------------------------------------------
+int ICardPile::findFirstEqualOrBiggerColour (CardWidget::COLOURS col) const {
+   unsigned int first (0), last (size ());
+   unsigned int middle (0);
+
+   TRACE8 ("ICardPile::findFirstEqualOrBiggerColour (CardWidget::COLOURS) - Searching for "
+           << col << " in " << size () << " cards");
+
+   while ((last - first) > 0 ) {
+      middle = first + ((last - first) >> 1);
+
+      TRACE5 ("ICardPile::findFirstEqualOrBiggerColour (CardWidget::COLOURS) - Data = ["
+              << first << "-(" << middle << ")-" << last << ") = "
+              << *operator[] (middle));
+
+      Check3 (operator[] (first)); Check3 (operator[] (middle));
+      Check3 (operator[] (first)->colour () <= operator[] (middle)->colour ());
+      Check3 ((last == size ()) ? 1
+              : operator[] (last) && (operator[] (middle)->colour () <= operator[] (last)->colour ()));
+
+      if (operator[] (middle)->colour () < col)
+         first = middle + 1;
+      else
+         last = middle;
+
+      Check3 (middle <= size ());
+      Check3 (last <= size ());
+      Check3 (first <= last); Check3 (middle <= last);
+   }
+
+#if TRACELEVEL > 4
+   TRACE ("ICardPile::findFirstEqualOrBigger (CardWidget::COLOURS) - End = ["
+          << first << "-(" << middle << ")-" << last << ')');
+   if (first < size ())
+      TRACE ("\t-> " << *operator[] (first))
+   else
+      TRACE ("\t-> Not found");
+#endif
+
+   return ((first < size ()) && ((operator[] (first)->colour () >= col))
+           ? static_cast<int> (first) : -1);
+}
+
+//-----------------------------------------------------------------------------
 /// Finds the last card having an equal number as the passed card
 /// \param pos: Card whose (equal) number has to be found
 /// \returns \c int: Position of card in pile
@@ -356,7 +409,27 @@ int ICardPile::findLastEqual (unsigned int pos) const {
          break;
    }
 
-   TRACE5 ("ICardPile::findLastEqual (CardWidget::NUMBERS) - Card "
+   TRACE5 ("ICardPile::findLastEqual (unsigned int) - Card "
+           << *operator[] (pos - 1) << " at position " << pos - 1);
+   return pos - 1;
+}
+
+//-----------------------------------------------------------------------------
+/// Finds the last card having an equal colour as the passed card
+/// \param pos: Card whose (equal) colour has to be found
+/// \returns \c int: Position of card in pile
+/// \pre Cards must be sorted
+//-----------------------------------------------------------------------------
+int ICardPile::findLastEqualColour (unsigned int pos) const {
+   Check3 (pos < size ());
+
+   CardWidget::COLOURS col (operator[] (pos)->colour ());
+   while (++pos < size ()) {
+      if (operator[] (pos)->colour () != col)
+         break;
+   }
+
+   TRACE5 ("ICardPile::findLastEqualColour (unsigned int) - Card "
            << *operator[] (pos - 1) << " at position " << pos - 1);
    return pos - 1;
 }
@@ -368,18 +441,41 @@ int ICardPile::findLastEqual (unsigned int pos) const {
 /// \pre Cards must be sorted
 //-----------------------------------------------------------------------------
 int ICardPile::findFirstEqual (unsigned int pos) const {
-   TRACE5 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Checking card " << pos);
+   TRACE5 ("ICardPile::findFirstEqual (unsigned int) - Checking card " << pos);
    Check1 (pos < size ());
    Check3 (operator[] (pos));
 
    CardWidget::NUMBERS nr (operator[] (pos)->number ());
    while (pos--) {
-      TRACE9 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Checking card"
+      TRACE9 ("ICardPile::findFirstEqual (unsigned int) - Checking card"
               << " at " << pos << " = " << *operator[] (pos));
       if (operator[] (pos)->number () != nr)
          break;
    }
-   TRACE5 ("ICardPile::findFirstEqual (CardWidget::NUMBERS) - Card at position "
+   TRACE5 ("ICardPile::findFirstEqual (unsigned int) - Card at position "
+           << (pos + 1) << " = " << *operator[] (pos + 1));
+   return pos + 1;
+}
+
+//-----------------------------------------------------------------------------
+/// Finds the first card having an equal colour as the passed card
+/// \param pos: Card whose (equal) colour has to be found
+/// \returns \c int: Position of card in pile
+/// \pre Cards must be sorted
+//-----------------------------------------------------------------------------
+int ICardPile::findFirstEqualColour (unsigned int pos) const {
+   TRACE5 ("ICardPile::findFirstEqualColour (unsigned int) - Checking card " << pos);
+   Check1 (pos < size ());
+   Check3 (operator[] (pos));
+
+   CardWidget::COLOURS col (operator[] (pos)->colour ());
+   while (pos--) {
+      TRACE9 ("ICardPile::findFirstEqualColour (unsigned int) - Checking card"
+              << " at " << pos << " = " << *operator[] (pos));
+      if (operator[] (pos)->colour () != col)
+         break;
+   }
+   TRACE5 ("ICardPile::findFirstEqualColour (unsigned int) - Card at position "
            << (pos + 1) << " = " << *operator[] (pos + 1));
    return pos + 1;
 }
@@ -714,4 +810,56 @@ unsigned int ICardPile::getSeries (CardWidget& card,
    }
 
    return nrs;
+}
+
+//----------------------------------------------------------------------------
+/// Find the worst (lowest) card in the pile
+/// \return unsigned int: Position of the lowest card in the pile 
+//----------------------------------------------------------------------------
+unsigned int ICardPile::findLowestCard () const {
+   TRACE9 ("ICardPile::findLowestCard () const - Analyzing " << size () << " cards");
+   Check3 (size ());
+
+   unsigned int pos (0);
+   for (ICardPile::const_iterator i (begin () + 1); i != end (); ++i)
+      if ((*i)->number () < operator[] (pos)->number ())
+         pos = i - begin ();
+
+   TRACE8 ("ICardPile::findLowestCard () const - Lowest card: "
+           << *operator[] (pos) << " at " << pos);
+   return pos;
+}
+
+//----------------------------------------------------------------------------
+/// Find the worst (lowest) card in the pile
+/// \param excludeColour: Special colour, which is not included in the search
+/// \return unsigned int: Position of the lowest card in the pile 
+//----------------------------------------------------------------------------
+unsigned int ICardPile::findLowestCard (CardWidget::COLOURS excludeColour) const {
+   TRACE9 ("ICardPile::findLowestCard (CardWidget::COLOURS) const - Analyzing "
+           << size () << " cards")
+   Check3 (size ());
+
+   unsigned int pos (0);
+   for (ICardPile::const_iterator i (begin () + 1); i != end (); ++i)
+      if (((*i)->colour () != excludeColour)
+          && ((*i)->number () < operator[] (pos)->number ()))
+         pos = i - begin ();
+
+   TRACE8 ("ICardPile::findLowestCard (CardWidget::COLOURS) const - Lowest card: "
+           << *operator[] (pos) << " at " << pos);
+   return pos;
+}
+
+//----------------------------------------------------------------------------
+/// Finds the last card with the passed colour in the pile.
+/// \param col: Colour to search for 
+/// \return int: Position of found card; -1 if there's no bigger card 
+/// \pre The pile must be sorted by colour
+//----------------------------------------------------------------------------
+int ICardPile::findLastEqualOrBiggerColour (CardWidget::COLOURS col) const {
+   TRACE9 ("ICardPile::findLastEqualOrBiggerColour (CardWidget::COLOURS)");
+   int pos (findFirstEqualOrBiggerColour (col));
+   return ((pos == -1) ? - 1 : ((operator[] (pos)->colour () == col)
+                                ? findLastEqualColour (pos) : -1));
 }

@@ -50,7 +50,8 @@ class ICardPile : public std::vector<CardWidget*> {
    ICardPile (PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE);
    virtual ~ICardPile ();
 
-   // Methods to access pile first-in-last-out
+   /// \name Methods to access pile first-in-last-out
+   //@{
    void flipTopCard ();
    void showTopCardFace (bool visible = true);
    void showTopCardBack () { showTopCardFace (false); }
@@ -73,12 +74,14 @@ class ICardPile : public std::vector<CardWidget*> {
       CardWidget& topCard (removeTopCard ());
       topCard.showFace (visible);
       return topCard; }
+   //@}
 
-   // Methods to random access pile
-   virtual void insert (CardWidget& card, unsigned int pos);
-   void insertSorted (CardWidget& card, CMPFUNC fnSort = compCardsByNr);
-   void insertColourSorted (CardWidget& card) {
-      insertSorted (card, compCards); }
+   /// \name Methods to random access pile
+   //@{
+   virtual unsigned int insert (CardWidget& card, unsigned int pos);
+   unsigned int insertSorted (CardWidget& card, CMPFUNC fnSort = compCardsByNr);
+   unsigned int  insertColourSorted (CardWidget& card) {
+      return insertSorted (card, compCards); }
    void append (CardWidget& card) { setTopCard (card); }
    virtual CardWidget& remove (CardWidget& card);
    virtual CardWidget& remove (unsigned int pos);
@@ -86,7 +89,10 @@ class ICardPile : public std::vector<CardWidget*> {
    virtual void move (unsigned int dest, unsigned int source);
 
    CardWidget* get (unsigned int id) const;
+   //@}
 
+   /// \name Find methods
+   //@{
    int find (const CardWidget& card, CMPFUNC fnComp) const {
       int pos (find1EqualOrBigger (card, fnComp));
       return ((pos != -1)
@@ -104,15 +110,25 @@ class ICardPile : public std::vector<CardWidget*> {
    int find1EqualOrBiggerByColour (const CardWidget& card) const {
       return find1EqualOrBigger (card, compCards); }
    int findFirstEqualOrBigger (CardWidget::NUMBERS nr) const;
+   int findFirstEqualOrBiggerColour (CardWidget::COLOURS nr) const;
    int findLastEqualOrBigger (CardWidget::NUMBERS nr) const {
       int pos (findFirstEqualOrBigger (nr));
       return (pos == -1) ? - 1 : findLastEqual (pos); }
+   int findLastEqualOrBiggerColour (CardWidget::COLOURS col) const;
    int findLastEqual (unsigned int pos) const;
+   int findLastEqualColour (unsigned int pos) const;
    int findFirstEqual (unsigned int pos) const;
+   int findFirstEqualColour (unsigned int pos) const;
    int find (CardWidget::NUMBERS nr, unsigned int start = 0) const;
    int find (CardWidget::COLOURS colour, unsigned int start = 0) const;
    int find (unsigned int id, unsigned int start = 0) const;
 
+   unsigned int findLowestCard () const;
+   unsigned int findLowestCard (CardWidget::COLOURS excludeColour) const;
+   //@}
+
+   /// \name Test availability
+   //@{
    bool exists (CardWidget::NUMBERS nr, unsigned int start = 0) const {
       return find (nr, start) != -1; }
    bool exists (CardWidget::COLOURS colour, unsigned int start = 0) const {
@@ -120,8 +136,10 @@ class ICardPile : public std::vector<CardWidget*> {
    bool exists (const CardWidget& card) const { return exists (&card); }
    bool exists (const CardWidget* card) const {
       return std::find (begin (), end (), card) != end (); }
+   //@}
 
-   // General management-functions
+   /// \name General management-functions
+   //@{
    virtual void resize (unsigned int pos, PileStyle s) {
       if (pos != -1U)
          resize (*operator[] (pos), s); }
@@ -134,11 +152,6 @@ class ICardPile : public std::vector<CardWidget*> {
 
    bool topCardShowsFace () const { return getTopCard ().showsFace (); }
 
-   virtual void sort (CMPFUNC fnSort);
-   void sortByNumber () { sort (compCardsByNr); }
-   void sortByColour () { sort (compCards); }
-
-
    bool hasFittingPair (const CardWidget& card, CMPFUNC2 cmp, bool doubles = true) const;
    iterator getFittingCard (const CardWidget& card, CMPFUNC2 cmp) const {
       return getFittingCard (card, begin (), cmp); }
@@ -149,6 +162,14 @@ class ICardPile : public std::vector<CardWidget*> {
    unsigned int getSeries (CardWidget& card, std::map<unsigned int, unsigned int>& aPos,
                            std::vector<unsigned int>& aOrder, CMPFUNC2 cmp,
                            bool doubles = true);
+   //@}
+
+   /// \name Sorting
+   //@{
+   virtual void sort (CMPFUNC fnSort);
+   void sortByNumber () { sort (compCardsByNr); }
+   void sortByColour () { sort (compCards); }
+   //@}
 
  protected:
    PileStyle style;
@@ -187,10 +208,10 @@ template <class T> class CardPile : public T, public ICardPile {
       T::remove (card);
       return card; }
 
-   virtual void insert (CardWidget& card, unsigned int pos) {
+   virtual unsigned int insert (CardWidget& card, unsigned int pos) {
       pack_start (card, Gtk::PACK_SHRINK);
       reorder_child (card, pos);
-      ICardPile::insert (card, pos);
+      return ICardPile::insert (card, pos);
    }
 
    virtual CardWidget& remove (CardWidget& card) {
@@ -282,9 +303,10 @@ template <class T> class CardInfoPile : public CardPile<T> {
       setTooltips ();
       return card; }
 
-   virtual void insert (CardWidget& card, unsigned int pos) {
-      CardPile<T>::insert (card, pos);
-      setTooltips (); }
+   virtual unsigned int insert (CardWidget& card, unsigned int pos) {
+      unsigned int rc (CardPile<T>::insert (card, pos));
+      setTooltips ();
+      return rc; }
 
    virtual CardWidget& remove (CardWidget& card) {
       CardPile<T>::remove (card);
