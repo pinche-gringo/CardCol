@@ -1097,7 +1097,7 @@ bool Buraco::humanPilesOK (unsigned int except) const {
 
    // Move dropped card to a (new) pile on the table
    unsigned int iPile;
-   if (iCard == -1U) {    // If card was dropped on the new label: Create pile
+      if (!(isJoker (moved)
       // Only allow dropping on new pile while having < 5 cards, if the game
       // can be ended, or there is still the reserve
       if (!canDumpCards (0, 3)) {
@@ -1113,7 +1113,7 @@ bool Buraco::humanPilesOK (unsigned int except) const {
       // can be ended, or there is still the reserve
       // Check validity of drop
       if (!(isJoker (moved)
-            ? pileHasFittingPair (hands[0])
+            ? pileHasFittingPair (hands[0], &moved)
             : pileHasFittingPair (hands[0], moved, acceptCards == -1U))) {
                                     ? N_("You can't end the game (there's no \"cerrado\")!")
          Gtk::MessageDialog dlg (_("There are no cards to make a valid new pile!"),
@@ -1153,16 +1153,6 @@ bool Buraco::humanPilesOK (unsigned int except) const {
       if ((pile->size () == 1)
    // End old drag
    context->drag_finish (true, false, time);
-   // Send move
-   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-      std::ostringstream msg;
-      msg << "Play=" << hands[0][*pValue]->id () << ";Target="
-          << (iPile << 16) + iCard + 100;
-      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-         ignoreNextMsg = true;
-      broadcastMessage (msg.str ());
-   }
-
    activeCards[*pValue].disconnect ();
    activeCards.erase (activeCards.begin () + *pValue);
 
@@ -1183,6 +1173,16 @@ bool Buraco::humanPilesOK (unsigned int except) const {
 
    // Send move
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+      std::ostringstream msg;
+      msg << "Play=" << moved.id () << ";Target="
+          << (iPile << 16) + iCard + 100;
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+         ignoreNextMsg = true;
+      broadcastMessage (msg.str ());
+   }
+
+   pile->insert (moved, iCard);
+   registerTableDND (moved, (iPile << 8) + iCard);
    if (iCard < (pile->size () - 1))
       registerTableDND (iPile, iCard + 1, pile->size () - 1);
 
@@ -1820,17 +1820,18 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
 /// \param pile: Pile to inspect
 /// \param exclude: Card to not inspect (can be NULL)
 /// \returns \c True, if the pile contains a matching pair
-/// \param card: Card where to find a pair to
+//-----------------------------------------------------------------------------
 bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget* exclude) {
    TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&, const CardWidget*)");
-bool Buraco::pileHasFittingPair (const ICardPile& pile) {
-   TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&)");
+
+   for (std::vector<CardWidget*>::const_iterator p (pile.begin ());
         p != pile.end (); ++p)
       if (*p != exclude)
          if ((pile.getFittingCard (**p, pile.begin (), &cardDistance) != p)
-      if ((pile.getFittingCard (**p, pile.begin (), &cardDistance) != p)
-          || (pile.getFittingCard (**p, p + 1, &cardDistance) != pile.end ()))
-         return true;
+             || (pile.getFittingCard (**p, p + 1, &cardDistance) != pile.end ()))
+            return true;
+   return false;
+}
 
 //-----------------------------------------------------------------------------
 /// Compares the cards in the pile with regard of the colour and with special
@@ -1942,9 +1943,10 @@ ICardPile& Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// \returns bool: True, if message has been processed completey
 /// \throw std::string: In case of an error an describing text
 //----------------------------------------------------------------------------
+bool Buraco::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
    TRACE1 ("Buraco::handleMessage (unsigned int player, const std::string&) - "
-bool Buraco::handleMessage (unsigned int player, const char* message) {
-   TRACE1 ("Buraco::handleMessage (unsigned int player, const char*) - "
+           << message << " (" << player << ')');
+
    YGP::Tokenize command (message);
     
 
@@ -1970,7 +1972,7 @@ bool Buraco::handleMessage (unsigned int player, const char* message) {
       if (cmd == "ActPlayer") {
          TRACE1 ("Buraco::handleMessage (unsigned int player, const std::string&) - "
                  "Next player: " << currentPlayer ());
-         TRACE1 ("Buraco::handleMessage (unsigned int player, const char*) - "
+
          startPlayer = currentPlayer ();
          setStartPlayer ();
       }

@@ -57,7 +57,7 @@ class Buraco : public Game {
 
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
-   virtual bool handleMessage (unsigned int player, const char* msg);
+   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
 
    static unsigned int getPoints (const CardWidget& card);
    static bool isJoker (const CardWidget& card);
@@ -104,7 +104,7 @@ class Buraco : public Game {
    void sendMoveCard (unsigned int pile, unsigned int from, unsigned int to) const;
    static bool pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
                                    bool withJokers = false);
-   static bool pileHasFittingPair (const ICardPile& pile);
+   static bool pileHasFittingPair (const ICardPile& pile, const CardWidget* exclude = NULL);
    static bool compByNumberWithJokers (const CardWidget* a, const CardWidget* b);
    void makeTeamNames (std::vector<Player*>& names) const;
    void Buraco::setStartPlayer ();
