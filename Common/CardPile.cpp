@@ -24,8 +24,6 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#define CHECK 3
-#define TRACELEVEL 9
 #include <Check.h>
 
 #include "CardPile.h"
@@ -77,8 +75,8 @@ CardWidget& ICardPile::removeTopCard () {
    CardWidget& card (getTopCard ());
    cards.pop_back ();
 
-   TRACE5("ICardPile::removeTopCard (CardWidget&) - Card " << card
-          << " -> new size: " << cards.size ());
+   TRACE5 ("ICardPile::removeTopCard (CardWidget&) - Card " << card
+           << " -> new size: " << cards.size ());
 
    if (cards.size () && (style > NORMAL)) {
       TRACE9 ("ICardPile::removeTopCard () - Resizing");
@@ -178,9 +176,11 @@ void ICardPile::setAccessable (bool access) {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Inserts a card into the pile
 //Parameters: card: Card to insert
+//            pos: Position of new card
 /*--------------------------------------------------------------------------*/
 void ICardPile::insert (CardWidget& card, unsigned int pos) {
-   TRACE5 ("ICardPile::insertCard (CardWidget&) - Card " << card << " at " << pos);
+   TRACE5 ("ICardPile::insertCard (CardWidget, unsigned int&) - Card " << card
+           << " at " << pos);
    Check3 (pos <= cards.size ());
 
    card.show ();
@@ -192,6 +192,18 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
       resize (*compressCard, COMPRESSED);
    }
    cards.insert (cards.begin () + pos, &card);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Inserts a card into the pile
+//Parameters: card: Card to insert
+/*--------------------------------------------------------------------------*/
+void ICardPile::insertSorted (CardWidget& card) {
+   TRACE5 ("ICardPile::insertSorted (CardWidget&) - Card " << card);
+   
+   insert (card, (upper_bound (cards.begin (), cards.end (),
+                              &card, compCardsByNr)
+                  - cards.begin ()));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -333,6 +345,9 @@ void ICardPile::sortByColor () {
 int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
    unsigned int first (0), last (cards.size ());
    unsigned int middle;
+
+   TRACE8 ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - Searching for "
+           << nr << " in " << cards.size () << " cards");
 
    while ((last - first) > 0 ) {
       middle = first + ((last - first) >> 1);
