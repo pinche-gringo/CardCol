@@ -75,6 +75,8 @@ class ICardPile {
    void setStyle (Style s);
    void setAccessable (bool access);
 
+   bool topCardVisible () const { return getTopCard ().visible (); }
+
    virtual void sortByNumber ();
    virtual void sortByColor ();
 
