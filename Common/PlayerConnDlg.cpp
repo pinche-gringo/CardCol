@@ -58,7 +58,8 @@ PlayerConnectDlg::PlayerConnectDlg (std::vector<Player*>& player,
                                     ConnectionMgr& cmgr)
     : ConnectDlg (player.size (), port, cmgr), aPlayer (player)
       , connected (new Gtk::Label ())
-      , lblConnected (new Gtk::Label (_("Connected:"))) {
+      , lblConnected (new Gtk::Label (_("Connected:")))
+      , posPlayer (0) {
    TRACE8 ("PlayerConnectDlg::PlayerConnectDlg (std::vector<Player*>&, "
            "const Glib::ustring&, ConnectionMgr&");
 
@@ -85,9 +86,10 @@ PlayerConnectDlg::~PlayerConnectDlg () {
 /// \param player: The player
 /// \param defPort: Default port to listen at/send to
 /// \param connMgr: Connection manager; holding the connections to use
+/// \returns <tt>unsigned int</tt>: Number player has for the server
 //----------------------------------------------------------------------------
-void PlayerConnectDlg::perform (std::vector<Player*>& player, unsigned int defPort,
-                                ConnectionMgr& connMgr) {
+unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, unsigned int defPort,
+                                        ConnectionMgr& connMgr) {
    std::ostringstream port;
    port << defPort;
    return perform (player, port.str (), connMgr);
@@ -98,12 +100,16 @@ void PlayerConnectDlg::perform (std::vector<Player*>& player, unsigned int defPo
 /// \param player: The player
 /// \param defPort: Default port to listen at/send to
 /// \param connMgr: Connection manager; holding the connections to use
+/// \returns <tt>unsigned int</tt>: Number player has for the server
 //----------------------------------------------------------------------------
-void PlayerConnectDlg::perform (std::vector<Player*>& player, const Glib::ustring& defPort,
-                                ConnectionMgr& connMgr) {
+unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, const Glib::ustring& defPort,
+                                        ConnectionMgr& connMgr) {
+   unsigned int pos (0);
    PlayerConnectDlg* dlg (new PlayerConnectDlg (player, defPort, connMgr));
    dlg->run ();
+   pos = dlg->posPlayer;
    delete dlg;
+   return pos;
 }
 
 //----------------------------------------------------------------------------
@@ -128,12 +134,11 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) 
       TRACE8 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - "
               "Received: " << input);
 
-      unsigned int player (0);
       Glib::ustring names;
       Glib::ustring error;
       unsigned int rc (0);
       AttributeParse ap;
-      ATTRIBUTE (ap, unsigned int, player, "Number");
+      ATTRIBUTE (ap, unsigned int, posPlayer, "Number");
       ATTRIBUTE (ap, Glib::ustring, names, "Names");
       ATTRIBUTE (ap, Glib::ustring, error, "Msg");
       ATTRIBUTE (ap, unsigned int, rc, "Error");
@@ -142,7 +147,7 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) 
       if (rc)
          throw error;
 
-      if (!player)
+      if (!posPlayer)
          throw std::string (_("Invalid player number!"));
 
       Tokenize split (names);
@@ -162,11 +167,11 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) 
       }
       TRACE9 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - Players: "
               << i << "<->" << aPlayer.size ());
-      if (i != aPlayer.size ())
+      if ((i != aPlayer.size ()) || (posPlayer >= aPlayer.size ()))
          throw std::string (_("Wrong number of players!"));
 
-      delete aPlayer[++player];
-      aPlayer[player] = aPlayer[0];
+      delete aPlayer[posPlayer + 1];
+      aPlayer[posPlayer + 1] = aPlayer[0];
       aPlayer.erase (aPlayer.begin ());
    }
    catch (std::domain_error& err) {

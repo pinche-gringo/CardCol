@@ -35,10 +35,10 @@ class PlayerConnectDlg : public ConnectDlg {
                      ConnectionMgr& cmgr);
    virtual ~PlayerConnectDlg ();
 
-   static void perform (std::vector<Player*>& player, const Glib::ustring& port,
-                        ConnectionMgr& cmgr);
-   static void perform (std::vector<Player*>& player, unsigned int port,
-                        ConnectionMgr& cmgr);
+   static unsigned int perform (std::vector<Player*>& player, const Glib::ustring& port,
+                                ConnectionMgr& cmgr);
+   static unsigned int perform (std::vector<Player*>& player, unsigned int port,
+                                ConnectionMgr& cmgr);
 
    /// \name Connection management
    virtual void connect (const Glib::ustring& target, unsigned int port);
@@ -50,6 +50,7 @@ class PlayerConnectDlg : public ConnectDlg {
 
  private:
    std::vector<Player*>& aPlayer;
+   unsigned int posPlayer;
 
    PlayerConnectDlg (const PlayerConnectDlg& other);
    const PlayerConnectDlg& operator= (const PlayerConnectDlg& other);
