@@ -33,6 +33,8 @@
 
 #include <gtkmm/statusbar.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -46,6 +48,10 @@
 #include <Player.h>
 #include <CardSet.h>
 #include <CardWidget.h>
+
+#if CHECK > 2
+#  include <ComputerPlayer.h>
+#endif
 
 #include "SigCExt.h"
 
@@ -157,10 +163,12 @@ void Machiavelli::start () {
       status.push (_("You can sort the cards in your hand with drag and drop or put"
                      " them on the table - click the staple to end turn"));
 
-      // Set random startplayer (if not already set)
-      if (startPlayer == -1U)
-         startPlayer = rand () & 0x3;
-      setStartPlayer ();
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
+         // Set random startplayer (if not already set)
+         if (startPlayer == -1U)
+            startPlayer = rand () & 0x3;
+         setStartPlayer ();
+      }
    }
 }
 
@@ -196,49 +204,6 @@ void Machiavelli::playOpen (bool open) {
     }
 }
 
-//----------------------------------------------------------------------------
-/// Handles the messages the server might send for the twopart cardgame
-/// \param player: ID of the player sending the message
-/// \param message: Message received from the server
-/// \returns bool: True, if message has been processed completey
-//----------------------------------------------------------------------------
-bool Machiavelli::handleMessage (unsigned int player, const char* message) {
-   TRACE1 ("Machiavelli::handleMessage (unsigned int player, const char*) - "
-           << message << " (" << player << ')');
-    
-   YGP::Tokenize command (message);
-   std::string cmd (command.getNextNode ('='));
-
-   bool rc (true);
-   if (cmd == "Move") {
-      YGP::AttributeParse ap;
-      unsigned int card (-1U), dest (-1U), iPile (-1U);
-      ATTRIBUTE (ap, unsigned int, card, "Move");
-      ATTRIBUTE (ap, unsigned int, dest, "To");
-      ATTRIBUTE (ap, unsigned int, iPile, "Pile");
-      ap.assignValues (message);
-
-      if (iPile >= tablePiles.size ())
-         throw std::string ("Invalid pile!");
-      ICardPile& pile (*tablePiles[iPile]);
-      if ((card >= pile.size ()) || (dest >= pile.size ()))
-         throw std::string ("Invalid card!");
-
-      pile.move (dest, card);
-   }
-   else {
-      rc = Game::handleMessage (player, message);
-      if (cmd == "ActPlayer") {
-         TRACE1 ("Machiavelli::handleMessage (unsigned int player, const char*) - "
-                 "Next player: " << currentPlayer ());
-
-         startPlayer = currentPlayer ();
-         setStartPlayer ();
-      }
-   }
-   return rc;
-}
-
 //-----------------------------------------------------------------------------
 /// Makes the move for the next player.
 /// \param player: Actual player
@@ -259,6 +224,13 @@ int Machiavelli::makeMove (unsigned int player) {
 
       // No more cards found: Continue with next player
       if (target == -1U) {
+         if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+            // Send played card to all clients (if any)
+            if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+               ignoreNextMsg = true;
+            broadcastMessage ("EndTurn");
+         }
+
          unsigned int nextPlayer (findNextPlayer (player));
          if (nextPlayer == findNextPlayer (nextPlayer)) {
             endGame (nextPlayer);
@@ -335,12 +307,14 @@ int Machiavelli::makeMove (unsigned int player) {
       target = -1U;
 
 #if CHECK > 2
-      YGP::StatusObject obj;
-      checkPiles (obj);
-      if (obj.getType () != YGP::StatusObject::UNDEFINED) {
-         TRACE ("Machiavelli::makeMove (unsigned int) - Invalid piles!\n"
-                << obj.getMessage ());
-         Check (!"Valid piles");
+      if (typeid (actPlayers[player]) == typeid (ComputerPlayer)) {
+         YGP::StatusObject obj;
+         checkPiles (obj);
+         if (obj.getType () != YGP::StatusObject::UNDEFINED) {
+            TRACE ("Machiavelli::makeMove (unsigned int) - Invalid piles!\n"
+                   << obj.getMessage ());
+            Check (!"Valid piles");
+         }
       }
 #endif
    }
@@ -398,14 +372,6 @@ void Machiavelli::disableHuman () {
 }
 
 //----------------------------------------------------------------------------
-/// Returns the actual target, where flipCard2Play should position the cards to
-/// \returns unsigned int: ID of the target
-//----------------------------------------------------------------------------
-unsigned int Machiavelli::getActTarget () const {
-   return target;
-}
-
-//----------------------------------------------------------------------------
 /// Changes the names of the playing people
 /// \param newPlayer: Array holding the new player
 //----------------------------------------------------------------------------
@@ -416,18 +382,6 @@ void Machiavelli::changeNames (const std::vector<Player*>& newPlayer) {
       TRACE1 ("Machiavelli::changeNames () " << i << ": " << newPlayer[i]->getName ());
       names[i].set_text (newPlayer[i]->getName ());
    }
-}
-
-//----------------------------------------------------------------------------
-/// Returns the passed pile of the player
-/// \param player: Number of player
-/// \param pile: ID of the pile to return
-//----------------------------------------------------------------------------
-ICardPile& Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile) {
-   Check1 (player < NUM_PLAYERS);
-   Check1 ((pile < 4) || (pile >= 100));
-
-   return *tablePiles[pile];
 }
 
 //----------------------------------------------------------------------------
@@ -496,12 +450,9 @@ void Machiavelli::stapleSelected () {
 
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
-      std::ostringstream msg;
-      msg << "Play=" << staple.getTopCard ().id () << ";Target=1";
-
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
-      broadcastMessage (msg.str ());
+      broadcastMessage ("EndTurn");
    }
 
    disableHuman ();
@@ -542,7 +493,7 @@ void Machiavelli::registerHandDND (unsigned int start, unsigned int end) {
 void Machiavelli::registerHandDND (unsigned int iCard) {
    Check1 (iCard < hands[0].size ());
    TRACE9 ("Machiavelli::registerHandDND (unsigned int) - Card: " << iCard << " ("
-           << *hands[0][iCard]);
+           << *hands[0][iCard] << ')');
 
    CardWidget& card (*hands[0][iCard]);
    Check3 (aDNDHand.find (&card) == aDNDHand.end ());
@@ -793,7 +744,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       std::ostringstream msg;
       msg << "Play=" << src[off]->id () << ";Target="
-          << (iPile << 16) + iCard + 100;
+          << (iPile << 16) + iCard;
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
           ignoreNextMsg = true;
       broadcastMessage (msg.str ());
@@ -1399,4 +1350,82 @@ void Machiavelli::endGame (unsigned int looser) {
    stat.replace (stat.find ("%1"), 2, actPlayers[looser]->getName ());
    status.push (stat);
    setGameStatus (STOPPED);
+}
+
+//----------------------------------------------------------------------------
+/// Returns the passed pile of the player
+/// \param player: Number of player
+/// \param pile: ID of the pile to return
+//----------------------------------------------------------------------------
+ICardPile& Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile) {
+   Check1 (player < NUM_PLAYERS);
+   Check1 (pile <= tablePiles.size ());
+
+   if (pile == tablePiles.size ())
+      makeNewPile ();
+
+   target = pile;
+   return hands[player];
+}
+
+//----------------------------------------------------------------------------
+/// Handles the messages the server might send for the twopart cardgame
+/// \param player: ID of the player sending the message
+/// \param message: Message received from the server
+/// \returns bool: True, if message has been processed completey
+//----------------------------------------------------------------------------
+bool Machiavelli::handleMessage (unsigned int player, const char* message) {
+   TRACE1 ("Machiavelli::handleMessage (unsigned int player, const char*) - "
+           << message << " (" << player << ')');
+    
+   YGP::Tokenize command (message);
+   std::string cmd (command.getNextNode ('='));
+
+   bool rc (true);
+   if (cmd == "Move") {
+      YGP::AttributeParse ap;
+      unsigned int card (-1U), dest (-1U), iPile (-1U);
+      ATTRIBUTE (ap, unsigned int, card, "Move");
+      ATTRIBUTE (ap, unsigned int, dest, "To");
+      ATTRIBUTE (ap, unsigned int, iPile, "Pile");
+      ap.assignValues (message);
+
+      if (iPile >= tablePiles.size ())
+         throw std::string ("Invalid pile!");
+      ICardPile& pile (*tablePiles[iPile]);
+      if ((card >= pile.size ()) || (dest >= pile.size ()))
+         throw std::string ("Invalid card!");
+
+      pile.move (dest, card);
+   }
+   else if (cmd == "EndTurn") {
+      unsigned int nextPlayer (findNextPlayer (currentPlayer ()));
+      if (nextPlayer == findNextPlayer (nextPlayer))
+         endGame (nextPlayer);
+      else {
+         displayTurn (player = nextPlayer);
+         dealCard (nextPlayer);
+         setNextPlayer (nextPlayer);
+      }
+   }
+   else {
+      rc = Game::handleMessage (player, message);
+      if (cmd == "ActPlayer") {
+         TRACE1 ("Machiavelli::handleMessage (unsigned int player, const char*) - "
+                 "Next player: " << currentPlayer ());
+
+         startPlayer = currentPlayer ();
+         setStartPlayer ();
+      }
+   }
+   return rc;
+}
+
+//----------------------------------------------------------------------------
+/// Returns the actual target, where flipCard2Play should position the cards to
+/// \returns unsigned int: ID of the target
+//----------------------------------------------------------------------------
+unsigned int Machiavelli::getActTarget () const {
+   Check3 (target < tablePiles.size ());
+   return target;
 }
