@@ -2,4 +2,4 @@
 
 SUBDIRS=.
 
-EXTRA_DIST=Rovhult.html Twopart.html
+EXTRA_DIST=index.html Rovhult.html Twopart.html
