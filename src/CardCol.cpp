@@ -34,7 +34,6 @@
 
 #include <glib.h>
 
-#define CHECK 1
 #include <Check.h>
 #include <Trace_.h>
 
@@ -50,6 +49,7 @@
 #include <Hearts.h>
 #include <Rovhult.h>
 #include <Twopart.h>
+#include <PlayerDlg.h>
 
 #include "CardCol.h"
 
@@ -307,10 +307,11 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     {    _("_Twopart"),       _("<ctl>T"), TWOPART,  RADIOITEM },
     {    _("_Hearts"),        _("<ctl>H"), HEARTS,   LASTRADIOITEM },
     { "",                     "",          0,        SUBMENUEND },
-    { _("_Change decks ..."), _("<ctl>C"), CHGDECKS, ITEM },
+    { _("Change _decks ..."), _("<ctl>D"), CHGDECKS, ITEM },
+    { _("Change _names ..."), _("<ctl>C"), CHGNAMES, ITEM },
     { _("_Save settings"),    _("<ctl>S"), SAVESET,  ITEM },
 #if TRACELEVEL >= 1
-    { "_Debug",               "<ctl>D",    DEBUG,    CHECKITEM },
+    { "_Debug",               "<ctl>G",    DEBUG,    CHECKITEM },
 #endif
     { _("_Help"),             _("<alt>H"), 0,        LASTBRANCH },
     { _("_Content..."),       _("F1"),     CONTENT,  ITEM },
@@ -321,7 +322,7 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
 //Purpose   : Defaultconstructor; all widget are created
 /*--------------------------------------------------------------------------*/
 CardgameCollection::CardgameCollection ()
-   : XApplication (PACKAGE " - Cardgames V" PRG_RELEASE), status ()
+   : XApplication (PACKAGE " V" PRG_RELEASE), status ()
      , cardFaces (USED_CARDS), cards (), pThread (NULL), game (NULL)
      , typeGame (GROVHULT), oldGame (NONE), restart (false) {
    set_usize (WIDTH, HEIGHT);
@@ -345,6 +346,11 @@ CardgameCollection::CardgameCollection ()
    catch (std::string& e) {
       XMessageBox::Show (e, _("Error starting thread"), XMessageBox::ERROR);
    }
+
+   names.push_back ("Human");
+   names.push_back ("Player 1");
+   names.push_back ("Player 2");
+   names.push_back ("Player 3");
 }
 
 /*--------------------------------------------------------------------------*/
@@ -393,6 +399,10 @@ void CardgameCollection::startGame () {
    }
 
    Check3 (game);
+   string name (PACKAGE " V" PRG_RELEASE " - ");
+   name += game->name ();
+   set_title (name);
+
    game->start ();
 }
 
@@ -437,9 +447,13 @@ void CardgameCollection::command (int menu) {
       break;
 
    case CHGDECKS:
-      dlgChgDecks = CarddeckSelectDlg<CardgameCollection>
+      CarddeckSelectDlg<CardgameCollection>
          ::create (*this, &CardgameCollection::changeDecks,
                    CARDSET_PATH, pathDeck, pathBack);
+      break;
+
+   case CHGNAMES:
+      PlayerDlg::perform (names);
       break;
 
    case SAVESET: {
@@ -447,7 +461,9 @@ void CardgameCollection::command (int menu) {
       ofstream inifile (NAME_INIFILE.c_str ());
       
       inifile << "[Game]\nDefault=" << typeGame << "\n\n[Decks]\nFront="
-              << pathDeck << "\nBack=" << pathBack << '\n';
+              << pathDeck << "\nBack=" << pathBack << "\n\n[Players]\n";
+      for (unsigned int i (0); i < names.size (); ++i)
+         inifile << i << '=' << names[i] << '\n';
       break;
    }
 
@@ -519,38 +535,26 @@ void CardgameCollection::command (int menu) {
 //Purpose   : Callback to change the carddecks
 //Parameters: cmd: Selected button of dialog
 /*--------------------------------------------------------------------------*/
-void CardgameCollection::changeDecks (ICarddeckSelectDlg::commands cmd) {
-   TRACE2 ("CardgameCollection::changeDecks (ICarddeckSelectDlg::commands) - Command "
-           << cmd);
-   Check3 (dlgChgDecks);
+void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
+   TRACE2 ("CardgameCollection::changeDecks (const ICarddeckSelectDlg&)");
 
-   if (cmd != ICarddeckSelectDlg::CANCEL) {
-      std::string deck, back;
-      dlgChgDecks->getSelection (deck, back);
-      TRACE3 ("CardgameCollection::changeDecks (ICarddeckSelectDlg::commands) - Use "
-              << deck << " and " << back);
-
-      unsigned int opt (0);
-      if (deck != pathDeck) {
-         pathDeck = deck;
-         opt |= 1;
-      }
-      if (back != pathBack) {
-         pathBack = back;
-         opt |= 2;
-      }
-      
-      if (opt) {
-         pThread = THRDAPPL::create (this,
-                                     (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::changeCards,
-                                     (void*)opt);
-         TRACE9 ("CardgameCollection::changeDecks (ICarddeckSelectDlg) - Thread-ID = "
-                 << pThread->getID ());
-      }
+   std::string deck, back;
+   dialog.getSelection (deck, back);
+   unsigned int option (0);
+   if (deck != pathDeck) {
+      option = 1;
+      pathDeck = deck;
+   }
+   if (back != pathBack) {
+      option |= 2;
+      pathBack = back;
    }
 
-   if (cmd != ICarddeckSelectDlg::APPLY)
-      dlgChgDecks = NULL;
+   pThread = THRDAPPL::create (this,
+                               (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::changeCards,
+                               (void*)option);
+   TRACE9 ("CardgameCollection::changeDecks (const ICarddeckSelectDlg) - Thread-ID = "
+           << pThread->getID ());
 }
 
 /*--------------------------------------------------------------------------*/
@@ -559,21 +563,22 @@ void CardgameCollection::changeDecks (ICarddeckSelectDlg::commands cmd) {
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::changeCards (void* opt) {
    TRACE2 ("CardgameCollection::changeCards (void*) - Option: " << opt);
+   Check1 (opt);
 
    // Cards need an realized (!) parent, so ensure that the window is already
    // shown
    Check3 (this->is_realized ());
-   unsigned int option ((unsigned int)opt); Check3 (option);
+   
+   TRACE3 ("CardgameCollection::changeCards (void*) - Use " << pathDeck
+           << " and " << pathBack);
 
-   if (option & 1)
+   if ((unsigned int)opt & 1)
       cardFaces.loadDecks (get_window (), pathDeck);
-   if (option & 2)
+   if ((unsigned int)opt & 2)
       cardFaces.loadBack (get_window (), pathBack);
 
    gdk_threads_enter ();
    cards.update ();
-   if (dlgChgDecks)
-      dlgChgDecks->unlock ();
    gdk_threads_leave ();
    pThread = NULL;
 }
@@ -628,6 +633,7 @@ void CardgameCollection::loadCards () {
       INIATTR2 (Decks, std::string, pathBack, Back);
       INISECTION (Game);
       INIATTR2 (Game, unsigned int, (unsigned int)typeGame, Default);
+      INILIST2 (Players, std::string, names);
 
       unsigned int rc (INIFILE_READ ());
    }
