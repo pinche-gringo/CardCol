@@ -49,7 +49,7 @@ class Rovhult : public Game {
    virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
 
  protected:
-   virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
    virtual bool executeRemoteMove (ICardPile& pile, unsigned int target);
 
  private:

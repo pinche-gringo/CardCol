@@ -79,7 +79,7 @@ class Machiavelli : public Game {
    virtual void disableHuman ();
    void changeNames (const std::vector<Player*>& newPlayer);
 
-   virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
    virtual unsigned int getActTarget () const;
    //@}
 

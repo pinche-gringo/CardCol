@@ -49,7 +49,7 @@ class Hearts : public Game {
    static void getPositionOfColours (ICardPile& pile, int result[4]);
 
  protected:
-   virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
 
  private:
    enum Status { EXCHANGE = Game::LAST };

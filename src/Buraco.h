@@ -76,7 +76,7 @@ class Buraco : public Game {
    virtual bool enableHuman ();
    virtual void disableHuman ();
 
-   virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
    virtual bool executeRemoteMove (ICardPile& pile, unsigned int target);
    virtual unsigned int getActTarget () const;
 

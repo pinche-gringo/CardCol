@@ -1916,26 +1916,31 @@ void Buraco::changeNames (const std::vector<Player*>& newPlayer) {
 /// \param pile: ID of the pile to return
 /// \returns ICardPile*: Pointer to pile to use or NULL
 //----------------------------------------------------------------------------
+ICardPile* Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
    if (((pile > 3) && (pile < 100)) || (player >= NUM_PLAYERS))
-ICardPile& Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
-   Check1 (player < NUM_PLAYERS);
-   Check1 ((pile < 4) || (pile >= 100));
+      return NULL;
+
+   if ((pile >= 100) && (pile != -1U)) {
+      if (pile != 0xffff0000) {
          pile -= 100;
-       if (pile != 0xffff0000) {
-          pile -= 100;
-          if ((pile >> 16) == tablePiles[player & 1].size ()) {
-             TRACE8 ("Buraco::getPileOfPlayer (unsigned int, unsigned int) - Creating pile");
-             makeNewPile (player & 1);
-          }
-       }
-       target = pile;
-       return hands[player];
+         if ((pile >> 16) > tablePiles[player & 1].size ())
+	    return NULL;
+
+         if ((pile >> 16) == tablePiles[player & 1].size ()) {
+            TRACE8 ("Buraco::getPileOfPlayer (unsigned int, unsigned int) - Creating pile");
+            makeNewPile (player & 1);
+         }
+      }
+      target = pile;
+      return &hands[player];
+   }
+   return &((pile == 2)
             ? static_cast<ICardPile&> (staple)
-   return ((pile == 2)
-           ? static_cast<ICardPile&> (staple)
-           : ((pile == 3)
-              ? static_cast<ICardPile&> (dumped)
-              : static_cast<ICardPile&> (hands[player])));
+            : ((pile == 3)
+               ? static_cast<ICardPile&> (dumped)
+               : static_cast<ICardPile&> (hands[player])));
+}
+
 //----------------------------------------------------------------------------
 /// Handles the messages the server might send for the Buraco cardgame
 /// \param player: ID of the player sending the message

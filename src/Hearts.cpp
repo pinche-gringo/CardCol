@@ -947,11 +947,10 @@ void Hearts::changeNames (const std::vector<Player*>& newPlayer) {
 /// Changes the names of the playing people
 /// \param newPlayer: Array holding the new player
 /// \param pile: ID of the pile to return
+/// \returns ICardPile*: Pointer to pile to use or NULL
 //----------------------------------------------------------------------------
-ICardPile& Hearts::getPileOfPlayer (unsigned int player, unsigned int pile) {
-   Check1 (player < NUM_PLAYERS);
-   Check1 (!pile);
-   return players[player].hand;
+ICardPile* Hearts::getPileOfPlayer (unsigned int player, unsigned int pile) {
+   return ((player >= NUM_PLAYERS) || pile) ? NULL : &players[player].hand;
 }
 
 //----------------------------------------------------------------------------

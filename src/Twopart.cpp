@@ -880,7 +880,7 @@ void Twopart::analyzeLastPlayed (unsigned int startPos, unsigned int cards,
          max = (int)played[startPos]->number ();
          maxPos = startPos;
       }
-      Check3 (maxPos < played.size ());
+      Check3 (maxPos < (int)played.size ());
       Check3 (max == played[maxPos]->number ());
 
       // Add trumps
@@ -1167,13 +1167,15 @@ void Twopart::changeNames (const std::vector<Player*>& newPlayer) {
 /// Changes the names of the playing people
 /// \param newPlayer: Array holding the new player
 /// \param pile: ID of the pile to return
+/// \returns ICardPile*: Pile corresponding to the passed number or NULL
 //----------------------------------------------------------------------------
-ICardPile& Twopart::getPileOfPlayer (unsigned int player, unsigned int pile) {
+ICardPile* Twopart::getPileOfPlayer (unsigned int player, unsigned int pile) {
    TRACE8 ("Twopart::getPileOfPlayer (unsigned int, unsigned int) - Player "
            << player << "; Pile " << pile);
-   Check1 (player < NUM_PLAYERS);
-   Check1 (pile <= 1);
-   return pile ? played : players[player].hand;
+   if ((player >= NUM_PLAYERS) || (pile > 1))
+      return NULL;
+
+   return &(pile ? played : players[player].hand);
 }
 
 //----------------------------------------------------------------------------
