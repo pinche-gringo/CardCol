@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 27.03.2002
-//COPYRIGHT   : Anticopyright (A) 2002
+//COPYRIGHT   : Anticopyright (A) 2002, 2003
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 #include "CardWidget.h"
 
 
-CardWidget::COLORS CardWidget::transColor[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
+CardWidget::COLOURS CardWidget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
 
 
 /*--------------------------------------------------------------------------*/
@@ -102,25 +102,25 @@ void CardWidget::showFace (bool visible) {
 //Returns   : char: Character describing number of card
 /*--------------------------------------------------------------------------*/
 char CardWidget::numberStr () const {
-   static char* specialCards = _("TJQKA");
+   static Glib::ustring specialCards (_("TJQKA"));
    return ((number () >= CardWidget::TEN)
            ? specialCards[number ()  - CardWidget::TEN]
            : number () + '2');
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Returns the color of the card as character
-//Returns   : char: Character describing color of card
+//Purpose   : Returns the colour of the card as character
+//Returns   : char: Character describing colour of card
 /*--------------------------------------------------------------------------*/
-char CardWidget::colorStr () const {
-   // Letters describing the colors (clubs, spades, hearts, diamonds)
-   static char* colors = _("CSHD");
-   return colors[nrCard & 0x3];
+char CardWidget::colourStr () const {
+   // Letters describing the colours (clubs, spades, hearts, diamonds)
+   static Glib::ustring colours (_("CSHD"));
+   return colours[nrCard & 0x3];
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Returns the color of the card as character
-//Returns   : char: Character describing color of card
+//Purpose   : Returns the colour of the card as character
+//Returns   : char: Character describing colour of card
 /*--------------------------------------------------------------------------*/
 void CardWidget::update () {
    TRACE3 ("CardWidget::update () - Card " << nrCard);
@@ -161,6 +161,6 @@ std::ostream& operator<< (std::ostream& out, const CardWidget& card) {
    if (card.nrCard >= 52)
       out << "Joker";
    else
-      out << card.colorStr () << card.numberStr ();
+      out << card.colourStr () << card.numberStr ();
    return out;
 }

@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 10.9.2002
-//COPYRIGHT   : Anticopyright (A) 2002
+//COPYRIGHT   : Anticopyright (A) 2002, 2003
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -200,12 +200,11 @@ bool Game::makeComputerMove () {
       setGameStatus (STOPPED);
       if (restart)
          start ();
-      return 0;
+      return false;
    }
 
    actPlayer = makeMove (actPlayer);
    TRACE9 ("Game::makeCompuerMove () - Next player: " << actPlayer);
-
    if (!actPlayer)
       enableHuman ();
    return actPlayer > 0;
@@ -315,8 +314,8 @@ bool Game::wonCardsSelected (GdkEvent* event) {
                                               (_("Sort by number"),
                                                slot (*this, &Game::sortWonByNumber)));
             pMenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem
-                                              (_("Sort by color"),
-                                               slot (*this, &Game::sortWonByColor)));
+                                              (_("Sort by colour"),
+                                               slot (*this, &Game::sortWonByColour)));
          }
          pMenuPopSort->popup (bev->button, bev->time);
          break; }
@@ -340,12 +339,12 @@ void Game::sortWonByNumber () {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Shows and sorts the won cards by color
+//Purpose   : Shows and sorts the won cards by colour
 /*--------------------------------------------------------------------------*/
-void Game::sortWonByColor () {
-   TRACE8 ("Game::sortWonByColor ()");
+void Game::sortWonByColour () {
+   TRACE8 ("Game::sortWonByColour ()");
    Check3 (pWonPile);
-   pWonPile->sortByColor ();
+   pWonPile->sortByColour ();
    showWonCards ();
    Glib::signal_timeout ().connect (slot (*this, &Game::enableActWonCards), 50);
    disableWonCards ();

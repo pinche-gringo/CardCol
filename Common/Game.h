@@ -85,7 +85,7 @@ class Game : public Gtk::Table {
    void disableWonCards ();
 
    void sortWonByNumber ();
-   void sortWonByColor ();
+   void sortWonByColour ();
 
    Gtk::Statusbar& status;
    CardSet& cards;

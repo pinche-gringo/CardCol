@@ -40,16 +40,16 @@ class CardWidget : public Gtk::EventBox {
    void showBack ()  { showFace (false); }
    bool showsFace () const { return isVisible; }
 
-   typedef enum { CLUBS = 0, DIAMONDS, SPADES, HEARTS } COLORS;
+   typedef enum { CLUBS = 0, DIAMONDS, SPADES, HEARTS } COLOURS;
    typedef enum { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
                   JACK, QUEEN, KING, ACE, UNREACHABLE } NUMBERS;
 
    unsigned int id () const { return nrCard; }
-   COLORS color () const { return transColor[nrCard & 0x3]; }
+   COLOURS colour () const { return transColour[nrCard & 0x3]; }
    NUMBERS number () const {
       return static_cast <NUMBERS> ((51 - nrCard) >> 2); }
    char numberStr () const;
-   char colorStr () const;
+   char colourStr () const;
 
    const Glib::RefPtr<Gdk::Pixbuf> getShownImage () const {
       return isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (); }
@@ -79,7 +79,7 @@ class CardWidget : public Gtk::EventBox {
    unsigned int nrCard;
    const CardImages& deck;
 
-   static COLORS transColor[4];
+   static COLOURS transColour[4];
 };
 
 #endif

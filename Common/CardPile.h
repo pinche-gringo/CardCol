@@ -75,7 +75,7 @@ class ICardPile : public std::vector<CardWidget*> {
    // Methods to random access pile
    virtual void insert (CardWidget& card, unsigned int pos);
    void insertSorted (CardWidget& card);
-   void insertColorSorted (CardWidget& card);
+   void insertColourSorted (CardWidget& card);
    void append (CardWidget& card) { setTopCard (card); }
    virtual CardWidget& remove (CardWidget& card);
    virtual CardWidget& remove (unsigned int pos);
@@ -89,7 +89,7 @@ class ICardPile : public std::vector<CardWidget*> {
       return ((pos != -1)
               && !fnComp (operator[] (pos), &card)) ? pos : -1; }
    int findByNr (CardWidget& card) const { return find (card, compCardsByNr); }
-   int findByColor (CardWidget& card) const { return find (card, compCards); }
+   int findByColour (CardWidget& card) const { return find (card, compCards); }
    int find1EqualOrBigger (const CardWidget& card, CMPFUNC fnComp) const {
       std::vector<CardWidget*>::const_iterator i
          (std::lower_bound (begin (), end (), &card, fnComp));
@@ -97,7 +97,7 @@ class ICardPile : public std::vector<CardWidget*> {
               ? (i - begin ()) : -1); }
    int find1EqualOrBiggerByNr (CardWidget& card) const {
       return find1EqualOrBigger (card, compCardsByNr); }
-   int find1EqualOrBiggerByColor (CardWidget& card) const {
+   int find1EqualOrBiggerByColour (CardWidget& card) const {
       return find1EqualOrBigger (card, compCards); }
    int findFirstEqualOrBigger (CardWidget::NUMBERS nr) const;
    int findLastEqualOrBigger (CardWidget::NUMBERS nr) const {
@@ -106,12 +106,12 @@ class ICardPile : public std::vector<CardWidget*> {
    int findLastEqual (unsigned int pos) const;
    int findFirstEqual (unsigned int pos) const;
    int find (CardWidget::NUMBERS nr, unsigned int start = 0) const;
-   int find (CardWidget::COLORS color, unsigned int start = 0) const;
+   int find (CardWidget::COLOURS colour, unsigned int start = 0) const;
 
    bool exists (CardWidget::NUMBERS nr, unsigned int start = 0) const {
       return find (nr, start) != -1; }
-   bool exists (CardWidget::COLORS color, unsigned int start = 0) const {
-      return find (color, start) != -1; }
+   bool exists (CardWidget::COLOURS colour, unsigned int start = 0) const {
+      return find (colour, start) != -1; }
    bool exists (CardWidget& card) const { exists (&card); }
    bool exists (CardWidget* card) const {
       return std::find (begin (), end (), card) != end (); }
@@ -131,7 +131,7 @@ class ICardPile : public std::vector<CardWidget*> {
 
    virtual void sort (CMPFUNC fnSort);
    void sortByNumber () { sort (compCardsByNr); }
-   void sortByColor () { sort (compCards); }
+   void sortByColour () { sort (compCards); }
 
  protected:
    PileStyle style;

@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 03.04.2002
-//COPYRIGHT   : Anticopyright (A) 2002
+//COPYRIGHT   : Anticopyright (A) 2002, 2003
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -190,10 +190,10 @@ void ICardPile::insertSorted (CardWidget& card) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Inserts a card into the pile; sorted by color and number
+//Purpose   : Inserts a card into the pile; sorted by colour and number
 //Parameters: card: Card to insert
 /*--------------------------------------------------------------------------*/
-void ICardPile::insertColorSorted (CardWidget& card) {
+void ICardPile::insertColourSorted (CardWidget& card) {
    TRACE5 ("ICardPile::insertSorted (CardWidget&) - Card " << card);
    
    insert (card, (upper_bound (begin (), end (), &card, compCards) - begin ()));
@@ -262,7 +262,7 @@ void ICardPile::setStyle (PileStyle s) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Sorts the cards in the pile with regard of the color
+//Purpose   : Sorts the cards in the pile with regard of the colour
 //Parameters: a: Card to compare
 //            b: Card to compare
 //Returns   : bool: True, if a < b
@@ -271,14 +271,14 @@ bool ICardPile::compCards (const CardWidget* a, const CardWidget* b) {
    Check3 (a); Check3 (b);
    TRACE9 ("ICardPile::compCards (const CardWidget*, const CardWidget*) - "
            << *a << " < " << *b << " = "
-           << ((a->color () == b->color ())
-               ? a->number () < b->number () : a->color () < b->color ()));
-   return ((a->color () == b->color ())
-           ? a->number () < b->number () : a->color () < b->color ());
+           << ((a->colour () == b->colour ())
+               ? a->number () < b->number () : a->colour () < b->colour ()));
+   return ((a->colour () == b->colour ())
+           ? a->number () < b->number () : a->colour () < b->colour ());
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Sorts the cards in the pile without regard of the color
+//Purpose   : Sorts the cards in the pile without regard of the colour
 //Parameters: a: Card to compare
 //            b: Card to compare
 //Returns   : bool: True, if a < b
@@ -433,14 +433,14 @@ int ICardPile::find (CardWidget::NUMBERS nr, unsigned int start) const {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Searches for the first card having the passed color
-//Parameters: color: Color to search for
+//Purpose   : Searches for the first card having the passed colour
+//Parameters: colour: Colour to search for
 //            start: Position of start of search
 //Returns   : int: Offset of found card or -1
 /*--------------------------------------------------------------------------*/
-int ICardPile::find (CardWidget::COLORS color, unsigned int start) const {
+int ICardPile::find (CardWidget::COLOURS colour, unsigned int start) const {
    for (; start < size (); ++start)
-      if (operator[] (start)->color () == color)
+      if (operator[] (start)->colour () == colour)
          return start;
 
    return -1;
