@@ -46,8 +46,8 @@
 /*--------------------------------------------------------------------------*/
 ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& deck,
                                         const std::string& back)
-   : Dialog (), txtDecks (_("Available decks")), ok (_("OK"))
-   , apply (_("Apply")), cancel (_("Cancel")), decks (), boxDecks ()
+   : XDialog (OKCANCEL), txtDecks (_("Available decks"))
+   , apply (_("Apply")), decks (), boxDecks ()
    , txtBack (_("Available backgrounds")), backs (), boxBack ()
    , selDeck (), selBack (), offDeck (-1), offBack (-1)
    , box (GTK_BUTTONBOX_END, 5), scrlBack (), scrlDeck () {
@@ -56,13 +56,8 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 
    set_title (_("Select carddeck"));
 
-   ok.set_flags (GTK_CAN_DEFAULT);
-   cancel.set_flags (GTK_CAN_DEFAULT);
-   apply.set_flags (GTK_CAN_DEFAULT);
-
-   ok.set_usize (90, -1);
-   cancel.set_usize (90, -1);
-   apply.set_usize (90, -1);
+   apply.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), APPLY));
+   addButton (apply);
 
    scrlDeck.set_policy (GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
    scrlBack.set_policy (GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -80,17 +75,6 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    get_vbox ()->pack_start (boxDecks, true, true, 5);
    get_vbox ()->pack_start (txtBack, false, false, 5);
    get_vbox ()->pack_start (boxBack, true, true, 5);
-
-   box.pack_start (ok, false, false, 5);
-   box.pack_start (apply, false, false, 5);
-   box.pack_start (cancel, false, false, 5);
-
-   Check3 (get_action_area ());
-   get_action_area ()->pack_start (box, true, true);
-
-   ok.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), OK));
-   apply.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), APPLY));
-   cancel.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), CANCEL));
 
    std::string cardDirs (path ? path : CARDSET_PATH);
    if (cardDirs.size ()
@@ -193,8 +177,6 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    height = ((img.height () + 20) * ((offset >> 2) + 1));
    scrlBack.set_usize ((img.width () + 25) << 2,
                        height < 250 ? height : 250);
-
-   ok.grab_default ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -268,8 +250,6 @@ void ICarddeckSelectDlg::backSelect (unsigned int offset) {
 //Parameters: action: ID of selected button
 /*--------------------------------------------------------------------------*/
 void ICarddeckSelectDlg::command (commands action) {
-   if (action != APPLY)
-      delete this;
-   else
-      lock ();
+   TRACE9 ("ICarddeckSelectDlg::command (commands) - Command: " << action);
+   Check1 (action == APPLY);
 }

@@ -25,29 +25,26 @@
 #include <gtk--/label.h>
 #include <gtk--/button.h>
 #include <gtk--/table.h>
-#include <gtk--/dialog.h>
 #include <gtk--/buttonbox.h>
 #include <gtk--/scrolledwindow.h>
 
+#include <XDialog.h>
 
 using namespace Gtk;
 
 
 // Class to select the card decks to use
-class ICarddeckSelectDlg : public Dialog {
+class ICarddeckSelectDlg : public XDialog {
  public:
    ICarddeckSelectDlg (const char* path, const std::string& deck,
                        const std::string& back);
    virtual ~ICarddeckSelectDlg ();
 
-   typedef enum { OK, APPLY, CANCEL } commands;
+   typedef enum { APPLY } commands;
 
    void getSelection (std::string& deck, std::string& back) const {
       deck = aFiles[0] + aFiles[offDeck];
       back = aFiles[0] + aFiles[offBack]; }
-
-   void lock () { apply.set_sensitive (false); ok.set_sensitive (false); }
-   void unlock () { apply.set_sensitive (true); ok.set_sensitive (true); }
 
  protected:
    virtual void command (commands action);
@@ -64,9 +61,7 @@ class ICarddeckSelectDlg : public Dialog {
    
    const ICarddeckSelectDlg& operator= (const ICarddeckSelectDlg&);
 
-   Button ok;
    Button apply;
-   Button cancel;
 
    HBox   boxDecks;
    Label  txtDecks;
@@ -93,7 +88,7 @@ class ICarddeckSelectDlg : public Dialog {
 template <class T>
 class CarddeckSelectDlg : public ICarddeckSelectDlg {
  public:
-   typedef void (T::*PCALLBACK) (ICarddeckSelectDlg::commands);
+   typedef void (T::*PCALLBACK) (const ICarddeckSelectDlg&);
 
    CarddeckSelectDlg (T& parent, PCALLBACK callback, const char* path,
                       const std::string& deck, const std::string& back)
@@ -106,10 +101,12 @@ class CarddeckSelectDlg : public ICarddeckSelectDlg {
    }
 
  protected:
+   virtual void okEvent () {
+      (obj.*pCallback) (*this);
+      ICarddeckSelectDlg::okEvent (); }
    virtual void command (commands action) {
-      (obj.*pCallback) (action);
       ICarddeckSelectDlg::command (action);
-   }
+      (obj.*pCallback) (*this); }
 
  private:
    T& obj;
