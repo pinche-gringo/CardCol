@@ -781,21 +781,14 @@ void CardgameCollection::startGame () {
            << " -> New: " << options.type);
 
    // Check if the game has been changed; if so destroy the old one
+   unsigned int oldDecks (0), oldJoker (0);
+
    if (oldGame != static_cast<int> (options.type)) {
       if (game) {
+         oldDecks = game->numberOfDecks ();
+         oldJoker = game->numberOfJokers ();
          getClient ().remove (*game);
          delete game;
-      }
-
-      if (oldGame >= GBURACO) {
-         TRACE9 ("CardgameCollection::startGame () - Cleaning buraco cards");
-         cards.clear ();
-         if (oldGame == GBURACO) {
-            cardFaces.delImage (cardFaces.size () - 1);
-            cardFaces.delImage (cardFaces.size () - 1);
-            cardFaces.delImage (cardFaces.size () - 1);
-         }
-         cards.addPacket (cardFaces);
       }
 
       oldGame = CardgameCollection::games (options.type);
@@ -816,22 +809,11 @@ void CardgameCollection::startGame () {
          break;
 
       case GBURACO:
-         cardFaces.addImage (xpmJoker);
-         cardFaces.addImage (xpmJoker);
-         cardFaces.addImage (xpmJoker);
-         cards.clear ();
-         cards.addPacket (cardFaces);
-         cards.addPacket (cardFaces);
-         cards.addPacket (cardFaces);
-         cards.addPacket (cardFaces);
          game = new TGame<Buraco, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 
       case GMACHIAVELLI:
-         cards.addPacket (cardFaces);
-         cards.addPacket (cardFaces);
-         cards.addPacket (cardFaces);
          game = new TGame<Machiavelli, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
@@ -839,6 +821,28 @@ void CardgameCollection::startGame () {
       default:
          Check (0);
       }
+   }
+
+   // Change number of jokers if necessary
+   if (oldJoker != game->numberOfJokers ()) {
+      TRACE5 ("CardgameCollection::startGame () - Re-adding jokers "
+              << oldJoker << "->" << game->numberOfJokers ());
+      for (unsigned int i (0); i < oldJoker; ++i)
+         cardFaces.delImage (cardFaces.size () - 1);
+
+      for (unsigned int i (0); i < game->numberOfJokers (); ++i)
+         cardFaces.addImage (xpmJoker);
+   }
+   
+   // Change number of decks if necessary
+   if ((oldDecks != game->numberOfDecks ())
+       || (oldJoker != game->numberOfJokers ())) {
+      TRACE5 ("CardgameCollection::startGame () - Changing carddecks "
+              << oldDecks << "->" << game->numberOfDecks ());
+
+      cards.clear ();
+      for (unsigned int i (0); i < game->numberOfDecks (); ++i)
+         cards.addPacket (cardFaces);
    }
 
    Check3 (game);
