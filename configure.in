@@ -6,7 +6,7 @@ AC_INIT()
 
 MAJOR_VERSION=0
 MINOR_VERSION=1
-MICRO_VERSION=01
+MICRO_VERSION=02
 RELEASE=$MAJOR_VERSION.$MINOR_VERSION
 VERSION=$RELEASE.$MICRO_VERSION
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE")
@@ -75,4 +75,5 @@ AC_ARG_ENABLE(checks,
                   CXXFLAGS="$CXXFLAGS -DNDEBUG -UCHECK"; fi)
 
 AC_OUTPUT([Makefile Common/Makefile Rovhult/Makefile Twopart/Makefile \
-	   Tarok/Makefile Common/Grafix/Makefile intl/Makefile po/Makefile.in])
+	   Tarok/Makefile Common/Grafix/Makefile intl/Makefile po/Makefile.in
+	   doc/Makefile])
