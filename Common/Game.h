@@ -32,9 +32,11 @@ class Socket;
 class Player;
 class CardSet;
 class ICardPile;
+class ConnectionMgr;
 
 
-// Class to select the card decks to use
+/**Abstract base class providing usefull methods for card games.
+*/
 class Game : public Gtk::Table {
  public:
    /// Stati of the game
@@ -55,7 +57,8 @@ class Game : public Gtk::Table {
    virtual void end (bool startNew);
    virtual void playOpen (bool) { }
    /// Informs the parent about status changes
-   virtual void control (unsigned int status) const { }
+   virtual void control (unsigned int status) const;
+   virtual ConnectionMgr* getConnectionMgr () const;
    virtual void clean ();
    virtual const char* name () = 0;
    virtual void changeNames (const std::vector<Player*>& newPlayer);
@@ -78,8 +81,18 @@ class Game : public Gtk::Table {
    /// \name Player actions
    //@{
    virtual bool enableHuman ();
-   bool readTurn (Socket& socket);
    bool makeComputerMove ();
+   //@}
+
+   /// \name Communication helper methods
+   //@{
+   static bool readTurn (Socket& socket);
+   static bool writeTurn (Socket& socket, unsigned int start, unsigned int end);
+   static void writeError (Socket& socket, unsigned int rc, const std::string& msg);
+   static void writeOK (Socket& socket) { return writeMessage (socket, "Error=0"); }
+   static void writeMessage (Socket& socket, const std::string& msg);
+   static void readMessage (Socket& socket, std::string& msg);
+   static void readResponse (Socket& socket);
    //@}
 
  protected:
@@ -94,7 +107,7 @@ class Game : public Gtk::Table {
    void makeNextMoves ();
    virtual int makeMove (unsigned int player) = 0;
 
-   void randomizeCardsToPile (ICardPile& pile) const;
+   bool randomizeCardsToPile (ICardPile& pile) const;
    static void movePile (ICardPile& dest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
 
@@ -113,7 +126,7 @@ class Game : public Gtk::Table {
    CardSet& cards;
 
    std::vector<SigC::Connection> activeCards;
-   const std::vector<Player*>&  actPlayers;
+   const std::vector<Player*>&   actPlayers;
 
  private:
    bool enableActWonCards ();
@@ -129,11 +142,15 @@ class Game : public Gtk::Table {
 };
 
 
-// Specialized Game to inform controler about status-changes
-// The Controller must support a statusbar (accessed by getStatusbar), a cardset
-// (accessed by getCards), a Gtk::Box, which can be accessed by getClient ()
-// and a vector of names (accessed by getNames ())
-// Parent must be derived from Game
+/**Specialized Game to inform controler about status-changes.
+
+   The Controller must support a statusbar (accessed by getStatusbar), a
+   cardset (accessed by getCards), a Gtk::Box, which can be accessed by
+   getClient (), a vector of players (accessed by getPlayer ()) and a method
+   called getConnectionMgr to retrieve a ConnectionMgr object.
+
+   \remarks Parent must be derived from Game
+*/
 template <class Parent, class Controller>
 class TGame : public Parent {
  public:
@@ -145,8 +162,13 @@ class TGame : public Parent {
       , obj (controller), pCallback (callback) { }
    virtual ~TGame () { }
 
+   /// 
    virtual void control (unsigned int status) const {
       (obj.*pCallback) (status);
+   }
+
+   virtual ConnectionMgr* getConnectionMgr () const {
+      return &obj.getConnectionMgr ();
    }
 
  private:

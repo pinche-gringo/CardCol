@@ -26,15 +26,25 @@
 
 #include <cardgames-cfg.h>
 
+#include <cerrno>
+#include <cstdlib>
+
+#include <sstream>
+
 #include <glibmm/main.h>
 
 #include <gtkmm/box.h>
 #include <gtkmm/menu.h>
 #include <gtkmm/statusbar.h>
+#include <gtkmm/messagedialog.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 #include <Socket.h>
+#include <ConnMgr.h>
+#include <AttrParse.h>
 
 #include "Player.h"
 #include "CardSet.h"
@@ -90,6 +100,19 @@ void Game::start () {
 
    setGameStatus (PLAYING);
    actPlayer = 0;
+
+   Check3 (getConnectionMgr ());
+   ConnectionMgr* cmgr (getConnectionMgr ());
+   if (cmgr && cmgr->getClients ().size ()) {
+      std::string msg ("Game=");
+      msg += name ();
+      TRACE9 ("Game::start () - Sending: " << msg);
+      for (std::vector<Socket*>::const_iterator i (cmgr->getClients ().begin ());
+           i != cmgr->getClients ().end (); ++i) {
+         writeMessage (**i, msg);
+         readResponse (**i);
+      }
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -132,11 +155,75 @@ void Game::disableHuman () {
 
 //-----------------------------------------------------------------------------
 /// Shuffles (Randomizes) the cards onto the staple
+/// \param pile: Pile to which the cards should be shuffeled to
+/// \returns bool: Flag, if method completed successfully
 //-----------------------------------------------------------------------------
-void Game::randomizeCardsToPile (ICardPile& pile) const {
+bool Game::randomizeCardsToPile (ICardPile& pile) const {
    // Randomize and put cards onto staple
-   cards.shuffle ();
+   ConnectionMgr* cmgr (getConnectionMgr ());
+   if (cmgr && (cmgr->getMode () == ConnectionMgr::CLIENT)) {
+      std::string input;
+      Check3 (cmgr->getSocket ());
+      readMessage (*cmgr->getSocket (), input);
+      TRACE9 ("Game::randomizeCardsToPile (ICardPile&) - Receiving: " << input);
+
+      AttributeParse ap;
+      ATTRIBUTE (ap, std::string, input, "Cards");
+      try {
+         ap.assignValues (input);
+
+         Tokenize positions (input);
+         TRACE9 ("Game::randomizeCardsToPile (ICardPile&) - Cards: " << cards.size ());
+         for (unsigned int i (0); i < (cards.size () - 1); ++i) {
+            unsigned long pos (0);
+            std::string token;
+            char* pTail (NULL);
+            errno = 0;
+
+            // Read next token; the value must be a number
+            if ((token = positions.getNextNode (' ')).empty ()
+                || ((pos = strtol (token.c_str (), &pTail, 10)) > cards.size ())
+                || (errno || (pTail && *pTail))) {
+               std::string error (_("Not a number: `%1'"));
+               error.replace (error.find ("%1"), 2, positions.getActNode ());
+               throw error;
+            }
+
+            TRACE9 ("Game::randomizeCardsToPile (ICardPile&) const - [" << i
+                    << "] = " << pos);
+            cards.set (i, pos);
+         }
+         writeOK (*cmgr->getSocket ());
+      }
+      catch (std::string& error) {
+         writeError (*cmgr->getSocket (), 99, error);
+         std::string err (_("Received invalid input from the server!\n\nReason: %1"));
+         err.replace (err.find ("%1"), 2, error);
+         Gtk::MessageDialog dlg (err, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+         dlg.set_title (PACKAGE);
+         dlg.run ();
+         return false;
+      }
+   }
+   else {
+      cards.shuffle ();
+      if (cmgr && cmgr->getClients ().size ()) {
+         std::ostringstream msg;
+         msg << "Cards=";
+         for (unsigned int i (0); i < cards.size (); ++i)
+            msg << cards.getCard (i).id () << ' ';
+         TRACE9 ("Game::randomizeCardsToPile (ICardPile&) - Sending: " << msg.str ());
+
+         for (std::vector<Socket*>::const_iterator i (cmgr->getClients ().begin ());
+              i != cmgr->getClients ().end (); ++i) {
+            writeMessage (**i, msg.str ());
+            readResponse (**i);
+         }
+      }
+   }
+
    pile.setTopCards (cards.getCards ());
+   return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -224,7 +311,7 @@ bool Game::makeComputerMove () {
 /// \param player: Player in turn
 //-----------------------------------------------------------------------------
 void Game::displayTurn (unsigned int player) {
-   Check1 (player < names.size ());
+   Check1 (player < actPlayers.size ());
    status.pop ();
    Glib::ustring stat (_("Turn of %1"));
    stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
@@ -396,8 +483,122 @@ void Game::changeNames (const std::vector<Player*>& newPlayer) {
 
 //-----------------------------------------------------------------------------
 /// Reads the turn of a remote player
-/// \param newNames: Array holding the new names of the players
+/// \param socket: Socket from which to read the turn
 /// \returns bool: Flag, if player continues its turn
 //-----------------------------------------------------------------------------
 bool Game::readTurn (Socket& socket) {
+   return false;
+}
+
+//-----------------------------------------------------------------------------
+/// Sends the performed turn to a clients
+/// \param socket: Socket from which to read the turn
+/// \param start: First card of the player to play
+/// \param end: Last card of the player to play
+/// \returns bool: Flag, if message could be sent
+//-----------------------------------------------------------------------------
+bool Game::writeTurn (Socket& socket, unsigned int start, unsigned int end) {
+   std::ostringstream msg;
+   msg << "Start=" << start << ";End=" << end;
+   writeMessage (socket, msg.str ());
+
+}
+
+//----------------------------------------------------------------------------
+/// Callback to inform a controller about status changes
+/// \param status: New status of the game
+//----------------------------------------------------------------------------
+void Game::control (unsigned int status) const {
+}
+
+//----------------------------------------------------------------------------
+/// Checks, if the game is running in server mode
+/// \returns ConnectionMgr*: Pointer to connection manager or NULL
+//----------------------------------------------------------------------------
+ConnectionMgr* Game::getConnectionMgr () const {
+   return NULL;
+}
+
+//----------------------------------------------------------------------------
+/// Writes a message to the partner
+/// \param socket: Socket to write message to
+/// \param msg: Message to write
+//----------------------------------------------------------------------------
+void Game::writeMessage (Socket& socket, const std::string& msg) {
+   try {
+      socket.write (msg);
+   }
+   catch (std::domain_error& error) {
+      std::string err (_("Can't write message!\n\nReason: %1"));
+      err.replace (err.find ("%1"), 2, error.what ());
+      Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dlg.set_title (PACKAGE);
+      dlg.run ();
+   }
+}
+
+//----------------------------------------------------------------------------
+/// Writes a status message to the partner
+/// \param socket: Socket to write message to
+/// \param rc: Error code to send
+/// \param msg: Message to write
+//----------------------------------------------------------------------------
+void Game::writeError (Socket& socket, unsigned int rc, const std::string& msg) {
+   std::string error ("Error=98;Msg=\"" + msg);
+   error += '"';
+   writeMessage (socket, error);
+}
+
+//----------------------------------------------------------------------------
+/// Reads a message form the partner
+/// \param socket: Socket to read message from
+/// \param msg: Read message
+//----------------------------------------------------------------------------
+void Game::readMessage (Socket& socket, std::string& msg) {
+   try {
+      socket.read (msg);
+   }
+   catch (std::domain_error& error) {
+      std::string err (_("Can't read message!\n\nReason: %1"));
+      err.replace (err.find ("%1"), 2, error.what ());
+      Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dlg.set_title (PACKAGE);
+      dlg.run ();
+   }
+}
+
+//----------------------------------------------------------------------------
+/// Reads the response from the partner.
+///
+/// The response must be in the format:
+/// <pre>  <b>Error</b>=<tt>Number</tt>;<b>Msg</b>="<tt>message</tt>"</pre>
+/// \param socket: Socket to read response from
+//----------------------------------------------------------------------------
+void Game::readResponse (Socket& socket) {
+   std::string msg;
+   try {
+      socket.read (msg);
+
+      unsigned int rc (0);
+      AttributeParse ap;
+      ATTRIBUTE (ap, std::string, msg, "Msg");
+      ATTRIBUTE (ap, unsigned int, rc, "Error");
+
+      ap.assignValues (msg);
+      if (!rc)
+         msg = "";
+   }
+   catch (std::domain_error& error) {
+      msg = _("Can't read response!\n\nReason: %1");
+      msg.replace (msg.find ("%1"), 2, error.what ());
+   }
+   catch (std::string& error) {
+      msg = _("Invalid response!\n\nReason: %1");
+      msg.replace (msg.find ("%1"), 2, error);
+   }
+   if (msg.size ()) {
+      Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dlg.set_title (PACKAGE);
+      dlg.run ();
+   }
 }
