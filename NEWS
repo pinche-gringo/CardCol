@@ -3,7 +3,7 @@ Overview of changes in version 0.4.00:
   - New game: Buraco
   - Switched to GCC 3
   - Using GTKMM2/GTK+ 2
-  - Needs General library 0.7.0
+  - Needs General library 0.6.20
   - Cards aint influenced by GTK-styles (as they are only images, not buttons)
   - Providing an icon for the window managers
   - Cards must now be in png-format (which allows to use KDE's cards directly)

@@ -45,7 +45,7 @@ AM_GNU_GETTEXT
 dnl Checks for libraries.
 AC_CHECK_LIB(stdc++, main)
 PKG_CHECK_MODULES(CARDGAME, gtkmm-2.0 >= 2.2.0 gthread-2.0 > 2.2.0
-                  YGP >= 0.7.0 XGP >= 0.7.0)
+                  YGP >= 0.6.20 XGP >= 0.6.20)
 AC_SUBST(CARDGAME_CFLAGS)
 AC_SUBST(CARDGAME_LIBS)
 
