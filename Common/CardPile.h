@@ -151,15 +151,15 @@ typedef CardPile<Gtk::HBox>  CardHPile;
 
 
 void CardVPile::resize (CardWidget& card, Style s) const {
-   static unsigned int sizes[(int)LAST] = { 96, 15, 1 };
-   TRACE5 ("CardVPile::resize (CardWidget&, Style) - " << (int)s);
-   card.set_usize (-1, sizes[(int)s]);
+   static unsigned int height[(int)LAST] = { card.getImageHeight (), 15, 1 };
+   TRACE5 ("CardVPile::resize (CardWidget&, Style) - " << (int)s << " (" << height[0] << ')');
+   card.set_usize (-1, height[(int)s]);
 }
 
 void CardHPile::resize (CardWidget& card, Style s) const {
-   static unsigned int sizes[(int)LAST] = { 72, 18, 1 };
-   TRACE5 ("CardHPile::resize (CardWidget&, Style) - " << (int)s);
-   card.set_usize (sizes[(int)s], -1);
+   static unsigned int width[(int)LAST] = { card.getImageWidth (), 18, 1 };
+   TRACE5 ("CardHPile::resize (CardWidget&, Style) - " << (int)s << " (" << width[0] << ')');
+   card.set_usize (width[(int)s], -1);
 }
 
 #endif
