@@ -53,11 +53,9 @@ class IPlayerDlg : public XDialog {
       Gtk::Label* label;
       Gtk::Entry* value;
 
-      line (const char* label, Glib::ustring& attribute);
-      line (Glib::ustring& label, Glib::ustring& attribute);
+      line (const Glib::ustring& label, Glib::ustring& attribute);
       ~line ();
 
-      void show ();
       void attach (Gtk::Table& table, unsigned int line);
    } line;
 

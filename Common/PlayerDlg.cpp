@@ -43,7 +43,7 @@
 //Parameters: names: Vector of string containing the names of the players
 /*--------------------------------------------------------------------------*/
 IPlayerDlg::IPlayerDlg (std::vector<Glib::ustring>& names)
-   : XDialog (OKCANCEL), pClient (new Gtk::Table (1, 2)), values (names) {
+   : XDialog (OKCANCEL), pClient (new Gtk::Table (names.size () + 1, 3)), values (names) {
    TRACE2 ("IPlayerDlg::IPlayerDlg (std::vector<Glib::ustring>&) - Players: "
            << names.size ());
    Check1 (names.size () > 1);
@@ -51,22 +51,19 @@ IPlayerDlg::IPlayerDlg (std::vector<Glib::ustring>& names)
 
    set_title (_("Set name of players"));
 
-   aPlayers.push_back (new line (_("Human:"), names[0]));
-   aPlayers.back ()->show ();
+   aPlayers.push_back (new line (_("_Human:"), names[0]));
    aPlayers.back ()->attach (*pClient, 0);
 
    for (unsigned int i (1); i < names.size (); ++i) {
-      Glib::ustring label (_("Player %1:"));
+      Glib::ustring label (_("Player _%1:"));
       label.replace (label.find ("%1"), 2, 1, (char)('0' + i));
       aPlayers.push_back (new line (label, names[i]));
 
-      aPlayers.back ()->show ();
       aPlayers.back ()->attach (*pClient, i);
    }
 
-   pClient->show ();
    get_vbox ()->pack_start (*pClient, false, false, 5);
-   show ();
+   show_all ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -97,23 +94,12 @@ void IPlayerDlg::okEvent () {
 //Parameters: label: Text for label
 //            attribute: Value for entryfield (to be updated)
 /*--------------------------------------------------------------------------*/
-IPlayerDlg::line::line (const char* label, Glib::ustring& attribute)
-   : label (new Gtk::Label (label))
-     , value (new Gtk::Entry ()) {
-   TRACE9 ("IPlayerDlg::line::line (const char*, Glib::ustring&)");
+IPlayerDlg::line::line (const Glib::ustring& labelVal, Glib::ustring& attribute)
+    : label (manage (new Gtk::Label (labelVal, 0, 0.5, true)))
+      , value (manage (new Gtk::Entry ())) {
+   TRACE9 ("IPlayerDlg::line::line (const Glib::ustring&, Glib::ustring&)");
    value->set_text (attribute);
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Constructor
-//Parameters: label: Text for label
-//            attribute: Value for entryfield (to be updated)
-/*--------------------------------------------------------------------------*/
-IPlayerDlg::line::line (Glib::ustring& labelVal, Glib::ustring& attribute)
-   : label (new Gtk::Label (labelVal))
-     , value (new Gtk::Entry ()) {
-   TRACE9 ("IPlayerDlg::line::line (Glib::ustring&, Glib::ustring&)");
-   value->set_text (attribute);
+   label->set_mnemonic_widget (*value);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -121,18 +107,8 @@ IPlayerDlg::line::line (Glib::ustring& labelVal, Glib::ustring& attribute)
 /*--------------------------------------------------------------------------*/
 IPlayerDlg::line::~line () {
    TRACE9 ("IPlayerDlg::line::~line ()");
-   delete label;
-   delete value;
 }
 
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shows the values of the structure
-/*--------------------------------------------------------------------------*/
-void IPlayerDlg::line::show () {
-   label->show ();
-   value->show ();
-}
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Attaches the values of the structure to the passed table
@@ -141,7 +117,6 @@ void IPlayerDlg::line::show () {
 /*--------------------------------------------------------------------------*/
 void IPlayerDlg::line::attach (Gtk::Table& table, unsigned int line) {
    Check3 (label); Check3 (value);
-   table.resize (line + 2, 2);
    table.attach (*label, 1, 2, line + 1, line + 2, Gtk::FILL, Gtk::FILL, 5, 3);
    table.attach (*value, 2, 3, line + 1, line + 2, Gtk::FILL | Gtk::EXPAND,
                  Gtk::FILL | Gtk::EXPAND, 5, 3);
