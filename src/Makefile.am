@@ -3,7 +3,7 @@
 bin_PROGRAMS=
 bin_PROGRAMS=CardCol
 
-CardCol_SOURCES=CardCol.cpp Twopart.cpp
+CardCol_SOURCES=CardCol.cpp Twopart.cpp Rovhult.cpp
 
 INCLUDES = @INCLUDES@ -I../Common `gtkmm-config --cflags`
 
