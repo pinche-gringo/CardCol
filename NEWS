@@ -1,8 +1,16 @@
+Overview of changes in version 0.4.00:
+
+  - New game: Buraco
+  - Switched to GCC 3
+  - Using GTKMM2/GTK+ 2
+  - Needs General library 0.6.10
+  - Cards aint influenced by GTK-styles (as they are only images, not buttons)
+
 Overview of changes in version 0.3.02:
 
-  - Fixed bug #19: Hearts computer player played queen of spades in first round
   - Using XAttributeLabel2 in HeartsScore dialog
   - Hearts ends now at 100 points (and not 101)
+  - Fixed bug in Hearts (played Queen of spades in round 1)
 
 Overview of changes in version 0.3.01:
 
