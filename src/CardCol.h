@@ -65,7 +65,7 @@ class CardgameCollection : public XApplication {
    const CardgameCollection& operator= (const CardgameCollection&);
 
    // Event-handling
-   void closeProgram (int, const Gtk::Dialog* dlg);
+   void closeDialog (int, const Gtk::Dialog* dlg);
    virtual void command (int menu);
    virtual void gameEvents (unsigned int status);
    virtual void showAboutbox ();
@@ -81,6 +81,7 @@ class CardgameCollection : public XApplication {
 
    void makePlayer ();
    void* waitForMessages (void*);
+   bool handleErrorMessage (char* msg);
    bool handleMessage (char* msg);
    bool showMessage (char* msg);
 

@@ -38,6 +38,7 @@
 #include <Check.h>
 #include <Trace_.h>
 #include <Socket.h>
+#include <ANumeric.h>
 
 #include <File.h>
 #include <INIFile.h>
@@ -732,6 +733,11 @@ CardgameCollection::~CardgameCollection () {
    for (std::vector<Player*>::iterator i (player.begin ());
         i != player.end (); ++i)
       delete *i;
+
+   if (pCommThread)
+      pCommThread->cancel ();
+   if (pThread)
+      pThread->cancel ();
 }
 
 
@@ -799,7 +805,7 @@ void CardgameCollection::startGame () {
    name += " - " PACKAGE " V" PRG_RELEASE;
    set_title (name);
 
-   if (cmgr.getClients ().size ())
+   if (cmgr.getMode () != ConnectionMgr::CLIENT)
       game->start ();
 }
 
@@ -1050,7 +1056,7 @@ void* CardgameCollection::changeCards (void* opt) {
       Gtk::MessageDialog* dlg (new Gtk::MessageDialog (e, Gtk::MESSAGE_ERROR));
       dlg->set_title (PACKAGE);
       dlg->signal_response ().connect
-          (bind (slot (*this, &CardgameCollection::closeProgram), dlg));
+          (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
       dlg->show ();
 
       Check3 (apMenus[NEW]); Check3 (apMenus[CONNECT]);
@@ -1066,10 +1072,9 @@ void* CardgameCollection::changeCards (void* opt) {
 /// \param int: Response of dialog (ignored)
 /// \param dlg: Dialog to close additionally
 //-----------------------------------------------------------------------------
-void CardgameCollection::closeProgram (int, const Gtk::Dialog* dlg) {
+void CardgameCollection::closeDialog (int, const Gtk::Dialog* dlg) {
    Check1 (dlg);
    delete dlg;
-   // delete this;
 }
 
 //-----------------------------------------------------------------------------
@@ -1192,6 +1197,8 @@ void* CardgameCollection::waitForMessages (void*) {
                actClient = 0;
          }
          TRACE7 ("CardgameCollection::waitForMessage (void*) - `" << input <<'\'');
+         if (input.empty ())
+            throw std::string (_("Lost connection!"));
 
          char* msg = new char [input.length () + 1];
          strcpy (msg, input.c_str ());
@@ -1208,52 +1215,100 @@ void* CardgameCollection::waitForMessages (void*) {
       Glib::signal_idle ().connect
           (bind (slot (*this, &CardgameCollection::showMessage), charmsg));
    }
+   catch (std::domain_error& error) {
+      std::string msg (_("Lost connection!"));
+      char* charmsg (new char [msg.length () + 1]);
+      strcpy (charmsg, msg.c_str ());
+      Glib::signal_idle ().connect
+          (bind (slot (*this, &CardgameCollection::showMessage), charmsg));
+   }
 
-   pCommThread = NULL;
+   return pCommThread = NULL;
 }
 
 //----------------------------------------------------------------------------
-/// Handles sent messages
+/// Handles received error messages
+/// \param msg: Received message to handle
+/// \remarks An error message is in the following format:
+///    <pre>  <b>Error</b>=<tt>Number</tt>;<b>Msg</b>="<tt>message</tt>"</pre>
+/// \returns bool: True: Message was error message and has been processed; else false
+//----------------------------------------------------------------------------
+bool CardgameCollection::handleErrorMessage (char* msg) {
+   TRACE5 ("CardgameCollection::handleErrorMessage (char*) - " << msg);
+
+   AttributeParse ap;
+   unsigned int error (0);
+   std::string  errText;
+   ATTRIBUTE (ap, unsigned int, error, "Error");
+   ATTRIBUTE (ap, std::string, errText, "Msg");
+
+   try {
+      ap.assignValues (msg);
+
+      if (error) {
+         std::string message (_("Client sent an error %1!\n\n%2"));
+         message.replace (message.find ("%1"), 2, ANumeric::toString (error));
+         message.replace (message.find ("%2"), 2, errText);
+
+         Gtk::MessageDialog* dlg (new Gtk::MessageDialog (message, Gtk::MESSAGE_ERROR));
+         dlg->set_title (PACKAGE);
+         dlg->signal_response ().connect
+             (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
+         dlg->show ();
+      }
+      return true;
+   }
+   catch (std::string& e) { }
+   return false;
+}
+
+//----------------------------------------------------------------------------
+/// Handles received messages
 /// \param msg: Received message to handle
 /// \returns bool: False
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
 bool CardgameCollection::handleMessage (char* msg) {
-   TRACE5 ("CardgameCollection::handleMessage (const std::string&) - " << msg);
+   TRACE5 ("CardgameCollection::handleMessage (char*) - " << msg);
 
-   if (game)
-       game->handleMessage (msg);
-   else {
-      std::string game;
-      try {
-          if (cmgr.getMode () == ConnectionMgr::SERVER)
-              throw std::string (_("Unexpected message in server mode"));
-
-          AttributeParse ap;
-          ATTRIBUTE (ap, std::string, game, "Game");
-          ap.assignValues (msg);
-
-          games type (CardgameAppl::convertToGameType (game.c_str ()));
-          if (type == NONE) {
-             std::string msg (_("Invalid game type: `%1'"));
-             msg.replace (msg.find ("%1"), 2, game);
-             throw msg;
-          }
-
-          options.type = type;
-          startGame ();
-          cmgr.getSocket ()->write ("Error=0");
-      }
-      catch (std::string& error) {
-         std::string msg ("Error=99;Msg=\"" + error);
-         msg += '"';
+   if (!handleErrorMessage (msg)) {
+      if (game)
+         game->handleMessage (msg);
+      else {
+         std::string game;
          try {
-            cmgr.getSocket ()->write (msg);
+            if (cmgr.getMode () == ConnectionMgr::SERVER)
+               throw std::string (_("Unexpected message in server mode"));
+
+            AttributeParse ap;
+            ATTRIBUTE (ap, std::string, game, "Game");
+            ap.assignValues (msg);
+
+            games type (CardgameAppl::convertToGameType (game.c_str ()));
+            if (type == NONE) {
+               std::string msg (_("Invalid game type: `%1'"));
+               msg.replace (msg.find ("%1"), 2, game);
+               throw msg;
+            }
+
+            options.type = type;
+            startGame ();
+            cmgr.getSocket ()->write ("Error=0");
          }
-         catch (std::string& e) { }
-         Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR);
-         dlg.set_title (PACKAGE);
-         dlg.run ();
+         catch (std::string& error) {
+            std::string msg ("Error=99;Msg=\"" + error);
+            msg += '"';
+            try {
+               cmgr.getSocket ()->write (msg);
+            }
+            catch (std::string& e) { }
+
+            Gtk::MessageDialog* dlg (new Gtk::MessageDialog (error, Gtk::MESSAGE_ERROR));
+            dlg->set_title (PACKAGE);
+            dlg->signal_response ().connect
+                (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
+            dlg->show ();
+         }
       }
    }
 
@@ -1268,9 +1323,11 @@ bool CardgameCollection::handleMessage (char* msg) {
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
 bool CardgameCollection::showMessage (char* msg) {
-   Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR);
-   dlg.set_title (PACKAGE);
-   dlg.run ();
+   Gtk::MessageDialog* dlg (new Gtk::MessageDialog (msg, Gtk::MESSAGE_ERROR));
+   dlg->set_title (PACKAGE);
+   dlg->signal_response ().connect
+       (bind (slot (*this, &CardgameCollection::closeDialog), dlg));
+   dlg->show ();
    delete [] msg;
    return false;
 }
