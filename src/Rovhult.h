@@ -21,6 +21,7 @@
 #include <vector>
 
 #include <gtk--/table.h>
+#include <gtk--/button.h>
 #include <gtk--/statusbar.h>
 
 #include <Thread.h>
@@ -46,8 +47,8 @@ class RovhultAppl : public XApplication {
    // IDs for menus
    enum { NEW, EXIT, ABOUT };
 
-   void pileSelected (CardPile* parent, unsigned int card);
-   void handSelected (CardCollection* parent, unsigned int card);
+   void pileSelected (CardPile* parent);
+   void handSelected (CardCollection* parent, unsigned int pos);
 
    void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
                      guint info, guint32 time, unsigned int player, unsigned int cardPos);
@@ -57,6 +58,8 @@ class RovhultAppl : public XApplication {
    void cardDroppedOnHand (GdkDragContext* pContext, gint x, gint y,
                            GtkSelectionData* pData, guint info, guint32 time,
                            unsigned int playerCard);
+
+   void finishedExchange ();
 
  private:
    // Protected manager functions
@@ -70,8 +73,6 @@ class RovhultAppl : public XApplication {
    void fillStaple ();
 
    void loadCards ();
-
-   virtual void size_allocate_impl (GtkAllocation* size);
 
    void registerHandDND (CardWidget& card, unsigned int player, unsigned int card);
    void registerTableDND (CardWidget& card, unsigned int player, unsigned int pile);
@@ -94,6 +95,8 @@ class RovhultAppl : public XApplication {
    CardImages cardFaces;
    CardSet cards;
 
+   CardCollection played;
+
    CardPile staple;                                          // Cards on staple
    CardCollection hands[NUM_PLAYERS];         // For players: Cards in the hand
    CardPile reserve[NUM_PLAYERS][3];            // Reserve-cards (for end-game)
@@ -105,8 +108,8 @@ class RovhultAppl : public XApplication {
 
    static const unsigned int USED_CARDS = 52;
 
-   static const unsigned int WIDTH = 720;
-   static const unsigned int HEIGHT = 690;
+   static const unsigned int WIDTH = 760;
+   static const unsigned int HEIGHT = 710;
 
 
    static GtkTargetEntry dndTypeTable;
