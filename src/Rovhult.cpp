@@ -33,8 +33,6 @@
 
 #include <glib.h>
 
-#define CHECK 3
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -306,7 +304,7 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
 //Purpose   : Defaultconstructor; all widget are created
 /*--------------------------------------------------------------------------*/
 RovhultAppl::RovhultAppl ()
-   : XApplication (PACKAGE " - Rovhult V" VERSION), status ()
+   : XApplication (PACKAGE " - Rovhult V" VERSION), status (), actPlayer (0)
      , tblTable (16, 19), cardFaces (USED_CARDS), cards (), pThread (NULL)
      , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::COMPRESSED, true) {
    set_usize (WIDTH, HEIGHT);
@@ -429,7 +427,6 @@ void RovhultAppl::finishedExchange () {
    }
 
    enablePlayer (0);
-   staple.setAccessable (false);
    staple.getTopCard ().remove_accelerator (*get_accel_group (), ' ', 0);
    pileTop.disconnect ();
 }
@@ -491,30 +488,22 @@ void RovhultAppl::exchangeAutoplayerCards () {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Makes the computer-moves and enables again player 0
-//Parameters: player: Not really a void*, but actually the (next computer)player
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::makeComputerMoves (void* player) {
-   int nrPlayer ((int)player);
-   
+int RovhultAppl::makeComputerMoves () {
    TRACE2 ("RovhultAppl::makeComputerMoves (void*) - Start with player "
-           << nrPlayer);
-   sleep (1);
+           << actPlayer);
 
-   do {
-      gdk_threads_enter ();
-      nrPlayer = makeTurn (nrPlayer);
-      gdk_threads_leave (); 
+   actPlayer = makeTurn (actPlayer);
 
-      TRACE2 ("RovhultAppl::makeComputerMoves (void*) - Next player: "
-              << nrPlayer);
+   TRACE2 ("RovhultAppl::makeComputerMoves (void*) - Next player: "
+           << actPlayer);
 
-      if (nrPlayer == -1)
-         return;
-   } while (nrPlayer);
+   if (!actPlayer)
+      enablePlayer (0);
 
-   gdk_threads_enter ();
-   enablePlayer (0);
-   gdk_threads_leave (); 
+   // Continue with computer-moves (means: let timer enabled), if computer
+   // controlled players are on turn
+   return actPlayer > 0;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -607,7 +596,7 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    }
    disableLastPlayer ();
 
-   // Create a thread perform the move from the pile; neccessary to enable
+   // Create a thread to perform the move from the pile; neccessary to enable
    // the update of the GUI (for the card-flip, which would not be visible
    // otherwise).
    pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::doPileSelected,
@@ -716,12 +705,10 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
 
    playCardsFromHand (player, pos);
 
-   player = executeMove (player, card.number ());
+   actPlayer = executeMove (player, card.number ());
 
-   // Create a thread to enable the next player; as else re-registering the
-   // actual played card (inside its event-handler) wreaks quite a bit of havoc
-   pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::makeComputerMoves,
-                               (void*)player);
+   // Start a timer to perform the computer-moves
+   Gtk::Main::timeout.connect (slot (this, &RovhultAppl::makeComputerMoves), 1000);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1295,9 +1282,6 @@ int RovhultAppl::makeTurn (unsigned int player) {
    if (nrCards) {
       unsigned int pos (players[player].hand.findFirstEqualOrBigger (cardMin));
 
-      TRACE5 ("RovhultAppl::makeTurn (unsigned int) - Continuing with card "
-              << players[player].hand.at (pos) << " at pos " << pos);
-   
       // Check if no matching normal card is found and use special card instead
       // We know one card must match as "playerCanContinue" reported this player
       // as valid
@@ -1310,6 +1294,9 @@ int RovhultAppl::makeTurn (unsigned int player) {
             assert (players[player].hand.at (pos).number () == CardWidget::TEN);
          }
       else {
+         TRACE5 ("RovhultAppl::makeTurn (unsigned int) - Continuing with card "
+                 << players[player].hand.at (pos) << " at pos " << pos);
+   
          assert ((cardMin == CardWidget::SEVEN)
                  ? (players[player].hand.at (pos).number () <= CardWidget::SEVEN)
                  : (players[player].hand.at (pos).number () >= cardMin));
@@ -1319,14 +1306,21 @@ int RovhultAppl::makeTurn (unsigned int player) {
          if (players[player].hand.at (pos).number () == CardWidget::TEN) {
             unsigned int npos = players[player].hand.findLastEqual (pos);
             if ((npos + 1) < nrCards)
-               pos = players[player].hand.findLastEqual (npos + 1);
+               pos = npos + 1;
          }
-         else
-            pos = players[player].hand.findLastEqual (pos);
+
+         // Now find the last of equal cards; we want to get rid of all of them
+         // unless it's the highest card and really high (we might need them in
+         // the next round) unless the card is the highest because its the only
+         // one -> then get rid of all of them to be able to play from the piles
+         unsigned int npos (players[player].hand.findLastEqual (pos));
+         if ((npos != players[player].hand.numberOfCards ())
+             || (pos == 0)
+             || (players[player].hand.at (npos).number () < CardWidget::TEN))
+            pos = npos;
       }
 
       CardWidget::NUMBERS nr (playCardsFromHand (player, pos));
-      sleep (1);
       return executeMove (player, nr);
    }
    else {

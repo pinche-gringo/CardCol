@@ -22,6 +22,7 @@
 
 #include <gtk--/table.h>
 #include <gtk--/button.h>
+#include <gtk--/tooltips.h>
 #include <gtk--/statusbar.h>
 
 #include <Mutex.h>
@@ -75,7 +76,7 @@ class RovhultAppl : public XApplication {
    // Helper functions
    void movePlayedCardsToLooser (unsigned int nrLooser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;
-   void makeComputerMoves (void* player);
+   int  makeComputerMoves ();
    void enablePlayer (unsigned int player);
    void disableLastPlayer ();
    void cleanTable ();
@@ -112,16 +113,18 @@ class RovhultAppl : public XApplication {
    static const char* xpmAuthor[];
    static const char* xpmRovhult[];
 
+   Gtk::Tooltips  tt;
    Gtk::Statusbar status;
    Gtk::Table     tblTable;
 
    Widget* pMenuNew;
 
+   unsigned int actPlayer;
+
    CardImages cardFaces;
    CardSet cards;
 
    CardHPile played;
-
    CardVPile staple;                                         // Cards on staple
    struct {
       CardHPile hand;                         // For players: Cards in the hand
@@ -139,7 +142,6 @@ class RovhultAppl : public XApplication {
 
    static const unsigned int WIDTH = 760;
    static const unsigned int HEIGHT = 735;
-
 
    static GtkTargetEntry dndTypeTable;
    static GtkTargetEntry dndTypeHand;
