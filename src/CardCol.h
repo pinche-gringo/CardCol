@@ -53,6 +53,7 @@ class CardgameCollection : public XApplication {
    Gtk::Statusbar& getStatusbar () { return status; }
    CardSet& getCards () { return cards; }
    const std::vector<Player*>& getPlayer () const;
+   ConnectionMgr& getConnectionMgr () { return cmgr; };
 
  private:
    // IDs for menus
@@ -70,13 +71,16 @@ class CardgameCollection : public XApplication {
    virtual void showAboutbox ();
    virtual const char* getHelpfile ();
 
-   bool changeCards (void* opt);
-   void loadCards ();
+   void* changeCards (void* opt);
+   void* loadCards (void*);
    void userWants2End ();
    void startGame ();
 
    void changeDecks (const ICarddeckSelectDlg& dialog);
    void changePlayernames ();
+
+   void makePlayer ();
+   void* waitForServerMessage (void*);
 
    static XApplication::MenuEntry CardgameCollection::menuItems[];
 
