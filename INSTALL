@@ -8,8 +8,7 @@ The following packages are needed
   - Gtkmm-2.0 (which itself needs GTK+-2.0). Available via http://www.gktmm.org
   - Carddecks; e.g. the KDE cardgames provide a huge collection. See also the
     README.
-  - An installed libpthreads enables the network ability (and loading of the
-    carddecks in the background)
+  - An installed libpthreads enables the network ability
 
 
 How to build (if extracted from an (tar-)archive)
@@ -125,3 +124,5 @@ Common options/targets for make
   - clean                       # Deletes the files created during the make
   - uninstall                   # Uninstalls (after you found out what crap
                                   this package actually contains)
+  - doc-install                 # Installs the documentation
+  - doc-uninstall               # Uninstalls the documentation
