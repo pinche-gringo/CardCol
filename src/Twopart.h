@@ -123,4 +123,27 @@ class Twopart : public Game {
    Widget* pMenuEnd;
 };
 
+
+
+// Specialized Twopart to inform parent about status-changes
+// The template must support a statusbar (accessed by getStatusbar), a cardset
+// (accessed by getCards) and a Gtk::Box, which can be accessed by getClient ()
+template <class T>
+class TTwopart : public Twopart {
+ public:
+   typedef void (T::*PCALLBACK) (unsigned int);
+
+   TTwopart  (T& parent, PCALLBACK callback)
+      : Twopart (parent.getClient (), parent.getStatusbar (), parent.getCards ())
+      , obj (parent), pCallback (callback) { }
+   virtual ~TTwopart () { }
+
+   virtual void control (unsigned int status) const {
+      (obj.*pCallback) (status);
+   }
+
+ private:
+   T& obj;
+   PCALLBACK pCallback;
+};
 #endif

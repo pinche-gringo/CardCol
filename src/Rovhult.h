@@ -101,6 +101,7 @@ class Rovhult : public Game {
    bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
    int executeMove (unsigned int player, CardWidget::NUMBERS nr);
 
+   virtual void end (bool restart);
    virtual void start ();
    virtual void playOpen (bool open);
 
@@ -121,6 +122,29 @@ class Rovhult : public Game {
 
    static GtkTargetEntry dndTypeTable;
    static GtkTargetEntry dndTypeHand;
+};
+
+
+// Specialized Rovhult to inform parent about status-changes
+// The template must support a statusbar (accessed by getStatusbar), a cardset
+// (accessed by getCards) and a Gtk::Box, which can be accessed by getClient ()
+template <class T>
+class TRovhult : public Rovhult {
+ public:
+   typedef void (T::*PCALLBACK) (unsigned int);
+
+   TRovhult  (T& parent, PCALLBACK callback)
+      : Rovhult (parent.getClient (), parent.getStatusbar (), parent.getCards ())
+      , obj (parent), pCallback (callback) { }
+   virtual ~TRovhult () { }
+
+   virtual void control (unsigned int status) const {
+      (obj.*pCallback) (status);
+   }
+
+ private:
+   T& obj;
+   PCALLBACK pCallback;
 };
 
 #endif
