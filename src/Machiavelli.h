@@ -24,6 +24,7 @@
 #include <deque>
 
 #include <gtkmm/label.h>
+#include <gtkmm/button.h>
 #include <gtkmm/scrolledwindow.h>
 
 #include <XGP/AutoContainer.h>
@@ -123,7 +124,7 @@ class Machiavelli : public Game {
 
    /// \name Callback from events
    //@{
-   void stapleSelected ();
+   void endTurn ();
    void undoMove (unsigned int number);
    //@}
 
@@ -137,6 +138,7 @@ class Machiavelli : public Game {
 
    Gtk::Label       newPile;
    CardVInfoPile    staple;
+   Gtk::Button      nextTurn;
 
    typedef struct {
       SigC::Connection connReceive;

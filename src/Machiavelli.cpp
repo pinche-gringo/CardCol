@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2002 - 2004
+//COPYRIGHT   : Copyright (C) 2003 - 2004
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -74,6 +74,7 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10)
      , startPlayer (-1U), newPile (_("New pile"))
      , staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK)
+     , nextTurn (_("_End turn"), true)
      , target (-1U), undoDlg (NULL) {
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&)");
@@ -101,6 +102,7 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    attach (hands[0], 3, 12, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
    attach (names[0], 3, 12, 1, 2, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
    attach (staple, 0, 1, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 5);
+   attach (nextTurn, 0, 1, 1, 2, Gtk::FILL, Gtk::SHRINK, 5);
    attach (newPile, 0, 12, 2, 3, Gtk::EXPAND | Gtk::FILL, Gtk::FILL, 0, 5);
    attach (piles, 0, 12, 3, 4, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
@@ -121,6 +123,11 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       dndTypeBoth.push_back (dndTypeHand.front ());
       dndTypeBoth.push_back (dndTypeTable.front ());
    }
+
+   nextTurn.set_flags (Gtk::CAN_DEFAULT);
+   nextTurn.grab_default ();
+   nextTurn.set_sensitive (false);
+   nextTurn.signal_clicked ().connect (slot (*this, (&Machiavelli::endTurn)));
 
    show_all_children ();
 }
@@ -334,7 +341,8 @@ bool Machiavelli::enableHuman () {
 
    if (staple.size ())
        activeCards.push_back (staple.getTopCard ().signal_clicked ().connect
-                              (slot (*this, (&Machiavelli::stapleSelected))));
+                              (slot (*this, (&Machiavelli::endTurn))));
+   nextTurn.set_sensitive (true);
 
    for (unsigned int i (0); i < hands[0].size (); ++i)
       registerHandDND (i);
@@ -370,6 +378,7 @@ void Machiavelli::disableHuman () {
    Check3 (aDNDHand.empty ());
 
    unregisterTableDND ();
+   nextTurn.set_sensitive (false);
 }
 
 //----------------------------------------------------------------------------
@@ -414,10 +423,10 @@ void Machiavelli::setStartPlayer () {
 }
 
 //-----------------------------------------------------------------------------
-/// Callback after clicking on the staple
+/// Callback to end a turn
 //-----------------------------------------------------------------------------
-void Machiavelli::stapleSelected () {
-   TRACE5 ("Machiavelli::stapleSelected ()");
+void Machiavelli::endTurn () {
+   TRACE5 ("Machiavelli::endTurn ()");
    Check1 (gameStatus () == PLAYING);
    Check3 (staple.size ()); Check3 (activeCards.size ());
 
@@ -1416,10 +1425,22 @@ void Machiavelli::undoMove (unsigned int number) {
 
    enableHuman ();
 
+   Check3 (undoDlg);
    if (undo.empty ()) {
-      Check3 (undoDlg);
       delete undoDlg;
       undoDlg = NULL;
+   }
+   else {
+      YGP::StatusObject obj;
+      checkPiles (obj);
+      if (obj.getType () != YGP::StatusObject::UNDEFINED)
+         obj.generalize (_("Can't end turn: The piles are not valid!"));
+      else
+         obj.setMessage (YGP::StatusObject::INFO, _("Could end turn: The piles are OK!"));
+      TRACE1 ("MessageDlg::update (const YGP::StatusObject&) - " << obj.getMessage ());
+      TRACE1 ("hasDetails: " << (obj.hasDetails () ? "Yes" : "No"));
+      TRACE1 ("Details: " << obj.getDetails ());
+      undoDlg->update (obj);
    }
 }
 
