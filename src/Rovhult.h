@@ -76,7 +76,7 @@ class Rovhult : public Game {
    int doPileSelected (unsigned int player, unsigned int pile);
 
    // Helper functions
-   void movePlayedCardsToLooser (unsigned int nrLooser);
+   unsigned int movePlayedCardsToLooser (unsigned int nrLooser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;
    int  makeMove (unsigned int player);
    void enablePlayer (unsigned int player);
@@ -100,7 +100,8 @@ class Rovhult : public Game {
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
    bool getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
                        CardWidget::NUMBERS& max) const;
-   bool existOnlySpecialCards (const ICardPile& pile, unsigned int pos) const;
+   bool existOnlySpecialCards (const ICardPile& pile, unsigned int start,
+                               unsigned int end) const;
    bool isSpecialCard (CardWidget::NUMBERS nr) const {
       return (nr == CardWidget::TEN) || (nr == CardWidget::TWO); }
 
