@@ -1,6 +1,26 @@
 <!-- -*-HTML-*- -->
 <!-- $Id$ -->
 
+<!--
+  Anti-Copyright (A) 2003 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <html>
   <head>
     <title>Cardgames - a collection of multi-player cardgames</title>
@@ -12,73 +32,69 @@
     <meta name="DC.Rights" content="Anticopyright (A) 2002, distributed under the GNU Free Documentation License">
   </head>
 
-<body>
-
+  <body>
     <h1 align="center">General information about the Cardgames</h1>
     <hr size=2>
 
-        <p>The Cardgames are a collection of cardgames I (usually) learned (and
-          liked) from various people around the world, usually during travelling
-          (what could kill time better in &gt;10 hour bus/train/whatever
-          rides than a good cardgame?)</p>
+    <p>The Cardgames are a collection of cardgames I (usually) learned
+      from various people around the world, usually during travelling
+      (what could kill time better in &gt;10 hour bus/train/whatever
+      rides than a good cardgame?)</p>
 
-        <p>As I prefer to communicate with people those are multi-player
-          games (but no worries, they have a computer player). If you search
-          for patience (single-player) games, you are wrong here; but check
-          out the excellent KDE cardgames.</p>
+    <p>They are all multi-player games having a computer player.  If
+      you search for patience (single-player) games, you are wrong here;
+      but check out the excellent KDE cardgames.</p>
 
-        <p>They are distributed under the GNU General Public License, which
-          basically says like this (see the file <tt>COPYING</tt> along with
-          this package or the <a href="http://www.gnu.org">GNU homepage
-            (http://www.gnu.org)</a> for more details):</p>
+    <p>They are distributed under the GNU General Public License, which
+      basically says like this (see the file <tt>COPYING</tt> along with
+      this package or the <a href="http://www.gnu.org">GNU homepage
+        (http://www.gnu.org)</a> for more details):</p>
 
-        <blockquote><em>This is free software; you can redistribute it and/or
-            modify it under the terms of the GNU General Public
-            License as published by the Free Software Foundation; either
-            version 2 of the License, or (at your option) any later version.
-        </em></blockquote>
+      <blockquote><em><p>This is free software; you can redistribute
+          it and/or modify it under the terms of the GNU General Public
+          License as published by the Free Software Foundation; either
+          version 2 of the License, or (at your option) any later
+          version.</p>
  
-        <blockquote><em>This is distributed in the hope that it will be useful,
-            but WITHOUT ANY WARRANTY; without even the implied warranty of
-            MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-            General Public License for more details.</em></blockquote>
- 
-        <blockquote><em>You should have received a copy of the GNU General Public
-            License along with this program; if not, write to the Free
-            Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-          </em></blockquote>
+        <p>This is distributed in the hope that it will be useful, but
+          WITHOUT ANY WARRANTY; without even the implied warranty of
+          MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+          GNU General Public License for more
+          details.</p></em></blockquote>
 
-        <h2>Author</h2>
-        <p>Both the program and the documentation have been written by Markus
-          Schwab.</p>
+    <h2>Author</h2>
+    <p>Both the program and the documentation have been written by Markus
+      Schwab.</p>
 
-        <h2>Games</h2>
-        <p>Currently there are the following games:</p>
+    <h2>Games</h2>
+    <p>Currently there are the following games:</p>
 
-        <table>
-        <!--#exec cmd='
-          /usr/bin/awk \'/title.*title/ \
-             { if (FILENAME !~ /index\..*/) \
-                { sub (/<\/title>/, "")
-                  sub (/<title>/, "")
-                  $1 = "<tr><td>&nbsp;&nbsp;<a href=\"" FILENAME "\">" $1 "</a></td><td>"
-                  print $0 "</td></tr>" } }\' *.html
-        ' -->
-        </table>
+    <table>
+      <!--#exec cmd='
+      /usr/bin/awk \'/title.*title/ \
+      { if (FILENAME !~ /CardCol\..*/) \
+      { sub (/<\/title>/, "")
+      sub (/<title>/, "")
+      $1 = "<tr><td>&nbsp;&nbsp;<a href=\"" FILENAME "\">" $1 "</a></td><td>"
+      print $0 "</td></tr>" } }\' *.html.en
+      ' -->
+    </table>
 
-        <h2>Credits</h2>
-        <p>Greetings to Andreas, Jakob and Janus, who taught me the rules of
-          <tt>R&oslash;vhult</tt>.</p>
+    <h2>Credits</h2>
+    <p>Greetings to Andreas, Jakob and Janus, who taught me the rules of
+      <tt>R&oslash;vhult</tt>.</p>
 
-        <p>Thanks to Ann-Karin, Arne, B&aring;rn and Solveing for introducing
-          me to <tt>Twopart</tt>.</p>
+    <p>Thanks to Ann-Karin, Arne, B&aring;rn and Solveing for introducing
+      me to <tt>Twopart</tt>.</p>
+
+    <p>Hearts is distributed along with Windows 98 (and maybe other versions).</p>
 
     <hr size=2 noshade>
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
 <!-- hhmts start -->
-Last modified: Sun Jan 12 22:36:18 PET 2003
+Last modified: Mon Feb 10 21:44:44 PET 2003
 <!-- hhmts end -->
           - $Revision$
 </body>
