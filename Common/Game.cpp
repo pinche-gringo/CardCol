@@ -38,8 +38,6 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 #include <Socket.h>
@@ -307,11 +305,15 @@ bool Game::makeComputerMove () {
       return false;
    }
 
-   actPlayer = makeMove (actPlayer);
-   TRACE9 ("Game::makeComputerMove () - Next player: " << actPlayer);
-   if (!actPlayer)
-      enableHuman ();
-   return actPlayer > 0;
+   unsigned int newPlayer (makeMove (actPlayer));
+   TRACE9 ("Game::makeComputerMove () - Next player: " << newPlayer);
+   if (newPlayer == actPlayer)
+      return true;
+   else {
+      actPlayer = newPlayer;
+      makeNextMoves ();
+      return false;
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -355,7 +357,7 @@ void Game::setGameStatus (unsigned int newStatus) {
 //-----------------------------------------------------------------------------
 void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end) {
    TRACE2 ("Game::flipCards2Play (ICardPile&, unsigned int, unsigned int) - "
-           "Cards from " << start << " to " << end);
+           "Cards " << start << " - " << end);
    Check3 (end < pile.size ());
    Check3 (start <= end);
 
@@ -643,8 +645,9 @@ bool Game::performCommand (unsigned int player, const char* msg) {
 
       unsigned long target;
       if (stringToNumber (target, strTarget.c_str ())
-          || playTo != "Target")
+          || (playTo != "Target"))
          return false;
+      Check3 (actPlayer >= 0);
       ICardPile& pile (getPileOfPlayer (correctPlayer (actPlayer), target));
 
       command = cmd;
