@@ -34,6 +34,7 @@
 #include <gtk/gtkdnd.h>
 
 #include <gtkmm/stock.h>
+#include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/scrolledwindow.h>
 
@@ -128,10 +129,11 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    statusbar.pack_end (frameInfo, Gtk::PACK_SHRINK, 5);
    frameInfo.set_shadow_type (Gtk::SHADOW_IN);
-   info.set_size_request (300, -1);
-   statusbar.set_has_resize_grip (false);
-   statusbar.pack_end (info, Gtk::PACK_SHRINK, 5);
+   frameInfo.show ();
+   info.show ();
+   frameInfo.add (info);
 
+   changeNames (player);
 }
 
 //-----------------------------------------------------------------------------
@@ -546,10 +548,6 @@ void Buraco::start () {
 
       gStatus.startTurn = gStatus.startGame = 1;
       gStatus.team1Buraco = gStatus.team2Buraco = 0x3;
-      status.pop ();
-      status.push (_("You can sort the cards in your hand with drag and drop or put"
-                     " them on the table - click card to dump to end turn"));
-
       gStatus.pickUpPlayed = 0;
 
       points[0] = points[1] = 0;
@@ -1536,8 +1534,7 @@ void Buraco::updateInfo () {
 
    info.set_text (strInfo);
 }
-   info.pop ();
-   info.push (strInfo);
+
 //-----------------------------------------------------------------------------
 /// Checks if the passed card fits on the passed staple
 /// \param iPile: Pile to inspect

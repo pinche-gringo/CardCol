@@ -23,7 +23,7 @@
 #include <vector>
 
 #include <gtkmm/label.h>
-#include <gtkmm/statusbar.h>
+#include <gtkmm/frame.h>
 
 #include <CardSet.h>
 #include <CardPile.h>
@@ -158,8 +158,9 @@ class Buraco : public Game {
    std::vector<Player*> nameTeams;
    unsigned int startPlayer;
 
-   Gtk::Statusbar info;
-   Gtk::HBox      boxTeam[2];
+   Gtk::Frame frameInfo;
+   Gtk::Label info;
+   Gtk::HBox  boxTeam[2];
 
    Gtk::Label       newPile;
    CardVInfoPile    staple;
