@@ -1055,7 +1055,7 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
             msg << ";Target=" << dest;
             if (pos2Play == hands[player].size ())
                msg << ";Now=1";
-                  
+
             if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
                ++ignoreNextMsg;
 
@@ -1225,7 +1225,6 @@ unsigned int Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
 unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
    for (ICardPile::const_iterator p (playerPile.begin ());
         p != playerPile.end (); ++p) {
-      ICardPile::const_iterator h (p);
       ICardPile work;
 
       // Try to find two cards from the table (from different piles)
@@ -1331,22 +1330,20 @@ unsigned int Machiavelli::reorderTableToFit4 (ICardPile& playerPile) {
    // Inspect every card
    for (ICardPile::const_iterator c (playerPile.begin ());
         c != playerPile.end (); ++c) {
-      
+
       for (std::vector<MachiPile*>::const_iterator t (tablePiles.begin ());
            t != tablePiles.end (); ++t) {
          Check2 ((*t)->getType () != MachiPile::UNDEFINED);
-         
+
          // TODO
       }
-
    }
-   
    return -1U;
 }
 
 //----------------------------------------------------------------------------
 /// Deals a card to the passed player
-/// \param player: Player to give a card to 
+/// \param player: Player to give a card to
 //----------------------------------------------------------------------------
 void Machiavelli::dealCard (unsigned int player) {
    if (staple.size () == 1) {
@@ -1388,7 +1385,7 @@ void Machiavelli::checkPiles (YGP::StatusObject& obj) const {
 
 //----------------------------------------------------------------------------
 /// Undoes the passed number of moves (starting from the last)
-/// \param number: Number of moves to undo 
+/// \param number: Number of moves to undo
 //----------------------------------------------------------------------------
 void Machiavelli::undoMove (unsigned int number) {
    TRACE3 ("Machiavelli::undoMove (unsigned int) - Undo " << number);
@@ -1462,7 +1459,7 @@ void Machiavelli::undoMove (unsigned int number) {
 
 //----------------------------------------------------------------------------
 /// Removes the passed pile from the table and internally
-/// \param pile: Offset of pile to remove 
+/// \param pile: Offset of pile to remove
 //----------------------------------------------------------------------------
 void Machiavelli::removePile (unsigned int pile) {
    TRACE9 ("Machiavelli::removePile (unsigned int) - " << pile);
@@ -1518,7 +1515,7 @@ ICardPile* Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile)
 bool Machiavelli::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
    TRACE1 ("Machiavelli::handleMessage (unsigned int player, const std::string&) - "
            << message << " (" << player << ')');
-    
+
    YGP::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
