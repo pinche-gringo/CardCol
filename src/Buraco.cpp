@@ -24,6 +24,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#include <cardgames-cfg.h>
 
 #include <gtk/gtkdnd.h>
 
@@ -115,8 +116,10 @@ int Burazno::makeMove (unsigned int player) {
    for (std::vector<CardVPile*>::iterator p (tablePiles[player & 1].begin ());
         p != tablePiles[player & 1].end (); ++p) {
       Check3 (*p); Check3 ((*p)->size () <= 7);
-      if ((*p)->size () == 7)
-         removeBurazno (player & 1, **p);
+      if ((*p)->size () == 7) {
+         removeBurazno (player, **p);
+         break;
+      }
    }
       target = showCardsToPlay (player);
    if (startTurn) {
@@ -161,6 +164,8 @@ int Burazno::executeMove (unsigned int player) {
    unsigned int count (1);
    for (unsigned int i (1); i < playerPile.size () - 1; ++i) {
       Check3 (playerPile[i]);
+      if (isJoker (*playerPile[i]))
+          continue;
 
       // Check if the actual card can be added to an existing pile
       if (tablePiles[player & 1].size () && cardFitsOnPlayedPile (player, i))
@@ -181,13 +186,34 @@ int Burazno::executeMove (unsigned int player) {
    TRACE8 ("Buraco::executeMove (unsigned int) - Playing all?");
    for (i = 0; i < playerPile.size () - 1; ++i) {
    TRACE8 ("Burazno::executeMove (unsigned int) - Searching for a card to dump");
-   for (unsigned int i (0); i < playerPile.size () - 1; ++i) {
-      dumped.setTopCard (playerPile.remove (0)); // TODO
+   count = 1;
+   unsigned int i (1);
+   for (; i < playerPile.size () - 1; ++i) {
+      if (isJoker (*playerPile[i]))
+          continue;
+
+      Check3 (i);
+      if (playerPile[i]->number () != playerPile[i - 1]->number ())
+         if (count == 1)
+            break;
+         else
+            count = 1;
+      else
+         ++count;
       break;
    }
+   Check3 (i <= playerPile.size ());
+   if (i >= playerPile.size ()) {         // No single card found: Dump highest
+      while (i--)
+         if (!isJoker (*playerPile[i]))
+            break;
+   }
    pos1Play = pos2Play = i;
+   return 0xffff0000;
+   dumped.setTopCard (playerPile.remove (i));
    startTurn = true;
-   return (player + 1) & 0x3;
+   displayTurn (player = (player + 1) & 0x3);
+   return player;
 //-----------------------------------------------------------------------------
 /// Starts the game by dealing the cards
 /*--------------------------------------------------------------------------*/
@@ -327,6 +353,7 @@ void Burazno::cardSelected (unsigned int iCard) {
       addReserve (handHuman, 0);
    gStatus.startGame = 0;
    makeNextMoves ();
+}
 
 //-----------------------------------------------------------------------------
 /// Callback after clicking on the staple
@@ -682,7 +709,7 @@ void Burazno::addReserve (ICardPile& pile, unsigned int player) {
       for (unsigned int i (0); i < hands[player].size (); ++i) {
          enableCard (i);
       for (unsigned int i (0); i < pile.size (); ++i)
-         registerHandDND (0, pile.size () - 1);
+
 //-----------------------------------------------------------------------------
 /// Hides the joker, which are displayed when picking up the buraco
 /*--------------------------------------------------------------------------*/
@@ -801,19 +828,31 @@ void Burazno::playCardOnPile (CardVPile& pile, unsigned int player,
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Removes a Burazno (a pile with 7 cards) from the table
-//Parameters: team: Player causing the remove of the pile
+//Parameters: player: Player causing the remove of the pile
 //            pile: Pile holding the Burazno
 /*--------------------------------------------------------------------------*/
-void Burazno::removeBurazno (unsigned int team, CardVPile& pile) {
-   Check1 (team < (NUM_PLAYERS >> 1));
-   TRACE9 ("Burazno::removeBurazno (unsigned int, CardVPile&) - Pile "
-           << (std::find (tablePiles[team].begin (),
-                          tablePiles[team].end (), &pile)
-               - tablePiles[team].begin ()) << " of team " << (team));
-   Check1 (std::find (tablePiles[team].begin (), tablePiles[team].end (), &pile)
+void Burazno::removeBurazno (unsigned int player, CardVPile& pile) {
            != tablePiles[team].end ());
-
+   unsigned int team (player & 1);
+   std::vector<CardVPile*>::iterator i
+      (std::find (tablePiles[team].begin (), tablePiles[team].end (), &pile));
+   Check1 (i != tablePiles[team].end ());
+   Check3 (static_cast<int> (pile.getPotentialPoints ()) == pile.getPoints ());
+   TRACE9 ("Burazno::removeBurazno (unsigned int, CardVPile&) - Pile "
+           << (i - tablePiles[team].begin ()) << " of team " << team);
    boxTeam[team].remove (pile);
-   tablePiles[team].erase (std::find (tablePiles[team].begin (),
-                                      tablePiles[team].end (), &pile));
+   i = tablePiles[team].erase (i);
+
+   // De- and re-register DND for removed and following piles
+   if (!player) {
+      while (i != tablePiles[0].end ()) {
+         Check3 (*i); Check3 ((*i)->size () >= 3);
+         registerTableDND (static_cast<unsigned int> (i - tablePiles[0].begin ()),
+                           0, (*i)->size () - 1);
+         ++i;
+      }
+
+      for (ICardPile::iterator c (pile.begin ()); c != pile.end (); ++c)
+         unregisterTableDND (**c);
+   }
    delete &pile;
