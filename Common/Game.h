@@ -65,7 +65,7 @@ class Game : public Gtk::Table {
    /// Checks if the game is being played
    bool isRunning () const { return statGame >= PLAYING; }
    /// Checks if the game can be stopped at the moment (only when it's the
-   /// turn of the human
+   /// turn of the human)
    virtual bool canBeStopped () const { return !actPlayer; }
 
    /// Returns the actual game status

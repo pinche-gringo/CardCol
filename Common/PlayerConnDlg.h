@@ -22,6 +22,7 @@
 
 #include <ConnectDlg.h>
 
+class Player;
 
 /**Implementation of the connect dialog for the players of the Cardgame
    collection.
@@ -30,21 +31,25 @@
 */
 class PlayerConnectDlg : public ConnectDlg {
  public:
-   PlayerConnectDlg (std::vector<Glib::ustring>& names, const Glib::ustring& port,
+   PlayerConnectDlg (std::vector<Player*>& player, const Glib::ustring& port,
                      ConnectionMgr& cmgr);
    virtual ~PlayerConnectDlg ();
 
-   static void perform (std::vector<Glib::ustring>& names, const Glib::ustring& port,
+   static void perform (std::vector<Player*>& player, const Glib::ustring& port,
                         ConnectionMgr& cmgr);
-   static void perform (std::vector<Glib::ustring>& names, unsigned int port,
+   static void perform (std::vector<Player*>& player, unsigned int port,
                         ConnectionMgr& cmgr);
 
    /// \name Connection management
    virtual void connect (const Glib::ustring& target, unsigned int port);
    virtual Socket* addClient (int socket);
 
+ protected:
+   Gtk::Label* connected;
+   Gtk::Label* lblConnected;
+
  private:
-   std::vector<Glib::ustring>& players;
+   std::vector<Player*>& aPlayer;
 
    PlayerConnectDlg (const PlayerConnectDlg& other);
    const PlayerConnectDlg& operator= (const PlayerConnectDlg& other);
