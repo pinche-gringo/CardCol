@@ -36,6 +36,8 @@
 #include <gtkmm/accelgroup.h>
 #include <gtkmm/messagedialog.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -1136,35 +1138,29 @@ void Rovhult::showCards2Play (unsigned int player) {
    Check3 (player < NUM_PLAYERS);
 
    findCard2Play (player, pos1Play, pos2Play);
+   Check3 (pos1Play <= pos2Play);
    if (players[player].hand.size ())
       flipCards2Play (players[player].hand, pos1Play, pos2Play);
    else {
       ICardPile& pile (players[player].reserve[pos2Play]);
+      unsigned int target (pos2Play + 1);
 
-      if ((pos1Play == pos2Play)
-          && (cardValid (pile.getTopCard ().number (), true))) {
-         pile.getTopCard ().showFace ();
+      if (!cardValid (pile.getTopCard ().number (), true))
+         target += 4;
 
-         // Inform the others about the move
-         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
-            // Send played card to all clients (if any)
-            std::ostringstream msg;
-            msg << "Play="
-                << players[player].reserve[pos2Play].getTopCard ().id ()
-                << ";Target=" << (pos2Play + 5);
-            broadcastMessage (msg.str ());
-         }
+      for (unsigned int i (pos1Play); i <= pos2Play; ++i) {
+         Check3 (players[player].reserve[i].size ());
+         (pile.size () || (target > 3))
+            ? players[player].reserve[i].getTopCard ().mark ()
+            : players[player].reserve[i].getTopCard ().showFace ();
       }
-      else {
-         // Inform the others about the move
-         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
-            // Send played card to all clients (if any)
-            std::ostringstream msg;
-            msg << "Play="
-                << players[player].reserve[pos2Play].getTopCard ().id ()
-                << ";Target=" << (pos2Play + 5);
-            broadcastMessage (msg.str ());
-         }
+
+      // Inform the others about the move
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
+         // Send played card to all clients (if any)
+         std::ostringstream msg;
+         msg << "Play=" << pile.getTopCard ().id () << ";Target=" << target;
+         broadcastMessage (msg.str ());
       }
    }
 }
@@ -1194,7 +1190,6 @@ int Rovhult::makeMove (unsigned int player) {
    else {
       TRACE2 ("Rovhult::makeMove (unsigned int) - play cards " << pos1Play
               << " to " << pos2Play);
-      Check3 (pos1Play >= 0);
       Check3 (pos1Play <= pos2Play);
 
       if (players[player].hand.size ()) {
@@ -1209,6 +1204,9 @@ int Rovhult::makeMove (unsigned int player) {
       }
       else {
          Check3 (pos1Play <= pos2Play); Check3 (pos2Play < 3);
+
+         for (unsigned int i (pos1Play); i <= pos2Play; ++i)
+            players[player].reserve[i].getTopCard ().unmark ();
 
          // If cards are visible
          if (players[player].reserve[pos1Play].size () > 1)
@@ -1317,7 +1315,7 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
             start = 0;
          else {
             start = players[player].hand.findFirstEqualOrBigger (CardWidget::TEN);
-            Check3 (start != -1);
+            Check3 (start != -1U);
             Check3 (players[player].hand[start]->number () == CardWidget::TEN);
          }
          TRACE7 ("Rovhult::findCard2Play (unsigned int) - Using special card "
@@ -1517,29 +1515,35 @@ void Rovhult::changeNames (const std::vector<Player*>& newPlayer) {
 /// Changes the names of the playing people
 /// \param newPlayer: Array holding the new player
 /// \param pile: ID of the pile to return
+///    - 0: Play from hand
+///    - 1 - 3: Play from pile 0 - 2
+///    - 4: Pick up played pile
+///    - 5 - 7: Tried to play from pile 0 - 2, but failed
+/// \returns ICardPile*: Pile corresponding to the passed number or NULL
 //----------------------------------------------------------------------------
-ICardPile& Rovhult::getPileOfPlayer (unsigned int player, unsigned int pile) {
-   Check1 (player < NUM_PLAYERS);
-   Check1 (pile < 8);
+ICardPile* Rovhult::getPileOfPlayer (unsigned int player, unsigned int pile) {
+   if ((player >= NUM_PLAYERS) || (pile > 7))
+      return NULL;
+
    TRACE8 ("Rovhult::getPileOfPlayer (unsigned int, unsigned int) - Player "
            << player << "; Pile " << pile);
 
-   if (pile >= 5) {
+   if (pile > 4) {
       ICardPile& pile (players[player].reserve[pile - 5]);
       Check3 (pile.size ());
       if (cardValid (pile.getTopCard ().number (), true))
-         return pile;
+         return &pile;
       else {
          played.append (pile.removeTopCard ());
-         return played;
+         return &played;
       }
    }
 
-   return (pile
-           ? ((pile == 4)
-              ? static_cast<ICardPile&> (played)
-              : static_cast<ICardPile&> (players[player].reserve[pile - 1]))
-           : static_cast<ICardPile&> (players[player].hand));
+   return &(pile
+            ? ((pile == 4)
+               ? static_cast<ICardPile&> (played)
+               : static_cast<ICardPile&> (players[player].reserve[pile - 1]))
+            : static_cast<ICardPile&> (players[player].hand));
 }
 
 //----------------------------------------------------------------------------
@@ -1564,10 +1568,6 @@ bool Rovhult::handleMessage (unsigned int player, const std::string& message) th
          if ((cmd == "Player")
              && !stringToNumber (lPlayer, command.getNextNode (';').c_str ())
              && (lPlayer < NUM_PLAYERS)) {
-            Check3 (player ? (lPlayer == player) : true);
-            if (!player)
-               lPlayer = static_cast<unsigned long> (lPlayer);
-
             register unsigned int save (lPlayer);
             lPlayer = (lPlayer - posServer) & 0x3;
             
@@ -1642,19 +1642,35 @@ bool Rovhult::executeRemoteMove (ICardPile& pile, unsigned int target) {
       Check3 (gameStatus () == PLAYING);
       TRACE7 ("Rovhult::executeRemoteMove (ICardPile&, unsigned int) - Target " << target);
 
-      if (target >= 4) {
+      unsigned int player (currentPlayer ());
+      if (target > 3) {
          if (&pile == &played) {
-            setNextPlayer (movePlayedCardsToLooser (currentPlayer ()));
+            setNextPlayer (movePlayedCardsToLooser (player));
             pos1Play = pos2Play = -1U;
             return false;
          }
-         target -= 4;
+         pos2Play = target - 5;
+      }
+      else
+         pos2Play = target - 1;
+
+      ICardPile* pile (&players[player].reserve[pos1Play = pos2Play]);
+      CardWidget::NUMBERS nr (pile->getTopCard ().number ());
+      pile->getTopCard ().mark ();
+      if (pile->size () > 1) {
+         while (pos1Play) {
+            pile = &players[player].reserve[pos1Play - 1];
+            if ((pile->size () > 1)
+                && (pile->getTopCard ().number () == nr)) {
+               --pos1Play;
+               pile->getTopCard ().mark ();
+            }
+            else
+               break;
+         }
       }
 
-      Check3 (!players[currentPlayer ()].hand.size ());
-      setNextPlayer (doPileSelected (currentPlayer (), target - 1));
-      pos1Play = pos2Play = -1U;
-      return false;
+      return true;
    }
    else
       return Game::executeRemoteMove (pile, target);
