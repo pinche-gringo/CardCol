@@ -30,13 +30,16 @@
 #include <Check.h>
 #include <Trace_.h>
 
+#include <gdk/gdk.h>
+
+#include <gtk--/main.h>
+#include <gtk--/menu.h>
+#include <gtk--/menuitem.h>
 #include <gtk--/statusbar.h>
 
 #include <XMessageBox.h>
 
 #include "Hearts.h"
-
-#include <ANumeric.h>
 
 
 const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = { 3, 9, 3,  1 };
@@ -52,7 +55,7 @@ const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset)
    : Game (parent, statusbar, cardset, 10, 10)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
-     , pos2Play (-1U) {
+     , pos2Play (-1U), pScoreDlg (NULL), pmenuPopSort (new Gtk::Menu ()) {
    TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&)");
 
    unsigned int width (cards.getCard (0).getImageWidth ());
@@ -64,8 +67,7 @@ Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset)
       attach (players[i].won, COLS_PLAYER[i],
               COLS_PLAYER[i] + ((i & 1) ? 1 : 5),
               ROWS_PLAYER[i] + ((i == 2) ? 2 : -2),
-              ROWS_PLAYER[i] + ((i == 2) ? 2 : -2) + 1,
-              0, 0, 1);
+              ROWS_PLAYER[i] + ((i == 2) ? 2 : -2) + 1, GTK_EXPAND);
 
       TRACE9 ("Hearts::Hearts () - Set at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i] + ((i == 2) ? 2 : -2));
@@ -73,7 +75,7 @@ Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset)
       players[i].hand.show ();
       attach (players[i].hand, COLS_PLAYER[i],
               COLS_PLAYER[i] + ((i & 1) ? 1 : 5), ROWS_PLAYER[i],
-              ROWS_PLAYER[i] + 1, 0, 0, 1);
+              ROWS_PLAYER[i] + 1, GTK_EXPAND);
       TRACE9 ("Hearts::Hearts () - 2nd set at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
 
@@ -84,7 +86,7 @@ Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset)
       players[i].hand.set_usize (width + 12 * 18, height + 5);
 
       players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::COMPRESSED);
-      players[i].won.setStyle (ICardPile::QUITE_COMPRESSED);
+      players[i].won.setStyle (ICardPile::VERY_COMPRESSED);
    }
 
    // Show played area
@@ -92,6 +94,10 @@ Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset)
    played.show ();
    attach (played, 3, 4, 5, 8, 0, 0, 0, 5);
    played.set_usize (width + 150, height);
+
+   Check3 (pmenuPopSort);
+   pmenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem (_("Sort by number"), slot (this, &Hearts::sortWonByNumber)));
+   pmenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem (_("Sort by color"), slot (this, &Hearts::sortWonByColor)));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -99,6 +105,8 @@ Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset)
 /*--------------------------------------------------------------------------*/
 Hearts::~Hearts () {
    TRACE9 ("Hearts::~Hearts ()");
+   delete pScoreDlg;
+   delete pmenuPopSort;
 }
 
 
@@ -119,7 +127,9 @@ int Hearts::makeMove (unsigned int player) {
    }
    else {
       TRACE9 ("Hearts::makeMove (unsigned int) - Playing card at pos " << pos2Play);
-      movePile (played, players[player].hand, pos2Play, pos2Play);
+      ICardPile& pile (players[player].hand);
+      aPlayed[pile.at (pos2Play).color ()]++;
+      movePile (played, pile, pos2Play, pos2Play);
       pos2Play = -1U;
       player = check4Winner (player);
    }
@@ -133,6 +143,12 @@ void Hearts::start () {
    TRACE9 ("Hearts::start ()");
    Game::start ();
 
+   // Hide won pile again (if not in debug-mode)
+#if TRACELEVEL > 0
+   if (players[1].won.getShowOption () == ICardPile::SHOWBACK)
+#endif
+      showWonCards (false);
+
    Check2 (!played.numberOfCards ());
    cards.shuffle ();
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
@@ -144,7 +160,7 @@ void Hearts::start () {
 
    status.pop (1);
    status.push (1, _("Select 3 cards to give away"));
-   enablePlayer (0);
+   enableHuman ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -158,7 +174,8 @@ void Hearts::clean () {
    }
 
    played.clear ();
-   disableLastPlayer ();
+   disableHuman ();
+   
 }
 
 /*--------------------------------------------------------------------------*/
@@ -170,73 +187,94 @@ void Hearts::playOpen (bool open) {
       players[i].hand.setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
       players[i].hand.setStyle (open ? ICardPile::COMPRESSED : ICardPile::QUITE_COMPRESSED);
       players[i].won.setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
-      players[i].won.setStyle (open ? ICardPile::COMPRESSED : ICardPile::QUITE_COMPRESSED);
+      players[i].won.setStyle (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
    }
    players[0].won.setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
-   players[0].won.setStyle (open ? ICardPile::COMPRESSED : ICardPile::QUITE_COMPRESSED);
+   players[0].won.setStyle (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Enables the cards of the passed player
-//Parameters: player: Player to enable
+//Purpose   : Enables the cards of the human player
+//Returns   : 0
 //Remarks   : Depending of the status of the game (PLAYING2) also the top
 //            card of the played pile is enabled
 /*--------------------------------------------------------------------------*/
-void Hearts::enablePlayer (unsigned int player) {
+int Hearts::enableHuman () {
    Check1 (activeCards.empty ());
    Check1 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
 
-   TRACE2 ("Hearts::enablePlayer (unsigned int) - player "
-           << player << " has " << players[player].hand.numberOfCards ()
+   TRACE2 ("Hearts::enableHuman () - Human has " << players[0].hand.numberOfCards ()
            << " cards");
 
-   for (int i (players[player].hand.numberOfCards ()); i;)
+   for (int i (players[0].hand.numberOfCards ()); i;)
       activeCards.push_back
-         (players[player].hand.at (--i).clicked.connect_after
-           (bind (slot (this, (&Hearts::cardSelected)), player, i)));
+         (players[0].hand.at (--i).clicked.connect_after
+           (bind (slot (this, (&Hearts::cardSelected)), i)));
+
+   if (gameStatus () == EXCHANGE)
+      for (int i (played.numberOfCards ()); i;)
+         activeCards.push_back
+            (played.at (--i).clicked.connect_after
+             (bind (slot (this, (&Hearts::takeCard)), i)));
+
+   return Game::enableHuman ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback after clicking on a card in the played field
+//Parameters: iCard: Offset of card in hand
+/*--------------------------------------------------------------------------*/
+void Hearts::takeCard (unsigned int iCard) {
+   TRACE9 ("Hearts::takeCard (unsigned int) - Picking up card " << iCard);
+   Check1 (iCard < played.numberOfCards ());
+   Check1 (gameStatus () == EXCHANGE);
+
+   movePile (players[0].hand, played, iCard, iCard);
+   players[0].hand.sortByColor ();
+   makeNextMoves ();
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card in hand
-//Parameters: player: ID of player
-//            iCard: Offset of card in hand
+//Parameters: iCard: Offset of card in hand
 /*--------------------------------------------------------------------------*/
-void Hearts::cardSelected (unsigned int player, unsigned int iCard) {
-   TRACE5 ("Hearts::cardSelected (unsigned int, unsigned int) - Player: "
-           << player << " at position " << iCard);
-   Check1 (player < NUM_PLAYERS);
-   Check1 (iCard < players[player].hand.numberOfCards ());
+void Hearts::cardSelected (unsigned int iCard) {
+   TRACE5 ("Hearts::cardSelected (unsigned int) - Position " << iCard);
+   Check1 (iCard < players[0].hand.numberOfCards ());
    Check1 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
 
-   if (moveSelectedCardToPlayed (player, iCard)) {
-      if (gameStatus () == PLAYING) {
-         player = check4Winner (player);
-         setNextPlayer (player);
-      }
+   // Hide won pile again (if not in debug-mode)
+#if TRACELEVEL > 0
+   if (players[1].won.getShowOption () == ICardPile::SHOWBACK)
+#endif
+      showWonCards (false);
+
+   if (moveSelectedCardToPlayed (0, iCard)) {
+      if (gameStatus () == PLAYING)
+         setNextPlayer (check4Winner (0));
       else {
          Check3 (gameStatus () == EXCHANGE);
          if (played.numberOfCards () == 3) {
             memset (aPlayed, 0, sizeof (aPlayed));
 
             // Exchange the cards in pre-play
-            TRACE7 ("Hearts::cardSelected (unsigned int, unsigned int) - "
-                    "Finished exchange");
+            TRACE7 ("Hearts::cardSelected (unsigned int) - Finished exchange");
             exchangeCards ();
             movePile (players[1].hand, played);
             players[1].hand.sortByColor ();
             setGameStatus (PLAYING);
 
             // Search for startplayer
+            unsigned int nextPlayer (0);
             for (unsigned int i (1); i < NUM_PLAYERS; ++i)
                if ((players[i].hand.at (0).number () == CardWidget::TWO)
                    && (players[i].hand.at (0).color () == CardWidget::CLUBS)) {
-                  TRACE7 ("Hearts::cardSelected (unsigned int, unsigned int) - "
-                          "Start with player " << i);
-                  setNextPlayer (player = i);
+                  TRACE7 ("Hearts::cardSelected (unsigned int) - Start with player " << i);
+                  setNextPlayer (nextPlayer = i);
                   flipCards2Play (players[i].hand, pos2Play = 0, pos2Play);
                   break;
                }
-            displayTurn (player);
+            displayTurn (nextPlayer);
          }
       }
       makeNextMoves ();
@@ -273,21 +311,31 @@ unsigned int  Hearts::check4Winner (unsigned int player) {
 
    if (!players[player].hand.numberOfCards ()) {
       player = -1U;
-      status.pop (1);
-      string msg (_("End of round: Bad points: %1 %2 %3 %4"));
-      msg.replace (msg.find ("%1"), 2,
-                   ANumeric::toString ((unsigned long)pointsOfPile (players[0].won)));
-      msg.replace (msg.find ("%2"), 2,
-                   ANumeric::toString ((unsigned long)pointsOfPile (players[1].won)));
-      msg.replace (msg.find ("%3"), 2,
-                   ANumeric::toString ((unsigned long)pointsOfPile (players[2].won)));
-      msg.replace (msg.find ("%4"), 2,
-                   ANumeric::toString ((unsigned long)pointsOfPile (players[3].won)));
-      status.push (1, msg);
       setGameStatus (STOPPED);
+      if (!pScoreDlg)
+         pScoreDlg = HeartsScoreDlg::perform ();
+
+      unsigned int aScore[NUM_PLAYERS];
+      for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+         aScore[i] = pointsOfPile (players[i].won);
+         if (aScore[i] == 26) {
+            aScore[0] = aScore[1] = aScore[2] = aScore[3] = 26;
+            aScore[i] = 0;
+            break;
+         }
+      }
+
+      pScoreDlg->addPoints (aScore);
+      pScoreDlg->show ();
+
+      status.pop (1);
+      status.push (1, _("Round ended"));
    }
    else
       displayTurn (player);
+
+   if (!player)
+      enableWonCards ();
    return player;
 }
 
@@ -305,7 +353,12 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
    Check1 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
 
    if (gameStatus () == PLAYING) {
-      CardWidget::COLORS playColor (players[player].hand.at (card).color ());
+      CardWidget& card (players[player].hand.at (card));
+      CardWidget::COLORS playColor (card.color ());
+      unsigned int cardsPlayed (0);
+      for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+         cardsPlayed += players[i].won.numberOfCards ();
+
       if (played.numberOfCards ()) {
          // The same color must be played again (if available)
          CardWidget::COLORS color (played.at (0).color ());
@@ -317,35 +370,39 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
          }
       }
       else {
-         CardWidget& card (players[player].hand.at (card));
-         unsigned int cardsPlayed (0);
-         for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-            cardsPlayed += players[i].won.numberOfCards ();
-         
+         // The game must be started with the two of clubs
          if (!cardsPlayed) {
-            // The game must be started with the two of clubs
             if ((card.color () != CardWidget::CLUBS)
                 && (card.number () != CardWidget::TWO)) {
                XMessageBox::Show (_("The game must be started with the two of clubs!"),
                                   PACKAGE " - Hearts", XMessageBox::ERROR);
                return false;
             }
-
-            // The queen of spades can't be played in the first round
-            if ((card.color () == CardWidget::SPADES)
-                && (card.number () == CardWidget::QUEEN)) {
-               XMessageBox::Show (_("The queen of spades can't be played in the first"
-                                    " round"), PACKAGE " - Hearts", XMessageBox::ERROR);
-               return false;
-            }
          }
 
          // One can start with a heart only if there has been one played before
-         if ((!aPlayed[CardWidget::HEARTS] && (playColor == CardWidget::HEARTS))
+         if (((playColor == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
              && (players[player].hand.at (0).color () != CardWidget::HEARTS)) {
             XMessageBox::Show (_("You can't start with a heart, if they have"
                                  " not been played before!"), PACKAGE " - Hearts",
                                XMessageBox::ERROR);
+            return false;
+         }
+      }
+
+      // The queen of spades can't be played in the first round
+      if (!cardsPlayed) {
+         if ((card.color () == CardWidget::SPADES)
+             && (card.number () == CardWidget::QUEEN)) {
+            XMessageBox::Show (_("The queen of spades can't be played in the first"
+                                 " round"), PACKAGE " - Hearts", XMessageBox::ERROR);
+            return false;
+         }
+
+         if (((playColor == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
+              && (players[player].hand.at (0).color () != CardWidget::HEARTS)) {
+            XMessageBox::Show (_("Hearts can't be played in the first round"),
+                               PACKAGE " - Hearts", XMessageBox::ERROR);
             return false;
          }
       }
@@ -519,11 +576,16 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
             while ((pos = pile.find (CardWidget::NUMBERS (card), pos))
                    != -1) {
                CardWidget::COLORS color (pile.at (pos).color ());
-               TRACE2 ("Checking high card " << pile.at (pos) << " at position "
-                       << pos << " against " << aPlayed[color] << " cards");
+               TRACE2 ("Hearts::findPos2Play (unsigned int) - Checking card "
+                       << pile.at (pos) << " at pos " << pos << " against "
+                       << aPlayed[color] << " cards");
                if (((aPlayed[color] + numberOfCards (aPos, color))
                     < (cards.numberOfCards () / NUM_PLAYERS))
-                   && (cardsPlayed || color != CardWidget::HEARTS))
+                   // ... but a heart or the queen of spades in round 1
+                   && (cardsPlayed
+                       || (color != CardWidget::HEARTS)
+                       || ((color == CardWidget::SPADES)
+                           && card != CardWidget::QUEEN)))
                   return pos;
                ++pos;
             }
@@ -568,7 +630,6 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
                     ? aPos[color] : card + 1);
          }
       }
-      Check3 (0);
    }
    else {
       // Player starts the round: If he has loads of spades: Play them
@@ -632,4 +693,87 @@ unsigned int Hearts::pointsOfPile (ICardPile& pile) {
    }
    TRACE7 ("Hearts::pointsOfPile (ICardPile&) - Number of points: " << points);
    return points;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Shows or hides the won cards
+//Parameters: show: Flag if to show or to hide the cards
+/*--------------------------------------------------------------------------*/
+void Hearts::showWonCards (bool show) {
+   players[0].won.setShowOption (show ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
+   players[0].won.setStyle (show ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
+   Gtk::Main::timeout.connect (slot (this, &Hearts::enableWonCards), 50);
+   disableWonCards ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback for any event for the top of the won cards
+//Parameters: event: Caused event
+/*--------------------------------------------------------------------------*/
+gint Hearts::wonCardsSelected (GdkEvent* event) {
+   TRACE2 ("Hearts::wonCardsSelected (GdkEvent*) - " << event->type);
+
+   if (event->type == GDK_BUTTON_PRESS) {
+      GdkEventButton* bev ((GdkEventButton*)(event));
+      switch (bev->button) {
+      case 1:
+         showWonCards (players[0].won.getShowOption () == ICardPile::SHOWBACK);
+         break;
+
+      case 3:
+         Check3 (pmenuPopSort);
+         pmenuPopSort->popup (bev->button, bev->time);
+      }
+      return true;
+   }
+
+   return false;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Shows and sorts the won cards by number
+/*--------------------------------------------------------------------------*/
+void Hearts::sortWonByNumber () {
+   players[0].won.sortByNumber ();
+   showWonCards ();
+   Gtk::Main::timeout.connect (slot (this, &Hearts::enableWonCards), 50);
+   disableWonCards ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Shows and sorts the won cards by color
+/*--------------------------------------------------------------------------*/
+void Hearts::sortWonByColor () {
+   players[0].won.sortByColor ();
+   showWonCards ();
+   Gtk::Main::timeout.connect (slot (this, &Hearts::enableWonCards), 50);
+   disableWonCards ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Enables the won cards
+/*--------------------------------------------------------------------------*/
+int Hearts::enableWonCards () {
+   disableWonCards ();
+
+   TRACE9 ("Hearts::enableWonCards () - Enabling " << players[0].won.numberOfCards ()
+           << " cards");
+   for (int i (players[0].won.numberOfCards ()); i;)
+      wonCards.push_back
+         (players[0].won.at (--i).event.connect
+          (slot (this, (&Hearts::wonCardsSelected))));
+
+   return 0;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Disables the won cards
+/*--------------------------------------------------------------------------*/
+void Hearts::disableWonCards () {
+   TRACE9 ("Hearts::disableWonCards () - Disabling " << wonCards.size () << " cards");
+   for (int i (wonCards.size ()); i > 0;)
+      wonCards[--i].disconnect ();
+   
+   wonCards.clear ();
+
 }
