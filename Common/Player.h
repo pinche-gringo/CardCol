@@ -39,6 +39,7 @@ class Player : public SigC::Object {
 
    /// Executes the turn of the player.
    /// \param game: Game playing.
+   /// \returns bool: Flag, if the method should be called again in the next turn.
    virtual bool makeTurn (Game* game) = 0;
 
    virtual unsigned int timeout () const;
