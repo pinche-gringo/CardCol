@@ -45,9 +45,8 @@
 #include "Twopart.h"
 
 
-
 const unsigned int Twopart::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
-const unsigned int Twopart::ROWS_PLAYER[NUM_PLAYERS] = { 4, 7, 13, 7 };
+const unsigned int Twopart::ROWS_PLAYER[NUM_PLAYERS] = { 4,  7, 8, 7 };
 
 // Pixmap for program
 const char* Twopart::xpmTwopart[] = {
@@ -307,7 +306,7 @@ XApplication::MenuEntry Twopart::menuItems[] = {
 /*--------------------------------------------------------------------------*/
 Twopart::Twopart ()
    : XApplication (PACKAGE " - Twopart V" VERSION), status ()
-     , tblTable (13, 13), cardFaces (USED_CARDS), cards (), pThread (NULL)
+     , tblTable (11, 7), cardFaces (USED_CARDS), cards (), pThread (NULL)
      , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , bfPlayers ((1 << NUM_PLAYERS) - 1) {
@@ -316,7 +315,7 @@ Twopart::Twopart ()
    addMenu (menuItems[0]);
    pMenuNew = addMenu (menuItems[1]); Check3 (pMenuNew);
    pMenuNew->set_sensitive (false);
-
+ 
    tblTable.show ();
    getClient ()->pack_start (tblTable, true, true, 5);
 
@@ -324,13 +323,12 @@ Twopart::Twopart ()
    getClient ()->pack_start (status, false);
 
    staple.show ();
-   tblTable.attach (staple, 3, 4, 2, 5, 0, 0);
+   tblTable.attach (staple, 2, 3, 2, 3, 0, 0, 5, 5);
 
    tblTable.set_col_spacings (2);
    tblTable.set_row_spacings (2);
 
    show ();
-
 
    // Load cards in background
    pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&Twopart::loadCards,
@@ -344,26 +342,28 @@ Twopart::Twopart ()
    for (int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.setStyle (ICardPile::VERY_COMPRESSED);
       players[i].won.show ();
-      tblTable.attach (players[i].won, COLS_PLAYER[i],
-                       COLS_PLAYER[i] + 1, ROWS_PLAYER[i],
-                       ROWS_PLAYER[i] + 2, 0, 0, 1);
+      tblTable.attach (players[i].won, COLS_PLAYER[i] + 1,
+                       COLS_PLAYER[i] + 2,
+                       ROWS_PLAYER[i] + ((i == 2) ? 2 : -2),
+                       ROWS_PLAYER[i] + ((i == 2) ? 2 : -2) + 1,
+                       0, 0, 1);
 
       TRACE9 ("Twopart::Twopart () - Set at: "
-              << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
+              << COLS_PLAYER[i] + 1 << '/' << ROWS_PLAYER[i] + ((i == 2) ? 2 : -2));
 
       players[i].hand.show ();
       tblTable.attach (players[i].hand, COLS_PLAYER[i],
-                       COLS_PLAYER[i] + 5,
-                       ROWS_PLAYER[i] + (i ? 3 : -3),
-                       ROWS_PLAYER[i] + (i ? 3 : -3) + 2
-                       , 0, 0, 1);
+                       COLS_PLAYER[i] + 3, ROWS_PLAYER[i],
+                       ROWS_PLAYER[i] + 1, 0, 0, 1);
       TRACE9 ("Twopart::Twopart () - 2nd set at: "
-              << COLS_PLAYER[i] + (i << 1) << '/'
-              << ROWS_PLAYER[i] + (i ? 3 : -3));
+              << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
    }
 
    played.show ();
-   tblTable.attach (played, 7, 11, 5, 14, 0, 0, 1);
+   tblTable.attach (played, 3, 11, 5, 8, 0, 0, 0, 5);
+
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+      players[i].won.setShowOption (ICardPile::SHOWBACK);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -479,7 +479,8 @@ void Twopart::handSelected (unsigned int player, unsigned int pos) {
    if (bfPlayers) {
       while (!(bfPlayers & (1 << player))) {
          ++player;
-         Check3 (player < NUM_PLAYERS);
+         if (player >= NUM_PLAYERS)
+            player %= NUM_PLAYERS;
       }
    }
    else
@@ -628,6 +629,19 @@ void Twopart::loadCards () {
    pMenuNew->set_sensitive (true);
    status.pop (1);
    status.push (1, _("Start a new game with Ctrl+N (or Game -> New)"));
+
+   assert (cardFaces.numberOfCards ());
+   const Gdk_Pixmap& img (cardFaces.getCardImage (0));
+   unsigned int width (const_cast<Gdk_Pixmap&> (img).width ());
+   unsigned int height (const_cast<Gdk_Pixmap&> (img).height ());
+
+   for (int i (0); i < NUM_PLAYERS; ++i) {
+      players[i].won.set_usize (width + 20, height + 5);
+      players[i].hand.set_usize (width * 3, height + 5);
+   }
+
+   played.set_usize (width + 50, height);
+   staple.set_usize (width, height);
    gdk_threads_leave ();
 }
 
