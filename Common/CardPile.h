@@ -86,8 +86,6 @@ class ICardPile {
  private:
    static bool compCards (const CardWidget* a, const CardWidget* b);
    static bool compCardsByNr (const CardWidget* a, const CardWidget* b);
-
-   static bool compNr (const CardWidget* card, CardWidget::NUMBERS nr);
 };
 
 
