@@ -22,7 +22,6 @@
 
 #include <gtk--/table.h>
 #include <gtk--/button.h>
-#include <gtk--/tooltips.h>
 #include <gtk--/statusbar.h>
 
 #include <Mutex.h>
@@ -44,7 +43,7 @@ class RovhultAppl : public XApplication {
 
  private:
    // IDs for menus
-   enum { NEW, EXIT, ABOUT };
+   enum { NEW, EXIT, DEBUG, ABOUT };
 
    // Protected manager functions
    RovhultAppl (const RovhultAppl&);
@@ -87,6 +86,7 @@ class RovhultAppl : public XApplication {
    CardWidget::NUMBERS playCardsFromHand (unsigned int player, unsigned int pos);
    void exchangeAutoplayerCards ();
 
+   unsigned int numberOfEqualTopCards () const;
    bool clearPlayedIf4Equal ();
    void fillUpPile (ICardPile& pile, unsigned int minCards);
 
@@ -94,10 +94,15 @@ class RovhultAppl : public XApplication {
    bool playerHandCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const;
    
    int makeTurn (unsigned int player);
+   int findCard2play (unsigned int player) const;
+   void flipCards2play (unsigned int player, unsigned int pos);
 
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
+   bool existOnlySpecialCards (unsigned int player, unsigned int pos) const;
 
-   bool cardValid (CardWidget::NUMBERS nr, bool silent = false);
+   CardWidget& cardAtPos (unsigned int player, unsigned int pos) const;
+
+   bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
    int executeMove (unsigned int player, CardWidget::NUMBERS nr);
 
    void loadCards ();
@@ -113,7 +118,6 @@ class RovhultAppl : public XApplication {
    static const char* xpmAuthor[];
    static const char* xpmRovhult[];
 
-   Gtk::Tooltips  tt;
    Gtk::Statusbar status;
    Gtk::Table     tblTable;
 
@@ -127,7 +131,7 @@ class RovhultAppl : public XApplication {
    CardHInfoPile played;
    CardVInfoPile staple;                                     // Cards on staple
    struct {
-      CardHPile hand;                         // For players: Cards in the hand
+      CardHPile hand;                     // For players: Cards in the hand
       CardVPile reserve[3];                     // Reserve-cards (for end-game)
    } players[NUM_PLAYERS];
 
