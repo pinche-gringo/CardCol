@@ -810,7 +810,7 @@ unsigned int Rovhult::movePlayedCardsToLooser (unsigned int nrLooser) {
 /// \returns \c int: ID of player or -1 (if none can continue)
 //-----------------------------------------------------------------------------
 int Rovhult::nextAvailablePlayer (unsigned int actPlayer) const {
-   // We assume (without checking), that acutal player still has cards
+   // We assume (without checking), that the acutal player still has cards
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       actPlayer = (actPlayer + 1) & 0x3;
       if ((players[actPlayer].hand.size ())
