@@ -46,12 +46,10 @@ HeartsScoreDlg::HeartsScoreDlg (const vector<string>& playerNames)
 
    set_title (_("Score"));
 
+   update (playerNames);
    for (unsigned int i (0);
-        i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i) {
-      aColumns[i].setTitle (playerNames[i]);
-
+        i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i)
       client->pack_start (aColumns[i].getBox (), true, true, 5);
-   }
 
    client->show ();
    get_vbox ()->pack_start (*client, false, false, 5);
@@ -97,6 +95,47 @@ void HeartsScoreDlg::addPoints (unsigned int aPoints[4]) {
 /*--------------------------------------------------------------------------*/
 void HeartsScoreDlg::okEvent () {
    hide ();
+}
+
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Gets the player with highest number of points and the points
+//Parameters: points: Reference where to put the highest points
+//            player: Reference where to put the player with the highest points
+/*--------------------------------------------------------------------------*/
+void HeartsScoreDlg::getMaxPoints (unsigned int& points, unsigned int& player) {
+   points = 0;
+   for (unsigned int i (0);
+        i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i)
+      if (aColumns[i].getPoints () > points) {
+         player = i;
+         points = aColumns[i].getPoints ();
+   }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Gets the player with highest number of points and the points
+//Parameters: points: Reference where to put the highest points
+//            player: Reference where to put the player with the highest points
+/*--------------------------------------------------------------------------*/
+void HeartsScoreDlg::getMinPoints (unsigned int& points, unsigned int& player) {
+   points = -1U;
+   for (unsigned int i (0);
+        i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i)
+      if (aColumns[i].getPoints () < points) {
+         player = i;
+         points = aColumns[i].getPoints ();
+   }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Changes the names of the playing people
+//Parameters: newNames: Array holding the new names of the players
+/*--------------------------------------------------------------------------*/
+void HeartsScoreDlg::update (const vector<string>& playerNames) {
+   for (unsigned int i (0);
+        i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i)
+      aColumns[i].setTitle (playerNames[i]);
 }
 
 

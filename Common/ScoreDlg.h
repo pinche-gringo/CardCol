@@ -46,9 +46,14 @@ class HeartsScoreDlg : public XDialog {
    static HeartsScoreDlg* perform (const vector<string>& playerNames) {
       return new HeartsScoreDlg (playerNames); }
 
+   void update (const vector<string>& playerNames);
+
    void addPoints (unsigned int points0, unsigned int points1,
                    unsigned int points2, unsigned int points3);
    void addPoints (unsigned int aPoints[4]);
+
+   void getMaxPoints (unsigned int& points, unsigned int& player);
+   void getMinPoints (unsigned int& points, unsigned int& player);
 
  private:
    //Prohibited manager functions
@@ -71,6 +76,7 @@ class HeartsScoreDlg : public XDialog {
       void addEntry (unsigned int points);
       void setTitle (const string& title);
 
+      unsigned int getPoints () const { return pSum->getAttribute (); }
       Gtk::Box& getBox () const { return *pBox; }
 
     private:
