@@ -281,7 +281,7 @@ int Buraco::makeMove (unsigned int player) {
              || playerPile.getFittingCard (dumpedCard, &cardDistance) != playerPile.end ())
           : ((!isJoker (dumpedCard))
              || getFittingCard (playerPile, dumpedCard) != playerPile.end ())
-          : (!isJoker (dumpedCard)
+             && ((points[player & 1] > 100)
                  || reserve[player & 1].size ()
                  || (dumped.size () + playerPile.size () > 4)))) {
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
@@ -1601,7 +1601,7 @@ int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
          }
          while ((cmp != -dist) & (cmp != (dist << 1)));
          return pos;
-         while (cmp ? ((cmp == -dist) || (cmp == (dist << 1))) : false);
+      }
    }
    return -1;
 }
