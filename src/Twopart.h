@@ -100,6 +100,9 @@ class Twopart : public Game {
    int makeMove (unsigned int player);
    int endRound (unsigned int player);
 
+   virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+
    static char sortOrder[4];
    static bool compByColourAccTrumps (const CardWidget* a, const CardWidget* b);
 
@@ -129,6 +132,8 @@ class Twopart : public Game {
 
    Widget* pMenuNew;
    Widget* pMenuEnd;
+
+   Gtk::UIManager::ui_merge_id idMrg;
 };
 
 #endif
