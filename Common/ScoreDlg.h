@@ -80,7 +80,7 @@ class HeartsScoreDlg : public XDialog {
       Gtk::Box& getBox () const { return *pBox; }
 
     private:
-      typedef XAttributeLabel<unsigned int> IntLabel;
+      typedef XAttributeLabel2<unsigned int> IntLabel;
       typedef SmartPtr<IntLabel>            PIntLabel;
 
       PBox       pBox;
