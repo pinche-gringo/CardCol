@@ -79,6 +79,8 @@ class RovhultAppl : public XApplication {
 
    CardSet cards;
 
+   Widget* pMenuNew;
+
    typedef OThread<RovhultAppl> THRDAPPL;
    THRDAPPL* pThread;
 

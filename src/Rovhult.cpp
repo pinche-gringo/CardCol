@@ -29,6 +29,9 @@
 #include <time.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <unistd.h>
+
+#include <glib.h>
 
 #define DEBUG 0
 #include <Check.h>
@@ -301,13 +304,16 @@ RovhultAppl::RovhultAppl ()
      , staple (CardPile::VERY_COMPRESSED), pThread (NULL) {
    set_usize (WIDTH, HEIGHT);
 
-   addMenus (menuItems, sizeof (menuItems) / sizeof (menuItems[0]));
+   addMenu (menuItems[0]);
+   pMenuNew = addMenu (menuItems[1]); Check3 (pMenuNew);
+   addMenus (menuItems + 2, sizeof (menuItems) / sizeof (menuItems[0]) - 2);
+
+   pMenuNew->set_sensitive (false);
 
    // Create controls
    tblTable.show ();
    getClient ()->pack_start (tblTable, true, true, 5);
 
-   status.push (1, _("Start a new game with Ctrl+N (or Game -> New)"));
    status.show ();
    getClient ()->pack_start (status, false);
 
@@ -317,11 +323,9 @@ RovhultAppl::RovhultAppl ()
    show ();
 
    // Load cards in background
-   loadCards ();
-#if 0
    pThread = THRDAPPL::create  (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::loadCards,
                                 NULL);
-#endif
+   TRACE9 ("RovhultAppl::RovhultAppl () - Thread-ID = " << pThread->getID ());
 }
 
 /*--------------------------------------------------------------------------*/
@@ -372,10 +376,17 @@ void RovhultAppl::command (int menu) {
 //
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::loadCards () {
+   sleep (0);
    Check3 (staple.is_realized ());
 
    cardFaces.load (staple.get_window ());  // Cards need an realized (!) parent
    cards.addPacket (cardFaces);
+   pThread = NULL;
+
+   gdk_threads_enter ();
+   pMenuNew->set_sensitive (true);
+   status.push (1, _("Start a new game with Ctrl+N (or Game -> New)"));
+   gdk_threads_leave ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -384,6 +395,8 @@ void RovhultAppl::loadCards () {
 void RovhultAppl::fillStaple () {
    // Randomize and put cards onto staple
    cards.shuffle ();
+
+   staple.clear ();
    staple.setTopCards (cards.getCards (), false);
 }
 
@@ -459,8 +472,13 @@ void RovhultAppl::initI18n () {
 int main (int argc, char* argv[]) {
    srand (time (NULL));              // Initialize the random number generator
 
+   g_thread_init (NULL);
+
    Main appl (argc,argv);
    RovhultAppl win;
+
+   gdk_threads_enter ();
    appl.run ();
+   gdk_threads_leave ();
    return 0;
 }
