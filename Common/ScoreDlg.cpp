@@ -39,6 +39,9 @@
 #include "ScoreDlg.h"
 
 
+static int lastX (-1);
+static int lastY (-1);
+
 //-----------------------------------------------------------------------------
 /// (Default-)Constructor; Shows the dialog
 /// \param player: Vector with player
@@ -57,6 +60,9 @@ ScoreDlg::ScoreDlg (const std::vector<Player*>& player)
    client->show ();
    get_vbox ()->pack_start (*client, Gtk::SHRINK, 5);
 
+   if (lastX != -1)
+      move (lastX, lastY);
+
    show ();
 }
 
@@ -67,6 +73,8 @@ ScoreDlg::~ScoreDlg () {
    for (std::vector<column*>::iterator i (aColumns.begin ());
         i != aColumns.end (); ++i)
       delete *i;
+
+   get_position (lastX, lastY);
 }
 
 
