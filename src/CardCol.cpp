@@ -31,6 +31,8 @@
 
 #include <glib.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -295,7 +297,6 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { (initI18n (PACKAGE, LOCALEDIR),
       _("_Game")),            _("<alt>G"), 0,        BRANCH },
     { _("_New"),              _("<ctl>N"), NEW,      ITEM },
-    { _("_End"),              _("<ctl>E"), END,      ITEM },
     { "",                     "",          0,        SEPARATOR },
     { _("E_xit"),             _("<ctl>Q"), EXIT,     ITEM },
     { _("_Options"),          _("<alt>O"), 0,        BRANCH },
@@ -337,9 +338,7 @@ CardgameCollection::CardgameCollection ()
    TRACE9 ("CardgameCollection::CardgameCollection () - Thread-ID = " << pThread->getID ());
 
    // Create controls
-   pMenuEnd = dynamic_cast<MenuItem*> (addMenu (menuItems[2])); Check3 (pMenuEnd);
-   pMenuEnd->set_sensitive (false);
-   addMenus (menuItems + 3, sizeof (menuItems) / sizeof (menuItems[0]) - 3);
+   addMenus (menuItems + 2, sizeof (menuItems) / sizeof (menuItems[0]) - 2);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -356,8 +355,6 @@ CardgameCollection::~CardgameCollection () {
 void CardgameCollection::startGame () {
    TRACE6 ("CardgameCollection::startGame () - Old game type " << oldGame
            << " -> New: " << typeGame);
-
-   pMenuEnd->set_sensitive (true);
 
    // Check if game has been changed; if so destroy the old one
    if (oldGame != typeGame) {
@@ -394,7 +391,6 @@ void CardgameCollection::command (int menu) {
    switch (menu) {
    case NEW:
       if (game && game->isRunning ()) {
-         restart = true;
          XMessageDialog<CardgameCollection>
             ::Show (*this, &CardgameCollection::userWants2End,
                     _("A game is already running. Do you really"
@@ -411,15 +407,6 @@ void CardgameCollection::command (int menu) {
 
    case ROVHULT:
       typeGame = GROVHULT;
-      break;
-
-   case END:
-      Check3 (game && game->isRunning ());
-      restart = false;
-      XMessageDialog<CardgameCollection>
-         ::Show (*this, &CardgameCollection::userWants2End,
-                 _("Do you really want to end the game?"),
-                 PACKAGE, XMessageBox::QUESTION | XMessageBox::YESNO);
       break;
 
    case CHGDECKS:
@@ -533,25 +520,17 @@ void CardgameCollection::changeCards (void* opt) {
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::userWants2End (unsigned int input) {
    if (input == XMessageBox::YES) {
-      pMenuEnd->set_sensitive (false);
-
       Check3 (game);
 
-      if (game->isRunning ()) {
-         status.pop (1);
-         status.push (1, _("User canceled"));
+      status.pop (1);
+      status.push (1, _("User canceled"));
 
-         if (game->canBeStopped ()) {
-            if (restart) {
-               game->stop ();
-               startGame ();
-            }
-            else
-               game->stop ();
-         }
-         else
-            game->end (restart);
+      if (game->canBeStopped ()) {
+         game->stop ();
+         startGame ();
       }
+      else
+         game->end ();
    }
 }
 

@@ -46,7 +46,7 @@ class CardgameCollection : public XApplication {
 
  private:
    // IDs for menus
-   enum { NEW, END, EXIT, DEBUG, ROVHULT, TWOPART, CHGDECKS, SAVESET, ABOUT };
+   enum { NEW, EXIT, DEBUG, ROVHULT, TWOPART, CHGDECKS, SAVESET, ABOUT };
 
    // Protected manager functions
    CardgameCollection (const CardgameCollection&);
@@ -59,7 +59,6 @@ class CardgameCollection : public XApplication {
    void loadCards ();
    void userWants2End (unsigned int input);
    void startGame ();
-   bool restart;
 
    void changeDecks (ICarddeckSelectDlg::commands cmd);
 
@@ -71,7 +70,6 @@ class CardgameCollection : public XApplication {
    Gtk::Statusbar status;
 
    MenuItem* pMenuNew;
-   MenuItem* pMenuEnd;
 
    CardImages cardFaces;
    CardSet cards;
