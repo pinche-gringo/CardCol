@@ -593,8 +593,10 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { _("_New"),              _("<ctl>N"), NEW,      ITEM },
     { _("_End"),              _("<ctl>E"), END,      ITEM },
     { "",                     "",          0,        SEPARATOR },
+#ifdef HAVE_LIBPTHREAD
     { _("_Connect ..."),      _("<shft><ctl>C"), CONNECT,ITEM },
     { "",                     "",          0,        SEPARATOR },
+#endif
     { _("E_xit"),             _("<ctl>Q"), EXIT,     ITEM },
     { _("_Options"),          _("<alt>O"), 0,        BRANCH },
     { _("_Change game"),      "",          0,        SUBMENU },
@@ -696,6 +698,7 @@ CardgameCollection::CardgameCollection (Options& opts)
 
    show ();
 
+#ifdef HAVE_LIBTHREAD
    // Load cards in background
    try {
       pThread = THRDAPPL::create (this, &CardgameCollection::loadCards,
@@ -705,8 +708,14 @@ CardgameCollection::CardgameCollection (Options& opts)
    catch (std::string& e) {
       TRACE1 ("Error starting the thread to load the card images\n\t->"
               << e);
-      CardgameCollection::loadCards (NULL);
+#else
+      Glib::signal_idle ().connect
+          (bind_return (slot (*this, (void* (CardgameCollection::*) ())
+                              &CardgameCollection::loadCards), false));
+#endif
+#ifdef HAVE_LIBTHREAD
    }
+#endif
 
    mxGuiCmd.lock ();
    makePlayer ();
@@ -753,6 +762,7 @@ CardgameCollection::~CardgameCollection () {
         i != aPlayer.end (); ++i)
       delete *i;
 
+#ifdef HAVE_LIBPTHREAD
    for (std::vector<THRDAPPL*>::iterator i (aCommThreads.begin ());
         i != aCommThreads.end (); ++i)
        (*i)->cancel ();
@@ -760,6 +770,7 @@ CardgameCollection::~CardgameCollection () {
 
    if (pThread)
       pThread->cancel ();
+#endif
 }
 
 
@@ -862,6 +873,7 @@ void CardgameCollection::command (int menu) {
          }
       }
       else {
+#ifdef HAVE_LIBPTHREAD
           if (cmgr.getMode () == ConnectionMgr::CLIENT) {
              Gtk::MessageDialog dlg (_("Stop waiting for the server to start the game and start a local one?"),
                                      Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
@@ -875,6 +887,7 @@ void CardgameCollection::command (int menu) {
              else
                 break;
           }
+#endif
          startGame ();
       }
       break;
@@ -977,6 +990,7 @@ void CardgameCollection::command (int menu) {
 /// Initializes the communication
 //-----------------------------------------------------------------------------
 void CardgameCollection::initCommunication () {
+#ifdef HAVE_LIBPTHREAD
    Check2 (cmgr.getMode () != ConnectionMgr::NONE);
    Check2 (aCommThreads.empty ());
 
@@ -993,6 +1007,7 @@ void CardgameCollection::initCommunication () {
                                                 (void*)i));
          aCommThreads[i]->allowCancelation ();
       }
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1050,9 +1065,13 @@ void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
       options.back = back;
    }
 
+#ifdef HAVE_LIBPTHREAD
    pThread = THRDAPPL::create (this,
                                &CardgameCollection::changeCards,
                                (void*)option);
+#else
+   changeCards ((void*)option);
+#endif
    TRACE9 ("CardgameCollection::changeDecks (const ICarddeckSelectDlg) - Thread-ID = "
            << pThread->getID ());
 }
@@ -1229,6 +1248,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
 /// \param player: ID of player (-1 for server; 0 .. n for clients)
 //----------------------------------------------------------------------------
 void* CardgameCollection::waitForMessages (void* player) {
+#ifdef HAVE_LIBPTHREAD
    TRACE1 ("CardgameCollection::waitForMessage (void*)");
    Check2 (cmgr.getMode () != ConnectionMgr::NONE);
 
@@ -1292,6 +1312,7 @@ void* CardgameCollection::waitForMessages (void* player) {
    }
 
    return NULL;
+#endif
 }
 
 //----------------------------------------------------------------------------
@@ -1317,6 +1338,7 @@ void CardgameCollection::doStartGame () {
 ///     -1 if Message was handled, but not fully processed yet; else false
 //----------------------------------------------------------------------------
 int CardgameCollection::handleGlobalMessage (unsigned int player, char* msg) throw (std::string) {
+#ifdef HAVE_LIBPTHREAD
    TRACE5 ("CardgameCollection::handleGlobalMessage (unsigned int, char*) - " << msg);
 
    Tokenize message (msg);
@@ -1369,6 +1391,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player, char* msg) thr
       return true;
    }
    return false;
+#endif
 }
 
 //----------------------------------------------------------------------------
@@ -1379,6 +1402,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player, char* msg) thr
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
 bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
+#ifdef HAVE_LIBPTHREAD
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - " << msg);
 
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - Unlocking GUI");
@@ -1416,6 +1440,7 @@ bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
 
    delete [] msg;
    return false;
+#endif
 }
 
 //----------------------------------------------------------------------------
@@ -1425,6 +1450,7 @@ bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
 bool CardgameCollection::showMessage (char* msg) {
+#ifdef HAVE_LIBPTHREAD
    Gtk::MessageDialog* dlg (new Gtk::MessageDialog (msg, Gtk::MESSAGE_ERROR));
    dlg->set_title (PACKAGE);
    dlg->signal_response ().connect
@@ -1432,6 +1458,7 @@ bool CardgameCollection::showMessage (char* msg) {
    dlg->show ();
    delete [] msg;
    return false;
+#endif
 }
 
 
