@@ -796,7 +796,7 @@ unsigned int Rovhult::movePlayedCardsToLooser (unsigned int nrLooser) {
 
    movePile (players[nrLooser].hand, played);
    players[nrLooser].hand.sortByNumber ();
-   Glib::ustring stat (_("%1 can't continue -> Taking whole pile. "));
+   Glib::ustring stat (_("%1 can't continue -> Taking the whole pile. "));
    stat.replace (stat.find ("%1"), 2, actPlayers[nrLooser]->getName ());
    displayTurn (nrLooser = nextAvailablePlayer (nrLooser), stat);
    return nrLooser;
@@ -1139,29 +1139,33 @@ void Rovhult::showCards2Play (unsigned int player) {
    if (players[player].hand.size ())
       flipCards2Play (players[player].hand, pos1Play, pos2Play);
    else {
-      std::ostringstream msg;
       ICardPile& pile (players[player].reserve[pos2Play]);
 
       if ((pos1Play == pos2Play)
-          && (!cardValid (pile.getTopCard ().number (), true))) {
+          && (cardValid (pile.getTopCard ().number (), true))) {
          pile.getTopCard ().showFace ();
 
          // Inform the others about the move
-         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
+         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
             // Send played card to all clients (if any)
+            std::ostringstream msg;
             msg << "Play="
                 << players[player].reserve[pos2Play].getTopCard ().id ()
                 << ";Target=" << (pos2Play + 5);
+            broadcastMessage (msg.str ());
+         }
       }
       else {
          // Inform the others about the move
-         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
+         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
             // Send played card to all clients (if any)
+            std::ostringstream msg;
             msg << "Play="
                 << players[player].reserve[pos2Play].getTopCard ().id ()
-                << ";Target=" << (pos2Play + 1);
+                << ";Target=" << (pos2Play + 5);
+            broadcastMessage (msg.str ());
+         }
       }
-      broadcastMessage (msg.str ());
    }
 }
 
