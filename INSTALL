@@ -1,0 +1,124 @@
+Prerequisites
+-------------
+
+The following packages are needed
+
+  - My General library; should be available on the same place where you got
+    this software).
+  - Gtkmm (which itself needs GTK+)
+  - Carddecks; either available from the same place where you get this package
+    or create your own (see the file README for details). Actually they are
+    not really necessary to run the program, but it's somewhat more entertaining
+    if you have real images on your cards than GTK+'s default image (might also
+    be easier to differenciate between them ;) ).
+
+
+How to build (if extracted from an (tar-)archive)
+-------------------------------------------------
+
+Inside the directory containing the source code type
+
+  ./configure [configure-options]
+  make [make-options]
+
+To be able to access the help online you need to install the documentation. This
+can be done with a make doc-install in the doc subdirectory. If someone can tell
+me how I could automatize that, *please* send me a mail/patch.
+
+
+How to build (after checking out of CVS)
+----------------------------------------
+
+As there is no public CVS server, these are just notes for me.
+
+Additional prerequiste software:
+
+  - CVS (obviously)
+  - GNU gettext
+  - autoconf
+  - automake
+
+
+Inside the directory containing the source code type
+
+  gettextize
+  aclocal && automake -a && autoconf    # Create configure.in
+  ./configure [configure-options]
+  make [make-options]
+
+
+Common options for configure
+----------------------------
+
+  --help                        # Overwhelming help to configure
+  --help=short                  # Reduces the output of configure --help
+  --prefix=<path>		# default: /usr/local
+  --disable-nls                 # Disable national language support
+  --enable-checks[=level]	# Adds asserts and Checks
+  --enable-debug[=level]	# Sets tracelevel & generation of debuginfo
+
+If you're using `csh' on an old version of System V, you might need to type
+`sh ./configure' instead to prevent `csh' from trying to execute `configure'
+itself.
+
+Running `configure' takes awhile.  While running, it prints some messages
+telling which features it is checking for.
+
+
+Compilers and Options
+
+     Some systems require unusual options for compilation or linking that
+  the `configure' script does not know about.  You can give `configure'
+  initial values for variables by setting them in the environment.  Using
+  a Bourne-compatible shell, you can do that on the command line like
+  this:
+       CC=c89 CFLAGS=-O2 LIBS=-lposix ./configure
+
+  Or on systems that have the `env' program, you can do it like this:
+       env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
+
+  Compiling For Multiple Architectures
+
+     You can compile the package for more than one kind of computer at the
+  same time, by placing the object files for each architecture in their
+  own directory.  To do this, you must use a version of `make' that
+  supports the `VPATH' variable, such as GNU `make'.  `cd' to the
+  directory where you want the object files and executables to go and run
+  the `configure' script.  `configure' automatically checks for the
+  source code in the directory that `configure' is in and in `..'.
+
+     If you have to use a `make' that does not supports the `VPATH'
+  variable, you have to compile the package for one architecture at a time
+  in the source code directory.  After you have installed the package for
+  one architecture, use `make distclean' before reconfiguring for another
+  architecture.
+
+  Installation Names
+
+     By default, `make install' will install the package's files in
+  `/usr/local/bin', `/usr/local/man', etc.  You can specify an
+  installation prefix other than `/usr/local' by giving `configure' the
+  option `--prefix=PATH'.
+
+     You can specify separate installation prefixes for
+  architecture-specific files and architecture-independent files.  If you
+  give `configure' the option `--exec-prefix=PATH', the package will use
+  PATH as the prefix for installing programs and libraries.
+  Documentation and other data files will still use the regular prefix.
+
+     In addition, if you use an unusual directory layout you can give
+  options like `--bindir=PATH' to specify different values for particular
+  kinds of files.  Run `configure --help' for a list of the directories
+  you can set and what kinds of files go in them.
+
+
+Common options/targets for make
+-------------------------------
+
+  - check			# Runs some tests on (some) classes
+  - install			# Installs the whole thing
+  - clean                       # Deletes the files created during the make
+  - uninstall                   # Uninstalls (after you found out what crap
+                                  this package actually contains)
+  - doc-install                 # Installs the documentation
+  - doc-uninstall               # Uninstalls the documentation
