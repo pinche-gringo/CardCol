@@ -32,9 +32,10 @@
 /*--------------------------------------------------------------------------*/
 //Purpose   : Constructor; adds all controls to the dialog
 //Parameters: set: Specifier for type of cardset
-//            access: Pile (topmost card) can be accessed
+//            show: Flag, if cards show their faces
 /*--------------------------------------------------------------------------*/
-ICardPile::ICardPile (PileStyle s, bool access) : style (s), accessable (access) {
+ICardPile::ICardPile (PileStyle s, ShowOpt show)
+   : style (s), showOpt (show) {
    TRACE3 ("ICardPile::ICardPile (PileStyle) - " << (int)style);
    Check3 (s < LAST);
 }
@@ -59,7 +60,9 @@ void ICardPile::setTopCard (CardWidget& card) {
       resize (getTopCard (), style);
    }
 
-   card.set_sensitive (accessable);
+   if (showOpt < DONT_CHANGE)
+      card.setVisible ((bool)showOpt);
+
    card.show ();
    cards.push_back (&card);
 }
@@ -83,7 +86,6 @@ CardWidget& ICardPile::removeTopCard () {
 
       CardWidget& card (getTopCard ());
       resize (card, NORMAL);
-      card.set_sensitive (accessable);
    }
 
    card.set_sensitive (true);
@@ -163,17 +165,6 @@ CardWidget* ICardPile::get (unsigned int id) const {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Returns the card with the passed ID
-//Parameters: id: ID of card to return
-//Returns   : CardWidget*: Pointer to card with passed ID (or NULL)
-/*--------------------------------------------------------------------------*/
-void ICardPile::setAccessable (bool access) {
-   accessable = access;
-   if (cards.size ())
-      getTopCard ().set_sensitive (access);
-}
-
-/*--------------------------------------------------------------------------*/
 //Purpose   : Inserts a card into the pile
 //Parameters: card: Card to insert
 //            pos: Position of new card
@@ -191,6 +182,10 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
       Check3 (compressCard);
       resize (*compressCard, COMPRESSED);
    }
+
+   if (showOpt < DONT_CHANGE)
+      card.setVisible ((bool)showOpt);
+
    cards.insert (cards.begin () + pos, &card);
 }
 
@@ -403,4 +398,21 @@ int ICardPile::findLastEqual (unsigned int pos) const {
    TRACE5 ("ICardPile::findLastEqual (CardWidget::NUMBERS) - Card "
            << *cards[pos - 1] << " at position " << pos - 1);
    return pos - 1;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Makes the staple display either back or faces of the cards
+//Parameters: show: Option of how to display the cards
+/*--------------------------------------------------------------------------*/
+void ICardPile::setShowOption (ShowOpt show) {
+   showOpt = show;
+
+   if (showOpt < DONT_CHANGE) {
+      vector<CardWidget*>::iterator i;
+
+      for (i = cards.begin (); i != cards.end (); ++i) {
+         Check3 (*i);
+         (*i)->setVisible (showOpt);
+      }
+   }
 }
