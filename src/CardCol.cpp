@@ -889,6 +889,7 @@ void CardgameCollection::startGame () {
       default:
          Check (0);
       }
+      game->addMenus (mgrUI);
    }
 
    // Change number of jokers if necessary
@@ -917,8 +918,6 @@ void CardgameCollection::startGame () {
    Glib::ustring name (Glib::locale_to_utf8 (game->name ()));
    name += " - " PACKAGE " V" PRG_RELEASE;
    set_title (name);
-
-   game->addMenus (mgrUI);
 
 #if SAVE_GAME
    if (options.gameFile.size () && options.load) {
