@@ -38,6 +38,8 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
+#define CHECK 9
+#define TRACELEVEL 8
 #include <Check.h>
 #include <Trace_.h>
 #include <Socket.h>
@@ -354,7 +356,55 @@ void Game::setGameStatus (unsigned int newStatus) {
 /// \param pile: Pile to manipulate
 /// \param start: Position of first card to play; update to reflect moving
 /// \param start: Position of last card to play; update to reflect moving
-/// \returns \c unsigned int: Changed position to play
+//-----------------------------------------------------------------------------
+void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std::string) {
+   TRACE2 ("Game::flipCards2Play (ICardPile&, const std::string& cards) - Cards " << cards);
+   Check1 (cards.size ());
+
+   Tokenize tokCards (cards);
+   unsigned long card (0);
+   unsigned int cCards (0);
+   bool bFollow (false);
+   while (tokCards.getNextNode (' ').size ()) {
+      if (stringToNumber (card, tokCards.getActNode ().c_str ())) {
+         std::string error ("Not a card number: `%1'");
+         error.replace (error.find ("%1"), 2, tokCards.getActNode ());
+         throw error;
+      }
+
+      card = pile.find (static_cast <unsigned int> (card));
+      if (card != -1U) {
+         Check3 (card < pile.size ());
+         ++cCards;
+
+         CardWidget& cardWg (*pile[card]);
+         pile.move (pile.size () - 1, card);
+         cardWg.showFace ();
+
+         if ((pile.getStyle () != ICardPile::NORMAL) && bFollow) {
+            Check3 (pile.size () > 1);
+            pile.resize (pile.size () - 2, ICardPile::COMPRESSED);
+         }
+         bFollow = true;
+      }
+      else {
+         std::string error ("Card %1 not found!");
+         error.replace (error.find ("%1"), 2, tokCards.getActNode ());
+         throw error;
+      }
+   } // end-while string has data
+   pos2Play = pile.size () - 1;
+   pos1Play = pos2Play - cCards + 1;
+   Check3 (pos1Play <= pos2Play);
+   TRACE8 ("Game::flipCards2Play (ICardPile&, const std::string&) - "
+           "New positions " << pos1Play << " and " << pos2Play);
+}
+
+//-----------------------------------------------------------------------------
+/// Flips the cards the user is about to play
+/// \param pile: Pile to manipulate
+/// \param start: Position of first card to play; update to reflect moving
+/// \param start: Position of last card to play; update to reflect moving
 //-----------------------------------------------------------------------------
 void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end) {
    TRACE2 ("Game::flipCards2Play (ICardPile&, unsigned int, unsigned int) - "
@@ -659,34 +709,13 @@ bool Game::performCommand (unsigned int player, const char* msg) throw (std::str
 
       Check3 (actPlayer >= 0);
       ICardPile& pile (getPileOfPlayer (actPlayer, target));
+      flipCards2Play (pile, cmd);
 
-      command = cmd;
-      unsigned int cards (-1U);
-      unsigned long lCard (0);
-      unsigned int card (0);
-      bool startTimer (false);
-      while (command.getNextNode (' ').size ()) {
-         if (stringToNumber (lCard, command.getActNode ().c_str ())) {
-             std::string error ("Not a card number: `%1'");
-             error.replace (error.find ("%1"), 2, command.getActNode ());
-             throw error;
-         }
+      // Inform clients about cards to play
+      if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
+          broadcastMessage (msg);
 
-         card = pile.find (static_cast <unsigned int> (lCard));
-         if (card != -1U) {
-            Check3 (card < pile.size ());
-            ++cards;
-            startTimer = executeRemoteMove (pile, card);
-         }
-         else {
-            std::string error ("Card %1 not found!");
-            error.replace (error.find ("%1"), 2, command.getActNode ());
-            throw error;
-         }
-      }
-      pos1Play = pos2Play - cards;
-
-      if (startTimer) {
+      if (executeRemoteMove (pile, target)) {
          Glib::signal_timeout ().connect
              (bind (slot (*this, &Game::endRemoteMove), actPlayer),
               ComputerPlayer::TIMEOUT);
@@ -702,8 +731,10 @@ bool Game::performCommand (unsigned int player, const char* msg) throw (std::str
       unsigned long player;
       if (stringToNumber (player, cmd.c_str ()))
          throw std::string ("Invalid number");
- 
-      displayTurn (actPlayer = player);
+
+      actPlayer = player;
+      if (statGame == PLAYING)
+         displayTurn (player);
    }
    else if (cmd == "Game") {
       Check3 (statGame == STOPPED);
@@ -745,10 +776,8 @@ bool Game::stringToNumber (unsigned long& number, const char* text) {
 /// \returns bool: True, if the timer to execute the move should be set
 //----------------------------------------------------------------------------
 bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) {
-    flipCards2Play (pile, card, pos2Play = card);
-
-    TRACE8 ("Game::executeRemoteMove (ICardPile&, unsigned int) - " << pos2Play);
-    return true;
+   TRACE8 ("Game::executeRemoteMove (ICardPile&, unsigned int) - " << pos2Play);
+   return true;
 }
 
 //----------------------------------------------------------------------------

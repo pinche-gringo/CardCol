@@ -97,7 +97,7 @@ class Game : public Gtk::Table {
 
  protected:
    virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile) = 0;
-   virtual bool executeRemoteMove (ICardPile& pile, unsigned int card);
+   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target);
 
    void closeDialog (int, const Gtk::Dialog* dlg);
 
@@ -155,6 +155,8 @@ class Game : public Gtk::Table {
    unsigned int ignoreNextMsg;
 
  private:
+   void flipCards2Play (ICardPile& pile, const std::string& cards) throw (std::string);
+
    bool enableActWonCards ();
 
    const char* data;                                   // Data send from server
