@@ -38,13 +38,15 @@ class ScoreDlg;
 class Buraco : public Game {
  public:
    Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<Glib::ustring>& names);
+            const std::vector<Player*>& player);
    virtual ~Buraco ();
 
    virtual void start ();
    virtual void clean ();
    virtual const char* name () { return "Buraco"; }
    virtual void playOpen (bool);
+
+   virtual void changeNames (const std::vector<Player*>& newPlayer);
 
  private:
    Buraco (const Buraco& other);
@@ -90,6 +92,7 @@ class Buraco : public Game {
    static bool compByNumberWithJokers (const CardWidget* a, const CardWidget* b);
    static int cardDistance (const CardWidget& a, const CardWidget& b,
                             bool aceIsOne = true);
+   void makeTeamNames (std::vector<Player*>& names) const;
 
    //@Section to handle piles on table
    CardVPile& makeNewPile (unsigned int team);
@@ -122,6 +125,8 @@ class Buraco : public Game {
    std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
    int points[NUM_PLAYERS >> 1];                       // Number of points/team
 
+   std::vector <Player*> nameTeams;
+
    unsigned int startPlayer;
 
    Gtk::Statusbar info;
@@ -139,7 +144,6 @@ class Buraco : public Game {
    } CONNECTIONS;
    std::map<CardWidget*, CONNECTIONS> aDNDHand;
    std::map<CardWidget*, SigC::Connection> aDNDTable;
-
 
    static std::vector<Gtk::TargetEntry> dndType;
 

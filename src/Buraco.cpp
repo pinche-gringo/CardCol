@@ -36,6 +36,7 @@
 #include <Trace_.h>
 #include <ANumeric.h>
 #include <ScoreDlg.h>
+#include <ComputerPlayer.h>
 
 
 
@@ -50,11 +51,11 @@ unsigned int Buraco::ENDPOINTS (2000);
 /// \param cardset: Cardset to use
 /// \param player: Vector of player
 /// \param posPlayer: Position of player for the server
-/// \param names: Vector of player-names
+/// \param mxSerialize: Mutex to serialize messages from the server
                 CardSet& cardset, const std::vector<Player*>& player,
                 unsigned int posPlayer, YGP::Mutex& mxSerialize)
-                  CardSet& cardset, const std::vector<Glib::ustring>& names)
-   : Game (parent, statusbar, cardset, names, 3, 10), startPlayer (0)
+                  CardSet& cardset, const std::vector<Player*>& player)
+   : Game (parent, statusbar, cardset, player, 3, 10), startPlayer (0)
      , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
      , newPile (_("New pile")), target (-1U), pos1 (0), pos2 (0)
@@ -106,6 +107,8 @@ unsigned int Buraco::ENDPOINTS (2000);
    statusbar.set_has_resize_grip (false);
    statusbar.pack_end (info, Gtk::PACK_SHRINK, 5);
 
+}
+   makeTeamNames (nameTeams);
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
@@ -114,6 +117,11 @@ Buraco::~Buraco () {
    clean ();
    delete pScoreDlg;
    // Free team names
+   for (std::vector<Player*>::iterator i (nameTeams.begin ());
+        i != nameTeams.end (); ++i)
+      delete *i;
+
+       delete *i;
 
 //-----------------------------------------------------------------------------
 /// Removes a cerrado from the table
@@ -1152,9 +1160,12 @@ void Buraco::addBuraco (unsigned int player, bool show) {
    Check3 (actPlayers.size () > player);
    Check3 (actPlayers[player]);
    if (show) {
+      Check3 (actPlayers.size () > player);
+      Check3 (actPlayers[player]);
+
       status.pop ();
       Glib::ustring stat (_("%1 picked up the pile with the dumped cards"));
-      stat.replace (stat.find ("%1"), 2, names[player]);
+      stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
       status.push (stat);
    status.pop ();
 
@@ -1435,6 +1446,30 @@ void Buraco::playOpen (bool open) {
 //-----------------------------------------------------------------------------
 /// Creates the combined team names from the players
 /// \param names: Array to receive groups
+//-----------------------------------------------------------------------------
+void Buraco::makeTeamNames (std::vector<Player*>& names) const {
+   Check1 (actPlayers.size () >= NUM_PLAYERS);
+
+   // First delete old names
+   for (unsigned int i (0); i < names.size (); ++i)
+      delete names[i];
+   names.clear ();
+
+   // ... then create it new with pair 0/2; 1/3
+   for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
+      Glib::ustring name (_("Team %1\n%2/%3"));
+      name.replace (name.find ("%1"), 2, 1, char ('1' + i));
+      name.replace (name.find ("%2"), 2, actPlayers[i]->getName ());
+      name.replace (name.find ("%3"), 2, actPlayers[i + 2]->getName ());
+
+      TRACE8 ("Buraco::makeTeamNames (std::vector<Player*>) - Add: " << name);
+      names.push_back (new Human (name));
+   }
+}
+
+//-----------------------------------------------------------------------------
+/// Performs the steps to end the game
+//-----------------------------------------------------------------------------
 void Buraco::endGame () {
    TRACE8 ("Buraco::endGame ()");
 
@@ -1444,15 +1479,7 @@ void Buraco::endGame () {
    if (!pScoreDlg) {
       pScoreDlg = ScoreDlg::create (nameTeams);
       pScoreDlg->get_window ()->set_transient_for (get_window ());
-      std::vector <Glib::ustring> _names;
-      for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
-         Glib::ustring name (_("Team %1\n%2/%3"));
-         name.replace (name.find ("%1"), 2, 1, char ('1' + i));
-         name.replace (name.find ("%2"), 2, names[i << 1]);
-         name.replace (name.find ("%3"), 2, names[(i << 1) + 1]);
-         _names.push_back (name);
-      }
-      pScoreDlg = ScoreDlg::create (_names);
+   }
    points[0] += reserve[0].empty () ? 100 : -100;
    points[1] += reserve[1].empty () ? 100 : -100;
    // Sum up all cards on the table
@@ -1730,4 +1757,16 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
    TRACE4 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
            "Distance: " << a.number () - b.number ());
    TRACE1 ("Buraco::cardDistance (const CardWidget&, const CardWidget&) - "
+}
+
+//----------------------------------------------------------------------------
+/// Changes the names of the playing people
+/*--------------------------------------------------------------------------*/
+//Purpose   : Changes the names of the playing people
+//Parameters: newPlayer: Array holding the new player
+/*--------------------------------------------------------------------------*/
+   makeTeamNames (nameTeams);
+
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+      TRACE1 ("Buraco::changeNames () " << i << ": " << newPlayer[i]->getName ());
 }
