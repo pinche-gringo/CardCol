@@ -50,7 +50,7 @@
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             unsigned int rows, unsigned int columns)
    : Gtk::Table (rows, columns), statGame (INITIALIZING), status (statusbar)
-   , cards (cardset), reStart (false) {
+   , cards (cardset), restart (false) {
    TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, unsinged int, unsigned int)");
    Check3 (cardset.numberOfCards ());
 
@@ -74,17 +74,39 @@ Game::~Game () {
 //Purpose   : Starts the game
 /*--------------------------------------------------------------------------*/
 void Game::start () {
-   statGame = PLAYING;
+   TRACE9 ("Game::start ()");
+   Check3 ((statGame == INITIALIZING) || (statGame == STOPPED));
+   if (statGame != INITIALIZING)
+      clean ();
 
+   setGameStatus (PLAYING);
    actPlayer = 0;
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Starts the game
+//Purpose   : Terminates the game and cleans the table
 /*--------------------------------------------------------------------------*/
 void Game::stop () {
+   TRACE9 ("Game::stop ()");
    clean ();
-   statGame = STOPPED;
+   setGameStatus (STOPPED);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : End the current game as soon as possible
+//Parameters: startNew: Flag, if game should be restarted
+/*--------------------------------------------------------------------------*/
+void Game::end (bool startNew) {
+   TRACE9 ("Game::end () - Restart: " << (startNew ? "Yes" : "No"));
+
+   restart = startNew;
+   if (canBeStopped ()) {
+      setGameStatus (STOPPED);
+      actPlayer = 0;
+      disableLastPlayer ();
+   }
+   else
+      setGameStatus (TOSTOP);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -129,12 +151,14 @@ void Game::clean () {
 //Purpose   : Activates the computer player
 /*--------------------------------------------------------------------------*/
 void Game::makeNextMoves () {
-   TRACE9 ("Game::makeComputerMoves () - *** Start timer ***");
-   Gtk::Main::timeout.connect (slot (this, (actPlayer
-                                     ? &Game::makeComputerMove
-                                     : &Game::enableActPlayer)),
-                               actPlayer ? 1000 : 50);
-   disableLastPlayer ();
+   if (actPlayer >= 0) {
+      TRACE9 ("Game::makeComputerMoves () - *** Start timer ***");
+      Gtk::Main::timeout.connect (slot (this, (actPlayer
+                                               ? &Game::makeComputerMove
+                                               : &Game::enableActPlayer)),
+                                  actPlayer ? 700 : 50);
+      disableLastPlayer ();
+   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -162,11 +186,14 @@ int Game::makeComputerMove () {
 
    if (statGame == TOSTOP) {
       TRACE8 ("Game::makeCompuerMove () - End game ");
-      stop ();
+      setGameStatus (STOPPED);
+      if (restart)
+         start ();
       return 0;
    }
 
    actPlayer = makeMove (actPlayer);
+   TRACE9 ("Game::makeCompuerMove () - Next player: " << actPlayer);
 
    if (!actPlayer)
       enablePlayer (0);
@@ -193,4 +220,13 @@ void Game::displayTurn (unsigned int player, const std::string& preText) {
    std::string stat (_("Turn of player %1"));
    stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
    status.push (1, preText + stat);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Changes the game-status
+//Parameters: newStatus: Status to set
+/*--------------------------------------------------------------------------*/
+void Game::setGameStatus (unsigned int newStatus) {
+   statGame = newStatus;
+   control (statGame);
 }
