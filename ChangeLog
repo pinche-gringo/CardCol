@@ -1,3 +1,81 @@
+2003-02-12  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.3.01 documented
+
+	* configure.in: Vesion to 0.3.01; INCLUDE changed
+
+	* Common/Game.cpp: Trace changed
+
+	* po/de.po, po/en.po, po/es.po: Line numbers actualized
+
+	* doc/CardCol.shtml.de, doc/Røvhult.html.de, doc/Twopart.html, doc/Twopart.html.de, doc/Twopart.html.en, doc/Twopart.html.es:
+	  Minor changes
+
+	* doc/Røvhult.html.es, doc/Twopart.html.es: New file.
+
+2003-02-11  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Makefile.am: index.* renamed to CardCol; Tranlations added
+
+	* doc/CardCol.shtml.es: New file.
+
+	* doc/Røvhult.html, doc/Røvhult.html.en, doc/Twopart.html.de: Minor changes
+
+	* doc/Røvhult.html.de: New file.
+
+	* doc/Twopart.html, doc/Twopart.html.de, doc/Twopart.html.en: Minor changes
+
+	* doc/Twopart.html.de: New file.
+
+	* doc/Hearts.html, doc/Hearts.html.de, doc/Hearts.html.en, doc/Hearts.html.es:
+	  Minor changes
+
+	* doc/CardCol.shtml.en, doc/index.shtml:
+	  Copyright added; Re-formatted; minor fixes
+
+	* doc/CardCol.shtml.de: New file.
+
+2003-02-10  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Hearts.html.de, doc/Hearts.html.es: New file.
+
+	* src/Hearts.cpp, src/Hearts.h:
+	  - Restarting game (clearing scores), when someone reaches 100 points
+	  - Exchanging cards with everyone (analogue to windows version)
+	  - Computer player improved
+	  - Fixes
+
+2003-02-01  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp:
+	  Icon changed; getHelpfile does not add the file-protocoll anymore
+
+2003-01-23  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.cpp, Common/CardPile.h:
+	  Implemented resize-method for ICardPile for piles which are not shown
+
+	* src/Hearts.cpp, src/Hearts.h:
+	  Exchanging cards with everyone (in turn), like M$'s Hearts
+
+	* src/Hearts.h:
+	  Flag if SQ has been played added; prototypes changed; calcNextWinner added
+
+	* src/Hearts.cpp: Computer played improved
+
+2003-01-20  Markus Schwab  <g17m0@lycos.com>
+
+	* src/HeartsScore.cpp, src/HeartsScore.h:
+	  Dialog can retrieve minimal and maximal number of points and update names
+
+	* src/Hearts.cpp: Scoredlg is resetted at 100 points; Computer player improved
+
+2003-01-19  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Makefile.am: CardCol.h added to distribution
+
+	* ChangeLog: Changes of V0.3.00 documented
+
 2003-01-19  Markus Schwab  <g17m0@lycos.com>
 
 	* src/Twopart.cpp: Traces of card-pos to TRACE9

@@ -1,7 +1,15 @@
+Overview of changes in version 0.3.01:
+
+  - If a player reaches 100 points in Hearts, the score is cleared again
+  - Hearts computer player improved
+  - Exchange of cards is analogue to Windows version in turn with everyone
+  - Documentation (of Hearts; also tranlations in german and spanish)
+  - Fixes
+
 Overview of changes in version 0.3.00:
 
   - Hearts implemented
-  - Security check if user closes it application while a game is running
+  - Security check if user closes the application while a game is running
   - Application shows the actual game type in the title bar
   - Posibility to inspect the won cards
   - Games show names of the players (which can be changed)
