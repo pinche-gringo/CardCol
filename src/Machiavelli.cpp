@@ -224,7 +224,7 @@ int Machiavelli::makeMove (unsigned int player) {
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
             // Send played card to all clients (if any)
             if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-               ignoreNextMsg = true;
+               ++ignoreNextMsg;
             broadcastMessage ("EndTurn");
          }
 
@@ -423,9 +423,9 @@ void Machiavelli::stapleSelected () {
    YGP::StatusObject obj;
    checkPiles (obj);
    if (obj.getType () != YGP::StatusObject::UNDEFINED) {
-      obj.generalize (_("The piles are not valid!"));
+      obj.generalize (_("Can't end turn: The piles are not valid!"));
       undoDlg = XGP::MessageDlg::create (obj);
-      undoDlg->set_title (_("Can't end turn"));
+      undoDlg->set_title (PACKAGE);
       undoDlg->get_window ()->set_transient_for (this->get_window ());
 
       // Add undo-buttons
@@ -450,7 +450,7 @@ void Machiavelli::stapleSelected () {
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-         ignoreNextMsg = true;
+         ++ignoreNextMsg;
       broadcastMessage ("EndTurn");
    }
 
@@ -734,11 +734,18 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
          return;
       }
 
-      if (info == TABLE)
-         // Check if only cards from an edge are moved to a numbered pile
+      if (info == TABLE) {
+         // Move only one card from a numbered pile
          if ((pile->getType () == MachiPile::NUMBER)
-             || ((tablePiles[nrpile]->getType () != MachiPile::NUMBER)
-                 && !iCard)) {
+             || ((pile->getType () == MachiPile::UNDEFINED)
+                 && (pile->size () == 1)
+                 && ((*pile)[0]->number () == moved->number ())))
+            nr = 1;
+
+         // Check if only cards from an edge are moved to the beginning of
+         // a coloured pile
+         if ((tablePiles[nrpile]->getType () != MachiPile::NUMBER)
+             && (!iCard || (!off && (moved->number () == CardWidget::ACE)))) {
             if ((off != (src.size () - 1)) && off) {
                context->drag_finish (true, false, time);
                Gtk::MessageDialog dlg (_("Card is not on the edge of the origen - try splitting the origin first!"),
@@ -750,7 +757,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
             // Also move only one card, if the target is a numbered pile
             nr = 1;
          }
-      nr = 1;
+      }
    }
    Check3 (pile);
 
@@ -774,12 +781,11 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
          msg << ";Now=1";
 
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-          ignoreNextMsg = true;
+          ++ignoreNextMsg;
       broadcastMessage (msg.str ());
    }
 
-
-   for (unsigned int i (1); i <= nr; i++) {
+   while (nr--) {
       TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Insert to: " << iPile
               << "; Pos: " << iCard);
       Check3 (iCard != -1U);
@@ -1025,7 +1031,7 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
                msg << ";Now=1";
                   
             if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-               ignoreNextMsg = 1;
+               ++ignoreNextMsg;
 
             broadcastMessage (msg.str ());
          }
@@ -1387,7 +1393,7 @@ void Machiavelli::undoMove (unsigned int number) {
       // Inform clients about cards to play
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
          if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
+            ++ignoreNextMsg;
 
          std::ostringstream msg;
          msg << "Move=" << move.destPile << ";From=" << move.destPos << ";To="
