@@ -220,11 +220,13 @@ class TGame : public Parent {
       , obj (controller), pCallback (callback) { }
    virtual ~TGame () { }
 
-   /// 
+   /// Callback to inform a controller about status changes
+   /// \param status: New status of the game
    virtual void control (unsigned int status) const {
       (obj.*pCallback) (status);
    }
 
+   /// Returns the connection-manager
    virtual YGP::ConnectionMgr& getConnectionMgr () const {
       return obj.getConnectionMgr ();
    }
