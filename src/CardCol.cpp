@@ -753,12 +753,11 @@ CardgameCollection::~CardgameCollection () {
         i != aPlayer.end (); ++i)
       delete *i;
 
-   if (aCommThreads.size ()) {
-      for (std::vector<THRDAPPL*>::iterator i (aCommThreads.begin ());
-           i != aCommThreads.end (); ++i)
-         (*i)->cancel ();
-      aCommThreads.clear ();
-   }
+   for (std::vector<THRDAPPL*>::iterator i (aCommThreads.begin ());
+        i != aCommThreads.end (); ++i)
+       (*i)->cancel ();
+   aCommThreads.clear ();
+
    if (pThread)
       pThread->cancel ();
 }
@@ -1212,7 +1211,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
       }
       else if (restart == -1U)
          Glib::signal_idle ().connect
-             (bind_return (slot (*this, &CardgameCollection::destroy_), false));
+             (bind_return (slot (*this, &CardgameCollection::hide), false));
 
       restart = false;
       break;
