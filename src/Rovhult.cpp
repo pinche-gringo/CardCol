@@ -33,7 +33,7 @@
 
 #include <glib.h>
 
-#define DEBUG 0
+#define DEBUG 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -506,23 +506,31 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    TRACE1 ("Rovhult::pileSelected (CardVPile*, unsinged int) - "
            << card.color () << '/' << card.number ());
 
+   // If played from bottom of pile (with invisible cards): Flip card first
+   if (reserve[player][pile].numberOfCards () == 1) {
+      card.setVisible ();
+      while (gtk_main_iteration_do (false));
+   }
+      
    if (!cardValid (card.number ())) {                 // Check if card is valid
       if (reserve[player][pile].numberOfCards () > 1)   // Visible card? Return
          return;
 
+      if (reserve[player][pile].numberOfCards () == 1)   // Wait after flipping
+         sleep (1);
+      
       disableLastPlayer ();
-      card.setVisible ();
-      reserve[player][pile].removeTopCard ();
       played.append (card);
+      reserve[player][pile].removeTopCard ();
       executeMove ((player - 1) & 0x3, CardWidget::UNREACHABLE);
       return;
    }
-   card.setVisible ();
    disableLastPlayer ();
 
-   // Move card (and cards with equal number below) from player to played staple
+   // Move card (and visible cards with equal number below) from player to played staple
    do {
-      if (reserve[player][pile].getTopCard ().number () == card.number ()) {
+      if (reserve[player][pile].numberOfCards ()
+          && (reserve[player][pile].getTopCard ().number () == card.number ())) {
          CardWidget& movedCard (reserve[player][pile].removeTopCard ());
          if (movedCard.number () != CardWidget::TEN)
             played.append (movedCard);
@@ -621,15 +629,23 @@ void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 
    // If last 4 cards have the same number or ten was played: Don't increase player
    if ((nr != CardWidget::TEN) && !clearPlayedIf4Equal ()) {
-      ++player;
-      player &= 0x3;
+      status.pop (1);
 
       std::string stat;
+      int nextPlayer (getNextAvailablePlayer (player));
+      if (player == -1) {
+         stat = _("Player %1 lost");
+         stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+         status.push (1, stat);
+         return;
+      }
+      else
+         player = nextPlayer;
+
       if (nr == CardWidget::EIGHT) {
          stat = _("Skipping player %1; ");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
-         ++player;
-         player &= 0x3;
+         player = getNextAvailablePlayer (player);
       }
 
       // Check if next player has fitting card
@@ -637,13 +653,12 @@ void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
          stat = stat + _("Player %1 can't continue -> Getting whole pile. ");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
 
-         movePlayedCardsToLooser (player++);
-         player &= 0x3;
-      }
+         movePlayedCardsToLooser (player);
+         player = getNextAvailablePlayer (player);
+         }
 
       stat = stat + _("Turn of player %1");
       stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
-      status.pop (1);
       status.push (1, stat);
    }
 
@@ -779,6 +794,23 @@ void RovhultAppl::movePlayedCardsToLooser (unsigned int nrLooser) {
 }
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Checks which player has still cards left
+//Parameters: actPlayer: ID of actual player
+//Returns   : int: ID of player or -1 (if none can continue)
+/*--------------------------------------------------------------------------*/
+int RovhultAppl::getNextAvailablePlayer (unsigned int actPlayer) const {
+   // We assume (without checking), that acutal player still has cards
+   for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
+      unsigned int player ((actPlayer + i) & 0x3);
+
+      for (int j (0); j < 3; ++j)
+         if (reserve[player][j].numberOfCards ())
+            return player;
+   }
+   return -1;
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Loads the cards (from xpm-files)
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::loadCards () {
@@ -876,7 +908,7 @@ void RovhultAppl::registerHandDND (CardWidget& card, unsigned int player,
 //Purpose   : Stops the drag´n´drop abilities of the passed card
 //Parameters: card: Card to unregister of dnd
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::unregisterDND (CardWidget& card) {
+void RovhultAppl::unregisterDND (CardWidget& card) const {
    card.drag_dest_unset ();
    card.drag_source_unset ();
 }
