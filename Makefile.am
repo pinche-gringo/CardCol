@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = m4  intl Common src po doc
+SUBDIRS = m4 intl Common src po doc
 
 DEFS=@DEFS@
 
