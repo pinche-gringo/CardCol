@@ -1,3 +1,81 @@
+2002-05-21  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h:
+	  pileSelected used thread to update flip of card; Fixes. Playing works!
+
+2002-05-20  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp: Fixes; handling of 'special cases' added
+	  Finished a game! Although not completely according the rules :(
+
+	* Rovhult/Rovhult.h: Prototypes changed
+
+	* Common/CardColl.cpp, Common/CardImgs.cpp, Common/CardSet.cpp:
+	  Traces and Checks are enabled via configure
+
+	* Common/CardWidget.h: NUMBERS-enum contains a value UNREACHABLE
+
+	* Common/CardPile.h: Prototype for compNr removed
+
+	* Common/CardPile.cpp: Last (?) fix in exists (NUMBERS); Adapted to new debug-style
+
+2002-05-19  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp:
+	  enablePlayer called from thread (to let actual handler finish); fixes
+
+2002-05-18  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.cpp: Traces and checks added;
+	  fixed bug in removeTopCard and (again) in exists
+
+	* Rovhult/Rovhult.h, Rovhult/Rovhult.cpp: Fixes; Playing from pile added;
+	  Msgs in statusbar improved
+
+	* Common/CardPile.h: getTopCard made const
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h: Loads of fixes;
+	  Playing from pile if hand is empty; Hey, nearly had a whole game
+
+	* Common/CardPile.cpp: Fixed bug in exists (NUMBERS); Traces added
+
+	* Rovhult/Rovhult.cpp: More progress on playing
+
+2002-05-17  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h:
+	  Disconnect card-events (and not reconnect to noop); Playing improved
+
+	* Common/CardPile.cpp, Common/CardPile.h: Method to enable/disable top card added
+	  Added exits-method with NUMBERS-parameter
+	  Fixed compare-fncs; fixed clear; sort-fncs resort the display
+
+	* Rovhult/Rovhult.h, Rovhult/Rovhult.cpp: A bit of game-handling implemented
+
+	* Common/CardColl.cpp: Fixed resizing of cards (after insert/remove)
+
+2002-05-16  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardWidget.cpp: Pixmap is left/top-aligned
+
+	* Common/CardPile.h: Method getTopCard added
+
+	* Common/CardPile.cpp: Using constant for card-resizing; Only resize if necessary
+
+	* Common/CardColl.h: Methods cardAt and setStyle added
+
+	* Common/CardColl.cpp: Compressed width is constant;
+	  Ev. card-resize after remove; Method setStyle added
+
+	* Rovhult/Rovhult.cpp:
+	  After swapping of cards DND-handlers are re-registered
+	  Fixed swap; Resizing cards after swap-phase -> Implementation of pre-game finished
+
+	* Rovhult/Rovhult.h:
+	  cardDropped exchanged with 2 declarations (for droppedOnTable/Hand);
+	  register*DND-methods declared;
+	  *Selected-prototypes changed; size changed
+
 2002-05-15  Markus Schwab  <g17m0@lycos.com>
 
 	* Rovhult/Rovhult.cpp:
@@ -10,12 +88,9 @@
 2002-05-14  Markus Schwab  <g17m0@lycos.com>
 
 	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h: Drag´n´drop exchanges some information
+	  Cards in hand and on pile have separate callback
 
 	* Rovhult/Rovhult.h: Declarations of callbacks for card-selection and drag´n´drop
-
-	* Rovhult/Rovhult.cpp: First draft of drag´n´drop
-
-	* Rovhult/Rovhult.cpp: Cards in hand and on pile have separate callback
 
 	* Common/CardSet.cpp, Common/CardSet.h: Method cards renamed to numberOfCards
 
