@@ -24,7 +24,6 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#define DEBUG 0
 #include <Check.h>
 
 #include "CardPile.h"
@@ -291,7 +290,7 @@ bool ICardPile::compCardsByNr (const CardWidget* a, const CardWidget* b) {
 void ICardPile::sortByNumber () {
    sort (cards.begin (), cards.end (), compCardsByNr);
 
-#if DEBUG > 0
+#if CHECK > 0
    vector<CardWidget*>::const_iterator i (cards.begin ());
    if (i != cards.end ())
       Check (*i);
@@ -308,7 +307,7 @@ void ICardPile::sortByNumber () {
 void ICardPile::sortByColor () {
    sort (cards.begin (), cards.end (), compCards);
 
-#if DEBUG > 0
+#if CHECK > 0
    vector<CardWidget*>::const_iterator i (cards.begin ());
    if (i != cards.end ())
       Check (*i);
@@ -342,29 +341,17 @@ bool ICardPile::exists (CardWidget::NUMBERS nr) const {
       Check3 ((last == cards.size ()) ? 1
               : cards[last] && (cards[middle]->number () <= cards[last]->number ()));
 
-      if (compNr (cards[middle], nr))
+      if (cards[middle]->number () < nr)
          first = middle + 1;
       else
          last = middle;
 
-      // Perform sanity-checks; don't wory if DEBUG is not defined or less then
-      // 3 this produces no code
       Check3 (middle >= 0); Check3 (middle <= cards.size ());
       Check3 (first >= 0); Check3 (last <= cards.size ());
       Check3 (first <= last); Check3 (middle <= last);
    }
-   return (first != last) && !compNr (cards[first], nr);
-}
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Checks if the passed card has the specified value
-//Parameters: nr: Number of card (2, 3, 4, ... Ace) to search for
-//            card: Pointer to card to analyze
-//Returns   : bool: True if if is smaller
-/*--------------------------------------------------------------------------*/
-bool ICardPile::compNr (const CardWidget* card, CardWidget::NUMBERS nr) {
-   Check3 (card);
-   TRACE5 ("ICardPile::compNr (const CardWidget*, CardWidget::NUMBERS) - "
-           << card->number () << " <-> " << nr);
-   return card->number () < nr;
+   TRACE5 ("ICardPile::exists (CardWidget::NUMBERS) - End = [" << first << "-("
+           << middle << ")-" << last << ')');
+   return (first != cards.size ()) && (cards[first]->number () == nr);
 }
