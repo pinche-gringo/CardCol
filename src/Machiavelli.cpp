@@ -72,6 +72,9 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&)");
 
+   scrlTable.set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+   scrlTable.add (table);
+
    int width (cards.getCard (0).getImageWidth ());
    int height (cards.getCard (0).getImageHeight ());
 
@@ -79,31 +82,21 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
            "std::vector<Glib::ustring>&) - Init common staples");
    staple.set_size_request (width, height);
 
-   table.show ();
-   table.set_size_request (-1, 3 * (height + 5));
-
+   table.pack_start (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
    for (unsigned int i (0); i < (sizeof (piles) / sizeof (piles[0])); ++i) {
+      piles[i].set_size_request (-1, height + 5);
       piles[i].show ();
-      table.pack_end (piles[i], Gtk::PACK_EXPAND_WIDGET, 5);
+      table.pack_start (piles[i], Gtk::PACK_EXPAND_WIDGET, 5);
    }
-   piles[0].pack_end (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
 
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       attach (hands[i], (i << 2) - 4, (i << 2) - 2, 3, 4,
               Gtk::EXPAND, Gtk::SHRINK, 5, 5);
       attach (names[i], (i << 2) - 4, (i << 2) - 2, 4, 5,
               Gtk::EXPAND, Gtk::SHRINK, 0);
-      hands[i].show ();
-      names[i].show ();
    }
    hands[0].setStyle (ICardPile::COMPRESSED);
    hands[0].setShowOption (ICardPile::SHOWFACE);
-   hands[0].show ();
-   names[0].show ();
-
-   scrlTable.show ();
-   scrlTable.set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
-   scrlTable.add (table);
 
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Attach widgets");
@@ -115,8 +108,6 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Show widgets");
-   newPile.show ();
-   staple.show ();
 
    changeNames (player);
 
@@ -124,6 +115,7 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       dndType.push_back
          (Gtk::TargetEntry ("icon/card", GTK_TARGET_SAME_APP, 0));
 
+   show_all_children ();
 }
 
 //-----------------------------------------------------------------------------
@@ -259,7 +251,9 @@ int Machiavelli::makeMove (unsigned int player) {
    Check1 (gameStatus () == PLAYING);
    Check1 (!hands[player].empty ());
 
-   return player;
+   unsigned int nextPlayer (findNextPlayer (player));
+   hands[nextPlayer].append (staple.removeTopCard ());
+   return nextPlayer;
 }
 
 //-----------------------------------------------------------------------------
@@ -267,11 +261,32 @@ int Machiavelli::makeMove (unsigned int player) {
 /// \returns \c 0
 //-----------------------------------------------------------------------------
 bool Machiavelli::enableHuman () {
+   TRACE4 ("Machiavelli::enableHuman ()");
    Check3 (staple.size ());
-   Check3 (!stapleTop.connected ());
+   Check3 (activeCards.empty ());
 
-   stapleTop = staple.getTopCard ().signal_clicked ().connect
-      (slot (*this, (&Machiavelli::stapleSelected)));
+   activeCards.push_back (staple.getTopCard ().signal_clicked ().connect
+                          (slot (*this, (&Machiavelli::stapleSelected))));
+
+   Check3 (hands[0].size ());
+   for (unsigned int i (0); i < hands[0].size (); ++i)
+      registerHandDND (i);
+   Check3 (aDNDHand.size () == hands[0].size ());
+
+   newPile.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
+   aDNDTable[NULL] = newPile.signal_drag_data_received ().connect
+      (bind (slot (*this, &Machiavelli::cardDroppedOnTable), -1U));
+
+   for (unsigned int i (0); i < (sizeof (piles) / sizeof (piles[0])); ++i)
+      for (unsigned int j (0); j < piles[i].children ().size (); j++) {
+         unsigned int valPile ((i << 12) + (j << 8));
+
+         Gtk::Box_Helpers::Child& child (piles[i].children ()[j]);
+         ICardPile& pile (*dynamic_cast<ICardPile*> (child.get_widget ()));
+
+         for (unsigned int k (0); k < pile.size (); ++k)
+            registerTableDND (*pile[k], (valPile) + k);
+   }
 
    return Game::enableHuman ();
 }
@@ -292,9 +307,6 @@ void Machiavelli::disableHuman () {
    Check3 (aDNDHand.empty ());
 
    unregisterTableDND ();
-
-   if (stapleTop.connected ())
-      stapleTop.disconnect ();
 }
 
 //----------------------------------------------------------------------------
@@ -368,7 +380,7 @@ void Machiavelli::setStartPlayer () {
 void Machiavelli::stapleSelected () {
    TRACE5 ("Machiavelli::stapleSelected ()");
    Check1 (gameStatus () == PLAYING);
-   Check3 (staple.size ()); Check3 (stapleTop.connected ());
+   Check3 (staple.size ()); Check3 (activeCards.size ());
 
    if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
@@ -380,26 +392,13 @@ void Machiavelli::stapleSelected () {
       broadcastMessage (msg.str ());
    }
 
-   stapleTop.disconnect ();
+   disableHuman ();
 
-   // Move top card to human and enable the cards in his hand, when idle
-   // (means: *after* this signalhandler termintes)
-   Glib::signal_idle ().connect
-       (bind_return (slot (*this, &Machiavelli::doStapleSelected), false));
-}
+   unsigned int nextPlayer (findNextPlayer (currentPlayer ()));
+   setNextPlayer (nextPlayer);
+   hands[nextPlayer].append (staple.removeTopCard ());
 
-//-----------------------------------------------------------------------------
-/// Delayed callback after clicking on the staple
-//-----------------------------------------------------------------------------
-void Machiavelli::doStapleSelected () {
-   TRACE5 ("Machiavelli::doStapleSelected ()");
-   Check1 (gameStatus () == PLAYING);
-   Check2 (staple.size ());
-
-   unsigned int player (currentPlayer ());
-   hands[player].append (staple.removeTopCard ());
-   if (!player)
-      enableHuman ();
+   makeNextMoves ();
 }
 
 //-----------------------------------------------------------------------------
@@ -413,13 +412,8 @@ void Machiavelli::registerHandDND (unsigned int start, unsigned int end) {
            << '-' << end << ']');
    Check1 (start <= end);
    Check1 (end < hands[0].size ());
-   Check1 (end < activeCards.size ());
 
    for (; start <= end; ++start) {
-      activeCards[start].disconnect ();
-      activeCards[start] = hands[0][start]->signal_clicked ().connect
-         (bind (slot (*this, (&Machiavelli::cardSelected)), start));
-
       unregisterHandDND (*hands[0][start]);
       registerHandDND (start);
    }
@@ -471,7 +465,8 @@ void Machiavelli::unregisterHandDND (CardWidget& card) {
 
 //-----------------------------------------------------------------------------
 /// Prepares the passed region of cards for drag´n´drop
-/// \param pile: Pile whose cards should be registered
+/// \param pile: Pile whose cards should be registered. This value is calcualated
+///     like (row << 4) + column
 /// \param start: Number of first card to prepare for DND
 /// \param end: Number of last card to prepare for DND
 /// \pre: \c start < \c end; \c end <= Number of cards
@@ -481,8 +476,8 @@ void Machiavelli::registerTableDND (unsigned int pile, unsigned int start, unsig
            << " - " << pile << '[' << start << '-' << end << ']');
 
    Check1 (start <= end);
-   unsigned int iRow (pile >> 16);
-   unsigned int iColumn (pile & 0xffff);
+   unsigned int iRow (pile >> 4);
+   unsigned int iColumn (pile & 0xff);
    Check1 (iRow < (sizeof (piles) / sizeof (piles[0])));
    Check1 (iColumn < piles[iRow].children ().size ());
 
@@ -539,16 +534,6 @@ void Machiavelli::unregisterTableDND () {
       i->second.disconnect ();
 
    aDNDTable.clear ();
-}
-
-//-----------------------------------------------------------------------------
-/// Callback after clicking on a card in the hand
-/// \param iCard: Offset of card in hand
-//-----------------------------------------------------------------------------
-void Machiavelli::cardSelected (unsigned int card) {
-   TRACE5 ("Machiavelli::cardSelected (unsigned int) - Position " << card);
-   Check1 (card < hands[0].size ());
-   Check1 (gameStatus () == PLAYING);
 }
 
 //-----------------------------------------------------------------------------
@@ -635,4 +620,97 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    Check3 (*pValue < hands[0].size ());
    TRACE1 ("Machiavelli::cardDroppedOnTable (...) - Inserting card " << *pValue
            << " in pile");
+
+   // Move dropped card to a (new) pile on the table
+   unsigned int iPile (piles[0].children ().size ());
+   MachiPile* pile (NULL);
+   CardWidget& moved (*hands[0][*pValue]);
+   TRACE4 ("Machiavelli::cardDroppedOnTable (...) - Card dropped: " << moved);
+
+   if (iCard == -1U) {    // If card was dropped on the new label: Create pile
+      unsigned int iRow (0);
+
+      // Find row where to create new pile
+      for (unsigned int i (1); i < (sizeof (piles) / sizeof (piles[0])); ++i) {
+         iPile += piles[i].children ().size ();
+
+         GtkRequisition req1, req2;
+         piles[i].size_request (&req1);
+         TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Width: " << req1.width);
+
+         piles[iRow].size_request (&req2);
+         if (req1.width < req2.width)
+            iRow = i;
+      }
+
+      pile = new MachiPile ();
+      piles[iRow].pack_start (*pile, Gtk::PACK_SHRINK, 5);
+
+      pile->show ();
+      iCard = 0;
+      iPile += (iRow << 4);
+   }
+   else {
+      // Else check pile to use
+      Check1 ((iCard >> 12) < (sizeof (piles) / sizeof (piles[0])));
+      iPile = (iCard >> 8) & 0xff;
+      Check1 (iPile < piles[iCard >> 12].children ().size ());
+
+      Gtk::Box_Helpers::Child& child (piles[iCard >> 12].children ()[iPile]);
+      pile = dynamic_cast<MachiPile*> (child.get_widget ());
+   }
+   Check3 (pile);
+
+   // Send move
+   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+      std::ostringstream msg;
+      msg << "Play=" << hands[0][*pValue]->id () << ";Target="
+          << (iPile << 16) + iCard + 100;
+      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+         ignoreNextMsg = true;
+      broadcastMessage (msg.str ());
+   }
+
+   // End old drag
+   context->drag_finish (true, false, time);
+
+   // Unregister old card
+   hands[0].remove (*pValue);
+   unregisterHandDND (moved);
+
+   // Insert card into pile and register it for DND
+   iCard = pile->getPosition4Card (moved);
+   Check3 (iCard <= pile->size ());
+   pile->insert (moved, iCard);
+   registerTableDND (moved, (iPile << 8) + iCard);
+   if (iCard < (pile->size () - 1))
+      registerTableDND (iPile, iCard + 1, pile->size () - 1);
+
+   // Player has won, if he does not have any cards left
+   if (hands[0].empty ()) {
+      return;
+   }
+
+   // Re-register the cards in the hand of the human for DND
+   if (*pValue < hands[0].size ())
+      registerHandDND (*pValue, hands[0].size () - 1);
+   Check3 (aDNDHand.size () == hands[0].size ());
+}
+
+//----------------------------------------------------------------------------
+/// Finds the next player still having cards
+/// \param player: Player to find next player to
+/// \return unsigned int: Next player having cards
+/// \remarks We assume (without really checking), that there's a next player.
+//----------------------------------------------------------------------------
+unsigned int Machiavelli::findNextPlayer (unsigned int player) const {
+   for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
+      player = (player + 1) & 0x3;
+      if (hands[player].size ()) {
+         TRACE8 ("Machiavelli::findNextPlayer (unsigned int) const - Player: " << player);
+         break;
+      }
+   }
+   Check3 (player < NUM_PLAYERS);
+   return player;
 }
