@@ -64,6 +64,9 @@ class CardWidget : public Gtk::EventBox {
 
    SigC::Signal0<void> signal_clicked () { return clicked_; }
 
+   void mark ();
+   void unmark ();
+
  protected:
   virtual void on_clicked ();
   virtual bool on_button_release_event (GdkEventButton* ev);

@@ -38,12 +38,12 @@
 CardWidget::COLOURS CardWidget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Constructor; creates a cardwidget with the passed index of a pixmap
-//Parameters: set: Images of cards
-//            card: Number of image inside the set to display
-//            visible: Flag, if card should be displayed visible
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Constructor; creates a cardwidget with the passed index of a pixmap
+/// \param set: Images of cards
+/// \param card: Number of image inside the set to display
+/// \param visible: Flag, if card should be displayed visible
+//-----------------------------------------------------------------------------
 CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible)
    : isVisible (visible), nrCard (card), deck (set) {
    TRACE3 ("CardWidget::CardWidget (const CardImages&, unsinged int, bool) - "
@@ -58,10 +58,10 @@ CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible)
                | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Copyconstructor; copies the image for the passed cardwidget
-//Parameters: other: Card to copy
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Copyconstructor; copies the image for the passed cardwidget
+/// \param other: Card to copy
+//-----------------------------------------------------------------------------
 CardWidget::CardWidget (const CardWidget& other)
    : isVisible (other.isVisible), nrCard (other.nrCard), deck (other.deck) {
    TRACE3 ("CardWidget::CardWidget (const CardWidget&) - "
@@ -77,26 +77,26 @@ CardWidget::CardWidget (const CardWidget& other)
                | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Destructor
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Destructor
+//-----------------------------------------------------------------------------
 CardWidget::~CardWidget () {
    TRACE9 ("CardWidget::~CardWidget () - " << *this);
 }
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shows either the cardimage of the image of the deck
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Shows either the cardimage of the image of the deck
+//-----------------------------------------------------------------------------
 void CardWidget::showFace (bool visible) {
    isVisible = visible;
    update ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Returns the number of the card as character
-//Returns   : char: Character describing number of card
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Returns the number of the card as character
+/// \returns \c char: Character describing number of card
+//-----------------------------------------------------------------------------
 char CardWidget::numberStr () const {
    static Glib::ustring specialCards (_("TJQKA"));
    return ((number () >= CardWidget::TEN)
@@ -104,36 +104,36 @@ char CardWidget::numberStr () const {
            : number () + '2');
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Returns the colour of the card as character
-//Returns   : char: Character describing colour of card
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Returns the colour of the card as character
+/// \returns \c char: Character describing colour of card
+//-----------------------------------------------------------------------------
 char CardWidget::colourStr () const {
    // Letters describing the colours (clubs, spades, hearts, diamonds)
    static Glib::ustring colours (_("CSHD"));
    return colours[nrCard & 0x3];
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Returns the colour of the card as character
-//Returns   : char: Character describing colour of card
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Returns the colour of the card as character
+/// \returns \c char: Character describing colour of card
+//-----------------------------------------------------------------------------
 void CardWidget::update () {
    TRACE3 ("CardWidget::update () - Card " << nrCard);
 
    img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground ());
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback after clicking a CardWidget
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Callback after clicking a CardWidget
+//-----------------------------------------------------------------------------
 void CardWidget::on_clicked () {
    TRACE9 ("CardWidget::on_clicked () - " << *this);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback after clicking a CardWidget
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Callback after clicking a CardWidget
+//-----------------------------------------------------------------------------
 bool CardWidget::on_button_release_event (GdkEventButton* ev) {
    Check1 (ev);
    TRACE9 ("CardWidget::on_button_release_event (GdkEventButton*) - "
@@ -149,13 +149,31 @@ bool CardWidget::on_button_release_event (GdkEventButton* ev) {
    return false;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Output operator; Writes number and colour of the card
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Output operator; Writes number and colour of the card
+//-----------------------------------------------------------------------------
 std::ostream& operator<< (std::ostream& out, const CardWidget& card) {
    if (card.nrCard >= 52)
       out << "Joker";
    else
       out << card.colourStr () << card.numberStr ();
    return out;
+}
+
+//-----------------------------------------------------------------------------
+/// Marks the card; this is done by changing the saturation
+//-----------------------------------------------------------------------------
+void CardWidget::mark () {
+   Glib::RefPtr<Gdk::Pixbuf> pic (getShownImage ());
+   Glib::RefPtr<Gdk::Pixbuf> dest (pic->copy ());
+
+   pic->saturate_and_pixelate (dest, 0.5, true);
+   img.set (dest);
+}
+
+//-----------------------------------------------------------------------------
+/// Unmarks the card; this is done by changing the saturation back
+//-----------------------------------------------------------------------------
+void CardWidget::unmark () {
+   update ();
 }
