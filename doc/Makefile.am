@@ -7,7 +7,7 @@ DESTINATION=${DESTDIR}${datadir}/doc/$(PACKAGE)
 EXTRA_DIST=index.shtml index.html Røvhult.html Twopart.html Hearts.html
 
 doc-install:
-	test -d ${datadir}/doc/$(PACKAGE) || mkdir ${datadir}/doc/$(PACKAGE)
+	test -d ${DESTINATION} || mkdir ${DESTINATION}
 	cp ${EXTRA_DIST} ${DESTINATION}
 
 doc-uninstall:
