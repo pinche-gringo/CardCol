@@ -17,7 +17,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+
 #include <string>
+#include <vector>
 
 #include <gtk--/table.h>
 #include <gtk--/button.h>
@@ -47,10 +49,11 @@ class CardgameCollection : public XApplication {
    Gtk::Box& getClient () { return *XApplication::getClient (); }
    Gtk::Statusbar& getStatusbar () { return status; }
    CardSet& getCards () { return cards; }
+   const vector<string>& getNames () const { return names; }
 
  private:
    // IDs for menus
-   enum { NEW = 1, END, EXIT, DEBUG, ROVHULT, TWOPART, HEARTS, CHGDECKS,
+   enum { NEW = 1, END, EXIT, DEBUG, ROVHULT, TWOPART, HEARTS, CHGDECKS, CHGNAMES,
           SAVESET, ABOUT, CONTENT};
 
    // Protected manager functions
@@ -69,7 +72,7 @@ class CardgameCollection : public XApplication {
    void userWants2End (unsigned int input);
    void startGame ();
 
-   void changeDecks (ICarddeckSelectDlg::commands cmd);
+   void changeDecks (const ICarddeckSelectDlg& dialog);
 
    static XApplication::MenuEntry CardgameCollection::menuItems[];
 
@@ -84,7 +87,6 @@ class CardgameCollection : public XApplication {
    typedef OThread<CardgameCollection> THRDAPPL;
    THRDAPPL* pThread;
 
-   ICarddeckSelectDlg* dlgChgDecks;
    std::string pathDeck;
    std::string pathBack;
 
@@ -95,12 +97,14 @@ class CardgameCollection : public XApplication {
 
    Game* game;
 
+   vector<string> names;
+
    static const std::string NAME_INIFILE;
 
    static const unsigned int USED_CARDS = 52;
 
    static const unsigned int WIDTH = 760;
-   static const unsigned int HEIGHT = 700;
+   static const unsigned int HEIGHT = 730;
 };
 
 #endif
