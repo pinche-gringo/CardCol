@@ -32,9 +32,10 @@ class CardWidget : public Gtk::Button {
    ~CardWidget ();
 
    // Methods to show card. Note that just the image is changed
-   void flip () { setVisible (!isVisible); }
-   void setVisible (bool visible = true);
-   void setInvisible ()  { setVisible (false); }
+   void flip () { showFace (!isVisible); }
+   void showFace (bool visible = true);
+   void showBack ()  { showFace (false); }
+   bool showsFace () const { return isVisible; }
 
    typedef enum { CLUBS = 0, DIAMONDS, HEARTS, SPADES } COLORS;
    typedef enum { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
@@ -44,8 +45,6 @@ class CardWidget : public Gtk::Button {
    COLORS color () const { return transColor[nrCard & 0x3]; }
    NUMBERS number () const {
       return static_cast <NUMBERS> ((deck.numberOfCards () - 1 - nrCard) >> 2); }
-
-   bool visible () const { return isVisible; }
 
    unsigned int getImageHeight () const {
       return const_cast<Gdk_Pixmap&> (deck.getCardImage (nrCard)).height (); }

@@ -51,6 +51,7 @@ CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible =
 
    add_pixmap (visible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
                NULL);
+   set_relief (GTK_RELIEF_NONE);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -64,7 +65,7 @@ CardWidget::~CardWidget () {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Shows either the cardimage of the image of the deck
 /*--------------------------------------------------------------------------*/
-void CardWidget::setVisible (bool visible) {
+void CardWidget::showFace (bool visible) {
    remove ();
    isVisible = visible;
    add_pixmap (visible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
