@@ -47,6 +47,11 @@ class CardWidget : public Gtk::Button {
 
    bool visible () const { return isVisible; }
 
+   unsigned int getImageHeight () const {
+      return const_cast<Gdk_Pixmap&> (deck.getCardImage (nrCard)).height (); }
+   unsigned int getImageWidth () const {
+      return const_cast<Gdk_Pixmap&> (deck.getCardImage (nrCard)).width (); }
+
  private:
    CardWidget ();
    CardWidget (const CardWidget&);
