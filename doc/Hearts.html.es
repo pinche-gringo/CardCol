@@ -35,56 +35,56 @@
   <body>
     <h1 align="center">Corazones</h1>
     <hr size=2>
-    <p>Corazones es un juego incluido con alguna(s) version(es) de un sistema
-      operativa popular.  ...</p>
+    <p>Corazones es un juego inclu&iacute;do con alguna(s) version(es) de un sistema
+      operativo popular.  ...</p>
 
-    <p>Todos de los cuatro jugadores tiene trece cartas. El objectivo es terminar
+    <p>Los cuatro jugadores tienen trece cartas. El objetivo es terminar
       la partida sin conseguir ni un coraz&oacute;n ni siquiera la reina de
-      espadas (o conseguir todas de esas cartas).</p>
+      espadas (o conseguir todas esas cartas).</p>
 
-    <p>El juego empieza con selectar tres cartas para pas&aacute;rlas con un
-      otro jugador (excepto en la cuarta mano, cuando no se cambio cartas).
-      Despu&eacute;s del intercambio lo comienza el jugador que tenga el dos
+    <p>El juego empieza con seleccionar tres cartas para pasarlas a
+      otro jugador (excepto en la cuarta mano, cuando no se cambia cartas).
+      Despu&eacute;s del intercambio, comienza el jugador que tenga el dos
       de tr&eacute;boles (con esa carta misma).</p>
 
-    <p>Los jugadores siguen en la direcci&oacute;n de las aguajas de reloj. Lo
+    <p>Los jugadores siguen en la direcci&oacute;n de las agujas del reloj. &Eacute;l
       que jug&oacute; la carta m&aacute;s alta (con el palo de la primera carta)
-      consiege el estaple jugado y comenzar&aacute; el proximo turno.</p>
+      consigue las cartas jugadas y comenzar&aacute; el pr&oacute;ximo turno.</p>
 
-    <p>Si no hay m&aacute;s cartas, se cuenta el n&uacute;mer de los puntos (malos).
+    <p>Si no hay m&aacute;s cartas, se cuenta el n&uacute;mero de los puntos (malos).
       Cada coraz&oacute;n recibido cuenta un punto y trece puntos para la reina
-      de espadas. Si un jugador recib&oacute; todas de esas cartas (y por eso
-      tendr&iacute;a 26 puntos), los puntos se invertan y el consegur&aacute;
-      ningun punto, sino los dem&aacute;s 26.</p>
+      de espadas. Si un jugador recibi&oacute; todas esas cartas (tendr&iacute;a
+      26 puntos), los puntos se invierten y no conseguir&aacute;
+      ni un punto y los dem&aacute;s 26.</p>
 
-    <p>El juego termina (o recomienza) si un de los jugadores alcanza a cien puntos.</p>
+    <p>El juego termina (o recomienza) si uno de los jugadores alcanza cien puntos.</p>
 
-    <p>Hay unas m&aacute;s reglas en el juego:</p>
+    <p>Hay otras reglas en el juego:</p>
 
     <ul>
       <li>La carta jugada tiene que tener el mismo palo como la primera (si hay).</li>
-      <li>Una mano no se puede comenzer con un carz&oacute;n, si no han jugado
+      <li>Una mano no se puede comenzer con un coraz&oacute;n, si no han jugado
         en turnos anteriores.</li>
       <li>En la primera mano no se puede jugar ni un coraz&oacute;n ni la reina
         de espadas.</li>
     </ul>
 
-    <p>El jugador que tiene los puntes menores cuando alguno alcanza a cien
+    <p>El jugador que tiene el menor puntaje cuando alguno alcanza cien
       puntos gana.</p>
 
-    <p>La barra de estatos muestra que est&aacute; pasando!</p>
+    <p>&iexcl;La barra de estado muestra que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
-    <p>Despu&eacute;s iniciar se encuentra (de izquierda a derecha y de arriba a
+    <p>Despu&eacute;s de iniciar se encuentra (de izquierda a derecha y de arriba a
       abajo):</p>
 
     <ul>
       <li>Las cartas del jugador humano. Por arriba sus cartas ganadas encima de
-        sus cartas en su mano. Se puede inspectarlas con hacer clic en las; hacer
+        sus cartas en su mano. Se puede chequearlas con hacer clic en ellas; hacer
         clic con la tecla derecha permite sortearlas.</li>
-      <li>En la linea proxima es lo mismo con los jugadores 3 y 1. Entrelos se
-        encuentre el estaple de las cartas jugados.</li>
-      <li>En la linea &uacute;ltima son las cartas del jugador 2.</li>
+      <li>En la l&iacute;nea pr&oacute;xima es lo mismo con los jugadores 3 y 1. Entre ellos se
+        encuentran las cartas jugadas.</li>
+      <li>En la l&iacute;nea &uacute;ltima est&aacute;n las cartas del jugador 2.</li>
     </ul>
 
     <hr size=2 noshade>
