@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.6 ($Revision$)\n"
-"POT-Creation-Date: 2004-01-15 00:58-0500\n"
+"POT-Creation-Date: 2004-01-19 01:05-0500\n"
 "PO-Revision-Date: 2003-12-06 18:46-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -25,8 +25,8 @@ msgstr ""
 #: src/Rovhult.cpp:380 src/Rovhult.cpp:515 src/Buraco.cpp:708
 #: src/Buraco.cpp:803 src/Buraco.cpp:1010 src/Buraco.cpp:1079
 #: src/Buraco.cpp:1095 src/Buraco.cpp:1109 src/Buraco.cpp:1121
-#: src/Buraco.cpp:1141 src/Buraco.cpp:1150 src/Machiavelli.cpp:734
-#: src/Machiavelli.cpp:756
+#: src/Buraco.cpp:1141 src/Buraco.cpp:1150 src/Machiavelli.cpp:743
+#: src/Machiavelli.cpp:765
 msgid "Invalid move"
 msgstr ""
 
@@ -38,7 +38,7 @@ msgstr ""
 msgid "Played card must be equal or bigger!"
 msgstr ""
 
-#: src/Rovhult.cpp:617 src/Twopart.cpp:425 src/Machiavelli.cpp:1450
+#: src/Rovhult.cpp:617 src/Twopart.cpp:425 src/Machiavelli.cpp:1471
 msgid "%1 lost"
 msgstr ""
 
@@ -102,37 +102,37 @@ msgid ""
 "Reason: %2"
 msgstr ""
 
-#: Common/Game.cpp:186
+#: Common/Game.cpp:184
 msgid "Not a number: `%1'"
 msgstr ""
 
-#: Common/Game.cpp:199
+#: Common/Game.cpp:197
 msgid ""
 "Received invalid input from the server!\n"
 "\n"
 "Reason: %1"
 msgstr ""
 
-#: Common/Game.cpp:330 Common/Game.cpp:341
+#: Common/Game.cpp:328 Common/Game.cpp:339
 msgid "Turn of %1"
 msgstr ""
 
-#: Common/Game.cpp:496
+#: Common/Game.cpp:494
 msgid "Sort by number"
 msgstr ""
 
-#: Common/Game.cpp:499
+#: Common/Game.cpp:497
 msgid "Sort by colour"
 msgstr ""
 
-#: Common/Game.cpp:604
+#: Common/Game.cpp:602
 msgid ""
 "Can't write message!\n"
 "\n"
 "Reason: %1"
 msgstr ""
 
-#: Common/Game.cpp:657
+#: Common/Game.cpp:655
 msgid ""
 "Error processing command `%1'!\n"
 "\n"
@@ -554,7 +554,7 @@ msgstr ""
 msgid "There are no cards to make a valid new pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1148 src/Machiavelli.cpp:732
+#: src/Buraco.cpp:1148 src/Machiavelli.cpp:741
 msgid "This card does not fit on that pile!"
 msgstr ""
 
@@ -584,38 +584,46 @@ msgstr ""
 msgid "Game ended; Team %1 won"
 msgstr ""
 
-#: src/Machiavelli.cpp:160
+#: src/Machiavelli.cpp:77
+msgid "_End turn"
+msgstr ""
+
+#: src/Machiavelli.cpp:167
 msgid ""
 "You can sort the cards in your hand with drag and drop or put them on the "
 "table - click the staple to end turn"
 msgstr ""
 
-#: src/Machiavelli.cpp:428
+#: src/Machiavelli.cpp:437 src/Machiavelli.cpp:1437
 msgid "Can't end turn: The piles are not valid!"
 msgstr ""
 
-#: src/Machiavelli.cpp:434
+#: src/Machiavelli.cpp:443
 msgid "_Undo all"
 msgstr ""
 
-#: src/Machiavelli.cpp:435
+#: src/Machiavelli.cpp:444
 msgid "Undo _last"
 msgstr ""
 
-#: src/Machiavelli.cpp:754
+#: src/Machiavelli.cpp:763
 msgid "Card is not on the edge of the origen - try splitting the origin first!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1328
+#: src/Machiavelli.cpp:1337
 msgid "Taking last card! Solve the game (somehow) ..."
 msgstr ""
 
-#: src/Machiavelli.cpp:1330
+#: src/Machiavelli.cpp:1339
 msgid "Game over"
 msgstr ""
 
-#: src/Machiavelli.cpp:1352
+#: src/Machiavelli.cpp:1361
 msgid "Pile %1: %2\n"
+msgstr ""
+
+#: src/Machiavelli.cpp:1439
+msgid "Could end turn: The piles are OK!"
 msgstr ""
 
 #: src/MachiPile.cpp:219
