@@ -41,6 +41,7 @@ class Burazno : public Game {
    virtual void start ();
    virtual void clean ();
    virtual const char* name () { return "Burazno"; }
+   virtual void playOpen (bool);
 
  private:
    Burazno (const Burazno& other);
@@ -62,18 +63,19 @@ class Burazno : public Game {
    void enableCard (unsigned int pos);
    bool containsOnlyJoker (std::vector<CardWidget*>& pile) const;
    bool containsNoJoker (std::vector<CardWidget*>& pile) const;
-   void addReserve (ICardPile& pile, unsigned int player);
+   void addReserve (unsigned int player);
    bool isJoker (CardWidget& card) const;
+   unsigned int showCardsToPlay (unsigned int player);
    int  executeMove (unsigned int player);
+   void endGame ();
 
    //@Section to handle piles on table
    CardVPile& makeNewPile (unsigned int team);
-   bool cardFitsOnPlayedPile (unsigned int player, unsigned int card);
+   unsigned int cardFitsOnPlayedPile (unsigned int player, unsigned int card);
    int  cardFitsOnPile (CardVPile& pile, CardWidget& card) const;
-   void playCardOnPile (CardVPile& pile, unsigned int player, unsigned int card,
-                        unsigned int pos = 0);
    void removeBurazno (unsigned int player, CardVPile& pile);
    void updateInfo ();
+   bool humanPilesOK (unsigned int except = -1U) const;
 
    //@Section DND
    void registerTableDND (unsigned int pile, unsigned int start, unsigned int end);
@@ -93,7 +95,7 @@ class Burazno : public Game {
                             unsigned int cardPile);
 
    CardHPile handHuman;
-   ICardPile hands[NUM_PLAYERS - 1]; // For computer players: Cards in the hand
+   CardHPile hands[NUM_PLAYERS - 1];     // For computer players: Cards in hand
    std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];      // Piles on table
    std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
    unsigned int buraznos[NUM_PLAYERS >> 1];          // Number of buraznos/team
@@ -116,6 +118,9 @@ class Burazno : public Game {
    static std::vector<Gtk::TargetEntry> dndType;
 
    bool startTurn;
+   unsigned int target;
+   unsigned int pos1;
+   unsigned int pos2;
 };
 
 #endif
