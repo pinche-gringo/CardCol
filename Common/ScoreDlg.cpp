@@ -145,7 +145,7 @@ void ScoreDlg::getMinPoints (int& points, unsigned int& player) {
 /// \param player: Array holding the new player
 //-----------------------------------------------------------------------------
 void ScoreDlg::update (const std::vector<Player*>& player) {
-   Check1 (playerNames.size () <= aColumns.size ());
+   Check1 (player.size () <= aColumns.size ());
 
    std::vector<Player*>::const_iterator p (player.begin ());
    for (std::vector<column*>::iterator i (aColumns.begin ());
