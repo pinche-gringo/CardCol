@@ -107,15 +107,13 @@
           encima, aparece una ventana mostrando su n&uacute;mero de las
           cartas). En la segunda parte la carta que determina el palo especial
           est&aacute; mostrado aqua.</p></li>
-
       <li><p>Las cartas del jugador humano. Por arriba sus cartas ganadas
           encima de sus cartas en su mano. Se puede inspectarlas con hacer
           clic en las; hacer clic con la tecla derecha permite
           sortearlas.</p></li>
-
-      <li><p>En la linea proxima es lo mismo con los jugadores 3 y 1. Entrelos
-          se encuentre el mont&oacute;n de las cartas jugados.</p></li>
-
+      <li><p>En la linea proxima es lo mismo con los jugadores 3 y
+          1. &Eacute;ntrelos se encuentre el mont&oacute;n de las cartas
+          jugados.</p></li>
       <li><p>En la linea &uacute;ltima son las cartas del jugador 2.</p></li>
     </ul>
 
