@@ -13,14 +13,14 @@ Various card games; til now they consist of:
   - Buraco: A famous game in Venezuela; a bit similar to Canasta or the like
     in Europe.
 
+  - Machiavelli: Append your cards to the ones on the table without getting
+    (too) confused while moving them around.
+
   - Hearts: A game included in various (?) versions of the operating (??? Well,
     sometimes) system from a company with a very good sales department.
 
 
 Planned are:
-
-  - Marchiavelli: A game where one has to get rid of its cards (which is not
-    as easy as it sounds).
 
   - Tarok. The game of my youth (long ago). Fucking hell, looking forward to
     the computer player.
@@ -34,7 +34,7 @@ Anti-Copyright (A) 2002, 2003 Markus Schwab <g17m0@lycos.com>
 Basically this means, the package is distributed under the GNU General Public
 License; in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
 even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the file COPYING for more details.
+PURPOSE.  See the file COPYING for details.
 
 
 Card decks
