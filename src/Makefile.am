@@ -8,7 +8,8 @@ CardCol_SOURCES=CardCol.cpp Twopart.cpp Rovhult.cpp Hearts.cpp Buraco.cpp \
 
 INCLUDES = @INCLUDES@ -I../Common @CARDGAME_CFLAGS@
 
-CardCol_LDFLAGS=-L../Common -lCard @CARDGAME_LIBS@
+CardCol_LDFLAGS=-L../Common -lCard @CARDGAME_LIBS@ @LTLIBINTL@
+DEFS = @DEFS@ -Wall
 
 EXTRA_DIST=Options.meta
 
