@@ -5,7 +5,7 @@ The following packages are needed
 
   - My YGP library; also availabe as a Sourceforge project
     (http://libymp.sourceforge.net)
-  - Gtkmm-2.0 (which itself needs GTK+-2.0). Available via http://www.gktmm.org
+  - Gtkmm-2.4 (which itself needs GTK+-2.4). Available via http://www.gktmm.org
   - Carddecks; e.g. the KDE cardgames provide a huge collection. See also the
     README.
   - An installed libpthreads enables the network ability
@@ -29,7 +29,7 @@ How to build (after checking out of CVS for the first time)
 
 As there is no public CVS server, these are just notes for me.
 
-Additional prerequiste software:
+Additional prerequisite software:
 
   - CVS (obviously, duh)
   - GNU gettext
