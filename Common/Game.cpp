@@ -125,6 +125,8 @@ void Game::stop () {
 //-----------------------------------------------------------------------------
 void Game::end (bool startNew) {
    TRACE9 ("Game::end () - Restart: " << (startNew ? "Yes" : "No"));
+   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
+      broadcastMessage ("End");
 
    restart = startNew;
    if (canBeStopped ()) {
@@ -166,7 +168,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
          ap.assignValues (input);
 
          Tokenize positions (input);
-         TRACE8 ("Game::randomizeCardsToPile (ICardPile&) - Cards: " << cards.size ());
+         TRACE9 ("Game::randomizeCardsToPile (ICardPile&) - Cards: " << cards.size ());
          for (unsigned int i (0); i < (cards.size () - 1); ++i) {
             unsigned long pos (0);
             std::string token;
@@ -183,7 +185,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
                throw error;
             }
 
-            TRACE8 ("Game::randomizeCardsToPile (ICardPile&) const - [" << i
+            TRACE9 ("Game::randomizeCardsToPile (ICardPile&) const - [" << i
                     << "] = " << pos);
             cards.set (i, pos);
          }
@@ -559,55 +561,55 @@ void Game::writeError (Socket& socket, unsigned int rc, const std::string& msg) 
 /// Handles a message send from the server
 /// \param player: ID of player sending the message
 /// \param msg: Message to handle
+/// \returns bool: True, if the message has been processed completely; else
+///    (if message is still pending) false
 //----------------------------------------------------------------------------
-void Game::handleMessage (unsigned int player, const char* msg) {
+bool Game::handleMessage (unsigned int player, const char* msg) {
    TRACE1 ("Game::handleMessage (unsigned int player, const char*) - " << msg
            << " (" << player << ')');
    Check1 (msg);
    Check2 (!data);
 
-   if (ignoreNextMsg) {
+   bool rc (true);
+   if (ignoreNextMsg)
       --ignoreNextMsg;
-      return;
-   }
+   else {
+      try {
+         switch (statGame) {
+         case NONE:
+            statGame = INITIALIZING;
+            data = msg;
+            start ();
+            break;
 
-   try {
-      switch (statGame) {
-      case NONE:
-         statGame = INITIALIZING;
-         data = msg;
-         start ();
-         break;
+         case INITIALIZING:
+            break;
 
-      case INITIALIZING:
-         break;
-
-      default:                             // Playing (and game specific stati)
-          if (!performCommand (player, msg)) {
-            std::string error (_("Invalid message `%1'"));
-            error.replace (error.find ("%1"), 2, msg);
-            throw error;
+         default:                          // Playing (and game specific stati)
+            rc = performCommand (player, msg);
          }
-         break;
       }
-   }
-   catch (std::string& error) {
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT) {
-         Check3 (getConnectionMgr ().getSocket ());
-         writeError (*getConnectionMgr ().getSocket (), 1, error);
-      }
+      catch (std::string& error) {
+         std::string message (_("Error processing command `%1'!\n\n%2"));
+         message.replace (message.find ("%1"), 2, msg);
+         message.replace (message.find ("%2"), 2, error);
 
-      std::string message (_("Error processing command!\n\n%1"));
-      message.replace (message.find ("%1"), 2, error);
-      Gtk::MessageDialog* dlg (new Gtk::MessageDialog (message, Gtk::MESSAGE_ERROR,
-                                                       Gtk::BUTTONS_OK));
-      dlg->set_title (PACKAGE);
-      dlg->signal_response ().connect
-          (bind (slot (*this, &Game::closeDialog), dlg));
-      dlg->show ();
+         if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT) {
+            Check3 (getConnectionMgr ().getSocket ());
+            writeError (*getConnectionMgr ().getSocket (), 1, error);
+         }
+
+         Gtk::MessageDialog* dlg (new Gtk::MessageDialog (message, Gtk::MESSAGE_ERROR,
+                                                          Gtk::BUTTONS_OK));
+         dlg->set_title (PACKAGE);
+         dlg->signal_response ().connect
+             (bind (slot (*this, &Game::closeDialog), dlg));
+         dlg->show ();
+      }
    }
 
    data = NULL;
+   return rc;
 }
 
 //-----------------------------------------------------------------------------
@@ -633,8 +635,10 @@ void Game::setNextPlayer (unsigned int player) {
 /// Handles a command the server sent in playing mode
 /// \param player: ID of player sending the message
 /// \param msg: Command to perform
+/// \returns bool: Flag, if command has been performed completely
+/// \throws std::string: Describing the error
 //----------------------------------------------------------------------------
-bool Game::performCommand (unsigned int player, const char* msg) {
+bool Game::performCommand (unsigned int player, const char* msg) throw (std::string) {
    TRACE8 ("Game::performCommand (unsigned int player, const char*) - "
            << msg << " (" << player << ')');
    Check1 (msg);
@@ -651,7 +655,8 @@ bool Game::performCommand (unsigned int player, const char* msg) {
       unsigned long target (-1U);
       if (stringToNumber (target, strTarget.c_str ())
           || (playTo != "Target"))
-         return false;
+         throw std::string ("Invalid target!");
+
       Check3 (actPlayer >= 0);
       ICardPile& pile (getPileOfPlayer (actPlayer, target));
 
@@ -661,8 +666,11 @@ bool Game::performCommand (unsigned int player, const char* msg) {
       unsigned int card (0);
       bool startTimer (false);
       while (command.getNextNode (' ').size ()) {
-         if (stringToNumber (lCard, command.getActNode ().c_str ()))
-            return false;
+         if (stringToNumber (lCard, command.getActNode ().c_str ())) {
+             std::string error ("Not a card number: `%1'");
+             error.replace (error.find ("%1"), 2, command.getActNode ());
+             throw error;
+         }
 
          card = pile.find (static_cast <unsigned int> (lCard));
          if (card != -1U) {
@@ -670,18 +678,19 @@ bool Game::performCommand (unsigned int player, const char* msg) {
             ++cards;
             startTimer = executeRemoteMove (pile, card);
          }
-         else
-            return false;
+         else {
+            std::string error ("Card %1 not found!");
+            error.replace (error.find ("%1"), 2, command.getActNode ());
+            throw error;
+         }
       }
       pos1Play = pos2Play - cards;
 
       if (startTimer) {
-         TRACE9 ("Game::performCommand (unsigned int, const char*) - Get lock");
-         mxSerializeMsgs.lock ();
-         TRACE9 ("Game::performCommand (unsigned int, const char*) - Perform move");
          Glib::signal_timeout ().connect
              (bind (slot (*this, &Game::endRemoteMove), actPlayer),
               ComputerPlayer::TIMEOUT);
+         return false;
       }
       else
          makeNextMoves ();
@@ -692,18 +701,26 @@ bool Game::performCommand (unsigned int player, const char* msg) {
               "Next player: " << cmd);
       unsigned long player;
       if (stringToNumber (player, cmd.c_str ()))
-         return false;
+         throw std::string ("Invalid number");
  
       displayTurn (actPlayer = player);
    }
    else if (cmd == "Game") {
-      Check3 (command.getNextNode (';') == name ());
       Check3 (statGame == STOPPED);
-      statGame = NONE;
+      if (command.getNextNode (';') == name ()) {
+         clean ();
+         statGame = NONE;
+      }
+      else {
+         std::string newGame (command.getActNode ());
+         data = newGame.c_str ();
+         setGameStatus (TERMINATED);
+      }
    }
+   else if (cmd == "Game")
+       end (false);
    else
-      return false;
-
+      throw std::string ("Unknown command!");
    return true;
 }
 
@@ -741,4 +758,16 @@ bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) {
 //----------------------------------------------------------------------------
 bool Game::canBeStopped () const {
    return !actPlayer || mxSerializeMsgs.trylock ();
+}
+
+//----------------------------------------------------------------------------
+/// Returns the name of the game to start new.
+/// \returns const char*: True, if the game can be stopped imediately
+/// \pre: Don't call! Only to be used after receiving a Game-message with a
+///       different game-name!
+//----------------------------------------------------------------------------
+const char* Game::name () {
+   Check (statGame == TERMINATED);
+   Check3 (data);
+   return data;
 }

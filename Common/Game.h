@@ -45,6 +45,7 @@ class Game : public Gtk::Table {
  public:
    /// Stati of the game
    enum { NONE = 0,                        ///< Class created; game not started
+          TERMINATED,                         //< Game is going to be destroyed
           INITIALIZING,          ///< Initialization phase (dealing cards, ...)
           STOPPED,                                     ///< Game has been ended
           TOSTOP,        ///< Game should be ended (but can't be at the moment)
@@ -68,7 +69,7 @@ class Game : public Gtk::Table {
    virtual const char* name () = 0;
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
-   virtual void handleMessage (unsigned int player, const char* msg);
+   virtual bool handleMessage (unsigned int player, const char* msg);
 
    /// \name Status handling
    //@{
@@ -124,7 +125,7 @@ class Game : public Gtk::Table {
    static void movePile (ICardPile& dest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
 
-   bool performCommand (unsigned int player, const char* msg);
+   bool performCommand (unsigned int player, const char* msg) throw (std::string);
    static bool stringToNumber (unsigned long& number, const char* text);
 
    // Handling of won cards (if any)
