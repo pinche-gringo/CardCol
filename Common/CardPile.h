@@ -207,14 +207,16 @@ typedef CardPile<Gtk::VBox>  CardVPile;
 typedef CardPile<Gtk::HBox>  CardHPile;
 
 
-void CardVPile::resize (unsigned int pos, PileStyle s) { ICardPile::resize (pos, s); }
-void CardVPile::resize (CardWidget& card, PileStyle s) {
+inline void CardVPile::resize (unsigned int pos, PileStyle s) {
+   ICardPile::resize (pos, s); }
+inline void CardVPile::resize (CardWidget& card, PileStyle s) {
    int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
    card.set_size_request (-1, height[s]);
 }
 
-void CardHPile::resize (unsigned int pos, PileStyle s) { ICardPile::resize (pos, s); }
-void CardHPile::resize (CardWidget& card, PileStyle s) {
+inline void CardHPile::resize (unsigned int pos, PileStyle s) {
+   ICardPile::resize (pos, s); }
+inline void CardHPile::resize (CardWidget& card, PileStyle s) {
    int width[(int)LAST] = { card.getImageWidth(), 18, 7, 1 };
    card.set_size_request (width[s], -1);
 }
@@ -294,18 +296,16 @@ typedef CardInfoPile<Gtk::HBox>  CardHInfoPile;
 class PseudoPile : public Gtk::Button, public ICardPile {
  public:
    PseudoPile (ShowOpt show = DONT_CHANGE)
-      : ICardPile (NORMAL, show) {
+      : ICardPile (VERY_COMPRESSED, show) {
       Gtk::Button::add (*Gtk::manage (new Gtk::Image ()));
       Gtk::Button::get_child ()->show (); }
    virtual ~PseudoPile () { }
 
    virtual void resize (CardWidget&, PileStyle) { }
    virtual void resize (unsigned int pos, PileStyle) {
-      TRACE1 ("PseudoPile::resize () - Pos: " << pos << "; Size: " << size ());
       if (size ()) {
-         if (pos == (size () - 1))
-            dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->set
-               (back ()->getShownImage ());
+         dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->set
+            (back ()->getShownImage ());
       }
       else
          dynamic_cast<Gtk::Image*> (Gtk::Button::get_child ())->clear (); }
@@ -379,6 +379,5 @@ class PseudoInfoPile : public PseudoPile {
  private:
     Gtk::Tooltips tt;
 };
-
 
 #endif
