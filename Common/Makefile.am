@@ -4,10 +4,10 @@ SUBDIRS=Grafix
 
 lib_LTLIBRARIES=libCard.la
 
-libCard_la_LDFLAGS=`gtkmm-config --libs`
+libCard_la_LDFLAGS=`gtkmm-config --libs` -version-info $(LIBVERSION) -release $(LIBRELEASE) -no-undefined
 
-libCard_la_SOURCES=CardWidget.cpp CardSet.cpp
+libCard_la_SOURCES=CardWidget.cpp CardSet.cpp CardPile.cpp
 
-include_HEADERS=CardWidget.h CardSet.h
+include_HEADERS=CardWidget.h CardSet.h CardPile.h
 
 INCLUDES = `gtkmm-config --cflags` -DPKGDIR=\"$(pkgdatadir)\"
