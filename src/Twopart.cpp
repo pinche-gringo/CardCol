@@ -309,7 +309,8 @@ Twopart::Twopart ()
      , tblTable (11, 7), cardFaces (USED_CARDS), cards (), pThread (NULL)
      , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
-     , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL), bfOldPlayers (bfPlayers) {
+     , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL)
+     , bfOldPlayers (bfPlayers), startPos (0) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
@@ -498,9 +499,13 @@ void Twopart::handSelected (unsigned int player, unsigned int pos) {
    else
       actPlayer = endRound ();
 
-   if (actPlayer == -1) {
+   if (actPlayer < 0) {
+      actPlayer = ~actPlayer;
+
+      std::string str (_("First part ended; Part 2 starts player %1"));
+      str.replace (str.find ("%1"), 2, (char)(actPlayer + '0'));
       status.pop (1);
-      status.push (1, _("First part ended"));
+      status.push (1, str);
    }
    else {
       makeComputerMoves ();
@@ -533,112 +538,106 @@ int Twopart:: endRound () {
          ++cPlayers;
 
    unsigned int nextPlayer (NUM_PLAYERS);
-   unsigned int i (0);                   // Index of first card for every round
-   unsigned int start (startPlayer);
-   do {
-      TRACE8 ("Twopart::endRound () - Round has " << cPlayers << " players; Start = "
-              << i << " of " << played.numberOfCards () << " cards");
-      Check3 ((i + cPlayers) <= played.numberOfCards ());
 
-      int maxNr (-1);
-      int maxEqualNr (-1);
-      int posMax (-1);
-      int posMaxEqual (-1);
+   TRACE8 ("Twopart::endRound () - Round has " << cPlayers << " players; Start = "
+           << dec << startPos << " of " << played.numberOfCards () << " cards");
+   Check3 ((startPos + cPlayers) <= played.numberOfCards ());
 
-      // Check if card is bigger then all previous
-      for (unsigned int j (i); j < (cPlayers + i); ++j) {
-         if ((int)(played.at (j).number ()) > maxNr) {
-            TRACE3 ("TwoPart::endRound () - New highest card " << played.at (j)
-                    << " at position " << j);
-            maxNr = (int)played.at (j).number ();
-            posMax = j;
+   int maxNr (-1);
+   int maxEqualNr (-1);
+   int posMax (-1);
+   int posMaxEqual (-1);
+
+   // Check if card is bigger then all previous
+   for (unsigned int i (startPos); i < (cPlayers + startPos); ++i) {
+      if ((int)(played.at (i).number ()) > maxNr) {
+         TRACE3 ("TwoPart::endRound () - New highest card " << played.at (i)
+                 << " at position " << i);
+         maxNr = (int)played.at (i).number ();
+         posMax = i;
          }
          Check3 (posMax < played.numberOfCards ());
          Check3 (maxNr == played.at (posMax).number ());
 
          // Check if card has equal cards
-         for (unsigned int k (j + 1); k < (cPlayers + i); ++k)
-            if (played.at (j).number () == played.at (k).number ())
-               if ((int)(played.at (j).number ()) > maxEqualNr) {
+         for (unsigned int j (i + 1); j < (cPlayers + startPos); ++j)
+            if (played.at (i).number () == played.at (j).number ())
+               if ((int)(played.at (i).number ()) > maxEqualNr) {
                   TRACE3 ("TwoPart::endRound () - Found equal "
-                          << played.at (j).numberStr ()
-                          << " at positions " << j << " and " << k);
-                  maxEqualNr = (int)played.at (j).number ();
-                  posMaxEqual = j;
+                          << played.at (i).numberStr ()
+                          << " at positions " << i << " and " << j);
+                  maxEqualNr = (int)played.at (i).number ();
+                  posMaxEqual = i;
                   break;
                } // endif equal card found
-      } // end-for all players still in game
+   } // end-for all players still in game
 
-      TRACE4 ("Twopart::endRound () - Player starting round: " << start
-              << "; players: " << cPlayers);
-      // Equal cards found
-      if (posMaxEqual >= 0) {
-         unsigned int bfPlayersOut (0);
-         unsigned int end (i + cPlayers);
-         cPlayers = 0;
+   TRACE4 ("Twopart::endRound () - Player starting round: " << startPlayer
+           << "; players: " << cPlayers);
+   Check3 ((startPos + cPlayers) == played.numberOfCards ());
 
-         // Add players having equal cards and having still cards left
-         nextPlayer = start;
-         for (unsigned int j (i); j < end; ++j) {
-            if ((played.at (j).number () == maxEqualNr)
-                && players[pos2Player (j - i, start)].hand.numberOfCards ()) {
-               if (!cPlayers)
-                  // Start player is the first who played the highest cards
-                  nextPlayer = pos2Player (posMaxEqual - i, start);
+   // Equal cards found
+   if (posMaxEqual >= 0) {
+      unsigned int bfPlayersOut (0);
+      cPlayers = 0;
 
-               TRACE5 ("Twopart::endRound () - Found equal cards; Player "
-                       << pos2Player (j - i, start)
-                       << (cPlayers ? " still in round" : " is winner"));
-               ++cPlayers;
+      // Add players having equal cards and having still cards left
+      nextPlayer = startPlayer;
+      for (unsigned int i (startPos); i < played.numberOfCards (); ++i) {
+         if ((played.at (i).number () == maxEqualNr)
+             && players[pos2Player (i - startPos)].hand.numberOfCards ()) {
+            if (!cPlayers)
+               // Start player is the first who played the highest cards
+               nextPlayer = pos2Player (posMaxEqual - startPos);
+
+            TRACE5 ("Twopart::endRound () - Found equal cards; Player "
+                    << pos2Player (i - startPos)
+                    << (cPlayers ? " still in round" : " is winner"));
+            ++cPlayers;
             }
             else
-               bfPlayersOut |= (1 << pos2Player (j - i, start));
+               bfPlayersOut |= (1 << pos2Player (i - startPos));
          } // endfor check for equal cards
-         bfPlayers &= ~bfPlayersOut;
-         TRACE5 ("Twopart::endRound () - Found equal cards; " << cPlayers
-                 << " player(s) still in round (" << hex << bfPlayers << ')');
+      bfPlayers &= ~bfPlayersOut;
+      TRACE5 ("Twopart::endRound () - Found equal cards; " << cPlayers
+              << " player(s) still in round (" << hex << bfPlayers << ')');
 
-         // Find player to continue
-         nextPlayer = findNextPlayer (nextPlayer);
-         TRACE6 ("Twopart::endRound () - Try to continue with player " << nextPlayer);
-         if (nextPlayer == -1) {               // None found: Search within all
-            bfPlayers = (1 << NUM_PLAYERS) - 1;
-            cPlayers = removePlayersWithoutCards ();
-            bfOldPlayers = bfPlayers;
-            nextPlayer = findNextPlayer (nextPlayer);
-            Check3 (end == played.numberOfCards ());
-            movePlayedCardsToPlayer (start);
-            break;
-         }
-
-         // Less than two players left: Activate winner
-         if (cPlayers < 2) {
-            Check3 (end == played.numberOfCards ());
-            movePlayedCardsToPlayer (startPlayer = start = nextPlayer);
-            break;
-         }
-         
-         start = nextPlayer;
-         i = end;
-         Check3 (cPlayers > 1);
-      }
-      else {
-         Check3 ((i + cPlayers) == played.numberOfCards ());
-
-         nextPlayer = pos2Player (posMax - i, start);
-         movePlayedCardsToPlayer (nextPlayer);
-         TRACE5 ("Twopart::endRound () - Found winner: " << nextPlayer);
-
+      // Find player to continue
+      nextPlayer = findNextPlayer (nextPlayer);
+      TRACE6 ("Twopart::endRound () - Try to continue with player " << nextPlayer);
+      if (nextPlayer == -1) {                  // None found: Search within all
          bfPlayers = (1 << NUM_PLAYERS) - 1;
-         removePlayersWithoutCards ();
-         bfOldPlayers = bfPlayers;
-
-         startPlayer = nextPlayer = findNextPlayer (nextPlayer);
-         break;
+         cPlayers = removePlayersWithoutCards ();
+         nextPlayer = bfPlayers ? findNextPlayer (nextPlayer) : ~startPlayer;
+         movePlayedCardsToPlayer (startPlayer);
       }
-   } while (i < played.numberOfCards ());
+      else
+         // Less than two players left: Activate winner
+         if (cPlayers < 2)
+            movePlayedCardsToPlayer (nextPlayer);
+#if TRACELEVEL > 3
+         else
+            Check (cPlayers > 1);
+#endif
+   }
+   // All played cards are differnt: Winner is the one with highest card
+   else {
+      startPlayer = nextPlayer = pos2Player (posMax - startPos);
+      movePlayedCardsToPlayer (nextPlayer);
+      TRACE5 ("Twopart::endRound () - Found winner: " << nextPlayer);
 
-   return nextPlayer;
+      bfPlayers = (1 << NUM_PLAYERS) - 1;     // Set all players (having cards)
+      removePlayersWithoutCards ();
+      bfOldPlayers = bfPlayers;
+
+      nextPlayer = findNextPlayer (nextPlayer);
+      if (nextPlayer == -1)
+         nextPlayer = ~startPlayer;
+   }
+
+   bfOldPlayers = bfPlayers;
+   startPos = played.numberOfCards ();
+   return startPlayer = nextPlayer;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -679,9 +678,11 @@ unsigned int Twopart::removePlayersWithoutCards () {
 //            start: First player of round
 //Returns   : unsigned int: Number of player
 /*--------------------------------------------------------------------------*/
-unsigned int Twopart::pos2Player (unsigned int pos, unsigned int start) const {
+unsigned int Twopart::pos2Player (unsigned int pos) const {
    TRACE9 ("Twopart::pos2Player (unsigned int) - Pos to convert: " << pos
-           << "; starting with player " << start);
+           << "; starting with player " << startPlayer);
+
+   unsigned int start (startPlayer);
    while (pos) {
       ++start &= 0x3;
       if (bfPlayers & (1 << start))
@@ -789,8 +790,7 @@ void Twopart::cleanTable () {
 void Twopart::dealCards () {
    TRACE9 ("Twopart::dealCards ()");
 
-   // Show cards on table: For all players put 6 cards on table (only the
-   // (upper visible) and 3 (visible ones) in hand
+   // Show cards on table: For all players put 3 cards in hand
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       for (unsigned int j (0); j < 3; ++j) {
          // Put card into hand
@@ -799,10 +799,8 @@ void Twopart::dealCards () {
          players[i].hand.insertSorted (card);
       }
 
-   enablePlayer (0);
    bfPlayers = bfOldPlayers = (1 << NUM_PLAYERS) - 1;
-   actPlayer = 0;
-   startPlayer = 0;
+   enablePlayer (startPos = actPlayer = startPlayer = 0);
 }
 
 
