@@ -74,12 +74,13 @@
 
     <table>
       <!--#exec cmd='
-      /usr/bin/awk \'/title.*title/ \
-      { if (FILENAME !~ /CardCol\..*/) \
-      { sub (/<\/title>/, "")
-      sub (/<title>/, "")
-      $1 = "<tr><td>&nbsp;&nbsp;<a href=\"" FILENAME "\">" $1 "</a></td><td>"
-      print $0 "</td></tr>" } }\' *.html.es
+      /usr/bin/awk \'BEGIN { FS="-" } \
+       /title.*title/ \
+        { if (FILENAME !~ /CardCol\..*/) { \
+          sub (/<\/title>/, "")
+          sub (/ *<title>/, "")
+          $1 = "<tr><td>&nbsp;&nbsp;<a href=\"" FILENAME "\">" $1 "</a></td><td> - "
+          print $0 "</td></tr>" } }\' *.html.es
       ' -->
     </table>
 
@@ -101,8 +102,8 @@
 
     <p>Un "Gr&uuml;etzi" a Michael (Miguel) Suttner para <tt>Machiavelli</tt>.</p>
 
-    <p>Un fuerte &iexclHola! a Tanja y Graham para ense&ntilde;arme el juego
-      <tt>Sgt. Mayor</tt>.</p>
+    <p>Un fuerte &iexcl;Hola! a Ver&oacute;nica, Tanja y Graham para
+      ense&ntilde;arme el juego <tt>Sgt. Mayor</tt>.</p>
 
     <p>Saludos a Andreas, Jakob y Janus, que me han ese&ntilde;ado las reglas de
       <tt>R&oslash;vhult</tt>.</p>
