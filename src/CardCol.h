@@ -41,7 +41,7 @@ class ICarddeckSelectDlg;
 class CardgameCollection : public XGP::XApplication {
  public:
    // IDs of games. The games starting with GBURACO get 4 decks!
-   typedef enum { NONE = -1, GROVHULT = 0, GTWOPART, GHEARTS, GBURACO,
+   typedef enum { NONE = -1U, GROVHULT = 0, GTWOPART, GHEARTS, GBURACO,
                   GMACHIAVELLI, GSGTMAYOR, GLAST } games;
 
    // Manager functions
@@ -58,16 +58,33 @@ class CardgameCollection : public XGP::XApplication {
 
  private:
    // IDs for menus
-   enum { NEW = LAST, END, CONNECT, EXIT, DEBUG, ROVHULT, TWOPART, HEARTS,
-          BURACO, MACHIAVELLI, SGTMAYOR, CHGDECKS, CHGNAMES, SAVESET };
+   enum { NEW = 0, END,
+#ifdef HAVE_LIBPTHREAD
+	  CONNECT,
+#endif
+	  ROVHULT, TWOPART, HEARTS, BURACO, MACHIAVELLI, SGTMAYOR, LAST };
+   Gtk::Widget* apMenus[LAST];
 
    // Protected manager functions
    CardgameCollection (const CardgameCollection&);
    const CardgameCollection& operator= (const CardgameCollection&);
 
    // Event-handling
+   void newGame ();
+   void endGame ();
+#ifdef HAVE_LIBPTHREAD
+   void connect ();
+#endif
+   void exit ();
+   void changeGame (games game);
+   void showChangeDeckDlg ();
+   void changeNames ();
+   void savePreferences ();
+#if TRACELEVEL >= 0
+   void toggleDebug ();
+#endif
+
    static void closeDialog (int, const Gtk::Dialog* dlg);
-   virtual void command (int menu);
    virtual void gameEvents (unsigned int status);
    virtual void showAboutbox ();
    virtual const char* getHelpfile ();
@@ -89,8 +106,6 @@ class CardgameCollection : public XGP::XApplication {
    bool handleMessage (unsigned int player, const std::string msg);
    bool showMessage (const std::string msg);
 #endif
-
-   static XGP::XApplication::MenuEntry CardgameCollection::menuItems[];
 
    static const char* xpmGame[];
    static const char* xpmAuthor[];
