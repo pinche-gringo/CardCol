@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.6 ($Revision$)\n"
-"POT-Creation-Date: 2004-01-19 01:05-0500\n"
-"PO-Revision-Date: 2004-01-19 01:07-0500\n"
+"POT-Creation-Date: 2004-01-25 14:32-0500\n"
+"PO-Revision-Date: 2004-01-25 14:35-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -14,47 +14,47 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: src/Rovhult.cpp:209 src/Hearts.cpp:327
+#: src/Rovhult.cpp:211 src/Hearts.cpp:327
 msgid "Waiting for other player to exchange their cards ..."
 msgstr "Estoy esperando que los demás jugadores intercambian sus cartas ..."
 
-#: src/Rovhult.cpp:378
+#: src/Rovhult.cpp:380
 msgid "You must first play the visible cards!"
 msgstr "¡Primero se tiene que usar las cartas visibles!"
 
-#: src/Rovhult.cpp:380 src/Rovhult.cpp:515 src/Buraco.cpp:708
+#: src/Rovhult.cpp:382 src/Rovhult.cpp:517 src/Buraco.cpp:708
 #: src/Buraco.cpp:803 src/Buraco.cpp:1010 src/Buraco.cpp:1079
 #: src/Buraco.cpp:1095 src/Buraco.cpp:1109 src/Buraco.cpp:1121
 #: src/Buraco.cpp:1141 src/Buraco.cpp:1150 src/Machiavelli.cpp:743
-#: src/Machiavelli.cpp:765
+#: src/Machiavelli.cpp:767
 msgid "Invalid move"
 msgstr "¡Juego realizado es invalido!"
 
-#: src/Rovhult.cpp:506
+#: src/Rovhult.cpp:508
 msgid "After a 7, the played card must be equal or smaller!"
 msgstr "¡Despues de un 7, la proxima carta tiene que ser igual o menor!"
 
-#: src/Rovhult.cpp:510
+#: src/Rovhult.cpp:512
 msgid "Played card must be equal or bigger!"
 msgstr "¡La carta que juega tiene que ser mayor o igual!"
 
-#: src/Rovhult.cpp:617 src/Twopart.cpp:425 src/Machiavelli.cpp:1471
+#: src/Rovhult.cpp:619 src/Twopart.cpp:425 src/Machiavelli.cpp:1471
 msgid "%1 lost"
 msgstr "%1 perdió"
 
-#: src/Rovhult.cpp:625
+#: src/Rovhult.cpp:627
 msgid "Skipping %1; "
 msgstr "Se ignora a %1; "
 
-#: src/Rovhult.cpp:631
+#: src/Rovhult.cpp:633
 msgid "Pile cleared; "
 msgstr "Se retiran las cartas; "
 
-#: src/Rovhult.cpp:800
+#: src/Rovhult.cpp:802
 msgid "%1 can't continue -> Taking the whole pile. "
 msgstr "%1 no puede continuar -> Consigue todo la pila."
 
-#: src/Rovhult.cpp:1007
+#: src/Rovhult.cpp:1009
 msgid ""
 "Exchange the cards in your hand with the one on the table (with drag and "
 "drop) - click on one card to start playing"
@@ -85,7 +85,7 @@ msgstr ""
 
 #: src/Twopart.cpp:424
 msgid "First part ended; Part 2 starts %1"
-msgstr "Primer parte terminó; %2 comienza el parte 2"
+msgstr "Primer parte terminó; %1 comienza el parte 2"
 
 #: Common/DeckSelect.cpp:55
 msgid "Select carddeck"
@@ -108,11 +108,11 @@ msgstr ""
 "¡Fichero \"%1\" no contiene un imagen!\n"
 "Causa: %2"
 
-#: Common/Game.cpp:184
-msgid "Not a number: `%1'"
-msgstr "No número: '%1'"
+#: Common/Game.cpp:184 Common/Game.cpp:368
+msgid "Invalid card specification!"
+msgstr "¡Carta invalida!"
 
-#: Common/Game.cpp:197
+#: Common/Game.cpp:196
 msgid ""
 "Received invalid input from the server!\n"
 "\n"
@@ -122,19 +122,19 @@ msgstr ""
 "\n"
 "Causa: %1"
 
-#: Common/Game.cpp:328 Common/Game.cpp:339
+#: Common/Game.cpp:327 Common/Game.cpp:338
 msgid "Turn of %1"
 msgstr "Turno de %1"
 
-#: Common/Game.cpp:494
+#: Common/Game.cpp:491
 msgid "Sort by number"
 msgstr "Sortea de números"
 
-#: Common/Game.cpp:497
+#: Common/Game.cpp:494
 msgid "Sort by colour"
 msgstr "Sortea de palos"
 
-#: Common/Game.cpp:602
+#: Common/Game.cpp:599
 msgid ""
 "Can't write message!\n"
 "\n"
@@ -144,15 +144,17 @@ msgstr ""
 "\n"
 "Causa: %1"
 
-#: Common/Game.cpp:655
-msgid ""
-"Error processing command `%1'!\n"
-"\n"
-"%2"
-msgstr ""
-"Error procesando comando '%1'!\n"
-"\n"
-"%2"
+#: Common/Game.cpp:685 Common/Game.cpp:690
+msgid "Invalid target!"
+msgstr "¡Destinación invalido!"
+
+#: Common/Game.cpp:713
+msgid "Invalid number"
+msgstr "¡Numero invalido!"
+
+#: Common/Game.cpp:725
+msgid "Unknown command!"
+msgstr "¡Comando invalido!"
 
 #: Common/PlayerDlg.cpp:53
 msgid "Set the name of the player"
@@ -358,11 +360,11 @@ msgstr ""
 msgid "Invalid game type: `%1'"
 msgstr "Tipo de juego invalido: '%1'"
 
-#: src/CardCol.cpp:1397
+#: src/CardCol.cpp:1400
 msgid "Unspecified error"
 msgstr "Error no especificado"
 
-#: src/CardCol.cpp:1399
+#: src/CardCol.cpp:1402
 msgid ""
 "%1 send error %2\n"
 "\n"
@@ -372,11 +374,21 @@ msgstr ""
 "\n"
 "%3"
 
-#: src/CardCol.cpp:1402
+#: src/CardCol.cpp:1405
 msgid "The server"
 msgstr "El servidor"
 
-#: src/CardCol.cpp:1495
+#: src/CardCol.cpp:1463
+msgid ""
+"Error processing command `%1'!\n"
+"\n"
+"%2"
+msgstr ""
+"Error procesando comando '%1'!\n"
+"\n"
+"%2"
+
+#: src/CardCol.cpp:1502
 msgid ""
 "Collection of cardgames\n"
 "\n"
@@ -386,7 +398,7 @@ msgstr ""
 "\n"
 "Modo de empleo: "
 
-#: src/CardCol.cpp:1496
+#: src/CardCol.cpp:1503
 msgid ""
 " [OPTIONS]\n"
 "\n"
@@ -394,43 +406,43 @@ msgstr ""
 " [OPCIONES]\n"
 "\n"
 
-#: src/CardCol.cpp:1498
+#: src/CardCol.cpp:1505
 msgid "[GAME] Select game to start (default: Rovhult)\n"
 msgstr "[JUEGO] Selecta juego para empezar (por defecto: Røvhult)\n"
 
-#: src/CardCol.cpp:1499
+#: src/CardCol.cpp:1506
 msgid "[FILE] Use file as INI file\n"
 msgstr "[FICHERO] Use fichero como archivo de initializar\n"
 
-#: src/CardCol.cpp:1500
+#: src/CardCol.cpp:1507
 msgid "[NAME] Browser to use to display the help\n"
 msgstr "[NOMBRE] Browser para mostrar la ayuda\n"
 
-#: src/CardCol.cpp:1501
+#: src/CardCol.cpp:1508
 msgid "[DIR] Directory to search for help\n"
 msgstr "[DIR] Directorio donde se busca la ayuda\n"
 
-#: src/CardCol.cpp:1503
+#: src/CardCol.cpp:1510
 msgid "[PORT] Awaits connections on port PORT\n"
 msgstr "[PUERTO] Espera a coneciones a puerto PUERTO\n"
 
-#: src/CardCol.cpp:1504
+#: src/CardCol.cpp:1511
 msgid "[SERVER[:PORT]] Connects to SERVER:PORT\n"
 msgstr "[SERVIDOR][:PUERTO] Conecta a SERVIDOR:PUERTO\n"
 
-#: src/CardCol.cpp:1507
+#: src/CardCol.cpp:1514
 msgid "[FILE] Saves game into FILE\n"
 msgstr "[FICHERO] Guarda juego en FICHERO\n"
 
-#: src/CardCol.cpp:1508
+#: src/CardCol.cpp:1515
 msgid "[FILE] Load game from FILE\n"
 msgstr "[FICHERO] Abre juego de FICHERO\n"
 
-#: src/CardCol.cpp:1510
+#: src/CardCol.cpp:1517
 msgid "Output version information and exit\n"
 msgstr "Informa de la versión y finaliza\n"
 
-#: src/CardCol.cpp:1511
+#: src/CardCol.cpp:1518
 msgid ""
 "Displays this help and exit\n"
 "\n"
@@ -438,7 +450,7 @@ msgstr ""
 "Muestra esta ayuda y finaliza\n"
 "\n"
 
-#: src/CardCol.cpp:1514
+#: src/CardCol.cpp:1521
 msgid ""
 "Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco,\n"
 "Machiavelli or the numbers 0 - 4 (corresponding to the games in the above "
@@ -450,7 +462,7 @@ msgstr ""
 "los números 0 - 4 (de acuerdo con el juego en el orden de arriba).\n"
 "\n"
 
-#: src/CardCol.cpp:1516
+#: src/CardCol.cpp:1523
 msgid ""
 "The INI file can have the following entries:\n"
 "\n"
@@ -458,35 +470,35 @@ msgstr ""
 "El archivo de inicialicación puede tener las siguentes propiedades:\n"
 "\n"
 
-#: src/CardCol.cpp:1547
+#: src/CardCol.cpp:1554
 msgid "-warning: Invalid game type `%1'"
 msgstr "-aviso: Tipo de juego '%1' invalido"
 
-#: src/CardCol.cpp:1553
+#: src/CardCol.cpp:1560
 msgid "-warning: No game specified! Ignoring option `g'\n"
 msgstr "-aviso: No juego especificado! Ignora opción 'g'\n"
 
-#: src/CardCol.cpp:1561
+#: src/CardCol.cpp:1568
 msgid "-warning: No directory specified! Ignoring option `d'\n"
 msgstr "-aviso: No directorio especificado! Ignora opción 'd'\n"
 
-#: src/CardCol.cpp:1569
+#: src/CardCol.cpp:1576
 msgid "-warning: No browser specified! Ignoring option `b'\n"
 msgstr "-aviso: No browser especificado! Ignora opción 'b'\n"
 
-#: src/CardCol.cpp:1577
+#: src/CardCol.cpp:1584
 msgid "-warning: No file specified! Ignoring option `f'\n"
 msgstr "-aviso: No fichero especificado! Ignora opción 'f'\n"
 
-#: src/CardCol.cpp:1586
+#: src/CardCol.cpp:1593
 msgid "-warning: No port specified! Ignoring option `l'\n"
 msgstr "-aviso: No puerto especificado! Ignora opción 'l'\n"
 
-#: src/CardCol.cpp:1603
+#: src/CardCol.cpp:1610
 msgid "-warning: No target specified! Ignoring option `c'\n"
 msgstr "-aviso: No destincación especificado! Ignora opción 'c'\n"
 
-#: src/CardCol.cpp:1618
+#: src/CardCol.cpp:1625
 msgid ""
 "-warning: Option `%1' has already been specified!\n"
 "Overwriting old setting\n"
@@ -494,23 +506,23 @@ msgstr ""
 "-avios: Opción '%1' ya especificado!\n"
 "Sobreescribo propiedad antigua\n"
 
-#: src/CardCol.cpp:1628
+#: src/CardCol.cpp:1635
 msgid "-warning: No file specified! Ignoring option `%1'\n"
 msgstr "-aviso: No fichero especificado! Ignora opción '%1'\n"
 
-#: src/CardCol.cpp:1682
+#: src/CardCol.cpp:1689
 msgid "Human"
 msgstr "Persona"
 
-#: src/CardCol.cpp:1683
+#: src/CardCol.cpp:1690
 msgid "Player 1"
 msgstr "Jugador 1"
 
-#: src/CardCol.cpp:1684
+#: src/CardCol.cpp:1691
 msgid "Player 2"
 msgstr "Jugador 2"
 
-#: src/CardCol.cpp:1685
+#: src/CardCol.cpp:1692
 msgid "Player 3"
 msgstr "Jugador 3"
 
@@ -644,7 +656,7 @@ msgstr ""
 "Se puede sortear las cartas en la mano con tirar y depositar o ponerlas a la "
 "mesa - hace click en el motón de reserve para terminar el turno"
 
-#: src/Machiavelli.cpp:437 src/Machiavelli.cpp:1437
+#: src/Machiavelli.cpp:437 src/Machiavelli.cpp:1440
 msgid "Can't end turn: The piles are not valid!"
 msgstr ""
 "No se puede terminar el turno: ¡Los motones por la mesa no son validadas!"
@@ -657,25 +669,25 @@ msgstr "Deshacer (_todo)"
 msgid "Undo _last"
 msgstr "_Deshacer (último)"
 
-#: src/Machiavelli.cpp:763
+#: src/Machiavelli.cpp:765
 msgid "Card is not on the edge of the origen - try splitting the origin first!"
 msgstr ""
 "La carta no está al límite del motón del origien - ¡trata de seperarlo "
 "primero!"
 
-#: src/Machiavelli.cpp:1337
+#: src/Machiavelli.cpp:1340
 msgid "Taking last card! Solve the game (somehow) ..."
 msgstr "¡Tomando la úlitma carta! Resuelva el juego (cómo sea) ..."
 
-#: src/Machiavelli.cpp:1339
+#: src/Machiavelli.cpp:1342
 msgid "Game over"
 msgstr "Juego terminado"
 
-#: src/Machiavelli.cpp:1361
+#: src/Machiavelli.cpp:1364
 msgid "Pile %1: %2\n"
 msgstr "Motón %1: %2\n"
 
-#: src/Machiavelli.cpp:1439
+#: src/Machiavelli.cpp:1442
 msgid "Could end turn: The piles are OK!"
 msgstr "Podría terminar el turno: ¡Los motones son validadas!"
 
