@@ -153,3 +153,14 @@ bool CardWidget::on_button_release_event (GdkEventButton* ev) {
    }
    return false;
 }
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback after clicking a CardWidget
+/*--------------------------------------------------------------------------*/
+std::ostream& operator<< (std::ostream& out, const CardWidget& card) {
+   if (card.nrCard >= 52)
+      out << "Joker";
+   else
+      out << card.colorStr () << card.numberStr ();
+   return out;
+}

@@ -47,7 +47,7 @@ class CardWidget : public Gtk::EventBox {
    unsigned int id () const { return nrCard; }
    COLORS color () const { return transColor[nrCard & 0x3]; }
    NUMBERS number () const {
-      return static_cast <NUMBERS> ((deck.numberOfCards () - 1 - nrCard) >> 2); }
+      return static_cast <NUMBERS> ((51 - nrCard) >> 2); }
    char numberStr () const;
    char colorStr () const;
 
@@ -59,10 +59,7 @@ class CardWidget : public Gtk::EventBox {
 
    int compareNumber (CardWidget& other) const { return number () - other.number (); }
 
-   friend std::ostream& operator<< (std::ostream& out, const CardWidget& card) {
-      out << card.colorStr () << card.numberStr ();
-      return out; }
-
+   friend std::ostream& operator<< (std::ostream& out, const CardWidget& card);
    void update ();
 
    SigC::Signal0<void> signal_clicked () { return clicked_; }
