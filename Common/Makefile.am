@@ -6,7 +6,7 @@ libCard_la_LDFLAGS=@CARDGAME_LIBS@ -release $(LIBRELEASE) -no-undefined
 
 libCard_la_SOURCES=CardWidget.cpp CardImgs.cpp CardPile.cpp CardSet.cpp \
                    DeckSelect.cpp Game.cpp PlayerDlg.cpp ScoreDlg.cpp \
-		   ScoreDlg.h
+		   ScoreDlg.h PlayerConnDlg.cpp PlayerConnDlg.h
 
 include_HEADERS=CardWidget.h CardImgs.h CardPile.h CardSet.h DeckSelect.h \
                 Game.h PlayerDlg.h

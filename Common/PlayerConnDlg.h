@@ -1,0 +1,53 @@
+#ifndef PLAYERCONNECTDLG_H
+#define PLAYERCONNECTDLG_H
+
+//$Id$
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+
+#include <vector>
+
+#include <ConnectDlg.h>
+
+
+/**Implementation of the connect dialog for the players of the Cardgame
+   collection.
+
+   After establishing the connection it negotiates the player names.
+*/
+class PlayerConnectDlg : public ConnectDlg {
+ public:
+   PlayerConnectDlg (std::vector<Glib::ustring>& names, const Glib::ustring& port,
+                     ConnectionMgr& cmgr);
+   virtual ~PlayerConnectDlg ();
+
+   static void perform (std::vector<Glib::ustring>& names, const Glib::ustring& port,
+                        ConnectionMgr& cmgr);
+   static void perform (std::vector<Glib::ustring>& names, unsigned int port,
+                        ConnectionMgr& cmgr);
+
+   /// \name Connection management
+   virtual void connect (const Glib::ustring& target, unsigned int port);
+   virtual Socket* addClient (int socket);
+
+ private:
+   std::vector<Glib::ustring>& players;
+
+   PlayerConnectDlg (const PlayerConnectDlg& other);
+   const PlayerConnectDlg& operator= (const PlayerConnectDlg& other);
+};
+
+#endif
