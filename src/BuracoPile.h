@@ -20,9 +20,11 @@
 
 #include <CardPile.h>
 
+/**Class for piles in the Buraco cardgame
+ */
 class BuracoPile : public CardVPile {
  public:
-   BuracoPile (PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE);
+   BuracoPile ();
    virtual ~BuracoPile ();
 
    virtual void setTopCard (CardWidget& newCard);
