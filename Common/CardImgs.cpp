@@ -65,8 +65,7 @@ const Glib::RefPtr<Gdk::Pixbuf> CardImages::getCardImage (unsigned int nr) const
 //Parameters: path: Path to files
 //            thread: Flag if loading in thread
 /*--------------------------------------------------------------------------*/
-void CardImages::loadDecks (const std::string& path,
-                            bool thread) throw (std::string) {
+void CardImages::loadDecks (const std::string& path, bool thread) throw (std::string) {
    TRACE1 ("CardImages::loadDecks (const Gdk::Window&, const char*) - " << path
            << "; Threaded: " << (thread ? "Yes" : "No"));
 
@@ -74,28 +73,35 @@ void CardImages::loadDecks (const std::string& path,
    if (file[file.size () - 1] != File::DIRSEPARATOR)
       file += File::DIRSEPARATOR;
 
+   std::string err;
+
    for (int i = 1; i <= numberOfCards (); ++i) {
-      std::string temp;
-      std::ostringstream out (temp);
-      out << file << i << ".xpm";
+      std::ostringstream out;
+      out << file << i << ".xpm" << std::ends;
       TRACE9 ("CardImages::loadDecks (const Gdk::Window&, const char*) - File "
-              << out.str () << "; Temp:" << temp);
+              << out.str ());
 
       if (thread)
          gdk_threads_enter ();
 
-      Gdk::Color color;
-      cards_[i - 1] = Gdk::Pixbuf::create_from_file (out.str ());
-      Check3 (cards_[i - 1]);
+      try {
+         cards_[i - 1] = Gdk::Pixbuf::create_from_file (out.str ());
+         Check3 (cards_[i - 1]);
+      }
+      catch (Gdk::PixbufError& e) {
+         err = e.what ();
+      }
+      catch (Glib::FileError& e) {
+         err = e.what ();
+      }
+      catch (...) {
+         err = _("Unknown error");
+      }
       if (thread)
          gdk_threads_leave ();
 
-      if (errno) {
-         std::string error (_("Can't create picture from file `%1'!\nReason: %2"));
-         error.replace (error.find ("%1"), 2, temp);
-         error.replace (error.find ("%2"), 2, strerror (errno));
-         throw (error);
-      }
+      if (err.size ())
+         throw (err);
    }
 }
 
@@ -107,17 +113,25 @@ void CardImages::loadDecks (const std::string& path,
 void CardImages::loadBack (const std::string& back,
                            bool thread) throw (std::string) {
    TRACE1 ("CardImages::loadBack (const Gdk::Window&, const char*) - " << back);
+   std::string err;
 
    if (thread)
       gdk_threads_enter ();
-   back_ = Gdk::Pixbuf::create_from_file (back);
+   try {
+      back_ = Gdk::Pixbuf::create_from_file (back);
+   }
+   catch (Gdk::PixbufError& e) {
+      err = e.what ();
+   }
+   catch (Glib::FileError& e) {
+      err = e.what ();
+   }
+   catch (...) {
+      err = _("Unknown error");
+   }
    if (thread)
       gdk_threads_leave ();
 
-   if (errno) {
-      std::string error (_("Can't create picture from file `%1'!\nReason: %2"));
-      error.replace (error.find ("%1"), 2, back);
-      error.replace (error.find ("%2"), 2, strerror (errno));
-      throw (error);
-   }
+   if (err.size ())
+      throw (err);
 }
