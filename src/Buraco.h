@@ -75,9 +75,11 @@ class Buraco : public Game {
    unsigned int showCardsToPlay (unsigned int player);
    int  executeMove (unsigned int player);
    void endGame ();
-   static bool cardFitsNext (ICardPile::const_iterator i);
    bool canGetRidOfCards (unsigned int player);
    bool canDumpCards (unsigned int player, unsigned int cards) const;
+   static ICardPile::const_iterator getFittingCard (const ICardPile& pile,
+                                                    const CardWidget& card,
+                                                    ICardPile::const_iterator start);
    static bool pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
                                    bool pileHoldsCard = false, bool withJokers = false);
    static bool pileHasFittingPair (const ICardPile& pile);
