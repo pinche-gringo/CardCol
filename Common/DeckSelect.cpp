@@ -53,15 +53,13 @@ static const char* const DEFAULTFILE = "14.png";
 //-----------------------------------------------------------------------------
 ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& deck,
                                         const std::string& back)
-   : XDialog (OKCANCEL), txtDecks (_("Available decks"))
+   : XDialog (_("Select carddeck"), OKCANCEL), txtDecks (_("Available decks"))
    , decks (), boxDecks ()
    , txtBack (_("Available backgrounds")), backs (), boxBack ()
    , selDeck (), selBack (), offDeck (-1), offBack (-1)
    , box (Gtk::BUTTONBOX_END, 5) {
    TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (const char*) - " << path
            << " (" << deck << " - " << back << ')');
-
-   set_title (_("Select carddeck"));
 
    add_button (Gtk::Stock::APPLY, Gtk::RESPONSE_APPLY);
 
