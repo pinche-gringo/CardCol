@@ -61,6 +61,15 @@ class Twopart : public XApplication {
    void dealCards ();
    void fillStaple ();
 
+   unsigned int pos2Player (unsigned int pos) const;
+
+   int makeComputerMove ();
+   void makeComputerMoves () {
+      TRACE9 ("Twopart::makeComputerMoves () - *** Start timer ***");
+      Gtk::Main::timeout.connect (slot (this, &Twopart::makeComputerMove), 100); }
+
+   unsigned int endRound ();
+
    bool cardValid (CardWidget::NUMBERS nr);
    void executeMove (unsigned int player, CardWidget::NUMBERS nr);
 
@@ -69,6 +78,10 @@ class Twopart : public XApplication {
    static XApplication::MenuEntry Twopart::menuItems[];
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
+
+   unsigned int bfPlayers;           // Array indicating players still in round
+   unsigned int actPlayer;          // Player who is in turn (needed for timer)
+   unsigned int startPlayer;  // Player who started round (needed for endRound)
 
    // Columns and rows for the cards of the players
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
@@ -101,7 +114,7 @@ class Twopart : public XApplication {
    static const unsigned int USED_CARDS = 52;
 
    static const unsigned int WIDTH = 760;
-   static const unsigned int HEIGHT = 735;
+   static const unsigned int HEIGHT = 680;
 };
 
 #endif
