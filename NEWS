@@ -3,9 +3,10 @@ Overview of changes in version 0.5.00:
   - Added network ability
   - Improved Buraco's layout (table shows scrollbars, when needed)
   - Improved Buracos computer player
-  - Twopart, Røvhult and Buraco start with a random player
+  - Twopart, Røvhult and Buraco starts with a random player
   - Fixed Røvhult's checking of humans playing from pile
   - Fixed Twopart's calcuation of next player (equal cards at end of part I)
+  - Renamed [Players]-section in INI-file to [Player]
   - Needs library YGP 0.6.21
 
 Overview of changes in version 0.4.00:

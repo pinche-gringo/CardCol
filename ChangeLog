@@ -1,3 +1,186 @@
+2003-09-05  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.5.00 commented
+
+	* doc/Buraco.html.es, doc/Røvhult.html.es, doc/Twopart.html, doc/Twopart.html.en, doc/Twopart.html.es:
+	  Minor fixes
+
+	* Common/PlayerConnDlg.cpp: Removed define of STRING
+
+	* Rovhult.cpp: Fixed computer player playing invisible cards from pile
+
+	* Twopart.cpp:
+	  Fixed round ending with equal cards of players without cards
+
+	* Hearts.cpp: Informing about waiting for server after exchanging cards
+
+	* CardCol.cpp: Fixed restarting
+
+	* Buraco.cpp: Fixed reset of start-of-game flag
+
+2003-09-04  Markus Schwab  <g17m0@lycos.com>
+
+	* CardCol.cpp: Added a trace showing command parser-error
+
+	* Buraco.cpp, Buraco.h: Fixes in network code
+
+	* Buraco.cpp, Buraco.h:
+	  Fixed compu player checking if picking up dumped pile; Improved networkability
+
+	* Twopart.cpp: Removed calling of srand; Traces changed
+
+2003-09-02  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp: Progress with netwok features
+
+2003-09-01  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp:
+	  Improved analyzing of dumped card; First draft of network ability
+
+2003-08-31  Markus Schwab  <g17m0@lycos.com>
+
+	* CardCol.cpp: Fixed Restarting
+
+	* CardCol.cpp, CardCol.h: Implemented remote restart of games
+
+	* Twopart.h: Renamed card to target in executeRemoteMove
+
+2003-08-30  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart.cpp: Adapted to new Game handling commands
+
+	* Rovhult.h: {find,show}Cards2Play return void
+
+	* Rovhult.cpp: Fixed (network) playing form pile
+
+2003-08-29  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult.cpp, Rovhult.h: First draft with network ability
+
+2003-08-27  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart.cpp, Twopart.h: Adapted to new handleMessage method signature
+
+	* CardCol.cpp, CardCol.h:
+	  Fixed remote restart; Fixed serializing of message processing
+
+	* Hearts.cpp, Hearts.h:
+	  Only handling 1 msg; Adapted to new handleMessage signature
+
+2003-08-26  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart.cpp: Showing that remote played picked up the played pile
+
+2003-08-25  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart.cpp: Playing part I; partly part II
+
+	* Twopart.cpp, Twopart.h: Network ability improved
+
+2003-08-23  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart.h, Twopart.cpp: First draft with network ability
+
+	* Hearts.cpp:
+	  Getting players as needed; so no need to re-calculate number for GUI
+
+2003-08-22  Markus Schwab  <g17m0@lycos.com>
+
+	* Hearts.cpp: Fixed single player mode
+
+	* Hearts.cpp: Fixed test for end-of-game; Fixed names for ScoreDialog
+
+2003-08-21  Markus Schwab  <g17m0@lycos.com>
+
+	* Hearts.cpp: Fixes for network ability
+
+	* CardCol.cpp: Minor fixes; Displaying who lost communication
+
+	* Hearts.cpp: Fixes
+
+	* Options.h: Target and Port added (for network features)
+
+2003-08-20  Markus Schwab  <g17m0@lycos.com>
+
+	* Hearts.cpp, Hearts.h: Fixes; Changes for network feature
+
+	* Buraco.cpp, Buraco.h, Rovhult.cpp, Rovhult.h, Twopart.cpp, Twopart.h:
+	  Adapted to new Game interface
+
+	* CardCol.cpp, CardCol.h:
+	  Added cmd-line options to connect to/with other computers
+
+2003-08-19  Markus Schwab  <g17m0@lycos.com>
+
+	* CardCol.cpp:
+	  Renamed --help-dir to dir-help; Improved network features
+
+	* CardCol.h:
+	  handle*Message gets player as parameter; Storing pos. of player rel to server
+
+	* Hearts.cpp, Hearts.h: Exchanging cards is network-able
+
+	* Buraco.cpp, Buraco.h:
+	  Piles on table in scrolled window; Translating buraco-status; +getPileOfPlayer
+
+2003-08-13  Markus Schwab  <g17m0@lycos.com>
+
+	* CardCol.cpp, CardCol.h: Further progress with network ability
+
+	* Buraco.cpp, Buraco.h:
+	  Table has scrollbars if neccessary; Showing all cards at end; Hiding dump-pile
+
+2003-08-08  Markus Schwab  <g17m0@lycos.com>
+
+	* CardCol.cpp, CardCol.h:
+	  Reading messages in a separate thread and dispatching them from there
+
+2003-08-04  Markus Schwab  <g17m0@lycos.com>
+
+	* CardCol.cpp: Global part of communication added
+
+	* CardCol.h:
+	  Changed prototype of thread methods; Added makePlayer() and waitForServerMsg()
+
+	* Buraco.cpp, Hearts.cpp, Rovhult.cpp, Twopart.cpp:
+	  Checking error returned by randomizeCardsToPile
+
+2003-07-26  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult.cpp, Rovhult.h, Twopart.cpp, Twopart.h, CardCol.cpp, CardCol.h, Hearts.cpp, Hearts.h:
+	  Using new player classes
+
+	* Buraco.cpp, Buraco.h:
+	  Unsing new player classes; updating player names (for score dialog)
+
+	* HeartsScore.cpp, HeartsScore.h: Using new player classes
+
+2003-07-25  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp, Hearts.cpp:
+	  Adapted to new dialog interface (using create, not perform to create score dlg)
+
+	* HeartsScore.h: Adapted to new dialog interface
+
+2003-07-22  Markus Schwab  <g17m0@lycos.com>
+
+	* CardCol.cpp, CardCol.h: Added connect dialog
+
+2003-07-08  Markus Schwab  <g17m0@lycos.com>
+
+	* CardCol.cpp: Including XAttribute; fixed minor problem with restart
+
+	* Buraco.cpp: Removed deleting of score dialog while cleanup
+
+	* Buraco.cpp:
+	  Fixed bugs (restarting; player series of colours); Improved computer player
+
+2003-07-07  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.h, Buraco.cpp:
+	  canDumpCards respect if dumped cards would make a cerrado; Fixes
+
 2003-07-06  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.4.00 commented
@@ -1279,7 +1462,7 @@
 
 2002-04-04  Markus Schwab  <g17m0@lycos.com>
 
-	* configure.in: Versionnumber for libraray added
+	* configure.in: Versionnumber for library added
 
 	* Common/Makefile.am: CardPile added; Versioninfo on lib
 
