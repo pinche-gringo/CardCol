@@ -48,22 +48,22 @@ class SgtMayor : public Game {
    virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
 
  private:
-   enum Status { EXCHANGE = Game::LAST };
-
    // Protected manager functions
    SgtMayor (const SgtMayor& other);
    const SgtMayor& operator= (const SgtMayor& other);
 
    //@Section Event handling
    void cardSelected (unsigned int iCard);
+   void cardColourSelect (unsigned int iCard);
 
    //@Section Virtual methods
    virtual int makeMove (unsigned int player);
    virtual bool enableHuman ();
 
    //@Section Helper methods
+   void showTrump (CardWidget::COLOURS);
    void startPlaying ();
-   bool moveSelectedCardToPlayed (unsigned int player, unsigned int card);
+   unsigned int playCard (unsigned int player, unsigned int card);
    static unsigned int calcNextPlayer (unsigned int player) {
       return (++player >= NUM_PLAYERS) ? 0 : player;
    }
@@ -77,8 +77,11 @@ class SgtMayor : public Game {
       CardHPile  hand;                        // For players: Cards in the hand
       Gtk::HBox  won;                                              // Won ticks
       Gtk::Label name;
+      Gtk::Label neededTicks;
    } players[NUM_PLAYERS];
    CardHPile played;
+   CardWidget* pExchange;
+   CardWidget* pTrump;
 
    unsigned int startPlayer;
 
