@@ -251,7 +251,10 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
    Check1 (pair.size () == 2);
    CardWidget *card (operator[] (0));
    int diff (cardDistance (*pair[1], *pair[0]));
-   int diffTable (cardDistance (*pair[0], *card));
+   int diffTable (cardDistance (*pair[0], *card,
+                                (diff < 0) ? ACE
+                                : ((pair[0]->number () == CardWidget::ACE)
+                                   && (pair[1]->number () < 5)) ? ONE : BOTH));
    TRACE1 ("MachiPile::hasMatching3rd (ICardPile&) - Differences: "
            << diff << '/' << diffTable);
 
@@ -271,7 +274,7 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
                  pair.find (operator[] (diffTable)->id ()) == -1)) {
             match = begin () + diffTable;
             nr = end () - match;
-            if ((size () - 4) > (unsigned int)diffTable)
+            if ((int)(size () - 4) > diffTable)
                pair.clear ();
          }
       }
@@ -291,19 +294,19 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
       break;
 
    case 1:
+      TRACE1 ("MachiPile::hasMatching3rd (ICardPile&) - Checking " << *pair[0]
+              << '-' << *pair[1] << '-' << *card);
       if ((pair[0]->colour () == card->colour ())
           && (getType () == COLOUR)) {
          Check3 (pair[1]->colour () == card->colour ());
-         if ((diffTable == 2) || (!(size () - diffTable)))
-            match = begin () + diffTable;
-         else if ((diffTable == -1)
-                  || ((size () - diffTable) == 2))
+         if ((diffTable == -2) || (diffTable == 1))
+            match = begin ();
+         else if (((size () - diffTable) == 3) || ((size () - diffTable) == 0))
             match = end () - 1;
          else
-            if ((size () > 6)
-                && ((diffTable - 3) > (int)size ())) {
+            if ((size () > 6) && (diffTable > (int)(size () - 7))) {
                pair.clear ();
-               match = end () - diffTable - 2;
+               match = end () - diffTable - 3;
                nr = end () - match;
             }
       }
@@ -317,10 +320,9 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
              || ((size () - 1) == (unsigned int)diffTable))
             match = begin () + diffTable - 1;
          else
-            if ((size () > 6)
-                && ((diffTable - 3) > (int)size ())) {
+            if ((size () > 6) && (diffTable > (int)(size () - 7))) {
                pair.clear ();
-               match =  end () - diffTable - 2;
+               match =  end () - diffTable - 3;
                nr = end () - match;
             }
       }
