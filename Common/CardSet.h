@@ -38,6 +38,7 @@ class CardSet {
 
    void shuffle ();
 
+   void clear ();
    void addPacket (const CardImages& decks);
    void update () const;
 

@@ -41,6 +41,7 @@
 /*--------------------------------------------------------------------------*/
 CardSet::~CardSet () {
    TRACE9 ("CardSet::~CardSet ()");
+   clear ();
 }
 
 
@@ -93,4 +94,14 @@ void CardSet::update () const {
    for (std::vector<CardWidget*>::const_iterator i (cards_.begin ());
         i != cards_.end (); ++i)
       (*i)->update ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Removes all cards from the set
+/*--------------------------------------------------------------------------*/
+void CardSet::clear () {
+   for (std::vector<CardWidget*>::iterator i (cards_.begin ());
+        i != cards_.end (); ++i)
+      delete *i;
+   cards_.clear ();
 }
