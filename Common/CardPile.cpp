@@ -36,8 +36,8 @@
 //Parameters: set: Specifier for type of cardset
 //            access: Pile (topmost card) can be accessed
 /*--------------------------------------------------------------------------*/
-ICardPile::ICardPile (Style s, bool access) : style (s), accessable (access) {
-   TRACE3 ("ICardPile::ICardPile (Style) - " << (int)style);
+ICardPile::ICardPile (PileStyle s, bool access) : style (s), accessable (access) {
+   TRACE3 ("ICardPile::ICardPile (PileStyle) - " << (int)style);
    Check3 (s < LAST);
 }
 
@@ -247,8 +247,8 @@ CardWidget& ICardPile::remove (unsigned int pos) {
 //Purpose   : Changes the drawing-style of the collection
 //Parameters: s: New style
 /*--------------------------------------------------------------------------*/
-void ICardPile::setStyle (Style s) {
-   TRACE5 ("ICardPile::setStyle (Style) - Size = " << cards.size ());
+void ICardPile::setStyle (PileStyle s) {
+   TRACE5 ("ICardPile::setStyle (PileStyle) - Size = " << cards.size ());
 
    if (s == style)
       return;
@@ -356,32 +356,36 @@ int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
       Check3 (first <= last); Check3 (middle <= last);
    }
 
-   TRACE5 ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - End = ["
-           << first << "-(" << middle << ")-" << last << ") = "
-           << *cards[middle]);
+#if TRACELEVEL > 4
+   TRACE ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - End = ["
+          << first << "-(" << middle << ")-" << last << ')');
+   if (first < cards.size ()) {
+      TRACE ("\t-> " << *cards[first]);
+   }
+   else
+      TRACE ("\t-> Not found");
+#endif
 
-   return ((first != cards.size ()) && ((cards[first]->number () >= nr))
+   return ((first < cards.size ()) && ((cards[first]->number () >= nr))
            ? static_cast<int> (first) : -1);
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Finds the last card being equal or minimal bigger than the past one
-//Parameters: nr: Number of card (2, 3, 4, ... Ace) to search for
-//Returns   : int: Position of card in pile (or -1, if none found)
+//Purpose   : Finds the last card having an equal number as the passed card
+//Parameters: pos: Card whose (equal) number has to be found
+//Returns   : int: Position of card in pile
 //Requires  : Cards must be sorted (as the search is binary)
 /*--------------------------------------------------------------------------*/
-int ICardPile::findLastEqualOrBigger (CardWidget::NUMBERS nr) const {
-   int pos (findFirstEqualOrBigger (nr));
-   if (pos == -1)
-      return -1;
+int ICardPile::findLastEqual (unsigned int pos) const {
+   Check3 (pos < cards.size ());
 
-   nr = cards[pos]->number ();
-   while (++pos != cards.size ()) {
+   CardWidget::NUMBERS nr (cards[pos]->number ());
+   while (++pos < cards.size ()) {
       if (cards[pos]->number () != nr)
          break;
    }
 
-   TRACE5 ("ICardPile::findLastEqualOrBigger (CardWidget::NUMBERS) - Card "
+   TRACE5 ("ICardPile::findLastEqual (CardWidget::NUMBERS) - Card "
            << *cards[pos - 1] << " at position " << pos - 1);
    return pos - 1;
 }
