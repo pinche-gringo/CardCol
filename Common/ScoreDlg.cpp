@@ -64,6 +64,8 @@ ScoreDlg::ScoreDlg (const std::vector<Player*>& player)
       move (lastX, lastY);
 
    show ();
+   if (lastX != -1)
+      move (lastX, lastY);
 }
 
 //-----------------------------------------------------------------------------
