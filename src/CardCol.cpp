@@ -1118,14 +1118,14 @@ void CardgameCollection::changePlayernames () {
 void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
    TRACE2 ("CardgameCollection::changeDecks (const ICarddeckSelectDlg&)");
 
-   std::string deck, back;
+   std::string deck (options.decks), back (options.back);
    dialog.getSelection (deck, back);
    unsigned int option (0);
-   if (deck != options.decks) {
+   if (deck.size () && (deck != options.decks)) {
       option = 1;
       options.decks = deck;
    }
-   if (back != options.back) {
+   if (back.size () && (back != options.back)) {
       option |= 2;
       options.back = back;
    }
