@@ -286,12 +286,14 @@ void Hearts::cardSelected (unsigned int iCard) {
 
    if (moveSelectedCardToPlayed (0, iCard)) {
       if (gameStatus () == PLAYING) {
-         // Send played card to all clients (if any)
-         std::ostringstream msg;
-         msg << "Play=" << played[played.size () - 1]->id () << ";Target=0";
-         if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-         broadcastMessage (msg.str ());
+         if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+            // Send played card to all clients (if any)
+            std::ostringstream msg;
+            msg << "Play=" << played[played.size () - 1]->id () << ";Target=0";
+            if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+               ignoreNextMsg = true;
+            broadcastMessage (msg.str ());
+         }
 
          setNextPlayer (calcNextPlayer (currentPlayer ()));
       }
@@ -350,8 +352,9 @@ void Hearts::startPlaying () {
 
    setNextPlayer ((nextPlayer + posServer) & 0x3);
    ConnectionMgr& cmgr (getConnectionMgr ());
-   if ((cmgr.getMode () == ConnectionMgr::SERVER)
-       && (nextPlayer > getConnectionMgr ().getClients ().size ()))
+   if ((cmgr.getMode () == ConnectionMgr::NONE)
+       || ((cmgr.getMode () == ConnectionMgr::SERVER)
+           && (nextPlayer > getConnectionMgr ().getClients ().size ())))
       flipCards2Play (players[nextPlayer].hand, pos1Play = 0, pos2Play = 0);
 
    player2Exchange = (player2Exchange - 1) & 0x3;
@@ -549,7 +552,7 @@ void Hearts::exchangeCards () {
 
    movePile (aExchange[0], played); Check9 (aExchange[0].size () == 3);
 
-   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+   if (getConnectionMgr ().getMode () != ConnectionMgr::CLIENT) {
       for (unsigned int i (getConnectionMgr ().getClients ().size () + 1);
            i < NUM_PLAYERS; ++i) {
          TRACE8 ("Hearts::exchangeCards () - Player " << i);
@@ -624,11 +627,13 @@ void Hearts::exchangeCards () {
             }
          }
 
-         std::ostringstream msg;
-         msg << "Exchange=" << aExchange[i][0]->id () << ' '
-             << aExchange[i][1]->id () << ' ' << aExchange[i][2]->id ()
-             << ";Player=" << i << ';';
-         broadcastMessage (msg.str ());
+         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+            std::ostringstream msg;
+            msg << "Exchange=" << aExchange[i][0]->id () << ' '
+                << aExchange[i][1]->id () << ' ' << aExchange[i][2]->id ()
+                << ";Player=" << i << ';';
+            broadcastMessage (msg.str ());
+         }
       }
    }
 
@@ -718,7 +723,7 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
                            ? aPos[1] + 1
                            : ((aPos[0] >= 0) ? aPos[0] + 1: 0));
          TRACE5 ("Hearts::findPos2Play (unsigned int) - Starting with spade at "
-                 << pos << " (" << pile[pos] << ')');
+                 << pos << " (" << *pile[pos] << ')');
          return pos;
       }
 
