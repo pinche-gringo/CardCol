@@ -47,16 +47,13 @@ class MachiPile : public CardHPile {
    static int cardDistance (const CardWidget& a, const CardWidget& b,
                             ACEFLAG aceIsOne);
 
+   void checkIntegrity () throw (Glib::ustring);
+
  private:
    MachiPile (const MachiPile& other);
    const MachiPile& operator= (const MachiPile& other);
 
-   void MachiPile::analyzePile () {
-      if (size () == 2)
-          type = ((operator[] (0)->number () == operator[] (1)->number ())
-                  ? NUMBER : COLOUR);
-   }
-
+   void analyzePile ();
 
    enum { UNDEFINED, NUMBER, COLOUR } type;
 };
