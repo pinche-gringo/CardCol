@@ -156,8 +156,17 @@
       to play and the joker moves itself automatically.</p>
 
     <hr size=3 noshade>
-    <address>
-      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
-    </address>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td>Previous</td>
+        <td><a href="CardCol.html.en">Cardgames</a></td>
+        <td><a href="Hearts.html.en">Next</a><br>(Hearts)</td>
+      </tr>
+    </table>
   </body>
 </html>

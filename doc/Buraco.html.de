@@ -165,9 +165,20 @@
       entsprechende Karte auf den Stapel verschoben, wird der Joker notfalls
       automatisch an die richtige Stelle platziert.</p>
 
+    <hr size=1 noshade>
+
     <hr size=3 noshade>
-    <address>
-      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
-    </address>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td>Vorherige</td>
+        <td><a href="CardCol.html.de">&Uuml;berblick</a></td>
+        <td><a href="Hearts.html.de">N&auml;chste</a><br>(Hearts)</td>
+      </tr>
+    </table>
   </body>
 </html>

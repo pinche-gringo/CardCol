@@ -132,8 +132,17 @@
       fin de esa actividad se se ejecuta con dejar el bot&oacute;n.</p>
 
     <hr size=3 noshade>
-    <address>
-      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
-    </address>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td><a href="Hearts.html.es">Anterior</a><br>(Corazones)</td>
+        <td><a href="CardCol.html.es">Contenido</a></td>
+        <td><a href="Twopart.html.es">Pr&oacute;ximo</a><br>(Twopart)</td>
+      </tr>
+    </table>
   </body>
 </html>

@@ -101,21 +101,35 @@
       abajo):</p>
 
     <ul>
-      <li>El mont&oacute;n de reserva: Una colecci&oacute;n de cartas tapadas, de
-        donde se saca cartas nuevas (si se pone la mouse por encima, aparece una
-        ventana mostrando su n&uacute;mero de las cartas). En la segunda parte
-        la carta que determina el palo especial est&aacute; mostrado aqua.</li>
-      <li>Las cartas del jugador humano. Por arriba sus cartas ganadas encima de
-        sus cartas en su mano. Se puede inspectarlas con hacer clic en las; hacer
-        clic con la tecla derecha permite sortearlas.</li>
-      <li>En la linea proxima es lo mismo con los jugadores 3 y 1. Entrelos se
-        encuentre el mont&oacute;n de las cartas jugados.</li>
-      <li>En la linea &uacute;ltima son las cartas del jugador 2.</li>
+      <li><p>El mont&oacute;n de reserva: Una colecci&oacute;n de cartas
+          tapadas, de donde se saca cartas nuevas (si se pone la mouse por
+          encima, aparece una ventana mostrando su n&uacute;mero de las
+          cartas). En la segunda parte la carta que determina el palo especial
+          est&aacute; mostrado aqua.</p></li>
+
+      <li><p>Las cartas del jugador humano. Por arriba sus cartas ganadas
+          encima de sus cartas en su mano. Se puede inspectarlas con hacer
+          clic en las; hacer clic con la tecla derecha permite
+          sortearlas.</p></li>
+
+      <li><p>En la linea proxima es lo mismo con los jugadores 3 y 1. Entrelos
+          se encuentre el mont&oacute;n de las cartas jugados.</p></li>
+
+      <li><p>En la linea &uacute;ltima son las cartas del jugador 2.</p></li>
     </ul>
 
     <hr size=2 noshade>
-    <address>
-      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
-    </address>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td><a href="Røvhult.html.es">Anterior</a><br>(Røvhult)</td>
+        <td><a href="CardCol.html.es">Contenido</a></td>
+        <td>Next</td>
+      </tr>
+    </table>
   </body>
 </html>

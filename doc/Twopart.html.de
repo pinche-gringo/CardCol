@@ -23,7 +23,7 @@
 
 <html>
   <head>
-    <title>Twopart - A norwegian cardgame (in two parts)</title>
+    <title>Twopart - Ein Kartenspiel aus Norwegen (in zwei Teilen)</title>
     <meta name="description" content="Dokumentation des Twopart Kartenspiels">
     <meta name="keywords" content="documentation, docu, dokumentation, doku, Twopart, game, card, cardgame, spiel, karte, kartenspiel">
 
@@ -122,8 +122,17 @@
     </ul>
 
     <hr size=2 noshade>
-    <address>
-      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
-    </address>
-</body>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td><a href="Røvhult.html.de">Vorherige</a><br>(Røvhult)</td>
+        <td><a href="CardCol.html.de">&Uuml;berblick</a></td>
+        <td>N&auml;chste</td>
+      </tr>
+    </table>
+  </body>
 </html>

@@ -1,4 +1,4 @@
- <!-- -*-HTML-*- -->
+<!-- -*-HTML-*- -->
 <!-- $Id$ -->
 
 <!--
@@ -161,8 +161,17 @@
       que quieres jugar y el mono se mueve automaticalmente.</p>
 
     <hr size=3 noshade>
-    <address>
-      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
-    </address>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td>Anterior</td>
+        <td><a href="CardCol.html.es">Contenido</a></td>
+        <td><a href="Hearts.html.es">Pr&oacute;ximo</a><br>(Corazones)</td>
+      </tr>
+    </table>
   </body>
 </html>

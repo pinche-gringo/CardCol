@@ -88,8 +88,17 @@
     </ul>
 
     <hr size=2 noshade>
-    <address>
-      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
-    </address>
-</body>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td><a href="Buraco.html.es">Anterior</a><br>(Buraco)</td>
+        <td><a href="CardCol.html.es">Contenido</a></td>
+        <td><a href="Røvhult.html.es">Pr&oacute;ximo</a><br>(Røvhult)</td>
+      </tr>
+    </table>
+  </body>
 </html>

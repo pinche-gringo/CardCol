@@ -132,8 +132,17 @@
       the button.</p>
 
     <hr size=3 noshade>
-    <address>
-      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
-    </address>
-</body>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td><a href="Hearts.html.en">Previous</a><br>(Hearts)</td>
+        <td><a href="CardCol.html.en">Cardgames</a></td>
+        <td><a href="Twopart.html.en">Next</a><br>(Twopart)</td>
+      </tr>
+    </table>
+  </body>
 </html>
