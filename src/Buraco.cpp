@@ -915,7 +915,7 @@ void Buraco::registerHandDND (unsigned int iCard) {
    card.drag_source_set
       (dndType, Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
        Gdk::ACTION_MOVE);
-      (dndType, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
+
    card.drag_source_set_icon (card.getImage ());
    aDNDHand[&card].connReceive = card.signal_drag_data_received ().connect
       (bind (mem_fun (*this, &Buraco::cardDropped), iCard));

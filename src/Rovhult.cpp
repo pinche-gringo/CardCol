@@ -862,7 +862,7 @@ void Rovhult::registerTableDND (CardWidget& card, unsigned int pile) {
    // Card accepts drops from hand and drags from table
    card.drag_dest_set (dndTypeHand, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    card.drag_source_set
-      (dndTypeTable, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
+      (dndTypeTable, Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
                                         Gdk::ACTION_MOVE);
 
    card.drag_source_set_icon (card.getImage ());
@@ -887,7 +887,7 @@ void Rovhult::registerHandDND (CardWidget& card,  unsigned int iCard) {
    card.drag_dest_set (dndTypeTable, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    card.drag_source_set
       (dndTypeHand,
-       Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK), Gdk::ACTION_MOVE);
+       Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK), Gdk::ACTION_MOVE);
 
    card.drag_source_set_icon (card.getImage ());
    aHandDND[&card] = card.signal_drag_data_received ().connect
