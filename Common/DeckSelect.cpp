@@ -60,11 +60,6 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (const char*) - " << path
            << " (" << deck << " - " << back << ')');
 
-   Gtk::Button& apply (*manage (new Gtk::Button (Gtk::Stock::APPLY)));
-   apply.signal_clicked ().connect
-       (bind (mem_fun (*this, &ICarddeckSelectDlg::command), Gtk::RESPONSE_APPLY));
-   get_action_area ()->pack_end (apply, false, false, 5);
-
    boxDecks.pack_start (decks, true, true, 50);
    boxDecks.pack_start (selDeck, false, 5);
 
@@ -78,6 +73,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    get_vbox ()->pack_start (boxBack, true, true, 5);
 
    std::string cardDirs (path ? path : CARDDECKS_DIR);
+   aFiles.push_back (cardDirs);
    if (cardDirs.size ()
        && (cardDirs[cardDirs.size () - 1] != YGP::File::DIRSEPARATOR))
       cardDirs += YGP::File::DIRSEPARATOR;
@@ -89,7 +85,6 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    const YGP::File* dir (ds.find (YGP::IDirectorySearch::FILE_DIRECTORY
                                   | YGP::IDirectorySearch::FILE_READONLY));
    unsigned int offset (0);
-   aFiles.push_back (dir->path ());
 
    show_all ();
 
@@ -133,7 +128,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
            << '/' << (height < 250 ? height : 250));
    decks.set_size_request (width + 25, height < 270 ? height : 270);
 
-   if (offDeck == -1)
+   if ((offDeck == -1) && (aFiles.size () > 1))
       deckSelect (1);
 
    unsigned int offsetBack (offset + 1);
@@ -158,7 +153,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
       backs.add (*temp);
       dir = ds.next ();
    }
-   if (offBack == -1)
+   if ((offBack == -1) && (aFiles.size () > static_cast<unsigned int> (offBack)))
       backSelect (offsetBack);
 
    offset -= offBack;
@@ -172,6 +167,15 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
            "std::string&, const std::string&) - Backsize:  " << width
            << '/' << (height < 250 ? height : 250));
    backs.set_size_request (width + 25, height < 270 ? height : 270);
+
+   if ((offDeck != -1) || (offBack != -1)) {
+      Gtk::Button& apply (*manage (new Gtk::Button (Gtk::Stock::APPLY)));
+      apply.signal_clicked ().connect
+	 (bind (mem_fun (*this, &ICarddeckSelectDlg::command), Gtk::RESPONSE_APPLY));
+      get_action_area ()->pack_end (apply, false, false, 5);
+   }
+   else
+      ok->set_sensitive (false);
 }
 
 //-----------------------------------------------------------------------------

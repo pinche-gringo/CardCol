@@ -38,8 +38,8 @@ class ICarddeckSelectDlg : public XGP::XDialog {
    virtual ~ICarddeckSelectDlg ();
 
    void getSelection (std::string& deck, std::string& back) const {
-      deck = aFiles[0] + aFiles[offDeck];
-      back = aFiles[0] + "decks/" + aFiles[offBack]; }
+      deck = (offDeck == -1) ? "" : (aFiles[0] + aFiles[offDeck]);
+      back = (offBack == -1) ? "" : (aFiles[0] + "decks/" + aFiles[offBack]); }
 
  protected:
    virtual void command (int action);
