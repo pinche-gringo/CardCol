@@ -34,6 +34,9 @@
 #include "CardPile.h"
 
 
+static const int SIZE_COMPRESSED = 15;
+
+
 /*--------------------------------------------------------------------------*/
 //Purpose   : Constructor; adds all controls to the dialog
 //Parameters: set: Specifier for type of cardset
@@ -61,7 +64,7 @@ void CardPile::setTopCard (CardWidget& card) {
 
    if ((style > NORMAL) && cards.size ()) {
       Check3 (cards[cards.size () - 1]);
-      cards[cards.size () - 1]->set_usize (-1, style == COMPRESSED ? 15 : 1);
+      cards[cards.size () - 1]->set_usize (-1, style == COMPRESSED ? SIZE_COMPRESSED : 1);
    }
 
    card.show ();
@@ -80,7 +83,7 @@ CardWidget& CardPile::removeTopCard () {
    remove (*cards[cards.size () - 1]);
    cards.pop_back ();
 
-   if (cards.size ())
+   if (cards.size () && (style > NORMAL))
       cards[cards.size () - 1] ->set_usize (-1, 96);
 
    return card;
