@@ -1,3 +1,247 @@
+2003-07-06  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.4.00 commented
+
+	* po/de.po, po/en.po, po/es.po: Increased version nr
+
+	* doc/Buraco.html.es: Fixed grammar error
+
+	* AUTHORS: Mariuxi added to Translators
+
+	* po/de.po, po/en.po, po/es.po: Actualized
+
+2003-07-05  Markus Schwab  <g17m0@lycos.com>
+
+	* po/POTFILES.in: Renamed ScoreDlg
+
+	* doc/CardCol.shtml.de, doc/CardCol.shtml.en, doc/CardCol.shtml.es, doc/Hearts.html, doc/Hearts.html.de, doc/Hearts.html.en, doc/Hearts.html.es, doc/Røvhult.html, doc/Røvhult.html.de, doc/Røvhult.html.en, doc/Røvhult.html.es, doc/Twopart.html, doc/Twopart.html.de, doc/Twopart.html.en, doc/Twopart.html.es, doc/index.shtml:
+	  Removed last changed line
+
+	* doc/Buraco.html.de, doc/Buraco.html.en, doc/Buraco.html.es:
+	  Actualized counting of cerrados of monos
+
+	* configure.in: Needing YMP 0.7
+
+	* src/Buraco.cpp:
+	  Fixed playing series of colours; fixed pileHasFittinPair (pile, card)
+
+	* src/Twopart.cpp, src/Twopart.h, src/Buraco.cpp, src/Buraco.h, src/CardCol.cpp, src/CardCol.h, src/Hearts.cpp, src/Hearts.h, src/Options.h, src/Rovhult.cpp, src/Rovhult.h, Common/Game.cpp, Common/Game.h, Common/PlayerDlg.cpp, Common/PlayerDlg.h, Common/ScoreDlg.cpp, Common/ScoreDlg.h, src/HeartsScore.cpp, src/HeartsScore.h:
+	  Using Glib::ustring instead of std::string
+
+	* Common/DeckSelect.cpp: Setting title while constructing dialog
+
+	* Common/DeckSelect.cpp, Common/DeckSelect.h:
+	  Using Folder to display the available bitmaps
+
+2003-07-04  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp:
+	  Fixed pileHasFittingPair (ICardPile&) for series of colours
+
+	* Buraco.cpp:
+	  Fixed playing a serie of colours; Fixed cardDistance; Fixed playing jokers
+
+	* CardCol.cpp:
+	  Fixed problem when restarting was canceled (game started new after ending)
+
+2003-07-03  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp:
+	- Added substraction of started cerrados of monos (without finishing them)
+	- Clean cerrado of monos now counts 2000 points
+	- First draft of computer player playing series of colours
+
+2003-06-30  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp: Ace as one seems now to work
+
+	* Buraco.h, Buraco.cpp: First draft with ace like one
+
+	* CardCol.cpp: Fixed exiting; Helptext changed
+
+	* CardCol.h: Restart-flag changed to unsigned int
+
+	* Buraco.cpp, Buraco.h:
+	  Storing and freeing drag_data_get-signal; minor fixes
+
+	* Rovhult.cpp: clean calls Game::clean
+
+2003-06-28  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp, Buraco.h:
+	Started with computer player playing series of colours; Fixes
+
+	* HeartsScore.h: getPoints returns now an int
+
+	* HeartsScore.cpp:
+	Traces added; Using INT_MIN/MAX to set the borders of the points
+
+2003-06-24  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.h: New fields for status-variable added
+
+	* Buraco.cpp: - Ending game with 2000 points
+	- Only close piles with joker after buraco player played its cards
+
+	* HeartsScore.cpp: Switched off traces and checks
+
+2003-06-23  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp, Buraco.h:
+	  Don't delete cerrados (for counting); Optimized; Fixes
+
+2003-06-22  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp, Buraco.h: Counting points; fixes
+
+	* Hearts.h: Forward declaring ScoreDlg; not including whole header
+
+	* Hearts.cpp:
+	  Points are int to fit to new ScoreDlg; Fixed human playing any club in round 1
+
+	* Makefile.am: Removed HeartsScore
+
+	* HeartsScore.cpp, HeartsScore.h:
+	  Generalized; to be useable by every game
+
+	* Buraco.cpp, Buraco.h:
+	  Improved selection if pick up 1st dumped card or from staple; Fixes messages
+
+	* Hearts.cpp: Removed include of string.h
+
+	* Buraco.cpp, Buraco.h:
+	  Human is now enabled in 2 stages: 1st pick up card; 2nd play cards
+
+	* CardCol.cpp: Changed markup for translation
+
+2003-06-21  Markus Schwab  <g17m0@lycos.com>
+
+	* CardCol.cpp, CardCol.h:
+	  Removed the definition/declaration of USED_CARDS
+
+	* Buraco.cpp, Buraco.h: Further bughunting
+
+	* CardCol.cpp:
+	  Buraco got 3 real jokers (not 2); Restarting games after deleting the old
+
+	* Rovhult.cpp, Rovhult.h:
+	  Disconnecting also the drag_data_get-signal; Traces added
+
+	* CardCol.cpp, CardCol.h: Changed (and fixed) loading of card images
+
+	* Options.h: Adapted to new image-handling
+
+	* Buraco.cpp, Hearts.cpp, Hearts.h, Twopart.cpp, Twopart.h:
+	  Renamed color to colour
+
+2003-06-19  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp: Further fixes (of computer player)
+
+	* CardCol.cpp: Burazno renamed to Buraco; UTF-converting game name
+
+	* CardCol.h:
+	  Burazno renamed to Buraco; userWants2End without input-flag
+
+2003-06-10  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp, Buraco.h: Fixed computer player
+
+2003-06-07  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.h: Method addReserve got flag if info should be displayed
+
+	* Buraco.cpp:
+	  Fixed computer getting rid of its cards; More traces; Other fixes
+
+	* Buraco.h: const-correctness
+
+	* Buraco.cpp: Fixes
+
+2003-06-06  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp, Buraco.h:
+	  - Checking if player can pick up the dumped staple
+	  - Picking up dumped staple moves its first card to a new pile on the table
+	  - Implemented check, if a joker can be dumped
+	  - Removed separation of human and computer cards (are now in same array)
+	  - Renamed a few color to colour
+	  - Fixes & improvements
+
+2003-06-05  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.cpp, Buraco.h: Renamed to Buraco; Computer player improved
+
+	* Makefile.am: Using automake 1.7 and pkg-config
+
+2003-05-22  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.am (SUBDIRS): Add m4.
+	  - (ACLOCAL_AMFLAGS): New variable.
+	  - (EXTRA_DIST): New variable.
+	* configure.in (AC_OUTPUT): Add m4/Makefile.
+
+2003-03-19  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Burazno.cpp:
+	  Using map to store connection (depending on card-address); Fixes
+
+2003-03-18  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Burazno.cpp, src/Burazno.h:
+	  User handling improved (putting cards on table)
+
+2003-03-17  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Rovhult.cpp, src/Rovhult.h:
+	  Starting real play with clicking in card to play; cleanup of DND
+
+2003-03-16  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Burazno.cpp, src/Burazno.h:
+	  Bit of user-handling added (taking cards from piles; sorting)
+
+	* Common/CardWidget.h, Common/CardWidget.cpp:
+	  Derived from EventBox (and not Button) to avoid style-influence for drawing
+
+	* Common/CardPile.h: Adapted to new CardWidget interface
+
+2003-03-15  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardImgs.cpp: Fixed storing of images; Traces added
+
+	* Common/DeckSelect.cpp:
+	  Fixed GPF setting button image; Setting button-size; Fixed selection of image
+
+2003-03-06  Markus Schwab  <g17m0@lycos.com>
+
+	* src/HeartsScore.h, src/Makefile.am, src/Options.h, src/Rovhult.cpp, src/Rovhult.h, src/Twopart.cpp, src/Twopart.h, Common/CardImgs.cpp, Common/CardImgs.h, Common/CardPile.cpp, Common/CardPile.h, Common/CardSet.cpp, Common/CardSet.h, Common/CardWidget.h, Common/DeckSelect.cpp, Common/DeckSelect.h, Common/Game.cpp, Common/Game.h, Common/Makefile.am, Common/PlayerDlg.cpp, Common/PlayerDlg.h, NEWS, README, configure.in, po/de.po, po/en.po, po/es.po, src/Burazno.cpp, src/Burazno.h, src/CardCol.cpp, src/CardCol.h, src/Hearts.cpp, src/Hearts.h, src/HeartsScore.cpp:
+	  First draft of port to GTKMM-2
+
+2003-03-05  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SigCExt.h: New file.
+
+2003-02-25  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Burazno.cpp, src/Burazno.h: New file.
+
+	* src/Rovhult.cpp, src/Rovhult.h:
+	  Drag and drop only for player 0 (removed player param from every method)
+
+	* Common/CardWidget.h: Method getShownImage added
+
+	* Common/CardPile.cpp: 
+	  Resizing after removing last button; resize is not const anymore
+
+	* Common/CardPile.h: PseudoPiles (Piles displayed as buttons) added
+
+	* src/Makefile.am: Burazno added
+
+	* src/CardCol.cpp: Burazno added; forgotten messages marked for translation
+
+	* src/CardCol.h: Burazno added
+
 2003-02-24  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.3.02 documented
@@ -478,7 +722,7 @@
 	* Common/CardPile.cpp, Common/CardPile.h:
 	  Fixes (of bugs caused by change of resize-method)
 
-	* NEWS: Changes in V0.1.03 documented
+	* NEWS: Changes of V0.1.03 documented
 
 	* configure.in:
 	  Grafix-subdir removed; Version++
@@ -740,7 +984,7 @@
 
 	* README: First 'real' version
 
-	* NEWS: Changes for V0.1.01 documented
+	* NEWS: Changes of V0.1.01 documented
 
 	* AUTHORS: Designers of cards added
 
@@ -755,14 +999,14 @@
 	  - Plays high cards, if all lower cards are special
 	  - New menu to enable debug (plays with visible cards)
 	  - Computer player has "quite compressed" cards in hand
-	  - Sanity check for timer for computer moves (exists if still in old move)
+	  - Sanity check for timer for computer moves (exits if still in old move)
 	  - Display cards which are going to be played
 	  - Reuseable functions extracted (cardAtPos, numberOfEqualTopCards, ...)
 	  - Fixes within computer player
 	  - Fixed bug in playing from pile (still doesn't work, though)
 	  - Staple of played cards is displayed VERY_COMPRESSED
 	  - Finally (*really*!) fixed mysterious trap in event handlers (timing problem)
-	  - Improvments in code reusing
+	  - Improvements in code reusing
 	  - If human plays hidden card from pile, card is displayed before played
 	  - Further fixes playing from pile for computer player (we're getting close)
 	  - Minor optimizations
@@ -1003,9 +1247,9 @@
 	* Common/CardPile.cpp, Common/CardPile.h: Adapted to new CardWidget/-Set interfaces
 
 	* Common/CardImgs.cpp, Common/CardImgs.h:
-	  Stores only bitmaps (not whole widets); Gets info from search-path from caller
+	  Stores only bitmaps (not whole widgets); Gets info from search-path from caller
 
-	* Common/CardWidget.cpp, Common/CardWidget.h: Responsible for showing right face
+	* Common/CardWidget.cpp, Common/CardWidget.h: Responsible for showing proper face
 
 2002-04-28  Markus Schwab  <g17m0@lycos.com>
 
