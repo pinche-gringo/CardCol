@@ -61,7 +61,10 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (const char*) - " << path
            << " (" << deck << " - " << back << ')');
 
-   add_button (Gtk::Stock::APPLY, Gtk::RESPONSE_APPLY);
+   Gtk::Button& apply (*manage (new Gtk::Button (Gtk::Stock::APPLY)));
+   apply.signal_clicked ().connect
+       (bind (slot (*this, &ICarddeckSelectDlg::command), Gtk::RESPONSE_APPLY));
+   get_action_area ()->pack_end (apply, false, false, 5);
 
    boxDecks.pack_start (decks, true, true, 50);
    boxDecks.pack_start (selDeck, false, 5);
