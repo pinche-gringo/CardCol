@@ -1,3 +1,229 @@
+2003-12-06  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.6.10 commented
+
+	* configure.in: Version to 0.6.10; actualized dependencies (to libYGP)
+
+	* po/de.po, po/es.po: Actualized line numbers
+
+	* po/en.po: Fixed help message (for game types)
+
+	* src/Machiavelli.cpp:
+	  Renamed abstract of StatusObject to generalize; Fixed check for end of game
+
+	* INSTALL: Added doc-(un)install make-targets
+
+2003-12-01  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp: Fixes
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  Fixed undo; Computer player reorders cards to make a card from the hand fit
+
+2003-11-30  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Makefile.am: Machiavelli added
+
+	* doc/CardCol.shtml.de, doc/CardCol.shtml.en, doc/CardCol.shtml.es, doc/index.shtml:
+	  Credits for Machiavelli added
+
+	* doc/CardCol.shtml.de, doc/CardCol.shtml.en, doc/CardCol.shtml.es, doc/Hearts.html.de, doc/Hearts.html.en, doc/Hearts.html.es, doc/Røvhult.html.de, doc/Røvhult.html.en, doc/Røvhult.html.es, doc/Twopart.html.de, doc/Twopart.html.en, doc/Twopart.html.es, doc/index.shtml:
+	  Using HTML variant strict
+
+	* doc/Machiavelli.html.de, doc/Machiavelli.html.en:
+	  Commented number of cards to start with
+
+	* doc/Buraco.html.es: Minor fixes
+
+	* doc/Machiavelli.html.es, doc/Machiavelli.html.en: New file.
+
+	* doc/Buraco.html.en: Fixed explaining the rules
+
+2003-11-29  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Buraco.html.en, doc/Buraco.html.es, doc/Buraco.html.de:
+	  Format to Strict; Fixes
+
+	* doc/Machiavelli.html.de: New file.
+
+	* Common/CardPile.cpp: Disabled traces
+
+2003-11-28  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp:
+	  Fixed info-message at startup (about how to make turns)
+
+	* po/de.po, po/en.po, po/es.po: Actualized (for Machiavelli)
+
+	* po/POTFILES.in: Added Machiavelli and MachiPile
+
+	* src/MachiPile.cpp: Fixed Check
+
+	* src/Machiavelli.cpp: Fixed trace
+
+	* Common/CardPile.cpp, Common/CardPile.h:
+	  getFittingCard returns iterator (not const_iterator)
+
+	* configure.in:
+	  Testing for YGP 0.6.40; variant of the communication protocoll++; Version++
+
+	* README: Mentioned Machiavelli
+
+	* src/Rovhult.cpp: Added a check
+
+	* src/Machiavelli.cpp: Fixes; Separated reorderTableToFit in two parts
+
+	* src/Machiavelli.h:
+	  Added reorderTableToFit2; endGame got player parameter
+
+	* src/MachiPile.cpp: Fixed checking for matching 3rd card
+
+	* src/CardCol.cpp:
+	  Adapted two checks to the new style of the libYGP library
+
+2003-11-27  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp:
+	  Fixed rearranging the table piles to get rid of cards
+
+	* src/MachiPile.cpp: Further fixes
+
+	* src/MachiPile.cpp: Fixes
+
+2003-11-26  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp:
+	  Splitting (1st) pile, if making new pile from hand-table-table, if neccessary
+
+2003-11-25  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp:
+	  Implemented making pile from 1 card from hand and each 1 card from 2 piles
+
+	* src/MachiPile.cpp, src/MachiPile.h:
+	  Added hasMatching3rd (moved from Machiavelli)
+
+	* src/Machiavelli.cpp:
+	  Implemented making piles with 2 cards from the hand and one from an existing table-pile
+
+2003-11-24  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp, src/Machiavelli.h: Cleaned up undo; fixes
+
+2003-11-23  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  Cleanup of code; Started buidling piles from two sources
+
+2003-11-22  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp:
+	  Computer player marks the cards he's moving from one tablepile to another
+
+	* Common/CardWidget.cpp, Common/CardWidget.h:
+	  Adding methods to (un)mark a card
+
+	* Common/CardPile.cpp:
+	  getSeries sorts doubles of number at the end (so that they are not played)
+
+	* src/Machiavelli.cpp: Computer player improved (can split piles)
+
+	* src/MachiPile.h: Added getType method
+
+2003-11-20  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp, src/Machiavelli.h: Added undo of moves
+
+2003-11-19  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp:
+	  Added check of all piles at end of turn; fixed moving whole pile
+
+	* src/MachiPile.h: Moved analyzePile into cpp-file
+
+	* src/MachiPile.cpp:
+	  Improved analyzePile; added checkIntegrity; fixed getPosition4Card
+
+src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp:
+	  Changed can't make a pile-message; Removed compiler warning
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  First draft of moving piles on the table; Fixes
+
+2003-11-17  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp:
+	  Fixed subtle bugs picking up the Buraco and searching for a card to dump
+
+	* Common/CardPile.cpp: Fixed couting of numbered piles
+
+	* src/MachiPile.cpp, src/MachiPile.h:
+	  cardDistance checks ace as one in a better way
+
+	* src/Hearts.cpp, src/Buraco.cpp, src/BuracoPile.cpp, src/CardCol.cpp, src/Rovhult.cpp, src/Twopart.cpp:
+	  Including Trace.h instead of Trace.h
+
+	* Common/CardImgs.cpp, Common/CardPile.h, Common/CardSet.cpp, Common/CardWidget.cpp, Common/ComputerPlayer.cpp, Common/DeckSelect.cpp, Common/Game.cpp, Common/Human.cpp, Common/PlayerConnDlg.cpp, Common/PlayerDlg.cpp, Common/RemotePlayer.cpp, Common/ScoreDlg.cpp, src/HeartsScore.cpp:
+	  Including Trace.h instead of Trace_.h
+
+	* Common/CardPile.cpp:
+	  Disabled checks and traces; removed include of Trace_.h
+
+2003-11-16  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  Computer player started (plays more or less its cards)
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Moved series-handling methods to CardPile
+
+	* Common/CardPile.cpp, Common/CardPile.h:
+	  Moved (and generalized) series-handling methods from Buraco
+
+2003-11-15  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  Adapted to new libYGP style (namespaces); Added validity checks
+
+	* src/BuracoPile.cpp:
+	  Adapted to new style; Removed ctr-params to set style
+
+	* src/BuracoPile.h: Removed ctr-params to set the style
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Adapted to new libYGP style; moved pair/match methods to CardPile
+
+	* src/CardCol.cpp, src/CardCol.h, src/Hearts.cpp, src/Hearts.h, src/Options.h, src/Rovhult.cpp, src/Rovhult.h, src/Twopart.cpp, src/Twopart.h, Common/CardImgs.cpp, Common/CardSet.cpp, Common/CardWidget.cpp, Common/ComputerPlayer.cpp, Common/DeckSelect.cpp, Common/DeckSelect.h, Common/Game.cpp, Common/Game.h, Common/Human.cpp, Common/PlayerConnDlg.cpp, Common/PlayerConnDlg.h, Common/PlayerDlg.cpp, Common/PlayerDlg.h, Common/RemotePlayer.cpp, Common/RemotePlayer.h, Common/ScoreDlg.cpp, Common/ScoreDlg.h, src/HeartsScore.cpp, src/HeartsScore.h:
+	  Adapted to new libYGP style
+
+	* Common/CardPile.cpp, Common/CardPile.h:
+	  Adapted to new libYGP style (namespace); Added methods to mach cards/pairs
+
+2003-11-10  Markus Schwab  <g17m0@lycos.com>
+
+	* src/MachiPile.cpp: Fixed getPosition4Card
+
+	* src/Machiavelli.cpp: Handling user input
+
+	* src/CardCol.cpp, src/CardCol.h: Playing Machiavelli with 4 cardsets
+
+2003-11-08  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp: Cards can be dropped onto the table
+
+	* src/Rovhult.cpp: Fixed typo in a comment
+
+	* src/Buraco.cpp: Improved playing of jokers
+
+2003-11-05  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp, src/CardCol.h, src/Makefile.am: Machiavelli added
+
+	* src/MachiPile.cpp, src/MachiPile.h, src/Machiavelli.cpp, src/Machiavelli.h:
+	  New file.
+
 2003-11-05  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.5.10 commented

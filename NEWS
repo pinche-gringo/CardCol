@@ -1,3 +1,18 @@
+Overview of changes in version 0.6.10:
+
+  - Improved/fixed Machiavelli's computer player
+  - Added documentation for Machiavelli
+  - Fixed undoing in Machiavelli
+  - Needs libYGP 0.6.41
+
+Overview of changes in version 0.6.00:
+
+  - New game: Machiavelli
+  - Improved Buraco's computer player playing jokers
+  - Improved Buraco's computer player picking up the Buraco
+  - Improved Buraco's computer player selecting card to dump
+  - Needs libYGP 0.6.40
+
 Overview of changes in version 0.5.10:
 
   - Games can be loaded and saved (if enabled while configuring) - this is
