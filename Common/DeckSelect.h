@@ -24,7 +24,7 @@
 #include <gtkmm/box.h>
 #include <gtkmm/label.h>
 #include <gtkmm/button.h>
-#include <gtkmm/table.h>
+#include <gtkmm/layout.h>
 #include <gtkmm/buttonbox.h>
 #include <gtkmm/scrolledwindow.h>
 
@@ -63,13 +63,13 @@ class ICarddeckSelectDlg : public XDialog {
    Gtk::HBox   boxDecks;
    Gtk::Label  txtDecks;
    Gtk::Button selDeck;
-   Gtk::Table  decks;
+   Gtk::Layout decks;
    Gtk::ScrolledWindow scrlDeck;
 
    Gtk::Button selBack;
    Gtk::HBox   boxBack;
    Gtk::Label  txtBack;
-   Gtk::Table  backs;
+   Gtk::Layout backs;
    Gtk::ScrolledWindow scrlBack;
 
    Gtk::HButtonBox box;
@@ -104,7 +104,9 @@ class CarddeckSelectDlg : public ICarddeckSelectDlg {
       ICarddeckSelectDlg::okEvent (); }
    virtual void command (int action) {
       ICarddeckSelectDlg::command (action);
-      (obj.*pCallback) (*this); }
+      if (action == Gtk::RESPONSE_APPLY)
+         (obj.*pCallback) (*this);
+   }
 
  private:
    T& obj;
