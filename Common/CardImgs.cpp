@@ -63,9 +63,10 @@ const Gdk_Pixmap& CardImages::getCardImage (unsigned int nr) const {
 //Parameters: parent: Parent window
 //            path: Path to files
 //            back: File containing background picture
+//            thread: Flag if loading in thread
 /*--------------------------------------------------------------------------*/
 void CardImages::load (const Gdk_Window& parent, const std::string& path,
-                       const std::string& back) throw (std::string) {
+                       const std::string& back, bool thread) throw (std::string) {
    TRACE1 ("CardImages::load (const Gdk_Window&, const char*) - " << path);
 
    std::string file (path);
@@ -81,9 +82,11 @@ void CardImages::load (const Gdk_Window& parent, const std::string& path,
       temp = file + nr.toUnformatedString () + ".xpm";
       TRACE3 ("CardImages::load (const Gdk_Window&, const char*) - File " << temp);
 
-      gdk_threads_enter ();
+      if (thread)
+         gdk_threads_enter ();
       cards_[i].create_from_xpm (parent, color, temp);
-      gdk_threads_leave ();
+      if (thread)
+         gdk_threads_leave ();
 
       if (errno)
          break;
@@ -92,9 +95,11 @@ void CardImages::load (const Gdk_Window& parent, const std::string& path,
    if (!errno) {
       TRACE3 ("CardImages::load (const Gdk_Window&, const char*) - File " << back);
 
-      gdk_threads_enter ();
+      if (thread)
+         gdk_threads_enter ();
       back_.create_from_xpm (parent, color, back);
-      gdk_threads_leave ();
+      if (thread)
+         gdk_threads_leave ();
    }
    if (errno) {
       std::string error (_("Can't create picture from file `%1'!\nReason: %2"));

@@ -35,11 +35,12 @@ class CardImages {
    void setCardBackground (const Gdk_Pixmap& back) { back_ = back; }
 
    void load (const Gdk_Window& parent, const std::string& path,
-              const std::string& back) throw (std::string);
+              const std::string& back, bool thread = true) throw (std::string);
    void load (unsigned int cards, const Gdk_Window& parent,
-              const std::string& path, const std::string& back) throw (std::string) {
+              const std::string& path, const std::string& back,
+              bool thread = true) throw (std::string) {
       cards_.reserve (cards);
-      load (parent, path, back); }
+      load (parent, path, back, thread); }
 
    unsigned int numberOfCards () const { return cards_.size (); }
 
