@@ -39,6 +39,9 @@ namespace YGP {
    class CardSet;
    class StatusObject;
 }
+namespace XGP {
+   class MessageDlg;
+}
 namespace Gtk {
    class Statusbar;
 }
@@ -92,6 +95,7 @@ class Machiavelli : public Game {
    unsigned int cardFitsToPile (const CardWidget& card, unsigned int offset);
    unsigned int reorderTableToFit (ICardPile& playerPile);
    unsigned int reorderTableToFit2 (ICardPile& playerPile);
+   unsigned int reorderTableToFit3 (ICardPile& playerPile);
    //@}
 
    /// name Drag-and-drop methods
@@ -146,15 +150,23 @@ class Machiavelli : public Game {
       unsigned int destPile : 8;
       unsigned int srcPile : 8;
       unsigned int number : 4;
+      unsigned int create : 1;
 
       undoValue (unsigned int targetPile, unsigned int targetPos,
                  unsigned int pile, unsigned int pos, unsigned int nr)
           : destPos (targetPos), srcPos (pos), destPile (targetPile)
-       , srcPile (pile), number (nr) { }
+       , srcPile (pile), number (nr), create (false) { }
+      undoValue (unsigned int targetPile, unsigned int targetPos,
+                 unsigned int pile, unsigned int pos, unsigned int nr,
+                 bool createPile)
+          : destPos (targetPos), srcPos (pos), destPile (targetPile)
+       , srcPile (pile), number (nr), create (createPile) { }
    } undoValue;
 
    std::stack<undoValue> undo;
    std::stack<unsigned int> posPiles;
+
+   XGP::MessageDlg* undoDlg;
 };
 
 #endif
