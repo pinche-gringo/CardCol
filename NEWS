@@ -1,6 +1,10 @@
 Overview of changes in version 0.7.03:
 
   - Fixed bugs in Buraco
+  - Buraco can undo last move and has menu to sort the cards of the player
+  - Machiavelli got undo-menus
+  - Sgt. Mayors plays now in clockwise direction, as the other games
+  - Needs libYGP 0.7.01
 
 Overview of changes in version 0.7.02:
 
