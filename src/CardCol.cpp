@@ -776,12 +776,14 @@ void CardgameCollection::startGame () {
          delete game;
       }
 
-      if (oldGame == GBURACO) {
+      if (oldGame >= GBURACO) {
          TRACE9 ("CardgameCollection::startGame () - Cleaning buraco cards");
          cards.clear ();
-         cardFaces.delImage (cardFaces.size () - 1);
-         cardFaces.delImage (cardFaces.size () - 1);
-         cardFaces.delImage (cardFaces.size () - 1);
+         if (oldGame == GBURACO) {
+            cardFaces.delImage (cardFaces.size () - 1);
+            cardFaces.delImage (cardFaces.size () - 1);
+            cardFaces.delImage (cardFaces.size () - 1);
+         }
          cards.addPacket (cardFaces);
       }
 
@@ -816,6 +818,9 @@ void CardgameCollection::startGame () {
          break;
 
       case GMACHIAVELLI:
+         cards.addPacket (cardFaces);
+         cards.addPacket (cardFaces);
+         cards.addPacket (cardFaces);
          game = new TGame<Machiavelli, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;

@@ -43,6 +43,7 @@ class ICarddeckSelectDlg;
 // Class to handle the Rovhult-cardgame
 class CardgameCollection : public XApplication {
  public:
+   // IDs of games. The games starting with GBURACO get 4 decks!
    typedef enum { NONE = -1, GROVHULT = 0, GTWOPART, GHEARTS, GBURACO,
                   GMACHIAVELLI, GLAST } games;
 
