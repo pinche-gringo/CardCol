@@ -31,27 +31,17 @@
 #include <gtk--/button.h>
 #include <gtk--/separator.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Trace_.h>
-#include <ANumeric.h>
 
 #include "HeartsScore.h"
 
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : (Default-)Constructor; Shows the dialog
-//Parameters: points0: Points of player 0
-//            points1: Points of player 1
-//            points2: Points of player 2
-//            points3: Points of player 3
 /*--------------------------------------------------------------------------*/
-HeartsScoreDlg::HeartsScoreDlg (unsigned int points0, unsigned int points1,
-                                unsigned int points2, unsigned int points3)
+HeartsScoreDlg::HeartsScoreDlg ()
    : Dialog (), client (new Gtk::HBox), ok (new Gtk::Button (_("OK"))) {
-   TRACE9 ("HeartsScoreDlg::HeartsScoreDlg (unsinged int, unsinged int, "
-           "unsinged int, unsinged int) - " << points0 << '/' << points1
-           << '/' << points2 << '/' << points3);
+   TRACE9 ("HeartsScoreDlg::HeartsScoreDlg (4 x unsinged int)");
    Check3 (ok);
    ok->set_usize (90, 30);
    ok->show ();
@@ -59,6 +49,8 @@ HeartsScoreDlg::HeartsScoreDlg (unsigned int points0, unsigned int points1,
    get_action_area ()->pack_start (*ok, false, false, 5);
    ok->set_flags (GTK_CAN_DEFAULT);
    ok->grab_default ();
+
+   set_title (_("Score"));
 
    for (unsigned int i (0);
         i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i) {
@@ -73,8 +65,6 @@ HeartsScoreDlg::HeartsScoreDlg (unsigned int points0, unsigned int points1,
    client->show ();
    get_vbox ()->pack_start (*client, false, false, 5);
 
-
-   addPoints (points0, points1, points2, points3);
    show ();
 }
 
@@ -94,11 +84,20 @@ HeartsScoreDlg::~HeartsScoreDlg () {
 /*--------------------------------------------------------------------------*/
 void HeartsScoreDlg::addPoints (unsigned int points0, unsigned int points1,
                                 unsigned int points2, unsigned int points3) {
-   static unsigned int* values[] = { &points0, &points1, &points2, &points3 };
+   TRACE9 ("HeartsScoreDlg::addPoints (4 x unsinged int) - " << points0 << '/'
+           << points1 << '/' << points2 << '/' << points3);
+   unsigned int values[] = { points0, points1, points2, points3 };
+   addPoints (values);
+}
 
-   for (unsigned int i (0);
-        i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i) {
-      aColumns[i].addEntry (*values[i]);
+/*--------------------------------------------------------------------------*/
+//Purpose   : Adds a line to the scores
+//Parameters: aPoints: Array of (4) points
+/*--------------------------------------------------------------------------*/
+void HeartsScoreDlg::addPoints (unsigned int aPoints[4]) {
+   for (unsigned int i (0); i < 4; ++i) {
+      TRACE5 ("HeartsScoreDlg::addPoints (unsinged int[4]) - " << aPoints[i]);
+      aColumns[i].addEntry (aPoints[i]);
    }
 }
 
@@ -116,15 +115,15 @@ void HeartsScoreDlg::command (commands cmd) {
 /*--------------------------------------------------------------------------*/
 HeartsScoreDlg::column::column ()
    : pBox (new Gtk::VBox ()) , pTitle (new Gtk::Label ())
-     , pSum (new Gtk::Label ()) , pSep (new Gtk::HSeparator ()) {
+     , pSum (new IntLabel (0)) , pSep (new Gtk::HSeparator ()) {
    pBox->show ();
    pTitle->show ();
    pSum->show ();
    pSep->show ();
 
-   pBox->pack_start (*pTitle, false, false, 5);
-   pBox->pack_end (*pSep, false, false, 5);
-   pBox->pack_end (*pSum, false, false, 5);
+   pBox->pack_start (*pTitle, false, false, 0);
+   pBox->pack_end (*pSum, false, false, 0);
+   pBox->pack_end (*pSep, false, false, 0);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -140,10 +139,12 @@ HeartsScoreDlg::column::~column () {
 /*--------------------------------------------------------------------------*/
 void HeartsScoreDlg::column::addEntry (unsigned int points) {
    Check3 (pBox); 
-   Gtk::Label* label (Gtk::manage (new Gtk::Label
-                                   (ANumeric::toString ((unsigned long)points))));
+   IntLabel* label (Gtk::manage (new IntLabel (points)));
    label->show ();
-   pBox->pack_start (*label, false, false, 5);
+   pBox->pack_start (*label, false, false, 0);
+
+   pSum->getAttribute () += points;
+   pSum->update ();
 }
 
 /*--------------------------------------------------------------------------*/

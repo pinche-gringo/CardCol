@@ -25,6 +25,8 @@
 #include <Check.h>
 
 #include <SmartPtr.h>
+#include <XAttrLabel.h>
+
 
 namespace Gtk {
    class HBox;
@@ -38,22 +40,15 @@ namespace Gtk {
 // Class to display the score of the Hearts cardgame
 class HeartsScoreDlg : public Gtk::Dialog {
  public:
-   HeartsScoreDlg (unsigned int points0, unsigned int points1,
-                   unsigned int points2, unsigned int points3);
+   HeartsScoreDlg ();
    virtual ~HeartsScoreDlg ();
 
-   static HeartsScoreDlg* perform (unsigned int points0, unsigned int points1,
-                                   unsigned int points2, unsigned int points3) {
-      return new HeartsScoreDlg (points0, points1, points2, points3); }
-   static HeartsScoreDlg* perform (unsigned int aPoints[4]) {
-      Check1 (aPoints);
-      return new HeartsScoreDlg (aPoints[0], aPoints[1], aPoints[2], aPoints[3]); }
+   static HeartsScoreDlg* perform () {
+      return new HeartsScoreDlg (); }
 
    void addPoints (unsigned int points0, unsigned int points1,
                    unsigned int points2, unsigned int points3);
-   void addPoints (unsigned int aPoints[4]) {
-      Check1 (aPoints);
-      addPoints (aPoints[0], aPoints[1], aPoints[2], aPoints[3]); }
+   void addPoints (unsigned int aPoints[4]);
 
  protected:
    typedef enum { OK } commands;
@@ -83,9 +78,12 @@ class HeartsScoreDlg : public Gtk::Dialog {
       Gtk::Box& getBox () const { return *pBox; }
 
     private:
+      typedef XAttributeLabel<unsigned int> IntLabel;
+      typedef SmartPtr<IntLabel>            PIntLabel;
+
       PBox       pBox;
       PLabel     pTitle;
-      PLabel     pSum;
+      PIntLabel  pSum;
       PSeparator pSep;
    } aColumns[4];
 };
