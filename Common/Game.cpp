@@ -65,9 +65,9 @@
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             const std::vector<Player*>& player, unsigned int rows,
             unsigned int columns)
-   : Gtk::Table (rows, columns), statGame (INITIALIZING), status (statusbar)
+   : Gtk::Table (rows, columns), statGame (NONE), status (statusbar)
      , cards (cardset), restart (false), pWonPile (NULL), pMenuPopSort (NULL)
-     , actPlayers (player) {
+     , actPlayers (player), data (NULL) {
    TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, std::vector<Player*>,"
            "unsinged int, unsigned int)");
    Check3 (cardset.size ());
@@ -94,8 +94,8 @@ Game::~Game () {
 //-----------------------------------------------------------------------------
 void Game::start () {
    TRACE9 ("Game::start ()");
-   Check3 ((statGame == INITIALIZING) || (statGame == STOPPED));
-   if (statGame != INITIALIZING)
+   Check3 ((statGame <= INITIALIZING) || (statGame == STOPPED));
+   if (statGame == STOPPED)
       clean ();
 
    setGameStatus (PLAYING);
@@ -110,7 +110,6 @@ void Game::start () {
       for (std::vector<Socket*>::const_iterator i (cmgr->getClients ().begin ());
            i != cmgr->getClients ().end (); ++i) {
          writeMessage (**i, msg);
-         readResponse (**i);
       }
    }
 }
@@ -162,10 +161,8 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
    // Randomize and put cards onto staple
    ConnectionMgr* cmgr (getConnectionMgr ());
    if (cmgr && (cmgr->getMode () == ConnectionMgr::CLIENT)) {
-      std::string input;
-      Check3 (cmgr->getSocket ());
-      readMessage (*cmgr->getSocket (), input);
-      TRACE9 ("Game::randomizeCardsToPile (ICardPile&) - Receiving: " << input);
+      Check3 (data);
+      std::string input (data);
 
       AttributeParse ap;
       ATTRIBUTE (ap, std::string, input, "Cards");
@@ -217,7 +214,6 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
          for (std::vector<Socket*>::const_iterator i (cmgr->getClients ().begin ());
               i != cmgr->getClients ().end (); ++i) {
             writeMessage (**i, msg.str ());
-            readResponse (**i);
          }
       }
    }
@@ -550,55 +546,52 @@ void Game::writeError (Socket& socket, unsigned int rc, const std::string& msg) 
 }
 
 //----------------------------------------------------------------------------
-/// Reads a message form the partner
-/// \param socket: Socket to read message from
-/// \param msg: Read message
-//----------------------------------------------------------------------------
-void Game::readMessage (Socket& socket, std::string& msg) {
-   try {
-      socket.read (msg);
-   }
-   catch (std::domain_error& error) {
-      std::string err (_("Can't read message!\n\nReason: %1"));
-      err.replace (err.find ("%1"), 2, error.what ());
-      Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dlg.set_title (PACKAGE);
-      dlg.run ();
-   }
-}
-
-//----------------------------------------------------------------------------
 /// Reads the response from the partner.
 ///
 /// The response must be in the format:
 /// <pre>  <b>Error</b>=<tt>Number</tt>;<b>Msg</b>="<tt>message</tt>"</pre>
 /// \param socket: Socket to read response from
 //----------------------------------------------------------------------------
-void Game::readResponse (Socket& socket) {
-   std::string msg;
+void Game::checkResponse (const char* msg) {
+   std::string message;
    try {
-      socket.read (msg);
-
       unsigned int rc (0);
       AttributeParse ap;
-      ATTRIBUTE (ap, std::string, msg, "Msg");
+      ATTRIBUTE (ap, std::string, message, "Msg");
       ATTRIBUTE (ap, unsigned int, rc, "Error");
 
       ap.assignValues (msg);
       if (!rc)
          msg = "";
    }
-   catch (std::domain_error& error) {
-      msg = _("Can't read response!\n\nReason: %1");
-      msg.replace (msg.find ("%1"), 2, error.what ());
-   }
    catch (std::string& error) {
-      msg = _("Invalid response!\n\nReason: %1");
-      msg.replace (msg.find ("%1"), 2, error);
-   }
-   if (msg.size ()) {
-      Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      message = _("Invalid response!\n\nReason: %1");
+      message.replace (message.find ("%1"), 2, error);
+      Gtk::MessageDialog dlg (message, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dlg.set_title (PACKAGE);
       dlg.run ();
    }
+}
+
+//----------------------------------------------------------------------------
+/// Handles a message send from the server
+/// \param msg: Message to handle
+//----------------------------------------------------------------------------
+void Game::handleMessage (const char* msg) {
+   TRACE1 ("Game::handleMessage (const char*) - " << msg);
+   Check1 (data == NULL);
+
+   switch (statGame) {
+   case NONE:
+      statGame = INITIALIZING;
+      data = msg;
+      start ();
+      break;
+
+   case INITIALIZING:
+      checkResponse (msg);
+      break;
+   }
+
+   data = NULL;
 }

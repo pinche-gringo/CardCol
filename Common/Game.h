@@ -22,6 +22,9 @@
 
 #include <gtkmm/table.h>
 
+#include <Mutex.h>
+
+
 // Forward declarations
 namespace Gtk {
    class Box;
@@ -40,7 +43,8 @@ class ConnectionMgr;
 class Game : public Gtk::Table {
  public:
    /// Stati of the game
-   enum { INITIALIZING,          ///< Initialization phase (dealing cards, ...)
+   enum { NONE,                            ///< Class created; game not started
+          INITIALIZING,          ///< Initialization phase (dealing cards, ...)
           STOPPED,                                     ///< Game has been ended
           TOSTOP,        ///< Game should be ended (but can't be at the moment)
           PLAYING,                                    ///< Game is being played
@@ -86,13 +90,14 @@ class Game : public Gtk::Table {
 
    /// \name Communication helper methods
    //@{
+   virtual void handleMessage (const char* msg);
+
    static bool readTurn (Socket& socket);
    static bool writeTurn (Socket& socket, unsigned int start, unsigned int end);
    static void writeError (Socket& socket, unsigned int rc, const std::string& msg);
    static void writeOK (Socket& socket) { return writeMessage (socket, "Error=0"); }
    static void writeMessage (Socket& socket, const std::string& msg);
-   static void readMessage (Socket& socket, std::string& msg);
-   static void readResponse (Socket& socket);
+   static void checkResponse (const char* msg);
    //@}
 
  protected:
@@ -130,6 +135,8 @@ class Game : public Gtk::Table {
 
  private:
    bool enableActWonCards ();
+
+   const char* data;                                   // Data send from server
 
    unsigned int statGame;
 
