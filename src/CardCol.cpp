@@ -1124,8 +1124,6 @@ bool CardgameCollection::restartGame () {
       else {
          TRACE9 ("CardgameCollection::restartGame () - Delaying stop of game");
          game->end ((options.type == oldGame) ? restart : false);
-         if (options.type == oldGame)
-            restart = false;
          return false;
       }
    }
@@ -1281,7 +1279,7 @@ void* CardgameCollection::waitForMessages (void*) {
       Check3 (actClient < aPlayer.size ());
       msg.replace (msg.find ("%1"), 2, 
                    (cmgr.getMode () == ConnectionMgr::CLIENT
-                    ? Glib::locale_to_utf8 ("the server")
+                    ? _("the server")
                     : aPlayer[actClient]->getName ()));
       char* charmsg (new char [msg.length () + 1]);
       strcpy (charmsg, msg.c_str ());
