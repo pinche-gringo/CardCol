@@ -24,8 +24,11 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#include <cardgames-cfg.h>
+
 #include <time.h>
 #include <stdlib.h>
+#include <locale.h>
 
 #define DEBUG 9
 #include <Check.h>
@@ -180,13 +183,15 @@ const char* RovhultAppl::xpmAuthor[] = {
    "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" };
 
 
+// With a very ugly trick initialize I18n before the first use of gettext)
 XApplication::MenuEntry RovhultAppl::menuItems[] = {
-    { "/_Game",           "",           0,         "<Branch>" },
-    { "/_Game/_New",      "<alt>N",     NEW,       "" },
-    { "/_Game/",           "",           0,         "<Separator>" },
-    { "/_Game/E_xit",      "<alt>q",     EXIT,      "" },
-    { "/_Help",           "",           0,         "<LastBranch>" },
-    { "/Help/_About...",  "<alt>a",     ABOUT,     "" } };
+    { (RovhultAppl::initI18n (),
+      _("_Game")),     _("<alt>G"), 0,     BRANCH },
+    { _("_New"),      _("<ctl>N"), NEW,   ITEM },
+    { "",             "",          0,     SEPARATOR },
+    { _("E_xit"),     _("<ctl>Q"), EXIT,  ITEM },
+    { _("_Help"),     _("<alt>H"), 0,     LASTBRANCH },
+    { _("_About..."), _("<alt>a"), ABOUT, ITEM } };
 
 
 /*--------------------------------------------------------------------------*/
@@ -194,23 +199,37 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
 /*--------------------------------------------------------------------------*/
 RovhultAppl::RovhultAppl ()
    : XApplication (PACKAGE " - Rovhult V" VERSION), status ()
-   , tblTable (16, 19), cards (), cardsOnStaple (cards.getCardNumber ()) {
+     , tblTable (16, 19), cards (), staple (CardPile::VERY_COMPRESSED) {
    set_usize (WIDTH, HEIGHT);
 
-   addMenu (*menuItems);
+   addMenus (menuItems, sizeof (menuItems) / sizeof (menuItems[0]));
 
    // Create controls
    tblTable.show ();
    getClient ()->pack_start (tblTable, true, true, 5);
 
-   status.push (1, "Start a new game with Alt+N (or Game -> New)");
+   status.push (1, _("Start a new game with Ctrl+N (or Game -> New)"));
    status.show ();
    getClient ()->pack_start (status, false);
 
-   show ();
+   staple.show ();
+   tblTable.attach (staple, 3, 4, 2, 4, 0, 0);
 
-   dealCards ();
+   show ();
+   cards.load (staple.get_window ());   // Cards need an realized (!) parent be loaded
+      fillStaple ();
 }
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Destructor
+/*--------------------------------------------------------------------------*/
+RovhultAppl::~RovhultAppl () {
+   TRACE9 ("RovhultAppl::~RovhultAppl ()");
+   tblTable.hide ();
+   status.hide ();
+   hide ();
+}
+
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Command-handler
@@ -244,41 +263,56 @@ void RovhultAppl::command (int menu) {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Shuffles (Randomizes) and deals the cards
 /*--------------------------------------------------------------------------*/
+void RovhultAppl::fillStaple () {
+   // Randomize cards into staple
+   for (int i (cards.getCardNumber () - 1); i >= 0;) {
+      int nr (rand () % cards.getCardNumber ());
+
+      // Search if card already exist in staple (TODO?: Optimize?)
+      CardWidget* card (cards.getCard (nr)); Check3 (card);
+      if (staple.existCard (card))
+         continue;
+
+      TRACE9 ("RovhultAppl::fillStaple () - Add to staple: " << nr);
+      staple.setTopCard (card, false);
+      card->show ();
+      --i;
+   }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Shuffles (Randomizes) and deals the cards
+/*--------------------------------------------------------------------------*/
 void RovhultAppl::dealCards () {
+   TRACE9 ("RovhultAppl::dealCards ()");
+
    // Show cards on table
    for (int i (0); i < NUM_PLAYERS; ++i) {
       for (int j (0); j < 3; ++j) {
-         int card (/* rand () % */ --cardsOnStaple);
-         TRACE9 ("RovhultAppl::dealCards () - Showing card " << card);
-
-	 CardWidget* pCard (cards.getCard (card)); Check3 (pCard);
-	 pCard->set_sensitive (false);
-         pCard->show ();
+         CardWidget* pCard (staple.removeTopCard ()); Check3 (pCard);
+         //         pCard->set_sensitive (false);
 
          tblTable.attach (*pCard, COLS_PLAYER[i]  + (j << 1),
                           COLS_PLAYER[i] + 1 + (j << 1), ROWS_PLAYER[i],
                           ROWS_PLAYER[i] + 2, 0, 0, 1);
-	 TRACE9 ("RovhultAppl::dealCards () - 1set set at: "
-		 << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
+         TRACE9 ("RovhultAppl::dealCards () - 1st set at: "
+                 << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
       }
    } // endfor all players
 
    // Show cards in hand
    for (int i (0); i < NUM_PLAYERS; ++i) {
       for (int j (0); j < 3; ++j) {
-         int card (/* rand () % */ --cardsOnStaple);
-         TRACE9 ("RovhultAppl::dealCards () - Showing card " << card);
-
-	 CardWidget* pCard (cards.getCard (card)); Check3 (pCard);
+         CardWidget* pCard (staple.removeTopCard ()); Check3 (pCard);
          pCard->show ();
          tblTable.attach (*pCard, COLS_PLAYER[i] + (j << 1),
                           COLS_PLAYER[i] + (j << 1)  + 1,
                           ROWS_PLAYER[i] + (i ? 3 : -3),
                           ROWS_PLAYER[i] + (i ? 3 : -3) + 2
                           , 0, 0, 1);
-	 TRACE9 ("RovhultAppl::dealCards () - 2nd set at: "
-		 << COLS_PLAYER[i] + (j << 1) << '/'
-		 << ROWS_PLAYER[i] + (i ? 3 : -3));
+         TRACE9 ("RovhultAppl::dealCards () - 2nd set at: "
+                 << COLS_PLAYER[i] + (j << 1) << '/'
+                 << ROWS_PLAYER[i] + (i ? 3 : -3));
       }
    } // endfor all players
 }
@@ -295,6 +329,15 @@ void RovhultAppl::size_allocate_impl (GtkAllocation* size) {
       //tblTable.set_usize (size->width 600 - XWIDTH);
       XApplication::size_allocate_impl (size);
    }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Initializes the programm for internationalication
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::initI18n () {
+   setlocale (LC_ALL, "");                          // Activate current locale
+   bindtextdomain (PACKAGE, LOCALEDIR);     // Specify messagefile for gettext
+   textdomain (PACKAGE);
 }
 
 
