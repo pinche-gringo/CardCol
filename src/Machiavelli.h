@@ -19,6 +19,7 @@
 
 
 #include <map>
+#include <stack>
 #include <vector>
 
 #include <gtkmm/label.h>
@@ -33,9 +34,11 @@
 
 
 // Forward declarations
-class Mutex;
-class CardSet;
-
+namespace YGP {
+   class Mutex;
+   class CardSet;
+   class StatusObject;
+}
 namespace Gtk {
    class Statusbar;
 }
@@ -80,8 +83,10 @@ class Machiavelli : public Game {
    void setStartPlayer ();
    unsigned int findNextPlayer (unsigned int player) const;
    MachiPile& makeNewPile ();
+   void removePile (unsigned int pile);
    unsigned int showCardsToPlay (unsigned int player);
    void dealCard (unsigned int player);
+   void checkPiles (YGP::StatusObject& obj) const;
    //@}
 
    /// name Drag-and-drop methods
@@ -107,6 +112,7 @@ class Machiavelli : public Game {
    /// name Callback from events
    //@{
    void stapleSelected ();
+   void undoMove (unsigned int number);
    //@}
 
    Gtk::Label names[NUM_PLAYERS];                        // Names of the player
@@ -128,6 +134,8 @@ class Machiavelli : public Game {
    std::map<CardWidget*, CONNECTIONS> aDNDTable;
 
    unsigned int target;       // Target of the last move of the computer player
+
+   std::stack<unsigned int> undo;
 };
 
 #endif

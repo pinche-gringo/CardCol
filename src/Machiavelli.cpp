@@ -434,8 +434,34 @@ void Machiavelli::stapleSelected () {
    Check1 (gameStatus () == PLAYING);
    Check3 (staple.size ()); Check3 (activeCards.size ());
 
-   if (!checkPiles ())
+   // Show error, if any
+   YGP::StatusObject obj;
+   checkPiles (obj);
+   if (obj.getType () != YGP::StatusObject::UNDEFINED) {
+      obj.abstract (_("The piles are not valid!"));
+      XGP::MessageDlg dlg (obj);
+      dlg.set_title (_("Invalid move"));
+
+      // Add undo-buttons
+      Gtk::Button undoAll (_("_Undo all"), true);
+      Gtk::Button undoLast (_("Undo _last"), true);
+
+      undoAll.show ();
+      undoLast.show ();
+      dlg.get_action_area ()->pack_end (undoAll, Gtk::PACK_SHRINK, 5);
+      dlg.get_action_area ()->pack_end (undoLast, Gtk::PACK_SHRINK, 5);
+
+      undoAll.signal_clicked ().connect
+          (bind (slot (*this, &Machiavelli::undoMove), -1U));
+      undoLast.signal_clicked ().connect
+          (bind (slot (*this, &Machiavelli::undoMove), 1));
+
+      dlg.run ();
       return;
+   }
+
+   while (undo.size ())
+      undo.pop ();
 
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
@@ -720,20 +746,27 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    // End old drag
    context->drag_finish (true, false, time);
 
+   // Send move
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+      std::ostringstream msg;
+      msg << "Play=" << src[off]->id () << ";Target="
+          << (iPile << 16) + iCard + 100;
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+          ignoreNextMsg = true;
+      broadcastMessage (msg.str ());
+   }
+
+   // Store undo-info: 4 Bytes: Target-pile, target-card, source-pile,
+   //source-card; if played from hand, set source-pile to 0xffff
+   undo.push ((iPile << 24) + (iCard << 16)
+              + ((info == HAND) ? (0xff00 | *pValue) : *pValue));
+   TRACE8 ("Machiavelli::cardDroppedOnTable (...) - Undo: " << std::hex
+           << undo.top () << std::dec);
+
    while (nr--) {
       TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Insert to: " << iPile
               << "; Pos: " << iCard);
       Check3 (iCard != -1U);
-
-      // Send move
-      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-         std::ostringstream msg;
-         msg << "Play=" << src[off]->id () << ";Target="
-             << (iPile << 16) + iCard + 100;
-         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-             ignoreNextMsg = true;
-         broadcastMessage (msg.str ());
-      }
 
       // Unregister old card
       src.remove (off);
@@ -798,7 +831,7 @@ unsigned int Machiavelli::findNextPlayer (unsigned int player) const {
 /// \returns MachiPile&: New created pile
 //-----------------------------------------------------------------------------
 MachiPile& Machiavelli::makeNewPile () {
-   TRACE9 ("Machi::makeNewPile ()");
+   TRACE9 ("Machiavelli::makeNewPile ()");
 
    MachiPile* pile (new MachiPile ());
    pile->show ();
@@ -880,11 +913,8 @@ void Machiavelli::dealCard (unsigned int player) {
 
 //----------------------------------------------------------------------------
 /// Checks, if all the piles on the table are valid
-/// \return bool: True, if piles are valid 
 //----------------------------------------------------------------------------
-bool Machiavelli::checkPiles () const {
-   YGP::StatusObject obj;
-
+void Machiavelli::checkPiles (YGP::StatusObject& obj) const {
    for (std::vector<MachiPile*>::const_iterator i (tablePiles.begin ());
         i != tablePiles.end (); ++i) {
        try {
@@ -900,14 +930,66 @@ bool Machiavelli::checkPiles () const {
            obj.setMessage (YGP::StatusObject::ERROR, msg);
        }
    }
+}
 
-   // Show error, if any
-   if (obj.getType () != YGP::StatusObject::UNDEFINED) {
-      obj.abstract (_("The piles are not valid!"));
-      XGP::MessageDlg dlg (obj);
-      dlg.set_title (_("Invalid move"));
-      dlg.run ();
-      return false;
+//----------------------------------------------------------------------------
+/// Undoes the passed number of moves (starting from the last)
+/// \param number: Number of moves to undo 
+//----------------------------------------------------------------------------
+void Machiavelli::undoMove (unsigned int number) {
+   TRACE3 ("Machiavelli::undoMove (unsigned int) - Undo " << number);
+   Check2 (number);
+
+   if (undo.empty ())
+      return;
+
+   if (number > undo.size ())
+      number = undo.size ();
+
+   disableHuman ();
+   while (number--) {
+      unsigned int move (undo.top ());
+      undo.pop ();
+      TRACE3 ("Machiavelli::undoMove (unsigned int) - " << std::hex
+              << (move >> 16) << " -> " << (move & 0xffff) << std::dec);
+
+      unsigned char tmp (move >> 8);
+      ICardPile& dest ((tmp == 0xff)
+                       ? hands[currentPlayer ()] : *tablePiles[tmp]);
+      Check3 ((move & 0xff) <= dest.size ());
+
+      tmp = move >> 24;
+      Check3 (tmp < tablePiles.size ());
+      MachiPile& src (*tablePiles[tmp]);
+
+      tmp = move >> 16;
+      Check3 (tmp < src.size ());
+
+      do {
+         dest.insert (src.remove (tmp), move & 0xff);
+      } while ((move & 0xff) && (tmp < src.size ()));
+
+      if (src.empty ()) {
+         tmp = move >> 24;
+         removePile (tmp);
+      }
    }
-   return true;
+
+   enableHuman ();
+}
+
+//----------------------------------------------------------------------------
+/// Removes the passed pile from the table and internally
+/// \param pile: Offset of pile to remove 
+//----------------------------------------------------------------------------
+void Machiavelli::removePile (unsigned int pile) {
+   TRACE9 ("Machiavelli::removeNewPile (unsigned int) - " << pile);
+   Check1 (pile < tablePiles.size ());
+
+   MachiPile& tmp (*tablePiles[pile]);
+   Check3 (tmp.empty ());
+
+   tablePiles.erase (tablePiles.begin () + pile);
+   piles.remove (tmp);
+   delete &tmp;
 }
