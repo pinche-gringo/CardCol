@@ -3,13 +3,12 @@
 bin_PROGRAMS=CardCol
 
 CardCol_SOURCES=CardCol.cpp Twopart.cpp Rovhult.cpp Hearts.cpp HeartsScore.cpp\
-		Burazno.cpp Twopart.h Rovhult.h Hearts.h HeartsScore.h\
+		Buraco.cpp Buraco.h Twopart.h Rovhult.h Hearts.h HeartsScore.h\
 		Options.h CardCol.h SigCExt.h
 
+INCLUDES = @INCLUDES@ -I../Common @CARDGAME_CFLAGS@
 
-INCLUDES = @INCLUDES@ -I../Common @GTKMM_CFLAGS@
-
-CardCol_LDFLAGS=-L../Common -lCard  @GTKMM_LIBS@ `pkg-config --libs gthread-2.0`
+CardCol_LDFLAGS=-L../Common -lCard @CARDGAME_LIBS@
 
 EXTRA_DIST=Options.meta
 
