@@ -37,7 +37,8 @@
 // Class to display a pile of cards on the screen
 class ICardPile {
  public:
-   typedef enum { NORMAL = 0, COMPRESSED, QUITE_COMPRESSED, VERY_COMPRESSED, LAST } PileStyle;
+   typedef enum { NORMAL = 0, COMPRESSED, QUITE_COMPRESSED, VERY_COMPRESSED,
+                  LAST } PileStyle;
    typedef enum { SHOWBACK = 0, SHOWFACE, DONT_CHANGE } ShowOpt;
 
    typedef bool (*CMPFUNC) (const CardWidget*, const CardWidget*);
@@ -82,20 +83,32 @@ class ICardPile {
       Check3 (pos < cards.size ()); return *cards[pos]; }
 
    int find (CardWidget& card, CMPFUNC fnComp) const {
-      CardWidget* const* low (lower_bound (cards.begin (), cards.end (),
-                                           &card, fnComp));
-      return (low != cards.end ()) ? (low - cards.begin ()) : -1; }
+      int pos (find1EqualOrBigger (card, fnComp));
+      return ((pos != -1)
+              && !fnComp (cards[pos], &card)) ? pos : -1; }
    int findByNr (CardWidget& card) const { return find (card, compCardsByNr); }
    int findByColor (CardWidget& card) const { return find (card, compCards); }
+   int find1EqualOrBigger (const CardWidget& card, CMPFUNC fnComp) const {
+      CardWidget* const* low (lower_bound (cards.begin (), cards.end (),
+                                           &card, fnComp));
+      return ((low != cards.end () && !fnComp (*low, &card))
+              ? (low - cards.begin ()) : -1); }
+   int find1EqualOrBiggerByNr (CardWidget& card) const {
+      return find1EqualOrBigger (card, compCardsByNr); }
+   int find1EqualOrBiggerByColor (CardWidget& card) const {
+      return find1EqualOrBigger (card, compCards); }
    int findFirstEqualOrBigger (CardWidget::NUMBERS nr) const;
    int findLastEqualOrBigger (CardWidget::NUMBERS nr) const {
       int pos (findFirstEqualOrBigger (nr));
       return (pos == -1) ? - 1 : findLastEqual (pos); }
    int findLastEqual (unsigned int pos) const;
 
-   bool exists (CardWidget::NUMBERS nr) const {
-      int pos (findFirstEqualOrBigger (nr));
-      return (pos != -1) && (at (pos).number () == nr); }
+   bool exists (CardWidget::NUMBERS nr, unsigned int start = 0) const {
+      for (; start < cards.size (); ++start)
+         if (cards[start]->number () == nr)
+            return true;
+      return false;
+   }
    bool exists (CardWidget& card) const { exists (&card); }
    bool exists (CardWidget* card) const {
       return ::find (cards.begin (), cards.end (), card) != cards.end (); }
