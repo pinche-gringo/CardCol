@@ -34,6 +34,8 @@
 
 #include <cardgames-cfg.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 #include <Socket.h>
@@ -159,17 +161,19 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
 /// Connects this application to a server
 /// \param target: Name or IP address of the server
 /// \param port: Port the server is listening at
+/// \throw std::domain_error: Does not throw;
 //----------------------------------------------------------------------------
-void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) {
+void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
+    throw (std::domain_error) {
    TRACE3 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - "
            << target << ':' << port);
-   ConnectDlg::connect (target, port);
-   Check1 (cmgr.getSocket ());
-
    Glib::ustring error;
-   Glib::ustring data ("Version=" STRPROTOCOLL ";Variant=" STRVARIANT ";Name=\""
-                       + aPlayer[0]->getName () + '"');
    try {
+      ConnectDlg::connect (target, port);
+      Check1 (cmgr.getSocket ());
+
+      Glib::ustring data ("Version=" STRPROTOCOLL ";Variant=" STRVARIANT ";Name=\""
+                          + aPlayer[0]->getName () + '"');
       cmgr.getSocket ()->write (data);
 
       std::string input;
@@ -178,7 +182,6 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) 
               "Received: " << input);
 
       Glib::ustring names;
-      Glib::ustring error;
       unsigned int rc (0);
       AttributeParse ap;
       ATTRIBUTE (ap, unsigned int, posPlayer, "Number");
