@@ -87,6 +87,10 @@ class Machiavelli : public Game {
    unsigned int showCardsToPlay (unsigned int player);
    void dealCard (unsigned int player);
    void checkPiles (YGP::StatusObject& obj) const;
+   void endGame ();
+   bool hasSerie (ICardPile& playerPile);
+   unsigned int cardFitsToPile (const CardWidget& card, unsigned int offset);
+   unsigned int reorderTableToFit (ICardPile& playerPile);
    //@}
 
    /// name Drag-and-drop methods
@@ -136,6 +140,7 @@ class Machiavelli : public Game {
    unsigned int target;       // Target of the last move of the computer player
 
    std::stack<unsigned int> undo;
+   std::vector<unsigned int> posPiles;
 };
 
 #endif
