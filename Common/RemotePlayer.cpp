@@ -48,5 +48,7 @@ bool RemotePlayer::makeTurn (Game* game) {
    TRACE1 ("RemotePlayer::makeTurn (Game*) - " << name);
    Check1 (game);
    Check1 (sock);
+
+   game->endTurn ();
    return false;
 }
