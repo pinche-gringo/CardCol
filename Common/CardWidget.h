@@ -38,7 +38,7 @@ class CardWidget : public Gtk::Button {
    void showBack ()  { showFace (false); }
    bool showsFace () const { return isVisible; }
 
-   typedef enum { CLUBS = 0, DIAMONDS, HEARTS, SPADES } COLORS;
+   typedef enum { CLUBS = 0, DIAMONDS, SPADES, HEARTS } COLORS;
    typedef enum { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
                   JACK, QUEEN, KING, ACE, UNREACHABLE } NUMBERS;
 
