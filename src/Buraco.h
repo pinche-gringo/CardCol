@@ -89,6 +89,7 @@ class Buraco : public Game {
    void doDumpedSelected ();
    void stapleSelected ();
    void doStapleSelected ();
+   bool doRegisterHand (unsigned int first, unsigned int last);
 
    //@Section helper methods
    void enableHumanHand ();

@@ -36,8 +36,6 @@
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/ConnMgr.h>
 #include <YGP/ANumeric.h>
 #include <YGP/Tokenize.h>
@@ -1033,8 +1031,24 @@ void Buraco::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
    }
 
    Glib::signal_idle ().connect
-   registerHandDND (card, *pValue);
+       (bind (mem_fun (*this, &Buraco::doRegisterHand), card, *pValue));
 }
+
+//-----------------------------------------------------------------------------
+/// Checks if the piles on the table are valid (have at least 3 cards)
+/// \param except: Pile which can be invalid
+/// \returns \c True, if the piles are OK
+//-----------------------------------------------------------------------------
+bool Buraco::doRegisterHand (unsigned int first, unsigned int last) {
+   TRACE9 ("Buraco::doRegisterHand (unsigned int, unsigned int) - [" << first << '-' << last);
+   Check1 (last < hands[0].size ());
+   Check1 (first <= last);
+
+   registerHandDND (first, last);
+   Check3 (aDNDHand.size () == hands[0].size ());
+   return false;
+}
+
 //-----------------------------------------------------------------------------
 /// Checks if the piles on the table are valid (have at least 3 cards)
 /// \param except: Pile which can be invalid
@@ -1262,6 +1276,8 @@ void Buraco::registerHandDND (unsigned int start, unsigned int end) {
    for (; start <= end; ++start) {
       TRACE9 ("Buraco::registerHandDND (unsigned int, unsigned int) - Handling card " << start);
 
+      activeCards[start].disconnect ();
+      activeCards[start] = hands[0][start]->signal_clicked ().connect
          (bind (mem_fun (*this, (&Buraco::cardSelected)), start));
 
       unregisterHandDND (*hands[0][start]);
@@ -1269,6 +1285,7 @@ void Buraco::registerHandDND (unsigned int start, unsigned int end) {
    }
    TRACE9 ("Buraco::registerHandDND (unsigned int, unsigned int) - End ");
 }
+
 //-----------------------------------------------------------------------------
 /// Checks, if the passed pile contains no cards except jokers or 2s. This is
 /// also true for empty piles.
