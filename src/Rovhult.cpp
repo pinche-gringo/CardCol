@@ -112,10 +112,10 @@ Rovhult::~Rovhult () {
 /*--------------------------------------------------------------------------*/
 void Rovhult::start () {
    Game::start ();
-   statGame = INITIALIZING;
+
+   setGameStatus (PREPLAYING);
    randomizeCardsToPile (staple);
    dealCards ();
-   statGame = PREPLAYING;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -143,7 +143,7 @@ void Rovhult::finishedExchange () {
 
 
    displayTurn (0);
-   statGame = PLAYING;
+   setGameStatus (PLAYING);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -282,8 +282,7 @@ void Rovhult::pileSelected (unsigned int player, unsigned int pile) {
       actPile.removeTopCard ();
       played.append (card);
       setNextPlayer (executeMove (player, CardWidget::UNREACHABLE) > 0);
-      if (currentPlayer () > 0)
-         makeNextMoves ();
+      makeNextMoves ();
       return;
    }
 
@@ -413,10 +412,7 @@ void Rovhult::handSelected (unsigned int player, unsigned int pos) {
    playCardsFromHand (player, pos);
 
    setNextPlayer (executeMove (player, card.number ()));
-
-   if (currentPlayer () >= 0)
-      // Start a timer to perform the computer-moves
-      makeNextMoves ();
+   makeNextMoves ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -472,7 +468,7 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
          stat = _("Player %1 lost");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
          status.push (1, stat);
-         stop ();
+         setGameStatus (STOPPED);
          return -1;
       }
 
@@ -509,7 +505,6 @@ void Rovhult::takeCards (unsigned int player) {
    TRACE2 ("Rovhult::takeCards (unsigned int) - " << player);
    setNextPlayer (executeMove (player, CardWidget::UNREACHABLE));
 
-   // Start a timer to perform the computer-moves
    makeNextMoves ();
 }
 
@@ -687,9 +682,9 @@ int Rovhult::nextAvailablePlayer (unsigned int actPlayer) const {
 //            any signals (DND)
 /*--------------------------------------------------------------------------*/
 void Rovhult::clean () {
-   TRACE9 ("Rovhult::clean () - Status: " << statGame);
+   TRACE9 ("Rovhult::clean () - Status: " << gameStatus ());
 
-   if (statGame == PREPLAYING)
+   if (gameStatus () == PREPLAYING)
       unregisterDND ();
 
    staple.clear ();                                             // Clear staple
@@ -715,7 +710,7 @@ void Rovhult::clean () {
 /*--------------------------------------------------------------------------*/
 void Rovhult::registerTableDND (CardWidget& card, unsigned int player,
                                     unsigned int pile) {
-   Check3 (statGame == INITIALIZING);
+   Check3 (gameStatus () == PREPLAYING);
 
    static Gdk_Colormap color (get_colormap ());
    static Gdk_Bitmap bitmap;
@@ -739,7 +734,7 @@ void Rovhult::registerTableDND (CardWidget& card, unsigned int player,
 /*--------------------------------------------------------------------------*/
 void Rovhult::registerHandDND (CardWidget& card, unsigned int player,
                                     unsigned int iCard) {
-   Check3 (statGame == INITIALIZING);
+   Check3 (gameStatus () == PREPLAYING);
 
    static Gdk_Colormap color (get_colormap ());
    static Gdk_Bitmap bitmap;
@@ -764,20 +759,19 @@ void Rovhult::unregisterDND (CardWidget& card) const {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Stops the drag´n´drop abilities of the passed card
+//Purpose   : Stops the drag´n´drop abilities of the cards of player 0
 //Parameters: card: Card to unregister of dnd
 /*--------------------------------------------------------------------------*/
 void Rovhult::unregisterDND () const {
-   TRACE9 ("Rovhult::unregisterDND () - Status: " << statGame);
-   Check3 (statGame == PREPLAYING);
+   TRACE9 ("Rovhult::unregisterDND () - Status: " << gameStatus ());
+   Check3 (gameStatus () == PREPLAYING);
 
-   if (players[0].hand.numberOfCards () == 3)
-      for (int i (0); i < 3; ++i) {
-         CardWidget& card (players[0].hand.at (i));
-         unregisterDND (card);
-         Check3 (players[0].reserve[i].numberOfCards () == 2);
-         unregisterDND (players[0].reserve[i].getTopCard ());
-      }
+   for (int i (0); i < players[0].hand.numberOfCards (); ++i) {
+      CardWidget& card (players[0].hand.at (i));
+      unregisterDND (card);
+      Check3 (players[0].reserve[i].numberOfCards () == 2);
+      unregisterDND (players[0].reserve[i].getTopCard ());
+   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1250,4 +1244,14 @@ void Rovhult::playOpen (bool open) {
                                 ? ICardPile::COMPRESSED
                                 : ICardPile::QUITE_COMPRESSED);
    }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : End the current game as soon as possible
+/*--------------------------------------------------------------------------*/
+void Rovhult::end (bool restart) {
+   if (gameStatus () == PREPLAYING)
+      unregisterDND ();
+
+   Game::end (restart);
 }
