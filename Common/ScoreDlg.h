@@ -41,7 +41,7 @@ class ScoreDlg : public XDialog {
    ScoreDlg (const std::vector<Glib::ustring>& playerNames);
    virtual ~ScoreDlg ();
 
-   static ScoreDlg* perform (const std::vector<Glib::ustring>& playerNames) {
+   static ScoreDlg* create (const std::vector<Glib::ustring>& playerNames) {
       return new ScoreDlg (playerNames); }
 
    void update (const std::vector<Glib::ustring>& playerNames);

@@ -36,8 +36,11 @@ class IPlayerDlg : public XDialog {
    IPlayerDlg (std::vector<Glib::ustring>& names);
    virtual ~IPlayerDlg ();
 
-   static IPlayerDlg* perform (std::vector<Glib::ustring>& names) {
-      return new IPlayerDlg (names); }
+   static IPlayerDlg* create (std::vector<Glib::ustring>& names) {
+      IPlayerDlg* dlg (new IPlayerDlg (names));
+      dlg->signal_delete_event ().connect (slot (*dlg, &XDialog::free));
+      return dlg;
+   }
 
  protected:
    virtual void okEvent ();
@@ -78,6 +81,7 @@ class PlayerDlg : public IPlayerDlg {
    static PlayerDlg* create (T& parent, PCALLBACK callback,
                              std::vector<Glib::ustring>& names) {
       PlayerDlg<T>* dlg (new PlayerDlg (parent, callback, names));
+      dlg->signal_delete_event ().connect (slot (*dlg, &XDialog::free));
       dlg->get_window ()->set_transient_for (parent.get_window ());
       return dlg;
    }
