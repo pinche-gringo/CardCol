@@ -31,7 +31,7 @@ class BuracoPile : public CardVPile {
    void setTopCard (CardWidget& newCard, bool visible) {
       CardVPile::setTopCard (newCard, visible); }
 
-   virtual void insert (CardWidget& card, unsigned int pos);
+   virtual unsigned int insert (CardWidget& card, unsigned int pos);
 
    virtual CardWidget& remove (CardWidget& card);
    CardWidget& remove (CardWidget& card, bool visible);

@@ -1345,7 +1345,10 @@ void Machiavelli::dealCard (unsigned int player) {
 
    if (staple.size ()) {
       CardWidget& card (staple.removeTopCard ());
-      player ? hands[player].insertSorted (card) : hands[0].append (card);
+      if (player)
+         hands[player].insertSorted (card);
+      else
+         hands[0].append (card);
    }
 }
 

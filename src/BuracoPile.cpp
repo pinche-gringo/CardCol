@@ -67,12 +67,14 @@ void BuracoPile::setTopCard (CardWidget& newCard) {
 /// \param card: Card to insert into the pile
 /// \param pos: Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
+/// \returns unsigned int: Position where card was inserted
 //----------------------------------------------------------------------------
-void BuracoPile::insert (CardWidget& card, unsigned int pos) {
+unsigned int BuracoPile::insert (CardWidget& card, unsigned int pos) {
    TRACE9 ("BuracoPile::insert (CardWidget&, unsigned int) - " << card
            << " to " << pos);
-   CardVPile::insert (card, pos);
+   unsigned int rc (CardVPile::insert (card, pos));
    analyzePile ();
+   return rc;
 }
 
 

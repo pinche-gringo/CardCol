@@ -64,12 +64,14 @@ void MachiPile::setTopCard (CardWidget& newCard) {
 /// \param card: Card to insert into the pile
 /// \param pos: Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
+/// \returns unsigned int: Position where card was inserted
 //----------------------------------------------------------------------------
-void MachiPile::insert (CardWidget& card, unsigned int pos) {
+unsigned int MachiPile::insert (CardWidget& card, unsigned int pos) {
    TRACE9 ("MachiPile::insert (CardWidget&, unsigned int) - " << card
            << " to " << pos);
-   CardHPile::insert (card, pos);
+   unsigned int rc (CardHPile::insert (card, pos));
    analyzePile ();
+   return rc;
 }
 
 
