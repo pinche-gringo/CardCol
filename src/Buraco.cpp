@@ -284,7 +284,7 @@ int Buraco::executeMove (unsigned int player) {
          unsigned int target (cardFitsOnPlayedPile (player, p - playerPile.begin ()));
          TRACE8 ("Buraco::executeMove (player) - Adding card " << **p << '?');
             return target;
-         if ((target != -1U) && canDumpCards (player, 1))
+         if ((target != -1U) && canDumpCards (player, 1, target >> 16))
 
    // Check for 3 cards belonging to a serie
    
@@ -308,16 +308,21 @@ int Buraco::executeMove (unsigned int player) {
             int diff (cardDistance (**p, *playerPile[i]));
             TRACE9 ("Buraco::executeMove (unsigned int) - " << **p
                     << " differs " << diff);
+            // Only consider series of colours for cards lower than ace, to
+            // avoid the problem with 3-K-A of one colour (the ace should
+            // haven been found from the 3 anyway).
             if (diff) {
-               diff += 2;
-               Check3 (diff <= 4);
-               if (!(bCols & (1 << diff))) {
-                  Check3 (aPos.find (diff) == aPos.end ());
-                  bCols |= (1 << diff);
-                  aPos[diff] = p - playerPile.begin ();
-                  aOrder.push_back (diff);
-                  if (aPos.size () == 7)
-                     break;
+               if (playerPile[i]->number () != CardWidget::ACE) {
+                  diff += 2;
+                  Check3 (diff <= 4);
+                  if (!(bCols & (1 << diff))) {
+                     Check3 (aPos.find (diff) == aPos.end ());
+                     bCols |= (1 << diff);
+                     aPos[diff] = p - playerPile.begin ();
+                     aOrder.push_back (diff);
+                     if (aPos.size () == 7)
+                         break;
+                  }
                }
             }
             else
@@ -357,12 +362,15 @@ int Buraco::executeMove (unsigned int player) {
                   p != aOrder.rend (); ++p) {
                 std::map<unsigned int, unsigned int>::const_iterator v;
                 if ((v = aPos.find (*p)) != aPos.end ()) {
-                   TRACE9 ("Buraco::executeMove (unsigned int) - Moving: "
+                   TRACE9 ("Buraco::executeMove (unsigned int) - Moving "
                            << v->second << " to end "
-                           << (p - aOrder.rbegin ()));
+                           << ((*p < 2) ? *p : 0));
                    Check3 ((p - aOrder.rbegin ()) >= 0);
-                   playerPile.move (playerPile.size () - (p - aOrder.rbegin ()) - 1,
-                                    v->second);
+                   // Move the card to the end of the staple; If it belongs
+                   // before the first card (which can only happen with aces)
+                   // move it before the other cards.
+                   playerPile.move (playerPile.size () - (p - aOrder.rbegin ())
+                                    - 1 - ((*p < 2) ? *p : 0), v->second);
                 }
              }
              i = playerPile.size () - (nrs = aPos.size ());
@@ -393,9 +401,10 @@ int Buraco::executeMove (unsigned int player) {
                Check3 (diff >= -2);
                playerPile.move (playerPile.size () - 2,
                                 next - playerPile.begin ());
-               playerPile.move (playerPile.size () - 1 + diff,
+               playerPile.move (playerPile.size () + ((diff == -2) ? -1 : -2),
                                 ci - playerPile.begin ());
-               playerPile.move (playerPile.size () - 1, ci - playerPile.begin ());
+            }
+            else {
                Check3 (diff <= 2);
                playerPile.move (playerPile.size () - 1, next - playerPile.begin ());
                playerPile.move (playerPile.size () - 1 - diff,
@@ -972,21 +981,22 @@ bool Buraco::humanPilesOK (unsigned int except) const {
       Check1 ((iCard >> 8) < tablePiles[0].size ());
       pile = tablePiles[0][iPile = (iCard >> 8)];
       Check1 ((iCard >> 8) <= tablePiles[0].size ());
-      pile = tablePiles[0][iPile = (iCard++ >> 8)];
-      if ((iCard = cardFitsOnPile (*pile, moved)) == -1) {
+      // Only allow dropping of last card, if the game can be ended, or there
+      // is still the reserve
+      if (!canDumpCards (0, 1, iCard >> 8)) {
+         context->drag_finish (false, false, time);
+         Gtk::MessageDialog dlg (_("You can't end the game (there's no \"cerrado\")!"),
                                  Gtk::MESSAGE_ERROR);
-         Gtk::MessageDialog dlg (_("This card does not fit on that pile!"),
+         dlg.set_title (_("Invalid move"));
          dlg.run ();
          return;
       }
 
       if ((iCard = cardFitsOnPile (iPile, moved)) == -1U) {
          context->drag_finish (false, false, time);
-      // Only allow dropping of last card, if the game can be ended, or there
-      // is still the reserve
-      if (!canDumpCards (0, 1) && (pile->size () < 6)) {
+      if ((iCard = cardFitsOnPile (*pile, moved)) == -1) {
                                  Gtk::MESSAGE_ERROR);
-         Gtk::MessageDialog dlg (_("You can't end the game (there's no \"cerrado\")!"),
+         dlg.set_title (_("Invalid move"));
          dlg.run ();
          return;
       }
@@ -1356,6 +1366,8 @@ int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
           && ((first == last)
               || (pile[first]->number () != pile[last]->number ()))
           && (pile[last]->colour () == card.colour ())) {
+         // This code assumes that the coloured pile is sorted from lower card
+         // to higher cards (strict ascending)
          // First check, if a joker can be replaced
          if ((posJoker != -1U)
              && (cardDistance (card, *pile[first]) == posJoker)) {
@@ -1363,33 +1375,32 @@ int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
             return posJoker + 1;
          }
 
-         // This code assums that the coloured pile is sorted from lower card
-         // to higher cards (strict ascending)
          Check3 ((cardDistance (*pile[first], *pile[last]) <= 0)
                  || (pile[first]->number () == CardWidget::ACE));
          // Possible difference the card can have: 1 or two if joker at one end
          unsigned int maxDiff ((posJoker == -1U) ? 1
                                : (((posJoker < first) || (posJoker > last))
                                   ? 2 : 1));
-         unsigned int diff (pile[first]->number () == CardWidget::ACE ? -1U
-                            : cardDistance (*pile[first], card,
-                                            pile[first]->number () <= CardWidget::FOUR));
-         TRACE9 ("Buraco::cardFitsOnPile (CardVPile&, CardWidget&) - Diff (start): "
-                 << diff << "; max: " << maxDiff);
-         Check3 (diff);
+         if ((first == last) || (pile[first]->number () != CardWidget::ACE)) {
+            unsigned int diff (cardDistance (*pile[first], card,
+                                             pile[first]->number () <= CardWidget::FOUR));
+            TRACE9 ("Buraco::cardFitsOnPile (CardVPile&, CardWidget&) - Diff (start): "
+                    << diff << "; max: " << maxDiff);
+            Check3 (diff);
 
-         if (diff && (diff <= maxDiff)) {
-            if ((diff == 2) && (posJoker > first)) {
-               Check3 (!first);
-               pile.move (0, posJoker);
-               ++first;
+            if (diff && (diff <= maxDiff)) {
+               if ((diff == 2) && (posJoker > first)) {
+                  Check3 (!first);
+                  pile.move (0, posJoker);
+                  ++first;
+               }
+               return first - diff + 1;
             }
-            return first - diff + 1;
          }
 
          // Test if card fits at other end
-         diff = cardDistance (card, *pile[last],
-                              first == last);
+         unsigned int diff (cardDistance (card, *pile[last],
+                                          first == last));
          TRACE9 ("Buraco::cardFitsOnPile (CardVPile&, CardWidget&) - Diff (end): "
                  << diff << "; max: " << maxDiff);
          if (diff && (diff <= maxDiff)) {
@@ -1535,12 +1546,24 @@ bool Buraco::canGetRidOfCards (unsigned int player) {
 /// only dump all of his cards, if: - The team has a cerrado - The team still
 /// has the reserve
 /// \param pile: Pile player is going to play its card to (or -1 for a new one)
+/// \returns \c True, if card can be played
+//-----------------------------------------------------------------------------
 bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
                            unsigned int pile) const {
-bool Buraco::canDumpCards (unsigned int player, unsigned int cards) const {
+   TRACE7 ("Buraco::canDumpCards (3x unsigned int) - Player "
+           << player << " playing " << cards << " cards to " << pile);
+   TRACE7 ("Buraco::canDumpCards (unsigned int, unsigned int, unsigned int) - "
+           "Player " << player << " playing " << cards << " cards to " << pile);
+           || ((tablePiles[player & 1][pile]->size () + cards) <= 7));
+   Check1 (hands[player].size () >= cards);
+   Check1 (cards <= 7);
+
+		     || reserve[player & 1].size ());
    unsigned int cPile (hands[player].size ());
    return (cPile >= (cards + 2) || (points[player & 1] > 100)
-           || !reserve[player & 1].empty ());
+           || !reserve[player & 1].empty ()
+           || (pile == -1)
+           || ((tablePiles[player & 1][pile]->size () + cards) == 7));
 //----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
