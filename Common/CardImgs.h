@@ -23,7 +23,8 @@
 #include <gdkmm/pixbuf.h>
 
 
-// Class to load & store the images of the used cards
+/**Class to load & store the images of the used cards
+*/
 class CardImages {
  public:
    CardImages () : cards_ (52) { }
