@@ -24,7 +24,6 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-
 #define DEBUG 0
 #include <Check.h>
 
@@ -143,10 +142,8 @@ void ICardPile::setTopCards (const vector<CardWidget*>& staple, bool visible) {
 //Purpose   : Removes all cards from pile
 /*--------------------------------------------------------------------------*/
 void ICardPile::clear () {
-   while (cards.size ()) {
+   while (cards.size ())
       remove (getTopCard ());
-      cards.pop_back ();
-   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -261,4 +258,43 @@ void ICardPile::setStyle (Style s) {
       Check3 (cards[i]);
       resize (*cards[i], style);
    }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Sorts the cards in the pile with regard of the color
+//Parameters: a: Card to compare
+//            b: Card to compare
+//Returns   : bool: True, if a < b
+/*--------------------------------------------------------------------------*/
+bool ICardPile::compCards (const CardWidget* a, const CardWidget* b) {
+   bool diff (a->color () < b->color ());
+   if (!diff)
+      diff = a->number () < b->number ();
+   return diff;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Sorts the cards in the pile without regard of the color
+//Parameters: a: Card to compare
+//            b: Card to compare
+//Returns   : bool: True, if a < b
+/*--------------------------------------------------------------------------*/
+bool ICardPile::compCardsByNr (const CardWidget* a, const CardWidget* b) {
+   TRACE9 ("ICardPile::compCardsByNr (const CardWidget*, const CardWidget*) - "
+           << a->number () << " <-> " << b->number ());
+   return a->number () < b->number ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Sorts the cards in the pile without regard of the number
+/*--------------------------------------------------------------------------*/
+void ICardPile::sortByNumber () {
+   sort (cards.begin (), cards.end (), &ICardPile::compCardsByNr);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Sorts the cards in the pile without regard of the number
+/*--------------------------------------------------------------------------*/
+void ICardPile::sortByColor () {
+   sort (cards.begin (), cards.end (), &ICardPile::compCards);
 }

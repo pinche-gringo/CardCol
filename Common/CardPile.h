@@ -74,10 +74,17 @@ class ICardPile {
    void setStyle (Style s);
    void setAccessable (bool access);
 
- private:
+   virtual void sortByNumber ();
+   virtual void sortByColor ();
+
+ protected:
    vector<CardWidget*> cards;
    Style style;
    bool accessable;
+
+ private:
+   static bool compCards (const CardWidget* a, const CardWidget* b);
+   static bool compCardsByNr (const CardWidget* a, const CardWidget* b);
 };
 
 
@@ -116,6 +123,23 @@ template <class T> class CardPile : public T, public ICardPile {
       return card; }
 
    virtual void resize (CardWidget& card, Style s) const { }
+   virtual void sortByNumber () {
+      if (cards.size ()) {
+         resize (getTopCard (), style);
+         ICardPile::sortByNumber ();
+         resortGUI (); } }
+   virtual void sortByColor () {
+      if (cards.size ()) {
+         resize (getTopCard (), style);
+         ICardPile::sortByColor ();
+         resortGUI (); } }
+
+ private:
+   void resortGUI () {
+      for (int i (0); i < cards.size (); ++i)
+         Gtk::Box::reorder_child (*cards[i], i);
+      resize (getTopCard (), NORMAL);
+      }
 };
 
 
