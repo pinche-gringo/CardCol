@@ -166,7 +166,7 @@ class Game : public Gtk::Table {
 
    unsigned int statGame;
 
-   unsigned int actPlayer;          // Player who is in turn (needed for timer)
+   int actPlayer;                   // Player who is in turn (needed for timer)
    struct {
       int restart : 1;
       int pendingTurn : 1;
