@@ -1,3 +1,9 @@
+Overview of changes in version 0.3.02:
+
+  - Fixed bug #19: Hearts computer player played queen of spades in first round
+  - Using XAttributeLabel2 in HeartsScore dialog
+  - Hearts ends now at 100 points (and not 101)
+
 Overview of changes in version 0.3.01:
 
   - If a player reaches 100 points in Hearts, the score is cleared again

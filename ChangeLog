@@ -1,3 +1,17 @@
+2003-02-24  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.3.02 documented
+
+	* src/Hearts.cpp, src/Hearts.h: Using namespace Gtk explicitely
+
+	* src/HeartsScore.h: Using XAttributeLabel2
+
+	* configure.in: Version to 0.3.02
+
+2003-02-18  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp: Fixed bug #19: Computer player played SQ in 1st round
+
 2003-02-12  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.3.01 documented
