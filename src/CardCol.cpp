@@ -747,8 +747,10 @@ CardgameCollection::~CardgameCollection () {
 
 #ifdef HAVE_LIBPTHREAD
    for (std::vector<THRDAPPL*>::iterator i (aCommThreads.begin ());
-        i != aCommThreads.end (); ++i)
+        i != aCommThreads.end (); ++i) {
        (*i)->cancel ();
+       delete *i;
+   }
    aCommThreads.clear ();
 #endif
 }
@@ -862,6 +864,7 @@ void CardgameCollection::command (int menu) {
                 Check3 (aCommThreads.size () == 1);
                 cmgr.changeMode (ConnectionMgr::NONE);
                 aCommThreads[0]->cancel ();
+                delete aCommThreads[0];
                 aCommThreads.clear ();
              }
              else
@@ -1443,8 +1446,8 @@ void CardgameAppl::showHelp () const {
        // For translations: Write one of the Rovhults with 'ø'
              << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts and Buraco or the\n"
                   "numbers 0 - 3 (corresponding to the games in the above order).\n\n")
-             << ("The INI file can have the following entries:\n\n"
-                 "  [Game]\n"
+             << _("The INI file can have the following entries:\n\n")
+             <<  "  [Game]\n"
                  "  Type=Twopart\n"
                  "  Helpbrowser=galeon\n"
                  "  Helpdir=/usr/share/doc/Cardgames/\n"
@@ -1454,7 +1457,7 @@ void CardgameAppl::showHelp () const {
                  "  0=Human\n"
                  "  1=Computer 1\n"
                  "  2=Computer 2\n"
-                 "  3=Computer 3\n");
+                 "  3=Computer 3\n";
 }
 
 //-----------------------------------------------------------------------------
