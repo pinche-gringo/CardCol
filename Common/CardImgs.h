@@ -34,8 +34,15 @@ class CardImages {
    const Gdk_Pixmap& getCardBackground () const { return back_; }
    void setCardBackground (const Gdk_Pixmap& back) { back_ = back; }
 
+   void loadDecks (const Gdk_Window& parent, const std::string& path,
+                  bool thread = true) throw (std::string);
+   void loadBack (const Gdk_Window& parent, const std::string& file,
+                  bool thread = true) throw (std::string);
    void load (const Gdk_Window& parent, const std::string& path,
-              const std::string& back, bool thread = true) throw (std::string);
+              const std::string& back, bool thread = true) throw (std::string) {
+      loadDecks (parent, path, true);
+      loadBack (parent, back);
+   }
    void load (unsigned int cards, const Gdk_Window& parent,
               const std::string& path, const std::string& back,
               bool thread = true) throw (std::string) {

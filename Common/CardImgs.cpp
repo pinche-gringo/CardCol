@@ -59,15 +59,15 @@ const Gdk_Pixmap& CardImages::getCardImage (unsigned int nr) const {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Constructor; adds all controls to the dialog
+//Purpose   : Loads the cards (faces)
 //Parameters: parent: Parent window
 //            path: Path to files
 //            back: File containing background picture
 //            thread: Flag if loading in thread
 /*--------------------------------------------------------------------------*/
-void CardImages::load (const Gdk_Window& parent, const std::string& path,
-                       const std::string& back, bool thread) throw (std::string) {
-   TRACE1 ("CardImages::load (const Gdk_Window&, const char*) - " << path);
+void CardImages::loadDecks (const Gdk_Window& parent, const std::string& path,
+                            bool thread) throw (std::string) {
+   TRACE1 ("CardImages::loadDecks (const Gdk_Window&, const char*) - " << path);
 
    std::string file (path);
    if (file[file.size () - 1] != File::DIRSEPARATOR)
@@ -80,7 +80,7 @@ void CardImages::load (const Gdk_Window& parent, const std::string& path,
    for (int i = 0; i < numberOfCards (); ++i) {
       nr = i + 1;
       temp = file + nr.toUnformatedString () + ".xpm";
-      TRACE3 ("CardImages::load (const Gdk_Window&, const char*) - File " << temp);
+      TRACE3 ("CardImages::loadDecks (const Gdk_Window&, const char*) - File " << temp);
 
       if (thread)
          gdk_threads_enter ();
@@ -88,22 +88,36 @@ void CardImages::load (const Gdk_Window& parent, const std::string& path,
       if (thread)
          gdk_threads_leave ();
 
-      if (errno)
-         break;
+      if (errno) {
+         std::string error (_("Can't create picture from file `%1'!\nReason: %2"));
+         error.replace (error.find ("%1"), 2, temp);
+         error.replace (error.find ("%2"), 2, strerror (errno));
+         throw (error);
+      }
    }
+}
 
-   if (!errno) {
-      TRACE3 ("CardImages::load (const Gdk_Window&, const char*) - File " << back);
+/*--------------------------------------------------------------------------*/
+//Purpose   : Loads the background card
+//Parameters: parent: Parent window
+//            back: File containing background picture
+//            thread: Flag if loading in thread
+/*--------------------------------------------------------------------------*/
+void CardImages::loadBack (const Gdk_Window& parent, const std::string& back,
+                           bool thread) throw (std::string) {
+   TRACE1 ("CardImages::loadBack (const Gdk_Window&, const char*) - " << back);
 
-      if (thread)
-         gdk_threads_enter ();
-      back_.create_from_xpm (parent, color, back);
-      if (thread)
-         gdk_threads_leave ();
-   }
+   Gdk_Color color;
+
+   if (thread)
+      gdk_threads_enter ();
+   back_.create_from_xpm (parent, color, back);
+   if (thread)
+      gdk_threads_leave ();
+
    if (errno) {
       std::string error (_("Can't create picture from file `%1'!\nReason: %2"));
-      error.replace (error.find ("%1"), 2, temp);
+      error.replace (error.find ("%1"), 2, back);
       error.replace (error.find ("%2"), 2, strerror (errno));
       throw (error);
    }
