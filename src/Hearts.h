@@ -57,6 +57,7 @@ class Hearts : public Game {
 
    //@Section Helper methods
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int card);
+   unsigned int  check4Winner (unsigned int player);
    unsigned int findPos2Play (unsigned int player);
    void exchangeCards ();
    static void getPositionOfColors (ICardPile& pile, int result[4]);
