@@ -322,6 +322,7 @@ RovhultAppl::RovhultAppl ()
    // Load cards in background
    pThread = THRDAPPL::create  (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::loadCards,
                                 NULL);
+   TRACE9 ("RovhultAppl::RovhultAppl () - Thread-ID = " << pThread->getID ());
 
    // Create controls
    addMenus (menuItems + 2, sizeof (menuItems) / sizeof (menuItems[0]) - 2);
@@ -349,8 +350,6 @@ RovhultAppl::RovhultAppl ()
               << COLS_PLAYER[i] + (j << 1) << '/'
               << ROWS_PLAYER[i] + (i ? 3 : -3));
    }
-
-   TRACE9 ("RovhultAppl::RovhultAppl () - Thread-ID = " << pThread->getID ());
 }
 
 /*--------------------------------------------------------------------------*/
@@ -397,6 +396,36 @@ void RovhultAppl::command (int menu) {
 }
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Callback after clicking on a card on table
+//Parameters: parent: Pile of card
+//            iCard: (Internal) ID of card
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::pileSelected (CardPile* parent, unsigned int iCard) {
+   Check3 (iCard <= cards.numberOfCards ());
+   Check3 (parent);
+
+   CardWidget* card (parent->getCard (iCard));
+   Check3 (card); Check3 (iCard == card->id ());
+   TRACE1 ("Rovhult::pileSelected (CardPile*, unsinged int) - " << iCard << " = "
+           << card->color () << '/' << card->number ());
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback after clicking on a card in hand
+//Parameters: parent: Pile of card
+//            iCard: (Internal) ID of card
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::handSelected (CardCollection* parent, unsigned int iCard) {
+   Check3 (iCard <= cards.numberOfCards ());
+   Check3 (parent);
+
+   CardWidget* card (parent->getCard (iCard));
+   Check3 (card); Check3 (iCard == card->id ());
+   TRACE1 ("Rovhult::handSelected (CardCollection*, unsinged int) - " << iCard << " = "
+           << card->color () << '/' << card->number ());
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Loads the cards (from xpm-files)
 //
 /*--------------------------------------------------------------------------*/
@@ -404,12 +433,17 @@ void RovhultAppl::loadCards () {
    sleep (0);
    Check3 (staple.is_realized ());
 
+   gdk_threads_enter ();
+   status.push (1, _("Loading cardimages ..."));
+   gdk_threads_leave ();
+
    cardFaces.load (staple.get_window ());  // Cards need an realized (!) parent
    cards.addPacket (cardFaces);
    pThread = NULL;
 
    gdk_threads_enter ();
    pMenuNew->set_sensitive (true);
+   status.pop (1);
    status.push (1, _("Start a new game with Ctrl+N (or Game -> New)"));
    gdk_threads_leave ();
 }
@@ -421,7 +455,14 @@ void RovhultAppl::fillStaple () {
    // Randomize and put cards onto staple
    cards.shuffle ();
 
-   staple.clear ();
+   staple.clear ();                                             // Clear staple
+   for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
+      for (int j (0); j < 3; ++j) {
+         reserve[i][j].clear ();
+      }
+      hands[i].clear ();
+   }
+
    staple.setTopCards (cards.getCards (), false);
 }
 
@@ -440,12 +481,15 @@ void RovhultAppl::dealCards () {
             card.set_sensitive (k);
 
             reserve[i][j].setTopCard (card, k);
+            card.clicked.connect (SigC::bind (SigC::slot (this, &RovhultAppl::pileSelected),
+                                              &reserve[i][j], card.id ()));
          } // end-for two cards pro pile (in reserve)
 
          CardWidget& card (staple.removeTopCard ());
-
          card.setVisible ();
          hands[i].addCard (card);
+         card.clicked.connect (SigC::bind (SigC::slot (this, &RovhultAppl::handSelected),
+                                           &hands[i], card.id ()));
       }
 
    // Show cards in hand
