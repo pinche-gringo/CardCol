@@ -25,6 +25,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <climits>
+
 #include <cardgames-cfg.h>
 
 #include <gtkmm/label.h>
@@ -89,7 +91,7 @@ void ScoreDlg::addPoints (const std::vector<int>& aPoints) {
    std::vector<int>::const_iterator p (aPoints.begin ());
    for (std::vector<column*>::iterator i (aColumns.begin ());
         i != aColumns.end (); ++i) {
-      TRACE5 ("ScoreDlg::addPoints (unsinged int[]) - " << *p);
+      TRACE5 ("ScoreDlg::addPoints (std::vector<int>&) - " << *p);
       (*i)->addEntry (*p);
       ++p;
    }
@@ -109,12 +111,16 @@ void ScoreDlg::okEvent () {
 //            player: Reference where to put the player with the highest points
 /*--------------------------------------------------------------------------*/
 void ScoreDlg::getMaxPoints (int& points, unsigned int& player) {
-   points = 0;
+   points = INT_MIN;
    for (std::vector<column*>::iterator i (aColumns.begin ());
-        i != aColumns.end (); ++i)
+        i != aColumns.end (); ++i) {
+      TRACE9 ("ScoreDlg::addPoints (int&, unsigned int&) - " << points
+              << '/' << (*i)->getPoints () << ": "
+              << (((*i)->getPoints () > points) ? '>' : '<'));
       if ((*i)->getPoints () > points) {
          player = i - aColumns.begin ();
          points = (*i)->getPoints ();
+      }
    }
 }
 
@@ -124,13 +130,13 @@ void ScoreDlg::getMaxPoints (int& points, unsigned int& player) {
 //            player: Reference where to put the player with the highest points
 /*--------------------------------------------------------------------------*/
 void ScoreDlg::getMinPoints (int& points, unsigned int& player) {
-   points = 0;
+   points = INT_MAX;
    for (std::vector<column*>::iterator i (aColumns.begin ());
         i != aColumns.end (); ++i)
       if ((*i)->getPoints () < points) {
          player = i - aColumns.begin ();
          points = (*i)->getPoints ();
-   }
+      }
 }
 
 /*--------------------------------------------------------------------------*/
