@@ -64,6 +64,7 @@ class Twopart : public XApplication {
    int  enableActPlayer ();
    void enablePlayer (unsigned int player);
    void disableLastPlayer ();
+   void pickUpPlayedPile (unsigned int player);
    int  findNextPlayer (unsigned int player);
    int  findNextPlayerWithCards (unsigned int player);
    void removePlayer (unsigned int player) { bfPlayers &= ~(1 << player); }
@@ -78,7 +79,7 @@ class Twopart : public XApplication {
                            int& maxPos, int& maxEqual, int& maxEqualPos) const;
 
    unsigned int pos2Player (unsigned int pos) const;
-   unsigned int findPos2Play (unsigned int player) const;
+   int findPos2Play (unsigned int player) const;
    unsigned int findSmallestCard (unsigned int player) const;
    unsigned int findEndOfSerie (unsigned int player, unsigned int start) const;
 
