@@ -42,19 +42,27 @@ class Hearts : public Game {
    virtual const char* name () { return "Hearts"; }
 
  private:
+   enum Status { EXCHANGE = Game::LAST };
+
    // Protected manager functions
    Hearts (const Hearts& other);
    const Hearts& operator= (const Hearts& other);
 
-   // Event handling
+   //@Section Event handling
    void cardSelected (unsigned int player, unsigned int iCard);
 
+   //@Section Virtual methods
    virtual int makeMove (unsigned int player);
    virtual void enablePlayer (unsigned int player);
 
+   //@Section Helper methods
+   bool moveSelectedCardToPlayed (unsigned int player, unsigned int card);
+   void exchangeCards ();
+   static void getNumberOfColors (ICardPile& pile, unsigned int result[4]);
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
+   bool         heartsPlayed;
    unsigned int startPlayer;
 
    struct {
