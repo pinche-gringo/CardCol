@@ -1,3 +1,9 @@
+Overview of changes in version 0.6.21:
+
+  - Improved usability of Machiavelli (Enter to end turn)
+  - Machiavelli actualizes information about wrong piles during undo
+  - Fixed some bugs in Machiavelli
+
 Overview of changes in version 0.6.20:
 
   - Added (finally) network ability to Machiavelli
@@ -71,7 +77,7 @@ Overview of changes in version 0.5.00:
   - Improved Buraco's layout (table shows scrollbars, when needed)
   - Improved Buracos computer player
   - Twopart, Røvhult and Buraco starts with a random player
-  - Fixed Røvhult's checking of humans playing from pile
+  - Fixed Røvhult checking of humans playing from piles on the table
   - Fixed Twopart's calcuation of next player (equal cards at end of part I)
   - Fixed Buraco's computer player taking dumped pile with series of colour
   - Renamed [Players]-section in INI-file to [Player]
@@ -90,7 +96,6 @@ Overview of changes in version 0.4.00:
 
 Overview of changes in version 0.3.02:
 
-  - Using XAttributeLabel2 in HeartsScore dialog
   - Hearts ends now at 100 points (and not 101)
   - Fixed bug in Hearts (played Queen of spades in round 1)
 
@@ -108,7 +113,7 @@ Overview of changes in version 0.3.00:
   - Security check if user closes the application while a game is running
   - Application shows the actual game type in the title bar
   - Posibility to inspect the won cards
-  - Games show names of the players (which can be changed)
+  - Games show the names of the players (which can be changed)
   - Program understands options from the command line
   - Spanish messages improved
   - Dialog to select the browser to use
@@ -118,7 +123,7 @@ Overview of changes in version 0.3.00:
 Overview of changes in version 0.2.00:
 
   - Combined the games in one application
-  - Security check if user terminates while a game is running
+  - Security check if the user terminates while a game is running
   - Playing of computer improved (both games)
   - Computer-player moves cards to the end of the staple before playing
   - Dialog to select carddecks improved (adapts size to show all decks)

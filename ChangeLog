@@ -1,3 +1,21 @@
+2004-01-21  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.6.21 commented
+
+	* src/Machiavelli.cpp:
+	  Fixes (computer made Q-K-A-2-3 piles; human splitting piles)
+
+2004-01-19  Markus Schwab  <g17m0@lycos.com>
+
+	* po/de.po, po/en.po, po/es.po: Translated new messages
+
+	* configure.in: Version to 0.6.21
+
+	* Common/Game.cpp: Disabled traces and checks
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  Added button to end the turn; Undo-dialog updates info of invalid piles
+
 2004-01-15  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.6.20 commented
