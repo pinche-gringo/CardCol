@@ -39,6 +39,11 @@ class Rovhult : public Game {
    Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset);
    ~Rovhult ();
 
+   virtual void end (bool restart);
+   virtual void start ();
+   virtual void playOpen (bool open);
+   virtual void clean ();
+
  private:
    enum { PREPLAYING = Game::LAST };
 
@@ -75,7 +80,6 @@ class Rovhult : public Game {
    int  nextAvailablePlayer (unsigned int actPlayer) const;
    int  makeMove (unsigned int player);
    void enablePlayer (unsigned int player);
-   virtual void clean ();
    void dealCards ();
    CardWidget::NUMBERS playCardsFromHand (unsigned int player, unsigned int pos);
    void exchangeAutoplayerCards ();
@@ -98,10 +102,6 @@ class Rovhult : public Game {
 
    bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
    int executeMove (unsigned int player, CardWidget::NUMBERS nr);
-
-   virtual void end (bool restart);
-   virtual void start ();
-   virtual void playOpen (bool open);
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 

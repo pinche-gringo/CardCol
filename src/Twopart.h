@@ -39,6 +39,10 @@ class Twopart : public Game {
    Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset);
    ~Twopart ();
 
+   virtual void start ();
+   virtual void clean ();
+   virtual void playOpen (bool open);
+
  private:
    // Status of game
    enum { PLAYING2 = Game::LAST};
@@ -69,10 +73,6 @@ class Twopart : public Game {
             ++cPlayers;
       return cPlayers; }
    unsigned int removePlayersWithoutCards ();
-
-   virtual void start ();
-   virtual void clean ();
-   virtual void playOpen (bool open);
 
    void dealCards ();
    void userWants2End (unsigned int input);
