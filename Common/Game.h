@@ -87,4 +87,31 @@ class Game : public Gtk::Table {
    bool restart;
 };
 
+
+// Specialized Game to inform controler about status-changes
+// The Controller must support a statusbar (accessed by getStatusbar), a cardset
+// (accessed by getCards) and a Gtk::Box, which can be accessed by getClient ()
+// Parent must be derived from Game
+template <class Parent, class Controller>
+class TGame : public Parent {
+ public:
+   typedef void (Controller::*PCALLBACK) (unsigned int);
+
+   TGame (Controller& controller, PCALLBACK callback)
+      : Parent (controller.getClient (), controller.getStatusbar (),
+                controller.getCards ()
+)
+      , obj (controller), pCallback (callback) { }
+   virtual ~TGame () { }
+
+   virtual void control (unsigned int status) const {
+      (obj.*pCallback) (status);
+   }
+
+ private:
+   Controller & obj;
+   PCALLBACK pCallback;
+};
+
+
 #endif
