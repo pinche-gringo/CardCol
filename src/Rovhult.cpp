@@ -33,7 +33,6 @@
 
 #include <glib.h>
 
-#define DEBUG 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -477,8 +476,8 @@ void RovhultAppl::enablePlayer (unsigned int player) {
 
    if (played.numberOfCards ())
       activeCards.push_back (played.getTopCard ().clicked.connect_after
-                             (bind (slot (this, &RovhultAppl::movePlayedCardsToLooser),
-                                    player)));
+                             (bind (slot (this, &RovhultAppl::takeCards),
+                                    nextAvailablePlayer (player))));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -507,7 +506,7 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
            << card.color () << '/' << card.number ());
 
    // If played from bottom of pile (with invisible cards): Flip card first
-   if (reserve[player][pile].numberOfCards () == 1) {
+   if (reserve[player][pile].numberOfCards () <= 1) {
       card.setVisible ();
       while (gtk_main_iteration_do (false));
    }
@@ -515,21 +514,23 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    if (!cardValid (card.number ())) {                 // Check if card is valid
       if (reserve[player][pile].numberOfCards () > 1)   // Visible card? Return
          return;
-
-      if (reserve[player][pile].numberOfCards () == 1)   // Wait after flipping
+      else
          sleep (1);
       
       disableLastPlayer ();
       played.append (card);
       reserve[player][pile].removeTopCard ();
-      executeMove ((player - 1) & 0x3, CardWidget::UNREACHABLE);
+      executeMove (player, CardWidget::UNREACHABLE);
       return;
    }
    disableLastPlayer ();
 
    // Move card (and visible cards with equal number below) from player to played staple
+   reserve[player][pile--].removeTopCard ();
+   if (card.number () != CardWidget::TEN)
+      played.append (card);
    do {
-      if (reserve[player][pile].numberOfCards ()
+      if ((reserve[player][pile].numberOfCards () > 1)
           && (reserve[player][pile].getTopCard ().number () == card.number ())) {
          CardWidget& movedCard (reserve[player][pile].removeTopCard ());
          if (movedCard.number () != CardWidget::TEN)
@@ -594,7 +595,7 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
    Check3 (pos <= hands[player].numberOfCards ());
 
    CardWidget& card (hands[player].at (pos));
-   TRACE1 ("Rovhult::handSelected (unsigned int, unsinged int) - " << pos << " = "
+   TRACE1 ("Rovhult::handSelected (unsigned int, unsinged int) - Card " << pos << " = "
            << card.color () << '/' << card.number ());
 
    if (!cardValid (card.number ()))
@@ -627,12 +628,15 @@ void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
    TRACE3 ("RovhultAppl::executeMove (unsigned int, CardWidget::NUMBERS - " << player)
    Check3 (player < NUM_PLAYERS);
 
-   // If last 4 cards have the same number or ten was played: Don't increase player
-   if ((nr != CardWidget::TEN) && !clearPlayedIf4Equal ()) {
+   // If last 4 cards have the same number or ten was played: Don't increase
+   // player (except of course, if actual player don't have anymore cards)
+   if ((nr != CardWidget::TEN) && !clearPlayedIf4Equal ()
+       || (player != nextAvailablePlayer ((player -1) & 0x3))) {
       status.pop (1);
 
       std::string stat;
-      int nextPlayer (getNextAvailablePlayer (player));
+      int nextPlayer ((nr == CardWidget::UNREACHABLE)
+                      ? player :  nextAvailablePlayer (player));
       if (player == -1) {
          stat = _("Player %1 lost");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
@@ -645,16 +649,18 @@ void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
       if (nr == CardWidget::EIGHT) {
          stat = _("Skipping player %1; ");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
-         player = getNextAvailablePlayer (player);
+         player = nextAvailablePlayer (player);
       }
 
       // Check if next player has fitting card
       if (!playerCanContinue (player, nr)) {
-         stat = stat + _("Player %1 can't continue -> Getting whole pile. ");
-         stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+         if (nr != CardWidget::UNREACHABLE) {
+            stat = stat + _("Player %1 can't continue -> Getting whole pile. ");
+            stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+         }
 
          movePlayedCardsToLooser (player);
-         player = getNextAvailablePlayer (player);
+         player = nextAvailablePlayer (player);
          }
 
       stat = stat + _("Turn of player %1");
@@ -669,6 +675,17 @@ void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 }
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Callback after selection top card on played pile -> Moves all
+//            its card to the passed player
+//Parameters: player: ID of player picking up the cards
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::takeCards (unsigned int player) {
+   TRACE2 ("RovhultAppl::takeCards (unsigned int) - " << player);
+   disableLastPlayer ();
+   executeMove ((player - 1) & 0x3, CardWidget::UNREACHABLE);
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Checks if the passed pile has a card which can be played
 //Parameters: player: ID of player to analyze
 //            card: Last played card
@@ -677,6 +694,9 @@ bool RovhultAppl::playerCanContinue (unsigned int player, CardWidget::NUMBERS ca
    TRACE3 ("RovhultAppl::playerCanContinue (unsigned int, CardWidget::NUMBERS) const - "
            << player << "; Card: " << card);
    Check3 (player < NUM_PLAYERS);
+
+   if (card == CardWidget::UNREACHABLE)
+      return false;
  
    if (hands[player].numberOfCards ())
       return playerHandCanContinue (hands[player], card);
@@ -798,10 +818,13 @@ void RovhultAppl::movePlayedCardsToLooser (unsigned int nrLooser) {
 //Parameters: actPlayer: ID of actual player
 //Returns   : int: ID of player or -1 (if none can continue)
 /*--------------------------------------------------------------------------*/
-int RovhultAppl::getNextAvailablePlayer (unsigned int actPlayer) const {
+int RovhultAppl::nextAvailablePlayer (unsigned int actPlayer) const {
    // We assume (without checking), that acutal player still has cards
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       unsigned int player ((actPlayer + i) & 0x3);
+
+      if (hands[player].numberOfCards ())
+         return player;
 
       for (int j (0); j < 3; ++j)
          if (reserve[player][j].numberOfCards ())
@@ -854,6 +877,8 @@ void RovhultAppl::cleanTable () {
       hands[i].clear ();
    }
    played.clear ();
+
+   disableLastPlayer ();
 }
 
 /*--------------------------------------------------------------------------*/
