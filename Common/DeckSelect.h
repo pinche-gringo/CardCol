@@ -19,10 +19,13 @@
 
 
 #include <string>
+#include <vector>
 
+#include <gtk--/box.h>
+#include <gtk--/label.h>
+#include <gtk--/button.h>
+#include <gtk--/packer.h>
 #include <gtk--/dialog.h>
-
-#include "SmartPtr.h"
 
 
 // Forward declarations
@@ -48,22 +51,19 @@ class ICarddeckSelectDlg : public Dialog {
    virtual void command (commands action) = 0;
 
  private:
-   typedef SmartPtr<HBox>   PHBox;
-   typedef SmartPtr<Label>  PLabel;
-   typedef SmartPtr<Button> PButton;
-   typedef SmartPtr<Packer> PPacker;
-
    // Prohibited manager-functions
    ICarddeckSelectDlg ();
    ICarddeckSelectDlg (const ICarddeckSelectDlg&);
    
    const ICarddeckSelectDlg& operator= (const ICarddeckSelectDlg&);
 
-   PButton ok;
-   PButton apply;
-   PButton cancel;
-   PLabel  txtDecks;
-   PPacker decks;
+   Button ok;
+   Button apply;
+   Button cancel;
+   Label  txtDecks;
+   Packer decks;
+
+   vector<Button*> aDecks;
 };
 
 

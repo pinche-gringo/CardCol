@@ -3,7 +3,7 @@
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Common/DeckSelect
 //REFERENCES  :
-//TODO        :
+//TODO        : - Use button labels from General-lib
 //BUGS        :
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
@@ -25,17 +25,12 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <gtk--/box.h>
-#include <gtk--/label.h>
-#include <gtk--/button.h>
-#include <gtk--/packer.h>
-
-#define CHECK 9
-#define TRACELEVEL 9
-#include "Check.h"
-#include "Trace_.h"
-
 #include <cardgames-cfg.h>
+
+#include <Check.h>
+#include <Trace_.h>
+
+#include <DirSrch.h>
 
 #include "DeckSelect.h"
 
@@ -45,28 +40,64 @@
 //Parameters: path: Path to carddecks
 /*--------------------------------------------------------------------------*/
 ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path)
-   : Dialog (), txtDecks (new Label (_("Available decks")))
-     , ok (new Button (_("OK"))), apply (new Button (_("Apply")))
-     , cancel (new Button (_("Cancel"))), decks (new Packer ()) {
+   : Dialog (), txtDecks (_("Available decks")), ok (_("OK"))
+   , apply (_("Apply")), cancel (_("Cancel")), decks () {
    TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (const char*)");
-   Check3 (txtDecks); Check3 (ok); Check3 (apply); Check3 (cancel); Check3 (decks);
+
+   set_title (_("Select carddeck"));
 
    if (!path)
       path = PKGDIR;
 
+   ok.grab_default ();
+
    Check3 (get_vbox ());
-   get_vbox ()->pack_start (*txtDecks, true, false, 5);
-   get_vbox ()->pack_start (*decks, true, false, 5);
+   get_vbox ()->pack_start (txtDecks, true, false, 5);
+   get_vbox ()->pack_start (decks, true, true, 5);
 
-   get_action_area ()->pack_start (*ok);
-   get_action_area ()->pack_start (*apply);
-   get_action_area ()->pack_start (*cancel);
-
-   ok->clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), OK));
-   apply->clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), APPLY));
-   cancel->clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), CANCEL));
+   get_action_area ()->pack_start (ok);
+   get_action_area ()->pack_start (apply);
+   get_action_area ()->pack_start (cancel);
 
    show_all ();
+
+   ok.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), OK));
+   apply.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), APPLY));
+   cancel.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), CANCEL));
+
+   std::string cardDirs (path);
+   cardDirs += File::DIRSEPARATOR;
+   cardDirs += "deck*";
+   DirectorySearch ds (cardDirs);
+
+   Gdk_Color color;
+
+   TRACE8 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Searching in path "
+           << cardDirs);
+   const File* dir (ds.find (IDirectorySearch::FILE_DIRECTORY
+                             | IDirectorySearch::FILE_READONLY));
+   while (dir) {
+      TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Found dir "
+              << dir->name ());
+
+      std::string file (dir->path ());
+      file += dir->name ();
+      file += File::DIRSEPARATOR;
+      file += "14.xpm";
+      TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Reading file "
+              << file);
+
+      Button* temp (new Button ());
+      temp->show ();
+      Gdk_Pixmap img;
+      img.create_from_xpm (get_window (), color, file);
+      temp->add_pixmap (img, NULL);
+      aDecks.push_back (temp);
+
+      decks.add (*temp, GTK_SIDE_LEFT);
+
+      dir = ds.next ();
+   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -74,4 +105,8 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path)
 /*--------------------------------------------------------------------------*/
 ICarddeckSelectDlg::~ICarddeckSelectDlg () {
    TRACE9 ("CarddeckSelectDlg::~CarddeckSelectDlg ()");
+
+   for (vector<Button*>::iterator i (aDecks.begin ());
+        i != aDecks.end (); ++i)
+      delete *i;
 }
