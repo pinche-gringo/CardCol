@@ -39,6 +39,7 @@
 #include <gtkmm/messagedialog.h>
 
 #define CHECK 9
+#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 #include <Socket.h>
@@ -48,6 +49,7 @@
 #include "Player.h"
 #include "CardSet.h"
 #include "CardPile.h"
+#include "ComputerPlayer.h"
 
 #include "Game.h"
 
@@ -64,10 +66,11 @@
 //-----------------------------------------------------------------------------
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             const std::vector<Player*>& player, unsigned int posPlayer,
-            unsigned int rows, unsigned int columns)
+            Mutex& mxSerialize, unsigned int rows, unsigned int columns)
    : Gtk::Table (rows, columns), statGame (NONE), status (statusbar)
      , cards (cardset), restart (false), pWonPile (NULL), pMenuPopSort (NULL)
-     , actPlayers (player), data (NULL), posServer (posPlayer) {
+     , actPlayers (player), data (NULL), posServer (posPlayer)
+     , pos2Play (-1U), pos1Play (-1U), mxSerializeMsgs (mxSerialize)  {
    TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, std::vector<Player*>,"
            "unsinged int, unsigned int)");
    Check3 (cardset.size ());
@@ -99,7 +102,7 @@ void Game::start () {
       clean ();
 
    setGameStatus (PLAYING);
-   actPlayer = 0;
+   actPlayer = posServer;
 
    if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
       std::string msg ("Game=");
@@ -259,6 +262,17 @@ void Game::makeNextMoves () {
               (bind (slot (*actPlayers[actPlayer], &Player::makeTurn), this));
       disableHuman ();
    }
+}
+
+
+//-----------------------------------------------------------------------------
+/// Ends the move of the passed remote player. This contains of executing the
+/// move and re-enable receiving of messages
+/// @param player: ID of remote player
+//-----------------------------------------------------------------------------
+void Game::endRemoteMove () {
+   makeNextMoves ();
+   mxSerializeMsgs.unlock ();
 }
 
 //-----------------------------------------------------------------------------
@@ -512,6 +526,7 @@ void Game::broadcastMessage (const std::string& msg) const {
 void Game::writeMessage (Socket& socket, const std::string& msg) {
    try {
       socket.write (msg);
+      socket.write ("\0", 1);
    }
    catch (std::domain_error& error) {
       std::string err (_("Can't write message!\n\nReason: %1"));
@@ -605,7 +620,7 @@ void Game::setNextPlayer (unsigned int player) {
 /// Corrects the player number (as they differ between server and client)
 //----------------------------------------------------------------------------
 unsigned int Game::correctPlayer (unsigned int player) const {
-   return (player + posServer) & 0x3;
+   return (player - posServer) & 0x3;
 }
 
 //----------------------------------------------------------------------------
@@ -655,6 +670,11 @@ bool Game::performCommand (unsigned int player, const char* msg) {
 
          card = lCard - cards++;
          flipCards2Play (pile, card, card);
+
+         mxSerializeMsgs.lock ();
+         Glib::signal_timeout ().connect
+             (bind_return (slot (*this, &Game::endRemoteMove), false),
+              ComputerPlayer::TIMEOUT);
       }
    }
    else

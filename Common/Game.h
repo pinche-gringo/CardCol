@@ -52,7 +52,7 @@ class Game : public Gtk::Table {
 
    Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
          const std::vector<Player*>& player, unsigned int posPlayer,
-         unsigned int rows, unsigned int columns);
+         Mutex& mxSerialize, unsigned int rows, unsigned int columns);
    virtual ~Game ();
 
    // Managing
@@ -113,6 +113,7 @@ class Game : public Gtk::Table {
    void displayTurn (unsigned int player);
    void displayTurn (unsigned int player, const Glib::ustring& preText);
    void makeNextMoves ();
+   void endRemoteMove ();
    virtual int makeMove (unsigned int player) = 0;
 
    bool randomizeCardsToPile (ICardPile& pile) const;
@@ -139,7 +140,12 @@ class Game : public Gtk::Table {
    std::vector<SigC::Connection> activeCards;
    const std::vector<Player*>&   actPlayers;
 
-   unsigned int posServer;       // Position the player occupies for the server
+   Mutex& mxSerializeMsgs;
+
+   unsigned int posServer;     ///< Position the player occupies for the server
+
+   unsigned int pos2Play;                    ///< Upper border of cards to play
+   unsigned int pos1Play;                    ///< Lower border of cards to play
 
  private:
    bool enableActWonCards ();
@@ -174,7 +180,7 @@ class TGame : public Parent {
    TGame (Controller& controller, PCALLBACK callback)
       : Parent (controller.getClient (), controller.getStatusbar (),
                 controller.getCards (), controller.getPlayer (),
-                controller.getPlayerPosition ())
+                controller.getPlayerPosition (), controller.getClientMutex ())
       , obj (controller), pCallback (callback) { }
    virtual ~TGame () { }
 
@@ -188,7 +194,7 @@ class TGame : public Parent {
    }
 
  private:
-   Controller & obj;
+   Controller& obj;
    PCALLBACK pCallback;
 };
 
