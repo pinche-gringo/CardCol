@@ -305,8 +305,8 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
 /*--------------------------------------------------------------------------*/
 RovhultAppl::RovhultAppl ()
    : XApplication (PACKAGE " - Rovhult V" VERSION), status ()
-     , tblTable (16, 19), cardFaces (USED_CARDS), cards ()
-     , staple (CardPile::VERY_COMPRESSED), pThread (NULL) {
+     , tblTable (16, 19), cardFaces (USED_CARDS), cards (), pThread (NULL)
+     , staple (CardPile::VERY_COMPRESSED), played (CardCollection::COMPRESSED) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
@@ -321,6 +321,9 @@ RovhultAppl::RovhultAppl ()
 
    staple.show ();
    tblTable.attach (staple, 3, 4, 2, 5, 0, 0);
+
+   tblTable.set_col_spacings (2);
+   tblTable.set_row_spacings (2);
 
    show ();
 
@@ -352,9 +355,11 @@ RovhultAppl::RovhultAppl ()
                        ROWS_PLAYER[i] + (i ? 3 : -3) + 2
                        , 0, 0, 1);
       TRACE9 ("RovhultAppl::dealCards () - 2nd set at: "
-              << COLS_PLAYER[i] + (j << 1) << '/'
+              << COLS_PLAYER[i] + (i << 1) << '/'
               << ROWS_PLAYER[i] + (i ? 3 : -3));
    }
+
+   tblTable.attach (played, 7, 11, 7, 11, 0, 0, 1);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -362,9 +367,6 @@ RovhultAppl::RovhultAppl ()
 /*--------------------------------------------------------------------------*/
 RovhultAppl::~RovhultAppl () {
    TRACE9 ("RovhultAppl::~RovhultAppl ()");
-   tblTable.hide ();
-   status.hide ();
-   hide ();
 }
 
 
@@ -401,18 +403,45 @@ void RovhultAppl::command (int menu) {
 }
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Callback after finishing card-exchange
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::finishedExchange () {
+   played.show ();
+
+   status.pop (1);
+   status.push (1, "");
+
+   // Remove drag´n´drop abilities and compress cards
+   for (int i (0); i < NUM_PLAYERS; ++i) {
+      hands[i].setStyle (CardCollection::COMPRESSED);
+
+      for (int j (0); j < 3; ++j) {
+         CardWidget& card (hands[i].cardAt (j));
+         unregisterDND (card);
+         unregisterDND (reserve[i][j].getTopCard ());
+
+         card.clicked.connect (bind (slot (this, &RovhultAppl::handSelected),
+                                     &hands[i], j));
+
+         reserve[i][j].getTopCard ().set_sensitive (false);     // Don't access
+      }
+   }
+
+   CardWidget& card (staple.getTopCard ());
+   card.set_sensitive (false);
+   card.remove_accelerator (*get_accel_group (), ' ', 0);
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card on table
 //Parameters: parent: Pile of card
-//            iCard: (Internal) ID of card
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::pileSelected (CardPile* parent, unsigned int iCard) {
-   Check3 (iCard <= cards.numberOfCards ());
+void RovhultAppl::pileSelected (CardPile* parent) {
    Check3 (parent);
 
-   CardWidget* card (parent->getCard (iCard));
-   Check3 (card); Check3 (iCard == card->id ());
-   TRACE1 ("Rovhult::pileSelected (CardPile*, unsinged int) - " << iCard << " = "
-           << card->color () << '/' << card->number ());
+   CardWidget& card (parent->removeTopCard ());
+   TRACE1 ("Rovhult::pileSelected (CardPile*, unsinged int) - "
+           << card.color () << '/' << card.number ());
 }
 
 /*--------------------------------------------------------------------------*/
@@ -420,14 +449,13 @@ void RovhultAppl::pileSelected (CardPile* parent, unsigned int iCard) {
 //Parameters: parent: Pile of card
 //            iCard: (Internal) ID of card
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::handSelected (CardCollection* parent, unsigned int iCard) {
-   Check3 (iCard <= cards.numberOfCards ());
-   Check3 (parent);
+void RovhultAppl::handSelected (CardCollection* parent, unsigned int pos) {
+   Check3 (pos <= cards.numberOfCards ());
+   Check3 (parent); 
 
-   CardWidget* card (parent->getCard (iCard));
-   Check3 (card); Check3 (iCard == card->id ());
-   TRACE1 ("Rovhult::handSelected (CardCollection*, unsinged int) - " << iCard << " = "
-           << card->color () << '/' << card->number ());
+   CardWidget& card (parent->cardAt (pos));
+   TRACE1 ("Rovhult::handSelected (CardCollection*, unsinged int) - " << pos << " = "
+           << card.color () << '/' << card.number ());
 }
 
 /*--------------------------------------------------------------------------*/
@@ -465,6 +493,8 @@ void RovhultAppl::fillStaple () {
       for (int j (0); j < 3; ++j) {
          reserve[i][j].clear ();
       }
+
+      hands[i].setStyle (CardCollection::NORMAL);
       hands[i].clear ();
    }
 
@@ -553,16 +583,18 @@ void RovhultAppl::dealCards () {
          hands[i].addCard (card);
 
          registerHandDND (card, i, j);
-#if 0
-         // Use that code for card-callbacks *after* exchanges of cards
-         card.clicked.connect (SigC::bind (SigC::slot (this, &RovhultAppl::handSelected),
-                                           &hands[player], card.id ()));
-#endif
       }
 
+   played.hide ();
+
+   CardWidget& card (staple.getTopCard ());
+   card.clicked.connect (slot (this, &RovhultAppl::finishedExchange));
+   card.add_accelerator ("clicked", *get_accel_group (), ' ', 0, GtkAccelFlags (0));
+
    status.pop (1);
-   status.push (1, _("Exchange the cards in your hand with the one on the"
-                     "table (with drag and drop - press space if finished)"));
+   status.push (1, _("Exchange the cards in your hand with the one on the "
+                     "table (with drag and drop) - press space (or click on staple) "
+                     "if finished"));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -706,20 +738,6 @@ void RovhultAppl::getDropData (GdkDragContext* pContext, GtkSelectionData* pData
    unsigned int data[] = { player, cardPos };
    gtk_selection_data_set (pData, pData->target, 8, reinterpret_cast <guchar*> (data),
                            sizeof (data));
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Resize-method of application
-/*--------------------------------------------------------------------------*/
-void RovhultAppl::size_allocate_impl (GtkAllocation* size) {
-   Check3 (size);
-   TRACE9 ("RovhultAppl::size_request_impl -> new size: " << size->width << " * "
-           << size->height);
-
-   if ((size->width >= WIDTH) || (size->height >= HEIGHT)) {
-      //tblTable.set_usize (size->width 600 - XWIDTH);
-      XApplication::size_allocate_impl (size);
-   }
 }
 
 /*--------------------------------------------------------------------------*/
