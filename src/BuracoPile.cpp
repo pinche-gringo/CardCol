@@ -187,6 +187,8 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
                           : card.number ()) == CardWidget::ACE)
                         ? status.posLast : 0);
             pos = status.posJoker;
+            if (!move)
+               ++pos;
             return true;
          }
 
