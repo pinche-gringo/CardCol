@@ -1,4 +1,36 @@
+2003-10-26  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.5.04 commented
+
+	* po/de.po, po/en.po, po/es.po: Actualized
+
+	* src/Buraco.cpp:
+	  Fixed playing 7 monos; Fixed some checks; Fixed blocking picked up cards
+
+2003-10-21  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.in:
+	  Version to 0.5.04; fixed and improved search for KDE carddecks
+
+	* src/Buraco.h, src/Buraco.cpp:
+	  Fixed check if game can be ended directly with first cerrado
+
+2003-10-20  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Now only allowing old cards to be played, after pickung up the dumped pile
+
+	* src/BuracoPile.cpp: Fixed moving of jokers in colour piles
+
+	* src/CardCol.h, src/CardCol.cpp:
+	  Loading cardimages now in main thread (as this is now fast enough)
+
 2003-10-19  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/Game.cpp: Initializing target with correct type -1UL
+
+	* Common/DeckSelect.cpp:
+	  Adding apply button manually, to no close the dialog, when selecting
 
 	* ChangeLog, NEWS: Changes of V0.5.03 commented
 
