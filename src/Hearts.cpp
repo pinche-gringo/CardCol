@@ -130,7 +130,6 @@ Hearts::~Hearts () {
 int Hearts::makeMove (unsigned int player) {
    TRACE5 ("Hearts::makeMove () - Turn of player " << player);
    Check1 (gameStatus () == PLAYING);
-   Check3 (player);
    Check3 (pos2Play == pos1Play);
 
    if (pos2Play == -1U) {
@@ -140,7 +139,7 @@ int Hearts::makeMove (unsigned int player) {
    }
    else {
       TRACE9 ("Hearts::makeMove (unsigned int) - Playing card at pos " << pos2Play);
-      ICardPile& pile (players[player].hand);
+      ICardPile& pile (players[correctPlayer (player)].hand);
       Check3 (pos2Play < pile.size ());
       aPlayed[pile[pos2Play]->colour ()]++;
       if ((pile[pos2Play]->colour () == CardWidget::SPADES)
@@ -187,8 +186,9 @@ void Hearts::start () {
       if (player2Exchange) {
          Glib::ustring stat (_("Select 3 cards to exchange with %1"));
          Check3 (actPlayers.size () > player2Exchange);
-         Check3 (actPlayers[player2Exchange]);
-         stat.replace (stat.find ("%1"), 2, actPlayers[player2Exchange]->getName ());
+         Check3 (actPlayers[(player2Exchange + posServer) & 0x3]);
+         stat.replace (stat.find ("%1"), 2,
+                       actPlayers[(player2Exchange + posServer) & 0x3]->getName ());
          status.pop ();
          status.push (stat);
          setGameStatus (EXCHANGE);
@@ -277,7 +277,9 @@ void Hearts::takeCard (unsigned int iCard) {
 void Hearts::cardSelected (unsigned int iCard) {
    TRACE5 ("Hearts::cardSelected (unsigned int) - Position " << iCard);
    Check1 (iCard < players[0].hand.size ());
-   Check1 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
+   Check3 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
+   Check3 (pos1Play == -1U);
+   Check3 (pos2Play == -1U);
 
    // Hide won pile again (if not in debug-mode)
 #if TRACELEVEL > 0
@@ -290,6 +292,8 @@ void Hearts::cardSelected (unsigned int iCard) {
          // Send played card to all clients (if any)
          std::ostringstream msg;
          msg << "Play=" << iCard << ";Target=0";
+         if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+            ignoreNextMsg = true;
          broadcastMessage (msg.str ());
 
          setNextPlayer (calcNextPlayer (0));
@@ -309,7 +313,6 @@ void Hearts::cardSelected (unsigned int iCard) {
                msg << "Exchange=" << played[0]->id () << ' ' << played[1]->id ()
                    << ' ' << played[2]->id () << ";Player=" << posServer;
                broadcastMessage (msg.str ());
-               disableHuman ();
 
                ConnectionMgr& cmgr (getConnectionMgr ());
                if ((cmgr.getMode () == ConnectionMgr::SERVER)
@@ -318,6 +321,7 @@ void Hearts::cardSelected (unsigned int iCard) {
                   startPlaying ();
                }
             }
+            disableHuman ();
             return;
          }
       }
@@ -336,22 +340,22 @@ void Hearts::startPlaying () {
    playedSQ = false;
    setGameStatus (PLAYING);
 
-   if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
-      // Search for startplayer
-       unsigned int nextPlayer (0);
-       for (unsigned int i (1); i < NUM_PLAYERS; ++i)
-          if ((players[i].hand[0]->number () == CardWidget::TWO)
-              && (players[i].hand[0]->colour () == CardWidget::CLUBS)) {
-              TRACE7 ("Hearts::startPlaying () - Start with player " << i);
-              nextPlayer = i;
-              break;
-          }
-       Check3 (nextPlayer < NUM_PLAYERS);
+   // Search for startplayer
+   unsigned int nextPlayer (0);
+   for (unsigned int i (1); i < NUM_PLAYERS; ++i)
+       if ((players[i].hand[0]->number () == CardWidget::TWO)
+           && (players[i].hand[0]->colour () == CardWidget::CLUBS)) {
+           TRACE7 ("Hearts::startPlaying () - Start with player " << i);
+           nextPlayer = i;
+           break;
+       }
+   Check3 (nextPlayer < NUM_PLAYERS);
 
-       setNextPlayer (nextPlayer);
-       if (nextPlayer)
-          flipCards2Play (players[nextPlayer].hand, pos1Play = 0, pos2Play = 0);
-   }
+   setNextPlayer ((nextPlayer + posServer) & 0x3);
+   ConnectionMgr& cmgr (getConnectionMgr ());
+   if ((cmgr.getMode () == ConnectionMgr::SERVER)
+       && (nextPlayer > getConnectionMgr ().getClients ().size ()))
+      flipCards2Play (players[nextPlayer].hand, pos1Play = 0, pos2Play = 0);
 
    player2Exchange = (player2Exchange - 1) & 0x3;
 
@@ -390,7 +394,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
    if (played.size () == NUM_PLAYERS) {
       // Everyone played its card: Search for winner of played pile;
       // clear it and continue with winner
-      setNextPlayer (player = ((player - NUM_PLAYERS + check4Winner () + 1) & 0x3));
+      player = (player - NUM_PLAYERS + check4Winner () + 1) & 0x3;
       TRACE4 ("Hearts::calcNextPlayer (unsinged int) - Continuing with player "
               << player);
       movePile (players[player].won, played);
@@ -537,7 +541,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
 ///    - Get rid of high cards
 //-----------------------------------------------------------------------------
 void Hearts::exchangeCards () {
-   TRACE8 ("Hearts::exchangeCards () - with " << player2Exchange);
+   TRACE8 ("Hearts::exchangeCards () - with " << ((player2Exchange + posServer) & 0x3));
    Check3 (played.size () == 3);
 
    movePile (aExchange[0], played); Check9 (aExchange[0].size () == 3);
