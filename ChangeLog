@@ -1,3 +1,182 @@
+2002-11-12  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Makefile.am: index.shtml added to distribution
+
+	* po/de.po, po/en.po, po/es.po: Only linenumbers have been changed
+
+	* doc/index.shtml: New file.
+
+	* bin/Rovhult.cpp: Typo corrected
+
+	* ChangeLog, NEWS: V0.2.00 documented
+
+	* configure.in: Help-strings beautified; LIBRELEASE set to 0.2.0
+
+	* bin/CardCol.cpp, bin/CardCol.h: Using new XApplication menu-interface
+
+2002-10-03  Markus Schwab  <g17m0@lycos.com>
+
+	* bin/Twopart.cpp:
+	  Fixed re-enabling after picking up pile; fixed findPos2Play; Improved playing
+
+2002-10-01  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Twopart.html, doc/Rovhult.html:
+	  Title changed (for index.html-generation; minor rewrite
+
+	* doc/Makefile.am: index.html added
+
+	* Common/Game.h:
+	  Specialization of Game with controller added
+
+	* bin/CardCol.cpp:
+	  Minor changes in menu-names (Rovhult->Røvhult; Debug not I18N); New Game tmpl.
+
+	* bin/Rovhult.h, bin/Twopart.h: Specialization moved to Game-base class
+
+	* bin/Rovhult.h:
+	  Interface changed acc. new handling of player-can't-continue
+
+2002-09-30  Markus Schwab  <g17m0@lycos.com>
+
+	* bin/Twopart.cpp, bin/Twopart.h:
+	  Regard trumps in part 1; Improvements of computer player
+
+	* bin/Rovhult.cpp:
+	  Fixed taking up piles and calculating last card to play; Improvements
+
+	* Common/CardPile.cpp, Common/CardPile.h:
+	  findFirstEqual and find (NUMBER) added
+
+	* bin/Rovhult.h:
+	  Interface changes because of calculating of played position only once
+
+	* bin/Rovhult.cpp: - Fixed bug
+	  - Changed handling if user can't continue: Now picks up pile with delay (Bug 8)
+	  - Cards to play are only calculated once
+	  - If a 6 should be played and there's also a 7, play them instead
+	  - Computer player respects known card (visible on pile) for his move
+	  - Internal improvements and bugfixes
+
+2002-09-29  Markus Schwab  <g17m0@lycos.com>
+
+	* po/POTFILES.in, po/de.po, po/en.po, po/es.po: Changed for V0.2
+
+	* bin/Twopart.h: findNextPlayer* is const
+
+	* bin/Twopart.cpp:
+	  Improved playing of trumps; Tries to finish part 1 with won cards
+
+2002-09-28  Markus Schwab  <g17m0@lycos.com>
+
+	* bin/Rovhult.h, bin/Twopart.h: Virtual methods (of game) are public
+
+	* bin/Rovhult.cpp: Adapted to new Game-interface
+
+	* bin/CardCol.cpp: Fixed restarting with changed game
+
+	* Common/Game.h: clean is public
+
+	* Common/DeckSelect.cpp, Common/DeckSelect.h: GUI improvements
+
+	* bin/Twopart.cpp: Fixes
+
+	* Common/Game.cpp: Fixed flipCard2Play
+
+	* bin/Twopart.cpp, bin/Twopart.h:
+	  Using new Game-methods (flipCards; movePile); Calc. pos. to play only 1x
+
+	* Common/Game.cpp, Common/Game.h: movePile & flipCards2Play added
+
+	* Common/CardPile.h, Common/CardPile.cpp: Method move added
+
+2002-09-27  Markus Schwab  <g17m0@lycos.com>
+
+	* bin/Rovhult.h, bin/Rovhult.cpp:
+	  flipCards2Play moved to game; changes acc. to that; Cleanup
+
+	* bin/CardCol.cpp:
+	  Sanity-check while enabling debug; Question for running game on exit
+
+2002-09-14  Markus Schwab  <g17m0@lycos.com>
+
+	* bin/CardCol.h:
+	  Restarting re-enabled; Let game inform about status-changes
+
+	* bin/CardCol.cpp:
+	  Restarting re-enabled; Let game inform about status-changes; Fixes
+
+	* bin/Rovhult.cpp, bin/Twopart.cpp: Fixes; Adapted to new Game interface
+
+	* bin/Rovhult.h, bin/Twopart.h:
+	  Specialization to inform parent about status changes
+
+	* Common/Game.cpp:
+	  Fixes; Informs about status-changes; Restarting enabled
+
+	* Common/Game.h:
+	  Enabling clients to inform (potential) parents about status changes
+
+	* bin/CardCol.cpp, bin/CardCol.h:
+	  End of games removed (not necesary and caused problems)
+
+2002-09-13  Markus Schwab  <g17m0@lycos.com>
+
+	* bin/CardCol.cpp: Open playing enabled; Fixed restarting
+
+	* bin/Twopart.cpp: Restart- and status handling changed; Fixes
+
+	* bin/Rovhult.cpp: Restart- and status handling changed
+
+	* Common/Game.h: Methods to display turn added
+
+	* Common/Game.cpp:
+	  Methods to display turn added; Traces & checks added
+
+2002-09-12  Markus Schwab  <g17m0@lycos.com>
+
+	* bin/Rovhult.cpp, bin/Rovhult.h, bin/Twopart.cpp, bin/Twopart.h:
+	  Global game handling moved to Game base class
+
+	* Common/Game.cpp, Common/Game.h:
+	  Common game-handling added (moved from Rovhult/Twopart)
+
+	* bin/Rovhult.cpp, bin/Twopart.cpp, bin/Twopart.h:
+	  Common methods moved to base class (Game)
+
+	* bin/CardCol.cpp, bin/CardCol.h:
+	  Game can be selected from menu
+
+	* Common/Game.cpp, Common/Game.h:
+	  Common methods added (moved from Twopart/Rovhult)
+
+	* Common/CardWidget.h: getImage added
+
+	* bin/Makefile.am: Rovhult added
+
+	* bin/Rovhult.cpp, bin/Rovhult.h: First version of combined game collection
+
+2002-09-10  Markus Schwab  <g17m0@lycos.com>
+
+	* bin/Makefile.am: New file.
+
+	* Common/Makefile.am: Game added
+
+	* Common/Game.cpp, Common/Game.h: New file.
+
+	* README: Actualized (Removing of cardset basically)
+
+	* configure.in:
+	  Games moved into single application and therefore into own subdir;
+	  Version to 0.2
+
+	* Makefile.am: 
+	  Games moved into single application and therefore into own subdir
+
+	* bin/Twopart.cpp, bin/Twopart.h: First version with combined games
+
+	* bin/CardCol.cpp, bin/CardCol.h: New file.
+
 2002-09-09  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog: Changes in V0.1.03 documented
