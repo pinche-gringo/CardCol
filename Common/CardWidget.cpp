@@ -56,8 +56,6 @@ CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible)
    add (img);
    add_events (Gdk::EXPOSURE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK
                | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
-
-   signal_clicked ().connect (SigC::slot (*this, &CardWidget::on_clicked));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -77,15 +75,13 @@ CardWidget::CardWidget (const CardWidget& other)
    add (img);
    add_events (Gdk::EXPOSURE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK
                | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
-
-   signal_clicked ().connect (SigC::slot (*this, &CardWidget::on_clicked));
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Destructor
 /*--------------------------------------------------------------------------*/
 CardWidget::~CardWidget () {
-   TRACE9 ("CardWidget::~CardWidget ()");
+   TRACE9 ("CardWidget::~CardWidget () - " << *this);
 }
 
 
@@ -128,12 +124,11 @@ void CardWidget::update () {
    img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground ());
 }
 
-
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking a CardWidget
 /*--------------------------------------------------------------------------*/
 void CardWidget::on_clicked () {
-   TRACE9 ("CardWidget::on_clicked ()");
+   TRACE9 ("CardWidget::on_clicked () - " << *this);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -145,17 +140,17 @@ bool CardWidget::on_button_release_event (GdkEventButton* ev) {
            << ev->button << "; X: " << ev->x - 1 << "; Y: " << ev->y - 1
            << "; W: " << get_width () << "; H: " << get_height ());
 
-   // It the button 1 is released within the image: Generate a clicked signal
+   // It button 1 is released within the image: Generate a clicked signal
    if ((ev->button == 1)
        && ((ev->x - 1) < get_width ()) && ((ev->y - 1) < get_height ())) {
-      clicked ();
-      return true;
+      clicked_.emit ();
+      on_clicked ();
    }
    return false;
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Callback after clicking a CardWidget
+//Purpose   : Output operator; Writes number and colour of the card
 /*--------------------------------------------------------------------------*/
 std::ostream& operator<< (std::ostream& out, const CardWidget& card) {
    if (card.nrCard >= 52)

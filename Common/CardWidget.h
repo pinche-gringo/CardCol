@@ -63,7 +63,6 @@ class CardWidget : public Gtk::EventBox {
    void update ();
 
    SigC::Signal0<void> signal_clicked () { return clicked_; }
-   void clicked () { clicked_.emit (); }
 
  protected:
   virtual void on_clicked ();
