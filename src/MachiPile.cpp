@@ -180,6 +180,9 @@ int MachiPile::cardDistance (const CardWidget& a, const CardWidget& b,
    TRACE9 ("MachiPile::cardDistance (const CardWidget&, const CardWidget&, ACEFLAG) - "
            << a << "<->" << b);
    
+   if (a.colour () != b.colour ())
+      return (a.number () == b.number ()) ? 0 : 99;
+
    if (aceIsOne != ACE) {                 // Special handling of the ace like 1
       TRACE9 ("MachiPile::cardDistance (const CardWidget&, const CardWidget&, ACEFLAG) - "
                "Checking for Ace");
