@@ -66,7 +66,7 @@ Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             const std::vector<Player*>& player, unsigned int posPlayer,
             Mutex& mxSerialize, unsigned int rows, unsigned int columns)
    : Gtk::Table (rows, columns), statGame (NONE), status (statusbar)
-     , cards (cardset), restart (false), pWonPile (NULL), pMenuPopSort (NULL)
+     , cards (cardset), pWonPile (NULL), pMenuPopSort (NULL)
      , actPlayers (player), data (NULL), posServer (posPlayer)
      , pos2Play (-1U), pos1Play (-1U), mxSerializeMsgs (mxSerialize)
      , ignoreNextMsg (false) {
@@ -79,6 +79,8 @@ Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
    set_row_spacings (2);
 
    parent.pack_start (*this, true, true, 5);
+
+   stati.pendingTurn = stati.restart = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -123,19 +125,42 @@ void Game::stop () {
 /// End the current game as soon as possible
 /// \param startNew: Flag, if game should be restarted
 //-----------------------------------------------------------------------------
+bool Game::endGame (bool startNew) {
+   TRACE8 ("Game::endGame (bool) - End game; Restart: " << (stati.restart ? "Yes" : "No"));
+   Check3 ((statGame == TOSTOP) || (statGame == STOPPED));
+
+   if (!mxSerializeMsgs.trylock ())
+      return true;
+   mxSerializeMsgs.unlock ();
+
+   setGameStatus (STOPPED);
+   if (stati.restart)
+      // Restart the game, when idle (means: *after* this signalhandler
+      // terminates)
+      Glib::signal_idle ().connect
+          (bind_return (slot (*this, &Game::start), false));
+   return false;
+}
+
+//-----------------------------------------------------------------------------
+/// End the current game as soon as possible
+/// \param startNew: Flag, if game should be restarted
+//-----------------------------------------------------------------------------
 void Game::end (bool startNew) {
    TRACE9 ("Game::end () - Restart: " << (startNew ? "Yes" : "No"));
    if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
       broadcastMessage ("End");
 
-   restart = startNew;
+   stati.restart = startNew;
    if (canBeStopped ()) {
       setGameStatus (STOPPED);
       actPlayer = 0;
       disableHuman ();
    }
-   else
+   else {
       setGameStatus (TOSTOP);
+      Glib::signal_idle ().connect (bind (slot (*this, &Game::endGame), stati.restart));
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -250,7 +275,7 @@ void Game::clean () {
 /// Activates the next player
 //-----------------------------------------------------------------------------
 void Game::makeNextMoves () {
-   if (actPlayer >= 0) {
+   if ((actPlayer >= 0) && (statGame != TOSTOP)) {
       TRACE8 ("Game::makeNextMoves () - " << actPlayer);
       Check1 (actPlayer < actPlayers.size ());
       unsigned int timeout (actPlayers[actPlayer]->timeout ());
@@ -275,6 +300,7 @@ bool Game::endRemoteMove (unsigned int player) {
    TRACE8 ("Game::endRemoteMove () - " << player);
    mxSerializeMsgs.unlock ();
    actPlayer = makeMove (player);
+   stati.pendingTurn = 0;
    makeNextMoves ();
    return false;
 }
@@ -293,18 +319,6 @@ bool Game::enableHuman () {
 //-----------------------------------------------------------------------------
 bool Game::makeComputerMove () {
    TRACE5 ("Game::makeComputerMove () - Turn of player " << actPlayer);
-
-   if (statGame == TOSTOP) {
-      TRACE8 ("Game::makeComputerMove () - End game; Restart: "
-              << (restart ? "Yes" : "No"));
-      setGameStatus (STOPPED);
-      if (restart)
-         // Restart the game, when idle (means: *after* this signalhandler
-         // terminates)
-         Glib::signal_idle ().connect
-             (bind_return (slot (*this, &Game::start), false));
-      return false;
-   }
 
    unsigned int newPlayer (makeMove (actPlayer));
    TRACE7 ("Game::makeComputerMove () - Next player: " << newPlayer);
@@ -720,6 +734,7 @@ bool Game::performCommand (unsigned int player, const char* msg) throw (std::str
          Glib::signal_timeout ().connect
              (bind (slot (*this, &Game::endRemoteMove), actPlayer),
               ComputerPlayer::TIMEOUT);
+         stati.pendingTurn = 1;
          return false;
       }
       else
@@ -773,7 +788,8 @@ bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) {
 /// \returns bool: True, if the game can be stopped imediately
 //----------------------------------------------------------------------------
 bool Game::canBeStopped () const {
-   return !actPlayer || mxSerializeMsgs.trylock ();
+   return !(actPlayer && stati.pendingTurn);
+;
 }
 
 //----------------------------------------------------------------------------

@@ -156,6 +156,7 @@ class Game : public Gtk::Table {
 
  private:
    void flipCards2Play (ICardPile& pile, const std::string& cards) throw (std::string);
+   bool endGame (bool startNew);
 
    bool enableActWonCards ();
 
@@ -164,7 +165,10 @@ class Game : public Gtk::Table {
    unsigned int statGame;
 
    int actPlayer;                   // Player who is in turn (needed for timer)
-   bool restart;
+   struct {
+      int restart : 1;
+      int pendingTurn : 1;
+   } stati;
 
    std::vector<SigC::Connection> wonCards;     // Connections to show won cards
    ICardPile*                    pWonPile;
