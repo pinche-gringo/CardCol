@@ -264,11 +264,12 @@ void Twopart::playedSelected () {
    Check3 (gameStatus () == PLAYING2);
    Check3 (bfPlayers);
 
-   if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT) {
+   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
       Check3 (startPos[offPos - 1] < played.size ());
       std::ostringstream msg;
       msg << "Play=" << played[startPos[offPos - 1]]->id () << ";Target=1";
-      ignoreNextMsg = true;
+      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+         ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
    setNextPlayer (pickUpPlayedPile (0));
@@ -369,7 +370,7 @@ void Twopart::cardSelected (unsigned int pos) {
       msg << players[0].hand[pos]->id () << ";Target=0";
 
       if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
-         ignoreNextMsg = pos - start + 1;
+         ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
 
@@ -455,8 +456,16 @@ int Twopart::makeMove (unsigned int player) {
          flipCards2Play (players[player].hand, pos1Play, pos2Play);
          return player;
       }
-      else
+      else {
+         if ((gameStatus () == PLAYING2)
+             && (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)) {
+            std::ostringstream msg;
+            Check3 (startPos[offPos - 1] < played.size ());
+            msg << "Play=" << played[startPos[offPos - 1]]->id () << ";Target=1";
+            broadcastMessage (msg.str ());
+         }
          player = pickUpPlayedPile (player);
+      }
    }
    else {
       player = executeMove (player, pos1Play, pos2Play);
@@ -787,14 +796,10 @@ int Twopart:: endRound (unsigned int player) {
          cPlayers = 0;
 
          // Add players having equal cards and having still cards left
-         nextPlayer = startPlayer;
+         nextPlayer = pos2Player (posMaxEqual - *startPos);
          for (unsigned int i (*startPos); i < played.size (); ++i) {
             if ((played[i]->number () == maxEqualNr)
                 && players[pos2Player (i - *startPos)].hand.size ()) {
-               if (!cPlayers)
-                  // Start player is the first who played the highest cards
-                  nextPlayer = pos2Player (posMaxEqual - *startPos);
-               
                TRACE5 ("Twopart::endRound (unsigned int) - Found equal cards; Player "
                        << pos2Player (i - *startPos)
                        << (cPlayers ? " still in round" : " is winner"));
@@ -808,25 +813,17 @@ int Twopart:: endRound (unsigned int player) {
                  << cPlayers << " player(s) still in round (" << std::hex
                  << bfPlayers << std::dec << ')');
 
-         // Find player to continue
-         if (!players[nextPlayer].hand.size ())
-            nextPlayer = findNextPlayer (nextPlayer);
          TRACE6 ("Twopart::endRound (unsigned int) - Try to continue with player " << nextPlayer);
-         if (cPlayers < 2) {                   // Less than two found: 
+         if (cPlayers < 2) {                   // Less than two players found:
             bfPlayers = (1 << NUM_PLAYERS) - 1;
             cPlayers = removePlayersWithoutCards ();
 
-            if (nextPlayer == -1) {
-               nextPlayer = bfPlayers ? findNextPlayer (nextPlayer) : ~startPlayer;
-               movePlayedCardsToPlayer (startPlayer);
-            }
-            else
-               movePlayedCardsToPlayer (nextPlayer);
+            if (players[nextPlayer].hand.empty () && cPlayers)
+               nextPlayer = findNextPlayer (nextPlayer);
+            movePlayedCardsToPlayer (nextPlayer);
+            if (!cPlayers)
+               nextPlayer = ~nextPlayer;
          }
-#if CHECK > 0
-         else
-            Check (cPlayers > 1);
-#endif
       }
       // All played cards are differnt: Winner is the one with highest card
       else {
@@ -856,8 +853,8 @@ int Twopart:: endRound (unsigned int player) {
 /// \param startPos: Position from where to start analyzing
 /// \param max: Highest single card
 /// \param maxPos: Position of highest single card
-/// \param maxEqua: Highest pair
-/// \param maxEquaPos: Position of highest equal card
+/// \param maxEqual: Highest pair
+/// \param maxEqualPos: Position of highest equal card
 /// \param trumps: Number of trumps
 /// \remarks Values are not resetted!
 //-----------------------------------------------------------------------------
@@ -981,12 +978,6 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start
    Check3 (receiver < NUM_PLAYERS);
    Check3 (start < played.size ());
 
-   if ((gameStatus () == PLAYING2)
-       && (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)) {
-      std::ostringstream msg;
-      msg << "Play=" << played[start]->id () << ";Target=1";
-      broadcastMessage (msg.str ());
-   }
    movePile (((gameStatus () == PLAYING)
               ? players[receiver].won : players[receiver].hand),
              played, start);
@@ -1205,19 +1196,18 @@ bool Twopart::handleMessage (unsigned int player, const char* message) {
 //----------------------------------------------------------------------------
 /// Executes the remote move locally
 /// \param pile: Pile to move to/from
-/// \param card: Card which to use from pile
+/// \param target: ID of target as send by the partner
+/// \pre Expects \c pos1Play and \c pos2Play to be set to the positions to play
 //----------------------------------------------------------------------------
-bool Twopart::executeRemoteMove (ICardPile& pile, unsigned int card) {
-   if (&pile == &played) {
-      TRACE7 ("Twopart::executeRemoteMove (ICardPile&, unsigned int) - Card " << card);
+bool Twopart::executeRemoteMove (ICardPile& pile, unsigned int target) {
+   Check2 (pos1Play != -1U);
+   Check2 (pos2Play != -1U);
+   if (target) {
+      TRACE7 ("Twopart::executeRemoteMove (ICardPile&, unsigned int) - Target " << target);
       Check3 (gameStatus () == PLAYING2);
       pos1Play = pos2Play = -1U;
       setNextPlayer (pickUpPlayedPile (currentPlayer ()));
       return false;
    }
-   else
-      Game::executeRemoteMove (pile, card);
-      if (pos2Play != pos1Play)
-         pile.resize (pos2Play - 1, ICardPile::COMPRESSED);
-      return true;
+   return Game::executeRemoteMove (pile, target);
 }
