@@ -23,7 +23,7 @@
 
 <html>
   <head>
-    <title>Corazones - Un juego donde mejor no se conseguirlos</title>
+    <title>Corazones - Un juego donde mejor no se conseguirlas</title>
     <meta name="description" content="Documentaci&oacute;n del juego de cartas Corazones">
     <meta name="keywords" content="Documentation, Docu, Hearts; game, card, cardgame, documentacion, juego, corazones">
 
@@ -91,9 +91,5 @@
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
-<!-- hhmts start -->
-Last modified: Mon Feb 10 18:40:31 PET 2003
-<!-- hhmts end -->
-          - $Revision$
 </body>
 </html>

@@ -23,7 +23,7 @@
 
 <html>
   <head>
-    <title>R&oslash;vhult - Un juego de cartas conozido en todo el muno (como Arsehole, ...)</title>
+    <title>R&oslash;vhult - Un juego de cartas conozido en todo el mundo (como Arsehole, ...)</title>
     <meta name="description" content="Documentaci&oacute;n del juego de cartas R&oslash;vhult">
     <meta name="keywords" content="documentacion, documentaci&oacute;n, docu, R&oslash;vhult, Rovhult; game, juego, card, cardgame, carta, juego de cartas">
 
@@ -107,7 +107,7 @@
       vale de acuerdo con las reglas, se tiene que sacarla y las dem&aacute;s
       del estaploe jugado.</p>
 
-    <p>La barra de estatos muestra que est&aacute; pasando!</p>
+    <p>La barra de estado muestra que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
     <p>Despu&eacute;s iniciar se encuentra (de izquierda a derecha y de arriba a
@@ -135,10 +135,5 @@
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
-    <!-- Created: Thu Jul  4 16:36:50 PET 2002 -->
-    <!-- hhmts start -->
-Last modified: Tue Feb 11 20:02:55 PET 2003
-<!-- hhmts end -->
-    - $Revision$
   </body>
 </html>

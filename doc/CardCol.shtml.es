@@ -36,14 +36,14 @@
     <h1 align="center">Informaci&oacute;n General sobre los Juegos de Cartas</h1>
     <hr size=2>
 
-    <p>Ese es una colecci&oacute;n  de juegos de cartas que aprend&iacute; de
-      varias personas, generalmente durante viajar (&iquest;Qu&eacute; pudr&iacute;a
-      matar mejor el tiempo durante un viaje de &gt;10 horas en
+    <p>Esta es una colecci&oacute;n de juegos de cartas que aprend&iacute; de
+      varias personas, generalmente durante viajar (&iquest;Qu&eacute;
+      podr&iacute;a matar mejor el tiempo durante un viaje de &gt;10 horas en
       bus/tren/qu&eacute;-s&eacute;-yo que un juego de cartas bueno?)</p>
 
-    <p>Todos son para varias personas (los dem&aacute;s est&aacute;n controlado
-      de la computadora). Por juegos de cartas solitarios puedo recomendar
-      los excelentes juegos de cartas de KDE.</p>
+    <p>Todos son para varias personas (los dem&aacute;s est&aacute;n
+      controlados por la computadora). Por juegos de cartas solitarios puedo
+      recomendar los excelentes juegos de cartas de KDE.</p>
 
     <p>Este programa se distribuye bajo los condicones de la GNU Licensia
       General P&uacute;blico, que principalmente expresa lo siguente (v&eacute;ase
@@ -65,7 +65,7 @@
         P&uacute;blico para m&aacute;s detalles).</p></em></blockquote>
 
     <h2>Autor</h2>
-    <p>Ambos el programa y la documentaci&oacute;n han sido escrito de Markus
+    <p>El programa y la documentaci&oacute;n han sido escrito de Markus
       Schwab.</p>
 
     <h2>Juegos</h2>
@@ -84,7 +84,7 @@
 
     <h2>Cr&eacute;ditos</h2>
     <p>Un abrazo fuerte a Ingrid y Jonathan, que me ense&ntilde;aron todos los
-      trucos de <tt>Buraco</tt> y lo jugaron conmigo para horas.</p>
+      trucos de <tt>Buraco</tt> y lo jugaron conmigo por horas.</p>
 
     <p>Saludos a Andreas, Jakob y Janus, que me han ese&ntilde;ado los reglas de
       <tt>R&oslash;vhult</tt>.</p>
@@ -98,9 +98,5 @@
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
-<!-- hhmts start -->
-Last modified: Tue Feb 11 09:33:07 PET 2003
-<!-- hhmts end -->
-          - $Revision$
 </body>
 </html>
