@@ -133,6 +133,8 @@ class Machiavelli : public Game {
    //@{
    void endTurn ();
    void undoMove (unsigned int number);
+   void sortHand ();
+   void sortHandByColour ();
    //@}
 
    Gtk::Label names[NUM_PLAYERS];                        // Names of the player

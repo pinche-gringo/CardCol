@@ -510,7 +510,7 @@ void Machiavelli::registerHandDND (unsigned int iCard) {
    // Card accepts drops from hand and drags from table
    card.drag_dest_set (dndTypeHand, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    card.drag_source_set
-      (dndTypeHand, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
+      (dndTypeHand, Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
        Gdk::ACTION_MOVE);
 
    card.drag_source_set_icon (card.getImage ());
@@ -575,7 +575,7 @@ void Machiavelli::registerTableDND (CardWidget& card, unsigned int nr) {
    // Card accepts drops from hand and drags from table
    card.drag_dest_set (dndTypeBoth, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    card.drag_source_set
-       (dndTypeTable, Gdk::ModifierType (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
+       (dndTypeTable, Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
         Gdk::ACTION_MOVE);
    card.drag_source_set_icon (card.getImage ());
 
@@ -1691,6 +1691,9 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 		     "      <menuitem action='Undo'/>"
 		     "      <menuitem action='UndoAll'/>"
 		     "      <separator/>"
+		     "      <menuitem action='Sort'/>"
+		     "      <menuitem action='SortCol'/>"
+		     "      <separator/>"
 		     "      <menuitem action='EndTurn'/>"
 		     "    </menu></placeholder></menubar>");
 
@@ -1704,6 +1707,15 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 		   bind (mem_fun (*this, &Machiavelli::undoMove), -1U));
    grpAction->add (Gtk::Action::create ("EndTurn", _("_End turn")),
 		   mem_fun (*this, (&Machiavelli::endTurn)));
+   grpAction->add (Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
+					_("_Sort cards (by number)")),
+		   Gtk::AccelKey ("<ctl><alt>S"),
+		   mem_fun (*this, &Machiavelli::sortHand));
+   grpAction->add (Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
+					_("Sort cards (by _colour)")),
+		   Gtk::AccelKey ("<shft><ctl>S"),
+		   mem_fun (*this, &Machiavelli::sortHandByColour));
+
 
    mgrUI->insert_action_group (grpAction);
    idMrg = mgrUI->add_ui_from_string (ui);
@@ -1719,4 +1731,28 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 void Machiavelli::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
    mgrUI->remove_ui (idMrg);
+}
+
+//-----------------------------------------------------------------------------
+/// Sorts the cards in the hand by number
+//-----------------------------------------------------------------------------
+void Machiavelli::sortHand () {
+   bool enabled (activeCards.size ());
+   if (enabled)
+      disableHuman ();
+   hands[0].sort (ICardPile::compCardsByNr);
+   if (enabled)
+      enableHuman ();
+}
+
+//-----------------------------------------------------------------------------
+/// Sorts the cards in the hand by colour
+//-----------------------------------------------------------------------------
+void Machiavelli::sortHandByColour () {
+   bool enabled (activeCards.size ());
+   if (enabled)
+      disableHuman ();
+   hands[0].sort (ICardPile::compCards);
+   if (enabled)
+      enableHuman ();
 }
