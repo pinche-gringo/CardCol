@@ -1044,7 +1044,7 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
                           << (p - playerPile.begin ()) << "; " << h - playerPile.begin ());
                   pos1Play = ((diff < 0) ? h : p) - playerPile.begin ();
                   playerPile.move (pos1Play,
-                                   ((diff < 0) ? p : (h - 1)) - playerPile.begin ());
+                                   ((diff < 0) ? p : h) - playerPile.begin ());
                   pos2Play = pos1Play + 1;
                }
                else
@@ -1116,13 +1116,16 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
                              << (p - playerPile.begin ()));
                      pos2Play = pos1Play = p - playerPile.begin ();
 
+                     if ((*i)->number () > (*c)->number ())
+                        std::swap (i, c);
+
                      TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Pile "
                              << (t - tablePiles.begin ()) << "; Card "
                              << (i - (*t)->begin ()) << '-' << (i - (*t)->begin () + nr - 1));
                      posPiles.push (((t - tablePiles.begin ()) << 8)
                                     + (nr << 16) + i - (*t)->begin ());
 
-                     (*i++)->mark ();
+                     (*i)->mark ();
                   }
                   else
                      pos1Play = pos2Play = playerPile.size ();
