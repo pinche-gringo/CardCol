@@ -70,7 +70,8 @@ class Game : public Gtk::Table {
    virtual const char* name () = 0;
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
-   virtual bool handleMessage (unsigned int player, const char* msg);
+   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
+   bool ignoreMessage ();
 
    /// \name Status handling
    //@{
@@ -101,14 +102,13 @@ class Game : public Gtk::Table {
    //@{
    void setCardOrder (const char* order) { cardOrder = order; data = cardOrder.data (); }
    const char* getCardOrder () const { return cardOrder.data (); }
+   void clearCardOrder () { cardOrder.clear () ; data = NULL; }
    //@}
 
  protected:
    virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile) = 0;
    virtual bool executeRemoteMove (ICardPile& pile, unsigned int target);
    virtual unsigned int getActTarget () const;
-
-   void closeDialog (int, const Gtk::Dialog* dlg);
 
    /// \name Communication helper methods
    //@{
@@ -124,6 +124,7 @@ class Game : public Gtk::Table {
    void setNextPlayer (unsigned int player);
 
    void flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end);
+   void flipCards2Play (ICardPile& pile, const std::string& cards) throw (std::string);
    void displayTurn (unsigned int player);
    void displayTurn (unsigned int player, const Glib::ustring& preText);
    void makeNextMoves ();
@@ -134,7 +135,7 @@ class Game : public Gtk::Table {
    static void movePile (ICardPile& dest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
 
-   bool performCommand (unsigned int player, const char* msg) throw (std::string);
+   bool performCommand (unsigned int player, const std::string& msg) throw (std::string);
    static bool stringToNumber (unsigned long& number, const char* text);
 
    // Handling of won cards (if any)
@@ -164,7 +165,6 @@ class Game : public Gtk::Table {
    unsigned int ignoreNextMsg;
 
  private:
-   void flipCards2Play (ICardPile& pile, const std::string& cards) throw (std::string);
    bool endGame (bool startNew);
 
    bool enableActWonCards ();

@@ -38,8 +38,6 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/Socket.h>
@@ -281,8 +279,8 @@ void Game::makeNextMoves () {
 //-----------------------------------------------------------------------------
 bool Game::endRemoteMove (unsigned int player) {
    TRACE8 ("Game::endRemoteMove () - " << player);
-   mxSerializeMsgs.unlock ();
    actPlayer = makeMove (player);
+   mxSerializeMsgs.unlock ();
    stati.pendingTurn = 0;
    makeNextMoves ();
    return false;
@@ -627,63 +625,40 @@ void Game::writeError (YGP::Socket& socket, unsigned int rc, const std::string& 
 /// \param msg: Message to handle
 /// \returns bool: True, if the message has been processed completely; else
 ///    (if message is still pending) false
+/// \throw std::string: In case of an error an describing string
 //----------------------------------------------------------------------------
-bool Game::handleMessage (unsigned int player, const char* msg) {
-   TRACE1 ("Game::handleMessage (unsigned int player, const char*) - " << msg
+bool Game::handleMessage (unsigned int player, const std::string& msg) throw (std::string) {
+   TRACE1 ("Game::handleMessage (unsigned int player, const std::string&) - " << msg
            << " (" << player << ')');
-   Check1 (msg);
+   Check1 (msg.size ());
    Check2 (!data);
 
    bool rc (true);
-   if (ignoreNextMsg)
-      --ignoreNextMsg;
-   else {
-      try {
-         switch (statGame) {
-         case NONE:
-            statGame = INITIALIZING;
-            data = msg;
-            start ();
-            break;
+   Check2 (!ignoreNextMsg);
+   try {
+      switch (statGame) {
+      case NONE:
+         statGame = INITIALIZING;
+         data = msg.c_str ();
+         start ();
+         data = NULL;
+         break;
 
-         case INITIALIZING:
-            break;
+      case INITIALIZING:
+         break;
 
-         default:                          // Playing (and game specific stati)
-            rc = performCommand (player, msg);
-         }
-      }
-      catch (std::string& error) {
-         std::string message (_("Error processing command `%1'!\n\n%2"));
-         message.replace (message.find ("%1"), 2, msg);
-         message.replace (message.find ("%2"), 2, error);
-
-         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT) {
-            Check3 (getConnectionMgr ().getSocket ());
-            writeError (*getConnectionMgr ().getSocket (), 1, error);
-         }
-
-         Gtk::MessageDialog* dlg (new Gtk::MessageDialog (message, Gtk::MESSAGE_ERROR,
-                                                          Gtk::BUTTONS_OK));
-         dlg->set_title (PACKAGE);
-         dlg->signal_response ().connect
-             (bind (slot (*this, &Game::closeDialog), dlg));
-         dlg->show ();
+      default:                          // Playing (and game specific stati)
+         rc = performCommand (player, msg);
       }
    }
+   catch (std::string& error) {
+      std::string message (_("Error processing command `%1'!\n\n%2"));
+      message.replace (message.find ("%1"), 2, msg);
+      message.replace (message.find ("%2"), 2, error);
+      throw (message);
+   }
 
-   data = NULL;
    return rc;
-}
-
-//-----------------------------------------------------------------------------
-/// Frees the passed dialog
-/// \param int: Response of dialog (ignored)
-/// \param dlg: Dialog to close additionally
-//-----------------------------------------------------------------------------
-void Game::closeDialog (int, const Gtk::Dialog* dlg) {
-   Check1 (dlg);
-   delete dlg;
 }
 
 //----------------------------------------------------------------------------
@@ -702,14 +677,14 @@ void Game::setNextPlayer (unsigned int player) {
 /// \returns bool: Flag, if command has been performed completely
 /// \throws std::string: Describing the error
 //----------------------------------------------------------------------------
-bool Game::performCommand (unsigned int player, const char* msg) throw (std::string) {
-   TRACE8 ("Game::performCommand (unsigned int player, const char*) - "
+bool Game::performCommand (unsigned int player, const std::string& msg) throw (std::string) {
+   TRACE8 ("Game::performCommand (unsigned int player, const std::string&) - "
            << msg << " (" << player << ')');
-   Check1 (msg);
+   Check1 (msg.size ());
 
    YGP::Tokenize command (msg);
    std::string cmd (command.getNextNode ('='));
-   TRACE2 ("Game::performCommand (unsigned int player, const char*) - " << cmd);
+   TRACE2 ("Game::performCommand (unsigned int player, const std::string&) - " << cmd);
 
    if (cmd == "Play") {
       cmd = command.getNextNode (';');
@@ -741,7 +716,7 @@ bool Game::performCommand (unsigned int player, const char* msg) throw (std::str
    }
    else if (cmd == "ActPlayer") {
       cmd = command.getNextNode (';');
-      TRACE8 ("Game::performCommand (unsigned int player, const char*) - "
+      TRACE8 ("Game::performCommand (unsigned int player, const std::string&) - "
               "Next player: " << cmd);
       unsigned long player;
       if (stringToNumber (player, cmd.c_str ()))
@@ -751,8 +726,11 @@ bool Game::performCommand (unsigned int player, const char* msg) throw (std::str
       if (statGame == PLAYING)
          displayTurn (player);
    }
-   else if (cmd == "End")
+   else if (cmd == "End") {
       end (false);
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
+         broadcastMessage ("End");
+   }
    else
       throw std::string ("Unknown command!");
    return true;
@@ -775,7 +753,7 @@ bool Game::stringToNumber (unsigned long& number, const char* text) {
 //----------------------------------------------------------------------------
 /// Executes the remote move locally
 /// \param pile: Pile to move to/from
-/// \param card: Card which to use from pile
+/// \param card: ID of target, where to play the card
 /// \returns bool: True, if the timer to execute the move should be set
 //----------------------------------------------------------------------------
 bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) {
@@ -790,4 +768,18 @@ bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) {
 //----------------------------------------------------------------------------
 bool Game::canBeStopped () const {
    return !(actPlayer && stati.pendingTurn);
+}
+
+//----------------------------------------------------------------------------
+/// Checks if the game should ignore a message. If so, the count of messages
+/// to ignore is reduced by 1.
+/// \returns bool: True, if a message should be ignored
+//----------------------------------------------------------------------------
+bool Game::ignoreMessage () {
+   if (ignoreNextMsg) {
+      TRACE9 ("Game::ignoreMessage () - Ignoring " << ignoreNextMsg);
+      --ignoreNextMsg;
+      return true;
+   }
+   return false;
 }
