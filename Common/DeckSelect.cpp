@@ -57,7 +57,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    , decks (), boxDecks ()
    , txtBack (_("Available backgrounds")), backs (), boxBack ()
    , selDeck (), selBack (), offDeck (-1), offBack (-1)
-   , box (Gtk::BUTTONBOX_END, 5), scrlBack (), scrlDeck () {
+   , box (Gtk::BUTTONBOX_END, 5) {
    TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (const char*) - " << path
            << " (" << deck << " - " << back << ')');
 
@@ -65,18 +65,11 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 
    add_button (Gtk::Stock::APPLY, Gtk::RESPONSE_APPLY);
 
-   scrlDeck.set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
-   scrlDeck.set_shadow_type (Gtk::SHADOW_IN);
-   scrlBack.set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
-   scrlBack.set_shadow_type (Gtk::SHADOW_IN);
+   boxDecks.pack_start (decks, true, true, 50);
+   boxDecks.pack_start (selDeck, false, 5);
 
-   boxDecks.pack_start (scrlDeck, true, true, 50);
-   boxDecks.pack_start (selDeck, false, false, 5);
-   scrlDeck.add (decks);
-
-   boxBack.pack_start (scrlBack, true, true, 50);
-   boxBack.pack_start (selBack, false, false, 5);
-   scrlBack.add (backs);
+   boxBack.pack_start (backs, true, true, 50);
+   boxBack.pack_start (selBack, false, 5);
 
    Check3 (get_vbox ());
    get_vbox ()->pack_start (txtDecks, false, false, 5);
@@ -100,8 +93,6 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 
    show_all ();
 
-   int tHeight (0), tWidth (0), cWidth (5);
-   int height, width;
    while (dir) {
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Found dir "
               << dir->name ());
@@ -121,22 +112,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
          (bind (slot (*this, &ICarddeckSelectDlg::deckSelect), offset));
       aDecks.push_back (temp);
 
-      if (aDecks.size ())
-         temp->get_size_request (width, height);
-
-      TRACE1 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Putting "
-              << offset << " to " << cWidth << '/' << tHeight);
-      decks.put (*temp, cWidth, tHeight);
-
-      if (!tWidth)
-         tWidth = ((width + 5) << 2);
-
-      if ((cWidth + width + 5) < tWidth)
-          cWidth += width + 5;
-      else {
-         tHeight += height + 5;
-         cWidth = 5;
-      }
+      decks.add (*temp);
 
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Comparing "
               << pathDeck << " with " << deck);
@@ -146,17 +122,20 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
       dir = ds.next ();
       ++offset;
    }
-   tHeight += height + 10;
-   TRACE1 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Decksize = "
-           << tWidth << '/' << tHeight);
-   decks.set_size (tWidth, tHeight);
-   scrlDeck.set_size_request (tWidth + 20, tHeight < 250 ? tHeight + 20 : 270);
+
+   int height (50), width (50);
+   if (aDecks.size ())
+      aDecks.front ()->get_size_request (width, height);
+   height = (height + 20) * ((offset >> 2) + 1);
+   width = (width + 25) << 2;
+   TRACE1 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*, const"
+           "std::string&, const std::string&) - Decksize:  " << width
+           << '/' << (height < 250 ? height : 250));
+   decks.set_size_request (width + 25, height < 270 ? height : 270);
 
    if (offDeck == -1)
       deckSelect (1);
 
-   cWidth = 5;
-   tHeight = 0;
    unsigned int offsetBack (offset + 1);
    std::string pathDecks (aFiles[0] + "decks/");
    dir = ds.find (pathDecks + "deck*.png", IDirectorySearch::FILE_NORMAL
@@ -176,16 +155,7 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
       if ((pathDecks + dir->name ()) == back)
          backSelect (offset);
 
-       backs.set_size ((offset >> 2) + 1, 4);
-      backs.put (*temp, cWidth, tHeight);
-
-      if ((cWidth + width + 5) < tWidth)
-          cWidth += width + 5;
-      else {
-         tHeight += height + 5;
-         cWidth = 5;
-      }
-
+      backs.add (*temp);
       dir = ds.next ();
    }
    if (offBack == -1)
@@ -193,9 +163,15 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 
    offset -= offBack;
 
-   tHeight += height + 10;
-   backs.set_size (tWidth, tHeight);
-   scrlBack.set_size_request (tWidth + 20, tHeight < 250 ? tHeight + 20 : 270);
+   height = width = 50;
+   if (aBacks.size ())
+      aBacks.front ()->get_size_request (width, height);
+   height = (height + 20) * ((offset >> 2) + 1);
+   width = (width + 25) << 2;
+   TRACE1 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*, const"
+           "std::string&, const std::string&) - Backsize:  " << width
+           << '/' << (height < 250 ? height : 250));
+   backs.set_size_request (width + 25, height < 270 ? height : 270);
 }
 
 //-----------------------------------------------------------------------------

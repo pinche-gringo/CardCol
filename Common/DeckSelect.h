@@ -24,10 +24,9 @@
 #include <gtkmm/box.h>
 #include <gtkmm/label.h>
 #include <gtkmm/button.h>
-#include <gtkmm/layout.h>
 #include <gtkmm/buttonbox.h>
-#include <gtkmm/scrolledwindow.h>
 
+#include <Folder.h>
 #include <XDialog.h>
 
 
@@ -63,14 +62,12 @@ class ICarddeckSelectDlg : public XDialog {
    Gtk::HBox   boxDecks;
    Gtk::Label  txtDecks;
    Gtk::Button selDeck;
-   Gtk::Layout decks;
-   Gtk::ScrolledWindow scrlDeck;
+   Folder      decks;
 
    Gtk::Button selBack;
    Gtk::HBox   boxBack;
    Gtk::Label  txtBack;
-   Gtk::Layout backs;
-   Gtk::ScrolledWindow scrlBack;
+   Folder      backs;
 
    Gtk::HButtonBox box;
 
