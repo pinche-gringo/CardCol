@@ -81,7 +81,7 @@ class RovhultAppl : public XApplication {
    void cleanTable ();
    void dealCards ();
    void fillStaple ();
-   void playCardsFromHand (unsigned int player, unsigned int pos);
+   CardWidget::NUMBERS playCardsFromHand (unsigned int player, unsigned int pos);
    void exchangeAutoplayerCards ();
 
    void waitForThread ();
