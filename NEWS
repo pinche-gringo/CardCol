@@ -1,3 +1,14 @@
+Overview of changes in version 0.6.22:
+
+  - Translating error messages received via network
+  - Røvhult marks cards which are played from the staple
+  - Fixed spanish translation of Twopart (which caused program to abort)
+  - Fixed Buraco's logic to determine if to end the game
+  - Fixed Buraco's replacing the Joker in a sequence starting with an ace
+  - Score dialog (tries to) display itself on the last position
+  - Fixed Buraco's (rare) problem make a new pile after picking up dumped cards
+  - Fixed Buraco's logic determining if to play all cards
+
 Overview of changes in version 0.6.21:
 
   - Improved usability of Machiavelli (Enter to end turn)

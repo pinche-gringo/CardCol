@@ -1,3 +1,53 @@
+2004-01-31  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.6.22 commented
+
+	* po/de.po, po/en.po, po/es.po: Actualized
+
+	* src/Buraco.cpp:
+	  Improved (and fixed) picking up played pile; Fixed canGetRidofCards
+
+	* src/BuracoPile.cpp:
+	  Fixed replacing the joker in a (coloured) serie starting with an ace
+
+	* src/Buraco.h: Added status-flag, if dumped pile should be picked up
+
+	* src/Machiavelli.cpp:
+	  getPileOfPlayer returns NULL, if pile is not valid
+
+	* Common/ScoreDlg.cpp:
+	  Also repositionating after show; some window managers don't respect it before
+
+	* Common/ScoreDlg.cpp:
+	  Score dialog (tries to) display itself on the last position
+
+2004-01-28  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp: Fixed logic to determine if to the end game
+
+	* src/BuracoPile.cpp:
+	  Fixed problems replacing the joker in a sequence starting with an ace
+
+2004-01-25  Markus Schwab  <g17m0@lycos.com>
+
+	* po/de.po, po/en.po: Translated communication errors
+
+	* po/es.po:
+	  Fixed substitute-parameter in a a translation; Translated communication errors
+
+	* configure.in: Version to 0.6.22
+
+	* Common/Game.cpp, Common/Game.h:
+	  getPileOfPlayer reports errors; Marking error messages for translation
+
+	* src/Machiavelli.h, src/Rovhult.h, src/Twopart.cpp, src/Twopart.h, src/Buraco.cpp, src/Buraco.h, src/Hearts.cpp, src/Hearts.h, src/Machiavelli.cpp:
+	  getPileOfPlayer returns NULL, if pile is not valid
+
+	* src/CardCol.cpp: Don't display errors receieved with quotes
+
+	* src/Rovhult.cpp:
+	  Computer and remote player mark the cards which they play from the staples
+
 2004-01-21  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.6.21 commented
