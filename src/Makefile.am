@@ -1,12 +1,15 @@
 ## Process this file with automake to produce Makefile.in
 
-bin_PROGRAMS=
 bin_PROGRAMS=CardCol
 
 CardCol_SOURCES=CardCol.cpp Twopart.cpp Rovhult.cpp Hearts.cpp HeartsScore.cpp
-include_HEADERS=Twopart.h Rovhult.h Hearts.h HeartsScore.h
 
 
 INCLUDES = @INCLUDES@ -I../Common `gtkmm-config --cflags`
 
 CardCol_LDFLAGS=-L../Common -lCard  `gtkmm-config --libs` -lgthread
+
+EXTRA_DIST=Options.meta Twopart.h Rovhult.h Hearts.h HeartsScore.h Options.h
+
+Options.meta: Options.h
+	mgeni Options.h Options.meta
