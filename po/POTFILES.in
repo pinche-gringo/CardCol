@@ -3,8 +3,10 @@
 # List of source files containing translatable strings.
 #     
 # Package source files
-Rovhult/Rovhult.cpp
+bin/Rovhult.cpp
 Common/CardImgs.cpp
 Common/CardPile.h
-Twopart/Twopart.cpp
-Common/DeckSelect.h
+bin/Twopart.cpp
+Common/DeckSelect.cpp
+Common/Game.cpp
+bin/CardCol.cpp
