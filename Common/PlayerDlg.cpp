@@ -1,0 +1,149 @@
+//$Id$
+
+//PROJECT     : Cardgames
+//SUBSYSTEM   : Common
+//REFERENCES  :
+//TODO        :
+//BUGS        :
+//REVISION    : $Revision$
+//AUTHOR      : Markus Schwab
+//CREATED     : 07.01.2003
+//COPYRIGHT   : Anticopyright (A) 2003
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+
+#include <Internal.h>
+
+#include <gtk--/box.h>
+#include <gtk--/label.h>
+#include <gtk--/entry.h>
+#include <gtk--/table.h>
+
+#define CHECK 9
+#define TRACELEVEL 9
+#include <Check.h>
+#include <Trace_.h>
+
+#include "PlayerDlg.h"
+
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Constructor
+//Parameters: names: Vector of string containing the names of the players
+/*--------------------------------------------------------------------------*/
+PlayerDlg::PlayerDlg (vector<string>& names)
+   : XDialog (OKCANCEL), pClient (new Gtk::Table (1, 2)), values (names) {
+   TRACE2 ("PlayerDlg::PlayerDlg (vector<string>&) - Players: " << names.size ());
+   Check1 (names.size () > 1);
+   Check1 (names.size () < 10);
+
+   set_title ("Set name of players");
+
+   aPlayers.push_back (new line ("Human:", names[0]));
+   aPlayers.back ()->show ();
+   aPlayers.back ()->attach (*pClient, 0);
+
+   for (unsigned int i (1); i < names.size (); ++i) {
+      string label (_("Player %1:"));
+      label.replace (label.find ("%1"), 2, (char)('0' + i));
+      aPlayers.push_back (new line (label, names[i]));
+
+      aPlayers.back ()->show ();
+      aPlayers.back ()->attach (*pClient, i);
+   }
+
+   pClient->show ();
+   get_vbox ()->pack_start (*pClient, false, false, 5);
+   show ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Destructor
+/*--------------------------------------------------------------------------*/
+PlayerDlg::~PlayerDlg () {
+   delete pClient;
+
+   for (unsigned int i (0); i < aPlayers.size (); ++i)
+      delete aPlayers[i];
+   aPlayers.clear ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Handling of the OK button; closes dialog with commiting data
+/*--------------------------------------------------------------------------*/
+void PlayerDlg::okEvent () {
+   for (unsigned int i (0); i < values.size (); ++i) {
+      Check3 (aPlayers[i]); Check3 (aPlayers[i]->value);
+      values[i] = aPlayers[i]->value->get_text ();
+   }
+   return XDialog::okEvent ();
+}
+
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Constructor
+//Parameters: label: Text for label
+//            attribute: Value for entryfield (to be updated)
+/*--------------------------------------------------------------------------*/
+PlayerDlg::line::line (const char* label, string& attribute)
+   : label (new Gtk::Label (label))
+     , value (new Gtk::Entry ()) {
+   TRACE9 ("PlayerDlg::line::line (string&, string&)");
+   value->set_text (attribute);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Constructor
+//Parameters: label: Text for label
+//            attribute: Value for entryfield (to be updated)
+/*--------------------------------------------------------------------------*/
+PlayerDlg::line::line (string& labelVal, string& attribute)
+   : label (new Gtk::Label (labelVal))
+     , value (new Gtk::Entry ()) {
+   TRACE9 ("PlayerDlg::line::line (string&, string&)");
+   value->set_text (attribute);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Destructor
+/*--------------------------------------------------------------------------*/
+PlayerDlg::line::~line () {
+   TRACE9 ("PlayerDlg::line::~line ()");
+   delete label;
+   delete value;
+}
+
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Shows the values of the structure
+/*--------------------------------------------------------------------------*/
+void PlayerDlg::line::show () {
+   label->show ();
+   value->show ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Attaches the values of the structure to the passed table
+//Parameters: table: Table where to attach the values to
+//            line: Line in which to attach
+/*--------------------------------------------------------------------------*/
+void PlayerDlg::line::attach (Gtk::Table& table, unsigned int line) {
+   Check3 (label); Check3 (value);
+   table.resize (line + 2, 2);
+   table.attach (*label, 1, 2, line + 1, line + 2, GTK_FILL, GTK_FILL, 5, 3);
+   table.attach (*value, 2, 3, line + 1, line + 2, GTK_FILL|GTK_EXPAND,
+                 GTK_FILL|GTK_EXPAND, 5, 3);
+}
