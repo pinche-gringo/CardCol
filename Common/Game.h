@@ -17,6 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#include <string>
 #include <vector>
 
 #include <gtk--/table.h>
@@ -57,6 +58,8 @@ class Game : public Gtk::Table {
    unsigned int currentPlayer () const { return actPlayer; }
    void setNextPlayer (unsigned int player) { actPlayer = player; }
 
+   void displayTurn (unsigned int player);
+   void displayTurn (unsigned int player, const std::string& preText);
    void makeNextMoves ();
    virtual int makeMove (unsigned int player) = 0;
 
