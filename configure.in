@@ -1,0 +1,50 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_REVISION($Revision$)
+
+AC_INIT()
+
+MAJOR_VERSION=0
+MINOR_VERSION=1
+MICRO_VERSION=00
+VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION
+RELEASE=$MAJOR_VERSION.$MINOR_VERSION
+AC_DEFINE_UNQUOTED(MICRO_VERSION, "$MICRO_VERSION")
+AC_SUBST(VERSION)
+AC_SUBST(RELEASE)
+
+dnl AC_CANONICAL_SYSTEM
+
+AC_LANG_C
+AC_LANG_CPLUSPLUS
+
+AC_C_BIGENDIAN
+
+AM_INIT_AUTOMAKE(Cardgames, $RELEASE)
+dnl AM_CONFIG_HEADER(config.h)
+
+AC_PROG_CXX
+AC_LANG_CPLUSPLUS
+AC_PROG_RANLIB
+AM_PROG_LIBTOOL
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+
+dnl Checks for programs.
+
+dnl Checks for libraries.
+AC_CHECK_LIB(stdc++, main)
+AC_CHECK_LIB(gmp, main)
+AC_CHECK_LIB(Attr, main)
+
+dnl Checks for header files.
+AC_HEADER_DIRENT
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+
+dnl Checks for library functions.
+
+dnl Enable special features
+
+AC_OUTPUT([Makefile Common/Makefile Rovhult/Makefile Twopart/Makefile \
+	   Tarok/Makefile Common/Grafix/Makefile])
