@@ -30,8 +30,6 @@
 #include <gtkmm/label.h>
 #include <gtkmm/separator.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
