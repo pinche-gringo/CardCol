@@ -30,7 +30,6 @@
 #include <gtk--/statusbar.h>
 #include <gtk--/accelgroup.h>
 
-#define TRACELEVEL 8
 #include <Check.h>
 #include <Trace_.h>
 
@@ -104,7 +103,7 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset)
 //Purpose   : Destructor
 /*--------------------------------------------------------------------------*/
 Rovhult::~Rovhult () {
-   TRACE9 ("Rovhult::~Rovhult ()");
+   TRACE8 ("Rovhult::~Rovhult ()");
 }
 
 
@@ -683,7 +682,7 @@ int Rovhult::nextAvailablePlayer (unsigned int actPlayer) const {
 //            any signals (DND)
 /*--------------------------------------------------------------------------*/
 void Rovhult::clean () {
-   TRACE9 ("Rovhult::clean () - Status: " << gameStatus ());
+   TRACE8 ("Rovhult::clean () - Status: " << gameStatus ());
 
    if (gameStatus () == PREPLAYING)
       unregisterDND ();
@@ -983,7 +982,8 @@ unsigned int Rovhult::showCards2Play (unsigned int player, unsigned int pos) {
              && (pile->at (start - 1).number () == nr))
          --start;
 
-      return flipCards2Play (*pile, start, pos);
+      flipCards2Play (*pile, start, pos);
+      return pos;
    }
    else
       players[player].reserve[pos].getTopCard ().showFace ();
