@@ -1,3 +1,13 @@
+Overview of changes in version 0.5.03:
+
+  - Displaying the cards of all Buraco players
+  - Fixed bug where the fitting last two cards in hand can't make a cerrado
+  - Fixed bug analyzing the validity of colour piles (for the human player)
+  - Fixed bug replacing a joker in a coloured pile
+  - Fixed jokers not playing on joker-pile (in some cases)
+  - Fixed computer player taking up dumped pile with joker
+  - Needs libYGP 0.6.30
+
 Overview of changes in version 0.5.02:
 
   - Fixed bug in replacing the joker in colour series

@@ -1,3 +1,30 @@
+2003-10-19  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.5.03 commented
+
+	* README: Copyright actualized
+
+	* configure.in: Version to 0.5.03; Testing for libXGP 0.6.30
+
+	* po/de.po, po/en.po, po/es.po: Actualized line-information
+
+	* Common/DeckSelect.h, Common/PlayerDlg.h:
+	  Adapted to new XDialog interface
+
+	* src/Buraco.cpp:
+	  Fixed checking if human can add a card to a (single-carded) pile
+
+2003-10-14  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp:
+	  Fixed playing joker; ending game making a cerrado; checking colour piles
+
+	* src/BuracoPile.cpp: Fixed bug replacing the joker
+
+2003-10-13  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp, src/Buraco.h: Showing cards of all players
+
 2003-10-12  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.5.02 commented
