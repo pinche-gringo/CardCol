@@ -25,6 +25,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <iomanip>
 #include <sstream>
 
 #include <cardgames-cfg.h>
@@ -472,11 +473,11 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
       if (maxDiff) {
 	 Check3 (posColours[maxCards] != -1U);
 	 pos = posColours[maxCards];
-	 Check3 ((playedCards[maxCards].size () + cColours[maxCards]) <= 13);
+	 Check3 ((playedCards[maxCards].count () + cColours[maxCards]) <= 13);
 	 if (!isHighest (*pile[posColours[maxCards]])
 	     || (trumpsLeft
-		 && (bfColours & (0x111 << maxCards))
-		 || ((playedCards[maxCards].size () + cColours[maxCards]) >= 13)))
+		 && (((playedCards[maxCards].count () + cColours[maxCards]) >= 13)
+		     || (bfColours & (0x111 << maxCards)))))
 	    pos -= cColours[maxCards] - 1;
 	 break;
       }
@@ -497,17 +498,18 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
       break; }
 
    case 1: {
-      Check3 ((playedCards[maxCards].size () + cColours[maxCards]) <= 13);
+      Check3 ((playedCards[played[0]->colour ()].count ()
+	       + cColours[played[0]->colour ()]) <= 13);
       bool nextHasntColour ((bfColours & ((1 << played[0]->colour ())
-					  << (calcNextPlayer (player) << 4)))
-			    || (playedCards[played[0]->colour ()].count ()
-				+ cColours[played[0]->colour ()] >= 13));
+					  << (calcNextPlayer (player) << 2)))
+			    || ((playedCards[played[0]->colour ()].count ()
+				 + cColours[played[0]->colour ()]) >= 13));
       pos = posColours[played[0]->colour ()];
       TRACE9 ("SgtMayor::findPos2Play (unsigned int) - Play: " << (int)pos
 	      << "; Next: " << nextHasntColour);
 
       if (pos == -1U) {
-	 bfColours |= ((1 << played[0]->colour ()) << (player << 4));
+	 bfColours |= ((1 << played[0]->colour ()) << (player << 2));
 	 pos = posColours[pTrump->colour ()];
 	 if ((pos == -1U)
 	     || (nextHasntColour
@@ -536,7 +538,7 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
          if (pos == -1U) {
             pos = pile.find1EqualOrBiggerByColour (*played[1]);
             if (pos == -1U) {
-	       bfColours |= ((1 << played[0]->colour ()) << (player << 4));
+	       bfColours |= ((1 << played[0]->colour ()) << (player << 2));
                pos = pile.findLowestCard (pTrump->colour ());
 	    }
          }
@@ -550,7 +552,7 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
              || (pile[pos]->colour () != played[0]->colour ()))
             pos = (pile.exists (played[0]->colour ())
                    ? pile.find (played[0]->colour ())
-                   : (bfColours |= ((1 << played[0]->colour ()) << (player << 4)),
+                   : (bfColours |= ((1 << played[0]->colour ()) << (player << 2)),
 		      tryToGetTickWithTrump (pile)));
       }
       break;
@@ -704,18 +706,9 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
    stat.replace (stat.find ("%3"), 2, actPlayers[1]->getName ());
    stat.replace (stat.find ("%5"), 2, actPlayers[2]->getName ());
 
-   char number[3] = "+1";
-   *number = (*diffTicks < 0) ? '-' : '+';
-   number[1] = (*diffTicks < 0) ? ('0' - *diffTicks) : '0' + *diffTicks;
-   stat.replace (stat.find ("%2"), 2, number);
-
-   *number = (diffTicks[1] < 0) ? '-' : '+';
-   number[1] = (diffTicks[1] < 0) ? ('0' - diffTicks[1]) : '0' + diffTicks[1];
-   stat.replace (stat.find ("%4"), 2, number);
-
-   *number = (diffTicks[2] < 0) ? '-' : '+';
-   number[1] = (diffTicks[2] < 0) ? ('0' - diffTicks[2]) : '0' + diffTicks[2];
-   stat.replace (stat.find ("%6"), 2, number);
+   stat.replace (stat.find ("%2"), 2, formatNumber (*diffTicks));
+   stat.replace (stat.find ("%4"), 2, formatNumber (diffTicks[1]));
+   stat.replace (stat.find ("%6"), 2, formatNumber (diffTicks[2]));
 
    stat.replace (stat.find ("%7"), 2,
 		 (ngettext ("tick", "ticks", (*diffTicks < 0) ? -*diffTicks : *diffTicks)));
@@ -726,6 +719,18 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
    status.push (stat);
    setGameStatus (STOPPED);
    return -1U;
+}
+
+//-----------------------------------------------------------------------------
+/// Formats a number with sign character always shown
+/// \param nr: Number to format
+/// \returns std::string: Formatted number
+/// \remarks Shows the sign always (e.g. also the plus sign (+)
+//-----------------------------------------------------------------------------
+std::string SgtMayor::formatNumber (int nr) {
+   std::ostringstream msg;
+   msg << std::showpos << nr;
+   return msg.str ();
 }
 
 //----------------------------------------------------------------------------
@@ -879,17 +884,15 @@ void SgtMayor::delayedExchange (unsigned int playerBad, unsigned int posBad,
 	 (bind_return (mem_fun (*this, &SgtMayor::startPlaying), false), 2000);
    }
 
-   CardWidget& bad (*players[playerBad].hand.at (posBad));
-   CardWidget& good (players[playerGood].hand.remove (posGood));
-   played.append (good);
+   CardWidget& bad (*players[0].hand.at (posBad));
    TRACE9 ("SgtMayor::delayedExchange (4x unsigned int ) - Player "
-           << playerBad << " and " << playerGood << " exchanges " << bad
-           << " and " << good);
+           << playerBad << " and " << playerGood << " exchanges "
+	   << bad << " and " << *players[playerGood].hand.at (posGood));
+   played.append (players[playerGood].hand.remove (posGood));
+   bad.mark ();
 
-   players[0].hand[posBad]->mark ();
    Glib::signal_timeout ().connect
-      (bind (mem_fun (*this, &SgtMayor::exchangeMarked),
-	     players[0].hand[posBad], playerGood), 1000);
+      (bind (mem_fun (*this, &SgtMayor::exchangeMarked), &bad, playerGood), 1000);
 }
 
 //----------------------------------------------------------------------------

@@ -79,6 +79,7 @@ class SgtMayor : public Game {
    static unsigned int calcNextPlayer (unsigned int player) {
       return (++player >= NUM_PLAYERS) ? 0 : player;
    }
+   static std::string formatNumber (int nr);
 
    //@Section Computer player
    unsigned int findPos2Play (unsigned int player);
