@@ -73,9 +73,9 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    unsigned int height (cards.getCard (0).getImageHeight ());
 
    // Show and attach card-piles
+   changeNames (names);
    for (int i (0); i < NUM_PLAYERS; ++i) {
       players[i].name.show ();
-      players[i].name.set_text (names[i]);
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 3,
               ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
               ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
@@ -1101,4 +1101,15 @@ int Twopart::findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const {
    TRACE3 ("Twopart::findBigger (const ICardPile&, CardWidget::NUMBERS) const - Pos "
            << pos);
    return pos;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Changes the names of the playing people
+//Parameters: newNames: Array holding the new names of the players
+/*--------------------------------------------------------------------------*/
+void Twopart::changeNames (const vector<string>& newNames) {
+   Game::changeNames (newNames);
+
+   for (int i (0); i < NUM_PLAYERS; ++i)
+      players[i].name.set_text (names[i]);
 }

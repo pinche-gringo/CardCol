@@ -46,6 +46,7 @@ class Twopart : public Game {
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Twopart"; }
+   virtual void changeNames (const vector<string>& newNames);
 
  private:
    // Status of game

@@ -49,6 +49,7 @@ class Hearts : public Game {
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Hearts"; }
+   virtual void changeNames (const vector<string>& newNames);
 
  private:
    enum Status { EXCHANGE = Game::LAST };

@@ -63,9 +63,9 @@ Hearts::Hearts (Box& parent, Statusbar& statusbar, CardSet& cardset,
    unsigned int height (cards.getCard (0).getImageHeight ());
 
    // Show and attach card-piles
+   changeNames (names);
    for (int i (0); i < NUM_PLAYERS; ++i) {
       players[i].name.show ();
-      players[i].name.set_text (names[i]);
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + ((i & 1) ? 1 : 5),
               ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
               ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
@@ -696,4 +696,15 @@ unsigned int Hearts::pointsOfPile (ICardPile& pile) {
    }
    TRACE7 ("Hearts::pointsOfPile (ICardPile&) - Number of points: " << points);
    return points;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Changes the names of the playing people
+//Parameters: newNames: Array holding the new names of the players
+/*--------------------------------------------------------------------------*/
+void Hearts::changeNames (const vector<string>& newNames) {
+   Game::changeNames (newNames);
+
+   for (int i (0); i < NUM_PLAYERS; ++i)
+      players[i].name.set_text (names[i]);
 }

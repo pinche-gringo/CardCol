@@ -71,6 +71,7 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    unsigned int height (cards.getCard (0).getImageHeight ());
 
    // Show and attach card-piles
+   changeNames (names);
    for (int i (0); i < NUM_PLAYERS; ++i) {
       for (int j (0); j < 3; ++j) {
          players[i].reserve[j].setStyle (ICardPile::QUITE_COMPRESSED);
@@ -86,7 +87,6 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       }
 
       players[i].name.show ();
-      players[i].name.set_text (names[i]);
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 5,
               ROWS_PLAYER[i] + (i ? 5 : 2),
               ROWS_PLAYER[i] + (i ? 6 : 3),
@@ -1310,4 +1310,16 @@ void Rovhult::end (bool restart) {
       unregisterDND ();
 
    Game::end (restart);
+}
+
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Changes the names of the playing people
+//Parameters: newNames: Array holding the new names of the players
+/*--------------------------------------------------------------------------*/
+void Rovhult::changeNames (const vector<string>& newNames) {
+   Game::changeNames (newNames);
+
+   for (int i (0); i < NUM_PLAYERS; ++i)
+      players[i].name.set_text (names[i]);
 }

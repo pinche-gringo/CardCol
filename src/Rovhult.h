@@ -47,6 +47,7 @@ class Rovhult : public Game {
    virtual void playOpen (bool open);
    virtual void clean ();
    virtual const char* name () { return "Røvhult"; }
+   virtual void changeNames (const vector<string>& newNames);
 
  private:
    enum { PREPLAYING = Game::LAST };
