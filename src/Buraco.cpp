@@ -53,10 +53,12 @@ unsigned int Buraco::ENDPOINTS (2000);
 /// \param player: Vector of player
 /// \param posPlayer: Position of player for the server
 /// \param mxSerialize: Mutex to serialize messages from the server
+//-----------------------------------------------------------------------------
                 CardSet& cardset, const std::vector<Player*>& player,
                 unsigned int posPlayer, YGP::Mutex& mxSerialize)
-                  CardSet& cardset, const std::vector<Player*>& player)
-   : Game (parent, statusbar, cardset, player, 3, 10), startPlayer (0)
+   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10)
+                unsigned int posPlayer)
+   : Game (parent, statusbar, cardset, player, posPlayer, 3, 10), startPlayer (0)
      , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
      , newPile (_("New pile")), target (-1U), pos1 (0), pos2 (0)
@@ -96,8 +98,10 @@ unsigned int Buraco::ENDPOINTS (2000);
    attach (hands[0], 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1);
    attach (*scrlTable[0], 0, 10, 2, 3, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
-   attach (*scrlTable[0], 0, 10, 1, 2);
-   attach (*scrlTable[1], 0, 10, 2, 3);
+   attach (*scrlTable[0], 0, 10, 1, 2, Gtk::EXPAND | Gtk::FILL,
+           Gtk::EXPAND | Gtk::FILL, 0, 5);
+   attach (*scrlTable[1], 0, 10, 2, 3, Gtk::EXPAND | Gtk::FILL,
+   TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Show widgets");
    newPile.show ();
    staple.show ();
@@ -279,6 +283,7 @@ void Buraco::cleanCerrado (unsigned int player) {
             // Send played card to all clients (if any)
          dumped.getTopCard ().show ();
 
+         // TODO: Implent analysis of the dumped card
          playerPile.insertSorted
              (((gStatus.startGame) && isJoker (dumped.getTopCard ()))
               ? dumped.removeTopCard () : staple.removeTopCard (),
@@ -1332,7 +1337,7 @@ void Buraco::updateInfo () {
    strInfo.replace (strInfo.find ("%1"), 2, ANumeric::toString (points[0]));
    strInfo.replace (strInfo.find ("%4"), 2, (reserve[1].empty () ? _("N") : _("Y")));
    strInfo.replace (strInfo.find ("%3"), 2, ANumeric::toString (points[1]));
-   strInfo.replace (strInfo.find ("%4"), 2, (reserve[0].empty () ? _("N") : _("Y")));
+   info.set_text (strInfo);
 }
    info.pop ();
    info.push (strInfo);
@@ -1793,12 +1798,22 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
 
 //----------------------------------------------------------------------------
 /// Changes the names of the playing people
-/*--------------------------------------------------------------------------*/
-//Purpose   : Changes the names of the playing people
-//Parameters: newPlayer: Array holding the new player
-/*--------------------------------------------------------------------------*/
+/// \param newPlayer: Array holding the new player
+//----------------------------------------------------------------------------
+void Buraco::changeNames (const std::vector<Player*>& newPlayer) {
+   Game::changeNames (newPlayer);
    makeTeamNames (nameTeams);
 
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       TRACE1 ("Buraco::changeNames () " << i << ": " << newPlayer[i]->getName ());
 }
+
+//----------------------------------------------------------------------------
+/// Returns the passed pile of the player
+/// \param player: Number of player
+/// Changes the names of the playing people
+/// \param newPlayer: Array holding the new player
+//----------------------------------------------------------------------------
+   if (((pile > 3) && (pile < 100)) || (player >= NUM_PLAYERS))
+ICardPile& Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
+   return hands[player];

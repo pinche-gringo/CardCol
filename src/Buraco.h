@@ -39,10 +39,12 @@ namespace Gtk {
 class ScoreDlg;
 
 
+/**Class handling the Buraco cardgame
+ */
 class Buraco : public Game {
  public:
    Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<Player*>& player);
+            const std::vector<Player*>& player, unsigned int posPlayer);
    virtual ~Buraco ();
 
    virtual void start ();
@@ -62,6 +64,8 @@ class Buraco : public Game {
    virtual int makeMove (unsigned int player);
    virtual bool enableHuman ();
    virtual void disableHuman ();
+
+   virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
 
    //@Section Event handling
    void cardSelected (unsigned int iCard);
