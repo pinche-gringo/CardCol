@@ -94,7 +94,7 @@ class CardgameCollection : public XApplication {
    Options& options;
 
    games oldGame;
-   bool restart;
+   unsigned int restart;
 
    Game* game;
 
