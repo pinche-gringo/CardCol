@@ -43,15 +43,16 @@
 #include <PathSrch.h>
 
 #include <XAbout.h>
-#include <DeckSelect.h>
+#include <XAttribute.h>
 
-#include <CardWidget.h>
+#include <DeckSelect.h>
+#include <PlayerDlg.h>
+
 #include "Hearts.h"
 #include "Rovhult.h"
 #include "Twopart.h"
 #include "Buraco.h"
 #include "Options.h"
-#include <PlayerDlg.h>
 
 #include "CardCol.h"
 
@@ -785,7 +786,7 @@ const std::vector<Glib::ustring>& CardgameCollection::getNames () const {
 //Parameters: menu: ID of command (menu)
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::command (int menu) {
-   TRACE1 ("CardgameCollection::command (int) - " << menu);
+   TRACE2 ("CardgameCollection::command (int) - " << menu);
    switch (menu) {
    case NEW:
       TRACE7 ("CardgameCollection::command (int) - New; Game running: "
@@ -1029,9 +1030,10 @@ void CardgameCollection::userWants2End () {
             restart = false;
       }
    }
-   else
+   else {
+      restart = false;
       startGame ();
-   restart = false;
+   }
 }
 
 /*--------------------------------------------------------------------------*/
