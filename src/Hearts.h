@@ -46,13 +46,13 @@ class Hearts : public Game {
 
    virtual bool handleMessage (unsigned int player, const std::string& message) throw (std::string);
 
-   static void getPositionOfColours (ICardPile& pile, int result[4]);
-
  protected:
    virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
 
  private:
    enum Status { EXCHANGE = Game::LAST };
+
+   static void getPositionOfColours (ICardPile& pile, int result[4]);
 
    // Protected manager functions
    Hearts (const Hearts& other);
@@ -92,7 +92,7 @@ class Hearts : public Game {
 
    struct {
       CardHPile  hand;                        // For players: Cards in the hand
-      CardHPile  won;                           // Reserve-cards (for end-game)
+      CardHPile  won;                                              // Won cards
       Gtk::Label name;
    } players[NUM_PLAYERS];
    CardHPile played;

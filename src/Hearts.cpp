@@ -61,11 +61,11 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
                 const std::vector<Player*>& player, unsigned int posPlayer,
                 YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 14, 10)
-     , playedSQ (false) , player2Exchange (3)
+     , playedSQ (false), player2Exchange (3)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , pScoreDlg (NULL)
  {
-   TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&, const std::vector<Glib::ustring>&)");
+   TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&, ...");
 
    int width (cards.getCard (0).getImageWidth ());
    int height (cards.getCard (0).getImageHeight ());
@@ -239,7 +239,6 @@ void Hearts::playOpen (bool open) {
 bool Hearts::enableHuman () {
    Check3 (activeCards.empty ());
    Check3 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
-
    TRACE2 ("Hearts::enableHuman () - Human has " << players[0].hand.size () << " cards");
 
    for (int i (players[0].hand.size ()); i;)
@@ -349,12 +348,12 @@ void Hearts::startPlaying () {
    // Search for startplayer
    unsigned int nextPlayer (0);
    for (unsigned int i (1); i < NUM_PLAYERS; ++i)
-       if ((players[i].hand[0]->number () == CardWidget::TWO)
-           && (players[i].hand[0]->colour () == CardWidget::CLUBS)) {
-           TRACE7 ("Hearts::startPlaying () - Start with player " << i);
-           nextPlayer = i;
-           break;
-       }
+      if ((players[i].hand[0]->number () == CardWidget::TWO)
+          && (players[i].hand[0]->colour () == CardWidget::CLUBS)) {
+         TRACE7 ("Hearts::startPlaying () - Start with player " << i);
+         nextPlayer = i;
+         break;
+      }
    Check3 (nextPlayer < NUM_PLAYERS);
 
    setNextPlayer (nextPlayer);
@@ -370,7 +369,6 @@ void Hearts::startPlaying () {
    displayTurn (currentPlayer ());
    makeNextMoves ();
 }
-
 
 //-----------------------------------------------------------------------------
 /// Checks who has played the highest card and would therefore win the played
@@ -698,9 +696,8 @@ unsigned int Hearts::numberOfCards (const int aPositions[4], CardWidget::COLOURS
 }
 
 //-----------------------------------------------------------------------------
-/// Calculate the number of cards for each colour
-/// \param pile: Pile to inspect
-/// \param result: Array of number of cards for earch colour
+/// Searches for the card to play
+/// \param player: Player to inspect
 //-----------------------------------------------------------------------------
 unsigned int Hearts::findPos2Play (unsigned int player) {
    Check1 (player < NUM_PLAYERS);
