@@ -48,7 +48,6 @@ class RovhultAppl : public XApplication {
 
    void pileSelected (CardVPile* parent);
    void handSelected (unsigned int player, unsigned int iCard);
-   void noop () {};
 
    void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
                      guint info, guint32 time, unsigned int player, unsigned int cardPos);
@@ -73,13 +72,12 @@ class RovhultAppl : public XApplication {
    void cleanTable ();
    void dealCards ();
    void fillStaple ();
-   void moveCardsToLooser (unsigned int nrLooser);
+   void movePlayedCardsToLooser (unsigned int nrLooser);
 
-   void clearPlayedIf4Equal ();
+   bool clearPlayedIf4Equal ();
    void fillUpPile (ICardPile& pile, unsigned int minCards);
 
-   bool playerCanContinue () const;
-
+   bool playerCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const;
 
    void loadCards ();
 
@@ -109,6 +107,9 @@ class RovhultAppl : public XApplication {
    CardVPile staple;                                         // Cards on staple
    CardHPile hands[NUM_PLAYERS];              // For players: Cards in the hand
    CardVPile reserve[NUM_PLAYERS][3];           // Reserve-cards (for end-game)
+
+   vector<Connection> activeCards;
+   Connection pileTop;
 
    Widget* pMenuNew;
 
