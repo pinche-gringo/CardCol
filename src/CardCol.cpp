@@ -453,10 +453,11 @@ void CardgameCollection::command (int menu) {
       break;
 
 #if TRACELEVEL > 0
-   case DEBUG:
+   case DEBUG: {
+      static bool open = false;
       Check3 (game);
-      game->playOpen ();
-      break;
+      game->playOpen (open = !open);
+      break; }
 #endif
 
    default:
@@ -541,13 +542,15 @@ void CardgameCollection::userWants2End (unsigned int input) {
          status.push (1, _("User canceled"));
 
          if (game->canBeStopped ()) {
-            if (restart)
+            if (restart) {
+               game->stop ();
                startGame ();
+            }
             else
                game->stop ();
          }
          else
-            game->end ();
+            game->end (restart);
       }
    }
 }
