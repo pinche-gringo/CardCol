@@ -57,7 +57,7 @@ void ICardPile::setTopCard (CardWidget& card) {
 
    if ((style > NORMAL) && cards.size ()) {
       Check3 (cards[cards.size () - 1]);
-      resize (getTopCard (), style);
+      resize (cards.size () - 1, style);
    }
 
    if (showOpt < DONT_CHANGE)
@@ -85,7 +85,7 @@ CardWidget& ICardPile::removeTopCard () {
       TRACE9 ("ICardPile::removeTopCard () - Resizing");
 
       CardWidget& card (getTopCard ());
-      resize (card, NORMAL);
+      resize (cards.size () - 1, NORMAL);
    }
 
    card.set_sensitive (true);
@@ -176,17 +176,13 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
 
    card.show ();
 
-   if ((style > NORMAL) && cards.size ()) {     // Cards to display compressed?
-      CardWidget* compressCard (pos == cards.size ()
-                                ? cards[cards.size () - 1] : &card);
-      Check3 (compressCard);
-      resize (*compressCard, style);
-   }
-
    if (showOpt < DONT_CHANGE)
       card.showFace ((bool)showOpt);
 
    cards.insert (cards.begin () + pos, &card);
+
+   if ((style > NORMAL) && cards.size ())       // Cards to display compressed?
+      resize ((pos == cards.size ()) ? pos - 1 : pos, style);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -225,13 +221,10 @@ CardWidget& ICardPile::remove (CardWidget& card) {
    Check3 (i != cards.end ());
 
    // Check if we have to resize a card
-   if (style > NORMAL) {
+   if (style > NORMAL)
       // If last card was removed: Resize new last card (if any)
       if (((i + 1) == cards.end ()) && i != cards.begin ())
-         resize (**(i - 1), NORMAL);
-      else
-         resize (card, NORMAL);                    // Else enlarge removed card
-   }
+         resize ((i - cards.begin () - 1), NORMAL);
 
    cards.erase (i--);
 
@@ -253,9 +246,7 @@ CardWidget& ICardPile::remove (unsigned int pos) {
    if (style > NORMAL) {
       // If last card was removed: Resize new last card (if any)
       if (((i + 1) == cards.end ()) && i != cards.begin ())
-         resize (**(i - 1), NORMAL);
-      else
-         resize (*pTemp, NORMAL);                  // Else enlarge removed card
+         resize ((i - cards.begin () - 1), NORMAL);
    }
 
    cards.erase (i--);
@@ -275,10 +266,10 @@ void ICardPile::setStyle (PileStyle s) {
    style = s;
    for (int i (0); i < static_cast <int> (cards.size () - 1); ++i) {
       Check3 (cards[i]);
-      resize (*cards[i], style);
+      resize (i, style);
    }
    if (cards.size ())
-      resize (*cards[cards.size () - 1], NORMAL);
+      resize (cards.size () - 1, NORMAL);
 }
 
 /*--------------------------------------------------------------------------*/

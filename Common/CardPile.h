@@ -114,9 +114,7 @@ class ICardPile {
       return ::find (cards.begin (), cards.end (), card) != cards.end (); }
 
    // General management-functions
-   // - resize is actually a virtual static method but as this does
-   //   not exist and static alone does not work neither: virtual
-   virtual void resize (CardWidget& card, PileStyle s) const = 0;
+   virtual void resize (unsigned int pos, PileStyle s) const = 0;
    unsigned int numberOfCards () const { return cards.size (); }
    void clear ();
    void setStyle (PileStyle s);
@@ -183,10 +181,10 @@ template <class T> class CardPile : public T, public ICardPile {
       card.showFace (visible);
       return card; }
 
-   virtual void resize (CardWidget& card, PileStyle s) const { }
+   virtual void resize (unsigned int pos, PileStyle s) const { }
    virtual void sort (CMPFUNC fnSort) {
       if (cards.size ()) {
-         resize (getTopCard (), style);
+         resize (cards.size () - 1, style);
          ICardPile::sort (fnSort);
          resortGUI (); } }
 
@@ -194,8 +192,9 @@ template <class T> class CardPile : public T, public ICardPile {
    virtual void resortGUI () {
       for (int i (0); i < cards.size (); ++i)
          Gtk::Box::reorder_child (*cards[i], i);
-      resize (getTopCard (), NORMAL);
-      }
+      if (cards.size ())
+         resize (cards.size () - 1, NORMAL);
+   }
 };
 
 
@@ -203,13 +202,15 @@ typedef CardPile<Gtk::VBox>  CardVPile;
 typedef CardPile<Gtk::HBox>  CardHPile;
 
 
-void CardVPile::resize (CardWidget& card, PileStyle s) const {
-   static unsigned int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
+void CardVPile::resize (unsigned int pos, PileStyle s) const {
+   CardWidget& card (*cards[pos]);
+   unsigned int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
    card.set_usize (-1, height[(int)s]);
 }
 
-void CardHPile::resize (CardWidget& card, PileStyle s) const {
-   static unsigned int width[(int)LAST] = { card.getImageWidth (), 18, 7, 1 };
+void CardHPile::resize (unsigned int pos, PileStyle s) const {
+   CardWidget& card (*cards[pos]);
+   unsigned int width[(int)LAST] = { card.getImageWidth (), 18, 7, 1 };
    card.set_usize (width[(int)s], -1);
 }
 
