@@ -666,7 +666,10 @@ void Buraco::enableHumanHand () {
          registerTableDND (*(*tablePiles[0][i])[j], (i << 8) + j);
    }
 
-   menuSort->set_sensitive ();
+   if (acceptCards == -1U) {
+      menuSort->set_sensitive ();
+      menuSort2->set_sensitive ();
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -677,6 +680,7 @@ void Buraco::disableHuman () {
            << aDNDTable.size ());
    Game::disableHuman ();
    menuSort->set_sensitive (false);
+   menuSort2->set_sensitive (false);
 
    newPile.drag_dest_unset ();
 
@@ -1232,8 +1236,11 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 
    // Accept again the jokers, if the pile has has now three cards (jokers are
    // disabled, if the human picked up the dumped pile.
-   if (pile->size () == 3)
+   if (pile->size () == 3) {
       acceptCards = -1U;
+      menuSort->set_sensitive ();
+      menuSort2->set_sensitive ();
+   }
    else
       if (acceptCards != -1U)
          --acceptCards;
@@ -1895,7 +1902,7 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget* exclud
 }
 
 //-----------------------------------------------------------------------------
-/// Compares the cards in the pile with regard of the colour and with special
+/// Compares the cards in the pile with regard of the number and with special
 /// consideration of joker cards
 /// \param a: Card to compare
 /// \param b: Card to compare
@@ -1908,6 +1915,30 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
    Check3 (b->number () < static_cast<int> (sizeof (values) / sizeof (values[0])));
 
    return values[a->number ()] < values[b->number ()];
+}
+
+//-----------------------------------------------------------------------------
+/// Compares the cards in the pile with regard of the colour and with special
+/// consideration of joker cards
+/// \param a: Card to compare
+/// \param b: Card to compare
+/// \returns \c bool: True, if a < b
+//-----------------------------------------------------------------------------
+bool Buraco::compByColourWithJokers (const CardWidget* a, const CardWidget* b) {
+   switch (a->number ()) {
+   case CardWidget::TWO:
+      return b->number () == CardWidget::UNREACHABLE;
+      break;
+
+   case CardWidget::UNREACHABLE:
+      return false;
+      break;
+
+   default:
+      return (isJoker (*b) ? true
+	      : ((a->colour () == b->colour ())
+		 ? a->number () < b->number () : a->colour () < b->colour ()));
+   } // endswitch
 }
 
 //----------------------------------------------------------------------------
@@ -2115,7 +2146,7 @@ bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) {
 /// Returns the actual target, where flipCard2Play should position the cards to
 /// \returns unsigned int: ID of the target
 //----------------------------------------------------------------------------
-unsigned int Buraco::getActTarget () const {
+ unsigned int Buraco::getActTarget () const {
    return (target == 0xffff0000) ? 0xffff0000 : (target + 100);
 }
 
@@ -2131,6 +2162,7 @@ void Buraco::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 		     "      <menuitem action='Undo'/>"
 		     "      <separator/>"
 		     "      <menuitem action='Sort'/>"
+		     "      <menuitem action='SortCol'/>"
 		     "    </menu></placeholder></menubar>");
 
    Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
@@ -2139,15 +2171,20 @@ void Buraco::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 		   Gtk::AccelKey (_("<ctl>Z")),
 		   mem_fun (*this, &Buraco::undoMove));
    grpAction->add (menuSort = Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
-						   _("_Sort cards")),
+						   _("_Sort cards (by number)")),
 		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Buraco::sortHand));
+		   Gtk::AccelKey ("<ctl><alt>S"),
+						    _("Sort cards (by _colour)")),
+		   Gtk::AccelKey ("<shft>S"),
+		   mem_fun (*this, &Buraco::sortHandByColour));
 		   Gtk::AccelKey ("<shft><ctl>S"),
    mgrUI->insert_action_group (grpAction);
    idMrg = mgrUI->add_ui_from_string (ui);
 
    menuUndo->set_sensitive (false);
    menuSort->set_sensitive (false);
+   menuSort2->set_sensitive (false);
 }
 
 //-----------------------------------------------------------------------------
@@ -2163,9 +2200,11 @@ void Buraco::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 /// Undoes the last move of the human player
 //-----------------------------------------------------------------------------
 void Buraco::undoMove () {
-   if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-      ignoreNextMsg = true;
-   broadcastMessage ("Undo");
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+	 ignoreNextMsg = true;
+      broadcastMessage ("Undo");
+   }
 
    undoLast (0);
 }
@@ -2194,6 +2233,10 @@ void Buraco::undoLast (unsigned int player) {
 
    Check3 (undo.destPos < src.size ());
    acceptCards = (undo.blocked == 0x7f) ? -1U : undo.blocked;
+   if (acceptCards != -1U) {
+      menuSort->set_sensitive (false);
+      menuSort2->set_sensitive (false);
+   }
 
    if (src.size () == 0) {
       tablePiles[player & 1].erase (tablePiles[player & 1].begin () + undo.destPile);
@@ -2213,10 +2256,19 @@ void Buraco::undoLast (unsigned int player) {
 }
 
 //-----------------------------------------------------------------------------
-/// Sorts the cards in the hand
+/// Sorts the cards in the hand by number
 //-----------------------------------------------------------------------------
 void Buraco::sortHand () {
    disableHuman ();
    hands[0].sort (compByNumberWithJokers);
+   enableHumanHand ();
+}
+
+//-----------------------------------------------------------------------------
+/// Sorts the cards in the hand by colour
+//-----------------------------------------------------------------------------
+void Buraco::sortHandByColour () {
+   disableHuman ();
+   hands[0].sort (compByColourWithJokers);
    enableHumanHand ();
 }
