@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.1 ($Revision$)\n"
-"POT-Creation-Date: 2002-09-09 16:44-0500\n"
+"POT-Creation-Date: 2002-09-09 17:04-0500\n"
 "PO-Revision-Date: 2002-04-28 00:15-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -175,21 +175,19 @@ msgstr[1] "%1 cartas"
 
 #: Twopart/Twopart.cpp:304
 msgid "_Change decks ..."
-msgstr ""
+msgstr "Cambiar cartas ..."
 
 #: Twopart/Twopart.cpp:304
-#, fuzzy
 msgid "<ctl>C"
 msgstr "<ctl>T"
 
 #: Twopart/Twopart.cpp:305
 msgid "_Save settings"
-msgstr ""
+msgstr "Guardar opciónes"
 
 #: Twopart/Twopart.cpp:305
-#, fuzzy
 msgid "<ctl>S"
-msgstr "<ctl>T"
+msgstr "<ctl>G"
 
 #: Twopart/Twopart.cpp:686
 msgid ""
@@ -204,6 +202,6 @@ msgid "First part ended; Part 2 starts player %1"
 msgstr "Primero parte terminó; juegador %2 comienza el parte 2"
 
 #: Twopart/Twopart.cpp:837
-#, fuzzy, ycp-format
+#, ycp-format
 msgid "Player %1 can't continue -> Picking up last cards; Turn of player %2"
-msgstr "Juegador %1 no puede continuar -> Consegue todo del staple. "
+msgstr "Juegador %1 no puede continuar -> Consegue todo del staple. Siguendo con juegador %2"
