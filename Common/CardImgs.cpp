@@ -54,7 +54,9 @@ CardImages::~CardImages () {
 //Parameters: nr: Number of card to retrieve
 /*--------------------------------------------------------------------------*/
 const Glib::RefPtr<Gdk::Pixmap> CardImages::getCardImage (unsigned int nr) const {
-   Check3 (nr < numberOfCards ());
+   TRACE8 ("CardImages::getCardImage (unsigned int) - Request for card " << nr);
+   Check1 (nr < numberOfCards ());
+   Check3 (cards_[nr]);
    return cards_[nr];
 }
 
@@ -68,7 +70,8 @@ const Glib::RefPtr<Gdk::Pixmap> CardImages::getCardImage (unsigned int nr) const
 void CardImages::loadDecks (const Glib::RefPtr<Gdk::Window> parent,
                             const std::string& path,
                             bool thread) throw (std::string) {
-   TRACE1 ("CardImages::loadDecks (const Gdk::Window&, const char*) - " << path);
+   TRACE1 ("CardImages::loadDecks (const Gdk::Window&, const char*) - " << path
+           << "; Threaded: " << (thread ? "Yes" : "No"));
 
    std::string file (path);
    if (file[file.size () - 1] != File::DIRSEPARATOR)
@@ -78,14 +81,15 @@ void CardImages::loadDecks (const Glib::RefPtr<Gdk::Window> parent,
       std::string temp;
       std::ostringstream out (temp);
       out << file << i << ".xpm";
-      TRACE3 ("CardImages::loadDecks (const Gdk::Window&, const char*) - File "
+      TRACE9 ("CardImages::loadDecks (const Gdk::Window&, const char*) - File "
               << out.str () << "; Temp:" << temp);
 
       if (thread)
          gdk_threads_enter ();
 
       Gdk::Color color;
-      cards_[i]->create_from_xpm (parent, color, out.str ());
+      cards_[i - 1] = Gdk::Pixmap::create_from_xpm (parent, color, out.str ());
+      Check3 (cards_[i - 1]);
       if (thread)
          gdk_threads_leave ();
 
@@ -113,7 +117,7 @@ void CardImages::loadBack (const Glib::RefPtr<Gdk::Window> parent,
 
    if (thread)
       gdk_threads_enter ();
-   back_->create_from_xpm (parent, color, back);
+   back_ = Gdk::Pixmap::create_from_xpm (parent, color, back);
    if (thread)
       gdk_threads_leave ();
 
