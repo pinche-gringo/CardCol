@@ -126,7 +126,7 @@ void Twopart::start () {
    players[0].hand.setStyle (ICardPile::NORMAL);
    players[0].won.setStyle (ICardPile::QUITE_COMPRESSED);
 
-   pos2Play = -1;
+   pos1Play = pos2Play = (unsigned int)-1;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -206,22 +206,25 @@ void Twopart::playedSelected (unsigned int player) {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card in hand
 //Parameters: player: ID of player
-//            iCard: Offset of card in hand
+//            start: Offset of first card to play
+//            end: Offset of last card to play
 //Returns   : bool: Status of moving; true: Card could be moved; false else
 /*--------------------------------------------------------------------------*/
-bool Twopart::moveSelectedCardToPlayed (unsigned int player, unsigned int pos) {
-   Check3 (player <= NUM_PLAYERS);
-   Check3 (pos <= players[player].hand.numberOfCards ());
+bool Twopart::moveSelectedCardToPlayed (unsigned int player,
+                                        unsigned int start, unsigned int end) {
    TRACE5 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsigned int) - Player: "
-           << player << " at position " << pos);
-
+           << player << " at position " << start << " to " << end);
+   Check3 (player <= NUM_PLAYERS);
+   Check3 (end <= players[player].hand.numberOfCards ());
+   Check3 (start <= end);
    Check3 (gameStatus () >= PLAYING);
 
    if (gameStatus () == PLAYING) {
-      CardWidget& card (players[player].hand.remove (pos));
-      TRACE9 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int) - Player "
-              << player << "; Card at " << pos << " = " << card);
-      played.append (card);
+      Check3 (start == end);
+      TRACE9 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int)"
+              " - Player " << player << "; Card at " << end << " = "
+              << players[player].hand.at (end));
+      movePile (played, players[player].hand, start, end);
 
       if (staple.numberOfCards ()) {
          CardWidget& card (staple.removeShownTopCard ());
@@ -235,47 +238,36 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player, unsigned int pos) {
       }
    }
    else {
-      CardWidget* card (&players[player].hand.at (pos));
-      unsigned int nr (card->number ());
-      CardWidget::COLORS  color (card->color ());
+      CardWidget& card (players[player].hand.at (start));
+      unsigned int nr (card.number ());
+      CardWidget::COLORS color (card.color ());
       
       // Perform validity-check in part 2: Card must have the same color and be
       // bigger than the last played card or be a (bigger) trump
       Check3 (pTrump);
-      if (played.numberOfCards ()
-          && ((color == pTrump->color ())
-              ? ((played.getTopCard ().color () == pTrump->color ())
-                 && (played.getTopCard ().number () >= nr))
-              : ((played.getTopCard ().color () != color)
-                 || (played.getTopCard ().number () >= nr)))) {
-         XMessageBox::Show (_("Played card(s) must have the same color and must be "
-                              "bigger (or be a trump)!"), PACKAGE " - Twopart",
-                            XMessageBox::ERROR);
-         return false;
+      if (played.numberOfCards ()) {
+         CardWidget& top (played.getTopCard ());
+
+         if ((color == pTrump->color ())
+             ? ((top.color () == pTrump->color ())
+                && (top.number () >= nr))
+             : ((top.color () != color)
+                || (top.number () >= nr))) {
+            XMessageBox::Show (_("Played card(s) must have the same color and must be "
+                                 "bigger (or be a trump)!"), PACKAGE " - Twopart",
+                               XMessageBox::ERROR);
+            return false;
+         }
       }
 
-      unsigned int posIns (played.numberOfCards ());
       if (offPos < (NUM_PLAYERS - 1))
-         startPos[offPos++] = posIns;
+         startPos[offPos++] = played.numberOfCards ();
 #if TRACELEVEL > 8
       for (unsigned int i (0); i < (NUM_PLAYERS - 1); ++i)
          TRACE ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int) - "
                 << i << ". Position: " << startPos[i]);
 #endif
-      played.append (players[player].hand.remove (pos));
-      TRACE3 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int) - Player "
-              << player << "; Card at " << pos << " = " << *card);
-
-      while (pos
-             && ((card = &players[player].hand.at (--pos)),
-                 (card->number ()) == (nr - 1))
-             && (card->color () == color)) {
-         TRACE9 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int) - Player "
-                 << player << "; Card at " << pos << " = " << *card);
-
-         nr = card->number ();
-         played.insert (players[player].hand.remove (pos), posIns);
-      }
+      movePile (played, players[player].hand, start, end);
    }
    return true;
 }
@@ -292,23 +284,25 @@ void Twopart::cardSelected (unsigned int player, unsigned int pos) {
    Check3 (pos <= players[player].hand.numberOfCards ());
    Check3 (gameStatus () >= PLAYING);
 
-   setNextPlayer (executeMove (player, pos));
+   setNextPlayer (executeMove (player, findStartOfSerie (player, pos), pos));
    makeNextMoves ();
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Executes a move out of a hand
 //Parameters: player: ID of player
-//            iCard: Offset of card in hand
+//            start: Offset of first card to play
+//            end: Offset of last card to play
 //Returns   : int: Next player or -1 at end
 /*--------------------------------------------------------------------------*/
-int Twopart::executeMove (unsigned int player, unsigned int pos) {
+int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int end) {
    TRACE5 ("Twopart::executeMove (unsigned int, unsigned int) - Player: "
-           << player << " at position " << pos);
+           << player << " at position " << start << " to " << end);
    Check3 (player <= NUM_PLAYERS);
-   Check3 (pos <= players[player].hand.numberOfCards ());
+   Check3 (start <= end);
+   Check3 (end <= players[player].hand.numberOfCards ());
 
-   if (!moveSelectedCardToPlayed (player, pos))
+   if (!moveSelectedCardToPlayed (player, start, end))
       return player;
 
    // Check if every player still in game or has already played; end round if so
@@ -364,24 +358,10 @@ int Twopart::makeMove (unsigned int player) {
    TRACE5 ("Twopart::makeMove () - Turn of player " << player);
    Check3 (gameStatus () >= PLAYING);
 
-   if (pos2Play == -1) {
-      pos2Play = findPos2Play (player);
-      if (pos2Play != -1) {
-         unsigned int pos (pos2Play);
+   if (pos2Play == (unsigned int)-1) {
+      if (findPos2Play (player, pos1Play, pos2Play) != -1) {
          // Flip card(s) to play
-         if (gameStatus () == PLAYING)
-            players[player].hand.at (pos).showFace ();
-         else
-            do {
-               players[player].hand.at (pos).showFace ();
-               if (pos != (players[player].hand.numberOfCards () - 1))
-                   players[player].hand.resize (pos, ICardPile::COMPRESSED);
-            } while (pos
-                     && ((players[player].hand.at (pos2Play).number ()
-                          - players[player].hand.at (--pos).number ()
-                          == (pos2Play - pos)))
-                     && (players[player].hand.at (pos).color ()
-                         == players[player].hand.at (pos2Play).color ()));
+         flipCards2Play (players[player].hand, pos1Play, pos2Play);
          return player;
       }
       else {
@@ -394,8 +374,8 @@ int Twopart::makeMove (unsigned int player) {
       }
    }
    else {
-      player = executeMove (player, pos2Play);
-      pos2Play = -1;
+      player = executeMove (player, pos1Play, pos2Play);
+      pos2Play = (unsigned int)-1;
    }
 
    return player;
@@ -406,9 +386,12 @@ int Twopart::makeMove (unsigned int player) {
 //            played cards
 //            to him if so. Else enable the players which can continue
 //Parameters: player: ID of player to analyze
+//            start: Offset of first card to play
+//            end: Offset of last card to play
 //Returns   : int: Position to play; or -1 if player can't continue
 /*--------------------------------------------------------------------------*/
-int Twopart::findPos2Play (unsigned int player) const {
+int Twopart::findPos2Play (unsigned int player, unsigned int& start,
+                           unsigned int& end) const {
    Check3 (player); Check3 (player < NUM_PLAYERS);
    Check3 (gameStatus () >= PLAYING);
    TRACE5 ("Twopart::findPos2Play (unsigned int) - Player " << player);
@@ -439,7 +422,7 @@ int Twopart::findPos2Play (unsigned int player) const {
       analyzeLastPlayed (*startPos, played.numberOfCards () - *startPos,
                          maxNr, posMax, maxEqualNr, posMaxEqual);
 
-      int pos (-1);
+      start = (unsigned int)-1;
       // Try to get the cards if there are loads of high cards (a third or more)
       // or if the average card played is at least a 8
       if (((played.numberOfCards () / 3) < cHigh)
@@ -452,74 +435,75 @@ int Twopart::findPos2Play (unsigned int player) const {
                     || (played.at (i).number () >= maxEqualNr))) {
                TRACE2 ("Twopart::findPos2Play (unsigned int) - Having equal card at "
                        << i);
-               return i;
+               return start = end = i;
             }
          
          // Player has no equal card: Play high card if higher (and he is the
          // last player) or 
          if (((!(bfPlayers & ~(1 << player)))
               && (posMaxEqual == -1)
-              && ((pos = players[player].hand.findFirstEqualOrBigger
+              && ((start = players[player].hand.findFirstEqualOrBigger
                    (static_cast<CardWidget::NUMBERS> (maxNr))) != -1))
              // or the staple is being fighted for and player has high cards
              || (*startPos
-                 && ((pos = players[player].hand.numberOfCards () - 1),
-                     ((players[player].hand.at (pos).number ()
+                 && ((start = players[player].hand.numberOfCards () - 1),
+                     ((players[player].hand.at (start).number ()
                        == CardWidget::ACE))
                      || ((playersInBitfield (bfOldPlayers) < *startPos)
-                         && (players[player].hand.at (pos).number () >= maxNr)
+                         && (players[player].hand.at (start).number () >= maxNr)
                          && (posMaxEqual == -1))))) {
             TRACE2 ("Twopart::findPos2Play (unsigned int) - Playing highest card at "
-                    << pos);
-            return pos;
+                    << start);
+            return end = start;
          }
       }
 
       // We don't want the pile; so try not to get it:
       TRACE5 ("Twopart::findPos2Play (unsigned int) - Avoiding pile");
-      pos = ((players[player].hand.numberOfCards () > 1)
-             && ((played.exists (players[player].hand.at (0).number (), *startPos)
-                  && (players[player].hand.at (1).number () < CardWidget::SIX)
-                  && !played.exists (players[player].hand.at (1).number (), *startPos))
-                 || ((players[player].hand.at (0).number () == maxEqualNr)
-                     && !played.exists (players[player].hand.at (1).number (),
-                                        *startPos)
-                     && (players[player].hand.at (1).number () < CardWidget::SIX))));
+      start = ((players[player].hand.numberOfCards () > 1)
+               && ((played.exists (players[player].hand.at (0).number (), *startPos)
+                    && (players[player].hand.at (1).number () < CardWidget::SIX)
+                    && !played.exists (players[player].hand.at (1).number (), *startPos))
+                   || ((players[player].hand.at (0).number () == maxEqualNr)
+                       && !played.exists (players[player].hand.at (1).number (),
+                                          *startPos)
+                       && (players[player].hand.at (1).number () < CardWidget::SIX))));
 
       // Final check: If you have to pick up the pile and you're the last,
       // use at least a high card
-      if (!pos
+      if (!start
           && !(bfPlayers & ~(1 << player))
           && (players[player].hand.numberOfCards () > 1)
-          && (players[player].hand.at (pos).number () > maxNr)
+          && (players[player].hand.at (start).number () > maxNr)
           && (posMaxEqual == -1))
-         pos = 1;
-      return pos;
+         start = 1;
+      return end = start;
    }
    else {
       // Find first fitting card
-      int pos (played.numberOfCards ()
+      start = (played.numberOfCards ()
                ? players[player].hand.find1EqualOrBigger (played.getTopCard (),
                                                           compByColorAccTrumps)
                : findSmallestCard (player));
-      TRACE5 ("Twopart::findPos2Play (unsigned int) - First try: " << pos);
+      TRACE5 ("Twopart::findPos2Play (unsigned int) - First try: " << start);
 
       Check3 (pTrump);
-      if ((pos == -1)
+      if ((start == -1)
           || (played.numberOfCards ()
               && (played.getTopCard ().color ()
-                  != players[player].hand.at (pos).color ()))) {
+                  != players[player].hand.at (start).color ()))) {
          TRACE5 ("Twopart::findPos2Play (unsigned int) - No card found; trying trump");
          Check3 (pTrump);
          if (played.getTopCard ().color () != pTrump->color ()) {
-            for (pos = players[player].hand.numberOfCards (); pos; --pos)
-               if (players[player].hand.at (pos - 1).color () != pTrump->color ())
+            for (start = players[player].hand.numberOfCards (); start; --start)
+               if (players[player].hand.at (start - 1).color () != pTrump->color ())
                   break;
 
-            if (!pos)
-               pos = findEndOfSerie (player, 0);
+            if (!start)
+               end = findEndOfSerie (player, 0);
             else
-               return (pos == players[player].hand.numberOfCards ()) ? -1 : pos;
+               return ((start == players[player].hand.numberOfCards ())
+                       ? -1 : (int)start);
          }
          else
             return -1;
@@ -527,11 +511,11 @@ int Twopart::findPos2Play (unsigned int player) const {
       else
          // Card was found; now search for last card to play (only if not trump
          // or only trump left)
-         if (!pos
-             || (players[player].hand.at (pos).color () != pTrump->color ()))
-            pos = findEndOfSerie (player, pos);
-      TRACE5 ("Twopart::findPos2Play (unsigned int) - Playing card at pos " << pos);
-      return pos;
+         if (!start
+             || (players[player].hand.at (start).color () != pTrump->color ()))
+            end = findEndOfSerie (player, start);
+      TRACE5 ("Twopart::findPos2Play (unsigned int) - Playing card at pos " << start);
+      return start;
    }
 }
 
@@ -597,6 +581,32 @@ unsigned int Twopart::findEndOfSerie (unsigned int player, unsigned int start) c
    }
 
    return start - 1;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Searches for the first position of the card which are in a serie
+//            (same color; number decreasing by 1)
+//Parameters: player: Player to inspect
+//            start: Position to start
+//Returns   : unsinged int: Position of first card in serie
+/*--------------------------------------------------------------------------*/
+unsigned int Twopart::findStartOfSerie (unsigned int player, unsigned int start) const {
+   Check3 (start < players[player].hand.numberOfCards ());
+
+   CardWidget* card (&players[player].hand.at (start));
+   CardWidget::NUMBERS nr (card->number ());
+   CardWidget::COLORS color (card->color ());
+
+   while ((--start < players[player].hand.numberOfCards ())
+          && ((card = &players[player].hand.at (start)),
+              (card->number ()) == (nr - 1))
+          && (card->color () == color)) {
+      TRACE9 ("Twopart::findStartOfSerie (unsigned int, unsigned int) - Next valid card "
+              << *card << " at " << start);
+      nr = card->number ();
+   }
+
+   return start + 1;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -927,7 +937,7 @@ int Twopart::startPartTwoTimerFnc (unsigned int player) {
    }
    
    bfPlayers = (1 << NUM_PLAYERS) - 1;
-   pos2Play = -1;
+   pos2Play = (unsigned int)-1;
 
    setNextPlayer (player);
    makeNextMoves ();
@@ -975,6 +985,10 @@ void Twopart::playOpen (bool open) {
    for (int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.setShowOption (show);
       players[i].won.setStyle (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
+      if (i)
+         players[i].hand.setStyle ((gameStatus () == PLAYING2)
+                                   ? (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED)
+                                   : ICardPile::COMPRESSED);
       players[i].hand.setShowOption (i ? show : ICardPile::SHOWFACE);
    }
 }

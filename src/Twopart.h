@@ -52,9 +52,10 @@ class Twopart : public Game {
    void playedSelected (unsigned int player);
 
    // Helper functions
-   int executeMove (unsigned int player, unsigned int iCard);
+   int executeMove (unsigned int player, unsigned int start, unsigned int end);
    void movePlayedCardsToPlayer (unsigned int nrPlayer, unsigned int start = 0);
-   bool moveSelectedCardToPlayed (unsigned int player, unsigned int iCard);
+   bool moveSelectedCardToPlayed (unsigned int player, unsigned int start,
+                                  unsigned int end);
    void enablePlayer (unsigned int player);
    unsigned int pickUpPlayedPile (unsigned int player);
    int  findNextPlayer (unsigned int player);
@@ -79,9 +80,10 @@ class Twopart : public Game {
                            int& maxPos, int& maxEqual, int& maxEqualPos) const;
 
    unsigned int pos2Player (unsigned int pos) const;
-   int findPos2Play (unsigned int player) const;
+   int findPos2Play (unsigned int player, unsigned int& start, unsigned int& end) const;
    unsigned int findSmallestCard (unsigned int player) const;
    unsigned int findEndOfSerie (unsigned int player, unsigned int start) const;
+   unsigned int findStartOfSerie (unsigned int player, unsigned int start) const;
 
    int startPartTwoTimerFnc (unsigned int player);
    void startPartTwo (unsigned int player);
@@ -104,7 +106,8 @@ class Twopart : public Game {
    unsigned int bfOldPlayers;  // Array indicating players while starting round
 
    bool restart;
-   int  pos2Play;
+   unsigned int pos2Play;
+   unsigned int pos1Play;
 
    // Columns and rows for the cards of the players
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
