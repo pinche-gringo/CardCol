@@ -382,14 +382,14 @@ RovhultAppl::~RovhultAppl () {
 
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Destructor
+//Purpose   : Starts the game
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::startGame () {
-   statGame = PLAYING;
    pMenuEnd->set_sensitive (true);
    cleanTable ();
    fillStaple ();
    dealCards ();
+   statGame = PREPLAYING;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -398,8 +398,8 @@ void RovhultAppl::startGame () {
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::command (int menu) {
    switch (menu) {
-   case NEW: {
-      if (statGame == PLAYING) {
+   case NEW:
+      if (statGame >= PREPLAYING) {
          restart = true;
          XMessageDialog<RovhultAppl>::Show (*this, &RovhultAppl::userWants2End,
                                             _("A game is already running. Do you really"
@@ -410,10 +410,9 @@ void RovhultAppl::command (int menu) {
       else
          startGame ();
       break;
-   }
 
    case END:
-      Check3 (statGame == PLAYING);
+      Check3 (statGame >= PREPLAYING);
       restart = false;
       XMessageDialog<RovhultAppl>::Show (*this, &RovhultAppl::userWants2End,
                                          _("Do you really want to end the game?"),
@@ -462,13 +461,18 @@ void RovhultAppl::command (int menu) {
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::userWants2End (unsigned int input) {
    if (input == XMessageBox::YES) {
-      if (statGame == PLAYING) {
-         statGame = TOSTOP;
+      pMenuEnd->set_sensitive (false);
+      disableLastPlayer ();
+
+      if (statGame >= PREPLAYING) {
          status.pop (1);
          status.push (1, _("User canceled"));
+
+         if (statGame == AUTOPLAYING)
+            statGame = TOSTOP;
+         else
+            startGame ();
       }
-      disableLastPlayer ();
-      pMenuEnd->set_sensitive (false);
    }
 }
 
@@ -487,16 +491,14 @@ void RovhultAppl::finishedExchange () {
    for (int i (0); i < NUM_PLAYERS; ++i)
       players[i].hand.sortByNumber ();
 
-   for (int i (0); i < 3; ++i) {
-      CardWidget& card (players[0].hand.at (i));
-      unregisterDND (card);
-      unregisterDND (players[0].reserve[i].getTopCard ());
-   }
+   unregisterDND ();
 
    players[0].hand.setStyle (ICardPile::COMPRESSED);
    enablePlayer (0);
    staple.getTopCard ().remove_accelerator (*get_accel_group (), ' ', 0);
    pileTop.disconnect ();
+
+   statGame = PLAYING;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -602,8 +604,10 @@ int RovhultAppl::makeComputerMove () {
    TRACE2 ("RovhultAppl::makeComputerMove () - Next player: "
            << actPlayer);
 
-   if (!actPlayer)
+   if (!actPlayer) {
+      statGame = PLAYING;
       enablePlayer (0);
+   }
 
    // Continue with computer-moves (means: let timer enabled), if computer
    // controlled players are on turn
@@ -1160,9 +1164,13 @@ void RovhultAppl::fillStaple () {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Remove cards from everything which can hold them
+//Purpose   : Remove cards from everything which can hold them and unregister
+//            any signals (DND)
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::cleanTable () {
+   if (statGame == PREPLAYING)
+      unregisterDND ();
+
    staple.clear ();                                             // Clear staple
    for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
       for (int j (0); j < 3; ++j) {
@@ -1235,6 +1243,21 @@ void RovhultAppl::unregisterDND (CardWidget& card) const {
 }
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Stops the drag´n´drop abilities of the passed card
+//Parameters: card: Card to unregister of dnd
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::unregisterDND () const {
+   Check3 (players[0].hand.numberOfCards () == 3);
+
+   for (int i (0); i < 3; ++i) {
+      CardWidget& card (players[0].hand.at (i));
+      unregisterDND (card);
+      Check3 (players[0].reserve[i].numberOfCards () == 2);
+      unregisterDND (players[0].reserve[i].getTopCard ());
+   }
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Deals the cards
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::dealCards () {
@@ -1256,6 +1279,7 @@ void RovhultAppl::dealCards () {
          players[i].hand.insertSorted (card);
       }
 
+   // Enable drag-and-drop for cards in hand (of human player)
    for (unsigned int i (0); i < players[i].hand.numberOfCards (); ++i) {
       registerHandDND (players[0].hand.at (i), 0, i);
       registerTableDND (players[0].reserve[i].getTopCard (), 0, i);
@@ -1621,7 +1645,7 @@ int RovhultAppl::findCard2Play (unsigned int player) const {
       //     * it´s the first card
       //     * it's a not that high card (up to 9)
       unsigned int npos (players[player].hand.findLastEqual (pos));
-      Check3 (npos < players[player].hand.numberOfCards);
+      Check3 (npos < players[player].hand.numberOfCards ());
       if (((numberOfEqualTopCards () + npos - pos) == 4)
           || (existOnlySpecialCards (player, players[player].hand.numberOfCards () - 1))
           || ((!isSpecialCard (players[player].hand.at (0).number ()))

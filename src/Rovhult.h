@@ -62,6 +62,7 @@ class RovhultAppl : public XApplication {
    void registerHandDND (CardWidget& card, unsigned int player, unsigned int card);
    void registerTableDND (CardWidget& card, unsigned int player, unsigned int pile);
    void unregisterDND (CardWidget& card) const;
+   void unregisterDND () const;
  
    // Event-handling
    virtual void command (int menu);
@@ -79,6 +80,7 @@ class RovhultAppl : public XApplication {
    int  makeComputerMove ();
    void makeComputerMoves () {
       TRACE9 ("RovhultAppl::makeComputerMoves () - *** Start timer ***");
+      statGame = AUTOPLAYING;
       Gtk::Main::timeout.connect (slot (this, &RovhultAppl::makeComputerMove), 1000);
       disableLastPlayer (); }
    void enablePlayer (unsigned int player);
@@ -128,7 +130,7 @@ class RovhultAppl : public XApplication {
    static const char* xpmAuthor[];
    static const char* xpmRovhult[];
 
-   enum { INITIALIZING, PLAYING, TOSTOP, STOPPED } statGame;
+   enum { INITIALIZING, TOSTOP, STOPPED, PREPLAYING, PLAYING, AUTOPLAYING } statGame;
 
    Gtk::Statusbar status;
    Gtk::Table     tblTable;
