@@ -39,9 +39,8 @@
 
     <p>R&oslash;vhult es un juego de cartas que aprend&iacute; de tres
       daneses; por eso ese nombre y esa letra linda y inefable (parece
-      como una vaca mugieno durante vomitar). R&oslash;vhult significa
-      literalmente &ldquo;vueco del culo&rdquo; (que ser&iacute;a como
-      cabr&oacute;n) y as&iacute; se lo conoze en otros partes del mundo.</p>
+      como una vaca mugieno durante vomitar). Otros nombres son Shithead
+      (Gran Britania) o Asshole (Australia, EE.UU.).</p>
 
     <p>La meta del juego es de librarse de todas sus cartas, de acuerdo con
       las siguentes reglas - por supuesto faciles como tambi&eacute;n los
@@ -142,7 +141,7 @@
         </td>
         <td><a href="Hearts.html.es">Anterior</a><br>(Corazones)</td>
         <td><a href="CardCol.html.es">Contenido</a></td>
-        <td><a href="Twopart.html.es">Pr&oacute;ximo</a><br>(Twopart)</td>
+        <td><a href="Sgt. Mayor.html.es">Pr&oacute;ximo</a><br>(Sgt. Mayor)</td>
       </tr>
     </table>
   </body>
