@@ -1,3 +1,152 @@
+2002-08-21  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes up to V0.1.02 commented
+	
+	* po/de.po, po/en.po, po/es.po: Actualized for V0.1.02
+
+	* Twopart/Twopart.cpp:
+	  Fixed restarting (status set top STOPPED; GPF caused by deleted trump)
+
+	* po/POTFILES.in: Twopart.cpp added
+
+	* doc/Rovhult.html: Minor changes
+
+	* configure.in: Subdir doc added
+
+	* doc/Makefile.am:
+	  Initial revision, handling Rovhult.html & Twopart.html
+
+	* Makefile.am: Subdir doc added
+
+	* Twopart/Twopart.cpp:
+	  Fixed restarting (status set top STOPPED; GPF caused by deleted trump)
+
+2002-08-19  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Twopart.html: New file.
+
+2002-08-18  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart/Twopart.cpp: Fixes in picking up pile
+
+	* Twopart.cpp:
+	  Fixed card-validity-check, picking up played pile & handling of empty hand (2)
+
+2002-08-17  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart/Twopart.h: Changes for part 2
+
+	* Twopart/Twopart.cpp: Fixes & improvements
+
+2002-08-16  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart/Twopart.cpp:
+	  - Sorting part 2 according trumps
+	  - Fixed restarting
+	  - Picking up played pile enabled
+	  - Vality-check enhanced for trumps
+	  - Playing part 2 a bit enhanced
+
+	* Rovhult/Rovhult.cpp: Minor fixes in restarting
+
+	* Twopart/Twopart.cpp, Twopart/Twopart.h:
+	  Bit of part 2 implemented; Functions handle both playing parts
+
+	* Common/CardPile.cpp: setStyle: Last card is changed to NORMAL
+
+2002-08-14  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart/Twopart.cpp, Twopart/Twopart.h:
+	  Fixed endRound when qual cards ends with only 1; Part 2 is started with timer
+
+	* Common/CardPile.h: Include of Trace_.h removed
+
+	* Common/CardPile.cpp: Fixed compCards
+
+	* Common/CardWidget.h: Order of colors changed
+
+	* Twopart/Twopart.cpp, Twopart/Twopart.h:
+	  Game can be restarted; enablePlayer works for every game status
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h:
+	  New game-status PREPLAYING to enable restaring during card exchange
+
+	* Twopart/Twopart.cpp, Twopart/Twopart.h: Started to implement part two of the game
+
+	* Common/CardPile.cpp, Common/CardPile.h:
+	  Generic sort method added (with sortfnc as param); sort.+ changed acc.
+
+2002-08-12  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart/Twopart.cpp:
+	  First draft of redesigned endRound; analzying only last round
+
+	* Twopart/Twopart.h: Variable holding old players; size changed
+
+	* Twopart/Twopart.cpp:
+	  Playing of first part finished; restarting game fixed
+
+	* Twopart/Twopart.h, Twopart/Twopart.cpp:
+	  Displaying trump card; Checking if player have cards left
+
+2002-08-11  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp: Special cards are played more intelligently from pile
+
+2002-08-07  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.h: Method isSpecialCard added
+
+	* Rovhult/Rovhult.cpp: Playing of 2 improved (hopefully)
+
+2002-08-06  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.cpp, Common/CardPile.h: Method insertColorSorted added
+
+	* Common/CardWidget.cpp, Common/CardWidget.h: Copyconstructor added
+
+	* Twopart/Twopart.h: Prototypes added
+
+	* Twopart/Twopart.cpp: Fixed endRound
+
+2002-08-04  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart/Twopart.cpp: Fixes withing calculation of next player(s)
+
+2002-08-02  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart/Twopart.h: Enabling next player in timer
+
+	* Twopart/Twopart.cpp: Enabling next player in timer; fixes in endRound
+
+2002-08-01  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h:
+	  Running game can be interrupted or restarted
+
+2002-07-25  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart/Twopart.cpp: Layout changed
+
+2002-07-24  Markus Schwab  <g17m0@lycos.com>
+
+	* Twopart/Twopart.cpp: Bit of game logic added
+
+	* Common/CardWidget.cpp, Common/CardWidget.h:
+	  Methods to seperately print color and numbers added
+
+2002-07-22  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.in: Checking for XAppl-library
+
+	* Twopart/Makefile.am: Needed libs and includes added
+
+	* Twopart/Twopart.cpp, Twopart/Twopart.h: New file.
+
+2002-07-21  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Rovhult.html: New file.
+
 2002-07-20  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog: Actualized for V0.1.01
