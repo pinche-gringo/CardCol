@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.12.2002
-//COPYRIGHT   : Anticopyright (A) 2002
+//COPYRIGHT   : Anticopyright (A) 2002, 2003
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -129,8 +129,8 @@ int Hearts::makeMove (unsigned int player) {
       TRACE9 ("Hearts::makeMove (unsigned int) - Playing card at pos " << pos2Play);
       ICardPile& pile (players[player].hand);
       Check3 (pos2Play < pile.size ());
-      aPlayed[pile[pos2Play]->color ()]++;
-      if ((pile[pos2Play]->color () == CardWidget::SPADES)
+      aPlayed[pile[pos2Play]->colour ()]++;
+      if ((pile[pos2Play]->colour () == CardWidget::SPADES)
           && (pile[pos2Play]->number () == CardWidget::QUEEN))
           playedSQ = true;
 
@@ -158,7 +158,7 @@ void Hearts::start () {
    cards.shuffle ();
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       for (unsigned int j (0); j < (cards.size () / NUM_PLAYERS); ++j)
-         players[i].hand.insertColorSorted
+         players[i].hand.insertColourSorted
             (cards.getCard (i * (cards.size () / NUM_PLAYERS) + j));
 
    if (pScoreDlg) {
@@ -249,7 +249,7 @@ void Hearts::takeCard (unsigned int iCard) {
    Check1 (gameStatus () == EXCHANGE);
 
    movePile (players[0].hand, played, iCard, iCard);
-   players[0].hand.sortByColor ();
+   players[0].hand.sortByColour ();
    makeNextMoves ();
 }
 
@@ -301,7 +301,7 @@ void Hearts::startPlaying () {
    unsigned int nextPlayer (0);
    for (unsigned int i (1); i < NUM_PLAYERS; ++i)
       if ((players[i].hand[0]->number () == CardWidget::TWO)
-          && (players[i].hand[0]->color () == CardWidget::CLUBS)) {
+          && (players[i].hand[0]->colour () == CardWidget::CLUBS)) {
          TRACE7 ("Hearts::startPlaying () - Start with player " << i);
          setNextPlayer (nextPlayer = i);
          flipCards2Play (players[i].hand, pos2Play = 0, pos2Play);
@@ -322,11 +322,11 @@ void Hearts::startPlaying () {
 //Returns   : ID of player with the highest card
 /*--------------------------------------------------------------------------*/
 unsigned int  Hearts::check4Winner () {
-   CardWidget::COLORS color (played[0]->color ());
+   CardWidget::COLOURS colour (played[0]->colour ());
    CardWidget::NUMBERS highest (CardWidget::TWO);
    unsigned int pos (0);
    for (unsigned int i (0); i < played.size (); ++i)
-      if ((played[i]->color () == color)
+      if ((played[i]->colour () == colour)
           && (played[i]->number () > highest)) {
          pos = i;
          highest = played[i]->number ();
@@ -357,8 +357,10 @@ unsigned int  Hearts::calcNextPlayer (unsigned int player) {
    if (!players[player].hand.size ()) {
       player = -1U;
       setGameStatus (STOPPED);
-      if (!pScoreDlg)
+      if (!pScoreDlg) {
          pScoreDlg = HeartsScoreDlg::perform (names);
+         pScoreDlg->get_window ()->set_transient_for (get_window ());
+      }
 
       unsigned int aScore[NUM_PLAYERS];
       for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
@@ -408,16 +410,16 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
 
    if (gameStatus () == PLAYING) {
       CardWidget& card (*players[player].hand[card]);
-      CardWidget::COLORS playColor (card.color ());
+      CardWidget::COLOURS playColour (card.colour ());
       unsigned int cardsPlayed (0);
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          cardsPlayed += players[i].won.size ();
 
       if (played.size ()) {
-         // The same color must be played again (if available)
-         CardWidget::COLORS color (played[0]->color ());
-         if ((playColor != color) && players[player].hand.exists (color)) {
-            Gtk::MessageDialog dlg (_("Play first cards with an equal color as "
+         // The same colour must be played again (if available)
+         CardWidget::COLOURS colour (played[0]->colour ());
+         if ((playColour != colour) && players[player].hand.exists (colour)) {
+            Gtk::MessageDialog dlg (_("Play first cards with an equal colour as "
                                       "the first played one!"), Gtk::MESSAGE_ERROR);
             dlg.set_title (PACKAGE " - Hearts");
             dlg.run ();
@@ -427,7 +429,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
       else {
          // The game must be started with the two of clubs
          if (!cardsPlayed) {
-            if ((card.color () != CardWidget::CLUBS)
+            if ((card.colour () != CardWidget::CLUBS)
                 && (card.number () != CardWidget::TWO)) {
                Gtk::MessageDialog dlg (_("The game must be started with the two of clubs!"),
                                          Gtk::MESSAGE_ERROR);
@@ -438,8 +440,8 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
          }
 
          // One can start with a heart only if there has been one played before
-         if (((playColor == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
-             && (players[player].hand[0]->color () != CardWidget::HEARTS)) {
+         if (((playColour == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
+             && (players[player].hand[0]->colour () != CardWidget::HEARTS)) {
             Gtk::MessageDialog dlg (_("You can't start with a heart, if they have"
                                       " not been played before!"),
                                     Gtk::MESSAGE_ERROR);
@@ -451,7 +453,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
 
       // The queen of spades can't be played in the first round
       if (!cardsPlayed) {
-         if ((card.color () == CardWidget::SPADES)
+         if ((card.colour () == CardWidget::SPADES)
              && (card.number () == CardWidget::QUEEN)) {
             Gtk::MessageDialog dlg (_("The queen of spades can't be played in the first"
                                       " round!"), Gtk::MESSAGE_ERROR);
@@ -460,8 +462,8 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
             return false;
          }
 
-         if (((playColor == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
-              && (players[player].hand[0]->color () != CardWidget::HEARTS)) {
+         if (((playColour == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
+              && (players[player].hand[0]->colour () != CardWidget::HEARTS)) {
                Gtk::MessageDialog dlg (_("Hearts can't be played in the first round!"),
                                        Gtk::MESSAGE_ERROR);
                dlg.set_title (PACKAGE " - Hearts");
@@ -470,8 +472,8 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
          }
       }
 
-      Check3 (playColor < (sizeof (aPlayed) / sizeof (aPlayed[0])));
-      aPlayed[playColor]++;
+      Check3 (playColour < (sizeof (aPlayed) / sizeof (aPlayed[0])));
+      aPlayed[playColour]++;
    }
 
    movePile (played, players[player].hand, card, card);
@@ -497,40 +499,40 @@ void Hearts::exchangeCards () {
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       TRACE8 ("Hearts::exchangeCards () - Player " << i);
 
-      int posColors[4];
+      int posColours[4];
       ICardPile& source (players[i].hand);
-      getPositionOfColors (source, posColors);
+      getPositionOfColours (source, posColours);
 
       unsigned int moved (0);
-      unsigned int cCards (numberOfCards (posColors, CardWidget::CLUBS));
+      unsigned int cCards (numberOfCards (posColours, CardWidget::CLUBS));
       // If nr. of clubs or diamonds are < 3 -> Use them
       if (cCards && (cCards < 3)) {
          TRACE3 ("Hearts::exchangeCards () - Getting rid of all clubs: 0 - "
                  << cCards - 1 << "; " << cCards << " cards");
-         movePile (aExchange[i], source, 0, posColors[CardWidget::CLUBS]);
+         movePile (aExchange[i], source, 0, posColours[CardWidget::CLUBS]);
          moved = cCards;
       }
-      cCards = numberOfCards (posColors, CardWidget::DIAMONDS);
+      cCards = numberOfCards (posColours, CardWidget::DIAMONDS);
       if (cCards && (cCards) < (3 - moved)) {
          TRACE3 ("Hearts::exchangeCards () - Getting rid of all diamonds: "
-                 << posColors[CardWidget::DIAMONDS] - moved  - cCards + 1
-                 << " - " << posColors[CardWidget::DIAMONDS] - moved << "; "
+                 << posColours[CardWidget::DIAMONDS] - moved  - cCards + 1
+                 << " - " << posColours[CardWidget::DIAMONDS] - moved << "; "
                  << cCards << " cards");
          movePile (aExchange[i], source,
-                   posColors[CardWidget::DIAMONDS] - moved - cCards + 1,
-                   posColors[CardWidget::DIAMONDS] - moved);
+                   posColours[CardWidget::DIAMONDS] - moved - cCards + 1,
+                   posColours[CardWidget::DIAMONDS] - moved);
          moved += cCards;
       }
 
       // If nr. of spades < 5 get rid of high spades (especially the queen)
-      cCards = numberOfCards (posColors, CardWidget::SPADES);
+      cCards = numberOfCards (posColours, CardWidget::SPADES);
       if (cCards && (cCards < 5)) {
          // Search for the queen of spades and get rid of cards equal or bigger
-         unsigned int start (posColors[CardWidget::SPADES] - moved - cCards + 1);
-         while (start <= (posColors[CardWidget::SPADES] - moved - 1)
+         unsigned int start (posColours[CardWidget::SPADES] - moved - cCards + 1);
+         while (start <= (posColours[CardWidget::SPADES] - moved - 1)
                 && (source[start]->number () < CardWidget::QUEEN)) {
             TRACE9 ("Hearts::exchangeCards () - Checking spades at " << start);
-            Check3 (source[start]->color () == CardWidget::SPADES);
+            Check3 (source[start]->colour () == CardWidget::SPADES);
             ++start;
          }
 
@@ -541,8 +543,8 @@ void Hearts::exchangeCards () {
             moved++;
          }
 
-         if ((moved < 3) && (start < (posColors[CardWidget::SPADES] - moved))) {
-            start = posColors[CardWidget::SPADES] - moved;
+         if ((moved < 3) && (start < (posColours[CardWidget::SPADES] - moved))) {
+            start = posColours[CardWidget::SPADES] - moved;
             cCards = 2 - moved;
             TRACE3 ("Hearts::exchangeCards () - Getting rid of all high spades: "
                     << start -  cCards << " - " << start << "; " << (cCards + 1)
@@ -573,24 +575,24 @@ void Hearts::exchangeCards () {
       ICardPile& target (players[(i + player2Exchange) & 0x3].hand);
       movePile (target, aExchange[i]);
 
-      target.sortByColor ();
+      target.sortByColour ();
       Check3 (target.size () == (cards.size () / NUM_PLAYERS));
    }
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Retrieve the last position of each color in the pile
+//Purpose   : Retrieve the last position of each colour in the pile
 //Parameters: pile: Pile to inspect
-//            result: Array of position of last cards of earch color
+//            result: Array of position of last cards of earch colour
 /*--------------------------------------------------------------------------*/
-void Hearts::getPositionOfColors (ICardPile& pile, int result[4]) {
+void Hearts::getPositionOfColours (ICardPile& pile, int result[4]) {
    memset (result, (char)-1, sizeof (int[4]));
    for (unsigned int i (0); i < (pile.size () - 1); ++i)
-      if (pile[i]->color () != pile[i + 1]->color ())
-         result[pile[i]->color ()] = i;
-   result[pile[pile.size () - 1]->color ()] = pile.size () - 1;
+      if (pile[i]->colour () != pile[i + 1]->colour ())
+         result[pile[i]->colour ()] = i;
+   result[pile[pile.size () - 1]->colour ()] = pile.size () - 1;
 
-   TRACE9 ("Hearts::getPositionOfColors (ICardPile&, unsigned int) - Pos. of "
+   TRACE9 ("Hearts::getPositionOfColours (ICardPile&, unsigned int) - Pos. of "
            "cards: " << result[0] << ", " << result[1]
            << ", " << result[2] << ", " << result[3]);
 }
@@ -598,29 +600,29 @@ void Hearts::getPositionOfColors (ICardPile& pile, int result[4]) {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Calculate the number of cards out of the positions
 //Parameters: aPositions: Array of positions
-//            color: Color whose number should be calculated
-//Returns   : int: Number of cards for color
+//            colour: Colour whose number should be calculated
+//Returns   : int: Number of cards for colour
 /*--------------------------------------------------------------------------*/
-unsigned int Hearts::numberOfCards (const int aPositions[4], CardWidget::COLORS color) {
-   Check1 (color <= CardWidget::HEARTS);
+unsigned int Hearts::numberOfCards (const int aPositions[4], CardWidget::COLOURS colour) {
+   Check1 (colour <= CardWidget::HEARTS);
    unsigned int nr (0);
-   if (aPositions[color] != -1) {
-      nr = aPositions[color] + 1;
-      while (color)
-         if (aPositions[--(unsigned int)color] != -1) {
-            nr -= aPositions[color] + 1;
+   if (aPositions[colour] != -1) {
+      nr = aPositions[colour] + 1;
+      while (colour)
+         if (aPositions[--(unsigned int)colour] != -1) {
+            nr -= aPositions[colour] + 1;
             break;
          }
    }
 
-   TRACE9 ("Hearts::size (int, CardWidget::COLORS) - Cards: " << nr);
+   TRACE9 ("Hearts::size (int, CardWidget::COLOURS) - Cards: " << nr);
    return nr;
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Calculate the number of cards for each color
+//Purpose   : Calculate the number of cards for each colour
 //Parameters: pile: Pile to inspect
-//            result: Array of number of cards for earch color
+//            result: Array of number of cards for earch colour
 /*--------------------------------------------------------------------------*/
 unsigned int Hearts::findPos2Play (unsigned int player) {
    Check1 (player < NUM_PLAYERS);
@@ -628,11 +630,11 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
 
    ICardPile& pile (players[player].hand);
    int aPos[4];
-   getPositionOfColors (pile, aPos);
+   getPositionOfColours (pile, aPos);
 
    if (played.size ()) {
-      // Check if cards of the same color are available
-      return (aPos[played[0]->color ()] == -1) 
+      // Check if cards of the same colour are available
+      return (aPos[played[0]->colour ()] == -1) 
          ? findWorstCard (pile, aPos) : findLowerCard (pile, aPos);
    }
    else {
@@ -661,19 +663,19 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
            ++card) {
          pos = 0;
          while ((pos = pile.find (CardWidget::NUMBERS (card), pos)) != -1) {
-            CardWidget::COLORS color (pile[pos]->color ());
-            // Play the lowest card, if there are still cards of that color
+            CardWidget::COLOURS colour (pile[pos]->colour ());
+            // Play the lowest card, if there are still cards of that colour
             // owned by other players and - if it is a heart - there are
             // already played hearts.
             TRACE9 ("Hearts::findPos2Play (unsigned int) - Analyzing "
-                    << *pile[pos] << "; Played: " << aPlayed[color]
-                    << "; I have: " << numberOfCards (aPos, color));
-            if ((aPlayed[color] + numberOfCards (aPos, color))
+                    << *pile[pos] << "; Played: " << aPlayed[colour]
+                    << "; I have: " << numberOfCards (aPos, colour));
+            if ((aPlayed[colour] + numberOfCards (aPos, colour))
                 < (cards.size () / NUM_PLAYERS)) {
                TRACE8 ("Hearts::findPos2Play (unsigned int) - Considering to "
-                       "play " << *pile[pos] << "; Played: " << aPlayed[color]);
+                       "play " << *pile[pos] << "; Played: " << aPlayed[colour]);
 
-                if ((color != CardWidget::HEARTS)
+                if ((colour != CardWidget::HEARTS)
                     || aPlayed[CardWidget::HEARTS]) {
                    TRACE5 ("Hearts::findPos2Play (unsigned int) - Starting with "
                            << *pile[pos]);
@@ -696,11 +698,11 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
 /*--------------------------------------------------------------------------*/
 unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[4]) {
    TRACE9 ("Hearts::findLowerCard (const ICardPile&, const int[4]");
-   CardWidget::COLORS color (played[0]->color ());
+   CardWidget::COLOURS colour (played[0]->colour ());
    unsigned int posWinner (check4Winner ());
 
    // Play queen of spades, if there's already a higher card in the pile
-   if ((color == CardWidget::SPADES)
+   if ((colour == CardWidget::SPADES)
        && (played[posWinner]->number () > CardWidget::QUEEN))
       return ((pile[aPositions[CardWidget::SPADES]]->number () == CardWidget::QUEEN)
               || (numberOfCards (aPositions, CardWidget::SPADES) == 1)
@@ -708,15 +710,15 @@ unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[
                   != CardWidget::QUEEN)
               ? aPositions[CardWidget::SPADES] : aPositions[CardWidget::SPADES] - 1);
 
-   // Play high card of the color, if last player and pile contains no
+   // Play high card of the colour, if last player and pile contains no
    // counting card, except if that would mean to play the queen of spades.
    if ((played.size () == (NUM_PLAYERS - 1))
        && !pointsOfPile (played))
-      return ((color != CardWidget::SPADES)
+      return ((colour != CardWidget::SPADES)
               || (pile[aPositions[CardWidget::SPADES]]->number ()
                   != CardWidget::QUEEN)
               || numberOfCards (aPositions, CardWidget::SPADES) == 1)
-         ? aPositions[color] : aPositions[color] - 1;
+         ? aPositions[colour] : aPositions[colour] - 1;
    else {
       // Play highest card lower than the previously played ones
       int card (0);
@@ -726,18 +728,18 @@ unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[
               " be below " << played[posWinner]);
 
       // Search for a lower card
-      unsigned int nrCards (numberOfCards (aPositions, color));
-      card = aPositions[color] + 1; Check3 (card >= 1);
+      unsigned int nrCards (numberOfCards (aPositions, colour));
+      card = aPositions[colour] + 1; Check3 (card >= 1);
       do {
-         Check3 (pile[card - 1]->color () == color);
+         Check3 (pile[card - 1]->colour () == colour);
          if (pile[--card]->number () < highest) {
             // Found a lower card; test if the highest is the ace of
             // spades and you have the queen and are about to play the king
-            if ((color == CardWidget::SPADES)
+            if ((colour == CardWidget::SPADES)
                 && (highest == CardWidget::ACE)
                 && card
                 && (pile[card - 1]->number () == CardWidget::QUEEN)
-                && (pile[card - 1]->color () == CardWidget::SPADES))
+                && (pile[card - 1]->colour () == CardWidget::SPADES))
                --card;
 
             TRACE5 ("Hearts::findLowerCard (const ICardPile&, unsigned int[4]) - "
@@ -747,15 +749,15 @@ unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[
       } while (--nrCards);
 
       // Try to not play the queen of spades, if possible
-      if ((color == CardWidget::SPADES)
+      if ((colour == CardWidget::SPADES)
           && (card < aPositions[CardWidget::SPADES])
           && (pile[card]->number () == CardWidget::QUEEN)) {
-         Check3 (pile[card + 1]->color () == CardWidget::SPADES);
+         Check3 (pile[card + 1]->colour () == CardWidget::SPADES);
          ++card;
       }
 
       if (played.size () == (NUM_PLAYERS - 1))
-         card = aPositions[color];
+         card = aPositions[colour];
       TRACE5 ("Hearts::findLowerCard (const ICardPile&, unsigned int[4]) - "
               "Forced to play card at " << card << ": " << pile[card]);
       return card;
@@ -788,7 +790,7 @@ unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[
               pos <= aPositions[2]; ++pos) {
             TRACE9 ("Hearts::findWorstCard (const ICardPile&, const int[4]) - "
                     "Searching for SQ at position " << pos);
-            Check3 (pile[pos]->color () == CardWidget::SPADES);
+            Check3 (pile[pos]->colour () == CardWidget::SPADES);
             if (pile[pos]->number () >= CardWidget::QUEEN)
                return pos;
          }
@@ -809,14 +811,14 @@ unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[
       pos = 0;
       while ((pos = pile.find (CardWidget::NUMBERS (card), pos))
              != -1) {
-         CardWidget::COLORS color (pile[pos]->color ());
+         CardWidget::COLOURS colour (pile[pos]->colour ());
          TRACE2 ("Hearts::findWorstCard (const ICardPile&, unsigned int[4]) - "
                  "Checking card " << *pile[pos] << " at pos " << pos
-                 << " against " << aPlayed[color] << " cards");
+                 << " against " << aPlayed[colour] << " cards");
          if (cardsPlayed
-             || ((color == CardWidget::SPADES)
+             || ((colour == CardWidget::SPADES)
                  ? (card != CardWidget::QUEEN)
-                 : (color != CardWidget::HEARTS)))
+                 : (colour != CardWidget::HEARTS)))
             return pos;
          ++pos;
       }
@@ -834,11 +836,11 @@ unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[
 unsigned int Hearts::pointsOfPile (ICardPile& pile) {
    unsigned int points (0);
    for (unsigned int i (0); i < pile.size (); ++i) {
-      CardWidget::COLORS color (pile[i]->color ());
-      if (color == CardWidget::HEARTS)
+      CardWidget::COLOURS colour (pile[i]->colour ());
+      if (colour == CardWidget::HEARTS)
          ++points;
       else
-         if ((color == CardWidget::SPADES)
+         if ((colour == CardWidget::SPADES)
              && pile[i]->number () == CardWidget::QUEEN)
             points += 13;
    }

@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 20.7.2002
-//COPYRIGHT   : Anticopyright (A) 2002
+//COPYRIGHT   : Anticopyright (A) 2002, 2003
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -255,20 +255,20 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player,
    else {
       CardWidget& card (*players[player].hand[start]);
       unsigned int nr (card.number ());
-      CardWidget::COLORS color (card.color ());
+      CardWidget::COLOURS colour (card.colour ());
       
-      // Perform validity-check in part 2: Card must have the same color and be
+      // Perform validity-check in part 2: Card must have the same colour and be
       // bigger than the last played card or be a (bigger) trump
       Check3 (pTrump);
       if (played.size ()) {
          CardWidget& top (played.getTopCard ());
 
-         if ((color == pTrump->color ())
-             ? ((top.color () == pTrump->color ())
+         if ((colour == pTrump->colour ())
+             ? ((top.colour () == pTrump->colour ())
                 && (top.number () >= nr))
-             : ((top.color () != color)
+             : ((top.colour () != colour)
                 || (top.number () >= nr))) {
-            Gtk::MessageDialog dlg (_("Played card(s) must have the same color"
+            Gtk::MessageDialog dlg (_("Played card(s) must have the same colour"
                                       " and must be bigger (or be a trump)!"),
                                     Gtk::MESSAGE_ERROR);
             dlg.set_title (PACKAGE " - Twopart");
@@ -456,7 +456,7 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
 
                // Use card if it's a trump
                if (pTrump
-                   && (pTrump->color () == players[player].hand[start]->color ())) {
+                   && (pTrump->colour () == players[player].hand[start]->colour ())) {
                   return end = start;
                }
                if (end == -1U)
@@ -535,20 +535,20 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
       // Find first fitting card
       start = (played.size ()
                ? players[player].hand.find1EqualOrBigger (played.getTopCard (),
-                                                          compByColorAccTrumps)
+                                                          compByColourAccTrumps)
                : findSmallestCard (player));
       TRACE5 ("Twopart::findPos2Play (unsigned int) - First try (II): " << start);
 
       Check3 (pTrump);
       if ((start == (unsigned int)-1)
           || (played.size ()
-              && (played.getTopCard ().color ()
-                  != players[player].hand[start]->color ()))) {
+              && (played.getTopCard ().colour ()
+                  != players[player].hand[start]->colour ()))) {
          TRACE5 ("Twopart::findPos2Play (unsigned int) - No card found; trying trump");
          Check3 (pTrump);
-         if (played.getTopCard ().color () != pTrump->color ()) {
+         if (played.getTopCard ().colour () != pTrump->colour ()) {
             for (start = players[player].hand.size (); start; --start)
-               if (players[player].hand[start - 1]->color () != pTrump->color ())
+               if (players[player].hand[start - 1]->colour () != pTrump->colour ())
                   break;
 
             if (!start)
@@ -573,7 +573,7 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
          // or only trump left)
          end = start;
          if (!start
-             || (players[player].hand[start]->color () != pTrump->color ()))
+             || (players[player].hand[start]->colour () != pTrump->colour ()))
             end = findEndOfSerie (player, start);
       TRACE5 ("Twopart::findPos2Play (unsigned int) - Playing card at pos " << start);
       return start;
@@ -597,7 +597,7 @@ unsigned int Twopart::findSmallestCard (unsigned int player) const {
       CardWidget& card (*players[player].hand[i]);
 
       // Stop searching if a trump was found
-      if ((card.color () == pTrump->color ()) && i)
+      if ((card.colour () == pTrump->colour ()) && i)
          break;
           
       if (nrMin >= card.number ()) {
@@ -621,7 +621,7 @@ unsigned int Twopart::findSmallestCard (unsigned int player) const {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Searches for the last position of the card which are in a serie
-//            (same color; number increasing by 1)
+//            (same colour; number increasing by 1)
 //Parameters: player: Player to inspect
 //            start: Position to start
 //Returns   : unsinged int: Position of last card in serie
@@ -631,12 +631,12 @@ unsigned int Twopart::findEndOfSerie (unsigned int player, unsigned int start) c
 
    CardWidget* card (players[player].hand[start]);
    CardWidget::NUMBERS nr (card->number ());
-   CardWidget::COLORS color (card->color ());
+   CardWidget::COLOURS colour (card->colour ());
 
    while ((++start < players[player].hand.size ())
           && ((card = players[player].hand[start]),
               (card->number ()) == (nr + 1))
-          && (card->color () == color)) {
+          && (card->colour () == colour)) {
       TRACE9 ("Twopart::findEndOfSerie (unsigned int, unsigned int) - Next valid card "
               << *card << " at " << start);
       nr = card->number ();
@@ -647,7 +647,7 @@ unsigned int Twopart::findEndOfSerie (unsigned int player, unsigned int start) c
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Searches for the first position of the card which are in a serie
-//            (same color; number decreasing by 1)
+//            (same colour; number decreasing by 1)
 //Parameters: player: Player to inspect
 //            start: Position to start
 //Returns   : unsinged int: Position of first card in serie
@@ -657,12 +657,12 @@ unsigned int Twopart::findStartOfSerie (unsigned int player, unsigned int start)
 
    CardWidget* card (players[player].hand[start]);
    CardWidget::NUMBERS nr (card->number ());
-   CardWidget::COLORS color (card->color ());
+   CardWidget::COLOURS colour (card->colour ());
 
    while ((--start < players[player].hand.size ())
           && ((card = players[player].hand[start]),
               (card->number ()) == (nr - 1))
-          && (card->color () == color)) {
+          && (card->colour () == colour)) {
       TRACE9 ("Twopart::findStartOfSerie (unsigned int, unsigned int) - Next valid card "
               << *card << " at " << start);
       nr = card->number ();
@@ -812,7 +812,7 @@ void Twopart::analyzeLastPlayed (unsigned int startPos, unsigned int cards,
 
       // Add trumps
       if (pTrump
-          && (pTrump->color () == played[startPos]->color ()))
+          && (pTrump->colour () == played[startPos]->colour ()))
          ++trumps;
 
       // Check if card has equal cards
@@ -921,7 +921,7 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start
       enableWonCards (players[0].won);
 
    if (gameStatus () == PLAYING2)
-      players[receiver].hand.sort (compByColorAccTrumps);
+      players[receiver].hand.sort (compByColourAccTrumps);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -980,8 +980,8 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
    // Prepare array for sorting according to trumps
    Check3 (pTrump);
    for (unsigned int i (0); i < 4; ++i)
-      sortOrder[i] = (i - pTrump->color () + 3) & 0x3;
-   Check3 (sortOrder[pTrump->color ()] == 3);
+      sortOrder[i] = (i - pTrump->colour () + 3) & 0x3;
+   Check3 (sortOrder[pTrump->colour ()] == 3);
 
    startPlayer = (unsigned int)-1;
 
@@ -1014,7 +1014,7 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
 
    // Finally sort and show the cards
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      players[i].hand.sort (compByColorAccTrumps);
+      players[i].hand.sort (compByColourAccTrumps);
       players[i].hand.setStyle (i ? ICardPile::VERY_COMPRESSED : ICardPile::COMPRESSED);
    }
    
@@ -1027,22 +1027,22 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Compares the cards in the pile with regard of the color and
+//Purpose   : Compares the cards in the pile with regard of the colour and
 //            with special consideration of trumps
 //Parameters: a: Card to compare
 //            b: Card to compare
 //Returns   : bool: True, if a < b
 /*--------------------------------------------------------------------------*/
-bool Twopart::compByColorAccTrumps (const CardWidget* a, const CardWidget* b) {
+bool Twopart::compByColourAccTrumps (const CardWidget* a, const CardWidget* b) {
    Check3 (a); Check3 (b);
 
-   TRACE9 ("Twopart::compByColorAccTrumps (const CardWidget*, const CardWidget*) - "
+   TRACE9 ("Twopart::compByColourAccTrumps (const CardWidget*, const CardWidget*) - "
            << *a << " < " << *b << " = "
-           << ((a->color () == b->color ()) ? a->number () < b->number ()
-               : (sortOrder[a->color ()] <sortOrder[b->color ()])));
-   return ((a->color () == b->color ())
+           << ((a->colour () == b->colour ()) ? a->number () < b->number ()
+               : (sortOrder[a->colour ()] <sortOrder[b->colour ()])));
+   return ((a->colour () == b->colour ())
            ? a->number () < b->number ()
-           : (sortOrder[a->color ()] < sortOrder[b->color ()]));
+           : (sortOrder[a->colour ()] < sortOrder[b->colour ()]));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1090,7 +1090,7 @@ int Twopart::findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const {
    if (pTrump && (pos != -1)) {
       unsigned int newPos (pos);
       while (++newPos < pile.size ())
-         if (pile[newPos]->color () == pTrump->color ()) {
+         if (pile[newPos]->colour () == pTrump->colour ()) {
             pos = newPos;
             break;
          }

@@ -95,7 +95,7 @@ class Twopart : public Game {
    int endRound (unsigned int player);
 
    static char sortOrder[4];
-   static bool compByColorAccTrumps (const CardWidget* a, const CardWidget* b);
+   static bool compByColourAccTrumps (const CardWidget* a, const CardWidget* b);
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 

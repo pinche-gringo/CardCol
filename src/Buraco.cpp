@@ -837,7 +837,7 @@ static unsigned int CARDS_AT_START (137);
             }
             if (moved.number () == hands[0][i]->number ())
                ++equalNr;
-            else if (moved.color () == hands[0][i]->color ()) {
+            else if (moved.colour () == hands[0][i]->colour ()) {
                int diff (moved.number () - hands[0][i]->number ());
                if ((unsigned int)(diff + 2) > 5)
                   continue;
@@ -1193,10 +1193,9 @@ int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
       return first;
    }
 
-   // Check if pile contains only jokers; if so for piles with only 1 joker
-   // every card is valid; for piles having >= 2 jokers, only jokers
+   // Check if pile contains only jokers; only accept another joker
    if (first == -1U)
-      return ((pile.size () == 1) || isJoker (card)) ? 0 : -1;
+      return isJoker (card) ? 0 : -1;
 
    // Else check if the pile is a numberd or a coloured one
    Check3 (first <= last); Check3 (last < pile.size ());
@@ -1208,10 +1207,10 @@ int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
          return pile.size ();
    }
    else
-      if ((pile[first]->color () == card.color ())
+      if ((pile[first]->colour () == card.colour ())
           && ((first == last)
               || (pile[first]->number () != pile[last]->number ()))
-          && (pile[last]->color () == card.color ())) {
+          && (pile[last]->colour () == card.colour ())) {
          // First check, if a joker can be replaced
          if ((posJoker != -1U)
              && (card.number () == (pile[first]->number () + posJoker))) {
@@ -1308,7 +1307,7 @@ bool Buraco::canGetRidOfCards (unsigned int player) {
       if (!used[i - pile.begin ()]
           && (((*i)->number () == (*(i - 1))->number ())
               || (((*i)->number () == ((*(i - 1))->number () + 1))
-                  && ((*i)->color () == (*(i - 1))->color ())))) {
+                  && ((*i)->colour () == (*(i - 1))->colour ())))) {
          used.set (o - pile.begin ());
       }
          used.set (i - pile.begin () - 1);
@@ -1349,7 +1348,7 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile,
       ICardPile::const_iterator i (pile.getFittingCard (card, pile.begin (),
    bool bJoker (isJoker (card));
    CardWidget::NUMBERS nr (card.number ());
-   CardWidget::COLORS colour (card.color ());
+   CardWidget::COLOURS colour (card.colour ());
    unsigned int nrs (0);
    unsigned int bCols (0);
 
@@ -1364,7 +1363,7 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile,
             if (++nrs == 2)
                return true;
 
-         if ((*p)->color () == colour) {
+         if ((*p)->colour () == colour) {
             unsigned int diff ((*p)->number () - nr + 2);
             TRACE9 ("Buraco::pileHasFittingPair (const ICardPile&, const "
                     "CardWidget*) - " << **p << " differs " << diff);
@@ -1408,5 +1407,5 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile) {
 bool Buraco::cardFitsNext (ICardPile::const_iterator i) {
    TRACE3 ("Buraco::cardFitsNext (ICardPile::const_iterator) - " << **i);
    return (((*i)->number () == (*(i + 1))->number ())
-           || (((*i)->color () == (*(i + 1))->color ())
+           || (((*i)->colour () == (*(i + 1))->colour ())
                && (*i)->number () == ((*(i + 1))->number () + 1)));

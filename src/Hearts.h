@@ -64,8 +64,8 @@ class Hearts : public Game {
    unsigned int  calcNextPlayer (unsigned int player);
    unsigned int  check4Winner ();
    void exchangeCards ();
-   static void getPositionOfColors (ICardPile& pile, int result[4]);
-   static unsigned int numberOfCards (const int aPositions[4], CardWidget::COLORS color);
+   static void getPositionOfColours (ICardPile& pile, int result[4]);
+   static unsigned int numberOfCards (const int aPositions[4], CardWidget::COLOURS colour);
    static unsigned int pointsOfPile (ICardPile& pile);
 
    //@Section Computer player
@@ -78,7 +78,7 @@ class Hearts : public Game {
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
    bool playedSQ;               // Flag, if the queen of spades has been played
-   unsigned int aPlayed[4];         // Array holding played cars for each color
+   unsigned int aPlayed[4];        // Array holding played cars for each colour
    unsigned int pos2Play;                                   // Position to play
    unsigned int player2Exchange;  // ID of (next) player to exchange cards with
 
