@@ -200,7 +200,10 @@ bool Game::makeComputerMove () {
               << (restart ? "Yes" : "No"));
       setGameStatus (STOPPED);
       if (restart)
-         start ();
+         // Restart the game, when idle (means: *after* this signalhandler
+         // terminates)
+         Glib::signal_idle ().connect
+             (bind_return (slot (*this, &Game::start), false));
       return false;
    }
 
