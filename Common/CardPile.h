@@ -117,7 +117,7 @@ class ICardPile {
       return ::find (cards.begin (), cards.end (), card) != cards.end (); }
 
    // General management-functions
-   virtual void resize (unsigned int pos, PileStyle s) const = 0;
+   virtual void resize (unsigned int pos, PileStyle s) const;
    unsigned int numberOfCards () const { return cards.size (); }
    void clear ();
    void setStyle (PileStyle s);

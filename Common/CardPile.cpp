@@ -456,3 +456,12 @@ int ICardPile::find (CardWidget::COLORS color, unsigned int start) const {
 
    return -1;
 }
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Resizing of a card in the pile
+//Parameters: pos: Position of card to resize
+//            PileStyle: Style of pile
+/*--------------------------------------------------------------------------*/
+void ICardPile::resize (unsigned int pos, PileStyle) const {
+   Check (0);
+}
