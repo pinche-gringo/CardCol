@@ -1,0 +1,117 @@
+<!-- -*-HTML-*- -->
+<!-- $Id$ -->
+
+<html>
+  <head>
+    <title>Twopart - Documentation</title>
+    <meta name="description" content="Documentation of the Twopart cardgame">
+    <meta name="keywords" content="Documentation, Docu, Twopart; game, card, cardgame">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2002-08-18">
+    <meta name="DC.Rights" content="Anticopyright (A) 2002, distributed under the GNU General Public License">
+  </head>
+
+<!--
+  Anti-Copyright (A) 2002 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+ 
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public
+  License along with this library; if not, write to the Free
+  Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//-->
+
+<body>
+
+    <h1 align="center">Twopart</h1>
+    <hr size=2>
+
+        <p>Twopart is a cardgame I learned from 4 norwegians I was travelling
+          with. I can't even remember if they told me the original name, but if
+          they should have done, I forgot it faster as George W. Bush needs to
+          say his next bullshit.</p>
+
+        <p>The game is splitted in two parts (hence the name; I'm obviously
+          not very imaginative).</p>
+
+        <p>In the first part every player starts with tree cards in his hand
+          which they play clockwise.</p>
+
+        <p>After every player (with cards left) put down, the one who
+          played the highest (regardless of the colour) gets all of
+          them. If there is more than one with the same number (not
+          neccessaily the highest), the played pile is not picked up,
+          but the people who played the equal cards continue playing
+          (according to the rules above) for the whole pile as long as
+          there are equal cards. Should there be equal cards, but one of
+          the players runs out of cards, he is out and only the others
+          can continue. Should all of the people with equal cars run out
+          of cards, the one who played the first (equal) cards, gets the
+          pile.</p>
+
+        <p>The person picking up the pile starts the next round;
+          except if he has no card left, in which case the next player
+          having cards continues.</p>
+
+        <p>After playing a card the players get a new one from the staple.
+          The colour of the last card of the staple defines the trump for
+          part two; this card is demonstrated after the end of the round.</p>
+
+        <p>The first part ends, if there are no more cards left. If a player
+          didn't collect any cards in the first round, he gets all the
+          low cards to (including) 5 from the others; if there are 2 or more
+          of such unlucky creatures, they share the stuff (more or less randomly).</p>
+
+        <p>In part two the players try to get rid of the previously collected
+          cards.</p>
+
+        <p>A card (or a sequence of cards with the same colour if you select the
+          right-most card of the sequence to play) can be played, as long as
+          it is bigger (and has the same colour) as the last card on the played
+          pile. Alternatively any trump card can be played (of course a bigger
+          one, if the last played card is also a trump).</p>
+
+        <p>After completing a round according to that rule, the played pile is
+          cleared and the same (the last) player can start a new round.</p>
+
+        <p>If a player can not continue, he must pick up all the cards
+          the last player had played.</p>
+
+        <p>The last player having cards left has lost.</p>
+
+        <p>The status line gives some information about what's going on!</p>
+
+        <h2>Note to the layout</h2>
+        <p>After starting a game you have (from left to right and from top to
+          bottom):</p>
+
+        <ul>
+          <li>The staple: A heap of cards (with face down), from where you put
+            up new cards (if you put the mouse over it you are informed about
+            the remaining cards).</li>
+          <li>The cards of the human player.</li>
+          <li>In the next line it's the same with computer players 1 and 3. In
+            between them there's the played pile (which also shows the number of
+            the cards inside, is the mouse rests over it).</li>
+          <li>In the last line there's computer player 2</li>
+        </ul>
+
+    <hr size=2 noshade>
+    <address>
+      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+    </address>
+<!-- hhmts start -->
+Last modified: Sun Aug 18 23:26:38 PET 2002
+<!-- hhmts end -->
+          - $Revision$
+</body>
+</html>
