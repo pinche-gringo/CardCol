@@ -38,8 +38,6 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 8
 #include <Check.h>
 #include <Trace_.h>
 #include <Socket.h>
@@ -388,6 +386,9 @@ void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std
          bFollow = true;
       }
       else {
+         TRACE1 ("Game::flipCards2Play (ICardPile&, const std::string&) - "
+                 "Card " << tokCards.getActNode () << " not found in "
+                 << pile.size () << " cards");
          std::string error ("Card %1 not found!");
          error.replace (error.find ("%1"), 2, tokCards.getActNode ());
          throw error;
@@ -736,20 +737,6 @@ bool Game::performCommand (unsigned int player, const char* msg) throw (std::str
       if (statGame == PLAYING)
          displayTurn (player);
    }
-   else if (cmd == "Game") {
-      Check3 (statGame == STOPPED);
-      if (command.getNextNode (';') == name ()) {
-         clean ();
-         statGame = NONE;
-      }
-      else {
-         std::string newGame (command.getActNode ());
-         data = newGame.c_str ();
-         setGameStatus (TERMINATED);
-      }
-   }
-   else if (cmd == "Game")
-       end (false);
    else
       throw std::string ("Unknown command!");
    return true;
