@@ -40,6 +40,7 @@
 
 #include <XAbout.h>
 #include <XMessageBox.h>
+#include <Cardset-config.h>
 
 #include <CardWidget.h>
 #include "Twopart.h"
@@ -291,17 +292,18 @@ const char* Twopart::xpmAuthor[] = {
 // With a very ugly trick initialize I18n before the first use of gettext)
 XApplication::MenuEntry Twopart::menuItems[] = {
     { (initI18n (PACKAGE, LOCALEDIR),
-      _("_Game")),    _("<alt>G"), 0,     BRANCH },
-    { _("_New"),      _("<ctl>N"), NEW,   ITEM },
-    { _("_End"),      _("<ctl>E"), END,   ITEM },
-    { "",             "",          0,     SEPARATOR },
-    { _("E_xit"),     _("<ctl>Q"), EXIT,  ITEM },
+      _("_Game")),        _("<alt>G"), 0,        BRANCH },
+    { _("_New"),          _("<ctl>N"), NEW,      ITEM },
+    { _("_End"),          _("<ctl>E"), END,      ITEM },
+    { "",                 "",          0,        SEPARATOR },
+    { _("E_xit"),         _("<ctl>Q"), EXIT,     ITEM },
+    { _("_Options"),      _("<alt>O"), 0,        BRANCH },
+    { _("_Change decks"), _("<ctl>C"), CHGDECKS, ITEM },
 #if TRACELEVEL > 0
-    { _("_Options"),  _("<alt>O"), 0,     BRANCH },
-    { _("_Debug"),    _("<ctl>D"), DEBUG, CHECKITEM },
+    { _("_Debug"),        _("<ctl>D"), DEBUG,    CHECKITEM },
 #endif
-    { _("_Help"),     _("<alt>H"), 0,     LASTBRANCH },
-    { _("_About..."), _("<ctl>A"), ABOUT, ITEM } };
+    { _("_Help"),         _("<alt>H"), 0,        LASTBRANCH },
+    { _("_About..."),     _("<ctl>A"), ABOUT,    ITEM } };
 
 
 /*--------------------------------------------------------------------------*/
@@ -435,6 +437,10 @@ void Twopart::command (int menu) {
       delete_event_impl (0);
       break;
 
+   case CHGDECKS:
+      dlgChgDecks = CarddeckSelectDlg<Twopart>::create (*this, &Twopart::changeDecks);
+      break;
+
 #if TRACELEVEL > 0
    case DEBUG: {
       ICardPile::ShowOpt show (players[0].won.getShowOption () == ICardPile::SHOWFACE
@@ -456,8 +462,17 @@ void Twopart::command (int menu) {
 }
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Callback to change the carddecks
+//Parameters: cmd: 
+/*--------------------------------------------------------------------------*/
+void Twopart::changeDecks (ICarddeckSelectDlg::commands cmd) {
+   TRACE2 ("Twopart::changeDecks (ICarddeckSelectDlg::commands) - Command "
+           << cmd);
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Checks the user-input after asking if he wants to end the game;
-//             depending on the answer either stops or continues
+//            depending on the answer either stops or continues
 //Parameters: input: Button pressed by the user
 /*--------------------------------------------------------------------------*/
 void Twopart::userWants2End (unsigned int input) {
@@ -754,6 +769,7 @@ int Twopart::makeNextMove () {
          // Flip all cards
          do {
             players[actPlayer].hand.at (pos).showFace ();
+            players[actPlayer].hand.resize (pos, ICardPile::COMPRESSED);
          } while (pos
                   && ((players[actPlayer].hand.at (pos2Play).number ()
                        - players[actPlayer].hand.at (--pos).number ()
@@ -767,7 +783,7 @@ int Twopart::makeNextMove () {
          pickUpPlayedPile (actPlayer);
 
          status.pop (1);
-         std::string stat ( _("User %1 can't continue -> Getting whole pile;"
+         std::string stat ( _("Player %1 can't continue -> Picking up last cards;"
                               " Turn of player %2"));
          stat.replace (stat.find ("%1"), 2, (char)(oldPlayer + '0'));
          stat.replace (stat.find ("%2"), 2, (char)(actPlayer + '0'));
@@ -1212,7 +1228,9 @@ void Twopart::loadCards () {
    status.push (1, _("Loading cardimages ..."));
    gdk_threads_leave ();
 
-   cardFaces.load (staple.get_window ());  // Cards need an realized (!) parent
+   // Cards need an realized (!) parent
+   cardFaces.load (staple.get_window (), CARDSET_PATH "/Deck1",
+                   CARDSET_PATH "/back1.xpm");
    cards.addPacket (cardFaces);
 
    gdk_threads_enter ();
@@ -1334,7 +1352,7 @@ int Twopart::startPartTwoTimerFnc () {
    // Finally sort and show the cards
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].hand.sort (compByColorAccTrumps);
-      players[i].hand.setStyle (ICardPile::COMPRESSED);
+      players[i].hand.setStyle (i ? ICardPile::VERY_COMPRESSED : ICardPile::COMPRESSED);
    }
    
    bfPlayers = (1 << NUM_PLAYERS) - 1;
