@@ -28,11 +28,6 @@
 #include <Game.h>
 
 
-namespace Gtk {
-   class Box;
-}
-
-using namespace Gtk;
 
 // Class to handle the Rovhult-cardgame
 class Rovhult : public Game {
@@ -58,16 +53,16 @@ class Rovhult : public Game {
 
    // Drag and drop handling
    void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
-                     guint info, guint32 time, unsigned int player, unsigned int cardPos);
+                     guint info, guint32 time, unsigned int cardPos);
    void cardDroppedOnTable (GdkDragContext* pContext, gint x, gint y,
                             GtkSelectionData* pData, guint info, guint32 time,
-                            unsigned int playerPile);
+                            unsigned int pile);
    void cardDroppedOnHand (GdkDragContext* pContext, gint x, gint y,
                            GtkSelectionData* pData, guint info, guint32 time,
-                           unsigned int playerCard);
+                           unsigned int card);
 
-   void registerHandDND (CardWidget& card, unsigned int player, unsigned int card);
-   void registerTableDND (CardWidget& card, unsigned int player, unsigned int pile);
+   void registerHandDND (CardWidget& card, unsigned int card);
+   void registerTableDND (CardWidget& card, unsigned int pile);
    void unregisterDND (CardWidget& card) const;
    void unregisterDND () const;
  
@@ -135,7 +130,7 @@ class Rovhult : public Game {
       Gtk::Label name;
    } players[NUM_PLAYERS];
 
-   Connection pileTop;
+   Gtk::Connection pileTop;
 
    static GtkTargetEntry dndTypeTable;
    static GtkTargetEntry dndTypeHand;
