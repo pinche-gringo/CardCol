@@ -39,7 +39,7 @@
     <p>Ese es una colecci&oacute;n  de juegos de cartas que aprend&iacute; de
       varias personas, generalmente durante viajar (&iquest;Qu&eacute; pudr&iacute;a
       matar mejor el tiempo durante un viaje de &gt;10 horas en
-      bus/tren/qu&eacute;-s&eacute;-yo que und juego de cartas bueno?)</p>
+      bus/tren/qu&eacute;-s&eacute;-yo que un juego de cartas bueno?)</p>
 
     <p>Todos son para varias personas (los dem&aacute;s est&aacute;n controlado
       de la computadora). Por juegos de cartas solitarios puedo recomendar
@@ -47,7 +47,7 @@
 
     <p>Este programa se distribuye bajo los condicones de la GNU Licensia
       General P&uacute;blico, que principalmente expresa lo siguente (v&eacute;ase
-      el archivo <tt>COPYING</tt> dentro de la distribuci&oacute; o
+      el archivo <tt>COPYING</tt> dentro de la distribuci&oacute;n o
       la <a href="http://www.gnu.org">p&aacute;gina web de GNU
         (http://www.gnu.org)</a> para m&aacute;s detalles):</p>
 
@@ -83,6 +83,9 @@
     </table>
 
     <h2>Cr&eacute;ditos</h2>
+    <p>Un abrazo fuerte a Ingrid y Jonathan, que me ense&ntilde;aron todos los
+      trucos de <tt>Buraco</tt> y lo jugaron conmigo para horas.</p>
+
     <p>Saludos a Andreas, Jakob y Janus, que me han ese&ntilde;ado los reglas de
       <tt>R&oslash;vhult</tt>.</p>
 
