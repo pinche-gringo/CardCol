@@ -52,6 +52,10 @@ class CardWidget : public Gtk::Button {
    unsigned int getImageWidth () const {
       return const_cast<Gdk_Pixmap&> (deck.getCardImage (nrCard)).width (); }
 
+   int compareNumber (CardWidget& other) const { return number () - other.number (); }
+
+   friend ostream& operator<< (ostream& out, const CardWidget& card);
+
  private:
    CardWidget ();
    CardWidget (const CardWidget&);

@@ -30,6 +30,8 @@
 
 #include <gtk--/pixmap.h>
 
+#include <cardgames-cfg.h>
+
 #include "CardWidget.h"
 
 
@@ -60,7 +62,7 @@ CardWidget::~CardWidget () {
 
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Destructor
+//Purpose   : Shows either the cardimage of the image of the deck
 /*--------------------------------------------------------------------------*/
 void CardWidget::setVisible (bool visible) {
    remove ();
@@ -70,4 +72,16 @@ void CardWidget::setVisible (bool visible) {
    Check3 (get_child ()); Check3 (Gtk::Pixmap::isA (get_child ()));
 
    dynamic_cast <Gtk::Pixmap*> (get_child ())->set_alignment (0.0, 0.0);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Writes the card-data to the passed stream
+//Parameters: out: Stream to write to
+//            card: Card whose info is to write
+//Returns   : ostream&: Reference to the passed output-stream
+/*--------------------------------------------------------------------------*/
+ostream& operator<< (ostream& out, const CardWidget& card) {
+   // Letters describing the colors (clubs, spades, hearts, diamons)
+   static char* colors = _("CSHD");
+   out << colors[card.color ()] << (card.number () + 2);
 }
