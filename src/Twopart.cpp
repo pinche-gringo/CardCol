@@ -291,6 +291,7 @@ XApplication::MenuEntry Twopart::menuItems[] = {
     { (initI18n (PACKAGE, LOCALEDIR),
       _("_Game")),    _("<alt>G"), 0,     BRANCH },
     { _("_New"),      _("<ctl>N"), NEW,   ITEM },
+    { _("_End"),      _("<ctl>E"), END,   ITEM },
     { "",             "",          0,     SEPARATOR },
     { _("E_xit"),     _("<ctl>Q"), EXIT,  ITEM },
 #if TRACELEVEL > 0
@@ -310,7 +311,7 @@ Twopart::Twopart ()
      , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL)
-     , bfOldPlayers (bfPlayers), startPos (0) {
+     , bfOldPlayers (bfPlayers), startPos (0), statGame (INITIALIZING) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
@@ -337,7 +338,9 @@ Twopart::Twopart ()
    TRACE9 ("Twopart::Twopart () - Thread-ID = " << pThread->getID ());
 
    // Create controls
-   addMenus (menuItems + 2, sizeof (menuItems) / sizeof (menuItems[0]) - 2);
+   pMenuEnd = addMenu (menuItems[2]); Check3 (pMenuEnd);
+   pMenuEnd->set_sensitive (false);
+   addMenus (menuItems + 3, sizeof (menuItems) / sizeof (menuItems[0]) - 3);
 
    // Show and attach card-piles
    for (int i (0); i < NUM_PLAYERS; ++i) {
@@ -374,6 +377,16 @@ Twopart::~Twopart () {
    TRACE9 ("Twopart::~Twopart ()");
 }
 
+/*--------------------------------------------------------------------------*/
+//Purpose   : Starts the game
+/*--------------------------------------------------------------------------*/
+void Twopart::startGame () {
+   statGame = PLAYING;
+   pMenuEnd->set_sensitive (true);
+   cleanTable ();
+   fillStaple ();
+   dealCards ();
+}
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Command-handler
@@ -381,12 +394,27 @@ Twopart::~Twopart () {
 /*--------------------------------------------------------------------------*/
 void Twopart::command (int menu) {
    switch (menu) {
-   case NEW: {
-      cleanTable ();
-      fillStaple ();
-      dealCards ();
+   case NEW:
+      if (statGame >= PLAYING) {
+         restart = true;
+         XMessageDialog<Twopart>::Show (*this, &Twopart::userWants2End,
+                                        _("A game is already running. Do you really"
+                                          " want to end it and start another?"),
+                                        PACKAGE " - Twopart",
+                                        XMessageBox::QUESTION | XMessageBox::YESNO);
+      }
+      else
+         startGame ();
       break;
-   }
+
+   case END:
+      Check3 (statGame >= PLAYING);
+      restart = false;
+      XMessageDialog<Twopart>::Show (*this, &Twopart::userWants2End,
+                                     _("Do you really want to end the game?"),
+                                     PACKAGE " - Twopart",
+                                     XMessageBox::QUESTION | XMessageBox::YESNO);
+      break;
 
    case ABOUT: {
       string ver (_("Anticopyright (A) 2002 Markus Schwab"
@@ -423,50 +451,54 @@ void Twopart::command (int menu) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Enables the cards of the passed player
-//Parameters: player: Player to enable
+//Purpose   : Checks the user-input after asking if he wants to end the game;
+//             depending on the answer either stops or continues
+//Parameters: input: Button pressed by the user
 /*--------------------------------------------------------------------------*/
-void Twopart::enablePlayer (unsigned int player) {
-   Check3 (activeCards.empty ());
+void Twopart::userWants2End (unsigned int input) {
+   if (input == XMessageBox::YES) {
+      pMenuEnd->set_sensitive (false);
+      disableLastPlayer ();
 
-   TRACE2 ("Twopart::enablePlayer (unsigned int) - Hand of player "
-           << player << " has " << players[player].hand.numberOfCards () << " cards");
+      if (statGame >= PLAYING) {
+         status.pop (1);
+         status.push (1, _("User canceled"));
 
-   for (int i (players[player].hand.numberOfCards ()); i;)
-      activeCards.push_back
-         (players[player].hand.at (--i).clicked.connect_after
-          (bind (slot (this, &Twopart::handSelected), player, i)));
-
-   showTurn (player);
+         if (statGame == AUTOPLAYING)
+            statGame = TOSTOP;
+         else
+            startGame ();
+      }
+   }
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Shows the player in turn as message in status line
-//Parameters: player: Player in turn
+//Purpose   : Enables the cards of the passed player
+//Parameters: player: Player to enable
+//Remarks   : Depending of the status of the game (PLAYING, PLAYING2) either
+//            the cards in the hand or the one of the won-pile are enabled
 /*--------------------------------------------------------------------------*/
-void Twopart::showTurn (unsigned int player) {
+void Twopart::enablePlayer (unsigned int player) {
+   Check3 (activeCards.empty ());
+   Check3 (statGame >= PLAYING);
+
+   TRACE2 ("Twopart::enablePlayer (unsigned int) - player "
+           << player << " has "
+           << ((statGame == PLAYING) ? players[player].hand.numberOfCards ()
+               : players[player].won.numberOfCards ()) << " cards");
+
+   for (int i ((statGame == PLAYING) ? players[player].hand.numberOfCards ()
+               : players[player].won.numberOfCards ()); i;)
+      activeCards.push_back
+         (((statGame == PLAYING) ? players[player].hand.at (--i)
+           : players[player].won.at (--i)).clicked.connect_after
+          (bind (slot (this, ((statGame == PLAYING) ? &Twopart::handSelected
+                              : &Twopart::wonSelected)), player, i)));
+
    status.pop (1);
    std::string stat ( _("Turn of player %1"));
    stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
    status.push (1, stat);
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Enables the cards of the passed player for part 2 of the game
-//Parameters: player: Player to enable
-/*--------------------------------------------------------------------------*/
-void Twopart::enablePlayer4Part2 (unsigned int player) {
-   Check3 (activeCards.empty ());
-
-   TRACE2 ("Twopart::enablePlayer4Part2 (unsigned int) - Hand of player "
-           << player << " has " << players[player].won.numberOfCards () << " cards");
-
-   for (int i (players[player].won.numberOfCards ()); i;)
-      activeCards.push_back
-         (players[player].won.at (--i).clicked.connect_after
-          (bind (slot (this, &Twopart::wonSelected), player, i)));
-
-   showTurn (player);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -573,7 +605,16 @@ void Twopart::wonSelected (unsigned int player, unsigned int pos) {
 //Purpose   : Makes the move for a computer player.
 /*--------------------------------------------------------------------------*/
 int Twopart::makeComputerMove () {
+   if (statGame == TOSTOP) {
+      TRACE8 ("Twopart::makeComputerMove () - End game ");
+      statGame = STOPPED;
+      if (restart)
+         startGame ();
+      return 0;
+   }
+
    TRACE5 ("Twopart::makeComputerMove () - Turn of player " << actPlayer);
+   statGame = PLAYING;
    enablePlayer (actPlayer);
    return 0;
 }
@@ -774,7 +815,6 @@ void Twopart::loadCards () {
 
    cardFaces.load (staple.get_window ());  // Cards need an realized (!) parent
    cards.addPacket (cardFaces);
-   pThread = NULL;
 
    gdk_threads_enter ();
    pMenuNew->set_sensitive (true);
@@ -794,6 +834,9 @@ void Twopart::loadCards () {
    played.set_usize (width + 50, height);
    staple.set_usize (width, height);
    gdk_threads_leave ();
+
+   statGame = STOPPED;
+   pThread = NULL;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -846,13 +889,14 @@ void Twopart::dealCards () {
 //Parameters: player: ID of player starting the game
 /*--------------------------------------------------------------------------*/
 void Twopart::startPartTwo (unsigned int player) {
+   statGame = PLAYING2;
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.sortByColor ();
       players[i].won.setStyle (ICardPile::COMPRESSED);
       players[i].won.setShowOption (ICardPile::SHOWFACE);
    }
 
-   enablePlayer4Part2 (player);
+   enablePlayer (player);
 }
 
 

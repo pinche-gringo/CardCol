@@ -42,7 +42,10 @@ class Twopart : public XApplication {
 
  private:
    // IDs for menus
-   enum { NEW, EXIT, DEBUG, ABOUT };
+   enum { NEW, END, EXIT, DEBUG, ABOUT };
+
+   // Status of game
+   enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, PLAYING2, AUTOPLAYING } statGame;
 
    // Protected manager functions
    Twopart (const Twopart&);
@@ -56,23 +59,24 @@ class Twopart : public XApplication {
    // Helper functions
    void movePlayedCardsToPlayer (unsigned int nrLooser);
    void enablePlayer (unsigned int player);
-   void enablePlayer4Part2 (unsigned int player);
    void disableLastPlayer ();
    int  findNextPlayer (unsigned int player);
    void removePlayer (unsigned int player) { bfPlayers &= ~(1 << player); }
    void addPlayer (unsigned int player) { bfPlayers |= 1 << player; }
    unsigned int removePlayersWithoutCards ();
+   void startGame ();
    void cleanTable ();
    void dealCards ();
    void fillStaple ();
-   void showTurn (unsigned int player);
    void startPartTwo (unsigned int player);
+   void userWants2End (unsigned int input);
 
    unsigned int pos2Player (unsigned int pos) const;
 
    int makeComputerMove ();
    void makeComputerMoves () {
       TRACE9 ("Twopart::makeComputerMoves () - *** Start timer ***");
+      statGame = AUTOPLAYING;
       Gtk::Main::timeout.connect (slot (this, &Twopart::makeComputerMove), 100); }
 
    int endRound ();
@@ -90,6 +94,8 @@ class Twopart : public XApplication {
    unsigned int startPos;                         // Offset of cards to analyze
    unsigned int startPlayer;  // Player who started round (needed for endRound)
    unsigned int bfOldPlayers;  // Array indicating players while starting round
+
+   bool restart;
 
    // Columns and rows for the cards of the players
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
@@ -119,6 +125,7 @@ class Twopart : public XApplication {
    THRDAPPL* pThread;
 
    Widget* pMenuNew;
+   Widget* pMenuEnd;
 
    static const unsigned int USED_CARDS = 52;
 
