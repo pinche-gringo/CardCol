@@ -41,7 +41,7 @@ class CardWidget : public Gtk::Button {
                   JACK, QUEEN, KING, ACE, UNREACHABLE } NUMBERS;
 
    unsigned int id () const { return nrCard; }
-   COLORS color () const { return transColor[nrCard % 4]; }
+   COLORS color () const { return transColor[nrCard & 0x3]; }
    NUMBERS number () const {
       return static_cast <NUMBERS> ((deck.numberOfCards () - 1 - nrCard) >> 2); }
 
