@@ -28,6 +28,7 @@
 #include <CardSet.h>
 #include <CardPile.h>
 #include <CardImgs.h>
+#include <CardColl.h>
 
 #include <XApplication.h>
 
@@ -74,10 +75,12 @@ class RovhultAppl : public XApplication {
    Gtk::Statusbar status;
    Gtk::Table     tblTable;
 
-   CardPile staple;
    CardImages cardFaces;
-
    CardSet cards;
+
+   CardPile staple;                                          // Cards on staple
+   CardCollection hands[NUM_PLAYERS];         // For players: Cards in the hand
+   CardPile reserve[NUM_PLAYERS][3];            // Reserve-cards (for end-game)
 
    Widget* pMenuNew;
 
@@ -87,7 +90,7 @@ class RovhultAppl : public XApplication {
    static const unsigned int USED_CARDS = 52;
 
    static const unsigned int WIDTH = 720;
-   static const unsigned int HEIGHT = 670;
+   static const unsigned int HEIGHT = 690;
 };
 
 #endif

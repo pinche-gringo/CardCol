@@ -306,11 +306,8 @@ RovhultAppl::RovhultAppl ()
 
    addMenu (menuItems[0]);
    pMenuNew = addMenu (menuItems[1]); Check3 (pMenuNew);
-   addMenus (menuItems + 2, sizeof (menuItems) / sizeof (menuItems[0]) - 2);
-
    pMenuNew->set_sensitive (false);
 
-   // Create controls
    tblTable.show ();
    getClient ()->pack_start (tblTable, true, true, 5);
 
@@ -325,6 +322,34 @@ RovhultAppl::RovhultAppl ()
    // Load cards in background
    pThread = THRDAPPL::create  (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::loadCards,
                                 NULL);
+
+   // Create controls
+   addMenus (menuItems + 2, sizeof (menuItems) / sizeof (menuItems[0]) - 2);
+
+   // Show and attach card-piles
+   for (int i (0); i < NUM_PLAYERS; ++i) {
+      for (int j (0); j < 3; ++j) {
+         reserve[i][j].setStyle (CardPile::COMPRESSED);
+         reserve[i][j].show ();
+         tblTable.attach (reserve[i][j], COLS_PLAYER[i] + (j << 1),
+                          COLS_PLAYER[i] + 1 + (j << 1), ROWS_PLAYER[i],
+                          ROWS_PLAYER[i] + 2, 0, 0, 1);
+
+         TRACE9 ("RovhultAppl::RovhultAppl () - Set at: "
+                 << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
+      }
+
+      hands[i].show ();
+      tblTable.attach (hands[i], COLS_PLAYER[i],
+                       COLS_PLAYER[i] + 5,
+                       ROWS_PLAYER[i] + (i ? 3 : -3),
+                       ROWS_PLAYER[i] + (i ? 3 : -3) + 2
+                       , 0, 0, 1);
+      TRACE9 ("RovhultAppl::dealCards () - 2nd set at: "
+              << COLS_PLAYER[i] + (j << 1) << '/'
+              << ROWS_PLAYER[i] + (i ? 3 : -3));
+   }
+
    TRACE9 ("RovhultAppl::RovhultAppl () - Thread-ID = " << pThread->getID ());
 }
 
@@ -406,35 +431,27 @@ void RovhultAppl::fillStaple () {
 void RovhultAppl::dealCards () {
    TRACE9 ("RovhultAppl::dealCards ()");
 
-   // Show cards on table
-   for (int i (0); i < NUM_PLAYERS; ++i) {
+   // Show cards on table: For all players put 6 cards on table (only the
+   // (upper visible) and 3 (visible ones) in hand
+   for (int i (0); i < NUM_PLAYERS; ++i)
       for (int j (0); j < 3; ++j) {
-         CardWidget& card (staple.removeTopCard ());
-         card.set_sensitive (false);
-         card.setVisible ();
+         for (int k (0); k < 2; ++k) {
+            CardWidget& card (staple.removeTopCard ());
+            card.set_sensitive (k);
 
-         tblTable.attach (card, COLS_PLAYER[i]  + (j << 1),
-                          COLS_PLAYER[i] + 1 + (j << 1), ROWS_PLAYER[i],
-                          ROWS_PLAYER[i] + 2, 0, 0, 1);
-         TRACE9 ("RovhultAppl::dealCards () - 1st set at: "
-                 << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
+            reserve[i][j].setTopCard (card, k);
+         } // end-for two cards pro pile (in reserve)
+
+         CardWidget& card (staple.removeTopCard ());
+
+         card.setVisible ();
+         hands[i].addCard (card);
       }
-   } // endfor all players
 
    // Show cards in hand
    for (int i (0); i < NUM_PLAYERS; ++i) {
       for (int j (0); j < 3; ++j) {
-         CardWidget& card (staple.removeTopCard ());
-         card.setVisible ();
 
-         tblTable.attach (card, COLS_PLAYER[i] + (j << 1),
-                          COLS_PLAYER[i] + (j << 1)  + 1,
-                          ROWS_PLAYER[i] + (i ? 3 : -3),
-                          ROWS_PLAYER[i] + (i ? 3 : -3) + 2
-                          , 0, 0, 1);
-         TRACE9 ("RovhultAppl::dealCards () - 2nd set at: "
-                 << COLS_PLAYER[i] + (j << 1) << '/'
-                 << ROWS_PLAYER[i] + (i ? 3 : -3));
       }
    } // endfor all players
 }
