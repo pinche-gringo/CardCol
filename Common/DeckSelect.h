@@ -91,7 +91,7 @@ class CarddeckSelectDlg : public ICarddeckSelectDlg {
                                      const std::string& deck, const std::string& back) {
       CarddeckSelectDlg<T>* dlg (new CarddeckSelectDlg (parent, callback,
                                                      path, deck, back));
-      dlg->signal_delete_event ().connect (slot (*dlg, &XDialog::free));
+      dlg->signal_response ().connect (slot (*dlg, &XDialog::free));
       dlg->get_window ()->set_transient_for (parent.get_window ());
       return dlg;
    }
