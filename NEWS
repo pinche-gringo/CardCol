@@ -1,3 +1,9 @@
+Overview of changes in version 0.6.20:
+
+  - Added (finally) network ability to Machiavelli
+  - Installing documentation automatically (hence removed make doc-(un)install)
+  - Fixed bug in Buraco: Human could make a pile with 2 jokers, but no pair
+
 Overview of changes in version 0.6.10:
 
   - Improved/fixed Machiavelli's computer player

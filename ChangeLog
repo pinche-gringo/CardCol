@@ -1,3 +1,91 @@
+2004-01-15  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.6.20 commented
+
+	* README: Changed the copyright
+
+	* po/de.po, po/en.po, po/es.po:
+	  Changed copyright; Added warning-message about card not on edge
+
+	* doc/Buraco.html.de, doc/Buraco.html.en, doc/Buraco.html.es, doc/CardCol.shtml.de, doc/CardCol.shtml.en, doc/CardCol.shtml.es, doc/Hearts.html.de, doc/Hearts.html.en, doc/Hearts.html.es, doc/Machiavelli.html.de, doc/Machiavelli.html.en, doc/Machiavelli.html.es, doc/Røvhult.html.de, doc/Røvhult.html.en, doc/Røvhult.html.es, doc/Twopart.html.de, doc/Twopart.html.en, doc/Twopart.html.es, doc/index.shtml, src/Buraco.cpp, src/BuracoPile.cpp, src/Hearts.cpp, src/Rovhult.cpp, src/Twopart.cpp:
+	  Changed copyright; including 2004
+
+	* src/Machiavelli.cpp:
+	  Improved check if card can be played; Fixed human ending game
+
+	* src/MachiPile.cpp:
+	  Fixed cardDistance; checkIntegrity handles Aces as one correctly
+
+	* src/CardCol.h: Optimized shwoMessage
+
+	* src/CardCol.cpp:
+	  Deleting communication threads at EOF; Optimized; Changed copyright
+
+	* Common/CardImgs.cpp, Common/CardPile.cpp, Common/CardSet.cpp, Common/CardWidget.cpp, Common/ComputerPlayer.cpp, Common/DeckSelect.cpp, Common/Game.cpp, Common/Human.cpp, Common/Player.cpp, Common/PlayerConnDlg.cpp, Common/PlayerDlg.cpp, Common/RemotePlayer.cpp, Common/ScoreDlg.cpp, src/HeartsScore.cpp:
+	  Changed copyright; including 2004
+
+2004-01-13  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp:
+	  Fixed undo (all); Fixed human playing table piles
+
+2004-01-12  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp: Fixed playing over a network
+
+	* doc/Machiavelli.html.es: Minor fixes
+
+	* doc/Makefile.am:
+	  Removed the doc-(un)install targets; (Un)Installing documentation automatically
+
+	* configure.in: Version to 0.6.20
+
+	* INSTALL: Removed description of doc-(un)install
+
+	* src/CardCol.h: Changed prototypes of handle{Global}Message
+
+	* src/CardCol.cpp: Fixed handling of error messages
+
+	* src/Machiavelli.h: Prototype for makeNewPile (unsigned int pos) added
+
+	* Common/Game.cpp, Common/Game.h:
+	  handleMessage, performCommand and flipCard2Play (string) throw error
+
+2004-01-11  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp: Fixed networking code
+
+2004-01-10  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.h, src/Machiavelli.cpp: Added network code
+
+2004-01-08  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp:
+	  Only compiling network-feat. if libpthread available; Fixed network handling
+
+2004-01-03  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp, src/Hearts.h, src/Rovhult.cpp, src/Rovhult.h, src/Twopart.cpp, src/Twopart.h:
+	  Adapted to new game interface: Message is passed as std::string
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Fixed bug checking validity of new pile; Adapted to new game interface
+
+2003-12-26  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp:
+	  Fixed handling of option -c; Fixes within network code
+
+2003-12-17  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp: First draft of network ability
+
+	* Common/PlayerDlg.cpp:
+	  Including cardgames-cfg.h and not YGP/Internal.h
+
+	* Common/Game.cpp: Fixed randomizeCardsToPile in client mode
+
 2003-12-06  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.6.10 commented
