@@ -38,7 +38,7 @@ class Game : public Gtk::Table {
    enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, LAST };
 
    Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-         unsigned int rows, unsigned int columns);
+         const vector<string>& playerNames, unsigned int rows, unsigned int columns);
    virtual ~Game ();
 
    // Managing
@@ -89,6 +89,7 @@ class Game : public Gtk::Table {
    CardSet& cards;
 
    vector<Gtk::Connection> activeCards;
+   const vector<string>& names;
 
  private:
    int makeComputerMove ();
@@ -108,7 +109,8 @@ class Game : public Gtk::Table {
 
 // Specialized Game to inform controler about status-changes
 // The Controller must support a statusbar (accessed by getStatusbar), a cardset
-// (accessed by getCards) and a Gtk::Box, which can be accessed by getClient ()
+// (accessed by getCards), a Gtk::Box, which can be accessed by getClient ()
+// and a vector of names (accessed by getNames ())
 // Parent must be derived from Game
 template <class Parent, class Controller>
 class TGame : public Parent {
@@ -117,8 +119,7 @@ class TGame : public Parent {
 
    TGame (Controller& controller, PCALLBACK callback)
       : Parent (controller.getClient (), controller.getStatusbar (),
-                controller.getCards ()
-)
+                controller.getCards (), controller.getNames ())
       , obj (controller), pCallback (callback) { }
    virtual ~TGame () { }
 

@@ -45,13 +45,16 @@
 //Parameters: parent: Parent of widget
 //            statusbar: For messages
 //            cardset: Cardset
+//            playerNames: Vector of player names
 //            rows: Number of rows needed by game
 //            columns: Number of columns needed by game
 /*--------------------------------------------------------------------------*/
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            unsigned int rows, unsigned int columns)
+            const vector<string>& playerNames, unsigned int rows,
+            unsigned int columns)
    : Gtk::Table (rows, columns), statGame (INITIALIZING), status (statusbar)
-   , cards (cardset), restart (false), pWonPile (NULL), pMenuPopSort (NULL) {
+     , cards (cardset), restart (false), pWonPile (NULL), pMenuPopSort (NULL)
+     , names (playerNames) {
    TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, unsinged int, unsigned int)");
    Check3 (cardset.numberOfCards ());
 
@@ -213,9 +216,10 @@ int Game::makeComputerMove () {
 //Parameters: player: Player in turn
 /*--------------------------------------------------------------------------*/
 void Game::displayTurn (unsigned int player) {
+   Check1 (player < names.size ());
    status.pop (1);
-   std::string stat (_("Turn of player %1"));
-   stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+   std::string stat (_("Turn of %1"));
+   stat.replace (stat.find ("%1"), 2, names[player]);
    status.push (1, stat);
 }
 
