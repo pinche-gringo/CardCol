@@ -33,8 +33,6 @@
 
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 #include <Socket.h>
@@ -719,9 +717,10 @@ CardgameCollection::CardgameCollection (Options& opts)
       else
           playerPos = PlayerConnectDlg::perform (player, cmgr, options.port);
 
-      TRACE1 ("CardgameCollection::command (int) - " << cmgr.getMode ()
-              << "; Pos: " << playerPos);
-      initCommunication ();
+      TRACE1 ("CardgameCollection::CardgameCollection (Options&) - "
+              << cmgr.getMode () << "; Pos: " << playerPos);
+      if (cmgr.getMode () != ConnectionMgr::NONE)
+         initCommunication ();
    }
 }
 
@@ -885,7 +884,7 @@ void CardgameCollection::command (int menu) {
 
    case CONNECT:
       playerPos = PlayerConnectDlg::perform (player, PORT, cmgr);
-      TRACE1 ("CardgameCollection::command (int) - " << cmgr.getMode ()
+      TRACE1 ("CardgameCollection::command (int) - Mode: " << cmgr.getMode ()
               << "; Pos: " << playerPos);
       if (cmgr.getMode () != ConnectionMgr::NONE)
          initCommunication ();
@@ -1192,6 +1191,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
       else if (restart == -1U)
          Glib::signal_idle ().connect
              (bind_return (slot (*this, &CardgameCollection::destroy_), false));
+
       restart = false;
       break;
    }
@@ -1211,6 +1211,8 @@ void* CardgameCollection::waitForMessages (void*) {
 
          if (cmgr.getMode () == ConnectionMgr::CLIENT) {
             cmgr.getSocket ()->read (input);
+
+            TRACE9 ("CardgameCollection::waitForMessages (void*) - Locking");
             mxSerMsgs.lock ();         // Wait til client allows messages again
             mxSerMsgs.unlock ();
          }
@@ -1220,11 +1222,19 @@ void* CardgameCollection::waitForMessages (void*) {
             if (actClient == cmgr.getClients ().size ())
                actClient = 0;
 
-            cmgr.getClients ()[actClient++]->read (input);
+            cmgr.getClients ()[actClient]->read (input);
+            ++actClient;
          }
          TRACE7 ("CardgameCollection::waitForMessage (void*) - `" << input <<'\'');
-         if (input.empty ())
-            throw std::string (_("Lost connection!"));
+         if (input.empty ()) {
+            std::string msg (_("Lost connection to %1!"));
+            Check3 ((actClient + 1) < player.size ());
+            msg.replace (msg.find ("%1"), 2, 
+                         (cmgr.getMode () == ConnectionMgr::CLIENT
+                          ? Glib::locale_to_utf8 ("the server")
+                          : player[actClient + 1]->getName ()));
+            throw msg;
+         }
 
          Tokenize messages (input);
          std::string message;
