@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 29.8.2002
-//COPYRIGHT   : Anticopyright (A) 2002
+//COPYRIGHT   : Anticopyright (A) 2002, 2003
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,21 +27,22 @@
 
 #include <cardgames-cfg.h>
 
+#include <gdkmm/pixbuf.h>
 #include <gdkmm/pixmap.h>
 
 #include <gtkmm/stock.h>
 #include <gtkmm/image.h>
+#include <gtkmm/messagedialog.h>
 
 #include <Check.h>
 #include <Trace_.h>
 
 #include <DirSrch.h>
-#include <Cardset-config.h>
 
 #include "DeckSelect.h"
 
 
-static const char* const DEFAULTFILE = "14.xpm";
+static const char* const DEFAULTFILE = "14.png";
 
 
 /*--------------------------------------------------------------------------*/
@@ -81,11 +82,11 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    get_vbox ()->pack_start (txtBack, false, false, 5);
    get_vbox ()->pack_start (boxBack, true, true, 5);
 
-   std::string cardDirs (path ? path : CARDSET_PATH);
+   std::string cardDirs (path ? path : CARDDECKS_DIR);
    if (cardDirs.size ()
        && (cardDirs[cardDirs.size () - 1] != File::DIRSEPARATOR))
       cardDirs += File::DIRSEPARATOR;
-   cardDirs += "Deck*";
+   cardDirs += "cards-*";
    DirectorySearch ds (cardDirs);
 
    TRACE8 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Searching in path "
@@ -141,21 +142,22 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
            << width << '/' << height);
 
    unsigned int offsetBack (offset + 1);
-   dir = ds.find (aFiles[0] + "/back*.xpm", IDirectorySearch::FILE_NORMAL
+   std::string pathDecks (aFiles[0] + "decks/");
+   dir = ds.find (pathDecks + "deck*.png", IDirectorySearch::FILE_NORMAL
                   | IDirectorySearch::FILE_READONLY);
    while (dir) {
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Reading "
               "background file " << dir->path () << dir->name ());
       aFiles.push_back (dir->name ());
 
-      Gtk::Button* temp (createButton (aFiles[0] + dir->name ()));
+      Gtk::Button* temp (createButton (pathDecks + dir->name ()));
       temp->signal_clicked ().connect
          (bind (slot (*this, &ICarddeckSelectDlg::backSelect), ++offset));
       aBacks.push_back (temp);
 
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Comparing "
-              << (aFiles[0] + dir->name ()) << " with " << back);
-      if ((aFiles[0] + dir->name ()) == back)
+              << (pathDecks + dir->name ()) << " with " << back);
+      if ((pathDecks + dir->name ()) == back)
          backSelect (offset);
 
       backs.resize (((offset - offsetBack) >> 2) + 1, 4);
@@ -220,9 +222,9 @@ void ICarddeckSelectDlg::backSelect (unsigned int offset) {
    Check3 (offset < aFiles.size ());
 
    TRACE3 ("ICarddeckSelectDlg::backSelect (const std::string&) - Selected "
-           << aFiles[0] << aFiles[offset]);
+           << aFiles[0] << "decks/" << aFiles[offset]);
 
-   setButtonImage (selBack, aFiles[0] + aFiles[offBack = offset]);
+   setButtonImage (selBack, aFiles[0] + "decks/" + aFiles[offBack = offset]);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -255,14 +257,38 @@ Gtk::Button* ICarddeckSelectDlg::createButton (const std::string& file) {
 void ICarddeckSelectDlg::setButtonImage (Gtk::Button& button, const std::string& file) {
    TRACE9 ("ICarddeckSelectDlg::setButtonImage (Gtk::Button&, const std::string&) - "
            << file);
-   Gdk::Color color;
+   Glib::RefPtr<Gdk::Pixbuf> imgBuf;
+   std::string err;
+
+   try {
+      imgBuf = Gdk::Pixbuf::create_from_file (file.c_str ());
+   }
+   catch (Gdk::PixbufError& e) {
+      err = e.what ();
+   }
+   catch (Glib::FileError& e) {
+      err = e.what ();
+   }
+   catch (...) {
+      err = _("Unknown error");
+   }
+   if (err.size ()) {
+      std::string msg (_("Error loading image from file `%1'!\n\nReason: %2"));
+      msg.replace (msg.find ("%1"), 2, file);
+      msg.replace (msg.find ("%2"), 2, err);
+      Gtk::MessageDialog dlg (msg, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dlg.run ();
+      return;
+   }
+
    Glib::RefPtr<Gdk::Pixmap> img;
+   Glib::RefPtr<Gdk::Bitmap> bitmap;
 
    button.remove ();
-   img = Gdk::Pixmap::create_from_xpm (get_window (), color, file); Check3 (img);
+   imgBuf->render_pixmap_and_mask (img, bitmap, 0);
 
    int x, y;
-   button.add_pixmap (img, Glib::RefPtr<Gdk::Bitmap> (NULL));
+   button.add_pixmap (img, bitmap);
    img->get_size (x, y);
    button.set_size_request (x + 6, y + 6);
 
