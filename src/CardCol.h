@@ -50,7 +50,7 @@ class CardgameCollection : public XApplication {
 
  private:
    // IDs for menus
-   enum { NEW, END, EXIT, DEBUG, ROVHULT, TWOPART, CHGDECKS, SAVESET, ABOUT };
+   enum { NEW = 1, END, EXIT, DEBUG, ROVHULT, TWOPART, CHGDECKS, SAVESET, ABOUT };
 
    // Protected manager functions
    CardgameCollection (const CardgameCollection&);
@@ -74,9 +74,6 @@ class CardgameCollection : public XApplication {
 
    Gtk::Statusbar status;
 
-   MenuItem* pMenuNew;
-   MenuItem* pMenuEnd;
-
    CardImages cardFaces;
    CardSet cards;
 
@@ -87,7 +84,7 @@ class CardgameCollection : public XApplication {
    std::string pathDeck;
    std::string pathBack;
 
-   typedef enum { NONE, GROVHULT, GTWOPART } games;
+   typedef enum { NONE = -1, GROVHULT = 0, GTWOPART } games;
    games typeGame;
    games oldGame;
    bool restart;

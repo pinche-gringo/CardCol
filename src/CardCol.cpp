@@ -318,9 +318,10 @@ CardgameCollection::CardgameCollection ()
      , typeGame (GROVHULT), oldGame (NONE), restart (false) {
    set_usize (WIDTH, HEIGHT);
 
-   addMenu (menuItems[0]);
-   pMenuNew = dynamic_cast<MenuItem*> (addMenu (menuItems[1])); Check3 (pMenuNew);
-   pMenuNew->set_sensitive (false);
+   // Create controls
+   addMenus (menuItems, sizeof (menuItems) / sizeof (menuItems[0]));
+   Check3 (apMenus[NEW]);
+   apMenus[NEW]->set_sensitive (false);
 
    status.show ();
    getClient ().pack_end (status, false);
@@ -328,14 +329,9 @@ CardgameCollection::CardgameCollection ()
    show ();
 
    // Load cards in background
-   pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::loadCards,
+   pThread = THRDAPPL::create (this, (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::loadCards,
                                NULL);
    TRACE9 ("CardgameCollection::CardgameCollection () - Thread-ID = " << pThread->getID ());
-
-   // Create controls
-   pMenuEnd = dynamic_cast<MenuItem*> (addMenu (menuItems[2])); Check3 (pMenuEnd);
-   pMenuEnd->set_sensitive (false);
-   addMenus (menuItems + 3, sizeof (menuItems) / sizeof (menuItems[0]) - 3);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -493,7 +489,7 @@ void CardgameCollection::changeDecks (ICarddeckSelectDlg::commands cmd) {
       }
       
       if (opt) {
-         pThread = THRDAPPL::create (*this,
+         pThread = THRDAPPL::create (this,
                                      (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::changeCards,
                                      (void*)opt);
          TRACE9 ("CardgameCollection::Twopart () - Thread-ID = " << pThread->getID ());
@@ -569,29 +565,33 @@ void CardgameCollection::loadCards () {
    status.push (1, _("Loading cardimages ..."));
    gdk_threads_leave ();
 
-   INIFILE (NAME_INIFILE.c_str ());
-   INISECTION (Decks);
-   INIATTR2 (Decks, std::string, pathDeck, Front);
-   INIATTR2 (Decks, std::string, pathBack, Back);
-   INISECTION (Game);
-   INIATTR2 (Game, unsigned int, (unsigned int)typeGame, Default);
-
    pathDeck = CARDSET_PATH "/Deck1";
    pathBack = CARDSET_PATH "/back1.xpm";
 
    try {
+      INIFILE (NAME_INIFILE.c_str ());
+      INISECTION (Decks);
+      INIATTR2 (Decks, std::string, pathDeck, Front);
+      INIATTR2 (Decks, std::string, pathBack, Back);
+      INISECTION (Game);
+      INIATTR2 (Game, unsigned int, (unsigned int)typeGame, Default);
+
       unsigned int rc (INIFILE_READ ());
    }
    catch (std::string& error) {
-      TRACE ("'CardgameCollection::loadCards () - Can't read INI-file '"
-             << NAME_INIFILE << "'\nReason: " << error);
+      cerr << PACKAGE "-warning: Error reading INI-file '"
+           << NAME_INIFILE << "'\n" << error << '\n';
    }
+
+   // This code needs the game-IDs in a sequence starting with 0!
+   Check (apMenus[ROVHULT + typeGame]);
+   dynamic_cast<CheckMenuItem*> (apMenus[ROVHULT + typeGame])->set_active ();
 
    cardFaces.load (get_window (), pathDeck, pathBack);
    cards.addPacket (cardFaces);
 
    gdk_threads_enter ();
-   pMenuNew->set_sensitive (true);
+   apMenus[NEW]->set_sensitive (true);
    status.pop (1);
    status.push (1, _("Start a new game with Ctrl+N (or Game -> New)"));
    gdk_threads_leave ();
@@ -610,13 +610,13 @@ void CardgameCollection::gameEvents (unsigned int status) {
 
    switch (status) {
    case Game::PLAYING:
-      Check3 (pMenuEnd);
-      pMenuEnd->set_sensitive (true);
+      Check3 (apMenus[END]);
+      apMenus[END]->set_sensitive (true);
       break;
 
    case Game::STOPPED:
-      Check3 (pMenuEnd);
-      pMenuEnd->set_sensitive (false);
+      Check3 (apMenus[END]);
+      apMenus[END]->set_sensitive (false);
 
       if (restart)
          startGame ();
