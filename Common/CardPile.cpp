@@ -26,7 +26,7 @@
 
 
 #define CHECK 9
-#define TRACELEVEL 9
+#define TRACELEVEL 8
 #include <Trace_.h>
 
 #include "CardPile.h"
@@ -82,7 +82,7 @@ CardWidget& ICardPile::removeTopCard () {
    CardWidget& card (getTopCard ());
    pop_back ();
 
-   TRACE5 ("ICardPile::removeTopCard (CardWidget&) - Card " << card
+   TRACE5 ("ICardPile::removeTopCard () - Card " << card
            << " -> new size: " << size ());
 
    if (size () && (style > NORMAL))
@@ -207,20 +207,19 @@ void ICardPile::insertColorSorted (CardWidget& card) {
 //Parameters: card: Card to remove
 /*--------------------------------------------------------------------------*/
 CardWidget& ICardPile::remove (CardWidget& card) {
-   TRACE8 ("ICardPile::remove (CardWidget&) - Card " << card);
+   TRACE8 ("ICardPile::remove (CardWidget&) - " << card);
    Check3 (size () > 0);
 
    // Search for card and remove it
    std::vector<CardWidget*>::iterator i (std::find (begin (), end (), &card));
    Check3 (i != end ());
+   i = erase (i);
 
    // Check if we have to resize a card
    if (style > NORMAL)
       // If last card was removed: Resize new last card (if any)
-      resize ((((i + 1) == end ()) && i != begin ()) ?
-              (i - begin () - 1) : (i - begin ()), NORMAL);
+      i == end () ? resize (i - begin () - 1, NORMAL) : resize (card, NORMAL);
 
-   erase (i);
    return card;
 }
 
@@ -229,21 +228,20 @@ CardWidget& ICardPile::remove (CardWidget& card) {
 //Parameters: card: Card(position) to remove
 /*--------------------------------------------------------------------------*/
 CardWidget& ICardPile::remove (unsigned int pos) {
-   TRACE8 ("ICardPile::remove (unsigned int&) - Card at pos " << pos << " ("
-           << at (pos) << ')');
-   Check3 (size () > pos);
+   Check1 (size () > pos);
+   TRACE8 ("ICardPile::remove (unsigned int) - Card at pos " << pos << " ("
+           << *operator[] (pos) << ')');
 
    // Remove card on passed position
    std::vector<CardWidget*>::iterator i (begin () + pos);
    CardWidget* pTemp (*i); Check3 (pTemp);
+   i = erase (i);
 
    // Check if we have to resize a card
    if (style > NORMAL)
       // If last card was removed: Resize new last card (if any)
-      resize ((((i + 1) == end ()) && i != begin ()) ?
-              (i - begin () - 1) : (i - begin ()), NORMAL);
+      i == end () ? resize (size () - 1, NORMAL) : resize (*pTemp, NORMAL);
 
-   erase (i--);
    return *pTemp;
 }
 
@@ -453,8 +451,8 @@ int ICardPile::find (CardWidget::COLORS color, unsigned int start) const {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Resizing of a card in the pile
-//Parameters: pos: Position of card to resize
+//Parameters: CardWidget&: Card to resize
 //            PileStyle: Style of pile
 /*--------------------------------------------------------------------------*/
-void ICardPile::resize (unsigned int pos, PileStyle) {
+void ICardPile::resize (CardWidget&, PileStyle) {
 }
