@@ -180,7 +180,7 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
       CardWidget* compressCard (pos == cards.size ()
                                 ? cards[cards.size () - 1] : &card);
       Check3 (compressCard);
-      resize (*compressCard, COMPRESSED);
+      resize (*compressCard, style);
    }
 
    if (showOpt < DONT_CHANGE)
