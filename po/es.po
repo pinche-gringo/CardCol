@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.3 ($Revision$)\n"
-"POT-Creation-Date: 2003-01-18 23:03-0500\n"
+"POT-Creation-Date: 2003-02-10 00:46-0500\n"
 "PO-Revision-Date: 2002-04-28 00:15-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -59,7 +59,7 @@ msgid ""
 "Can't create picture from file `%1'!\n"
 "Reason: %2"
 msgstr ""
-"Fichero \"%1\" no contiene una imagen!\n"
+"¡Fichero \"%1\" no contiene una imagen!\n"
 "Causa: %2"
 
 #: Common/CardPile.h:274
@@ -73,7 +73,7 @@ msgstr[1] "%1 cartas"
 msgid ""
 "Played card(s) must have the same color and must be bigger (or be a trump)!"
 msgstr ""
-"¡Cartas jugadas tienen que tener el mismo color y estar mayor (o estar del "
+"¡Cartas jugadas tienen que tener el mismo palo y estar mayor (o estar del "
 "color especial)!"
 
 #: src/Twopart.cpp:352
@@ -113,128 +113,140 @@ msgstr "Sortea de números"
 
 #: Common/Game.cpp:317
 msgid "Sort by color"
-msgstr "Sortea de colores"
+msgstr "Sortea de palos"
 
 #: Common/PlayerDlg.cpp:58
 #, ycp-format
 msgid "Player %1:"
 msgstr "Jugador %1:"
 
-#: src/CardCol.cpp:297
+#: src/CardCol.cpp:406
 msgid "_Game"
 msgstr "_Juego"
 
-#: src/CardCol.cpp:297
+#: src/CardCol.cpp:406
 msgid "<alt>G"
 msgstr "<alt>J"
 
-#: src/CardCol.cpp:298
+#: src/CardCol.cpp:407
 msgid "_New"
 msgstr "_Nuevo"
 
-#: src/CardCol.cpp:298
+#: src/CardCol.cpp:407
 msgid "<ctl>N"
 msgstr ""
 
-#: src/CardCol.cpp:299
+#: src/CardCol.cpp:408
 msgid "_End"
 msgstr "_Terminar"
 
-#: src/CardCol.cpp:299
+#: src/CardCol.cpp:408
 msgid "<ctl>E"
 msgstr "<ctl>T"
 
-#: src/CardCol.cpp:301
+#: src/CardCol.cpp:410
 msgid "E_xit"
-msgstr "Cerrar"
+msgstr "_Cerrar"
 
-#: src/CardCol.cpp:301
+#: src/CardCol.cpp:410
 msgid "<ctl>Q"
 msgstr "<ctl>C"
 
-#: src/CardCol.cpp:302
+#: src/CardCol.cpp:411
 msgid "_Options"
-msgstr "_Opciónes"
+msgstr "_Opciones"
 
-#: src/CardCol.cpp:302
+#: src/CardCol.cpp:411
 msgid "<alt>O"
 msgstr "<alt>O"
 
-#: src/CardCol.cpp:303
+#: src/CardCol.cpp:412
 msgid "_Change game"
 msgstr "Cambiar el _juego"
 
-#: src/CardCol.cpp:303
+#: src/CardCol.cpp:412
 msgid "<alt>C"
 msgstr ""
 
-#: src/CardCol.cpp:304
+#: src/CardCol.cpp:413
 msgid "_Røvhult"
 msgstr ""
 
-#: src/CardCol.cpp:304
+#: src/CardCol.cpp:413
 msgid "<ctl>R"
 msgstr ""
 
-#: src/CardCol.cpp:305
+#: src/CardCol.cpp:414
 msgid "_Twopart"
 msgstr ""
 
-#: src/CardCol.cpp:305
+#: src/CardCol.cpp:414
 msgid "<ctl>T"
-msgstr ""
+msgstr "<ctl>P"
 
-#: src/CardCol.cpp:306
+#: src/CardCol.cpp:415
 msgid "_Hearts"
-msgstr ""
+msgstr "_Corazones"
 
-#: src/CardCol.cpp:306
+#: src/CardCol.cpp:415
 msgid "<ctl>H"
-msgstr "<ctl>H"
+msgstr "<ctl>O"
 
-#: src/CardCol.cpp:308
+#: src/CardCol.cpp:417
 msgid "Change _decks ..."
-msgstr "Cambia _imagenes de las cartas ..."
+msgstr "Cambiar _imágenes de las cartas ..."
 
-#: src/CardCol.cpp:308
+#: src/CardCol.cpp:417
 msgid "<ctl>D"
 msgstr "<ctl>I"
 
-#: src/CardCol.cpp:309
+#: src/CardCol.cpp:418
 msgid "Change _names ..."
-msgstr "Cambiar los _nombres ..."
+msgstr "Cambiar los nombres del los _jugadores..."
 
-#: src/CardCol.cpp:309
+#: src/CardCol.cpp:418
 msgid "<ctl>C"
-msgstr ""
+msgstr "<ctl>J"
 
-#: src/CardCol.cpp:310
+#: src/CardCol.cpp:419
 msgid "_Save settings"
-msgstr "_Guarda opciónes"
+msgstr "_Guardar opciónes"
 
-#: src/CardCol.cpp:310
+#: src/CardCol.cpp:419
 msgid "<ctl>S"
 msgstr "<ctl>G"
 
-#: src/CardCol.cpp:393
+#: src/CardCol.cpp:445
+msgid "Compiled on"
+msgstr "Compilada al"
+
+#: src/CardCol.cpp:447
+msgid ""
+"Author: Markus Schwab; e-mail: g17m0@lycos.com\n"
+"Distributed under the terms of the GNU General Public License"
+msgstr ""
+"Escritor: Markus Schwab; correo-e: g17m0@lycos.com\n"
+"Distributado bajo los condicones de la GNU Licensia General Públic"
+
+#: src/CardCol.cpp:507
 msgid "Error starting thread"
 msgstr "Error ejecutando el proceso del fondo"
 
-#: src/CardCol.cpp:470
+#: src/CardCol.cpp:584
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 "Un juego ya está activo. ¿Seguro que quieres terminarlo y comencer de nuevo?"
 
-#: src/CardCol.cpp:483
+#: src/CardCol.cpp:597
 msgid "Do you really want to end the game?"
 msgstr "¿Seguro que quieres terminar el juego activo?"
 
-#: src/CardCol.cpp:523
+#: src/CardCol.cpp:637
 msgid "A game is running. Do you really want to quit?"
 msgstr "Un juego está activo. ¿Seguro que quieres cerrar?"
 
-#: src/CardCol.cpp:562
+#: src/CardCol.cpp:675
 #, ycp-format
 msgid ""
 "Anticopyright (A) 2002, 2003 Markus Schwab\n"
@@ -247,45 +259,51 @@ msgstr ""
 "\n"
 "Compilado al %1 al %2"
 
-#: src/CardCol.cpp:643
+#: src/CardCol.cpp:756
 msgid "User canceled"
 msgstr "Usario terminó"
 
-#: src/CardCol.cpp:670
+#: src/CardCol.cpp:783
 msgid "Loading cardimages ..."
-msgstr "Abriendo las imagenes de las cartas ..."
+msgstr "Abriendo las imágenes de las cartas ..."
 
-#: src/CardCol.cpp:684
+#: src/CardCol.cpp:797
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Comienca un juego nuevo con Ctrl+N (o Juego -> Nuevo)"
 
-#: src/Hearts.cpp:165
-msgid "Select 3 cards to give away"
-msgstr "Selecte 3 cartas para cambiar"
+#: src/Hearts.cpp:178
+#, c-format, ycp-format
+msgid "Select 3 cards to exchange with %1"
+msgstr "Selecte 3 cartas para cambiar con %1"
 
-#: src/Hearts.cpp:335
+#: src/Hearts.cpp:380
 msgid "Round ended"
 msgstr "Turno terminó"
 
-#: src/Hearts.cpp:369
+#: src/Hearts.cpp:384
+#, ycp-format
+msgid "Game ended; %1 won"
+msgstr "Juego terminó; %1 ganó"
+
+#: src/Hearts.cpp:424
 msgid "Play first cards with an equal color as the first played one!"
-msgstr "Usa una carta con el mismo color como la primera!"
+msgstr "¡Usa una carta con el mismo palo como la primera!"
 
-#: src/Hearts.cpp:380
+#: src/Hearts.cpp:435
 msgid "The game must be started with the two of clubs!"
-msgstr "El juego tiene que estar empiezando con el dos del naipe de trébol!"
+msgstr "¡El juego tiene que estar empiezando con el dos del naipe de trébol!"
 
-#: src/Hearts.cpp:389
+#: src/Hearts.cpp:444
 msgid "You can't start with a heart, if they have not been played before!"
-msgstr "No se puede usar los carzones si no han usado antes!"
+msgstr "¡No se puede usar los corazones si los no estaban usado antes!"
 
-#: src/Hearts.cpp:400
-msgid "The queen of spades can't be played in the first round"
-msgstr "La reine (Q) de los picas no puede estar jugado en el primer turno!"
+#: src/Hearts.cpp:455
+msgid "The queen of spades can't be played in the first round!"
+msgstr "¡La reina (Q) de los picas no puede estar jugado en el primer turno!"
 
-#: src/Hearts.cpp:407
-msgid "Hearts can't be played in the first round"
-msgstr "Las corazones no pueden estar jugado en el primer turno!"
+#: src/Hearts.cpp:462
+msgid "Hearts can't be played in the first round!"
+msgstr "¡Las corazones no pueden estar jugado en el primer turno!"
 
 #: src/HeartsScore.cpp:47
 msgid "Score"

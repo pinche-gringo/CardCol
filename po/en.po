@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.3 ($Revision$)\n"
-"POT-Creation-Date: 2003-01-18 23:03-0500\n"
+"POT-Creation-Date: 2003-02-10 00:46-0500\n"
 "PO-Revision-Date: 2002-04-28 00:15-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -114,120 +114,130 @@ msgstr ""
 msgid "Player %1:"
 msgstr ""
 
-#: src/CardCol.cpp:297
+#: src/CardCol.cpp:406
 msgid "_Game"
 msgstr ""
 
-#: src/CardCol.cpp:297
+#: src/CardCol.cpp:406
 msgid "<alt>G"
 msgstr ""
 
-#: src/CardCol.cpp:298
+#: src/CardCol.cpp:407
 msgid "_New"
 msgstr ""
 
-#: src/CardCol.cpp:298
+#: src/CardCol.cpp:407
 msgid "<ctl>N"
 msgstr ""
 
-#: src/CardCol.cpp:299
+#: src/CardCol.cpp:408
 msgid "_End"
 msgstr ""
 
-#: src/CardCol.cpp:299
+#: src/CardCol.cpp:408
 msgid "<ctl>E"
 msgstr ""
 
-#: src/CardCol.cpp:301
+#: src/CardCol.cpp:410
 msgid "E_xit"
 msgstr ""
 
-#: src/CardCol.cpp:301
+#: src/CardCol.cpp:410
 msgid "<ctl>Q"
 msgstr ""
 
-#: src/CardCol.cpp:302
+#: src/CardCol.cpp:411
 msgid "_Options"
 msgstr ""
 
-#: src/CardCol.cpp:302
+#: src/CardCol.cpp:411
 msgid "<alt>O"
 msgstr ""
 
-#: src/CardCol.cpp:303
+#: src/CardCol.cpp:412
 msgid "_Change game"
 msgstr ""
 
-#: src/CardCol.cpp:303
+#: src/CardCol.cpp:412
 msgid "<alt>C"
 msgstr ""
 
-#: src/CardCol.cpp:304
+#: src/CardCol.cpp:413
 msgid "_Røvhult"
 msgstr ""
 
-#: src/CardCol.cpp:304
+#: src/CardCol.cpp:413
 msgid "<ctl>R"
 msgstr ""
 
-#: src/CardCol.cpp:305
+#: src/CardCol.cpp:414
 msgid "_Twopart"
 msgstr ""
 
-#: src/CardCol.cpp:305
+#: src/CardCol.cpp:414
 msgid "<ctl>T"
 msgstr ""
 
-#: src/CardCol.cpp:306
+#: src/CardCol.cpp:415
 msgid "_Hearts"
 msgstr ""
 
-#: src/CardCol.cpp:306
+#: src/CardCol.cpp:415
 msgid "<ctl>H"
 msgstr ""
 
-#: src/CardCol.cpp:308
+#: src/CardCol.cpp:417
 msgid "Change _decks ..."
 msgstr ""
 
-#: src/CardCol.cpp:308
+#: src/CardCol.cpp:417
 msgid "<ctl>D"
 msgstr ""
 
-#: src/CardCol.cpp:309
+#: src/CardCol.cpp:418
 msgid "Change _names ..."
 msgstr ""
 
-#: src/CardCol.cpp:309
+#: src/CardCol.cpp:418
 msgid "<ctl>C"
 msgstr ""
 
-#: src/CardCol.cpp:310
+#: src/CardCol.cpp:419
 msgid "_Save settings"
 msgstr ""
 
-#: src/CardCol.cpp:310
+#: src/CardCol.cpp:419
 msgid "<ctl>S"
 msgstr ""
 
-#: src/CardCol.cpp:393
+#: src/CardCol.cpp:445
+msgid "Compiled on"
+msgstr ""
+
+#: src/CardCol.cpp:447
+msgid ""
+"Author: Markus Schwab; e-mail: g17m0@lycos.com\n"
+"Distributed under the terms of the GNU General Public License"
+msgstr ""
+
+#: src/CardCol.cpp:507
 msgid "Error starting thread"
 msgstr ""
 
-#: src/CardCol.cpp:470
+#: src/CardCol.cpp:584
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 
-#: src/CardCol.cpp:483
+#: src/CardCol.cpp:597
 msgid "Do you really want to end the game?"
 msgstr ""
 
-#: src/CardCol.cpp:523
+#: src/CardCol.cpp:637
 msgid "A game is running. Do you really want to quit?"
 msgstr ""
 
-#: src/CardCol.cpp:562
+#: src/CardCol.cpp:675
 #, ycp-format
 msgid ""
 "Anticopyright (A) 2002, 2003 Markus Schwab\n"
@@ -236,44 +246,50 @@ msgid ""
 "Compiled on %1 at %2"
 msgstr ""
 
-#: src/CardCol.cpp:643
+#: src/CardCol.cpp:756
 msgid "User canceled"
 msgstr ""
 
-#: src/CardCol.cpp:670
+#: src/CardCol.cpp:783
 msgid "Loading cardimages ..."
 msgstr ""
 
-#: src/CardCol.cpp:684
+#: src/CardCol.cpp:797
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr ""
 
-#: src/Hearts.cpp:165
-msgid "Select 3 cards to give away"
-msgstr ""
-
-#: src/Hearts.cpp:335
-msgid "Round ended"
-msgstr ""
-
-#: src/Hearts.cpp:369
-msgid "Play first cards with an equal color as the first played one!"
+#: src/Hearts.cpp:178
+#, c-format, ycp-format
+msgid "Select 3 cards to exchange with %1"
 msgstr ""
 
 #: src/Hearts.cpp:380
+msgid "Round ended"
+msgstr ""
+
+#: src/Hearts.cpp:384
+#, ycp-format
+msgid "Game ended; %1 won"
+msgstr ""
+
+#: src/Hearts.cpp:424
+msgid "Play first cards with an equal color as the first played one!"
+msgstr ""
+
+#: src/Hearts.cpp:435
 msgid "The game must be started with the two of clubs!"
 msgstr ""
 
-#: src/Hearts.cpp:389
+#: src/Hearts.cpp:444
 msgid "You can't start with a heart, if they have not been played before!"
 msgstr ""
 
-#: src/Hearts.cpp:400
-msgid "The queen of spades can't be played in the first round"
+#: src/Hearts.cpp:455
+msgid "The queen of spades can't be played in the first round!"
 msgstr ""
 
-#: src/Hearts.cpp:407
-msgid "Hearts can't be played in the first round"
+#: src/Hearts.cpp:462
+msgid "Hearts can't be played in the first round!"
 msgstr ""
 
 #: src/HeartsScore.cpp:47
