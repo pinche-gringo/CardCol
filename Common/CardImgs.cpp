@@ -53,7 +53,7 @@ CardImages::~CardImages () {
 //Purpose   : Retrieves the specified cardnumber
 //Parameters: nr: Number of card to retrieve
 /*--------------------------------------------------------------------------*/
-const Glib::RefPtr<Gdk::Pixmap> CardImages::getCardImage (unsigned int nr) const {
+const Glib::RefPtr<Gdk::Pixbuf> CardImages::getCardImage (unsigned int nr) const {
    TRACE8 ("CardImages::getCardImage (unsigned int) - Request for card " << nr);
    Check1 (nr < numberOfCards ());
    Check3 (cards_[nr]);
@@ -62,13 +62,10 @@ const Glib::RefPtr<Gdk::Pixmap> CardImages::getCardImage (unsigned int nr) const
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Loads the cards (faces)
-//Parameters: parent: Parent window
-//            path: Path to files
-//            back: File containing background picture
+//Parameters: path: Path to files
 //            thread: Flag if loading in thread
 /*--------------------------------------------------------------------------*/
-void CardImages::loadDecks (const Glib::RefPtr<Gdk::Window> parent,
-                            const std::string& path,
+void CardImages::loadDecks (const std::string& path,
                             bool thread) throw (std::string) {
    TRACE1 ("CardImages::loadDecks (const Gdk::Window&, const char*) - " << path
            << "; Threaded: " << (thread ? "Yes" : "No"));
@@ -88,7 +85,7 @@ void CardImages::loadDecks (const Glib::RefPtr<Gdk::Window> parent,
          gdk_threads_enter ();
 
       Gdk::Color color;
-      cards_[i - 1] = Gdk::Pixmap::create_from_xpm (parent, color, out.str ());
+      cards_[i - 1] = Gdk::Pixbuf::create_from_file (out.str ());
       Check3 (cards_[i - 1]);
       if (thread)
          gdk_threads_leave ();
@@ -104,20 +101,16 @@ void CardImages::loadDecks (const Glib::RefPtr<Gdk::Window> parent,
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Loads the background card
-//Parameters: parent: Parent window
-//            back: File containing background picture
+//Parameters: back: File containing background picture
 //            thread: Flag if loading in thread
 /*--------------------------------------------------------------------------*/
-void CardImages::loadBack (const Glib::RefPtr<Gdk::Window> parent,
-                           const std::string& back,
+void CardImages::loadBack (const std::string& back,
                            bool thread) throw (std::string) {
    TRACE1 ("CardImages::loadBack (const Gdk::Window&, const char*) - " << back);
 
-   Gdk::Color color;
-
    if (thread)
       gdk_threads_enter ();
-   back_ = Gdk::Pixmap::create_from_xpm (parent, color, back);
+   back_ = Gdk::Pixbuf::create_from_file (back);
    if (thread)
       gdk_threads_leave ();
 

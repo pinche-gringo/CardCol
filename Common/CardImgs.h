@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include <gdkmm/pixmap.h>
+#include <gdkmm/pixbuf.h>
 
 
 // Class to load & store the images of the used cards
@@ -29,31 +29,34 @@ class CardImages {
    CardImages (unsigned int cards) : cards_ (cards) { }
    ~CardImages ();
 
-   const Glib::RefPtr<Gdk::Pixmap> getCardImage (unsigned int nr) const;
+   unsigned int addImage (const char* const* data) {
+      cards_.push_back (Gdk::Pixbuf::create_from_xpm_data (data));
+      return cards_.size () - 1; }
+   void delImage (unsigned int pos) {
+      cards_.erase (cards_.begin () + pos); }
 
-   const Glib::RefPtr<Gdk::Pixmap> getCardBackground () const { return back_; }
-   void setCardBackground (const Glib::RefPtr<Gdk::Pixmap> back) { back_ = back; }
+   const Glib::RefPtr<Gdk::Pixbuf> getCardImage (unsigned int nr) const;
 
-   void loadDecks (const Glib::RefPtr<Gdk::Window> parent, const std::string& path,
-                  bool thread = true) throw (std::string);
-   void loadBack (const Glib::RefPtr<Gdk::Window> parent, const std::string& file,
-                  bool thread = true) throw (std::string);
-   void load (const Glib::RefPtr<Gdk::Window> parent, const std::string& path,
-              const std::string& back, bool thread = true) throw (std::string) {
-      loadDecks (parent, path, true);
-      loadBack (parent, back);
-   }
-   void load (unsigned int cards, const Glib::RefPtr<Gdk::Window> parent,
-              const std::string& path, const std::string& back,
+   const Glib::RefPtr<Gdk::Pixbuf> getCardBackground () const { return back_; }
+   void setCardBackground (const Glib::RefPtr<Gdk::Pixbuf> back) { back_ = back; }
+
+   void loadDecks ( const std::string& path, bool thread = true) throw (std::string);
+   void loadBack (const std::string& file, bool thread = true) throw (std::string);
+   void load (const std::string& path, const std::string& back,
               bool thread = true) throw (std::string) {
+      loadDecks (path, true);
+      loadBack (back);
+   }
+   void load (unsigned int cards, const std::string& path,
+              const std::string& back, bool thread = true) throw (std::string) {
       cards_.reserve (cards);
-      load (parent, path, back, thread); }
+      load (path, back, thread); }
 
    unsigned int numberOfCards () const { return cards_.size (); }
 
  private:
-   std::vector<Glib::RefPtr<Gdk::Pixmap> > cards_;
-   Glib::RefPtr<Gdk::Pixmap> back_;
+   std::vector<Glib::RefPtr<Gdk::Pixbuf> > cards_;
+   Glib::RefPtr<Gdk::Pixbuf> back_;
 
    void unload ();
 };
