@@ -442,7 +442,9 @@ void Twopart::command (int menu) {
       break;
 
    case CHGDECKS:
-      dlgChgDecks = CarddeckSelectDlg<Twopart>::create (*this, &Twopart::changeDecks);
+      dlgChgDecks = CarddeckSelectDlg<Twopart>::create (*this, &Twopart::changeDecks,
+                                                        CARDSET_PATH,
+                                                        pathDeck, pathBack);
       break;
 
    case SAVESET: {
@@ -499,12 +501,14 @@ void Twopart::changeDecks (ICarddeckSelectDlg::commands cmd) {
       }
       
       if (opt) {
-         pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&Twopart::changeCards,
+         pThread = THRDAPPL::create (*this,
+                                     (THRDAPPL::THREAD_OBJMEMBER)&Twopart::changeCards,
                                      (void*)opt);
          TRACE9 ("Twopart::Twopart () - Thread-ID = " << pThread->getID ());
       }
    }
-   else
+
+   if (cmd != ICarddeckSelectDlg::APPLY)
       dlgChgDecks = NULL;
 }
 
@@ -1269,14 +1273,14 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start
 //Purpose   : Loads the cards (from xpm-files) and initializes deck
 /*--------------------------------------------------------------------------*/
 void Twopart::loadCards () {
+   // Cards need an realized (!) parent, so make somehow sure, that the window
+   // already exists
    Check3 (staple.is_realized ());
 
    gdk_threads_enter ();
    status.push (1, _("Loading cardimages ..."));
    gdk_threads_leave ();
 
-   // Cards need an realized (!) parent, so make somehow sure, that the window
-   // already exists
    INIFILE (NAME_INIFILE.c_str ());
    INISECTION (Decks);
    INIATTR2 (Decks, std::string, pathDeck, Front);
@@ -1337,6 +1341,8 @@ void Twopart::changeCards (void* opt) {
 
    gdk_threads_enter ();
    cards.update ();
+   if (dlgChgDecks)
+      dlgChgDecks->unlock ();
    gdk_threads_leave ();
    pThread = NULL;
 }

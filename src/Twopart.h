@@ -161,7 +161,7 @@ class Twopart : public XApplication {
    Widget* pMenuNew;
    Widget* pMenuEnd;
 
-   const ICarddeckSelectDlg* dlgChgDecks;
+   ICarddeckSelectDlg* dlgChgDecks;
 
    std::string pathDeck;
    std::string pathBack;
