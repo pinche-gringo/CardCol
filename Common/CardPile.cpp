@@ -221,7 +221,7 @@ CardWidget& ICardPile::remove (CardWidget& card) {
    Check3 (cards.size () > 0);
 
    // Search for card and remove it
-   vector<CardWidget*>::iterator i (find (cards.begin (), cards.end (), &card));
+   vector<CardWidget*>::iterator i (::find (cards.begin (), cards.end (), &card));
    Check3 (i != cards.end ());
 
    // Check if we have to resize a card
@@ -356,9 +356,8 @@ int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
 #if TRACELEVEL > 4
    TRACE ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - End = ["
           << first << "-(" << middle << ")-" << last << ')');
-   if (first < cards.size ()) {
+   if (first < cards.size ())
       TRACE ("\t-> " << *cards[first]);
-   }
    else
       TRACE ("\t-> Not found");
 #endif
