@@ -162,19 +162,21 @@ template <class T> class CardPile : public T, public ICardPile {
       return card; }
 
    virtual void insert (CardWidget& card, unsigned int pos) {
-      ICardPile::insert (card, pos);
       pack_start (card, false);
-      reorder_child (card, pos); }
+      reorder_child (card, pos);
+      ICardPile::insert (card, pos);
+   }
 
    virtual CardWidget& remove (CardWidget& card) {
-      T::remove (ICardPile::remove (card));
+      T::remove (card);
+      ICardPile::remove (card);
       return card; }
    CardWidget& remove (CardWidget& card, bool visible) {
       card.showFace (visible);
       return remove (card); }
    virtual CardWidget& remove (unsigned int pos) {
+      T::remove (at (pos));
       CardWidget& card (ICardPile::remove (pos));
-      T::remove (card);
       return card; }
    CardWidget& remove (unsigned int pos, bool visible) {
       CardWidget& card (remove (pos));

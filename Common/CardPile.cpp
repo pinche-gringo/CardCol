@@ -65,6 +65,7 @@ void ICardPile::setTopCard (CardWidget& card) {
 
    card.show ();
    cards.push_back (&card);
+   resize (cards.size () - 1, NORMAL);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -181,8 +182,8 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
 
    cards.insert (cards.begin () + pos, &card);
 
-   if ((style > NORMAL) && cards.size ())       // Cards to display compressed?
-      resize ((pos == cards.size ()) ? pos - 1 : pos, style);
+   if ((style > NORMAL) && cards.size () > 1)   // Cards to display compressed?
+      resize ((pos == (cards.size () - 1)) ? pos - 1 : pos, style);
 }
 
 /*--------------------------------------------------------------------------*/
