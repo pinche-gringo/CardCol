@@ -2,13 +2,13 @@
 
 Various card games; til now they consist of:
 
-  - Røvhult (the danish words for arsehole); obviously I learned it from danes
-    (3 of them), but it is also known internationally.
+  - Røvhult (the danish words for arsehole); obviously I learned it from danes,
+    but it is also known internationally (as shithead or asshole).
 
   - Twopart: A game I learned from some norwegians. They probably mentioned the
-    name; though I was not able to remember it (you have no idea how long it
+    name, though I was not able to remember it (you have no idea how long it
     took me to learn the word "Røvhult" - not to mention the pronuncation).
-    So the name describes the game (a bit).
+    So the name describes the game.
 
   - Buraco: A famous game in Venezuela; a bit similar to Canasta or the like
     in Europe.
@@ -16,14 +16,11 @@ Various card games; til now they consist of:
   - Machiavelli: Append your cards to the ones on the table without getting
     (too) confused while moving them around.
 
+  - Sgt. Major: The player must make a certain amount of ticks. Making more is
+    rewarded and makeing less punished in the next round.
+
   - Hearts: A game included in various (?) versions of the operating (??? Well,
     sometimes) system from a company with a very good sales department.
-
-
-Planned are:
-
-  - Tarok. The game of my youth (long ago). Fucking hell, looking forward to
-    the computer player.
 
 
 The whole thing is:    
@@ -51,9 +48,6 @@ then (in the same sequence of the colours) down from king, queen, ... to 3, 2.
 The images for the front side must be put in a directory called cards-NAME
 and the images for the back in a directory called decks (and must be called
 deck#.png).
-
-The path of the card decks to use can be specified with an option to
-configure. If it is missing, the script tries to figure it out by itself.
 
 Principally front and back of the cards should have the same size (as
 otherwise flipping a card looks a bit weired).
