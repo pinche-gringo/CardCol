@@ -494,7 +494,7 @@ bool ICardPile::hasFittingPair (const CardWidget& card, CMPFUNC2 cmp,
          diff = (diff < 0) ? (diff + 2) : (diff + 1);
          Check3 (diff < 4);
          TRACE1 ("ICardPile::pileHasFittingPair (const " "CardWidget*, "
-                 "CMPFUNC2, bool) - " << **p << " differs " << diff);
+                 "CMPFUNC2, bool) - " << **p << " diff: " << diff);
          if ((((unsigned int)diff) < 4) && !(bCols & (1 << diff))) {
             // The card is valid, if either a card bordering the one the
             // inspect and this one has been found. Note that for aces the
@@ -536,7 +536,7 @@ bool ICardPile::hasFittingPair (const CardWidget& card, CMPFUNC2 cmp,
             return true;
       }
    }
-   TRACE8 ("CardPile::pileHasFittingPair (const " "CardWidget*, CMPFUNC2, bool) - "
+   TRACE7 ("CardPile::pileHasFittingPair (const " "CardWidget*, CMPFUNC2, bool) - "
            << card << " matches " << nrs << '/' << std::hex << bCols << std::dec);
    return false;
 }
@@ -671,6 +671,7 @@ unsigned int ICardPile::getSeries (CardWidget& card,
                foundCards.push_back ((*p)->id ());
                TRACE1 ("ICardPile::getSeries (...) - Adding non-double " << **p);
             }
+            ++nrs;
          }
       }
    }
