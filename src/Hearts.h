@@ -28,7 +28,7 @@
 
 #include <Game.h>
 
-#include <HeartsScore.h>
+class ScoreDlg;
 
 
 // Class to handle the Hearts cardgame
@@ -89,7 +89,7 @@ class Hearts : public Game {
    } players[NUM_PLAYERS];
    CardHPile played;
 
-   HeartsScoreDlg* pScoreDlg;
+   ScoreDlg* pScoreDlg;
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
