@@ -37,7 +37,7 @@
     <h1 align="center">Informaci&oacute;n General sobre los Juegos de Cartas</h1>
     <hr size=2>
 
-    <p>Esta es una colecci&oacute;n de juegos de cartas que aprend&iacute; de
+    <p>&Eacute;sta es una colecci&oacute;n de juegos de cartas que aprend&iacute; de
       varias personas, generalmente durante viajar (&iquest;Qu&eacute;
       podr&iacute;a matar mejor el tiempo durante un viaje de &gt;10 horas en
       bus/tren/qu&eacute;-s&eacute;-yo que un juego de cartas bueno?)</p>
@@ -46,20 +46,20 @@
       controlados por la computadora). Por juegos de cartas solitarios puedo
       recomendar los excelentes juegos de cartas de KDE.</p>
 
-    <p>Este programa se distribuye bajo los condicones de la GNU Licensia
+    <p>&Eacute;ste programa se distribuye bajo los condiciones de la GNU Licensia
       General P&uacute;blico, que principalmente expresa lo siguente (v&eacute;ase
       el archivo <tt>COPYING</tt> dentro de la distribuci&oacute;n o
       la <a href="http://www.gnu.org">p&aacute;gina web de GNU
         (http://www.gnu.org)</a> para m&aacute;s detalles):</p>
 
-    <blockquote><em><p>Este programa es software libre; puede
+    <blockquote><em><p>&Eacute;ste programa es software libre; puede
         redistribuirlo y/o modificarlo bajo los t&eacute;rminos de la
         GNU Licencia P&uacute;blica General seg&uacute;n se publica por la
         Free Software Foundation (la Fundaci&oacute;n para el Software
         Libre); tanto de la versi&oacute;n 2 de la Licencia, o (seg&uacute;n su
         elecci&oacute;n) de cualquier versi&oacute;n posterior.</p>
- 
-      <p>Este se destribuye con la esperanza de que sea &uacute;til,
+
+      <p>&Eacute;ste se destribuye con la esperanza de que sea &uacute;til,
         pero SIN NINGUNA GARANT&Iacute;A, ni siquiera la garant&iacute;a
         impl&iacute;cita de COMERCIABILIDAD o CONVENIENCIA PARA UN
         PROP&Oacute;SITO PARTICULAR.  V&eacute;ase la GNU Licensia General
