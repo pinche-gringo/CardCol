@@ -112,9 +112,9 @@
     <p>Ist das Spiel beendet, werden die Punkte gez&auml;hlt. Jeder "cerrado"
       ohne Joker oder 2'er z&auml;hlt 400 Punkte (sonst 200); au&szlig;er der
       der Asse - diese bringen 500 beziehungsweise 300 Punkte. Ein "cerrado"
-      aus Jokern und 2'er sind 1.000 Punkte. Aber <b>Achtung</b>: Wird ein ein
-      solcher Stapel angefangen, aber nicht geschlossen, bringt er 1.000
-      Minuspunkte!</p>
+      aus Jokern und 2'er sind 1.000 Punkte; einer nur mit 2'ern 2.000.  Aber
+      <b>Achtung</b>: Wird ein ein solcher Stapel angefangen, aber nicht
+      geschlossen, bringt er 1.000 Minuspunkte!</p>
 
     <p>Weitere (jeweils) 100 Punkte gibt es f&uuml;r das Aufnehmen des Buraco
       und das Beenden des Spiels.</p>
@@ -169,10 +169,5 @@
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
-    <!-- Created: Thu Jul  4 16:36:50 PET 2002 -->
-    <!-- hhmts start -->
-Last modified: Mon Jun 23 11:45:32 PET 2003
-<!-- hhmts end -->
-    - $Revision$
   </body>
 </html>

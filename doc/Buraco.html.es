@@ -105,9 +105,9 @@
       &uacute;ltima carta), los puntos est&aacute;n calculados. Cada cerrado
       sin mono o 2 cuenta 400 puntos; si no 200s; excepto los de los ases -
       ellos cuentas 500 &oacute; 300 respectivamente. Un "cerrado" de
-      solamente monos y/o 2'es cuente 1.000 puntos. Pero <b>cuidado</b>: Si se
-      empieza una pila de monos sin terminarla tambi&eacute;n la cuenta 1.000
-      puntos - pero negativos!</p>
+      solamente monos y/o 2'es cuente 1.000 puntos, uno con solamente 2'es
+      vale 2.000 puntos. Pero <b>cuidado</b>: Si se empieza una pila de monos
+      sin terminarla tambi&eacute;n la cuenta 1.000 puntos - pero negativos!</p>
 
     <p>M&aacute;s 100 puntos hay por recoger el buraco y por terminar el
       juego.</p>
@@ -164,10 +164,5 @@
     <address>
       <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
     </address>
-    <!-- Created: Thu Jul  4 16:36:50 PET 2002 -->
-    <!-- hhmts start -->
-Last modified: Mon Jun 23 11:45:32 PET 2003
-<!-- hhmts end -->
-    - $Revision$
   </body>
 </html>
