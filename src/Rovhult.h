@@ -24,6 +24,7 @@
 #include <gtk--/button.h>
 #include <gtk--/statusbar.h>
 
+#include <Mutex.h>
 #include <Thread.h>
 
 #include <CardSet.h>
@@ -83,6 +84,8 @@ class RovhultAppl : public XApplication {
    void dealCards ();
    void fillStaple ();
 
+   void waitForThread ();
+
    bool clearPlayedIf4Equal ();
    void fillUpPile (ICardPile& pile, unsigned int minCards);
 
@@ -108,6 +111,8 @@ class RovhultAppl : public XApplication {
    Gtk::Statusbar status;
    Gtk::Table     tblTable;
 
+   Widget* pMenuNew;
+
    CardImages cardFaces;
    CardSet cards;
 
@@ -120,10 +125,9 @@ class RovhultAppl : public XApplication {
    vector<Connection> activeCards;
    Connection pileTop;
 
-   Widget* pMenuNew;
-
    typedef OThread<RovhultAppl> THRDAPPL;
    THRDAPPL* pThread;
+   Mutex mutexThread;
 
    static const unsigned int USED_CARDS = 52;
 

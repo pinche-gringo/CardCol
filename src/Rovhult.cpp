@@ -327,7 +327,6 @@ RovhultAppl::RovhultAppl ()
 
    show ();
 
-
    // Load cards in background
    pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::loadCards,
                                NULL);
@@ -493,11 +492,22 @@ void RovhultAppl::disableLastPlayer () {
 }
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Disables the cards of the passed player
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::waitForThread () {
+   mutexThread.lock ();
+   if (pThread)
+      Thread::waitForThread (*pThread);
+   mutexThread.unlock ();
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Callback after clicking on a card on table
 //Parameters: player: ID of player
 //            iCard: Offset of card in hand
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
+   waitForThread ();
    Check3 (player <= NUM_PLAYERS); Check3 (pile < 3);
 
    CardWidget& card (reserve[player][pile].getTopCard ());
@@ -524,8 +534,8 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
 
    // Create a thread to enable the next player; as else re-registering the
    // actual played card (inside its event-handler) wreaks quite a bit of havoc
-   THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::doPileSelected,
-                     (void*)((player << 16) + pile));
+   pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::doPileSelected,
+                               (void*)((player << 16) + pile));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -533,9 +543,8 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
 //Parameters: playerPile: Combination of player-ID and pile number
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::doPileSelected (void* playerPile) {
-   assert (playerPile);
-   unsigned int player ((unsigned int)playerPile >> 16);
-   unsigned int pile ((unsigned int)playerPile & 0xffff);
+   unsigned int player ((unsigned int)playerPile >> 16); assert (player < NUM_PLAYERS);
+   unsigned int pile ((unsigned int)playerPile & 0xffff); assert (pile < 3);
 
    TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - " 
            << player << '/' << pile);
@@ -560,6 +569,9 @@ void RovhultAppl::doPileSelected (void* playerPile) {
 
    executeMove (player, card.number ());
    gdk_threads_leave ();
+   mutexThread.lock ();
+   pThread = NULL;
+   mutexThread.unlock ();
 }
 
 
@@ -610,6 +622,8 @@ bool RovhultAppl::cardValid (CardWidget::NUMBERS nr) {
 //            iCard: Offset of card in hand
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
+   waitForThread ();
+
    TRACE3 ("Rovhult::handSelected (unsigned int, unsinged int) - Checking player "
            << player << "; Card at " << pos);
    Check3 (player <= NUM_PLAYERS);
@@ -649,13 +663,13 @@ void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
    TRACE3 ("RovhultAppl::executeMove (unsigned int, CardWidget::NUMBERS) - " << player)
    Check3 (player < NUM_PLAYERS);
 
+   status.pop (1);
+   std::string stat;
+
    // If last 4 cards have the same number or ten was played: Don't increase
    // player (except of course, if actual player don't have anymore cards)
    if (!((nr == CardWidget::TEN) || clearPlayedIf4Equal ())
        || (player != nextAvailablePlayer ((player - 1) & 0x3))) {
-      status.pop (1);
-
-      std::string stat;
       if (nr != CardWidget::UNREACHABLE)
          player = nextAvailablePlayer (player);
 
@@ -682,16 +696,18 @@ void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
          movePlayedCardsToLooser (player);
          player = nextAvailablePlayer (player);
       }
-      
-      stat = stat + _("Turn of player %1");
-      stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
-      status.push (1, stat);
    }
+   else
+      stat = _("Pile cleared; ");
+
+   stat = stat + _("Turn of player %1");
+   stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+   status.push (1, stat);
 
    // Create a thread to enable the next player; as else re-registering the
    // actual played card (inside its event-handler) wreaks quite a bit of havoc
-   THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::threadedEnablePlayer,
-                     (void*)(player));
+   pThread = THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::threadedEnablePlayer,
+                               (void*)(player));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -700,6 +716,8 @@ void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 //Parameters: player: ID of player picking up the cards
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::takeCards (unsigned int player) {
+   waitForThread ();
+
    TRACE2 ("RovhultAppl::takeCards (unsigned int) - " << player);
    disableLastPlayer ();
    executeMove ((player - 1) & 0x3, CardWidget::UNREACHABLE);
@@ -865,7 +883,9 @@ void RovhultAppl::loadCards () {
 
    cardFaces.load (staple.get_window ());  // Cards need an realized (!) parent
    cards.addPacket (cardFaces);
+   mutexThread.lock ();
    pThread = NULL;
+   mutexThread.unlock ();
 
    gdk_threads_enter ();
    pMenuNew->set_sensitive (true);
