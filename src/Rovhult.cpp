@@ -599,15 +599,13 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
       players[player].reserve[pile].removeTopCard ();
       played.append (card);
       executeMove (player, CardWidget::UNREACHABLE);
+      makeComputerMoves ();
       return;
    }
    disableLastPlayer ();
 
    Gtk::Main::timeout.connect (bind (slot (this, &RovhultAppl::doPileSelected),
                                      player, pile), 1000);
-
-   // Start a timer to perform the computer-moves
-   makeComputerMoves ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -620,6 +618,7 @@ int RovhultAppl::doPileSelected (unsigned int player, unsigned int pile) {
    TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - " 
            << player << '/' << pile);
 
+   Check3 (player < NUM_PLAYERS); Check3 (pile < 3);
    Check3 (players[player].reserve[pile].numberOfCards ());
 
    // Move card (and visible cards with equal number below) from player to
@@ -638,8 +637,13 @@ int RovhultAppl::doPileSelected (unsigned int player, unsigned int pile) {
    }
 
    actPlayer = executeMove (player, card.number ());
+
    if (!(player || actPlayer))
       enablePlayer (0);
+   else
+      if (!player)
+         // Start a timer to perform the computer-moves
+         makeComputerMoves ();
 
    return 0;
 }
@@ -1278,7 +1282,8 @@ int RovhultAppl::makeTurn (unsigned int player) {
    // the smallest available
    CardWidget::NUMBERS cardMin (CardWidget::THREE);
    if (played.numberOfCards ()
-       && (played.getTopCard ().number () != CardWidget::SEVEN))
+       && (played.getTopCard ().number () != CardWidget::SEVEN)
+       && (played.getTopCard ().number () != CardWidget::TWO))
       cardMin = played.getTopCard ().number ();
 
    TRACE5 ("RovhultAppl::makeTurn (unsigned int) - Card to beat " << cardMin);
@@ -1315,6 +1320,9 @@ int RovhultAppl::makeTurn (unsigned int player) {
             unsigned int npos = players[player].hand.findLastEqual (pos);
             if ((npos + 1) < nrCards)
                pos = npos + 1;
+            else
+               // Ten must be played: Clear played pile
+               played.clear ();
          }
 
          // Now find the last of equal cards; we want to get rid of all of them
@@ -1346,11 +1354,8 @@ int RovhultAppl::makeTurn (unsigned int player) {
                       && (players[player].reserve[i + 1].getTopCard ().number ()
                           == actCard.number ()))
                   ++i;
-            }
 
-            // Execute move (if valid card found)
-            if (i != 3) {
-               doPileSelected (player, i);
+               doPileSelected (player, i);                      // Execute move
                return actPlayer;
             }
          }
@@ -1358,27 +1363,28 @@ int RovhultAppl::makeTurn (unsigned int player) {
 
       // No card visible: Play the first
       if (!cardVisible) {
-         for (int i (0); i < 3; ++i) {
-            if (players[player].reserve[i].numberOfCards ()) {
-               CardWidget& card (players[player].reserve[i].getTopCard ());
-               card.setVisible ();
+         unsigned int i (0);
+         while (!players[player].reserve[i].numberOfCards ())
+            ++i;
 
-               // If card is valid: Play it
-               if (cardValid (card.number (), true)) {
-                  doPileSelected (player, i);
-                  return actPlayer;
-               }
-               else {
-                  // Card is not valid: Take up pile
-                  players[player].reserve[i].removeTopCard ();
-                  played.append (card);
-                  return executeMove (player, CardWidget::UNREACHABLE);
-               }
-            }
+         CardWidget& card (players[player].reserve[i].getTopCard ());
+         card.setVisible ();
+
+         // If card is valid: Play it
+         if (cardValid (card.number (), true)) {
+            doPileSelected (player, i);
+            return actPlayer;
+         }
+         else {
+            // Card is not valid: Take up pile
+            players[player].reserve[i].removeTopCard ();
+            played.append (card);
          }
       }
 
-      Check3 (0);
+      // Either invisible card was invalid or no visible card is playable (al-
+      // though you shouldn't then reach this part anyway): Take up pile
+      return executeMove (player, CardWidget::UNREACHABLE);
    }
 }
 
