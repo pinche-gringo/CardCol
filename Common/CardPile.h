@@ -82,7 +82,7 @@ class ICardPile : public std::vector<CardWidget*> {
    virtual CardWidget& remove (CardWidget& card);
    virtual CardWidget& remove (unsigned int pos);
 
-   virtual CardWidget& move (unsigned int dest, unsigned int source);
+   virtual void move (unsigned int dest, unsigned int source);
 
    CardWidget* get (unsigned int id) const;
 
@@ -116,7 +116,7 @@ class ICardPile : public std::vector<CardWidget*> {
       return find (nr, start) != -1; }
    bool exists (CardWidget::COLOURS colour, unsigned int start = 0) const {
       return find (colour, start) != -1; }
-   bool exists (CardWidget& card) const { exists (&card); }
+   bool exists (CardWidget& card) const { return exists (&card); }
    bool exists (CardWidget* card) const {
       return std::find (begin (), end (), card) != end (); }
 
@@ -204,7 +204,7 @@ template <class T> class CardPile : public T, public ICardPile {
 
  protected:
    virtual void resortGUI () {
-      for (int i (0); i < size (); ++i)
+      for (unsigned int i (0); i < size (); ++i)
          Gtk::Box::reorder_child (*operator[] (i), i);
       if (size ())
          resize (size () - 1, NORMAL);
@@ -286,9 +286,9 @@ template <class T> class CardInfoPile : public CardPile<T> {
       setTooltips ();
       return card; }
    virtual CardWidget& remove (unsigned int pos, bool visible) {
-      CardPile<T>::remove (pos, visible); }
+      return CardPile<T>::remove (pos, visible); }
 
-   virtual CardWidget& move (unsigned int dest, unsigned int source) {
+   virtual void move (unsigned int dest, unsigned int source) {
       CardPile<T>::move (dest, source);
       setTooltips (); }
 
@@ -304,7 +304,7 @@ template <class T> class CardInfoPile : public CardPile<T> {
       std::string tip (ngettext ("%1 card", "%1 cards", size ()));
       tip.replace (tip.find ("%1"), 2,
                    ANumeric::toString (size ()));
-      for (int i (0); i < size (); ++i)
+      for (unsigned int i (0); i < size (); ++i)
          tt.set_tip (*operator[] (i), tip);
    }
 

@@ -25,6 +25,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#define TRACELEVEL 9
 #include <Trace_.h>
 
 #include "CardPile.h"
@@ -304,7 +305,7 @@ void ICardPile::sort (CMPFUNC fnSort) {
 //-----------------------------------------------------------------------------
 int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
    unsigned int first (0), last (size ());
-   unsigned int middle;
+   unsigned int middle (0);
 
    TRACE8 ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - Searching for "
            << nr << " in " << size () << " cards");
@@ -409,7 +410,7 @@ void ICardPile::setShowOption (ShowOpt show) {
 /// \param source: Position of card to move
 /// \param dest: New position of card
 //-----------------------------------------------------------------------------
-CardWidget& ICardPile::move (unsigned int dest, unsigned int source) {
+void ICardPile::move (unsigned int dest, unsigned int source) {
    TRACE5 ("ICardPile::move (unsigned int, unsigned int) - Card from pos "
            << source << " to " << dest);
 

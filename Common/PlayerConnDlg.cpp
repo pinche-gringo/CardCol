@@ -56,10 +56,10 @@
 PlayerConnectDlg::PlayerConnectDlg (std::vector<Player*>& player,
                                     const Glib::ustring& port,
                                     ConnectionMgr& cmgr)
-    : ConnectDlg (player.size (), port, cmgr), aPlayer (player)
+    : ConnectDlg (player.size (), port, cmgr)
       , connected (new Gtk::Label ())
       , lblConnected (new Gtk::Label (_("Connected:")))
-      , posPlayer (0) {
+      , aPlayer (player), posPlayer (0) {
    TRACE8 ("PlayerConnectDlg::PlayerConnectDlg (std::vector<Player*>&, "
            "const Glib::ustring&, ConnectionMgr&");
 

@@ -65,11 +65,10 @@
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             const std::vector<Player*>& player, unsigned int posPlayer,
             Mutex& mxSerialize, unsigned int rows, unsigned int columns)
-   : Gtk::Table (rows, columns), statGame (NONE), status (statusbar)
-     , cards (cardset), pWonPile (NULL), pMenuPopSort (NULL)
-     , actPlayers (player), data (NULL), posServer (posPlayer)
-     , pos2Play (-1U), pos1Play (-1U), mxSerializeMsgs (mxSerialize)
-     , ignoreNextMsg (false) {
+   : Gtk::Table (rows, columns), status (statusbar) , cards (cardset)
+     , actPlayers (player), mxSerializeMsgs (mxSerialize), posServer (posPlayer)
+     , pos2Play (-1U) , pos1Play (-1U), ignoreNextMsg (false), data (NULL)
+     , statGame (NONE) , actPlayer (0), pWonPile (NULL), pMenuPopSort (NULL) {
    TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, std::vector<Player*>,"
            "unsinged int, unsigned int)");
    Check3 (cardset.size ());

@@ -52,7 +52,7 @@ CardSet::~CardSet () {
 void CardSet::addPacket (const CardImages& decks) {
    TRACE9 ("CardSet::addPacket (const CardImages&)");
 
-   for (int i (0); i < decks.size (); ++i) {
+   for (unsigned int i (0); i < decks.size (); ++i) {
       CardWidget* card (new CardWidget (decks, i, true)); Check3 (card);
       card->show ();
       cards_.push_back (card);
