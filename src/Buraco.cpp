@@ -283,35 +283,42 @@ int Buraco::executeMove (unsigned int player) {
 
    // Check for 3 cards belonging to a serie
 
-      unsigned int nrs (0);
-      unsigned int bCols (0x04);
-      std::vector<unsigned int> aPos;
-      ICardPile::const_iterator p (playerPile.begin ());
-      while ((p = getFittingCard (playerPile, *playerPile[i], p))
-             != playerPile.end ()) {
-         int diff (cardDistance (**p, *playerPile[i]));
-         TRACE9 ("Buraco::executeMove (unsigned int) - " << **p << " differs "
-                 << diff);
-         if (diff) {
-            diff = (diff < 0) ? (diff + 2) : (diff + 1);
-            Check3 (diff < 5);
-            if ((((unsigned int)diff) < 4) && !(bCols & (1 << diff))) {
-               bCols |= (1 << diff);
-               aPos.push_back (p - playerPile.begin ());
-               if (aPos.size () == 7)
-                  break;
+      unsigned int nrs (1);
+      unsigned int bCols (0x4);
+      std::map<int, unsigned int> aPos;
+      for (ICardPile::const_iterator p (playerPile.begin ());
+           ((p = getFittingCard (playerPile, *playerPile[i], p)) 
+             != playerPile.end ()); ++p) {
+         if (*p == playerPile[i])
+            aPos[2] = i;
+         else {
+            int diff (cardDistance (**p, *playerPile[i]));
+            TRACE9 ("Buraco::executeMove (unsigned int) - " << **p
+                    << " differs " << diff);
+            if (diff) {
+               diff = (diff < 0) ? (diff + 2) : (diff + 2);
+               Check3 (diff <= 4);
+               if (!(bCols & (1 << diff))) {
+                  Check3 (aPos.find (diff) == aPos.end ());
+                  aPos[diff] = p - playerPile.begin ();
+                  bCols |= (1 << diff);
+                  if (aPos.size () == 7)
+                     break;
+               }
             }
+            else
+                if (++nrs == 7)
+                    break;
          }
-         else
-            if (++nrs == 7)
-               break;
-         ++p;
       }
 
       // Check if the series of colors is a valid one
       TRACE9 ("Buraco::executeMove (unsigned int) - Serie: " << std::hex
               << bCols << std::dec);
-      if ((bCols != 0x7) && (bCols != 0x0e) && (bCols != 0x1c))
+      Check3 (aPos.find (2) != aPos.end ());
+      Check3 (bCols & 0x4);
+      if (((bCols & 0x3) != 0x3) && ((bCols & 0xa) != 0xa)
+          && ((bCols &0x18) != 0x18))
          aPos.clear ();
       //   - Play jokers if there are at least 5 and the team has still the
       //     reserve and the other team has no burraco and the reserve
@@ -321,11 +328,15 @@ int Buraco::executeMove (unsigned int player) {
           ? (nrs > 4)
          if (nrs < aPos.size ()) {
           if (nrs < aPos.size ()) {
-             nrs = aPos.size ();
-             for (std::vector<unsigned int>::const_iterator pi (aPos.begin ());
-                  pi != aPos.end (); ++pi) 
-                playerPile.move (playerPile.size () - 1, *pi);
-             i = playerPile.size () - nrs;
+             // Although more cards have been found, only play 3 of them as
+             // this makes the logic easier; the others are added in the next
+             // turns.
+             nrs = ((bCols & 0x3) == 0x3) ? 2 : ((bCols & 0xa) == 0xa) ? 3 : 4;
+             for (unsigned int c (0); c < 3; ++c) {
+                Check3 (aPos.find (nrs - c) != aPos.end ());
+                playerPile.move (playerPile.size () - 1 - c, aPos[nrs - c]);
+             }
+             i = playerPile.size () - (nrs = 3);
           }
           aPos.clear ();
          if (!unfinishedMonoPiles[player & 1]
@@ -354,7 +365,6 @@ int Buraco::executeMove (unsigned int player) {
                Check3 (diff >= -2);
                playerPile.move (playerPile.size () - 2,
                                 next - playerPile.begin ());
-               Check3 (next > (ci - diff));
                playerPile.move (playerPile.size () - 1 + diff,
                                 ci - playerPile.begin ());
                playerPile.move (playerPile.size () - 1, ci - playerPile.begin ());
@@ -372,14 +382,21 @@ int Buraco::executeMove (unsigned int player) {
                             pos2 = playerPile.size () - 1);
          ++ci;
       }
-         ++ci;
 
+      ++ci;
+   // Play all jokers if team has a cerrado, or leave one, if the player has
    // >= 2 normal cards left.
-      if ((ci != playerPile.end ()) && isJoker (**ci))
+   if (playerPile.size () && (points[player & 1] > 100)) {
+      if ((isJoker (*playerPile[playerPile.size () - 1]))
+             && ((playerPile.size () <= 2)
+                 || ((!isJoker (*playerPile[1]))
+                     || isJoker (*playerPile[playerPile.size () - 2])))) {
+         unsigned int bestPile (-1U);
+                     || isJoker (*playerPile[playerPile.size () - 2]))))
          for (std::vector<CardVPile*>::const_iterator p (tablePiles[player & 1].begin ());
               p != tablePiles[player & 1].end (); ++p)
             if (((*p)->size () < 7) && containsNoJoker (**p)) {
-               pos1 = pos2 = ci - playerPile.begin ();
+               pos1 = pos2 = playerPile.size () - 1;
                flipCards2Play (playerPile, pos1, pos2);
                return (p - tablePiles[player & 1].begin ()) << 16;
 
@@ -1635,6 +1652,12 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
            << a << "<->" << b);
    TRACE1 ("Buraco::cardDistance (const CardWidget&, const CardWidget&) - "
    bool aJoker (isJoker (a));
+   bool bJoker (isJoker (b));
+   if (aJoker || bJoker)
+      return aJoker && bJoker ? 0 : 99;
+
+   if (a.colour () != b.colour ())
+      return (a.number () == b.number ()) ? 0 : 99;
       if ((a.number () == CardWidget::ACE)
        TRACE9 ("Buraco::cardDistance (const CardWidget&, const CardWidget&) - "
                "Checking for Ace");
@@ -1645,12 +1668,6 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
                && (a.number () <= CardWidget::FOUR))
 
    TRACE4 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
-
-   // Special handling of jokers
-   bool aJoker (isJoker (a));
-   bool bJoker (isJoker (b));
-   if (aJoker || bJoker)
-      return aJoker && bJoker ? 0 : 99;
            "Distance: " << a.number () - b.number ());
    TRACE1 ("Buraco::cardDistance (const CardWidget&, const CardWidget&) - "
 }
