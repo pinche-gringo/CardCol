@@ -32,15 +32,18 @@
 #include <gtk/gtkdnd.h>
 
 #include <gtkmm/statusbar.h>
-#include <gtkmm/messagedialog.h>
 
 #define CHECK 9
 #define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
+#include <YGP/ANumeric.h>
 #include <YGP/Tokenize.h>
 #include <YGP/AttrParse.h>
+#include <YGP/StatusObj.h>
+
+#include <XGP/MessageDlg.h>
 
 #include <Player.h>
 #include <CardSet.h>
@@ -175,8 +178,10 @@ void Machiavelli::clean () {
    staple.clear ();
 
    for (std::vector<MachiPile*>::iterator i (tablePiles.begin ());
-        i != tablePiles.end (); ++i)
+        i != tablePiles.end (); ++i) {
+      (*i)->clear ();
       piles.remove (**i);
+   }
    tablePiles.clear ();
 
    Game::clean ();
@@ -276,7 +281,6 @@ int Machiavelli::makeMove (unsigned int player) {
 
       TRACE4 ("Machiavelli::makeMove (unsigned int) - Moving cards to pile " << target);
       Check3 (target < tablePiles.size ());
-      ICardPile& dest ();
 
 #if CHECK > 2
       for (unsigned int t (pos1Play); t < pos2Play; ++t) {
@@ -291,6 +295,21 @@ int Machiavelli::makeMove (unsigned int player) {
       for (; (int)pos1Play <= (int)pos2Play; --pos2Play)
          tablePiles[target]->insert (hands[player].remove (pos1Play), pos++);
       target = -1U;
+
+      // No more cards found: Continue with next player
+      if (hands[player].empty ()) {
+         unsigned int next (findNextPlayer (player));
+         if (next == player) {
+            status.pop ();
+            Glib::ustring stat (_("%1 lost"));
+            stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
+            status.push (stat);
+            setGameStatus (STOPPED);
+            return -1;
+         }
+         displayTurn (player = next);
+         dealCard (player);
+      }
    }
 
    return player;
@@ -414,6 +433,9 @@ void Machiavelli::stapleSelected () {
    TRACE5 ("Machiavelli::stapleSelected ()");
    Check1 (gameStatus () == PLAYING);
    Check3 (staple.size ()); Check3 (activeCards.size ());
+
+   if (!checkPiles ())
+      return;
 
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
@@ -673,16 +695,6 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    TRACE4 ("Machiavelli::cardDroppedOnTable (...) - Card dropped: " << *moved);
 
    if (iCard == -1U) {    // If card was dropped on the new label: Create pile
-      if ((info == HAND)
-          && !src.hasFittingPair (*moved, &MachiPile::cardDistance, false)) {
-         context->drag_finish (false, false, time);
-         Gtk::MessageDialog dlg (_("There are no cards to make a valid new pile!"),
-                                 Gtk::MESSAGE_ERROR);
-         dlg.set_title (_("Invalid move"));
-         dlg.run ();
-         return;
-      }
-
       iPile = tablePiles.size ();
       pile = &makeNewPile ();
       iCard = 0;
@@ -740,8 +752,25 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
          break;
    }
 
+   // Pile moved completely?
+   if ((info == TABLE) && src.empty ()) {
+      std::vector<MachiPile*>::iterator i (tablePiles.begin () + nrpile);
+      Check3 (*i == &src);
+      tablePiles.erase (i);
+      delete &src;
+
+      if (nrpile > iPile)
+         nrpile = iPile;
+
+      // Re-register the following piles
+      while (nrpile < tablePiles.size ()) {
+         registerTableDND (nrpile, 0, tablePiles[nrpile]->size () - 1);
+         ++nrpile;
+      }
+   }
+
    // Re-register the cards in the hand of the human for DND
-   if (*pValue < hands[0].size ())
+   if ((info ==HAND) && *pValue < hands[0].size ())
       registerHandDND (*pValue, hands[0].size () - 1);
    Check3 (aDNDHand.size () == hands[0].size ());
 }
@@ -847,4 +876,38 @@ void Machiavelli::dealCard (unsigned int player) {
       CardWidget& card (staple.removeTopCard ());
       player ? hands[player].insertSorted (card) : hands[0].append (card);
    }
+}
+
+//----------------------------------------------------------------------------
+/// Checks, if all the piles on the table are valid
+/// \return bool: True, if piles are valid 
+//----------------------------------------------------------------------------
+bool Machiavelli::checkPiles () const {
+   YGP::StatusObject obj;
+
+   for (std::vector<MachiPile*>::const_iterator i (tablePiles.begin ());
+        i != tablePiles.end (); ++i) {
+       try {
+           (*i)->checkIntegrity ();
+       }
+       catch (Glib::ustring& error) {
+           TRACE9 ("Machiavelli::checkPiles () const - " << (i - tablePiles.begin ())
+                   << ": " << error);
+           Glib::ustring msg (_("Pile %1: %2\n"));
+           msg.replace (msg.find ("%1"), 2,
+                        YGP::ANumeric::toString (i - tablePiles.begin () + 1));
+           msg.replace (msg.find ("%2"), 2, error);
+           obj.setMessage (YGP::StatusObject::ERROR, msg);
+       }
+   }
+
+   // Show error, if any
+   if (obj.getType () != YGP::StatusObject::UNDEFINED) {
+      obj.abstract (_("The piles are not valid!"));
+      XGP::MessageDlg dlg (obj);
+      dlg.set_title (_("Invalid move"));
+      dlg.run ();
+      return false;
+   }
+   return true;
 }
