@@ -1,9 +1,19 @@
+Overview of changes in version 0.5.00:
+
+  - Added network ability
+  - Improved Buraco's layout (table shows scrollbars, when needed)
+  - Improved Buracos computer player
+  - Twopart, Røvhult and Buraco start with a random player
+  - Fixed Røvhult's checking of humans playing from pile
+  - Fixed Twopart's calcuation of next player (equal cards at end of part I)
+  - Needs library YGP 0.6.21
+
 Overview of changes in version 0.4.00:
 
   - New game: Buraco
   - Switched to GCC 3
   - Using GTKMM2/GTK+ 2
-  - Needs General library 0.6.20
+  - Needs library YGP 0.6.20
   - Cards aint influenced by GTK-styles (as they are only images, not buttons)
   - Providing an icon for the window managers
   - Cards must now be in png-format (which allows to use KDE's cards directly)
