@@ -103,7 +103,7 @@
     <ul>
       <li>The staple: A heap of cards (with face down), from where you put
         up new cards (if you put the mouse over it you are informed about
-        the number of remaining cards). In part two the color of the trump
+        the number of remaining cards). In part two the colour of the trump
         is shown here.</li>
       <li>The cards of the human player. The won cards (above) become visible,
         if they are clicked into; right-clicking allows to sort them.</li>
