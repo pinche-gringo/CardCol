@@ -4,8 +4,8 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Cardgames V0.2 ($Revision$)\n"
-"POT-Creation-Date: 2003-01-12 21:51-0500\n"
+"Project-Id-Version: Cardgames V0.3 ($Revision$)\n"
+"POT-Creation-Date: 2003-01-18 23:03-0500\n"
 "PO-Revision-Date: 2002-04-28 00:15-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -114,172 +114,137 @@ msgstr ""
 msgid "Player %1:"
 msgstr ""
 
-#: src/CardCol.cpp:299
+#: src/CardCol.cpp:297
 msgid "_Game"
 msgstr ""
 
-#: src/CardCol.cpp:299
+#: src/CardCol.cpp:297
 msgid "<alt>G"
 msgstr ""
 
-#: src/CardCol.cpp:300
+#: src/CardCol.cpp:298
 msgid "_New"
 msgstr ""
 
-#: src/CardCol.cpp:300
+#: src/CardCol.cpp:298
 msgid "<ctl>N"
 msgstr ""
 
-#: src/CardCol.cpp:301
+#: src/CardCol.cpp:299
 msgid "_End"
 msgstr ""
 
-#: src/CardCol.cpp:301
+#: src/CardCol.cpp:299
 msgid "<ctl>E"
 msgstr ""
 
-#: src/CardCol.cpp:303
+#: src/CardCol.cpp:301
 msgid "E_xit"
 msgstr ""
 
-#: src/CardCol.cpp:303
+#: src/CardCol.cpp:301
 msgid "<ctl>Q"
 msgstr ""
 
-#: src/CardCol.cpp:304
+#: src/CardCol.cpp:302
 msgid "_Options"
 msgstr ""
 
-#: src/CardCol.cpp:304
+#: src/CardCol.cpp:302
 msgid "<alt>O"
 msgstr ""
 
-#: src/CardCol.cpp:305
+#: src/CardCol.cpp:303
 msgid "_Change game"
 msgstr ""
 
-#: src/CardCol.cpp:305
+#: src/CardCol.cpp:303
 msgid "<alt>C"
 msgstr ""
 
-#: src/CardCol.cpp:306
+#: src/CardCol.cpp:304
 msgid "_Røvhult"
 msgstr ""
 
-#: src/CardCol.cpp:306
+#: src/CardCol.cpp:304
 msgid "<ctl>R"
 msgstr ""
 
-#: src/CardCol.cpp:307
+#: src/CardCol.cpp:305
 msgid "_Twopart"
 msgstr ""
 
-#: src/CardCol.cpp:307
+#: src/CardCol.cpp:305
 msgid "<ctl>T"
 msgstr ""
 
-#: src/CardCol.cpp:308
+#: src/CardCol.cpp:306
 msgid "_Hearts"
 msgstr ""
 
-#: src/CardCol.cpp:308
+#: src/CardCol.cpp:306
 msgid "<ctl>H"
 msgstr ""
 
-#: src/CardCol.cpp:310
+#: src/CardCol.cpp:308
 msgid "Change _decks ..."
 msgstr ""
 
-#: src/CardCol.cpp:310
+#: src/CardCol.cpp:308
 msgid "<ctl>D"
 msgstr ""
 
-#: src/CardCol.cpp:311
+#: src/CardCol.cpp:309
 msgid "Change _names ..."
 msgstr ""
 
-#: src/CardCol.cpp:311
+#: src/CardCol.cpp:309
 msgid "<ctl>C"
 msgstr ""
 
-#: src/CardCol.cpp:312
+#: src/CardCol.cpp:310
 msgid "_Save settings"
 msgstr ""
 
-#: src/CardCol.cpp:312
+#: src/CardCol.cpp:310
 msgid "<ctl>S"
 msgstr ""
 
-#: src/CardCol.cpp:316
-msgid "_Help"
-msgstr ""
-
-#: src/CardCol.cpp:316
-msgid "<alt>H"
-msgstr ""
-
-#: src/CardCol.cpp:317
-msgid "_Content..."
-msgstr ""
-
-#: src/CardCol.cpp:317
-msgid "F1"
-msgstr ""
-
-#: src/CardCol.cpp:318
-msgid "_About..."
-msgstr ""
-
-#: src/CardCol.cpp:318
-msgid "<ctl>A"
-msgstr ""
-
-#: src/CardCol.cpp:352
+#: src/CardCol.cpp:393
 msgid "Error starting thread"
 msgstr ""
 
-#: src/CardCol.cpp:420
+#: src/CardCol.cpp:470
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 
-#: src/CardCol.cpp:433
+#: src/CardCol.cpp:483
 msgid "Do you really want to end the game?"
 msgstr ""
 
-#: src/CardCol.cpp:472
+#: src/CardCol.cpp:523
+msgid "A game is running. Do you really want to quit?"
+msgstr ""
+
+#: src/CardCol.cpp:562
 #, ycp-format
 msgid ""
-"Anticopyright (A) 2002 Markus Schwab\n"
+"Anticopyright (A) 2002, 2003 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
 "\n"
 "Compiled on %1 at %2"
 msgstr ""
 
-#: src/CardCol.cpp:484
-msgid "A game is running. Do you really want to quit?"
-msgstr ""
-
-#: src/CardCol.cpp:507
-msgid "Error starting browser for help! Reason"
-msgstr ""
-
-#: src/CardCol.cpp:511
-msgid ""
-"Error starting browser for help!\n"
-"\n"
-"Reason: "
-msgstr ""
-
-#: src/CardCol.cpp:606
+#: src/CardCol.cpp:643
 msgid "User canceled"
 msgstr ""
 
-#: src/CardCol.cpp:633
+#: src/CardCol.cpp:670
 msgid "Loading cardimages ..."
 msgstr ""
 
-#: src/CardCol.cpp:665
+#: src/CardCol.cpp:684
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr ""
 

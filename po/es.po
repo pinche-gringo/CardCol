@@ -4,8 +4,8 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Cardgames V0.2 ($Revision$)\n"
-"POT-Creation-Date: 2003-01-12 21:51-0500\n"
+"Project-Id-Version: Cardgames V0.3 ($Revision$)\n"
+"POT-Creation-Date: 2003-01-18 23:03-0500\n"
 "PO-Revision-Date: 2002-04-28 00:15-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -49,7 +49,9 @@ msgstr "%1 no puede continuar -> Consigue todo el estaple. "
 msgid ""
 "Exchange the cards in your hand with the one on the table (with drag and "
 "drop) - press space (or click on the staple) if finished"
-msgstr "Intercambiar las cartas de la mano (arriba) con las de abojo (con su mouse) - después empuje la tecla espacio (o hace click en el mazo de cartas)"
+msgstr ""
+"Intercambiar las cartas de la mano (arriba) con las de abojo (con su mouse) "
+"- después empuje la tecla espacio (o hace click en el mazo de cartas)"
 
 #: Common/CardImgs.cpp:92 Common/CardImgs.cpp:119
 #, ycp-format
@@ -70,7 +72,9 @@ msgstr[1] "%1 cartas"
 #: src/Twopart.cpp:276
 msgid ""
 "Played card(s) must have the same color and must be bigger (or be a trump)!"
-msgstr "¡Cartas jugadas tienen que tener el mismo color y estar mayor (o estar del color especial)!"
+msgstr ""
+"¡Cartas jugadas tienen que tener el mismo color y estar mayor (o estar del "
+"color especial)!"
 
 #: src/Twopart.cpp:352
 #, c-format, ycp-format
@@ -80,7 +84,7 @@ msgstr "Primero parte terminó; %2 comienza el parte 2"
 #: src/Twopart.cpp:389
 #, ycp-format
 msgid "%1 can't continue -> Picking up last cards; "
-msgstr "%1 no puede continuar -> Consegue todo del staple. %2 sigue"
+msgstr "%1 no puede continuar -> Consigue todo del staple. %2 sigue"
 
 #: Common/DeckSelect.cpp:49
 msgid "Available decks"
@@ -96,200 +100,162 @@ msgstr "Fondos de cartas disponibles"
 
 #: Common/DeckSelect.cpp:57
 msgid "Select carddeck"
-msgstr "Selectar cartas"
+msgstr "Selecte cartas"
 
 #: Common/Game.cpp:221 Common/Game.cpp:232
 #, c-format, ycp-format
 msgid "Turn of %1"
-msgstr "Turno del %1"
+msgstr "Turno de %1"
 
 #: Common/Game.cpp:314
 msgid "Sort by number"
-msgstr "Sortear de números"
+msgstr "Sortea de números"
 
 #: Common/Game.cpp:317
 msgid "Sort by color"
-msgstr "Sortear de colores"
+msgstr "Sortea de colores"
 
 #: Common/PlayerDlg.cpp:58
 #, ycp-format
 msgid "Player %1:"
 msgstr "Jugador %1:"
 
-#: src/CardCol.cpp:299
+#: src/CardCol.cpp:297
 msgid "_Game"
 msgstr "_Juego"
 
-#: src/CardCol.cpp:299
+#: src/CardCol.cpp:297
 msgid "<alt>G"
 msgstr "<alt>J"
 
-#: src/CardCol.cpp:300
+#: src/CardCol.cpp:298
 msgid "_New"
 msgstr "_Nuevo"
 
-#: src/CardCol.cpp:300
+#: src/CardCol.cpp:298
 msgid "<ctl>N"
 msgstr ""
 
-#: src/CardCol.cpp:301
+#: src/CardCol.cpp:299
 msgid "_End"
 msgstr "_Terminar"
 
-#: src/CardCol.cpp:301
+#: src/CardCol.cpp:299
 msgid "<ctl>E"
 msgstr "<ctl>T"
 
-#: src/CardCol.cpp:303
+#: src/CardCol.cpp:301
 msgid "E_xit"
 msgstr "Cerrar"
 
-#: src/CardCol.cpp:303
+#: src/CardCol.cpp:301
 msgid "<ctl>Q"
 msgstr "<ctl>C"
 
-#: src/CardCol.cpp:304
+#: src/CardCol.cpp:302
 msgid "_Options"
 msgstr "_Opciónes"
 
-#: src/CardCol.cpp:304
+#: src/CardCol.cpp:302
 msgid "<alt>O"
 msgstr "<alt>O"
 
-#: src/CardCol.cpp:305
+#: src/CardCol.cpp:303
 msgid "_Change game"
 msgstr "Cambiar el _juego"
 
-#: src/CardCol.cpp:305
+#: src/CardCol.cpp:303
 msgid "<alt>C"
 msgstr ""
 
-#: src/CardCol.cpp:306
+#: src/CardCol.cpp:304
 msgid "_Røvhult"
 msgstr ""
 
-#: src/CardCol.cpp:306
+#: src/CardCol.cpp:304
 msgid "<ctl>R"
 msgstr ""
 
-#: src/CardCol.cpp:307
+#: src/CardCol.cpp:305
 msgid "_Twopart"
 msgstr ""
 
-#: src/CardCol.cpp:307
+#: src/CardCol.cpp:305
 msgid "<ctl>T"
 msgstr ""
 
-#: src/CardCol.cpp:308
+#: src/CardCol.cpp:306
 msgid "_Hearts"
 msgstr ""
 
-#: src/CardCol.cpp:308
+#: src/CardCol.cpp:306
 msgid "<ctl>H"
 msgstr "<ctl>H"
 
-#: src/CardCol.cpp:310
+#: src/CardCol.cpp:308
 msgid "Change _decks ..."
-msgstr "Cambiar _imagenes de las cartas ..."
+msgstr "Cambia _imagenes de las cartas ..."
 
-#: src/CardCol.cpp:310
+#: src/CardCol.cpp:308
 msgid "<ctl>D"
 msgstr "<ctl>I"
 
-#: src/CardCol.cpp:311
+#: src/CardCol.cpp:309
 msgid "Change _names ..."
 msgstr "Cambiar los _nombres ..."
 
-#: src/CardCol.cpp:311
+#: src/CardCol.cpp:309
 msgid "<ctl>C"
 msgstr ""
 
-#: src/CardCol.cpp:312
+#: src/CardCol.cpp:310
 msgid "_Save settings"
-msgstr "Guardar opciónes"
+msgstr "_Guarda opciónes"
 
-#: src/CardCol.cpp:312
+#: src/CardCol.cpp:310
 msgid "<ctl>S"
 msgstr "<ctl>G"
 
-#: src/CardCol.cpp:316
-msgid "_Help"
-msgstr "_Ayuda"
-
-#: src/CardCol.cpp:316
-msgid "<alt>H"
-msgstr "<alt>A"
-
-#: src/CardCol.cpp:317
-msgid "_Content..."
-msgstr "_Contento ..."
-
-#: src/CardCol.cpp:317
-msgid "F1"
-msgstr ""
-
-#: src/CardCol.cpp:318
-msgid "_About..."
-msgstr "_Sobre ..."
-
-#: src/CardCol.cpp:318
-msgid "<ctl>A"
-msgstr "<ctl>S"
-
-#: src/CardCol.cpp:352
+#: src/CardCol.cpp:393
 msgid "Error starting thread"
 msgstr "Error ejecutando el proceso del fondo"
 
-#: src/CardCol.cpp:420
+#: src/CardCol.cpp:470
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 "Un juego ya está activo. ¿Seguro que quieres terminarlo y comencer de nuevo?"
 
-#: src/CardCol.cpp:433
+#: src/CardCol.cpp:483
 msgid "Do you really want to end the game?"
 msgstr "¿Seguro que quieres terminar el juego activo?"
 
-#: src/CardCol.cpp:472
+#: src/CardCol.cpp:523
+msgid "A game is running. Do you really want to quit?"
+msgstr "Un juego está activo. ¿Seguro que quieres cerrar?"
+
+#: src/CardCol.cpp:562
 #, ycp-format
 msgid ""
-"Anticopyright (A) 2002 Markus Schwab\n"
+"Anticopyright (A) 2002, 2003 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
 "\n"
 "Compiled on %1 at %2"
 msgstr ""
-"Anticopyright (A) 1999 - 2002 Markus Schwab\n"
+"Anticopyright (A) 1999 - 2003 Markus Schwab\n"
 "correo-e: g17m0@lycos.com\n"
 "\n"
 "Compilado al %1 al %2"
 
-#: src/CardCol.cpp:484
-msgid "A game is running. Do you really want to quit?"
-msgstr "Un juego está activo. ¿Seguro que quieres cerrar?"
-
-#: src/CardCol.cpp:507
-msgid "Error starting browser for help! Reason"
-msgstr "Error ejecutando el navigator por el ayuda! Causa"
-
-#: src/CardCol.cpp:511
-msgid ""
-"Error starting browser for help!\n"
-"\n"
-"Reason: "
-msgstr ""
-"Error ejecutando el navigator por el ayuda!\n"
-"\n"
-"Causa: "
-
-#: src/CardCol.cpp:606
+#: src/CardCol.cpp:643
 msgid "User canceled"
 msgstr "Usario terminó"
 
-#: src/CardCol.cpp:633
+#: src/CardCol.cpp:670
 msgid "Loading cardimages ..."
 msgstr "Abriendo las imagenes de las cartas ..."
 
-#: src/CardCol.cpp:665
+#: src/CardCol.cpp:684
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Comienca un juego nuevo con Ctrl+N (o Juego -> Nuevo)"
 

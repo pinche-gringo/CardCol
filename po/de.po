@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.3 ($Revision$)\n"
-"POT-Creation-Date: 2003-01-12 21:51-0500\n"
+"POT-Creation-Date: 2003-01-18 23:03-0500\n"
 "PO-Revision-Date: 2002-05-20 00:15-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -49,7 +49,9 @@ msgstr "%1 kann nicht fortsetzen und bekommt daher den ganzen Stapel. "
 msgid ""
 "Exchange the cards in your hand with the one on the table (with drag and "
 "drop) - press space (or click on the staple) if finished"
-msgstr "Tausche die Karten in der Hand mit jenen am Tisch (mittels Ziehen und Ablegen) - Starte das Spiel mit der Leertaste (oder durch Klicken am Stapel)"
+msgstr ""
+"Tausche die Karten in der Hand mit jenen am Tisch (mittels Ziehen und "
+"Ablegen) - Starte das Spiel mit der Leertaste (oder durch Klicken am Stapel)"
 
 #: Common/CardImgs.cpp:92 Common/CardImgs.cpp:119
 #, ycp-format
@@ -82,7 +84,8 @@ msgstr "Erster Teil beendet; %1 startet den 2. Teil"
 #: src/Twopart.cpp:389
 #, ycp-format
 msgid "%1 can't continue -> Picking up last cards; "
-msgstr "%1 kann nicht fortsetzen und bekommt daher den ganzen Stapel. %2 ist am Zug"
+msgstr ""
+"%1 kann nicht fortsetzen und bekommt daher den ganzen Stapel. %2 ist am Zug"
 
 #: Common/DeckSelect.cpp:49
 msgid "Available decks"
@@ -118,144 +121,124 @@ msgstr "Nach Farben ordnen"
 msgid "Player %1:"
 msgstr "Spieler %1:"
 
-#: src/CardCol.cpp:299
+#: src/CardCol.cpp:297
 msgid "_Game"
 msgstr "_Spiel"
 
-#: src/CardCol.cpp:299
+#: src/CardCol.cpp:297
 msgid "<alt>G"
 msgstr "<alt>s"
 
-#: src/CardCol.cpp:300
+#: src/CardCol.cpp:298
 msgid "_New"
 msgstr "_Neu"
 
-#: src/CardCol.cpp:300
+#: src/CardCol.cpp:298
 msgid "<ctl>N"
 msgstr ""
 
-#: src/CardCol.cpp:301
+#: src/CardCol.cpp:299
 msgid "_End"
 msgstr "_Anhalten"
 
-#: src/CardCol.cpp:301
+#: src/CardCol.cpp:299
 msgid "<ctl>E"
 msgstr "<ctl>H"
 
-#: src/CardCol.cpp:303
+#: src/CardCol.cpp:301
 msgid "E_xit"
 msgstr "_Beenden"
 
-#: src/CardCol.cpp:303
+#: src/CardCol.cpp:301
 msgid "<ctl>Q"
 msgstr "<ctl>x"
 
-#: src/CardCol.cpp:304
+#: src/CardCol.cpp:302
 msgid "_Options"
 msgstr "_Optionen"
 
-#: src/CardCol.cpp:304
+#: src/CardCol.cpp:302
 msgid "<alt>O"
 msgstr "<alt>s"
 
-#: src/CardCol.cpp:305
+#: src/CardCol.cpp:303
 msgid "_Change game"
 msgstr "_Spiel auswählen..."
 
-#: src/CardCol.cpp:305
+#: src/CardCol.cpp:303
 msgid "<alt>C"
 msgstr "<alt>s"
 
-#: src/CardCol.cpp:306
+#: src/CardCol.cpp:304
 msgid "_Røvhult"
 msgstr ""
 
-#: src/CardCol.cpp:306
+#: src/CardCol.cpp:304
 msgid "<ctl>R"
 msgstr ""
 
-#: src/CardCol.cpp:307
+#: src/CardCol.cpp:305
 msgid "_Twopart"
 msgstr ""
 
-#: src/CardCol.cpp:307
+#: src/CardCol.cpp:305
 msgid "<ctl>T"
 msgstr ""
 
-#: src/CardCol.cpp:308
+#: src/CardCol.cpp:306
 msgid "_Hearts"
 msgstr ""
 
-#: src/CardCol.cpp:308
+#: src/CardCol.cpp:306
 msgid "<ctl>H"
 msgstr ""
 
-#: src/CardCol.cpp:310
+#: src/CardCol.cpp:308
 msgid "Change _decks ..."
 msgstr "Ändere _Kartenbilder ..."
 
-#: src/CardCol.cpp:310
+#: src/CardCol.cpp:308
 msgid "<ctl>D"
 msgstr "<ctl>K"
 
-#: src/CardCol.cpp:311
+#: src/CardCol.cpp:309
 msgid "Change _names ..."
 msgstr "Ändere Spielernamen ..."
 
-#: src/CardCol.cpp:311
+#: src/CardCol.cpp:309
 msgid "<ctl>C"
 msgstr "<ctl>S"
 
-#: src/CardCol.cpp:312
+#: src/CardCol.cpp:310
 msgid "_Save settings"
 msgstr "_Speichere Einstellungen"
 
-#: src/CardCol.cpp:312
+#: src/CardCol.cpp:310
 msgid "<ctl>S"
 msgstr ""
 
-#: src/CardCol.cpp:316
-msgid "_Help"
-msgstr "_Hilfe"
-
-#: src/CardCol.cpp:316
-msgid "<alt>H"
-msgstr ""
-
-#: src/CardCol.cpp:317
-msgid "_Content..."
-msgstr "_Inhalt"
-
-#: src/CardCol.cpp:317
-msgid "F1"
-msgstr ""
-
-#: src/CardCol.cpp:318
-msgid "_About..."
-msgstr "_Über"
-
-#: src/CardCol.cpp:318
-msgid "<ctl>A"
-msgstr ""
-
-#: src/CardCol.cpp:352
+#: src/CardCol.cpp:393
 msgid "Error starting thread"
 msgstr "Fehler beim Starten des Hintergrundprozesses"
 
-#: src/CardCol.cpp:420
+#: src/CardCol.cpp:470
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 "Ein Spiel läuft bereits. Soll wirklich abgebrochen und neu gestartet werden?"
 
-#: src/CardCol.cpp:433
+#: src/CardCol.cpp:483
 msgid "Do you really want to end the game?"
 msgstr "Soll das Spiel wirklich beendet werden?"
 
-#: src/CardCol.cpp:472
-#, ycp-format
+#: src/CardCol.cpp:523
+msgid "A game is running. Do you really want to quit?"
+msgstr "Ein Spiel läuft bereits. Soll wirklich abgebrochen werden?"
+
+#: src/CardCol.cpp:562
+#, fuzzy, ycp-format
 msgid ""
-"Anticopyright (A) 2002 Markus Schwab\n"
+"Anticopyright (A) 2002, 2003 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
 "\n"
 "Compiled on %1 at %2"
@@ -265,33 +248,15 @@ msgstr ""
 "\n"
 "Übersetzt am %1 um %2"
 
-#: src/CardCol.cpp:484
-msgid "A game is running. Do you really want to quit?"
-msgstr "Ein Spiel läuft bereits. Soll wirklich abgebrochen werden?"
-
-#: src/CardCol.cpp:507
-msgid "Error starting browser for help! Reason"
-msgstr "Fehler beim Starten des Browsers für die Hilfe! Ursache"
-
-#: src/CardCol.cpp:511
-msgid ""
-"Error starting browser for help!\n"
-"\n"
-"Reason: "
-msgstr ""
-"Fehler beim Starten des Browsers für die Hilfe!\n"
-"\n"
-"Ursache"
-
-#: src/CardCol.cpp:606
+#: src/CardCol.cpp:643
 msgid "User canceled"
 msgstr "Benutzer hat abgebrochen"
 
-#: src/CardCol.cpp:633
+#: src/CardCol.cpp:670
 msgid "Loading cardimages ..."
 msgstr "Lade Kartenbilder ..."
 
-#: src/CardCol.cpp:665
+#: src/CardCol.cpp:684
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Starte ein neues Spiel mit Strg+N (oder Spiel -> Neu)"
 
@@ -305,7 +270,9 @@ msgstr "Runde beendet"
 
 #: src/Hearts.cpp:369
 msgid "Play first cards with an equal color as the first played one!"
-msgstr "Es müssen Karten mit der gleichen Farbe wie die zuerst gespielte gespielt werden!"
+msgstr ""
+"Es müssen Karten mit der gleichen Farbe wie die zuerst gespielte gespielt "
+"werden!"
 
 #: src/Hearts.cpp:380
 msgid "The game must be started with the two of clubs!"
@@ -313,7 +280,8 @@ msgstr "Das Spiel muß mit der Kreuz-2 gestartet werden!"
 
 #: src/Hearts.cpp:389
 msgid "You can't start with a heart, if they have not been played before!"
-msgstr "Herz kann nur dann am Anfang gespielt werden, wenn sie schon gespielt wurden!"
+msgstr ""
+"Herz kann nur dann am Anfang gespielt werden, wenn sie schon gespielt wurden!"
 
 #: src/Hearts.cpp:400
 msgid "The queen of spades can't be played in the first round"
