@@ -39,19 +39,27 @@
 /*--------------------------------------------------------------------------*/
 //Purpose   : Constructor; adds all controls to the dialog
 //Parameters: path: Path to carddecks
+//            deck: Name of deck to preselect
+//            back: Name of back to preselect
 /*--------------------------------------------------------------------------*/
-ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path)
+ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& deck,
+                                        const std::string& back)
    : Dialog (), txtDecks (_("Available decks")), ok (_("OK"))
      , apply (_("Apply")), cancel (_("Cancel")), decks (), boxDecks ()
      , txtBack (_("Available backgrounds")), backs (), boxBack ()
-     , selDeck (), selBack () {
-   TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (const char*)");
+     , selDeck (), selBack (), offDeck (-1), offBack (-1) {
+   TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (const char*) - " << path
+           << " (" << deck << " - " << back << ')');
 
    set_title (_("Select carddeck"));
 
    ok.set_flags (GTK_CAN_DEFAULT);
    cancel.set_flags (GTK_CAN_DEFAULT);
    apply.set_flags (GTK_CAN_DEFAULT);
+
+   ok.set_usize (90, -1);
+   cancel.set_usize (90, -1);
+   apply.set_usize (90, -1);
 
    boxDecks.pack_start (decks, true, true, 50);
    boxDecks.pack_start (selDeck, true, false, 5);
@@ -66,18 +74,18 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path)
    get_vbox ()->pack_start (boxBack, true, true, 5);
 
    Check3 (get_action_area ());
-   get_action_area ()->pack_start (ok);
-   get_action_area ()->pack_start (apply);
-   get_action_area ()->pack_start (cancel);
-
-   show_all ();
+   get_action_area ()->pack_start (ok, false, false, 5);
+   get_action_area ()->pack_start (apply, false, false, 5);
+   get_action_area ()->pack_start (cancel, false, false, 5);
 
    ok.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), OK));
    apply.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), APPLY));
    cancel.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), CANCEL));
 
    std::string cardDirs (path ? path : CARDSET_PATH);
-   cardDirs += File::DIRSEPARATOR;
+   if (cardDirs.size ()
+       && (cardDirs[cardDirs.size () - 1] != File::DIRSEPARATOR))
+      cardDirs += File::DIRSEPARATOR;
    cardDirs += "Deck*";
    DirectorySearch ds (cardDirs);
 
@@ -89,13 +97,18 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path)
                              | IDirectorySearch::FILE_READONLY));
    unsigned int offset (0);
    aFiles.push_back (dir->path ());
+
+
+   show_all ();
    while (dir) {
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Found dir "
               << dir->name ());
 
-      std::string file (aFiles[0]);
+      std::string pathDeck (aFiles[0]);
       aFiles.push_back (dir->name ());
-      file += dir->name ();
+      pathDeck += dir->name ();
+
+      std::string file (pathDeck);
       file += File::DIRSEPARATOR;
       file += DEFAULTFILE;
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Reading file "
@@ -112,10 +125,17 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path)
 
       decks.add (*temp, GTK_SIDE_LEFT, GTK_ANCHOR_CENTER, 0, 5, 2, 2);
 
+      TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Comparing "
+              << pathDeck << " with " << deck);
+      if (pathDeck == deck)
+         deckSelect (offset);
+
       dir = ds.next ();
    }
+   if (offDeck == -1)
+      deckSelect (1);
 
-   unsigned int offBack (offset + 1);
+   unsigned int offsetBack (offset + 1);
    dir = ds.find (aFiles[0] + "/back*.xpm", IDirectorySearch::FILE_NORMAL
                   | IDirectorySearch::FILE_READONLY);
    while (dir) {
@@ -127,6 +147,11 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path)
       temp->clicked.connect (bind (slot (this, &ICarddeckSelectDlg::backSelect), ++offset));
       temp->show ();
 
+      TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Comparing "
+              << (aFiles[0] + dir->name ()) << " with " << back);
+      if ((aFiles[0] + dir->name ()) == back)
+         backSelect (offset);
+
       Gdk_Pixmap img;
       img.create_from_xpm (get_window (), color, aFiles[0] + dir->name ());
       temp->add_pixmap (img, NULL);
@@ -136,9 +161,9 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path)
 
       dir = ds.next ();
    }
+   if (offBack == -1)
+      backSelect (offsetBack);
 
-   deckSelect (1);
-   backSelect (offBack);
    ok.grab_default ();
 }
 
@@ -201,4 +226,15 @@ void ICarddeckSelectDlg::backSelect (unsigned int offset) {
    selBack.add_pixmap (img, NULL);
 
    offBack = offset;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback after selecting a button
+//Parameters: action: ID of selected button
+/*--------------------------------------------------------------------------*/
+void ICarddeckSelectDlg::command (commands action) {
+   if (action != APPLY)
+      delete this;
+   else
+      lock ();
 }

@@ -34,7 +34,8 @@ using namespace Gtk;
 // Class to select the card decks to use
 class ICarddeckSelectDlg : public Dialog {
  public:
-   ICarddeckSelectDlg (const char* path = NULL);
+   ICarddeckSelectDlg (const char* path, const std::string& deck,
+                       const std::string& back);
    virtual ~ICarddeckSelectDlg ();
 
    typedef enum { OK, APPLY, CANCEL } commands;
@@ -43,13 +44,16 @@ class ICarddeckSelectDlg : public Dialog {
       deck = aFiles[0] + aFiles[offDeck];
       back = aFiles[0] + aFiles[offBack]; }
 
+   void lock () { apply.set_sensitive (false); ok.set_sensitive (false); }
+   void unlock () { apply.set_sensitive (true); ok.set_sensitive (true); }
+
  protected:
-   virtual void command (commands action) = 0;
+   virtual void command (commands action);
    virtual void deckSelect (unsigned int offset);
    virtual void backSelect (unsigned int offset);
 
-   unsigned int offDeck;
-   unsigned int offBack;
+   int offDeck;
+   int offBack;
 
  private:
    // Prohibited manager-functions
@@ -85,20 +89,20 @@ class CarddeckSelectDlg : public ICarddeckSelectDlg {
  public:
    typedef void (T::*PCALLBACK) (ICarddeckSelectDlg::commands);
 
-   CarddeckSelectDlg (T& parent, PCALLBACK callback, const char* path = NULL)
-      : ICarddeckSelectDlg (path), obj (parent), pCallback (callback) { }
+   CarddeckSelectDlg (T& parent, PCALLBACK callback, const char* path,
+                      const std::string& deck, const std::string& back)
+      : ICarddeckSelectDlg (path, deck, back), obj (parent), pCallback (callback) { }
    virtual ~CarddeckSelectDlg () { }
 
-   static const CarddeckSelectDlg* create (T& parent, PCALLBACK callback,
-                                           const char* path = NULL) {
-      return new CarddeckSelectDlg (parent, callback, path);
+   static CarddeckSelectDlg* create (T& parent, PCALLBACK callback, const char* path,
+                                     const std::string& deck, const std::string& back) {
+      return new CarddeckSelectDlg (parent, callback, path, deck, back);
    }
 
  protected:
    virtual void command (commands action) {
       (obj.*pCallback) (action);
-      if (action != APPLY)
-         delete this;
+      ICarddeckSelectDlg::command (action);
    }
 
  private:
