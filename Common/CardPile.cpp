@@ -83,12 +83,9 @@ CardWidget& ICardPile::removeTopCard () {
    TRACE5 ("ICardPile::removeTopCard (CardWidget&) - Card " << card
            << " -> new size: " << cards.size ());
 
-   if (cards.size () && (style > NORMAL)) {
-      TRACE9 ("ICardPile::removeTopCard () - Resizing");
-
+   if (cards.size () && (style > NORMAL))
       CardWidget& card (getTopCard ());
-      resize (cards.size () - 1, NORMAL);
-   }
+   resize (cards.size () - 1, NORMAL);
 
    card.set_sensitive (true);
    return card;
@@ -462,6 +459,6 @@ int ICardPile::find (CardWidget::COLORS color, unsigned int start) const {
 //Parameters: pos: Position of card to resize
 //            PileStyle: Style of pile
 /*--------------------------------------------------------------------------*/
-void ICardPile::resize (unsigned int pos, PileStyle) const {
+void ICardPile::resize (unsigned int pos, PileStyle) {
    Check (0);
 }
