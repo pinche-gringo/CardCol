@@ -64,10 +64,10 @@ class Burazno : public Game {
    //@Section DND
    void registerTableDND (unsigned int pile, unsigned int start, unsigned int end);
    void registerTableDND (CardWidget& card, unsigned int nr);
-   void unregisterTableDND (CardWidget& card, unsigned int offset);
+   void unregisterTableDND (CardWidget& card);
    void registerHandDND (unsigned int start, unsigned int end);
    void registerHandDND (unsigned int iCard);
-   void unregisterHandDND (unsigned int card);
+   void unregisterHandDND (CardWidget& card);
    void getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
                      GtkSelectionData* pData, guint info, guint32 time,
                      unsigned int cardPos);
@@ -77,6 +77,8 @@ class Burazno : public Game {
    void cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& pContext, gint,
                             gint, GtkSelectionData* pData, guint, guint32 time,
                             unsigned int cardPile);
+
+   void enableCard (unsigned int pos);
 
    CardHPile handHuman;
    ICardPile hands[NUM_PLAYERS - 1]; // For computer players: Cards in the hand
@@ -92,8 +94,8 @@ class Burazno : public Game {
    SigC::Connection dumpedTop;
    SigC::Connection stapleTop;
 
-   std::vector<SigC::Connection> aDNDHand;
-   std::map<unsigned int, SigC::Connection> aDNDTable;
+   std::map<CardWidget*, SigC::Connection> aDNDHand;
+   std::map<CardWidget*, SigC::Connection> aDNDTable;
 
    std::vector<CardVPile*>  aPiles;
    std::vector<CardWidget*> deck;
