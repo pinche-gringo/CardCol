@@ -34,29 +34,32 @@
 
 #include <Check.h>
 #include <Trace_.h>
+#include <Socket.h>
 
+#include "Player.h"
 #include "CardSet.h"
 #include "CardPile.h"
 
 #include "Game.h"
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Constructor
-//Parameters: parent: Parent of widget
-//            statusbar: For messages
-//            cardset: Cardset
-//            playerNames: Vector of player names
-//            rows: Number of rows needed by game
-//            columns: Number of columns needed by game
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Constructor
+/// \param parent: Parent of widget
+/// \param statusbar: For messages
+/// \param cardset: Cardset
+/// \param player: Vector of player
+/// \param rows: Number of rows needed by game
+/// \param columns: Number of columns needed by game
+//-----------------------------------------------------------------------------
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<Glib::ustring>& playerNames, unsigned int rows,
+            const std::vector<Player*>& player, unsigned int rows,
             unsigned int columns)
    : Gtk::Table (rows, columns), statGame (INITIALIZING), status (statusbar)
      , cards (cardset), restart (false), pWonPile (NULL), pMenuPopSort (NULL)
-     , names (playerNames) {
-   TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, unsinged int, unsigned int)");
+     , actPlayers (player) {
+   TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, std::vector<Player*>,"
+           "unsinged int, unsigned int)");
    Check3 (cardset.size ());
 
    show ();
@@ -66,9 +69,9 @@ Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
    parent.pack_start (*this, true, true, 5);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Destructor
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Destructor
+//-----------------------------------------------------------------------------
 Game::~Game () {
    TRACE9 ("Game::~Game ()");
    clean ();
@@ -76,9 +79,9 @@ Game::~Game () {
 }
 
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Starts the game
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Starts the game
+//-----------------------------------------------------------------------------
 void Game::start () {
    TRACE9 ("Game::start ()");
    Check3 ((statGame == INITIALIZING) || (statGame == STOPPED));
@@ -89,19 +92,19 @@ void Game::start () {
    actPlayer = 0;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Terminates the game and cleans the table
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Terminates the game and cleans the table
+//-----------------------------------------------------------------------------
 void Game::stop () {
    TRACE9 ("Game::stop ()");
    clean ();
    setGameStatus (STOPPED);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : End the current game as soon as possible
-//Parameters: startNew: Flag, if game should be restarted
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// End the current game as soon as possible
+/// \param startNew: Flag, if game should be restarted
+//-----------------------------------------------------------------------------
 void Game::end (bool startNew) {
    TRACE9 ("Game::end () - Restart: " << (startNew ? "Yes" : "No"));
 
@@ -115,9 +118,9 @@ void Game::end (bool startNew) {
       setGameStatus (TOSTOP);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Disables the cards the human player can select
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Disables the cards the human player can select
+//-----------------------------------------------------------------------------
 void Game::disableHuman () {
    TRACE2 ("Game::disableHuman () - " << activeCards.size () << " cards");
 
@@ -127,20 +130,20 @@ void Game::disableHuman () {
    activeCards.clear ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shuffles (Randomizes) the cards onto the staple
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Shuffles (Randomizes) the cards onto the staple
+//-----------------------------------------------------------------------------
 void Game::randomizeCardsToPile (ICardPile& pile) const {
    // Randomize and put cards onto staple
    cards.shuffle ();
    pile.setTopCards (cards.getCards ());
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Moves cards from one pile to another
-//Parameters: dest: Destination pile
-//            source: Source pile
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Moves cards from one pile to another
+/// \param dest: Destination pile
+/// \param source: Source pile
+//-----------------------------------------------------------------------------
 void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start,
                      int end) {
    TRACE3 ("Game::movePile (ICardPile&, ICardPile&, unsigned int, int) - "
@@ -157,41 +160,43 @@ void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start,
    } while ((unsigned int)end-- > start);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Cleans the table
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Cleans the table
+//-----------------------------------------------------------------------------
 void Game::clean () {
    TRACE9 ("Game::clean ()");
    disableWonCards ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Activates the next player
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Activates the next player
+//-----------------------------------------------------------------------------
 void Game::makeNextMoves () {
    if (actPlayer >= 0) {
-      TRACE9 ("Game::makeNextMoves () - *** Start timer *** for player " << actPlayer);
-      Glib::signal_timeout ().connect
-         (slot (*this, (actPlayer
-                        ? &Game::makeComputerMove
-                        : &Game::enableHuman)), actPlayer ? 700 : 50);
+      Check1 (actPlayer < actPlayers.size ());
+      unsigned int timeout (actPlayers[actPlayer]->timeout ());
+      if (timeout)
+         Glib::signal_timeout ().connect
+             (bind (slot (*actPlayers[actPlayer], &Player::makeTurn), this), timeout);
+      else
+          Glib::signal_idle ().connect
+              (bind (slot (*actPlayers[actPlayer], &Player::makeTurn), this));
       disableHuman ();
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Enables the cards of the human player
-//Returns   : int: false
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Enables the cards of the human player
+//-----------------------------------------------------------------------------
 bool Game::enableHuman () {
    TRACE9 ("Game::enableHuman () - enabling player " << actPlayer);
    return false;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Makes the move for the next player.
-//Returns   : int: Flag for timer, if it should continue (0: no; else: yes)
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Makes the move for the next player.
+/// \returns \c int: Flag for timer, if it should continue (0: no; else: yes)
+//-----------------------------------------------------------------------------
 bool Game::makeComputerMove () {
    TRACE5 ("Game::makeComputerMove () - Turn of player " << actPlayer);
 
@@ -214,45 +219,45 @@ bool Game::makeComputerMove () {
    return actPlayer > 0;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Displays information about whose turn it is
-//Parameters: player: Player in turn
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Displays information about whose turn it is
+/// \param player: Player in turn
+//-----------------------------------------------------------------------------
 void Game::displayTurn (unsigned int player) {
    Check1 (player < names.size ());
    status.pop ();
    Glib::ustring stat (_("Turn of %1"));
-   stat.replace (stat.find ("%1"), 2, names[player]);
+   stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
    status.push (stat);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Displays information about whose turn it is
-//Parameters: player: Player in turn
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Displays information about whose turn it is
+/// \param player: Player in turn
+//-----------------------------------------------------------------------------
 void Game::displayTurn (unsigned int player, const Glib::ustring& preText) {
    status.pop ();
    Glib::ustring stat (_("Turn of %1"));
-   stat.replace (stat.find ("%1"), 2, names[player]);
+   stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
    status.push (preText + stat);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Changes the game-status
-//Parameters: newStatus: Status to set
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Changes the game-status
+/// \param newStatus: Status to set
+//-----------------------------------------------------------------------------
 void Game::setGameStatus (unsigned int newStatus) {
    statGame = newStatus;
    control (statGame);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Flips the cards the user is about to play
-//Parameters: pile: Pile to manipulate
-//            start: Position of first card to play; update to reflect moving
-//            start: Position of last card to play; update to reflect moving
-//Returns   : unsigned int: Changed position to play
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Flips the cards the user is about to play
+/// \param pile: Pile to manipulate
+/// \param start: Position of first card to play; update to reflect moving
+/// \param start: Position of last card to play; update to reflect moving
+/// \returns \c unsigned int: Changed position to play
+//-----------------------------------------------------------------------------
 void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end) {
    TRACE2 ("Game::flipCards2Play (ICardPile&, unsigned int, unsigned int) - "
            "Cards from " << start << " to " << end);
@@ -281,10 +286,10 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
            "New positions " << start << " and " << end);
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shows or hides the won cards
-//Parameters: show: Flag if to show or to hide the cards
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Shows or hides the won cards
+/// \param show: Flag if to show or to hide the cards
+//-----------------------------------------------------------------------------
 void Game::showWonCards (bool show) {
    if (pWonPile) {
       pWonPile->setShowOption (show ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
@@ -295,10 +300,10 @@ void Game::showWonCards (bool show) {
    }
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Callback for any event for the top of the won cards
-//Parameters: event: Caused event
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Callback for any event for the top of the won cards
+/// \param event: Caused event
+//-----------------------------------------------------------------------------
 bool Game::wonCardsSelected (GdkEvent* event) {
    TRACE2 ("Game::wonCardsSelected (GdkEvent*) - " << event->type);
 
@@ -330,9 +335,9 @@ bool Game::wonCardsSelected (GdkEvent* event) {
    return false;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shows and sorts the won cards by number
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Shows and sorts the won cards by number
+//-----------------------------------------------------------------------------
 void Game::sortWonByNumber () {
    TRACE8 ("Game::sortWonByNumber ()");
    Check3 (pWonPile);
@@ -342,9 +347,9 @@ void Game::sortWonByNumber () {
    disableWonCards ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Shows and sorts the won cards by colour
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Shows and sorts the won cards by colour
+//-----------------------------------------------------------------------------
 void Game::sortWonByColour () {
    TRACE8 ("Game::sortWonByColour ()");
    Check3 (pWonPile);
@@ -354,9 +359,9 @@ void Game::sortWonByColour () {
    disableWonCards ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Enables the actual won cards
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Enables the actual won cards
+//-----------------------------------------------------------------------------
 bool Game::enableActWonCards () {
    disableWonCards ();
 
@@ -370,9 +375,9 @@ bool Game::enableActWonCards () {
    return false;
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Disables the won cards
-/*--------------------------------------------------------------------------*/
+//-----------------------------------------------------------------------------
+/// Disables the won cards
+//-----------------------------------------------------------------------------
 void Game::disableWonCards () {
    TRACE9 ("Game::disableWonCards () - Disabling " << wonCards.size () << " cards");
    for (int i (wonCards.size ()); i > 0;)
@@ -381,10 +386,18 @@ void Game::disableWonCards () {
    wonCards.clear ();
 }
 
-/*--------------------------------------------------------------------------*/
-//Purpose   : Changes the names of the playing people
-//Parameters: newNames: Array holding the new names of the players
-/*--------------------------------------------------------------------------*/
-void Game::changeNames (const std::vector<Glib::ustring>& newNames) {
-   const_cast<std::vector<Glib::ustring>&> (names) = newNames;
+//-----------------------------------------------------------------------------
+/// Changes the names of the playing people
+/// \param newNames: Array holding the new names of the players
+//-----------------------------------------------------------------------------
+void Game::changeNames (const std::vector<Player*>& newPlayer) {
+   const_cast<std::vector<Player*>&> (actPlayers) = newPlayer;
+}
+
+//-----------------------------------------------------------------------------
+/// Reads the turn of a remote player
+/// \param newNames: Array holding the new names of the players
+/// \returns bool: Flag, if player continues its turn
+//-----------------------------------------------------------------------------
+bool Game::readTurn (Socket& socket) {
 }

@@ -28,6 +28,8 @@ namespace Gtk {
    class Menu;
    class Statusbar;
 };
+class Socket;
+class Player;
 class CardSet;
 class ICardPile;
 
@@ -35,10 +37,15 @@ class ICardPile;
 // Class to select the card decks to use
 class Game : public Gtk::Table {
  public:
-   enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, LAST };
+   /// Stati of the game
+   enum { INITIALIZING,          ///< Initialization phase (dealing cards, ...)
+          STOPPED,                                     ///< Game has been ended
+          TOSTOP,        ///< Game should be ended (but can't be at the moment)
+          PLAYING,                                    ///< Game is being played
+          LAST };
 
    Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-         const std::vector<Glib::ustring>& playerNames, unsigned int rows,
+         const std::vector<Player*>& player, unsigned int rows,
          unsigned int columns);
    virtual ~Game ();
 
@@ -47,23 +54,38 @@ class Game : public Gtk::Table {
    virtual void stop ();
    virtual void end (bool startNew);
    virtual void playOpen (bool) { }
+   /// Informs the parent about status changes
    virtual void control (unsigned int status) const { }
    virtual void clean ();
    virtual const char* name () = 0;
-   virtual void changeNames (const std::vector<Glib::ustring>& newNames);
+   virtual void changeNames (const std::vector<Player*>& newPlayer);
 
-   // Status handling
+   /// \name Status handling
+   //@{
+   /// Checks if the game is being played
    bool isRunning () const { return statGame >= PLAYING; }
+   /// Checks if the game can be stopped at the moment (only when it's the
+   /// turn of the human
    virtual bool canBeStopped () const { return !actPlayer; }
 
+   /// Returns the actual game status
    unsigned int gameStatus () const { return statGame; }
    void setGameStatus (unsigned int newStatus);
+   //@}
 
- protected:
-   virtual bool enableHuman ();
    virtual void disableHuman ();
 
+   /// \name Player actions
+   //@{
+   virtual bool enableHuman ();
+   bool readTurn (Socket& socket);
+   bool makeComputerMove ();
+   //@}
+
+ protected:
+   /// Returns the current player
    unsigned int currentPlayer () const { return actPlayer; }
+   /// Sets the next player
    void setNextPlayer (unsigned int player) { actPlayer = player; }
 
    void flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end);
@@ -90,11 +112,10 @@ class Game : public Gtk::Table {
    Gtk::Statusbar& status;
    CardSet& cards;
 
-   std::vector<SigC::Connection>     activeCards;
-   const std::vector<Glib::ustring>& names;
+   std::vector<SigC::Connection> activeCards;
+   const std::vector<Player*>&  actPlayers;
 
  private:
-   bool makeComputerMove ();
    bool enableActWonCards ();
 
    unsigned int statGame;
@@ -120,7 +141,7 @@ class TGame : public Parent {
 
    TGame (Controller& controller, PCALLBACK callback)
       : Parent (controller.getClient (), controller.getStatusbar (),
-                controller.getCards (), controller.getNames ())
+                controller.getCards (), controller.getPlayer ())
       , obj (controller), pCallback (callback) { }
    virtual ~TGame () { }
 
