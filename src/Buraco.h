@@ -68,6 +68,7 @@ class Buraco : public Game {
    unsigned int showCardsToPlay (unsigned int player);
    int  executeMove (unsigned int player);
    void endGame ();
+   static bool cardFitsNext (ICardPile::const_iterator i);
    bool canGetRidOfCards (unsigned int player);
    bool canDumpCards (unsigned int player, unsigned int cards) const;
    static bool pileHasFittingPair (const ICardPile& pile, const CardWidget& card);
@@ -77,7 +78,7 @@ class Buraco : public Game {
    CardVPile& makeNewPile (unsigned int team);
    unsigned int cardFitsOnPlayedPile (unsigned int player, unsigned int card);
    int  cardFitsOnPile (ICardPile& pile, const CardWidget& card) const;
-   void removeBuraco (unsigned int player, CardVPile& pile);
+   void removeCerrado (unsigned int player, CardVPile& pile);
    void updateInfo ();
    bool humanPilesOK (unsigned int except = -1U) const;
 
@@ -99,9 +100,9 @@ class Buraco : public Game {
                             unsigned int cardPile);
 
    CardHPile hands[NUM_PLAYERS];              // For all players: Cards in hand
-   std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];      // Piles on table
+   std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];       // Piles on table
    std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
-   unsigned int cerrados[NUM_PLAYERS >> 1];           // Number of buracos/team
+   unsigned int cerrados[NUM_PLAYERS >> 1];          // Number of cerrados/team
 
    unsigned int startPlayer;
 
