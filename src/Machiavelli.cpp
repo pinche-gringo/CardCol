@@ -315,7 +315,7 @@ int Machiavelli::makeMove (unsigned int player) {
       target = -1U;
 
 #if CHECK > 2
-      if (typeid (actPlayers[player]) == typeid (ComputerPlayer)) {
+      if (typeid (*actPlayers[player]) == typeid (ComputerPlayer)) {
          YGP::StatusObject obj;
          checkPiles (obj);
          if (obj.getType () != YGP::StatusObject::UNDEFINED) {
@@ -749,16 +749,18 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
          // Move only one card from/to a numbered pile
          if ((pile->getType () == MachiPile::NUMBER)
              || ((pile->getType () == MachiPile::UNDEFINED)
-                 && (pile->size () == 1)
-                 && ((*pile)[0]->number () == moved->number ()))
+                 ? ((pile->size () == 1)
+                    && ((*pile)[0]->number () == moved->number ()))
+                 : !iCard)
              || (tablePiles[nrpile]->getType () == MachiPile::NUMBER))
             nr = 1;
 
          // Check if only cards from an edge are moved to the beginning of
          // a coloured pile or a numbered pile
          if ((tablePiles[nrpile]->getType () == MachiPile::COLOUR)
-             && (((off + nr) != src.size ()) && off)
-             && (iCard != pile->size ())) {
+             && (((off + 1) != src.size ()) && off)
+             && ((iCard != pile->size ())
+                 || (pile->getType () == MachiPile::NUMBER))) {
             context->drag_finish (true, false, time);
             Gtk::MessageDialog dlg (_("Card is not on the edge of the origen - try splitting the origin first!"),
                                     Gtk::MESSAGE_ERROR);
@@ -814,7 +816,6 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       iCard++;
    }
 
-   // Check if game has been ended
    if (hands[0].empty ()) {
       YGP::StatusObject obj;
       checkPiles (obj);
@@ -823,6 +824,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
          if (nextPlayer == findNextPlayer (nextPlayer)) {
             endGame (nextPlayer);
             disableHuman ();
+            return;
          }
       }
    }
@@ -1143,7 +1145,7 @@ unsigned int Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
              || ((**t)[0]->colour () != (*p)->colour ()))
             continue;
 
-         int diff (MachiPile::cardDistance (**p, *((**t)[0])));
+         int diff (MachiPile::cardDistance (**p, *((**t)[0]), MachiPile::ONE));
          if ((diff == -2) || (diff - (*t)->size () == 1)) {
             TRACE8 ("Machiavelli::reorderTableToFit2 (ICardPile&) - With move: "
                     << **p << "; Diff: " << diff);
@@ -1156,7 +1158,8 @@ unsigned int Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
                        && ((**o)[0]->colour () != (*p)->colour ())))
                   continue;
 
-               int diffTable (MachiPile::cardDistance (**p, *((**o)[0])));
+               int diffTable (MachiPile::cardDistance (**p, *((**o)[0]),
+                                                       MachiPile::ONE));
                MachiPile::const_iterator c ((*o)->end ());
                if ((*o)->getType () == MachiPile::NUMBER) {
                   if (diffTable == ((diff == -2) ? -1 : 1)) {
@@ -1437,9 +1440,6 @@ void Machiavelli::undoMove (unsigned int number) {
          obj.generalize (_("Can't end turn: The piles are not valid!"));
       else
          obj.setMessage (YGP::StatusObject::INFO, _("Could end turn: The piles are OK!"));
-      TRACE1 ("MessageDlg::update (const YGP::StatusObject&) - " << obj.getMessage ());
-      TRACE1 ("hasDetails: " << (obj.hasDetails () ? "Yes" : "No"));
-      TRACE1 ("Details: " << obj.getDetails ());
       undoDlg->update (obj);
    }
 }
