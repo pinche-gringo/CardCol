@@ -1,4 +1,4 @@
- <!-- -*-HTML-*- -->
+<!-- -*-HTML-*- -->
 <!-- $Id$ -->
 
 <!--
@@ -24,7 +24,7 @@
 
 <html>
   <head>
-    <title>Machiavelli - Sortiere Karten bis der Kopf raucht</title>
+    <title>Machiavelli - Sortiere Karten bis man keine mehr hat</title>
     <meta name="description" content="Dokumentation des Machiavelli Kartenspiels">
     <meta name="keywords" content="Dokumentation, Doku, Buraco, Spiel, Karten, Kartenspiel">
 
@@ -38,8 +38,9 @@
     <hr size=2>
 
     <p>Machiavelli lernte ich von einem Schweizer, der es seinerseits von
-      Italienern gelernt hat. Und genausowenig, wie ich die Herkunft (exakt)
-      kenne, bin ich mir beim Namen sicher ...</p>
+      Italienern gelernt hat (und die es m&ouml;glicherweise wiederum,
+      ...). Und genausowenig, wie ich die Herkunft (exakt) kenne, bin ich mir
+      beim Namen sicher ...</p>
 
     <p>Wie auch immer - die Spielregeln:</p>
 
@@ -52,21 +53,22 @@
 
     <p>Jeder Stapel am Tisch mu&szlig; dabei mindestens 3 Karten aufweisen.</p>
 
-    <p>Jeder Spieler startet seinen Zug mit der Aufnahme einer Karte (diese
-      wird automatisch zugeteilt). Danach kann er entweder Karten an
-      bestehende Stapel anlegen, diese beliebig umsortieren, neue Stapel
-      bilden - kurz machen, was er will, solange am Ende des Zuges alle Stapel
-      den obigen Regeln entsprechen.</p>
+    <p>Jeder Spieler beginnt mit 7 Karten in der Hand und nimmt eine weitere
+      vom Reservestapel am Beginn seines Zugs (diese wird automatisch
+      zugeteilt). Danach kann er entweder Karten an bestehende Stapel anlegen,
+      diese beliebig umsortieren, neue Stapel bilden (auch mit Karten von
+      bereits bestehenden Stapeln) - kurz machen, was er will, solange am Ende
+      des Zuges alle Stapel den obigen Regeln entsprechen.</p>
 
     <p>Abgelegt und/oder sortiert werden die Karten mit Ziehen und Ablegen -
       drag and drop<a href="Machiavelli.html.de#Note1"><sup>1</sup></a>.
 
     <p>Kann/will der Spieler keine Karten ablegen, setzt der n&auml;chste
-      Spieler setzt (im Uhrzeigersinn) fort. Dies wird durch Anklicken des
-      Reservestapels angezeigt. Sollten dabei Stapel in einem ung&uuml;tigen
-      Zustand sein, erscheint ein Fenster mit einer Fehlerinformation. Dieses
-      Fenster erm&ouml;glicht auch ein Undo des letzten (oder aller)
-      Z&uuml;ge.</p>
+      Spieler (im Uhrzeigersinn) fort, der noch Karten hat. Dies wird durch
+      Anklicken des Reservestapels angezeigt. Sollten dabei Stapel in einem
+      ung&uuml;tigen Zustand sein, erscheint ein Fenster mit einer
+      Fehlerinformation. Dieses Fenster erm&ouml;glicht auch ein Undo des
+      letzten (oder aller) Aktionen im aktuellen Zug.</p>
 
     <p>Der letzte Spieler, der noch Karten &uuml;brig hat, hat verloren.</p>
 
@@ -109,7 +111,7 @@
         </td>
         <td><a href="Hearts.html.de">Vorherige</a><br>(Hearts)</td>
         <td><a href="CardCol.html.de">&Uuml;berblick</a></td>
-        <td><a href="Røvhult.html.de">N&auml;chste</a><br>(Røvhult)</td>
+        <td><a href="Røvhult.html.de">N&auml;chste</a><br>(R&oslash;vhult)</td>
       </tr>
     </table>
   </body>

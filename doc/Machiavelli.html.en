@@ -37,7 +37,7 @@
     <h1 align="center">Machiavelli</h1>
     <hr size=2>
 
-    <p>I learned Machiavelli from a suiss guy, who itself learned it from
+    <p>I learned Machiavelli from a swiss guy, who itself learned it from
       italiens (which in turn might have learned it from someone else). And
       actually I'm not even sure, if the name is right ...</p>
 
@@ -51,12 +51,12 @@
 
     <p>Every pile on the table must contain at least 3 cards.</p>
 
-    <p>Every player starts its turn by taking a new card from the pile of
-      reserve (this happens automatically by the computer). Then he can either
-      put his cards to existing piles, re-sort them however he likes, build
-      new piles (even with cards from existing piles) - in a nutshell doing as
-      he likes, as long as at the end of its turn all piles follow the rules
-      above.</p>
+    <p>Every player starts with 7 cards in his hand and takes another one at
+      the beginning of its turn from the pile of reserve (this happens
+      automatically by the computer). Then he can either put his cards to
+      existing piles, re-sort them however he likes, build new piles (even
+      with cards from existing piles) - in a nutshell doing as he likes, as
+      long as at the end of its turn all piles follow the rules above.</p>
 
     <p>The cards are played and/or sorted with drag and drop<a
       href="Machiavelli.html.en#Note1"><sup>1</sup></a>.
@@ -67,7 +67,7 @@
       appears a window with an error message. This window also allows an undo
       of the last or all actions in the actual turn.</p>
 
-    <p>Tge last player still having cards has lost.</p>
+    <p>The last player still having cards has lost.</p>
 
     <p>The status line gives some information about what's going on!</p>
 
@@ -108,7 +108,7 @@
         </td>
         <td><a href="Hearts.html.en">Previous</a><br>(Hearts)</td>
         <td><a href="CardCol.html.en">Cardgames</a></td>
-        <td><a href="Røvhult.html.en">Next</a><br>(Røvhult)</td>
+        <td><a href="Røvhult.html.en">Next</a><br>(R&oslash;vhult)</td>
       </tr>
     </table>
   </body>
