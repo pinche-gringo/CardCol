@@ -47,8 +47,6 @@
 #include "PlayerConnDlg.h"
 
 
-#define STRING(NUMBER) #NUMBER
-
 //-----------------------------------------------------------------------------
 /// Default constructor
 /// \param player: The player
