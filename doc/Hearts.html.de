@@ -1,0 +1,100 @@
+<!-- -*-HTML-*- -->
+<!-- $Id$ -->
+
+<!--
+  Anti-Copyright (A) 2003 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public
+  License along with this library; if not, write to the Free
+  Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//DE">
+
+<html>
+  <head>
+    <title>Hearts - Ein Spiel, in dem man sie besser nicht bekommt</title>
+    <meta name="description" content="Documentation of the Hearts cardgame">
+    <meta name="keywords" content="Documentation, Docu, Hearts; game, card, cardgame, kartenspiel">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2003-02-10">
+    <meta name="DC.Rights" content="Anticopyright (A) 2003, distributed under the GNU Free Documentation License">
+  </head>
+
+  <body>
+    <h1 align="center">Hearts</h1>
+    <hr size=2>
+    <p>Hearts ist ein in mehreren (?) Versionen eines popul&auml;ren Betriebssystems
+      vorhandenes Spiel. Aber genug, woher ich die Idee dazu hatte ...</p>
+
+    <p>Jeder der vier Spieler beginnt mit dreizehn Karten. Das Ziel ist entweder
+      alle loszuwerden, ohne dabei ein Herz oder die Pik-Dame zu bekommen - oder
+      alle dieser Karten zu erobern.</p>
+
+    <p>Das Spiel start mit dem Tasuch von drei Karten mit einem anderen Spieler
+      (au&szlig;er im vierten Umlauf - da werden keine Karten getauscht). Der
+      Spieler der anschlie&szlig;end die Kreuz-2 hat, beginnt das Spiel (mit
+      eben jener Karte).</p>
+
+    <p>Die Spieler setzen im Uhrzeigersinn fort. Der Spieler mit der h&ouml;chsten
+      Karte (der zuerst gespielten Farbe) bekommt den gespielten Stapel und
+      startet die n&auml;chste Runde.</p>
+
+    <p>Wenn keine Karten mehr &uuml;brig sind, werden die (Fehler-)Punkte
+      gez&auml;hlt. Jedes Herz z&auml;hlt einen Punkt und die Pik-Dame 13.
+      Wenn ein Spieler alle dieser Karten hat (und daher 26 Punkte bek&auml;me),
+      werden die Punkte umgedreht: Keinen f&uuml;r ihn und jeweils 26 f&uuml;r
+      alle anderen.</p>
+
+    <p>Das Spiel endet, wenn einer der Spiele 100 Punkte erreicht.</p>
+
+    <p>W&auml;hrend des Spieles gibt es einige Regeln:</p>
+
+    <ul>
+      <li>Die gespielten Karten m&uuml;ssen die gleiche Farbe wie die zuerst gespielte
+        aufweisen (wenn vorhanden).</li>
+      <li>Eine Runde kann nicht mit einem Herz begonnen werden, wenn diese noch
+        nicht gespielt wurden.</li>
+      <li>In der ersten Runde kann weder die Pik-Dame noch ein Herz gespielt
+        werden.</li>
+    </ul>
+
+    <p>Der Spieler mit den wenigsten Punkten (wenn jemand 100 Punkte erreicht hat),
+      hat gewonnen.</p>
+
+    <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
+
+    <h2>Anmerkungen zum Layout</h2>
+    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+      unten):</p>
+
+    <ul>
+      <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb, darunter die in
+        seiner Hand. Die gewonnenen Karten k&ouml;nnen durch Anklicken betrachtet
+        werden; ein Rechts-Klick erm&ouml;glicht zu&auml;tzlich sortieren.</li>
+      <li>In der n&auml;chsten Reihe befinden sich die Karten der Computer-Spieler
+        3 und 1. Zwischen ihnen ist der Stapel der gespielten Karten.</li>
+      <li>In der letzten Reihe sind die Karten von Computer-Spieler 2.</li>
+    </ul>
+
+    <hr size=2 noshade>
+    <address>
+      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+    </address>
+<!-- hhmts start -->
+Last modified: Mon Feb 10 18:51:45 PET 2003
+<!-- hhmts end -->
+          - $Revision$
+</body>
+</html>
