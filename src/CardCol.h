@@ -88,7 +88,7 @@ class CardgameCollection : public XGP::XApplication {
    void* waitForMessages (void*);
    int handleGlobalMessage (unsigned int player, const std::string& msg) throw (std::string);
    bool handleMessage (unsigned int player, const std::string msg);
-   bool showMessage (char* msg);
+   bool showMessage (const std::string msg);
 #endif
 
    static XGP::XApplication::MenuEntry CardgameCollection::menuItems[];
