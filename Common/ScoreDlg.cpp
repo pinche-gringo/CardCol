@@ -1,7 +1,7 @@
 //$Id$
 
 //PROJECT     : Cardgames
-//SUBSYSTEM   : Hearts
+//SUBSYSTEM   : Common
 //REFERENCES  :
 //TODO        :
 //BUGS        :
@@ -30,26 +30,28 @@
 #include <gtkmm/label.h>
 #include <gtkmm/separator.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
+#include <Check.h>
 #include <Trace_.h>
 
-#include "HeartsScore.h"
+#include "ScoreDlg.h"
 
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : (Default-)Constructor; Shows the dialog
 //Parameters: playerNames: Vector with names of players
 /*--------------------------------------------------------------------------*/
-HeartsScoreDlg::HeartsScoreDlg (const std::vector<std::string>& playerNames)
+ScoreDlg::ScoreDlg (const std::vector<std::string>& playerNames)
    : XDialog (OK), client (new Gtk::HBox) {
-   TRACE9 ("HeartsScoreDlg::HeartsScoreDlg ()");
-   Check1 ((sizeof (aColumns) / sizeof (aColumns[0])) < playerNames.size ());
-
+   TRACE9 ("ScoreDlg::ScoreDlg ()");
    set_title (_("Score"));
 
+   for (unsigned int i (0); i < playerNames.size (); ++i) {
+      aColumns.push_back (new column ());
+      client->pack_start (aColumns.back ()->getBox (), true, true, 15);
+   }
    update (playerNames);
-   for (unsigned int i (0);
-        i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i)
-      client->pack_start (aColumns[i].getBox (), true, true, 5);
 
    client->show ();
    get_vbox ()->pack_start (*client, Gtk::SHRINK, 5);
@@ -60,40 +62,45 @@ HeartsScoreDlg::HeartsScoreDlg (const std::vector<std::string>& playerNames)
 /*--------------------------------------------------------------------------*/
 //Purpose   : Destructor
 /*--------------------------------------------------------------------------*/
-HeartsScoreDlg::~HeartsScoreDlg () {
+ScoreDlg::~ScoreDlg () {
+   for (std::vector<column*>::iterator i (aColumns.begin ());
+        i != aColumns.end (); ++i)
+      delete *i;
 }
 
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Adds a line to the scores
-//Parameters: points0: Points of player 0
-//            points1: Points of player 1
-//            points2: Points of player 2
-//            points3: Points of player 3
+//Parameters: aPoints: Array of points
 /*--------------------------------------------------------------------------*/
-void HeartsScoreDlg::addPoints (unsigned int points0, unsigned int points1,
-                                unsigned int points2, unsigned int points3) {
-   TRACE9 ("HeartsScoreDlg::addPoints (4 x unsinged int) - " << points0 << '/'
-           << points1 << '/' << points2 << '/' << points3);
-   unsigned int values[] = { points0, points1, points2, points3 };
-   addPoints (values);
+void ScoreDlg::addPoints (int aPoints[]) {
+   for (std::vector<column*>::iterator i (aColumns.begin ());
+        i != aColumns.end (); ++i) {
+      TRACE5 ("ScoreDlg::addPoints (unsinged int[]) - " << *aPoints);
+      (*i)->addEntry (*aPoints++);
+   }
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Adds a line to the scores
-//Parameters: aPoints: Array of (4) points
+//Parameters: aPoints: Vector of points
 /*--------------------------------------------------------------------------*/
-void HeartsScoreDlg::addPoints (unsigned int aPoints[4]) {
-   for (unsigned int i (0); i < 4; ++i) {
-      TRACE5 ("HeartsScoreDlg::addPoints (unsinged int[4]) - " << aPoints[i]);
-      aColumns[i].addEntry (aPoints[i]);
+void ScoreDlg::addPoints (const std::vector<int>& aPoints) {
+   Check1 (aPoints.size () <= aColumns.size ());
+
+   std::vector<int>::const_iterator p (aPoints.begin ());
+   for (std::vector<column*>::iterator i (aColumns.begin ());
+        i != aColumns.end (); ++i) {
+      TRACE5 ("ScoreDlg::addPoints (unsinged int[]) - " << *p);
+      (*i)->addEntry (*p);
+      ++p;
    }
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after selecting OK; Hides the dialog
 /*--------------------------------------------------------------------------*/
-void HeartsScoreDlg::okEvent () {
+void ScoreDlg::okEvent () {
    hide ();
 }
 
@@ -103,13 +110,13 @@ void HeartsScoreDlg::okEvent () {
 //Parameters: points: Reference where to put the highest points
 //            player: Reference where to put the player with the highest points
 /*--------------------------------------------------------------------------*/
-void HeartsScoreDlg::getMaxPoints (unsigned int& points, unsigned int& player) {
+void ScoreDlg::getMaxPoints (int& points, unsigned int& player) {
    points = 0;
-   for (unsigned int i (0);
-        i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i)
-      if (aColumns[i].getPoints () > points) {
-         player = i;
-         points = aColumns[i].getPoints ();
+   for (std::vector<column*>::iterator i (aColumns.begin ());
+        i != aColumns.end (); ++i)
+      if ((*i)->getPoints () > points) {
+         player = i - aColumns.begin ();
+         points = (*i)->getPoints ();
    }
 }
 
@@ -118,13 +125,13 @@ void HeartsScoreDlg::getMaxPoints (unsigned int& points, unsigned int& player) {
 //Parameters: points: Reference where to put the highest points
 //            player: Reference where to put the player with the highest points
 /*--------------------------------------------------------------------------*/
-void HeartsScoreDlg::getMinPoints (unsigned int& points, unsigned int& player) {
-   points = -1U;
-   for (unsigned int i (0);
-        i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i)
-      if (aColumns[i].getPoints () < points) {
-         player = i;
-         points = aColumns[i].getPoints ();
+void ScoreDlg::getMinPoints (int& points, unsigned int& player) {
+   points = 0;
+   for (std::vector<column*>::iterator i (aColumns.begin ());
+        i != aColumns.end (); ++i)
+      if ((*i)->getPoints () < points) {
+         player = i - aColumns.begin ();
+         points = (*i)->getPoints ();
    }
 }
 
@@ -132,23 +139,32 @@ void HeartsScoreDlg::getMinPoints (unsigned int& points, unsigned int& player) {
 //Purpose   : Changes the names of the playing people
 //Parameters: newNames: Array holding the new names of the players
 /*--------------------------------------------------------------------------*/
-void HeartsScoreDlg::update (const std::vector<std::string>& playerNames) {
-   for (unsigned int i (0);
-        i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i)
-      aColumns[i].setTitle (playerNames[i]);
+void ScoreDlg::update (const std::vector<std::string>& playerNames) {
+   Check1 (playerNames.size () <= aColumns.size ());
+
+   std::vector<std::string>::const_iterator p (playerNames.begin ());
+   for (std::vector<column*>::iterator i (aColumns.begin ());
+        i != aColumns.end (); ++i) {
+      (*i)->setTitle (*p);
+      ++p;
+   }
 }
 
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Constructor
 /*--------------------------------------------------------------------------*/
-HeartsScoreDlg::column::column ()
+ScoreDlg::column::column ()
    : pBox (new Gtk::VBox ()) , pTitle (new Gtk::Label ())
-     , pSum (new IntLabel (0U)) , pSep (new Gtk::HSeparator ()) {
+     , pSum (new NumLabel (0)) , pSep (new Gtk::HSeparator ()) {
    pBox->show ();
    pTitle->show ();
    pSum->show ();
    pSep->show ();
+
+   pTitle->set_justify (Gtk::JUSTIFY_CENTER);
+   pTitle->set_alignment (0.5, 0);
+   pSum->set_alignment (1.0, 0);
 
    pBox->pack_start (*pTitle, false, false, 5);
    pBox->pack_end (*pSum, false, false, 3);
@@ -158,7 +174,7 @@ HeartsScoreDlg::column::column ()
 /*--------------------------------------------------------------------------*/
 //Purpose   : Destructor
 /*--------------------------------------------------------------------------*/
-HeartsScoreDlg::column::~column () {
+ScoreDlg::column::~column () {
 }
       
 
@@ -166,9 +182,10 @@ HeartsScoreDlg::column::~column () {
 //Purpose   : Adds a value to the column
 //Parameters: points: Number to add to column
 /*--------------------------------------------------------------------------*/
-void HeartsScoreDlg::column::addEntry (unsigned int points) {
+void ScoreDlg::column::addEntry (int points) {
    Check3 (pBox); 
-   IntLabel* label (Gtk::manage (new IntLabel (points)));
+   NumLabel* label (Gtk::manage (new NumLabel (points)));
+   label->set_alignment (1.0, 0);
    label->show ();
    pBox->pack_start (*label, false, false, 0);
 
@@ -180,7 +197,7 @@ void HeartsScoreDlg::column::addEntry (unsigned int points) {
 //Purpose   : Sets the "title" (the first line) of the column
 //Parameters: title: New "title"
 /*--------------------------------------------------------------------------*/
-void HeartsScoreDlg::column::setTitle (const std::string& title) {
+void ScoreDlg::column::setTitle (const std::string& title) {
    Check3 (pTitle);
    pTitle->set_text (title);
 }

@@ -1,5 +1,5 @@
-#ifndef HEARTSSCORE_H
-#define HEARTSSCORE_H
+#ifndef SCOREDLG_H
+#define SCOREDLG_H
 
 //$Id$
 
@@ -21,11 +21,10 @@
 #include <string>
 #include <vector>
 
-#include <XDialog.h>
-
-#include <Check.h>
-
+#include <ANumeric.h>
 #include <SmartPtr.h>
+
+#include <XDialog.h>
 #include <XAttrLabel.h>
 
 
@@ -37,28 +36,27 @@ namespace Gtk {
 }
 
 
-// Class to display the score of the Hearts cardgame
-class HeartsScoreDlg : public XDialog {
+// Class to display the score of the cardgames
+class ScoreDlg : public XDialog {
  public:
-   HeartsScoreDlg (const std::vector<std::string>& playerNames);
-   virtual ~HeartsScoreDlg ();
+   ScoreDlg (const std::vector<std::string>& playerNames);
+   virtual ~ScoreDlg ();
 
-   static HeartsScoreDlg* perform (const std::vector<std::string>& playerNames) {
-      return new HeartsScoreDlg (playerNames); }
+   static ScoreDlg* perform (const std::vector<std::string>& playerNames) {
+      return new ScoreDlg (playerNames); }
 
    void update (const std::vector<std::string>& playerNames);
 
-   void addPoints (unsigned int points0, unsigned int points1,
-                   unsigned int points2, unsigned int points3);
-   void addPoints (unsigned int aPoints[4]);
+   void addPoints (int aPoints[]);
+   void addPoints (const std::vector<int>& aPoints);
 
-   void getMaxPoints (unsigned int& points, unsigned int& player);
-   void getMinPoints (unsigned int& points, unsigned int& player);
+   void getMaxPoints (int& points, unsigned int& player);
+   void getMinPoints (int& points, unsigned int& player);
 
  private:
    //Prohibited manager functions
-   HeartsScoreDlg (const HeartsScoreDlg& other);
-   const HeartsScoreDlg& operator= (const HeartsScoreDlg& other);
+   ScoreDlg (const ScoreDlg& other);
+   const ScoreDlg& operator= (const ScoreDlg& other);
 
    virtual void okEvent ();
 
@@ -73,21 +71,23 @@ class HeartsScoreDlg : public XDialog {
       column ();
       ~column ();
 
-      void addEntry (unsigned int points);
+      void addEntry (int points);
       void setTitle (const std::string& title);
 
       unsigned int getPoints () const { return pSum->getAttribute (); }
       Gtk::Box& getBox () const { return *pBox; }
 
     private:
-      typedef XAttributeLabel2<unsigned int> IntLabel;
-      typedef SmartPtr<IntLabel>             PIntLabel;
+      typedef XAttributeLabel2<ANumeric> NumLabel;
+      typedef SmartPtr<NumLabel>         PNumLabel;
 
       PBox       pBox;
       PLabel     pTitle;
-      PIntLabel  pSum;
+      PNumLabel  pSum;
       PSeparator pSep;
-   } aColumns[4];
+   };
+
+   std::vector<column*> aColumns;
 };
 
 #endif
