@@ -71,6 +71,8 @@ class RovhultAppl : public XApplication {
    void finishedExchange ();
    void takeCards (unsigned int player);
 
+   void doPileSelected (void* playerPile);
+
    // Helper functions
    void movePlayedCardsToLooser (unsigned int nrLooser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;

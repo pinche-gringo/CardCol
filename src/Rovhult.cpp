@@ -436,10 +436,9 @@ void RovhultAppl::finishedExchange () {
 //Parameters: void*: Not really a pointer, but the number of the player
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::threadedEnablePlayer (void* player) {
-   TRACE2 ("RovhultAppl::threadedEnablePlayer (void*)");
+   Check1 (player);
+   TRACE2 ("RovhultAppl::threadedEnablePlayer (void*)" - (unsigned int)player);
    assert ((unsigned int)player <= NUM_PLAYERS);
-
-   sleep (0);
 
    gdk_threads_enter ();
    enablePlayer ((unsigned int)player);
@@ -502,20 +501,18 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    Check3 (player <= NUM_PLAYERS); Check3 (pile < 3);
 
    CardWidget& card (reserve[player][pile].getTopCard ());
-   TRACE1 ("Rovhult::pileSelected (CardVPile*, unsinged int) - "
+   TRACE1 ("Rovhult::pileSelected (unsigned int, unsinged int) - "
            << card.color () << '/' << card.number ());
 
    // If played from bottom of pile (with invisible cards): Flip card first
-   if (reserve[player][pile].numberOfCards () <= 1) {
+   if (reserve[player][pile].numberOfCards () == 1) {
       card.setVisible ();
-      while (gtk_main_iteration_do (false));
+      while (gtk_main_iteration ()) ;    // Should force GTK+ to redraw
    }
       
    if (!cardValid (card.number ())) {                 // Check if card is valid
       if (reserve[player][pile].numberOfCards () > 1)   // Visible card? Return
          return;
-      else
-         sleep (1);
       
       disableLastPlayer ();
       played.append (card);
@@ -525,20 +522,44 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    }
    disableLastPlayer ();
 
-   // Move card (and visible cards with equal number below) from player to played staple
-   reserve[player][pile--].removeTopCard ();
+   // Create a thread to enable the next player; as else re-registering the
+   // actual played card (inside its event-handler) wreaks quite a bit of havoc
+   THRDAPPL::create (*this, (THRDAPPL::THREAD_OBJMEMBER)&RovhultAppl::doPileSelected,
+                     (void*)((player << 16) + pile));
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Executes the move from a pile: Moves the cards and enables next
+//Parameters: playerPile: Combination of player-ID and pile number
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::doPileSelected (void* playerPile) {
+   assert (playerPile);
+   unsigned int player ((unsigned int)playerPile >> 16);
+   unsigned int pile ((unsigned int)playerPile & 0xffff);
+
+   TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - " 
+           << player << '/' << pile);
+
+   if (reserve[player][pile].numberOfCards () == 1)
+      sleep (1);
+
+   gdk_threads_enter ();
+   // Move card (and visible cards with equal number below) from player to
+   // played staple
+   CardWidget& card (reserve[player][pile].removeTopCard ());
    if (card.number () != CardWidget::TEN)
       played.append (card);
-   do {
+   while (pile--) {
       if ((reserve[player][pile].numberOfCards () > 1)
           && (reserve[player][pile].getTopCard ().number () == card.number ())) {
          CardWidget& movedCard (reserve[player][pile].removeTopCard ());
          if (movedCard.number () != CardWidget::TEN)
             played.append (movedCard);
       }
-   } while (pile--);
+   }
 
    executeMove (player, card.number ());
+   gdk_threads_leave ();
 }
 
 
@@ -607,7 +628,7 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
       CardWidget& movedCard (hands[player].remove (pos));
       if (movedCard.number () != CardWidget::TEN)
          played.append (movedCard);
-   } while (pos && (hands[player].at (--pos).number () == card.number ()));
+   } while (pos-- && (hands[player].at (pos).number () == card.number ()));
 
    // If staple contains cards and no 10 was played (except if hand is empty):
    // Fill up cards til player has 3 (or one, in case of a ten)
@@ -625,26 +646,25 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
 //            NUMBERS: Played card
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
-   TRACE3 ("RovhultAppl::executeMove (unsigned int, CardWidget::NUMBERS - " << player)
+   TRACE3 ("RovhultAppl::executeMove (unsigned int, CardWidget::NUMBERS) - " << player)
    Check3 (player < NUM_PLAYERS);
 
    // If last 4 cards have the same number or ten was played: Don't increase
    // player (except of course, if actual player don't have anymore cards)
-   if ((nr != CardWidget::TEN) && !clearPlayedIf4Equal ()
-       || (player != nextAvailablePlayer ((player -1) & 0x3))) {
+   if (!((nr == CardWidget::TEN) || clearPlayedIf4Equal ())
+       || (player != nextAvailablePlayer ((player - 1) & 0x3))) {
       status.pop (1);
 
       std::string stat;
-      int nextPlayer ((nr == CardWidget::UNREACHABLE)
-                      ? player :  nextAvailablePlayer (player));
-      if (player == -1) {
+      if (nr != CardWidget::UNREACHABLE)
+         player = nextAvailablePlayer (player);
+
+      if (nextAvailablePlayer (player) == -1) {
          stat = _("Player %1 lost");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
          status.push (1, stat);
          return;
       }
-      else
-         player = nextPlayer;
 
       if (nr == CardWidget::EIGHT) {
          stat = _("Skipping player %1; ");
@@ -661,8 +681,8 @@ void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
 
          movePlayedCardsToLooser (player);
          player = nextAvailablePlayer (player);
-         }
-
+      }
+      
       stat = stat + _("Turn of player %1");
       stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
       status.push (1, stat);
