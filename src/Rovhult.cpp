@@ -338,9 +338,9 @@ RovhultAppl::RovhultAppl ()
    // Show and attach card-piles
    for (int i (0); i < NUM_PLAYERS; ++i) {
       for (int j (0); j < 3; ++j) {
-         reserve[i][j].setStyle (ICardPile::COMPRESSED);
-         reserve[i][j].show ();
-         tblTable.attach (reserve[i][j], COLS_PLAYER[i] + (j << 1),
+         players[i].reserve[j].setStyle (ICardPile::COMPRESSED);
+         players[i].reserve[j].show ();
+         tblTable.attach (players[i].reserve[j], COLS_PLAYER[i] + (j << 1),
                           COLS_PLAYER[i] + 1 + (j << 1), ROWS_PLAYER[i],
                           ROWS_PLAYER[i] + 2, 0, 0, 1);
 
@@ -348,8 +348,8 @@ RovhultAppl::RovhultAppl ()
                  << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
       }
 
-      hands[i].show ();
-      tblTable.attach (hands[i], COLS_PLAYER[i],
+      players[i].hands.show ();
+      tblTable.attach (players[i].hands, COLS_PLAYER[i],
                        COLS_PLAYER[i] + 5,
                        ROWS_PLAYER[i] + (i ? 3 : -3),
                        ROWS_PLAYER[i] + (i ? 3 : -3) + 2
@@ -414,13 +414,13 @@ void RovhultAppl::finishedExchange () {
 
    // Remove drag´n´drop abilities and compress cards
    for (int i (0); i < NUM_PLAYERS; ++i) {
-      hands[i].sortByNumber ();
-      hands[i].setStyle (ICardPile::COMPRESSED);
+      players[i].hands.sortByNumber ();
+      players[i].hands.setStyle (ICardPile::COMPRESSED);
 
       for (int j (0); j < 3; ++j) {
-         CardWidget& card (hands[i].at (j));
+         CardWidget& card (players[i].hands.at (j));
          unregisterDND (card);
-         unregisterDND (reserve[i][j].getTopCard ());
+         unregisterDND (players[i].reserve[j].getTopCard ());
       }
    }
 
@@ -451,27 +451,25 @@ void RovhultAppl::threadedEnablePlayer (void* player) {
 void RovhultAppl::enablePlayer (unsigned int player) {
    Check3 (activeCards.empty ());
 
-   if (hands[player].numberOfCards ()) {
+   if (players[player].hands.numberOfCards ()) {
       TRACE2 ("RovhultAppl::enablePlayer (unsigned int) - Hand of player "
-           << player << " has " << hands[player].numberOfCards () << " card(s)");
+           << player << " has " << players[player].hands.numberOfCards () << " card(s)");
 
-      for (int i (hands[player].numberOfCards ()); i;) {
-         TRACE8 ("RovhultAppl::enablePlayer (unsigned int) - Card " << i - 1);
+      for (int i (players[player].hands.numberOfCards ()); i;)
          activeCards.push_back
-            (hands[player].at (--i).clicked.connect_after
+            (players[player].hands.at (--i).clicked.connect_after
              (bind (slot (this, &RovhultAppl::handSelected), player, i)));
-      }
    }
    else {
       TRACE2 ("RovhultAppl::enablePlayer (unsigned int) - Enable reserve of player "
               << player);
 
       for (int i (0); i < 3; ++i)
-         if (reserve[player][i].numberOfCards ()) {
+         if (players[player].reserve[i].numberOfCards ()) {
             TRACE8 ("RovhultAppl::enablePlayer (unsigned int) - Pile " << i << " has "
-                    << reserve[player][i].numberOfCards () << " card(s)");
+                    << players[player].reserve[i].numberOfCards () << " card(s)");
             activeCards.push_back
-               (reserve[player][i].getTopCard ().clicked.connect_after
+               (players[player].reserve[i].getTopCard ().clicked.connect_after
                 (bind (slot (this, &RovhultAppl::pileSelected), player, i)));
          }
    }
@@ -517,22 +515,20 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    waitForThread ();
    Check3 (player <= NUM_PLAYERS); Check3 (pile < 3);
 
-   CardWidget& card (reserve[player][pile].getTopCard ());
+   CardWidget& card (players[player].reserve[pile].getTopCard ());
    TRACE1 ("Rovhult::pileSelected (unsigned int, unsinged int) - "
            << card.color () << '/' << card.number ());
 
    // If played from bottom of pile (with invisible cards): Flip card first
-   if (reserve[player][pile].numberOfCards () == 1) {
+   if (players[player].reserve[pile].numberOfCards () == 1)
       card.setVisible ();
-      while (gtk_main_iteration ()) ;    // Should force GTK+ to redraw
-   }
       
    if (!cardValid (card.number ())) {                 // Check if card is valid
-      if (reserve[player][pile].numberOfCards () > 1)   // Visible card? Return
+      if (players[player].reserve[pile].numberOfCards () > 1)   // Visible card? Return
          return;
       
       disableLastPlayer ();
-      reserve[player][pile].removeTopCard ();
+      players[player].reserve[pile].removeTopCard ();
       played.append (card);
       executeMove (player, CardWidget::UNREACHABLE);
       return;
@@ -557,20 +553,20 @@ void RovhultAppl::doPileSelected (void* playerPile) {
    TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - " 
            << player << '/' << pile);
 
-   assert (reserve[player][pile].numberOfCards ());
-   if (reserve[player][pile].numberOfCards () == 1)
+   assert (players[player].reserve[pile].numberOfCards ());
+   if (players[player].reserve[pile].numberOfCards () == 1)
       sleep (1);
 
    gdk_threads_enter ();
    // Move card (and visible cards with equal number below) from player to
    // played staple
-   CardWidget& card (reserve[player][pile].removeTopCard ());
+   CardWidget& card (players[player].reserve[pile].removeTopCard ());
    if (card.number () != CardWidget::TEN)
       played.append (card);
    while (pile--) {
-      if ((reserve[player][pile].topCardVisible ())
-          && (reserve[player][pile].getTopCard ().number () == card.number ())) {
-         CardWidget& movedCard (reserve[player][pile].removeTopCard ());
+      if ((players[player].reserve[pile].topCardVisible ())
+          && (players[player].reserve[pile].getTopCard ().number () == card.number ())) {
+         CardWidget& movedCard (players[player].reserve[pile].removeTopCard ());
          if (movedCard.number () != CardWidget::TEN)
             played.append (movedCard);
       }
@@ -636,9 +632,9 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
    TRACE3 ("Rovhult::handSelected (unsigned int, unsinged int) - Checking player "
            << player << "; Card at " << pos);
    Check3 (player <= NUM_PLAYERS);
-   Check3 (pos <= hands[player].numberOfCards ());
+   Check3 (pos <= players[player].hands.numberOfCards ());
 
-   CardWidget& card (hands[player].at (pos));
+   CardWidget& card (players[player].hands.at (pos));
    TRACE1 ("Rovhult::handSelected (unsigned int, unsinged int) - Card " << pos << " = "
            << card.color () << '/' << card.number ());
 
@@ -648,15 +644,15 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
 
    // Move card (and cards with equal number below) from player to played staple
    do {
-      CardWidget& movedCard (hands[player].remove (pos));
+      CardWidget& movedCard (players[player].hands.remove (pos));
       if (movedCard.number () != CardWidget::TEN)
          played.append (movedCard);
-   } while (pos-- && (hands[player].at (pos).number () == card.number ()));
+   } while (pos-- && (players[player].hands.at (pos).number () == card.number ()));
 
    // If staple contains cards and no 10 was played (except if hand is empty):
    // Fill up cards til player has 3 (or one, in case of a ten)
-   if ((card.number () != CardWidget::TEN) || (!hands[player].numberOfCards ()))
-      fillUpPile (hands[player], card.number () != CardWidget::TEN ? 3 : 1);
+   if ((card.number () != CardWidget::TEN) || (!players[player].hands.numberOfCards ()))
+      fillUpPile (players[player].hands, card.number () != CardWidget::TEN ? 3 : 1);
 
    executeMove (player, card.number ());
 }
@@ -745,19 +741,19 @@ bool RovhultAppl::playerCanContinue (unsigned int player, CardWidget::NUMBERS ca
    if (card == CardWidget::UNREACHABLE)
       return false;
  
-   if (hands[player].numberOfCards ())
-      return playerHandCanContinue (hands[player], card);
+   if (players[player].hands.numberOfCards ())
+      return playerHandCanContinue (players[player].hands, card);
 
    // Check pile: Analyze only visible cards; if there are none, return true
    bool hasNoVisibleCards (true);
    for (int i (0); i < 3; ++i)
-      if (reserve[player][i].numberOfCards () > 1) {
+      if (players[player].reserve[i].numberOfCards () > 1) {
          TRACE5 ("RovhultAppl::playerCanContinue (unsigned int, CardWidget::NUMBERS) const"
-                 " - Checking pile " << i << "; " << reserve[player][i].numberOfCards ()
-                 << " cards");
+                 " - Checking pile " << i << "; "
+                 << players[player].reserve[i].numberOfCards () << " cards");
          hasNoVisibleCards = false;
 
-         CardWidget::NUMBERS nr (reserve[player][i].getTopCard ().number ());
+         CardWidget::NUMBERS nr (players[player].reserve[i].getTopCard ().number ());
          switch (nr) {
          case CardWidget::TWO:
          case CardWidget::TEN:
@@ -857,9 +853,9 @@ void RovhultAppl::movePlayedCardsToLooser (unsigned int nrLooser) {
    Check3 (nrLooser < NUM_PLAYERS);
 
    while (played.numberOfCards ())
-      hands[nrLooser].append (played.remove (0));
+      players[nrLooser].hands.append (played.remove (0));
 
-   hands[nrLooser].sortByNumber ();
+   players[nrLooser].hands.sortByNumber ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -872,11 +868,11 @@ int RovhultAppl::nextAvailablePlayer (unsigned int actPlayer) const {
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       unsigned int player ((actPlayer + i) & 0x3);
 
-      if (hands[player].numberOfCards ())
+      if (players[player].hands.numberOfCards ())
          return player;
 
       for (int j (0); j < 3; ++j)
-         if (reserve[player][j].numberOfCards ())
+         if (players[player].reserve[j].numberOfCards ())
             return player;
    }
    return -1;
@@ -902,6 +898,20 @@ void RovhultAppl::loadCards () {
    pMenuNew->set_sensitive (true);
    status.pop (1);
    status.push (1, _("Start a new game with Ctrl+N (or Game -> New)"));
+
+   assert (cardFaces.numberOfCards ());
+   const Gdk_Pixmap& img (cardFaces.getCardImage (0));
+   unsigned int width (const_cast<Gdk_Pixmap&> (img).width ());
+   unsigned int height (const_cast<Gdk_Pixmap&> (img).height ());
+
+   for (int i (0); i < NUM_PLAYERS; ++i) {
+      for (int j (0); j < 3; ++j)
+         players[i].reserve[j].set_usize (width, height + 20);
+
+      players[i].hands.set_usize (width * 3, height);
+   }
+   played.set_usize (width, height);
+   staple.set_usize (width, height);
    gdk_threads_leave ();
 }
 
@@ -921,11 +931,11 @@ void RovhultAppl::cleanTable () {
    staple.clear ();                                             // Clear staple
    for (int i (0); i < NUM_PLAYERS; ++i) {            // Clear cards of players
       for (int j (0); j < 3; ++j) {
-         reserve[i][j].clear ();
+         players[i].reserve[j].clear ();
       }
 
-      hands[i].setStyle (ICardPile::NORMAL);
-      hands[i].clear ();
+      players[i].hands.setStyle (ICardPile::NORMAL);
+      players[i].hands.clear ();
    }
    played.clear ();
 
@@ -1002,7 +1012,7 @@ void RovhultAppl::dealCards () {
       for (unsigned int j (0); j < 3; ++j) {
          for (unsigned int k (0); k < 2; ++k) {           // Set cards on table
             CardWidget& card (staple.removeTopCard ());
-            reserve[i][j].setTopCard (card, k);
+            players[i].reserve[j].setTopCard (card, k);
 
             if (k)                       // Enable drag-n-drop for the top-card
                registerTableDND (card, i, j);
@@ -1011,7 +1021,7 @@ void RovhultAppl::dealCards () {
          // Put card into hand
          CardWidget& card (staple.removeTopCard ());
          card.setVisible ();
-         hands[i].append (card);
+         players[i].hands.append (card);
 
          registerHandDND (card, i, j);
       }
@@ -1070,8 +1080,8 @@ void RovhultAppl::cardDroppedOnTable (GdkDragContext* pContext, gint, gint,
    if (player != *pValues)
       drag_finish (gdc, false, false, time);
    else {
-      CardWidget& cardTable (reserve[player][pile].removeTopCard ());
-      CardWidget& cardHand (hands[player].remove (pValues[1]));
+      CardWidget& cardTable (players[player].reserve[pile].removeTopCard ());
+      CardWidget& cardHand (players[player].hands.remove (pValues[1]));
 
       TRACE1 ("RovhultAppl::cardDroppedOnTable (...) - Exchanging cards "
               << cardHand.id () << "<->" << cardTable.id ());
@@ -1083,8 +1093,8 @@ void RovhultAppl::cardDroppedOnTable (GdkDragContext* pContext, gint, gint,
       unregisterDND (cardTable);
 
       // Swap cards
-      reserve[player][pile].setTopCard (cardHand);
-      hands[player].insert (cardTable, pValues[1]);
+      players[player].reserve[pile].setTopCard (cardHand);
+      players[player].hands.insert (cardTable, pValues[1]);
 
       registerHandDND (cardTable, player, pValues[1]);
       registerTableDND (cardHand, player, pile);
@@ -1117,7 +1127,7 @@ void RovhultAppl::cardDroppedOnHand (GdkDragContext* pContext, gint, gint,
    unsigned int card (playerCard & 0xffff);
 
    Check3 (player < NUM_PLAYERS);
-   Check3 (card < hands[player].numberOfCards ());
+   Check3 (card < players[player].hands.numberOfCards ());
 
    unsigned int* pValues (reinterpret_cast <unsigned int*> (pData->data));
    Check3 (pValues);
@@ -1131,8 +1141,8 @@ void RovhultAppl::cardDroppedOnHand (GdkDragContext* pContext, gint, gint,
    if (player != *pValues)
       drag_finish (gdc, false, false, time);
    else {
-      CardWidget& cardTable (reserve[player][pValues[1]].removeTopCard ());
-      CardWidget& cardHand (hands[player].remove (card));
+      CardWidget& cardTable (players[player].reserve[pValues[1]].removeTopCard ());
+      CardWidget& cardHand (players[player].hands.remove (card));
 
       TRACE1 ("RovhultAppl::cardDroppedOnHand (...) - Exchanging cards "
               << cardHand.id () << "<->" << cardTable.id ());
@@ -1143,8 +1153,8 @@ void RovhultAppl::cardDroppedOnHand (GdkDragContext* pContext, gint, gint,
       unregisterDND (cardTable);
 
       // Swap cards
-      reserve[player][pValues[1]].setTopCard (cardHand);
-      hands[player].insert (cardTable, card);
+      players[player].reserve[pValues[1]].setTopCard (cardHand);
+      players[player].hands.insert (cardTable, card);
 
       // Adapt dnd-settigns
       registerHandDND (cardTable, player, card);

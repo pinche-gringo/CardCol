@@ -119,8 +119,10 @@ class RovhultAppl : public XApplication {
    CardHPile played;
 
    CardVPile staple;                                         // Cards on staple
-   CardHPile hands[NUM_PLAYERS];              // For players: Cards in the hand
-   CardVPile reserve[NUM_PLAYERS][3];           // Reserve-cards (for end-game)
+   struct {
+      CardHPile hands;                        // For players: Cards in the hand
+      CardVPile reserve[3];                     // Reserve-cards (for end-game)
+   } players[NUM_PLAYERS];
 
    vector<Connection> activeCards;
    Connection pileTop;
