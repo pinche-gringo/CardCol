@@ -130,10 +130,17 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) 
 
       unsigned int player (0);
       Glib::ustring names;
+      Glib::ustring error;
+      unsigned int rc (0);
       AttributeParse ap;
       ATTRIBUTE (ap, unsigned int, player, "Number");
       ATTRIBUTE (ap, Glib::ustring, names, "Names");
+      ATTRIBUTE (ap, Glib::ustring, error, "Msg");
+      ATTRIBUTE (ap, unsigned int, rc, "Error");
       ap.assignValues (input);
+
+      if (rc)
+         throw error;
 
       if (!player)
          throw std::string (_("Invalid player number!"));
