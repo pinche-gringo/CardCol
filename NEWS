@@ -6,6 +6,7 @@ Overview of changes in version 0.5.00:
   - Twopart, Røvhult and Buraco starts with a random player
   - Fixed Røvhult's checking of humans playing from pile
   - Fixed Twopart's calcuation of next player (equal cards at end of part I)
+  - Fixed Buraco's computer player taking dumped pile with series of colour
   - Renamed [Players]-section in INI-file to [Player]
   - Needs library YGP 0.6.21
 
