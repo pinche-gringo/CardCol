@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Cardgames V0.3 ($Revision$)\n"
+"Project-Id-Version: Cardgames V0.4 ($Revision$)\n"
 "POT-Creation-Date: 2003-07-05 20:49-0500\n"
-"PO-Revision-Date: 2002-04-28 00:15-0500\n"
+"PO-Revision-Date: 2003-07-05 21:08-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
 "MIME-Version: 1.0\n"
