@@ -17,6 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#include <vector>
 
 #include <gtk--/table.h>
 
@@ -26,6 +27,7 @@ namespace Gtk {
    class Statusbar;
 };
 class CardSet;
+class ICardPile;
 
 
 // Class to select the card decks to use
@@ -47,10 +49,17 @@ class Game : public Gtk::Table {
 
  protected:
    enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, LAST };
+
+   virtual void disableLastPlayer ();
+
+   void randomizeCardsToPile (ICardPile& pile) const;
+
    unsigned int statGame;
 
    Gtk::Statusbar& status;
    CardSet& cards;
+
+   vector<Gtk::Connection> activeCards;
 
  private:
 };

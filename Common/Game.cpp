@@ -32,6 +32,7 @@
 #include <Trace_.h>
 
 #include "CardSet.h"
+#include "CardPile.h"
 
 #include "Game.h"
 
@@ -78,3 +79,25 @@ void Game::start () {
 void Game::stop () {
    statGame = STOPPED;
 }
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Disables the cards of the last player
+/*--------------------------------------------------------------------------*/
+void Game::disableLastPlayer () {
+   TRACE2 ("Game::disableLastPlayer () - " << activeCards.size () << " cards");
+
+   for (int i (activeCards.size ()); i > 0;)
+      activeCards[--i].disconnect ();
+   
+   activeCards.clear ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Shuffles (Randomizes) the cards onto the staple
+/*--------------------------------------------------------------------------*/
+void Game::randomizeCardsToPile (ICardPile& pile) const {
+   // Randomize and put cards onto staple
+   cards.shuffle ();
+   pile.setTopCards (cards.getCards (), false);
+}
+
