@@ -1,7 +1,7 @@
 //$Id$
 
 //PROJECT     : Cardgames
-//SUBSYSTEM   : Common
+//SUBSYSTEM   : General
 //REFERENCES  :
 //TODO        : 
 //BUGS        :
@@ -58,7 +58,7 @@
 const unsigned int CardgameCollection::USED_CARDS = 52;
 
 const unsigned int CardgameCollection::WIDTH = 760;
-const unsigned int CardgameCollection::HEIGHT = 730;
+const unsigned int CardgameCollection::HEIGHT = 750;
 
 
 // Pixmap for program
@@ -408,6 +408,173 @@ const char* CardgameCollection::xpmAuthor[] = {
    "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" };
 
 
+/* XPM for the Joker; borrowed (and simplified) from the Warwick cardset of the
+   KDE cardgames */
+static char * xpmJoker[] = {
+"72 96 65 1",
+" 	c None",
+".	c #030303",
+"+	c #0E322E",
+"@	c #1D6266",
+"#	c #40818D",
+"$	c #51AEC8",
+"%	c #CA0303",
+"&	c #A39F9A",
+"*	c #B5B5B1",
+"=	c #84CCD0",
+"-	c #A30404",
+";	c #F6CE02",
+">	c #26829E",
+",	c #D03333",
+"'	c #B2DEDE",
+")	c #710607",
+"!	c #863A3D",
+"~	c #32C1A1",
+"{	c #DF7878",
+"]	c #E3DBD4",
+"^	c #5E2E32",
+"/	c #C6E6E6",
+"(	c #470707",
+"_	c #F2E2D6",
+":	c #96D6D6",
+"<	c #967E02",
+"[	c #14221F",
+"}	c #D2EAEA",
+"|	c #AAD6E2",
+"1	c #E69A9A",
+"2	c #E5EEEE",
+"3	c #228672",
+"4	c #EAC60A",
+"5	c #24534C",
+"6	c #228E76",
+"7	c #29271E",
+"8	c #F6E6E6",
+"9	c #121A1A",
+"0	c #D1CECB",
+"a	c #5FCDB5",
+"b	c #26927A",
+"c	c #706A68",
+"d	c #F2F2F2",
+"e	c #978984",
+"f	c #768188",
+"g	c #2A8EAA",
+"h	c #220202",
+"i	c #F2F6F6",
+"j	c #16424E",
+"k	c #269E86",
+"l	c #227A7A",
+"m	c #ECD1C2",
+"n	c #353532",
+"o	c #745A42",
+"p	c #71BCD4",
+"q	c #0E1010",
+"r	c #AA222A",
+"s	c #FAFAFA",
+"t	c #625202",
+"u	c #2E96B6",
+"v	c #32A3BF",
+"w	c #C55151",
+"x	c #C69292",
+"y	c #5A554F",
+"z	c #C9BBAC",
+".q.7n**************************************************************n....",
+"..y00sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssszcq..",
+".c0iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiisss&q.",
+".&sssssssssssssssssssssssssssssssssi$$$psssssssssssssssssssssssssisisiq.",
+"&ssisisiz...ydsisisisisisisis/}$vv>>>n7>vvpisisisisisisisisisisisssissi.",
+"&ssssssi]n.[essssssssssssis'|vvuc@...;4qv$|'sssssssssssssssssssssssisisq",
+"&is2sdsis*.yssdsdsdsdsdsds:$vvuo(h.@@tt@v$||s2sdsdsdsdsdsdsdsdsdsssssii.",
+"&sdssssss*.ysssssdsssdssss]$vv!%h.lvvl>v//ssdsssdsssdsssdsssdssssisisssq",
+"&ssisdsis*.y2sdsssdsssds=vvv#r%h..uvvv/sdisssdsssdsssdsssdsssdsissssdsi.",
+"&ssdssisd*.yssssdsss2s/||$vur%%h..5vvv$||'sdsssdsssdsssdsssdssssdsdsssiq",
+"&issdsssi*.y2sdsssds'=vvvvuo%%%h...uvvgvv$p=p=p=p|sssdsssdsssdsssssdssi.",
+"&ssssdssd*.ysssdisss8pvuvvvr%%(....9vvvvuvv>9[9jvv$$$$$$$'dsssisisssdssq",
+"&sdsssdss*.ydsssd=vvvuvvv>^%%%h....n.>>l7n7ysss*nnn[.9n5gv$|issssdsssds.",
+"&issdsssd*.ysdss2pgvl@@5@9ywr%h..yydy.cciss_1111111c[o;o@vpdsdsdssisssdq",
+"&sdycsssi*.ydsd/$>jjc&e&7.*d11&e&issdqss8{ww%%%%roof>yty>vp2ssssdssdsss.",
+"&i].qyisz7.ys'$$@o00]siiy.*ssddsidss2.,,%%%%%r#f#uvvvg3gv=dssdsssdssisdq",
+"&ss]7....qcd/$u@cmw%%%%%(90d]00z00dssdh%%%%!vvv$$:siissississsdsssdsssi.",
+"&sss2ycycess}p@c{%r!!r%-y0&&yyyyyyeeido)))ov$p|ssssissssiissdsissssdssiq",
+"&ssss]cfids/pv@^,!fvu#r(&&fe08]88_eecidee9vv$p'issssdssssisssssdsdssssi.",
+"&iss0y0&css8=v@)!uvvvv#[&y&yn708n77]znss]quvvvv$=idsssdssdsdsdssssdsdssq",
+"&sss0[i07ssd}=@)!vvvvuvv+&]zz*mz8zz*_]qs]5>vuv$pssssdssdss=$vvu|dssssds.",
+"&iis]7i0nsd/pg5oo>uvvvvv+&&[..z[0q..emc&d0[vvu$|||||/sss/||$l@gv=|||dsdq",
+"&sis07i*nsi}$@o;o5vvuvvv+&xeee070eeee]09s]fjjjj@vuvp/s2s/|$v^hlvujju2ss.",
+"*iss2*ny]ssd|u575uvvvvuvgj*_m]y&m_]_m_07ssz7z00e[[jv$$'d=$$!)@gvv[.g$ddq",
+"&sisd0i20isdd'p$$uvvvvvvu+&8]_y&znmz_m0qssssdsdd&...+gvvvg>^(5[..>vv$$i.",
+"&sss07s0ndssssss'$uvvuvv$@cm_e0cymey__ffsiidsss0c....+>uvj.ny9...>v:issq",
+"&sss070f*sdiissds}pvvvvuvv[&_&ooyy.]_m9dsssisdm!.....(^l@qycz&[.5>vvpdi.",
+"&sis].yzsssssssssd2puvuvvj&yz]z9..*m_n*7yssdm,,%)...(-wc9cmz08z7q[>vv$dq",
+"&sis07]y0ssisssis|$vvvv>5ziiy&m]zz__.......(%%%%%-[)%%)fyeycmy&n^r(.g'd.",
+"&sss][d0nssisisssd=vvvl50ssssefmcyme......h)%%%%%,1m,%wcnf&oz&[7>voju=iq",
+"&sis2&s]*sdsssd/==av$v5&iiisis&cyyy.........)%%%%wssmw-^ecyyo9@vv$~=|8s.",
+"&sss}7n7cssdsisi}=~~~@)^*sssiw,-----.........(-)w]dss8c.9ey@k3~~'}}sisdq",
+"&sds]7siidssd}}=~~~kj)%%)e0m,%%%%%%%h........n9.^]ds]c.9eoeng~~~aa}ssss.",
+"&sss09e*sssi}=a~~~~5)%%%%(.-%%%%%%%%%....qycfi*.qnzzy.7*&r%)5v~=dssisidq",
+"&iss]9e&ssss}:~~~~67-%%%)..-%%%%%%%%%..e&&isds]c957n.n0sd{%%(3~~/sssssi.",
+"&dss07ssiiis}/~~~~@)%%%)...h-%%%%%%%h00sssssss2&jl.qy]sdi8,%(3~~a2siisiq",
+"&sis}nnncii}a~~~~@.(-,^7n7q..)----...iidsississ&..q9.c]si]y((@~~|}dsssi.",
+"&sss2&e&siii}aa~~@..(xdsi*7.........qsisiss]&e&c.[l6[.y0zn....b~~adsdssq",
+"&sds09&ffsiis}a~69..yzsse[59.........ssssi]cey..[6~~k+h!^.....6~~a:2ssi.",
+"&iss07szys/aaa~~@...esifq@~k9........ndss07q7[.nf@~39^%%-(....6~~~'issiq",
+"&sss0qny0ssi/a~~@nnem_]n3~~k[........qsd*[_28]8]_&9.(%%%{fn7q9b~~'2iisi.",
+"&sis][i0nii}a~~@cdd{%1y+k3l9.........q2eyc__]_]_]]e.(-%,msiiy3~~~~a2sssq",
+"&dss]7s*5s}:a~~@fd1,%!7l~+t9oe&e.....q][__m______]e..hw0dsi&@v~~~~2isdi.",
+"&sss20s20}a~~~~@cs{%%(5~~+[qxy7n*q...qs*n_8_____]]e...),1dfl~~~~~'issssq",
+"&isdsisssi2=~~3(%%{sic3~~~+&;7<9]nn7n.*..hhh7zzzzc...)%%%(3~~~~:ssisdsi.",
+"&ssssiii}/:~~~l)%%{sic@~~~+-xccc4e&ed..q)%%-((9j+7ycy!%-n6~~~~~a2iisssiq",
+"&sdsssssi':a~~@^11eyc7l~~~+-%w{w_9<<c..)%%%%%-+~lcdis{%)@~~~~~~aissdssi.",
+"&ssissis}aaa~~3ciif...l~~5)%%%%%_q47..-%%%%%%)+~3qnnnezc@~~~~:}}isssissq",
+"&sssdsii}2=~~~~@cmcn7nq3~+-%%%%%%-..74qm%%%%%)5~~l...ciscl~~aaa}iidssds.",
+"&sdssss2a~~~~~~@)%{ii2cl~+)%%%%%)..o<<[mw{w%-+~~~l7yoe1xy@~~=''issssssdq",
+"&ssdsis}a~~~~~b7-%!ccy7+5q((-%%)...2&e&4oyc{)+~~~lcis{%%(l~~~==iisdsdss.",
+"&dsissss'~~~~37%%%)...c***z7hhh..*.n7nnm7<7;&+~~~lcss{%%(@~~:isissssssdq",
+"&isisi'~~~~k3cd1,)...e]_]m___m_nziq..qq*7ntxq[+~k@(%%{ic@~~~~a}]}i02dsi.",
+"&sisi2~~~~~@&sis0wh..e__]___]8_898q....q&&eo7t+~l[!%,1sc3~~aa}snzs[]issq",
+"&sss2a~~~~3yissm,%-(.em__]]_8]cyed..........9l3b+c{%{ssc@~~aisin0s7]ssi.",
+"&isis}'~~b9qnnc1%%%(.9x_______7*dsq........[k~~3y]8menn@~~:}2si]yn.0ssiq",
+"&sssi'~~~6....(-%-(93~@fn.77h7miisn........[k~@.csie...@~~a~a}inzs7]2si.",
+"&issi:a~~3.....^!hjk~~b[..cec]sisis.........[5[&si0y..[k~a}sissff&9]sssq",
+"&ssii}a~~3....nzmy.[6l[.ce&e/ssissi..........7*iiixh..@~~aa2siss*ee2idi.",
+"&issss}'~~@()y]sd0c.9q..&iiiiiissss...----)..q7nn^,%(.5~~~~~}sic7nn]sssq",
+"&sisss}a~~3(%wmsss]y..3j&sssssssd00h%%%%%%%-h...)%%%)@~~~~:iiisssi[]dsi.",
+"&sssiii/~~l(%%{is0n.n[j[c]sssi&&eq.%%%%%%%%%-.h)%%%-73~~~~:}isis&&9mssiq",
+"&ssssisi=~k5)%r&*n.y0zn..*decyq....%%%%%%%%%-.(%%%%)5~~~~a:}siss&&90sds.",
+"&siss2~a~~~3neof9.c]sd2n.[7q.......h%%%%%%%r00e(%%-jk~~~:}}isisssi7]ssdq",
+"&ssii}2'~~kb@ye9.c8isi]w)-(.........-----,wdsi2*7)@~~~a2iisissiyn7n]2ss.",
+"&ii|:~~~k59ooycf!-,]sd{%%%%).........yyyo&ssssss&+~~~a:a/sssiss*_s&2ssdq",
+"*i=g+oug+[&*yee7fw%,z1r%%%%%)h......e]yf0fediss0lluuv=issisisssn0i7]ssd.",
+"&2/g.(r)neymfyeyf)%%-7)%%%%%(......._m*z_m&ysdz5>vvvv$|ssissisi0y070ssiq",
+"&i$vvg[9nz_0zmcqcw%(...)-,,m8diy7*n]_&..9z_zyejuvvuvp2isisisisis0y.]iss.",
+"&sdpvvu5.7&zcy[@>^(.....!zdiisisi9m_]qoyyo&]*+vuvvvvvp}sssisssi*c][]ssdq",
+"&ss2=v>...9on.jvvl+....o]ssssiisce]_ye]yc0e80c@vvuvvvv$'issisisn0i7]2ss.",
+"&dp$$v>..[@(^>gvvvu+...&sssisssd70_]zmnz&y8_m&+vvvgvvuv$$$'ssss02i02ssdq",
+"&i2$>.9vvu@(!$$=d|$$$j[[e00z70di9m_m8__]&ym88*5>vvvvvvg57@g=2is0y7*2sss.",
+"&ssduj5uvl.!v$|/sss/pvvv@jjjjf2i9m_eeeem70eee&&+vvuvvv5<;t@p}sin0s[]isdq",
+"&sid|||=v>@>$||/isi/|:|||vvvv[0i&y_e..q09z..9&x+vvvvuvlow5>p/sin0i7]iss.",
+"&sssdsd8|vvvv=sssssisiid=$vvvl5]i9mm**zmzmzzzm&+vvvvvvvo(@=/2ssnzs7]ssdq",
+"&ississisddssssisisisss=$vuvvvq]iin*m77n_z7no&y&+#uvvu#!)@v:dssc&0n]sis.",
+"&sississssssdsisssisssdsd|p$vv9feiscee888_m0ece*(r#vvf!,^@vp/issfo}sisdq",
+"&sisssssdsdsssisdssdsssds|p$uo)))odi&eoyoyyc&*0^)%r!!r%{c5p}ssfyccy]sss.",
+"&ssdssdsssssiisssdssds=p$vvu!%%%%.2is200000]207(%%%%%{mc@u$'sc9....n]siq",
+"&ssissdsdssss2=uu>gvvvg#f#r%%%%,,,.2sid2didii*.ydds]0zc@$$'sy.70iiy..]s.",
+"&dssdsssssii2pv>5ty>#ccr%%%%ww{_dsqdss2&e&11d*.ne&ecjj>$/sssy.*sisdfyddq",
+"&ssssdsdsdss8pv@o;o[c11111118sddcc.odcy..h%rwn[@@@@>vvp/ssssy.*isssssss.",
+"&dsdsssssssd/$v#@7qq9nn7*dddc7nnl>>.7....h%%%^gvvvvuvv:sdsd2y.*dsdsissiq",
+"&sssdsdsdssiis'$pp$$$$$vj[[9>vvvvvvv[....(%%rvvvvvp}dsssssisy.*sssssdsi.",
+"&sdssssssdssssss2sssid|p=ppp=p$vuvvvv...h%%-ovuvu$p'dsdsdsidy.*ssdsssssq",
+"&sssdsdsssdssssssdssssssssssdd|||vvuv5..h%%rvv$||/sssssssdssy.*ssisdsii.",
+"&sdssssssssdsdsdssdssssisssissdsd}vvvu..h%r#vvv=dss2sdsdssddy.*dsssssssq",
+"&ssdsdsdsdssssssdssdsdsisssiss}}v>>vvl.h%!vv$}ssisssssssdsssy.*isdsdsdi.",
+"&dssssssssdsdsdsssisssssisis'|$v@tt@@..(ovuu$:isssdsdsdsssidy.*ssssssssq",
+"&ssdsdsdsssssssdsssdsdsssdss'|vvq4;...@cvu$|'sssdssssssdsds&9.n]idsdssi.",
+"&dsssssssdsdsdsssdssssdsssdsspvv>77l>>vv$/}ssdsssdsdsdssssdy...zsssissiq",
+"qfsdsdssssssssdsssdsdssdsssdsdsip$$pdiddssssssdsssssssdsdsssssisisssdsq.",
+".q&sssdsdsdsdssdsisssdsssdsssssssssdsssssdssdsssdsdsdssssssdsisssdssseq.",
+".qqccssssssssdssssssssdsssdsdsisiisisdsdssdssdsssssssdsdsssdssdsssdccqq.",
+".q..qnnnnnnnnnnnnn7nn7nnnnnnnn7nnnnn7nnn7nn7nn7nn7nn7nn7nnn7n7nn7nn9..qq"};
+
+
 // With a very ugly trick initialize I18n before the first use of gettext)
 XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { (initI18n (PACKAGE, LOCALEDIR),
@@ -545,6 +712,14 @@ void CardgameCollection::startGame () {
          delete game;
       }
 
+      if (oldGame == GBURAZNO) {
+         TRACE9 ("CardgameCollection::startGame () - Cleaning burazno cards");
+         cards.clear ();
+         cardFaces.delImage (cardFaces.numberOfCards () - 1);
+         cardFaces.delImage (cardFaces.numberOfCards () - 1);
+         cards.addPacket (cardFaces);
+      }
+
       oldGame = CardgameCollection::games (options.type);
       switch (oldGame) {
       case GROVHULT:
@@ -563,6 +738,13 @@ void CardgameCollection::startGame () {
          break;
 
       case GBURAZNO:
+         cardFaces.addImage (xpmJoker);
+         cardFaces.addImage (xpmJoker);
+         cards.clear ();
+         cards.addPacket (cardFaces);
+         cards.addPacket (cardFaces);
+         cards.addPacket (cardFaces);
+         cards.addPacket (cardFaces);
          game = new TGame<Burazno, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
@@ -594,16 +776,19 @@ const std::vector<std::string>& CardgameCollection::getNames () const {
 //Parameters: menu: ID of command (menu)
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::command (int menu) {
+   TRACE1 ("CardgameCollection::command (int) - " << menu);
    switch (menu) {
    case NEW:
+      TRACE7 ("CardgameCollection::command (int) - New; Game running: "
+             << (game && game->isRunning () ? "Yes" : "No"));
       if (game && game->isRunning ()) {
          restart = true;
          Gtk::MessageDialog dlg (_("A game is already running. Do you really"
                                    " want to end it and start another?"),
                                  Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
          dlg.set_title (PACKAGE);
-         dlg.signal_response ().connect
-            (slot (*this, &CardgameCollection::userWants2End));
+         if (dlg.run () == Gtk::RESPONSE_YES)
+            userWants2End ();
       }
       else
          startGame ();
@@ -615,8 +800,8 @@ void CardgameCollection::command (int menu) {
       Gtk::MessageDialog dlg (_("Do you really want to end the game?"),
                               Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
       dlg.set_title (PACKAGE);
-      dlg.signal_response ().connect
-         (slot (*this, &CardgameCollection::userWants2End));
+      if (dlg.run () == Gtk::RESPONSE_YES)
+         userWants2End ();
       break; }
 
    case TWOPART:
@@ -662,9 +847,10 @@ void CardgameCollection::command (int menu) {
          Gtk::MessageDialog dlg (_("A game is running. Do you really want to quit?"),
                                  Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
          dlg.set_title (PACKAGE);
-         if (dlg.run () == Gtk::RESPONSE_YES)
-            hide ();
+         if (dlg.run () != Gtk::RESPONSE_YES)
+            break;
       }
+      hide ();
       break;
           
 #if TRACELEVEL >= 0
@@ -748,7 +934,6 @@ void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::changeCards (void* opt) {
    TRACE2 ("CardgameCollection::changeCards (void*) - Option: " << opt);
-   Check1 (opt);
 
    // Cards need an realized (!) parent, so ensure that the window is already
    // shown
@@ -758,9 +943,9 @@ void CardgameCollection::changeCards (void* opt) {
            << " and " << options.back);
 
    if ((unsigned int)opt & 1)
-      cardFaces.loadDecks (get_window (), options.decks);
+      cardFaces.loadDecks (options.decks);
    if ((unsigned int)opt & 2)
-      cardFaces.loadBack (get_window (), options.back);
+      cardFaces.loadBack (options.back);
 
    gdk_threads_enter ();
    cards.update ();
@@ -770,30 +955,27 @@ void CardgameCollection::changeCards (void* opt) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Checks the user-input after asking if he wants to end the game;
-//             depending on the answer either stops or continues
+//            depending on the answer either stops or continues
 //Parameters: input: Button pressed by the user
 /*--------------------------------------------------------------------------*/
-void CardgameCollection::userWants2End (int input) {
-   if (input == Gtk::RESPONSE_YES) {
-      Check3 (game);
-      if (game->isRunning ()) {
-         status.pop ();
-         status.push (_("User canceled"));
+void CardgameCollection::userWants2End () {
+   if (game->isRunning ()) {
+      status.pop ();
+      status.push (_("User canceled"));
 
-         if (game->canBeStopped ()) {
-            game->stop ();
-            if (restart)
-               startGame ();
-         }
-         else {
-            game->end ((options.type == oldGame) ? restart : false);
-            if (options.type == oldGame)
-               restart = false;
-         }
+      if (game->canBeStopped ()) {
+         game->stop ();
+         if (restart)
+            startGame ();
       }
-      else
-         startGame ();
+      else {
+         game->end ((options.type == oldGame) ? restart : false);
+         if (options.type == oldGame)
+            restart = false;
+      }
    }
+   else
+      startGame ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -806,17 +988,17 @@ void CardgameCollection::loadCards () {
    gdk_threads_enter ();
    Check3 (is_realized ());
    status.push (_("Loading cardimages ..."));
-   gdk_threads_leave ();
 
    // This code needs the game-IDs in a sequence starting with 0!
    if (GLAST <= (unsigned int)options.type)
       options.type = GROVHULT;
    dynamic_cast<Gtk::CheckMenuItem*> (apMenus[ROVHULT + options.type])->set_active ();
+   gdk_threads_leave ();
 
-   cardFaces.load (get_window (), options.decks, options.back);
-   cards.addPacket (cardFaces);
+   cardFaces.load (options.decks, options.back);
 
    gdk_threads_enter ();
+   cards.addPacket (cardFaces);
    apMenus[NEW]->set_sensitive (true);
    status.pop ();
    status.push (_("Start a new game with Ctrl+N (or Game -> New)"));
@@ -1035,6 +1217,7 @@ int CardgameAppl::perform (int, const char**) {
 /*--------------------------------------------------------------------------*/
 int main (int argc, const char* argv[]) {
    Glib::thread_init (NULL);
+   gdk_threads_init ();
 
    Gtk::Main gtk (&argc, const_cast<char***> (&argv));
    CardgameAppl appl (argc, argv);
