@@ -49,9 +49,9 @@ IPlayerDlg::IPlayerDlg (std::vector<std::string>& names)
    Check1 (names.size () > 1);
    Check1 (names.size () < 10);
 
-   set_title ("Set name of players");
+   set_title (_("Set name of players"));
 
-   aPlayers.push_back (new line ("Human:", names[0]));
+   aPlayers.push_back (new line (_("Human:"), names[0]));
    aPlayers.back ()->show ();
    aPlayers.back ()->attach (*pClient, 0);
 
