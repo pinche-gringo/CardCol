@@ -214,12 +214,6 @@ unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
    Check3 (gameStatus () == PLAYING2);
    Check3 (bfPlayers);
 
-   Glib::ustring stat ( _("%1 can't continue -> Picking up last cards; "));
-   Check3 (actPlayers.size () > player);
-   Check3 (actPlayers[player]);
-   stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
-   displayTurn (player, stat);
-
    // Move played cards to player
    Check3 (offPos > 0); Check3 (offPos < NUM_PLAYERS);
    movePlayedCardsToPlayer (player, startPos[--offPos]);
@@ -249,7 +243,16 @@ unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
          --num;
       }
    }
-   return findNextPlayer (player);
+
+   Glib::ustring stat ( _("%1 can't continue -> Picking up last cards; "));
+   Check3 (actPlayers.size () > player);
+   Check3 (actPlayers[player]);
+   stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
+
+   player = findNextPlayer (player);
+   displayTurn (player, stat);
+
+   return player;
 }
 
 //-----------------------------------------------------------------------------
@@ -262,7 +265,7 @@ void Twopart::playedSelected () {
    Check3 (bfPlayers);
 
    if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT) {
-      Check3 (startPos[--offPos] < played.size ());
+      Check3 (startPos[offPos - 1] < played.size ());
       std::ostringstream msg;
       msg << "Play=" << played[startPos[offPos - 1]]->id () << ";Target=1";
       ignoreNextMsg = true;
@@ -291,7 +294,7 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player,
 
    if (gameStatus () == PLAYING) {
       Check3 (start == end);
-      TRACE9 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int)"
+      TRACE8 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int)"
               " - Player " << player << "; Card at " << end << " = "
               << *players[player].hand[end]);
       movePile (played, players[player].hand, start, end);
@@ -667,7 +670,7 @@ unsigned int Twopart::findSmallestCard (unsigned int player) const {
          break;
           
       if (nrMin >= card.number ()) {
-         TRACE9 ("Twopart::findSmallestCard (unsigned int) - New smallest card at "
+         TRACE8 ("Twopart::findSmallestCard (unsigned int) - New smallest card at "
                  << i << "; Cards: " << (findEndOfSerie (player, i) - i));
 
          unsigned int endPos (findEndOfSerie (player, i));
@@ -703,7 +706,7 @@ unsigned int Twopart::findEndOfSerie (unsigned int player, unsigned int start) c
           && ((card = players[player].hand[start]),
               (card->number ()) == (nr + 1))
           && (card->colour () == colour)) {
-      TRACE9 ("Twopart::findEndOfSerie (unsigned int, unsigned int) - Next valid card "
+      TRACE8 ("Twopart::findEndOfSerie (unsigned int, unsigned int) - Next valid card "
               << *card << " at " << start);
       nr = card->number ();
    }
@@ -729,7 +732,7 @@ unsigned int Twopart::findStartOfSerie (unsigned int player, unsigned int start)
           && ((card = players[player].hand[start]),
               (card->number ()) == (nr - 1))
           && (card->colour () == colour)) {
-      TRACE9 ("Twopart::findStartOfSerie (unsigned int, unsigned int) - Next valid card "
+      TRACE8 ("Twopart::findStartOfSerie (unsigned int, unsigned int) - Next valid card "
               << *card << " at " << start);
       nr = card->number ();
    }
@@ -953,7 +956,7 @@ unsigned int Twopart::removePlayersWithoutCards () {
 /// \returns unsigned int: Number of player
 //-----------------------------------------------------------------------------
 unsigned int Twopart::pos2Player (unsigned int pos) const {
-   TRACE9 ("Twopart::pos2Player (unsigned int) - Pos to convert: " << pos
+   TRACE8 ("Twopart::pos2Player (unsigned int) - Pos to convert: " << pos
            << "; starting with player " << startPlayer);
 
    unsigned int start (startPlayer);
@@ -963,7 +966,7 @@ unsigned int Twopart::pos2Player (unsigned int pos) const {
          --pos;
    }
    
-   TRACE9 ("Twopart::pos2Player (unsigned int) - Calculated player: " << start);
+   TRACE8 ("Twopart::pos2Player (unsigned int) - Calculated player: " << start);
    return start;
 }
 
@@ -973,7 +976,7 @@ unsigned int Twopart::pos2Player (unsigned int pos) const {
 /// \param start: Startposition of cards to move
 //-----------------------------------------------------------------------------
 void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start) {
-   TRACE8 ("Twopart::movePlayedCardsToPlayer () - " << played.size ()
+   TRACE8 ("Twopart::movePlayedCardsToPlayer () - " << (played.size () - start)
            << " cards for player " << receiver << " til position " << start);
    Check3 (receiver < NUM_PLAYERS);
    Check3 (start < played.size ());
@@ -1021,7 +1024,6 @@ void Twopart::clean () {
 /// \returns int: Value indicating if timer should continue
 //-----------------------------------------------------------------------------
 bool Twopart::startPartTwoTimerFnc (unsigned int player) {
-   TRACE8 ("Twopart::startPartTwoTimerFnc ()");
    TRACE9 ("Twopart::startPartTwoTimerFnc (unsigned int) - Continuing with " << player);
    Check3 (!bfPlayers);
    setGameStatus (PLAYING2);
@@ -1052,7 +1054,7 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       for (unsigned int j (players[i].won.size ()); j; --j) {
          CardWidget& card (players[i].won.removeTopCard ());
-         TRACE9 ("Twopart::startPartTwoTimerFnc (unsigned int) - Moving cards "
+         TRACE8 ("Twopart::startPartTwoTimerFnc (unsigned int) - Moving cards "
                  << card << " for player " << i);
          if (bfPlayers && (card.number () <= CardWidget::FIVE)) {
             players[pos2Player (++victim)].hand.append (card);
@@ -1101,7 +1103,7 @@ bool Twopart::compByColourAccTrumps (const CardWidget* a, const CardWidget* b) {
 /// \param player: Player to start part II
 //-----------------------------------------------------------------------------
 void Twopart::startPartTwo (unsigned int player) {
-   TRACE9 ("Twopart::startPartTwo (unsigned int) - Continuing with " << player);
+   TRACE8 ("Twopart::startPartTwo (unsigned int) - Continuing with " << player);
 
    Glib::signal_timeout ().connect
       (bind (slot (*this, &Twopart::startPartTwoTimerFnc),
@@ -1169,8 +1171,10 @@ void Twopart::changeNames (const std::vector<Player*>& newPlayer) {
 /// \param pile: ID of the pile to return
 //----------------------------------------------------------------------------
 ICardPile& Twopart::getPileOfPlayer (unsigned int player, unsigned int pile) {
+   TRACE8 ("Twopart::getPileOfPlayer (unsigned int, unsigned int) - Player "
+           << player << "; Pile " << pile);
    Check1 (player < NUM_PLAYERS);
-   Check1 (!pile);
+   Check1 (pile <= 1);
    return pile ? played : players[player].hand;
 }
 
@@ -1202,9 +1206,7 @@ void Twopart::handleMessage (unsigned int player, const char* message) {
 //----------------------------------------------------------------------------
 bool Twopart::executeRemoteMove (ICardPile& pile, unsigned int card) {
    if (&pile == &played) {
-      TRACE7 ("Twopart::executeRemoteMove (ICardPile&, unsigned int) - Card "
-              << card << "; ("
-              << (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) ? "S)" : "C)");
+      TRACE7 ("Twopart::executeRemoteMove (ICardPile&, unsigned int) - Card " << card);
       Check3 (gameStatus () == PLAYING2);
       pos1Play = pos2Play = -1U;
       setNextPlayer (pickUpPlayedPile (currentPlayer ()));
