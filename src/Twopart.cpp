@@ -444,7 +444,7 @@ void Twopart::command (int menu) {
          players[i].won.setStyle ((show == ICardPile::SHOWFACE)
                                   ? ICardPile::COMPRESSED
                                   : ICardPile::VERY_COMPRESSED);
-         players[i].hand.setShowOption (show);
+         players[i].hand.setShowOption (i ? show : ICardPile::SHOWFACE);
       }
       }
       break;
@@ -555,7 +555,6 @@ void Twopart::playedSelected (unsigned int player) {
             break;
       }
    actPlayer = findNextPlayer (player);
-
 
    TRACE7 ("Twopart::playedSelected (unsigned int) - Continuing with player "
            << actPlayer);
@@ -737,19 +736,34 @@ int Twopart::makeNextMove () {
    TRACE5 ("Twopart::makeNextMove () - Turn of player " << actPlayer);
    Check3 ((statGame == PLAYING) || (statGame == PLAYING2));
    if (pos2Play == -1) {
-      pos2Play = findPos2Play (actPlayer); Check3 (pos2Play != -1);
-      players[actPlayer].hand.at (pos2Play).showFace ();
-      return 1;
+      pos2Play = findPos2Play (actPlayer);
+      if (pos2Play != -1) {
+         players[actPlayer].hand.at (pos2Play).showFace ();
+         return 1;
+      }
+      else {
+         unsigned int oldPlayer (actPlayer);
+         playedSelected (actPlayer);
+
+         status.pop (1);
+         std::string stat ( _("User %1 can't continue -> Getting whole pile;"
+                              " Turn of player %2"));
+         stat.replace (stat.find ("%1"), 2, (char)(oldPlayer + '0'));
+         stat.replace (stat.find ("%2"), 2, (char)(actPlayer + '0'));
+         status.push (1, stat);
+      }
+   }
+   else {
+      executeMove (actPlayer, pos2Play);
+
+      // If turn of human player: Stop computer playing
+      if (!actPlayer) {
+         TRACE5 ("Twopart::makeNextMove () - Enable human");
+         enablePlayer (0);
+      }
    }
 
-   executeMove (actPlayer, pos2Play);
    pos2Play = -1;
-
-   // If turn of human player: Stop computer playing
-   if (!actPlayer) {
-      TRACE5 ("Twopart::makeNextMove () - Enable human");
-      enablePlayer (0);
-   }
    return actPlayer;
 }
 
@@ -760,7 +774,7 @@ int Twopart::makeNextMove () {
 //Parameters: player: ID of player to analyze
 //Returns   : int: Next player; or -1 if there is no next player
 /*--------------------------------------------------------------------------*/
-unsigned int Twopart::findPos2Play (unsigned int player) {
+unsigned int Twopart::findPos2Play (unsigned int player) const {
    Check3 (actPlayer); Check3 (actPlayer < NUM_PLAYERS);
    Check3 ((statGame == PLAYING) || (statGame == PLAYING2));
    TRACE5 ("Twopart::findPos2Play (unsigned int) - Player " << player);
@@ -773,7 +787,7 @@ unsigned int Twopart::findPos2Play (unsigned int player) {
       for (unsigned int i (0); i < played.numberOfCards (); ++i) {
          CardWidget::NUMBERS nr (played.at (i).number ());
          points += nr;
-         if (nr >= CardWidget::EIGHT)
+         if (nr >= CardWidget::TEN)
             ++cHigh;
       }
 
@@ -797,7 +811,8 @@ unsigned int Twopart::findPos2Play (unsigned int player) {
           || (points >= CardWidget::EIGHT)) {
          int pos;
          // Search for card whose number you own
-         for (unsigned int i (0); i < players[player].hand.numberOfCards (); ++i)
+         for (unsigned int i (*startPos);
+              i < players[player].hand.numberOfCards (); ++i)
             if ((played.exists (players[player].hand.at (i).number ()))
                 && ((posMaxEqual == -1) 
                     || (played.at (i).number () >= maxEqualNr))) {
@@ -807,7 +822,7 @@ unsigned int Twopart::findPos2Play (unsigned int player) {
             }
          
          // Player has no equal card: Play high card if higher (and he is the
-         // last player)
+         // last player) or 
          if (((!(bfPlayers & ~(1 << player)))
               && (posMaxEqual == -1)
               && ((pos = players[player].hand.findFirstEqualOrBigger
@@ -826,37 +841,82 @@ unsigned int Twopart::findPos2Play (unsigned int player) {
       // We don't want the pile; so try not to get it:
       TRACE5 ("Twopart::findPos2Play (unsigned int) - Avoiding pile");
       return (players[player].hand.numberOfCards () > 1
-              && ((played.exists (players[player].hand.at (0).number ())
-                   && (players[player].hand.at (1).number () < maxNr)
-                   && !played.exists (players[player].hand.at (1).number ()))
+              && ((played.exists (players[player].hand.at (0).number (), *startPos)
+                   && (players[player].hand.at (1).number () < CardWidget::EIGHT)
+                   && !played.exists (players[player].hand.at (1).number (), *startPos))
                   || ((players[player].hand.at (0).number () == maxEqualNr)
-                      && !played.exists (players[player].hand.at (1).number ()))));
+                      && !played.exists (players[player].hand.at (1).number (),
+                                         *startPos))));
    }
    else {
       // Find first fitting card
       int pos (played.numberOfCards ()
-               ? players[player].hand.find1EqualOrBiggerByColor (played.getTopCard ())
-               : 0); // TODO: Search for minimal card
+               ? players[player].hand.find1EqualOrBigger (played.getTopCard (),
+                                                          compByColorAccTrumps)
+               : findSmallestCard (player));
+      TRACE5 ("Twopart::findPos2Play (unsigned int) - First try: " << pos);
+
       Check3 (pTrump);
-      if (pos == -1) {
+      if ((pos == -1)
+          || (played.numberOfCards ()
+              && (played.getTopCard ().color ()
+                  != players[player].hand.at (pos).color ()))) {
+         TRACE5 ("Twopart::findPos2Play (unsigned int) - No card found; trying trump");
          Check3 (pTrump);
          if (played.getTopCard ().color () != pTrump->color ()) {
-            for (pos = players[player].hand.numberOfCards (); pos;)
-               if (players[player].hand.at (--pos).color () != pTrump->color ())
+            for (pos = players[player].hand.numberOfCards (); pos; --pos)
+               if (players[player].hand.at (pos - 1).color () != pTrump->color ())
                   break;
 
             if (!pos)
                pos = findEndOfSerie (player, 0);
             else
-               ++pos;
+               return (pos == players[player].hand.numberOfCards ()) ? -1 : pos;
          }
+         else
+            return -1;
       }
       else
-         // Card was found; now search for last card to play
-         pos = findEndOfSerie (player, pos);
+         // Card was found; now search for last card to play (only if not trump
+         // or only trump left)
+         if (!pos
+             || (players[player].hand.at (pos).color () != pTrump->color ()))
+            pos = findEndOfSerie (player, pos);
       TRACE5 ("Twopart::findPos2Play (unsigned int) - Playing card at pos " << pos);
       return pos;
    }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Searches for the smallest card in the hand of the passed player
+//Parameters: player: Player to inspect
+//Returns   : int: Position of smallest card
+/*--------------------------------------------------------------------------*/
+unsigned int Twopart::findSmallestCard (unsigned int player) const {
+   TRACE5 ("Twopart::findSmallestCard (unsigned int) - Inspecting player " << player);
+   Check3 (player < NUM_PLAYERS);
+
+   unsigned int nrMin (CardWidget::UNREACHABLE);
+   unsigned int cSerie (0);
+   unsigned int pos (0);
+   for (unsigned int i (0); i < players[player].hand.numberOfCards (); ++i) {
+      CardWidget& card (players[player].hand.at (i));
+      if (nrMin >= card.number ()) {
+         TRACE9 ("Twopart::findSmallestCard (unsigned int) - New smallest card at "
+                 << i << "; Cards: " << (findEndOfSerie (player, i) - i));
+
+         unsigned int endPos (findEndOfSerie (player, i));
+         if ((card.number () == nrMin) && ((endPos - i) <= cSerie))
+               continue;
+
+         cSerie = (endPos - i);
+         nrMin = card.number ();
+         pos = endPos;
+      }
+   }
+
+   TRACE5 ("Twopart::findSmallestCard (unsigned int) - Smallest card at " << pos);
+   return pos;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -864,9 +924,9 @@ unsigned int Twopart::findPos2Play (unsigned int player) {
 //            (same color; number increasing by 1)
 //Parameters: player: Player to inspect
 //            start: Position to start
-//Returns   : int: Position of last card in serie
+//Returns   : unsinged int: Position of last card in serie
 /*--------------------------------------------------------------------------*/
-int Twopart::findEndOfSerie (unsigned int player, unsigned int start) const {
+unsigned int Twopart::findEndOfSerie (unsigned int player, unsigned int start) const {
    Check3 (start < players[player].hand.numberOfCards ());
 
    CardWidget* card (&players[player].hand.at (start));
@@ -1115,10 +1175,11 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start
    while (played.numberOfCards () > start)
       if (statGame == PLAYING)
          players[receiver].won.append (played.remove (0));
-      else {
+      else
          players[receiver].hand.append (played.remove (start));
-         players[receiver].hand.sort (compByColorAccTrumps);
-      }
+
+   if (statGame == PLAYING2)
+      players[receiver].hand.sort (compByColorAccTrumps);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1264,7 +1325,8 @@ int Twopart::startPartTwoTimerFnc () {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Sorts the cards in the pile with regard of the color
+//Purpose   : Compares the cards in the pile with regard of the color and
+//            with special consideration of trumps
 //Parameters: a: Card to compare
 //            b: Card to compare
 //Returns   : bool: True, if a < b
