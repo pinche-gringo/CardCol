@@ -10,4 +10,5 @@ libCard_la_SOURCES=CardWidget.cpp CardSet.cpp CardPile.cpp
 
 include_HEADERS=CardWidget.h CardSet.h CardPile.h
 
-INCLUDES = `gtkmm-config --cflags` -DPKGDIR=\"$(pkgdatadir)\"
+INCLUDES = @INCLUDES@ `gtkmm-config --cflags`
+DEFS= @DEFS@ -DPKGDIR=\"$(pkgdatadir)\"
