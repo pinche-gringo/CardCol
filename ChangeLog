@@ -1,3 +1,37 @@
+2004-09-17  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.01 commented
+
+	* src/CardCol.cpp, src/CardCol.h: Works with GTKMM 2.4
+
+	* src/SgtMayor.cpp: Improved messages a bit
+
+	* po/de.po, po/en.po, po/es.po: Actualized
+
+	* README: Minor changes
+
+	* INSTALL: Actualized
+
+	* doc/Røvhult.html.de, doc/Røvhult.html.en, doc/Røvhult.html.es, doc/Twopart.html.de, doc/Twopart.html.en, doc/Twopart.html.es:
+	  Fixed links to other games
+
+	* configure.in: Version to 0.7.01; Needing libXGP 0.6.47
+
+2004-09-07  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp, src/Machiavelli.h, src/Rovhult.cpp, src/Rovhult.h:
+	  Delaying re-registering cards after DND them
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Delaying re-registering cards in hand when DND from hand to hand
+
+2004-09-06  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp, src/Buraco.h, src/CardCol.cpp, src/Hearts.cpp, src/Machiavelli.cpp, src/Machiavelli.h, src/Makefile.am, src/Rovhult.cpp, src/Rovhult.h, src/SgtMayor.cpp, src/Twopart.cpp, Common/CardPile.h, Common/DeckSelect.cpp, Common/DeckSelect.h, Common/Game.cpp, Common/PlayerConnDlg.cpp, Common/PlayerDlg.h:
+	  Works with GCC 3.4 and and GTKMM 2.4
+
+	* src/SigCExt.h: Deleted (sigc++-2.0 provides needed constructs)
+
 2004-04-19  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.00 commented
