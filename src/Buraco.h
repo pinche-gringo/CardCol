@@ -95,7 +95,8 @@ class Buraco : public Game {
    unsigned int showCardsToPlay (unsigned int player);
    int  executeMove (unsigned int player);
    void endGame ();
-   bool canGetRidOfCards (unsigned int player);
+   bool canClosePile (unsigned int player, unsigned int pile) const;
+   bool canGetRidOfCards (unsigned int player) const;
    bool canDumpCards (unsigned int player, unsigned int cards,
                       unsigned int pile = -1U) const;
 

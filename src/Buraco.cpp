@@ -1762,10 +1762,10 @@ unsigned int Buraco::getPoints (const CardWidget& card) {
 //-----------------------------------------------------------------------------
 bool Buraco::canGetRidOfCards (unsigned int player) const {
    TRACE5 ("Buraco::canGetRidOfCards (unsigned int) - Checking player " << player);
-bool Buraco::canGetRidOfCards (unsigned int player) {
+   std::bitset<160> used; Check3 (hands[player].size () < used.size ());
    const CardHPile& pile (hands[player]);
    std::bitset<200> used; Check3 (hands[player].size () < used.size ());
-   CardHPile& pile (hands[player]);
+   unsigned int cJokers (0);
    unsigned int piles (0);
    for (ICardPile::const_iterator i (pile.begin ()); i != pile.end (); ++i) {
       if (used[i - pile.begin ()])
@@ -1814,18 +1814,64 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
 
    bool enoughCards ((hands[player].size () > (cards + 1))
 		     || reserve[player & 1].size ());
-   unsigned int pos, move;
    return ((hands[player].size () > (cards + 1))
            || (points[player & 1] > 100)
            || reserve[player & 1].size ()
            || ((pile != -1U)
                && (((tablePiles[player & 1][pile]->size () + cards) >= 7)
-                   || (((tablePiles[player & 1][pile]->size () + cards) == 6)
+                   || (((tablePiles[player & 1][pile]->size () + cards) == 5)
                        && (hands[player].size () == 2)
-                       && (tablePiles[player & 1][pile]->getPosition4Card
-                           (*hands[player][0], pos, move)))))
+                       && canClosePile (player, pile))))
            || (cards >= 7));
 //----------------------------------------------------------------------------
+/// Checks if the player can with his two cards left close the passed pile
+/// \param player: Player to inspect
+/// \param pile: Pile to analyze
+/// \return bool: True, if the remaining cards of the player can make a
+///        cerrado for this pile
+/// \remarks: - The player must have only two cards; the pile 5
+///        cerrado for this pile 
+/// \remarks: - The player must have only two cards; the pile 5 
+//---------------------------------------------------------------------------- 
+           << player << " closes pile " << pile);
+   Check1 (tablePiles[player & 1].size () > pile);
+
+   BuracoPile& orig (*tablePiles[player & 1][pile]);
+   Check1 (orig.size () == 5);
+   Check1 (hands[player].size () == 2);
+   Check1 (orig->size () == 5);
+   bool isOK (false);
+   // Make a copy of the original pile
+   BuracoPile copy;
+   for (BuracoPile::const_iterator i (orig.begin ()); i != orig.end (); ++i)
+       copy.append (*new CardWidget (**i));
+
+   unsigned int pos, move;
+   for (unsigned int i (0); i < 2; ++i) {
+       if (copy.getPosition4Card (*hands[player][i], pos, move)) {
+          Check3 (pos <= copy.size ());
+          if (move != -1U) {
+          Check3 (pos <= pile.size ());
+             Check3 (move != copy.getPosJoker ());
+             Check3 (move < pile.size ());
+             Check3 (move != pile.getPosJoker ());
+	  copy.insert (*new CardWidget (*hands[player][i]), pos);
+
+             isOK = true;
+             break;
+          }
+	  else
+	     delete &copy.remove (pos);
+
+   // Free the copy
+   for (BuracoPile::const_iterator i (copy.begin ()); i != copy.end (); ++i)
+      delete *i;
+
+   return isOK;
+}
+
+//-----------------------------------------------------------------------------
+/// Checks if the passed pile contains a pair matching the passed card
 
 //-----------------------------------------------------------------------------
 /// Returns a card fitting to the passed on
