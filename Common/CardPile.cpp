@@ -24,7 +24,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#define DEBUG 9
+#define DEBUG 0
 #include <Check.h>
 
 #include "CardPile.h"
@@ -83,10 +83,10 @@ CardWidget& ICardPile::removeTopCard () {
 
       CardWidget& card (getTopCard ());
       resize (card, NORMAL);
-      card.set_sensitive (false);
+      card.set_sensitive (accessable);
    }
 
-   card.set_sensitive (accessable);
+   card.set_sensitive (true);
    return card;
 }
 
@@ -290,6 +290,16 @@ bool ICardPile::compCardsByNr (const CardWidget* a, const CardWidget* b) {
 /*--------------------------------------------------------------------------*/
 void ICardPile::sortByNumber () {
    sort (cards.begin (), cards.end (), compCardsByNr);
+
+#if DEBUG > 0
+   vector<CardWidget*>::const_iterator i (cards.begin ());
+   if (i != cards.end ())
+      Check (*i);
+
+   for (++i; i < cards.end (); ++i) {
+      Check (*i); Check ((*i)->number () >= i[-1]->number ());
+   }
+#endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -297,6 +307,19 @@ void ICardPile::sortByNumber () {
 /*--------------------------------------------------------------------------*/
 void ICardPile::sortByColor () {
    sort (cards.begin (), cards.end (), compCards);
+
+#if DEBUG > 0
+   vector<CardWidget*>::const_iterator i (cards.begin ());
+   if (i != cards.end ())
+      Check (*i);
+
+   for (++i; i < cards.end (); ++i) {
+      Check (*i);
+      Check (((*i)->color () >= i[-1]->color ())
+             || (((*i)->color () == i[-1]->color ())
+                 && ((*i)->number () >= i[-1]->number ())));
+   }
+#endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -306,27 +329,31 @@ void ICardPile::sortByColor () {
 /*--------------------------------------------------------------------------*/
 bool ICardPile::exists (CardWidget::NUMBERS nr) const {
    unsigned int first (0), last (cards.size ());
-   unsigned int middle (last >> 1);
+   unsigned int middle;
 
    while ((last - first) > 0 ) {
-      TRACE5 ("ICardPile::exists (CardWidget::NUMBERS) - [" << first << '-'
-              << last << ')');
-      if (compNr (cards[middle], nr))
-         last = middle;
-      else
-         first = middle + 1;
-
       middle = first + ((last - first) >> 1);
-      TRACE5 ("ICardPile::exists (CardWidget::NUMBERS) - Data = [" << first << '-'
-              << middle << '-' << last << ')');
+
+      TRACE5 ("ICardPile::exists (CardWidget::NUMBERS) - Data = [" << first << "-("
+              << middle << ")-" << last << ')');
+
+      Check3 (cards[first]); Check3 (cards[middle]);
+      Check3 (cards[first]->number () <= cards[middle]->number ());
+      Check3 ((last == cards.size ()) ? 1
+              : cards[last] && (cards[middle]->number () <= cards[last]->number ()));
+
+      if (compNr (cards[middle], nr))
+         first = middle + 1;
+      else
+         last = middle;
 
       // Perform sanity-checks; don't wory if DEBUG is not defined or less then
       // 3 this produces no code
       Check3 (middle >= 0); Check3 (middle <= cards.size ());
       Check3 (first >= 0); Check3 (last <= cards.size ());
-      Check3 (first <= middle); Check3 (middle <= last);
+      Check3 (first <= last); Check3 (middle <= last);
    }
-   return (middle != last) && !compNr (cards[middle], nr);
+   return (first != last) && !compNr (cards[first], nr);
 }
 
 /*--------------------------------------------------------------------------*/
