@@ -136,10 +136,24 @@ void CardPile::setTopCards (const vector<CardWidget*>& staple, bool visible) {
 //Purpose   : Removes all cards from pile
 /*--------------------------------------------------------------------------*/
 void CardPile::clear () {
-   vector<CardWidget*>::const_iterator i;
-
    while (cards.size ()) {
       remove (*cards[cards.size () - 1]);
       cards.pop_back ();
    }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Returns the card with the passed ID
+//Parameters: id: ID of card to return
+//Returns   : CardWidget*: Pointer to card with passed ID (or NULL)
+/*--------------------------------------------------------------------------*/
+CardWidget* CardPile::getCard (unsigned int id) const {
+   vector<CardWidget*>::const_iterator i;
+
+   for (i = cards.begin (); i != cards.end (); ++i) {
+      Check3 (*i);
+      if ((*i)->id () == id)
+         return *i;
+   }
+   return NULL;
 }

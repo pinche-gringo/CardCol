@@ -52,6 +52,8 @@ class CardPile : public Gtk::VBox {
    CardWidget& removeTopCard ();
    void clear ();
 
+   CardWidget* getCard (unsigned int id) const;
+
    bool existCard (CardWidget& card) const { existCard (&card); }
    bool existCard (CardWidget* card) const {
       return find (cards.begin (), cards.end (), card) != cards.end (); }
