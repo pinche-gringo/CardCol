@@ -31,20 +31,22 @@ namespace Gtk {
 }
 
 
-class PlayerDlg : public XDialog {
+// Class to enter the names of the players
+class IPlayerDlg : public XDialog {
  public:
-   PlayerDlg (vector<string>& names);
-   virtual ~PlayerDlg ();
+   IPlayerDlg (vector<string>& names);
+   virtual ~IPlayerDlg ();
 
-   static PlayerDlg* perform (vector<string>& names) {
-      return new PlayerDlg (names); }
+   static IPlayerDlg* perform (vector<string>& names) {
+      return new IPlayerDlg (names); }
+
+ protected:
+   virtual void okEvent ();
 
  private:
    //Prohibited manager functions
-   PlayerDlg (const PlayerDlg& other);
-   const PlayerDlg& operator= (const PlayerDlg& other);
-
-   virtual void okEvent ();
+   IPlayerDlg (const IPlayerDlg& other);
+   const IPlayerDlg& operator= (const IPlayerDlg& other);
 
    Gtk::Table* pClient;
 
@@ -62,6 +64,36 @@ class PlayerDlg : public XDialog {
 
    vector<line*> aPlayers;
    vector<string>& values;
+};
+
+
+// Class to enter the names of the players with a callback to inform about the
+// changes.
+template <class T>
+class PlayerDlg : public IPlayerDlg {
+ public:
+   typedef void (T::*PCALLBACK) ();
+
+   PlayerDlg (T& parent, PCALLBACK callback, vector<string>& names)
+      : IPlayerDlg (names), obj (parent), pCallback (callback) { }
+   virtual ~PlayerDlg () { }
+   
+   static PlayerDlg* create (T& parent, PCALLBACK callback,
+                              vector<string>& names) {
+      return new PlayerDlg<T> (parent, callback, names); }
+
+ protected:
+   virtual void okEvent () {
+      IPlayerDlg::okEvent ();
+      (obj.*pCallback) (); }
+
+ private:
+   PlayerDlg ();
+   PlayerDlg (const PlayerDlg&);
+   PlayerDlg& operator= (const PlayerDlg&);
+
+   T& obj;
+   PCALLBACK pCallback;
 };
 
 #endif

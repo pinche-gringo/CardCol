@@ -32,8 +32,6 @@
 #include <gtk--/entry.h>
 #include <gtk--/table.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 
@@ -44,9 +42,9 @@
 //Purpose   : Constructor
 //Parameters: names: Vector of string containing the names of the players
 /*--------------------------------------------------------------------------*/
-PlayerDlg::PlayerDlg (vector<string>& names)
+IPlayerDlg::IPlayerDlg (vector<string>& names)
    : XDialog (OKCANCEL), pClient (new Gtk::Table (1, 2)), values (names) {
-   TRACE2 ("PlayerDlg::PlayerDlg (vector<string>&) - Players: " << names.size ());
+   TRACE2 ("IPlayerDlg::IPlayerDlg (vector<string>&) - Players: " << names.size ());
    Check1 (names.size () > 1);
    Check1 (names.size () < 10);
 
@@ -73,7 +71,7 @@ PlayerDlg::PlayerDlg (vector<string>& names)
 /*--------------------------------------------------------------------------*/
 //Purpose   : Destructor
 /*--------------------------------------------------------------------------*/
-PlayerDlg::~PlayerDlg () {
+IPlayerDlg::~IPlayerDlg () {
    delete pClient;
 
    for (unsigned int i (0); i < aPlayers.size (); ++i)
@@ -84,7 +82,7 @@ PlayerDlg::~PlayerDlg () {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Handling of the OK button; closes dialog with commiting data
 /*--------------------------------------------------------------------------*/
-void PlayerDlg::okEvent () {
+void IPlayerDlg::okEvent () {
    for (unsigned int i (0); i < values.size (); ++i) {
       Check3 (aPlayers[i]); Check3 (aPlayers[i]->value);
       values[i] = aPlayers[i]->value->get_text ();
@@ -98,10 +96,10 @@ void PlayerDlg::okEvent () {
 //Parameters: label: Text for label
 //            attribute: Value for entryfield (to be updated)
 /*--------------------------------------------------------------------------*/
-PlayerDlg::line::line (const char* label, string& attribute)
+IPlayerDlg::line::line (const char* label, string& attribute)
    : label (new Gtk::Label (label))
      , value (new Gtk::Entry ()) {
-   TRACE9 ("PlayerDlg::line::line (string&, string&)");
+   TRACE9 ("IPlayerDlg::line::line (string&, string&)");
    value->set_text (attribute);
 }
 
@@ -110,18 +108,18 @@ PlayerDlg::line::line (const char* label, string& attribute)
 //Parameters: label: Text for label
 //            attribute: Value for entryfield (to be updated)
 /*--------------------------------------------------------------------------*/
-PlayerDlg::line::line (string& labelVal, string& attribute)
+IPlayerDlg::line::line (string& labelVal, string& attribute)
    : label (new Gtk::Label (labelVal))
      , value (new Gtk::Entry ()) {
-   TRACE9 ("PlayerDlg::line::line (string&, string&)");
+   TRACE9 ("IPlayerDlg::line::line (string&, string&)");
    value->set_text (attribute);
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Destructor
 /*--------------------------------------------------------------------------*/
-PlayerDlg::line::~line () {
-   TRACE9 ("PlayerDlg::line::~line ()");
+IPlayerDlg::line::~line () {
+   TRACE9 ("IPlayerDlg::line::~line ()");
    delete label;
    delete value;
 }
@@ -130,7 +128,7 @@ PlayerDlg::line::~line () {
 /*--------------------------------------------------------------------------*/
 //Purpose   : Shows the values of the structure
 /*--------------------------------------------------------------------------*/
-void PlayerDlg::line::show () {
+void IPlayerDlg::line::show () {
    label->show ();
    value->show ();
 }
@@ -140,7 +138,7 @@ void PlayerDlg::line::show () {
 //Parameters: table: Table where to attach the values to
 //            line: Line in which to attach
 /*--------------------------------------------------------------------------*/
-void PlayerDlg::line::attach (Gtk::Table& table, unsigned int line) {
+void IPlayerDlg::line::attach (Gtk::Table& table, unsigned int line) {
    Check3 (label); Check3 (value);
    table.resize (line + 2, 2);
    table.attach (*label, 1, 2, line + 1, line + 2, GTK_FILL, GTK_FILL, 5, 3);
