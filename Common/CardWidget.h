@@ -47,7 +47,7 @@ class CardWidget : public Gtk::EventBox {
    unsigned int id () const { return nrCard; }
    COLOURS colour () const { return transColour[nrCard & 0x3]; }
    NUMBERS number () const {
-      return static_cast <NUMBERS> ((51 - nrCard) >> 2); }
+      return static_cast <NUMBERS> ((nrCard > 51) ? UNREACHABLE : (51 - nrCard) >> 2); }
    char numberStr () const;
    char colourStr () const;
 
