@@ -113,11 +113,6 @@ class ICardPile : public std::vector<CardWidget*> {
    int find (CardWidget::COLOURS colour, unsigned int start = 0) const;
    int find (unsigned int id, unsigned int start = 0) const;
 
-   bool hasFittingPair (const CardWidget& card, bool pileHoldsCard, CMPFUNC2 cmp) const;
-   const_iterator getFittingCard (const CardWidget& card, CMPFUNC2 cmp) const {
-      return getFittingCard (card, begin (), cmp); }
-   const_iterator getFittingCard (const CardWidget& card, const_iterator start, CMPFUNC2 cmp) const;
-
    bool exists (CardWidget::NUMBERS nr, unsigned int start = 0) const {
       return find (nr, start) != -1; }
    bool exists (CardWidget::COLOURS colour, unsigned int start = 0) const {
@@ -142,6 +137,18 @@ class ICardPile : public std::vector<CardWidget*> {
    virtual void sort (CMPFUNC fnSort);
    void sortByNumber () { sort (compCardsByNr); }
    void sortByColour () { sort (compCards); }
+
+
+   bool hasFittingPair (const CardWidget& card, CMPFUNC2 cmp, bool doubles = true) const;
+   const_iterator getFittingCard (const CardWidget& card, CMPFUNC2 cmp) const {
+      return getFittingCard (card, begin (), cmp); }
+   const_iterator getFittingCard (const CardWidget& card, const_iterator start, CMPFUNC2 cmp) const;
+
+   unsigned int sortColourSerie (std::map<unsigned int, unsigned int>& aPos,
+                                 std::vector<unsigned int>& aOrder);
+   unsigned int getSeries (CardWidget& card, std::map<unsigned int, unsigned int>& aPos,
+                           std::vector<unsigned int>& aOrder, CMPFUNC2 cmp,
+                           bool doubles = true);
 
  protected:
    PileStyle style;

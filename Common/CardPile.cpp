@@ -25,6 +25,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/Trace_.h>
 
 #include "CardPile.h"
@@ -326,8 +328,8 @@ int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
       else
          last = middle;
 
-      Check3 (middle >= 0); Check3 (middle <= size ());
-      Check3 (first >= 0); Check3 (last <= size ());
+      Check3 (middle <= size ());
+      Check3 (last <= size ());
       Check3 (first <= last); Check3 (middle <= last);
    }
 
@@ -470,32 +472,33 @@ void ICardPile::resize (CardWidget&, PileStyle) {
 //-----------------------------------------------------------------------------
 /// Checks if the passed pile contains a pair matching the passed card
 /// \param card: Card where to find a pair to
-/// \param pileHoldsCard: Flag, if the pile contains the card (to skip)
 /// \param cmp: Method to compare two cards. This method gets the two cards to
 ///        compare as input as must return an integer describing their
 ///        difference (0: Equal). A pair can have a difference of at most
 ///        [-2 - 2]
+/// \param doubles: True, if the same card (id) can be included more than once
 /// \returns \c True, if the pile contains a matching pair
 //-----------------------------------------------------------------------------
-bool ICardPile::hasFittingPair (const CardWidget& card, bool pileHoldsCard,
-                                CMPFUNC2 cmp) const {
-   TRACE3 ("ICardPile::pileHasFittingPair (const ICardPile&, const "
-           "CardWidget*, bool) - " << card);
+bool ICardPile::hasFittingPair (const CardWidget& card, CMPFUNC2 cmp,
+                                bool doubles) const {
+   TRACE3 ("ICardPile::pileHasFittingPair (const CardWidget*, CMPFUNC2, bool) - " << card);
 
    unsigned int nrs (0);
    unsigned int bCols (0);
 
+   unsigned int foundCards[] = { card.id (), -1U, -1U };
+
    for (const_iterator p (begin ());
         (p = getFittingCard (card, p, cmp)) != end (); ++p) {
-      if (pileHoldsCard && (*p == &card))    // Skip card if its the passed one
+      if (*p == &card)                      // Skip card if its the passed one
          continue;
 
       int diff (cmp (**p, card));
       if (diff) {
          diff = (diff < 0) ? (diff + 2) : (diff + 1);
          Check3 (diff < 4);
-         TRACE8 ("ICardPile::pileHasFittingPair (const " "CardWidget*, bool, "
-                 "CMPFUNC2) - " << **p << " differs " << diff);
+         TRACE1 ("ICardPile::pileHasFittingPair (const " "CardWidget*, "
+                 "CMPFUNC2, bool) - " << **p << " differs " << diff);
          if ((((unsigned int)diff) < 4) && !(bCols & (1 << diff))) {
             // The card is valid, if either a card bordering the one the
             // inspect and this one has been found. Note that for aces the
@@ -508,11 +511,36 @@ bool ICardPile::hasFittingPair (const CardWidget& card, bool pileHoldsCard,
             bCols |= (1 << diff);
          }
       }
-      else
+      else {
+         // Filter out doubles (if specififed)
+         if (!doubles) {
+            unsigned int i (0);
+            for (; i < (sizeof (foundCards) / sizeof (foundCards[0])); ++i) {
+               TRACE1 ("ICardPile::pileHasFittingPair (const CardWidget*, "
+                       "CMPFUNC2, bool) - " << foundCards[i] << '-' << (*p)->id ());
+               if (foundCards[i] != -1U) {
+                  if (foundCards[i] == (*p)->id ()) {
+                     break;
+                  }
+               }
+               else {
+                  foundCards[i] = (*p)->id ();
+                  i = sizeof (foundCards) / sizeof (foundCards[0]);
+                  break;
+               }
+            }
+
+            if (i != sizeof (foundCards) / sizeof (foundCards[0]))
+               continue;
+
+            TRACE1 ("ICardPile::pileHasFittingPair (const " "CardWidget*, "
+                    "CMPFUNC2, bool) - Adding non-double " << **p);
+         }
          if (++nrs == 2)
             return true;
+      }
    }
-   TRACE8 ("CardPile::pileHasFittingPair (const " "CardWidget*, bool, CMPFUNC2) - "
+   TRACE8 ("CardPile::pileHasFittingPair (const " "CardWidget*, CMPFUNC2, bool) - "
            << card << " matches " << nrs << '/' << std::hex << bCols << std::dec);
    return false;
 }
@@ -557,4 +585,135 @@ ICardPile::const_iterator ICardPile::getFittingCard (const CardWidget& card,
    }
 #endif
    return start;
+}
+
+//----------------------------------------------------------------------------
+/// Sorts a series of matching cards to the end of the pile
+/// \param aPos: Map holding the positions of the cards in the pile
+/// \param aOrder: Sorted order of the cards
+/// \returns unsigned int: Position of start of sorted serie
+//----------------------------------------------------------------------------
+unsigned int ICardPile::sortColourSerie (std::map<unsigned int, unsigned int>& aPos,
+                                         std::vector<unsigned int>& aOrder) {
+   unsigned int pos (1);
+   for (std::vector<unsigned int>::reverse_iterator p (aOrder.rbegin ());
+        p != aOrder.rend (); ++p) {
+      std::map<unsigned int, unsigned int>::const_iterator v;
+      if ((v = aPos.find (*p)) != aPos.end ()) {
+          TRACE9 ("ICardPile::sortColourSeries (...) - Moving " << v->second
+                  << " to end " << ((*p < 2) ? *p : 0));
+          Check3 ((p - aOrder.rbegin ()) >= 0);
+          // Move the card to the end of the staple; If it belongs before the
+          // first card move it before the other cards.
+          move (size () - pos, v->second);
+          unsigned int oldOrder (*p);
+          if (((p + 1) != aOrder.rend ()) && (*(p + 1) < oldOrder))
+             ++pos;
+      }
+   }
+   TRACE9 ("ICardPile::sortColourSeries (...) - Moved "
+           << size () - aPos.size () << " cards");
+   return size () - aPos.size ();
+}
+
+//----------------------------------------------------------------------------
+/// Gets a series of matching cards
+/// \param card: Card to compare
+/// \param aPos: Map holding the positions of the cards in the pile
+/// \param aOrder: Sorted order of the cards
+/// \param cmp: Method to compare two cards. This method gets the two cards to
+///        compare as input as must return an integer describing their
+///        difference (0: Equal). A pair can have a difference of at most
+///        [-2 - 2]
+/// \returns unsigned int: The number of matching cards in a row
+//----------------------------------------------------------------------------
+unsigned int ICardPile::getSeries (CardWidget& card,
+                                   std::map<unsigned int, unsigned int>& aPos,
+                                   std::vector<unsigned int>& aOrder, CMPFUNC2 cmp,
+                                   bool doubles) {
+   TRACE3 ("ICardPile::getSeries (...) for " << card);
+   unsigned int nrs (1);
+   unsigned int bCols (0x4);
+
+   std::vector<unsigned int> foundCards;
+   if (!doubles)
+      foundCards.push_back (card.id ());
+
+   for (const_iterator p (begin ()); ((p = getFittingCard (card, p, cmp)) != end ()); ++p) {
+      if (*p == &card) {
+         aPos[2] = p - begin ();
+         aOrder.push_back (2);
+      }
+      else {
+         int diff (cmp (**p, card));
+         TRACE9 ("ICardPile::getSeries (...) - " << **p << " differs " << diff);
+         Check3 (static_cast<unsigned int> (diff + 2) < 5);
+         if (diff) {
+            diff += 2;
+            Check3 (diff <= 4);
+            if (!(bCols & (1 << diff))) {
+               Check3 (aPos.find (diff) == aPos.end ());
+               bCols |= (1 << diff);
+               aPos[diff] = p - begin ();
+               aOrder.push_back (diff);
+               if (aPos.size () == 7)
+                   break;
+            }
+         }
+         else {
+            // Filter out doubles (if specififed)
+            if (!doubles) {
+               std::vector<unsigned int>::const_iterator i (foundCards.begin ());
+               do {
+                  TRACE1 ("ICardPile::getSeries (...) - " << *i << '-' << (*p)->id ());
+                  if (*i == (*p)->id ())
+                     break;
+               } while (++i != foundCards.end ());
+               if (i != foundCards.end ())
+                  continue;
+
+               foundCards.push_back ((*p)->id ());
+               TRACE1 ("ICardPile::getSeries (...) - Adding non-double " << **p);
+            }
+         }
+      }
+   }
+
+   // Check if the series of colors is a valid one
+   TRACE9 ("ICardPile::getSeries (...) - Serie: " << std::hex << bCols << std::dec);
+   Check3 (bCols & 0x4);
+
+   // Delete cards having no direct access to the analyzed one
+   if ((bCols & 0x3) == 0x1) {
+      Check3 (aPos.find (0) != aPos.end ());
+      Check3 (aPos.find (1) == aPos.end ());
+      aPos.erase (aPos.find (0));
+   }
+   if ((bCols & 0x18) == 0x10) {
+      Check3 (aPos.find (4) != aPos.end ());
+      Check3 (aPos.find (3) == aPos.end ());
+      aPos.erase (aPos.find (4));
+   }
+
+   // Special handling of series of colours for an ace, to avoid the problem
+   // with 3-K-A of one colour.
+   if (card.number () == CardWidget::ACE) {
+       if ((bCols & 0xa) == 0xa) {
+          std::map<unsigned int, unsigned int>::iterator i;
+          if ((bCols & 0x18) == 0x18) {
+             if ((i = aPos.find (0)) != aPos.end ())
+                aPos.erase (i);
+             if ((i = aPos.find (1)) != aPos.end ())
+                aPos.erase (i);
+          }
+          else {
+             if ((i = aPos.find (3)) != aPos.end ())
+                aPos.erase (i);
+             if ((i = aPos.find (4)) != aPos.end ())
+                aPos.erase (i);
+          }
+       }
+   }
+
+   return nrs;
 }
