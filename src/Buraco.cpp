@@ -105,7 +105,7 @@ static unsigned int CARDS_AT_START (137);
 
          (Gtk::TargetEntry ("icon/card", GTK_TARGET_SAME_APP, 0));
    frameInfo.set_shadow_type (Gtk::SHADOW_IN);
-   info.set_size_request (200, -1);
+   info.set_size_request (250, -1);
    statusbar.set_has_resize_grip (false);
    statusbar.pack_end (info, Gtk::PACK_SHRINK, 5);
 
@@ -380,7 +380,7 @@ static unsigned int CARDS_AT_START (137);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
        hands[i].sortByNumber ();
 
-   dumped.setTopCard (staple.removeTopCard (), !startPlayer);
+   dumped.setTopCard (staple.removeTopCard ());
    TRACE9 ("Buraco::start () - NUMBER OF CARDS: " << staple.size ());
 
    status.pop ();
@@ -778,7 +778,7 @@ static unsigned int CARDS_AT_START (137);
    // is still the reserve
    if (!canDumpCards (0, 1)) {
       context->drag_finish (false, false, time);
-      Gtk::MessageDialog dlg (_("Can't drop last card!"),
+      Gtk::MessageDialog dlg (_("You can't drop last card!"),
                               Gtk::MESSAGE_ERROR);
       dlg.set_title (_("Invalid move"));
       dlg.run ();
@@ -806,9 +806,9 @@ static unsigned int CARDS_AT_START (137);
       // ended, or there is still the reserve
       if (!canDumpCards (0, 3)) {
                                  Gtk::MESSAGE_ERROR);
-         Gtk::MessageDialog dlg ((hands[0].size () <= 5)
-                                  ? _("Can't end the game (there's no \"cerrado\")!")
-                                  : _("Not enough cards to make new pile!"),
+         Gtk::MessageDialog dlg (_((hands[0].size () <= 5)
+                                  ? N_("You can't end the game (there's no \"cerrado\")!")
+                                  : N_("Not enough cards to make new pile!")),
          dlg.run ();
          return;
       }
@@ -826,39 +826,45 @@ static unsigned int CARDS_AT_START (137);
             return;
          }
       }
-
-      // Check validity of ordinary dropped card
-      unsigned int equalNr (1);
-      unsigned int equalColours (0);
-      bool joker (false);
-      for (std::vector<CardWidget*>::const_iterator i (hands[0].begin ());
-           i != hands[0].end (); ++i) {
-         Check3 (*i);
-         if (isJoker (**i) && !joker) {
-            joker = true;
-            equalNr++;
-            continue;
-         }
-         if (moved.number () == (*i)->number ())
-            ++equalNr;
-         else if (moved.color () == (*i)->color ()) {
-            int diff (moved.number () - (*i)->number ());
-            if ((unsigned int)(diff + 2) > 5)
+      else {
+         // Check validity of ordinary dropped card
+         unsigned int equalNr (1);
+         unsigned int equalColours (0);
+         bool joker (false);
+         for (unsigned int i (0); i < hands[0].size (); ++i) {
+            if (i == iCard)                         // Skip card which is moved
                continue;
-            equalColours |= (diff < 0) ? -diff << 2 : diff;
-         }
-      }
-      Check (equalColours < 0x10);
 
-      if ((equalNr < 3)    // Card can be dropped, if there are 3 equal numbers
-          && (equalColours != 0x3) && (equalColours != 0x6)
-          && (equalColours != 0xc) && !(equalColours && joker)) {
-         context->drag_finish (false, false, time);
-         Gtk::MessageDialog dlg (_("There are no cards to make three of a kind!"),
-                                 Gtk::MESSAGE_ERROR);
-         dlg.set_title (_("Invalid move"));
-         dlg.run ();
-         return;
+            Check3 (hands[0][i]);
+            if (isJoker (*hands[0][i]) && !joker) {
+               joker = true;
+               equalNr++;
+               continue;
+            }
+            if (moved.number () == hands[0][i]->number ())
+               ++equalNr;
+            else if (moved.color () == hands[0][i]->color ()) {
+               int diff (moved.number () - hands[0][i]->number ());
+               if ((unsigned int)(diff + 2) > 5)
+                  continue;
+               equalColours |= (diff < 0) ? -diff << 2 : diff;
+            }
+         }
+         Check3 (equalColours < 0x10);
+
+         // Card can be dropped, if there are 3 equal numbers
+         TRACE9 ("Buraco::cardDroppedOnTable (...) - Equal: " << equalNr
+                 << "; Colours: " << std::hex << equalColours << std::dec);
+         if ((equalNr < 3)
+             && (equalColours != 0x3) && (equalColours != 0x6)
+             && (equalColours != 0xc) && !(equalColours && joker)) {
+            context->drag_finish (false, false, time);
+            Gtk::MessageDialog dlg (_("There are no cards to make three of a kind!"),
+                                    Gtk::MESSAGE_ERROR);
+            dlg.set_title (_("Invalid move"));
+            dlg.run ();
+            return;
+          }
       iPile = tablePiles[0].size ();
       pile = &makeNewPile (0); Check3 (tablePiles[0].size ());
       iCard = 0;
@@ -962,8 +968,8 @@ static unsigned int CARDS_AT_START (137);
 //Parameters: pile: Pile to inspect
 //Returns   : True, if there are only jokers (or pile is empty)
 /*--------------------------------------------------------------------------*/
-bool Buraco::containsOnlyJoker (std::vector<CardWidget*>& pile) {
-   TRACE8 ("Buraco::containsOnlyJoker (std::vector<CardWidget*>&");
+
+   for (std::vector<CardWidget*>::const_iterator i (pile.begin ());
         i != pile.end (); ++i) {
       Check3 (*i);
       if (!isJoker (**i))
@@ -980,7 +986,7 @@ bool Buraco::containsOnlyJoker (std::vector<CardWidget*>& pile) {
 //Parameters: pile: Pile to inspect
 //Returns   : True, if there are no jokers
 /*--------------------------------------------------------------------------*/
-bool Buraco::containsNoJoker (std::vector<CardWidget*>& pile) {
+        i != pile.end (); ++i) {
       Check3 (*i);
       if (isJoker (**i))
          return false;
@@ -1097,8 +1103,8 @@ CardVPile& Buraco::makeNewPile (unsigned int team) {
 //Parameters: card: Card to inspect
 //Returns   : True if card is a joker
 /*--------------------------------------------------------------------------*/
-bool Buraco::isJoker (CardWidget& card) {
-   TRACE9 ("Buraco::isJoker (CardWidget&) const - " << card << " = "
+           || (card.number () > CardWidget::ACE));
+   TRACE9 ("Buraco::isJoker (const CardWidget&) const - " << card << " = "
            << card.number ());
    return (card.number () == CardWidget::TWO) || (card.number () > CardWidget::ACE);
 //-----------------------------------------------------------------------------
@@ -1141,7 +1147,7 @@ void Buraco::removeBuraco (unsigned int player, CardVPile& pile) {
 //Purpose   : Actualizes the info-part of the statusbar
 /*--------------------------------------------------------------------------*/
    strInfo.replace (strInfo.find ("%1"), 2, YGP::ANumeric::toString (points[0]));
-   std::string strInfo (_("Cerrados: %1 [%2] / %3 [%4]"));
+   std::string strInfo (_("Cerrados [Buraco]: %1 [%2] / %3 [%4]"));
    strInfo.replace (strInfo.find ("%1"), 2, ANumeric::toString (cerrados[0]));
    strInfo.replace (strInfo.find ("%2"), 2, 1, (reserve[0].empty () ? 'N' : 'Y'));
    strInfo.replace (strInfo.find ("%3"), 2, ANumeric::toString (cerrados[1]));
@@ -1158,7 +1164,7 @@ void Buraco::removeBuraco (unsigned int player, CardVPile& pile) {
 //Returns   : Position where card can be played to, or -1 if card does not fit
 //Requires  : Coloured piles must be sorted strict ascending
 /*--------------------------------------------------------------------------*/
-int Buraco::cardFitsOnPile (ICardPile& pile, CardWidget& card) const {
+int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
    Check1 (pile.size ());
    //   - A joker; if there are at least 3 jokers (on table + in hand)
    // Check for jokers in pile; first and last points to first and last card
@@ -1209,8 +1215,10 @@ int Buraco::cardFitsOnPile (ICardPile& pile, CardWidget& card) const {
           && (pile[last]->color () == card.color ())) {
          // First check, if a joker can be replaced
          if ((posJoker != -1U)
-             && (card.number () == (pile[first]->number () + posJoker)))
+             && (card.number () == (pile[first]->number () + posJoker))) {
+            pile.move (0, posJoker);
             return posJoker;
+         }
 
          // This code assums that the coloured pile is sorted from lower card
          // to higher cards (strict ascending)
@@ -1226,7 +1234,7 @@ int Buraco::cardFitsOnPile (ICardPile& pile, CardWidget& card) const {
             if ((diff == 2) && posJoker > first) {
                Check3 (!first);
                pile.move (0, posJoker);
-               first++;
+               ++first;
             }
             return first - diff + 1;
          }
@@ -1236,11 +1244,13 @@ int Buraco::cardFitsOnPile (ICardPile& pile, CardWidget& card) const {
          TRACE9 ("Buraco::cardFitsOnPile (CardVPile&, CardWidget&) - Diff (end): "
                  << diff << "; max: " << maxDiff);
          if (diff && (diff <= maxDiff)) {
-            if ((diff == 2) && posJoker < last) {
-               Check3 (!first);
-               pile.move (last + 1, posJoker);
-               last--;
+            if ((diff == 2) && (posJoker < last)) {
+               Check3 (first > posJoker);
+               pile.move (last, posJoker);
+               --last;
             }
+            TRACE9 ("Buraco::cardFitsOnPile (CardVPile&, CardWidget&) - Diff (ret): "
+                    << last + diff);
             return last + diff;
          }
       }
@@ -1333,30 +1343,38 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile,
    TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&, const CardWidget*) "
            " - " << card);
       ICardPile::const_iterator i (pile.getFittingCard (card, pile.begin (),
+   bool bJoker (isJoker (card));
    CardWidget::NUMBERS nr (card.number ());
    CardWidget::COLORS colour (card.color ());
    unsigned int nrs (0);
    unsigned int bCols (0);
-   unsigned int cols (0);
 
    for (std::vector<CardWidget*>::const_iterator p (pile.begin ());
         p != pile.end (); ++p) {
-      if ((*p)->number () == nr)
-         if (++nrs == 2)
+      if (bJoker) {
+         if (isJoker (**p) && (++nrs == 2))
             return true;
-
-      if ((*p)->color () == colour) {
-         unsigned int diff (static_cast<unsigned int> ((*p)->number ()) - nr + 2);
-         TRACE9 ("Buraco::pileHasFittingPair (const ICardPile&, const "
-                 "CardWidget*) - " << *p << " differs " << diff);
-
-         if ((diff < 4) && !(bCols && (1 << diff))) {
-            bCols |= 1 << diff;
-            if (++cols == 2)
+      }
+      else {
+         if ((*p)->number () == nr)
+            if (++nrs == 2)
                return true;
+
+         if ((*p)->color () == colour) {
+            unsigned int diff ((*p)->number () - nr + 2);
+            TRACE9 ("Buraco::pileHasFittingPair (const ICardPile&, const "
+                    "CardWidget*) - " << **p << " differs " << diff);
+            if ((diff < 5) && !(bCols & (1 << diff))) {
+               bCols |= (1 << diff);
+               if ((bCols == 0x18) || (bCols == 0x03) || (bCols == 0x82))
+                  return true;
+            }
          }
       }
    }
+   TRACE9 ("Buraco::pileHasFittingPair (const ICardPile&, const "
+           "CardWidget*) - " << card << " matches " << nr << '/'
+           << std::hex << bCols << std::dec);
    return false;
 //-----------------------------------------------------------------------------
 /// Checks if the passed pile contains a pair matching the passed card
@@ -1371,11 +1389,7 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile) {
    TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&)");
         p != pile.end (); ++p)
       if (*p != exclude)
-           p != pile.end (); ++p) {
-       if (isJoker (**p))
-          continue;
-
+           p != pile.end (); ++p)
        if (pileHasFittingPair (pile, **p))
           return true;
-   }
 
