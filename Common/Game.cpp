@@ -307,8 +307,8 @@ gint Game::wonCardsSelected (GdkEvent* event) {
          break;
 
       case 3: {
-          if (!pMenuPopSort) {
-            TRACE9 ("wonCardsSelected (GdkEvent*) - Creating menu");
+         if (!pMenuPopSort) {
+            TRACE9 ("Game::wonCardsSelected (GdkEvent*) - Creating menu");
             pMenuPopSort = new Gtk::Menu;
             pMenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem
                                               (_("Sort by number"),
