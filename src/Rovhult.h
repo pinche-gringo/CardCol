@@ -48,6 +48,7 @@ class RovhultAppl : public XApplication {
 
    void pileSelected (CardVPile* parent);
    void handSelected (unsigned int player, unsigned int iCard);
+   void noop () {};
 
    void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
                      guint info, guint32 time, unsigned int player, unsigned int cardPos);
@@ -59,6 +60,8 @@ class RovhultAppl : public XApplication {
                            unsigned int playerCard);
 
    void finishedExchange ();
+   void enablePlayer (unsigned int player);
+   void disablePlayer (unsigned int player);
 
    // Protected manager functions
    RovhultAppl (const RovhultAppl&);
@@ -71,6 +74,12 @@ class RovhultAppl : public XApplication {
    void dealCards ();
    void fillStaple ();
    void moveCardsToLooser (unsigned int nrLooser);
+
+   void clearPlayedIf4Equal ();
+   void fillUpPile (ICardPile& pile, unsigned int minCards);
+
+   bool playerCanContinue () const;
+
 
    void loadCards ();
 

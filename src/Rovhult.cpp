@@ -307,7 +307,7 @@ XApplication::MenuEntry RovhultAppl::menuItems[] = {
 RovhultAppl::RovhultAppl ()
    : XApplication (PACKAGE " - Rovhult V" VERSION), status ()
      , tblTable (16, 19), cardFaces (USED_CARDS), cards (), pThread (NULL)
-     , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::VERY_COMPRESSED) {
+     , staple (ICardPile::VERY_COMPRESSED), played (ICardPile::VERY_COMPRESSED, false) {
    set_usize (WIDTH, HEIGHT);
 
    addMenu (menuItems[0]);
@@ -416,6 +416,7 @@ void RovhultAppl::finishedExchange () {
 
    // Remove drag´n´drop abilities and compress cards
    for (int i (0); i < NUM_PLAYERS; ++i) {
+      hands[i].sortByNumber ();
       hands[i].setStyle (ICardPile::COMPRESSED);
 
       for (int j (0); j < 3; ++j) {
@@ -423,13 +424,36 @@ void RovhultAppl::finishedExchange () {
          unregisterDND (card);
          unregisterDND (reserve[i][j].getTopCard ());
 
-         card.clicked.connect (bind (slot (this, &RovhultAppl::handSelected), i, j));
          reserve[i][j].setAccessable (false);
       }
    }
 
+   enablePlayer (0);
    staple.setAccessable (false);
    staple.getTopCard ().remove_accelerator (*get_accel_group (), ' ', 0);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Enables the cards of the passed player
+//Parameters: player: Player to enable
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::enablePlayer (unsigned int player) {
+   TRACE2 ("RovhultAppl::enablePlayer (unsigned int) - " << player);
+
+   for (int i (hands[player].numberOfCards ()); i;)
+      hands[player].at (--i).clicked.connect (bind (slot (this, &RovhultAppl::handSelected),
+                                              player, i));
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Disables the cards of the passed player
+//Parameters: player: Player to enable
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::disablePlayer (unsigned int player) {
+   TRACE2 ("RovhultAppl::disablePlayer (unsigned int) - " << player);
+
+   for (int i (hands[player].numberOfCards ()); i;)
+      hands[player].at (--i).clicked.connect (slot (this, &RovhultAppl::noop));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -458,32 +482,86 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
    TRACE1 ("Rovhult::handSelected (unsigned int, unsinged int) - " << pos << " = "
            << card.color () << '/' << card.number ());
 
-   //   card.clicked.disconnect ();
-
+   // Check if played card is valid (equal or bigger)
+   // The following cards have special meaning:
+   //   - 2: Can be played always
+   //   - 7: The next card must be equal or *smaller*
+   //   - 8: Skips the next player
+   //   -10: Clears the staple; the same player can continue with cards in hand
    switch (card.number ()) {
    case CardWidget::TWO:
       break;
 
    case CardWidget::TEN:
       played.clear ();
-      break;
+      return;
 
    default:
-      if (played.numberOfCards ()
-          && (card.number () < played.getTopCard ().number ())) {
-         XMessageBox::Show (_("Played card must be equal or bigger!"),
-                            _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
-         return;
+      if (played.numberOfCards ()) {
+         CardWidget& lastPlayed (played.getTopCard ());
+
+         if (lastPlayed.number () == CardWidget::SEVEN) {
+            if (card.number () > CardWidget::SEVEN) {
+               XMessageBox::Show (_("After a 7, the played card must be equal or smaller!"),
+                                  _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
+               return;
+            }
+         }
+         else
+            if (card.number () < played.getTopCard ().number ()) {
+               XMessageBox::Show (_("Played card must be equal or bigger!"),
+                                  _("Invalid move"), XMessageBox::ERROR | XMessageBox::OK);
+               return;
+            }
       }
    } // end-switch
 
+   // Move card from player to played staple
    hands[player].remove (pos);
    played.append (card);
-   if (staple.numberOfCards ()) {
+
+   // If staple contains cards and no 10 was played (except if hand is empty):
+   // Fill up cards til player has 3 (or one, in case of a ten)
+   if ((card.number () != CardWidget::TEN) || (!hands[player].numberOfCards ()))
+      fillUpPile (hands[player], card.number () != CardWidget::TEN ? 3 : 1);
+
+   // Check if last 4 cards have the same number and clear played staple, if so
+   clearPlayedIf4Equal ();
+
+   disablePlayer (player);
+
+   // Check if next player has fitting card
+   player = player + ((card.number () == CardWidget::EIGHT) ? 2 : 1);
+   //   if (!playerCanContinue ()) ;
+      
+
+   enablePlayer (player & 0x3);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Fills up the passed pile til it contains the specified number
+//            of cards
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::fillUpPile (ICardPile& pile, unsigned int minCards) {
+   while ((pile.numberOfCards () < minCards) && staple.numberOfCards ()) {
       CardWidget& newCard (staple.removeTopCard ());
       newCard.setVisible ();
-      hands[player].append (newCard);
+      pile.append (newCard);
    }
+   pile.sortByNumber ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Clears the played staple if the last 4 cards are equal
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::clearPlayedIf4Equal () {
+   int i (1);
+   CardWidget& card (played.getTopCard ());
+   for (; i < 4; ++i)
+      if (played.at (played.numberOfCards () - i).number () != card.number ())
+         break;
+   if (i == 4)
+      played.clear ();
 }
 
 /*--------------------------------------------------------------------------*/
