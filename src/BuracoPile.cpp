@@ -182,13 +182,15 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
          if ((status.posJoker < 7)
              && (Buraco::cardDistance (card, *operator[] (status.posFirst))
                  == static_cast<int> (status.posJoker))) {
-            if (status.posJoker)
-                move = ((((status.posJoker > status.posFirst)
-                          ? operator[] (status.posFirst)->number ()
-                          : card.number ()) == CardWidget::ACE)
-                        ? status.posLast : 0);
+            if (status.posJoker
+                && ((status.posJoker < status.posLast)
+                    || (card.number () == CardWidget::ACE)))
+               move = ((((status.posJoker > status.posFirst)
+                         ? operator[] (status.posFirst)->number ()
+                         : card.number ()) == CardWidget::ACE)
+                       ? status.posLast : 0);
             pos = status.posJoker;
-            if (!move)
+            if ((move != -1U) && (move < pos))
                ++pos;
             return true;
          }
@@ -203,14 +205,16 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
             unsigned int diff (Buraco::cardDistance
                                (*operator[] (status.posFirst), card,
                                 operator[] (status.posFirst)->number ()
-                                <= CardWidget::FOUR));
+                                < CardWidget::FIVE));
             TRACE9 ("BuracoPile::getPosition4Card (const CardWidget&, unsigned "
                     "int&, int&) - Diff: " << diff << "; max: " << maxDiff);
             Check3 (diff);
 
             if (diff && (diff <= maxDiff)) {
                pos = status.posFirst - diff + 1;
-               if ((diff == 2) && (status.posJoker > status.posFirst)) {
+               if ((diff == 2) && (status.posJoker > status.posFirst)
+                   && ((operator[] (status.posFirst)->number () != CardWidget::ACE)
+                       || (size () < 3))) {
                   Check3 (!status.posFirst);
 
                   move = 0;
