@@ -45,6 +45,8 @@ class CardWidget : public Gtk::Button {
    COLORS color () const { return transColor[nrCard & 0x3]; }
    NUMBERS number () const {
       return static_cast <NUMBERS> ((deck.numberOfCards () - 1 - nrCard) >> 2); }
+   char numberStr () const;
+   char colorStr () const;
 
    unsigned int getImageHeight () const {
       return const_cast<Gdk_Pixmap&> (deck.getCardImage (nrCard)).height (); }
@@ -53,7 +55,9 @@ class CardWidget : public Gtk::Button {
 
    int compareNumber (CardWidget& other) const { return number () - other.number (); }
 
-   friend ostream& operator<< (ostream& out, const CardWidget& card);
+   friend ostream& operator<< (ostream& out, const CardWidget& card) {
+      out << card.colorStr () << card.numberStr ();
+      return out; }
 
  private:
    CardWidget ();

@@ -76,17 +76,23 @@ void CardWidget::showFace (bool visible) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Writes the card-data to the passed stream
-//Parameters: out: Stream to write to
-//            card: Card whose info is to write
-//Returns   : ostream&: Reference to the passed output-stream
+//Purpose   : Returns the number of the card as character
+//Returns   : char: Character describing number of card
 /*--------------------------------------------------------------------------*/
-ostream& operator<< (ostream& out, const CardWidget& card) {
+char CardWidget::numberStr () const {
+   static char* specialCards = _("TJQKA");
+   return ((number () >= CardWidget::TEN)
+           ? specialCards[number ()  - CardWidget::TEN]
+           : number () + '2');
+
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Returns the color of the card as character
+//Returns   : char: Character describing color of card
+/*--------------------------------------------------------------------------*/
+char CardWidget::colorStr () const {
    // Letters describing the colors (clubs, spades, hearts, diamonds)
    static char* colors = _("CSHD");
-   static char* specialCards = _("TJQKA");
-   out << colors[card.nrCard & 0x3]
-       << (char)((card.number () >= CardWidget::TEN)
-                 ? specialCards[card.number ()  - CardWidget::TEN]
-                 : card.number () + '2');
+   return colors[nrCard & 0x3];
 }
