@@ -96,6 +96,7 @@ class Buraco : public Game {
    void undoMove ();
    void undoLast (unsigned int player);
    void sortHand ();
+   void sortHandByColour ();
 
    //@Section helper methods
    void enableHumanHand ();
@@ -116,6 +117,7 @@ class Buraco : public Game {
                                    bool withJokers = false);
    static bool pileHasFittingPair (const ICardPile& pile, const CardWidget* exclude = NULL);
    static bool compByNumberWithJokers (const CardWidget* a, const CardWidget* b);
+   static bool compByColourWithJokers (const CardWidget* a, const CardWidget* b);
    void makeTeamNames (std::vector<Player*>& names) const;
    void Buraco::setStartPlayer ();
 
@@ -209,6 +211,7 @@ class Buraco : public Game {
    Gtk::UIManager::ui_merge_id idMrg;
    Glib::RefPtr<Gtk::Action> menuUndo;
    Glib::RefPtr<Gtk::Action> menuSort;
+   Glib::RefPtr<Gtk::Action> menuSort2;
 };
 
 #endif
