@@ -20,34 +20,31 @@
 
 #include <vector>
 
-#include <gtk--/table.h>
-#include <gtk--/button.h>
-#include <gtk--/statusbar.h>
-
-#include <Mutex.h>
-#include <Thread.h>
-
 #include <CardSet.h>
 #include <CardPile.h>
-#include <CardImgs.h>
 
-#include <XApplication.h>
+#include <Game.h>
 
+
+namespace Gtk {
+   class Box;
+}
+
+using namespace Gtk;
 
 // Class to handle the Rovhult-cardgame
-class RovhultAppl : public XApplication {
+class Rovhult : public Game {
  public:
    // Manager functions
-   RovhultAppl ();
-   ~RovhultAppl ();
+   Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset);
+   ~Rovhult ();
 
  private:
-   // IDs for menus
-   enum { NEW, END, EXIT, DEBUG, ABOUT };
+   enum { PREPLAYING = Game::LAST };
 
    // Protected manager functions
-   RovhultAppl (const RovhultAppl&);
-   const RovhultAppl& operator= (const RovhultAppl&);
+   Rovhult (const Rovhult&);
+   const Rovhult& operator= (const Rovhult&);
 
    // Drag and drop handling
    void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
@@ -65,7 +62,6 @@ class RovhultAppl : public XApplication {
    void unregisterDND () const;
  
    // Event-handling
-   virtual void command (int menu);
    void pileSelected (unsigned int player, unsigned int pile);
    void handSelected (unsigned int player, unsigned int iCard);
    void finishedExchange ();
@@ -78,13 +74,8 @@ class RovhultAppl : public XApplication {
    void movePlayedCardsToLooser (unsigned int nrLooser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;
    int  makeComputerMove ();
-   void makeComputerMoves () {
-      TRACE9 ("RovhultAppl::makeComputerMoves () - *** Start timer ***");
-      statGame = AUTOPLAYING;
-      Gtk::Main::timeout.connect (slot (this, &RovhultAppl::makeComputerMove), 1000);
-      disableLastPlayer (); }
+   void makeComputerMoves ();
    void enablePlayer (unsigned int player);
-   void disableLastPlayer ();
    void cleanTable ();
    void dealCards ();
    void fillStaple ();
@@ -112,14 +103,7 @@ class RovhultAppl : public XApplication {
    bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
    int executeMove (unsigned int player, CardWidget::NUMBERS nr);
 
-   void loadCards ();
-
-   void startGame ();
-
-   void userWants2End (unsigned int input);
-   bool restart;
-
-   static XApplication::MenuEntry RovhultAppl::menuItems[];
+   void start ();
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
@@ -127,22 +111,9 @@ class RovhultAppl : public XApplication {
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
 
-   static const char* xpmAuthor[];
-   static const char* xpmRovhult[];
-
-   enum { INITIALIZING, TOSTOP, STOPPED, PREPLAYING, PLAYING, AUTOPLAYING } statGame;
-
-   Gtk::Statusbar status;
-   Gtk::Table     tblTable;
-
-   MenuItem* pMenuNew;
-   MenuItem* pMenuEnd;
-
    // Variables for makeComputerMove
    int actPlayer;                                         // Player to continue
-
-   CardImages cardFaces;
-   CardSet cards;
+   bool restart;
 
    CardHInfoPile played;
    CardVInfoPile staple;                                     // Cards on staple
@@ -151,18 +122,7 @@ class RovhultAppl : public XApplication {
       CardVPile reserve[3];                     // Reserve-cards (for end-game)
    } players[NUM_PLAYERS];
 
-   vector<Connection> activeCards;
    Connection pileTop;
-
-   typedef OThread<RovhultAppl> THRDAPPL;
-   THRDAPPL* pThread;
-
-   Mutex mutexStatus;
-
-   static const unsigned int USED_CARDS = 52;
-
-   static const unsigned int WIDTH = 700;
-   static const unsigned int HEIGHT = 700;
 
    static GtkTargetEntry dndTypeTable;
    static GtkTargetEntry dndTypeHand;
