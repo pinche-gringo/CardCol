@@ -89,14 +89,12 @@ class Rovhult : public Game {
    
    int makeTurn (unsigned int player);
    int findCard2Play (unsigned int player) const;
-   void flipCards2Play (unsigned int player, unsigned int pos);
+   unsigned int showCards2Play (unsigned int player, unsigned int pos);
 
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
-   bool existOnlySpecialCards (unsigned int player, unsigned int pos) const;
+   bool existOnlySpecialCards (const ICardPile& pile, unsigned int pos) const;
    bool isSpecialCard (CardWidget::NUMBERS nr) const {
       return (nr == CardWidget::TEN) || (nr == CardWidget::TWO); }
-
-   CardWidget* cardAtPos (unsigned int player, unsigned int pos) const;
 
    bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
    int executeMove (unsigned int player, CardWidget::NUMBERS nr);

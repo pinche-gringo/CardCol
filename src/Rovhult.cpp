@@ -30,6 +30,7 @@
 #include <gtk--/statusbar.h>
 #include <gtk--/accelgroup.h>
 
+#define TRACELEVEL 8
 #include <Check.h>
 #include <Trace_.h>
 
@@ -959,57 +960,38 @@ void Rovhult::getDropData (GdkDragContext* pContext, GtkSelectionData* pData,
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Retrieves the card at given position. If there are cards in the
-//            hand, they are considered; else the cards in the reserve
-//Parameters: player: Player in turn
-//            pos: Position of (last) card to play
-//Returns   : CardWidget*: Pointer to specified card or NULL if no card
-/*--------------------------------------------------------------------------*/
-CardWidget* Rovhult::cardAtPos (unsigned int player, unsigned int pos) const {
-   TRACE2 ("Rovhult::cardAtPos (unsigned int, unsigned int) - "
-           " For player " << player << " at position " << pos);
-   Check3 ((players[player].hand.numberOfCards ())
-           ? (pos < players[player].hand.numberOfCards ())
-           : (pos < 3));
-
-   return ((players[player].hand.numberOfCards ())
-           ? &players[player].hand.at (pos)
-           : (players[player].reserve[pos].numberOfCards ()
-              ? &players[player].reserve[pos].getTopCard () : NULL));
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Flips the cards the user is about to play (and the ones with
+//Purpose   : Shows the cards the user is about to play (and the ones with
 //            similar numbers below)
 //Parameters: player: Player in turn
 //            pos: Position of (last) card to play
+//Returns   : unsigned int: New position to play
 /*--------------------------------------------------------------------------*/
-void Rovhult::flipCards2Play (unsigned int player, unsigned int pos) {
-   TRACE2 ("Rovhult::flipCards2Pplay (unsigned int, unsigned int) - "
+unsigned int Rovhult::showCards2Play (unsigned int player, unsigned int pos) {
+   TRACE2 ("Rovhult::showCards2Play (unsigned int, unsigned int) - "
            " For player " << player << " at position " << pos);
    Check3 (player < NUM_PLAYERS);
 
-   bool playFromHand (players[player].hand.numberOfCards ());
-   Check3 (playFromHand
-           ? (pos < players[player].hand.numberOfCards ())
-           : (pos < 3));
+   ICardPile* pile (&players[player].hand);
 
-   CardWidget* card (cardAtPos (player, pos));
-   CardWidget::NUMBERS nr (card->number ());
-   card->showFace ();
-   do {
-      if (playFromHand || card->showsFace ()) {
-         card->showFace ();
-         if (card->width () < card->getImageWidth ())
-            players[player].hand.resize (pos, ICardPile::COMPRESSED);
-      }
-   } while (pos
-            && ((card = cardAtPos (player, --pos)))
-            && (card->number () == nr));
+   if (pile->numberOfCards ()) {
+      Check3 (pos < pile->numberOfCards ());
+
+      unsigned int start (pos);
+      CardWidget* card (&pile->at (pos));
+      CardWidget::NUMBERS nr (card->number ());
+      while (start
+             && (pile->at (start - 1).number () == nr))
+         --start;
+
+      return flipCards2Play (*pile, start, pos);
+   }
+   else
+      players[player].reserve[pos].getTopCard ().showFace ();
+   return pos;
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Finds an executes the turn of a (computer control.ed) player
+//Purpose   : Finds an executes the turn of a (computer controled) player
 //Returns   : int: The next player
 /*--------------------------------------------------------------------------*/
 int Rovhult::makeMove (unsigned int player) {
@@ -1020,7 +1002,7 @@ int Rovhult::makeMove (unsigned int player) {
       if ((pos2Play = findCard2Play (player)) < 0)
          pos2Play = ~pos2Play;
       else
-         flipCards2Play (player, pos2Play);
+         pos2Play = showCards2Play (player, pos2Play);
    }
    else {
       TRACE2 ("Rovhult::makeMove (unsigned int) - play card " << pos2Play);
@@ -1062,19 +1044,16 @@ int Rovhult::makeMove (unsigned int player) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Checks if there are only special cards up to the passed position
-//Parameters: player: Player to inspect
+//Parameters: pile: Pile to inspect
 //            pos: Upper position of cards to inspect
 //Returns   : bool: True, if there are only special cards
 /*--------------------------------------------------------------------------*/
-bool Rovhult::existOnlySpecialCards (unsigned int player, unsigned int pos) const {
-   Check3 (player < NUM_PLAYERS);
-   Check3 ((players[player].hand.numberOfCards ())
-           ? (pos < players[player].hand.numberOfCards ())
-           : (pos < 3));
+bool Rovhult::existOnlySpecialCards (const ICardPile& pile, unsigned int pos) const {
+   Check3 (pile.numberOfCards () > pos);
 
    do {
-       if (!isSpecialCard (cardAtPos (player, pos)->number ()))
-          return false;
+      if (!isSpecialCard (pile.at (pos).number ()))
+         return false;
    } while (pos--);
 
    return true;
@@ -1163,7 +1142,8 @@ int Rovhult::findCard2Play (unsigned int player) const {
       unsigned int npos (players[player].hand.findLastEqual (pos));
       Check3 (npos < players[player].hand.numberOfCards ());
       if (((numberOfEqualTopCards () + npos - pos) == 4)
-          || (existOnlySpecialCards (player, players[player].hand.numberOfCards () - 1))
+          || (existOnlySpecialCards (players[player].hand,
+                                     players[player].hand.numberOfCards () - 1))
           || ((!isSpecialCard (players[player].hand.at (0).number ()))
               && ((npos != (players[player].hand.numberOfCards () - 1))
                   || (pos == 0)
