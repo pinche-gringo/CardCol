@@ -44,9 +44,13 @@ class CardgameCollection : public XApplication {
    CardgameCollection ();
    ~CardgameCollection ();
 
+   Gtk::Box& getClient () { return *XApplication::getClient (); }
+   Gtk::Statusbar& getStatusbar () { return status; }
+   CardSet& getCards () { return cards; }
+
  private:
    // IDs for menus
-   enum { NEW, EXIT, DEBUG, ROVHULT, TWOPART, CHGDECKS, SAVESET, ABOUT };
+   enum { NEW, END, EXIT, DEBUG, ROVHULT, TWOPART, CHGDECKS, SAVESET, ABOUT };
 
    // Protected manager functions
    CardgameCollection (const CardgameCollection&);
@@ -54,6 +58,7 @@ class CardgameCollection : public XApplication {
 
    // Event-handling
    virtual void command (int menu);
+   virtual void gameEvents (unsigned int status);
 
    void changeCards (void* opt);
    void loadCards ();
@@ -70,6 +75,7 @@ class CardgameCollection : public XApplication {
    Gtk::Statusbar status;
 
    MenuItem* pMenuNew;
+   MenuItem* pMenuEnd;
 
    CardImages cardFaces;
    CardSet cards;
@@ -83,6 +89,8 @@ class CardgameCollection : public XApplication {
 
    typedef enum { NONE, GROVHULT, GTWOPART } games;
    games typeGame;
+   games oldGame;
+   bool restart;
 
    Game* game;
 
@@ -92,8 +100,6 @@ class CardgameCollection : public XApplication {
 
    static const unsigned int WIDTH = 760;
    static const unsigned int HEIGHT = 700;
-
-   static games oldGame;
 };
 
 #endif
