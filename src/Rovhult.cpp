@@ -33,7 +33,7 @@
 
 #include <glib.h>
 
-#define DEBUG 3
+#define DEBUG 0
 #include <Check.h>
 #include <Trace_.h>
 
@@ -472,13 +472,67 @@ void RovhultAppl::fillStaple () {
 }
 
 /*--------------------------------------------------------------------------*/
+//Purpose   : Prepares the card for drag´n´drop (starting from the table,
+//            ending on hand or ending on table, starting from hand)
+//Parameters: card: Card to prepare for drag´n´drop
+//            player: Number of player holding card
+//            pile: Number of pile on reserve holding card
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::registerTableDND (CardWidget& card, unsigned int player,
+                                    unsigned int pile) {
+   static Gdk_Colormap color (get_colormap ());
+   static Gdk_Bitmap bitmap;
+
+   // Card accepts drops from hand and drags from table
+   card.drag_dest_set (GTK_DEST_DEFAULT_ALL, &dndTypeHand, 1, GDK_ACTION_COPY);
+   card.drag_source_set (GDK_BUTTON1_MASK, &dndTypeTable, 1, GDK_ACTION_COPY);
+   card.drag_source_set_icon
+      (color, const_cast<Gdk_Pixmap&> (cardFaces.getCardImage (card.id ())),
+       bitmap);
+   card.drag_data_received.connect
+      (bind (slot (this, &RovhultAppl::cardDroppedOnTable), (player << 16) + pile));
+   card.drag_data_get.connect (bind (slot (this, &RovhultAppl::getDropData),
+                                     player, pile));
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Prepares the card for drag´n´drop (starting from the hand
+//            ending on table or ending on hand, starting from table)
+//Parameters: card: Card to prepare for drag´n´drop
+//            player: Number of player holding card
+//            pile: Number of pile on reserve holding card
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::registerHandDND (CardWidget& card, unsigned int player,
+                                    unsigned int iCard) {
+   static Gdk_Colormap color (get_colormap ());
+   static Gdk_Bitmap bitmap;
+
+   // Card accepts drops from table and drags from hand
+   card.drag_dest_set (GTK_DEST_DEFAULT_ALL, &dndTypeTable, 1, GDK_ACTION_COPY);
+   card.drag_source_set (GDK_BUTTON1_MASK, &dndTypeHand, 1, GDK_ACTION_COPY);
+   card.drag_source_set_icon
+      (color, const_cast<Gdk_Pixmap&> (cardFaces.getCardImage (card.id ())),
+       bitmap);
+   card.drag_data_received.connect
+      (bind (slot (this, &RovhultAppl::cardDroppedOnHand), (player << 16) + iCard));
+   card.drag_data_get.connect (bind (slot (this, &RovhultAppl::getDropData),
+                                     player, iCard));
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Stops the drag´n´drop abilities of the passed card
+//Parameters: card: Card to unregister of dnd
+/*--------------------------------------------------------------------------*/
+void RovhultAppl::unregisterDND (CardWidget& card) {
+   card.drag_dest_unset ();
+   card.drag_source_unset ();
+}
+
+/*--------------------------------------------------------------------------*/
 //Purpose   : Deals the cards
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::dealCards () {
    TRACE9 ("RovhultAppl::dealCards ()");
-
-   Gdk_Bitmap bitmap;
-   Gdk_Colormap color (get_colormap ());
 
    // Show cards on table: For all players put 6 cards on table (only the
    // (upper visible) and 3 (visible ones) in hand
@@ -489,36 +543,21 @@ void RovhultAppl::dealCards () {
             card.set_sensitive (k);
 
             reserve[i][j].setTopCard (card, k);
-            if (k) {                     // Enable drag-n-drop for the top-card
-               card.drag_dest_set (GTK_DEST_DEFAULT_ALL, &dndTypeHand, 1, GDK_ACTION_MOVE);
-               card.drag_source_set (GDK_BUTTON1_MASK, &dndTypeTable, 1, GDK_ACTION_MOVE);
-               card.drag_source_set_icon
-                  (color, const_cast<Gdk_Pixmap&> (cardFaces.getCardImage (card.id ())),
-                   bitmap);
-               card.drag_data_received.connect
-                  (bind (slot (this, &RovhultAppl::cardDroppedOnTable), (i << 16) + j));
-               card.drag_data_get.connect (bind (slot (this, &RovhultAppl::getDropData),
-                                                 i, j));
-            }
+            if (k)                       // Enable drag-n-drop for the top-card
+               registerTableDND (card, i, j);
          } // end-for two cards pro pile (in reserve)
 
          // Put card into hand
          CardWidget& card (staple.removeTopCard ());
          card.setVisible ();
          hands[i].addCard (card);
-         card.clicked.connect (SigC::bind (SigC::slot (this, &RovhultAppl::handSelected),
-                                           &hands[i], card.id ()));
 
-         // Enable drag-n-drop for the cards in the hand
-         card.drag_dest_set (GTK_DEST_DEFAULT_ALL, &dndTypeTable, 1, GDK_ACTION_MOVE);
-         card.drag_source_set (GDK_BUTTON1_MASK, &dndTypeHand, 1, GDK_ACTION_MOVE);
-         card.drag_source_set_icon
-            (color, const_cast<Gdk_Pixmap&> (cardFaces.getCardImage (card.id ())),
-             bitmap);
-         card.drag_data_received.connect
-            (bind (slot (this, &RovhultAppl::cardDroppedOnHand), (i << 16) + j));
-         card.drag_data_get.connect (bind (slot (this, &RovhultAppl::getDropData),
-                                           i, j));
+         registerHandDND (card, i, j);
+#if 0
+         // Use that code for card-callbacks *after* exchanges of cards
+         card.clicked.connect (SigC::bind (SigC::slot (this, &RovhultAppl::handSelected),
+                                           &hands[player], card.id ()));
+#endif
       }
 
    status.pop (1);
@@ -540,7 +579,10 @@ void RovhultAppl::dealCards () {
 void RovhultAppl::cardDroppedOnTable (GdkDragContext* pContext, gint, gint,
                                       GtkSelectionData* pData, guint info,
                                       guint32 time, unsigned int playerPile) {
-   Check3 (pContext); Check3 (pData); Check3 (!info);
+   if (info == 1)
+      return;
+
+   Check3 (pContext); Check3 (pData);
    Check3 (!pContext->is_source);
    Check3 (pData->length == (sizeof (int) << 1));
    Check3 (pData->format == 8);
@@ -554,24 +596,33 @@ void RovhultAppl::cardDroppedOnTable (GdkDragContext* pContext, gint, gint,
    unsigned int* pValues (reinterpret_cast <unsigned int*> (pData->data));
    Check3 (pValues);
 
-   TRACE1 ("RovhultAppl::cardDroppedOnHand (...) - Data = "
-           << *pValues << '/' << pValues[1]);
+   TRACE1 ("RovhultAppl::cardDroppedOnTable (...) - Data = "
+           << *pValues << '/' << pValues[1] << " <-> " << player << '/' << pile);
 
    Gdk_DragContext gdc (pContext);
 
    // Check if player matches
    if (player != *pValues)
-      drag_finish (gdc, false, true, time);
+      drag_finish (gdc, false, false, time);
    else {
       CardWidget& cardTable (reserve[player][pile].removeTopCard ());
       CardWidget& cardHand (hands[player].removeCard (pValues[1]));
 
-      TRACE1 ("RovhultAppl::cardDroppedOnHand (...) - Exchanging cards "
+      TRACE1 ("RovhultAppl::cardDroppedOnTable (...) - Exchanging cards "
               << cardHand.id () << "<->" << cardTable.id ());
 
+      // End old dnd
+      drag_finish (gdc, true, false, time);
+
+      unregisterDND (cardHand);
+      unregisterDND (cardTable);
+
+      // Swap cards
       reserve[player][pile].setTopCard (cardHand);
       hands[player].insertCard (cardTable, pValues[1]);
-      drag_finish (gdc, true, false, time);
+
+      registerHandDND (cardTable, player, pValues[1]);
+      registerTableDND (cardHand, player, pile);
    }
 }
 
@@ -589,7 +640,10 @@ void RovhultAppl::cardDroppedOnTable (GdkDragContext* pContext, gint, gint,
 void RovhultAppl::cardDroppedOnHand (GdkDragContext* pContext, gint, gint,
                                      GtkSelectionData* pData, guint info,
                                      guint32 time, unsigned int playerCard) {
-   Check3 (pContext); Check3 (pData); Check3 (info == 1);
+   if (!info)
+      return;
+
+   Check3 (pContext); Check3 (pData);
    Check3 (!pContext->is_source);
    Check3 (pData->length == (sizeof (int) << 1));
    Check3 (pData->format == 8);
@@ -604,22 +658,32 @@ void RovhultAppl::cardDroppedOnHand (GdkDragContext* pContext, gint, gint,
    Check3 (pValues);
 
    TRACE1 ("RovhultAppl::cardDroppedOnHand (...) - Data = "
-           << *pValues << '/' << pValues[1]);
+           << *pValues << '/' << pValues[1] << " <-> " << player << '/' << card);
 
    Gdk_DragContext gdc (pContext);
 
    // Check if player matches
-   if (player != pValues[1])
-      drag_finish (gdc, false, true, time);
+   if (player != *pValues)
+      drag_finish (gdc, false, false, time);
    else {
-#if 0
       CardWidget& cardTable (reserve[player][pValues[1]].removeTopCard ());
-      CardWidget& cardHand (hands[player].removeCard (*pValues));
+      CardWidget& cardHand (hands[player].removeCard (card));
 
-      reserve[player][pile].setTopCard (cardHand);
-      hands[player].addCard (cardTable);
-#endif
-      drag_finish (gdc, true, true, time);
+      TRACE1 ("RovhultAppl::cardDroppedOnHand (...) - Exchanging cards "
+              << cardHand.id () << "<->" << cardTable.id ());
+
+      // End old DND
+      drag_finish (gdc, true, false, time);
+      unregisterDND (cardHand);
+      unregisterDND (cardTable);
+
+      // Swap cards
+      reserve[player][pValues[1]].setTopCard (cardHand);
+      hands[player].insertCard (cardTable, card);
+
+      // Adapt dnd-settigns
+      registerHandDND (cardTable, player, card);
+      registerTableDND (cardHand, player, pValues[1]);
    }
 }
 
