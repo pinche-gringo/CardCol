@@ -1,3 +1,180 @@
+2003-01-19  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Twopart.cpp: Traces of card-pos to TRACE9
+
+	* po/de.po, po/es.po: 	Actualized for V0.3.00
+
+	* doc/index.shtml: Minor re-wording
+
+	* doc/Twopart.html: New option to show won cards documented
+
+	* doc/Makefile.am: Using macro DESTINATION in doc-install
+
+	* configure.in: Version to 0.3.00; bin-subdir renamed to src
+
+	* Makefile.am: Directory bin renamed to src
+
+	* ChangeLog, NEWS: Changes of V0.3.00 documented
+
+	* INSTALL, README: Minor changes
+
+	* po/de.po, po/en.po, po/es.po: Actualized for V0.3
+
+2003-01-17  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Makefile.am:
+	  Options.{h meta} added; Headers moved from include_HEADERS to EXTRA_DIST
+
+	* src/Options.h: New file.
+
+	* src/CardCol.cpp, src/CardCol.h:
+	  Derived also from IVIOAppl to get option handling
+
+2003-01-14  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp, src/CardCol.h:
+	  Help-menu handling is now in XApplication
+
+2003-01-13  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Makefile.am: Hearts added
+
+	* doc/Hearts.html: New file.
+
+	* po/en.po: Actualized
+
+	* po/de.po, po/es.po: New messages translated
+
+	* po/POTFILES.in:
+	  Directory bin changed to src; Hearts, Score- and Player dialog messages added
+
+2003-01-12  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp, src/Hearts.h, src/Rovhult.cpp, src/Rovhult.h, src/Twopart.cpp, src/Twopart.h:
+	  Changing the names of the players enabled
+
+	* src/CardCol.cpp, src/CardCol.h:
+	  Changing the player-names also changes them on the field
+
+	* Common/Game.cpp, Common/Game.h:
+	  Method changeNames to update the names of the players added
+
+	* Common/PlayerDlg.cpp, Common/PlayerDlg.h: Template with callback added
+
+2003-01-09  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp, src/Hearts.h, src/HeartsScore.cpp, src/HeartsScore.h, src/Makefile.am, src/Rovhult.cpp, src/Rovhult.h, src/Twopart.cpp, src/Twopart.h:
+	  Using (and displaying) real names
+
+	* src/CardCol.h:
+	  Size changed; Variable for names; Callback for changing decks changed
+
+	* src/CardCol.cpp:
+	  Dialog to change names; Changed changing decks; Reading names from INI file
+
+	* Common/CardSet.cpp: Fixed bug while shuffling
+
+	* Common/Makefile.am: PlayerDlg added
+
+	* Common/Game.cpp, Common/Game.h:
+	  Player are addresed by names and not numbers
+
+	* Common/DeckSelect.cpp, Common/DeckSelect.h:
+	  Using XDialog as parent; lock while applying removed
+
+2003-01-08  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/PlayerDlg.cpp, Common/PlayerDlg.h: New file.
+
+2003-01-07  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp, src/Hearts.h: Showing won cards moved to Game
+
+	* src/Twopart.cpp: Showing won cards implemented
+
+	* Common/Game.cpp, Common/Game.h:
+	  dis/enablePlayer renamed to dis/enableHuman; Fixes; Methods to show won cards
+
+2003-01-06  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Rovhult.cpp, src/Rovhult.h, src/Twopart.cpp, src/Twopart.h:
+	  Adapted to new Game interface (en/disableHuman); Player param removed from CBs
+
+	* src/Hearts.h:
+	  Added score-dialog; Inspecting cards; Removed player parameter from callbacks
+
+	* src/Hearts.cpp:
+	  - Adapted to new Game-interface (using en/disableHuman)
+	  - Card-callbacks only for player 0 (no player parameter anymore)
+	  - Displays Score-dialog at end
+	  - Won cards can be inspected (and sorted)
+	  - Fixes
+
+2003-01-04  Markus Schwab  <g17m0@lycos.com>
+
+	* src/HeartsScore.cpp, src/HeartsScore.h:
+	  Initial dialog is empty; using new XAttributeLabel; Calculating sum
+
+2003-01-03  Markus Schwab  <g17m0@lycos.com>
+
+	* src/HeartsScore.cpp, src/HeartsScore.h: New file.
+
+2003-01-02  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Twopart.cpp: 
+	  Checks (for pos in number of cards) corrected; Empty for removed
+
+	* src/Hearts.h: Method check4Winner added
+
+	* src/Hearts.cpp: Playing quite a bit improved; Fixes
+
+2002-12-31  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp: Bugfixes; Playing works
+
+	* Common/CardPile.cpp, Common/CardPile.h: Find-method with color added
+
+	* src/Hearts.cpp:
+	Bugfixes; Compu can play (but not very good)
+
+2002-12-30  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp, src/Hearts.h: A bit of playing implemented
+
+2002-12-25  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp, src/Hearts.h: Exchanging of cards implemented
+
+	* src/Makefile.am: Hearts added; headers included to distribution
+
+	* src/CardCol.h: Hearts added; Delete event calls exit
+
+	* src/CardCol.cpp: Hearts added
+
+	* src/Hearts.cpp, src/Hearts.h: New file.
+
+2002-11-12  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/index.shtml:
+	  Generating quotes around filenames (to work with files with blanks)
+
+	* src/Rovhult.h, src/Twopart.h:
+	  Implemented name () to return name of the game
+
+	* src/CardCol.h, src/CardCol.cpp:
+	  Showing documentation online (Help->Content)
+
+	* Common/Game.h: Virtual method to return name of the game added
+
+	* configure.in: DOCUDIR defined and passed to compiler
+
+	* INSTALL: New file.
+
+	* README:
+	  Generation of card decks explained in detail; Hints to online-help
+
+	* doc/Makefile.am: Labels to (un)install the documentation added
+
 2002-11-12  Markus Schwab  <g17m0@lycos.com>
 
 	* doc/Makefile.am: index.shtml added to distribution
