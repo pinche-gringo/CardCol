@@ -74,7 +74,7 @@ class CardgameCollection : public XApplication {
    virtual const char* getHelpfile ();
 
    void* changeCards (void* opt);
-   void* loadCards (void*);
+   void loadCards ();
    bool restartGame ();
    void startGame ();
    void doStartGame ();
@@ -100,7 +100,6 @@ class CardgameCollection : public XApplication {
    CardSet cards;
 
    typedef OThread<CardgameCollection> THRDAPPL;
-   THRDAPPL* pThread;
    std::vector<THRDAPPL*> aCommThreads;
 
    Options& options;

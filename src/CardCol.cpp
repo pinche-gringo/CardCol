@@ -676,7 +676,7 @@ const IVIOApplication::longOptions CardgameAppl::lo[] = {
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE)
-     , pThread (NULL), options (opts), playerPos (0), oldGame (NONE)
+     , options (opts), playerPos (0), oldGame (NONE)
      , restart (false), game (NULL) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
 
@@ -698,25 +698,8 @@ CardgameCollection::CardgameCollection (Options& opts)
 
    show ();
 
-#ifdef HAVE_LIBTHREAD
-   // Load cards in background
-   try {
-      pThread = THRDAPPL::create (this, &CardgameCollection::loadCards,
-                                  NULL);
-      TRACE9 ("CardgameCollection::CardgameCollection () - Thread-ID = " << pThread->getID ());
-   }
-   catch (std::string& e) {
-      TRACE1 ("Error starting the thread to load the card images\n\t->"
-              << e);
-#else
-      Glib::signal_idle ().connect
-          (bind_return (slot (*this, (void* (CardgameCollection::*) ())
-                              &CardgameCollection::loadCards), false));
-#endif
-#ifdef HAVE_LIBTHREAD
-   }
-#endif
-
+   Glib::signal_idle ().connect
+       (bind_return (slot (*this, &CardgameCollection::loadCards), false));
    mxGuiCmd.lock ();
    makePlayer ();
 
@@ -767,9 +750,6 @@ CardgameCollection::~CardgameCollection () {
         i != aCommThreads.end (); ++i)
        (*i)->cancel ();
    aCommThreads.clear ();
-
-   if (pThread)
-      pThread->cancel ();
 #endif
 }
 
@@ -1065,15 +1045,7 @@ void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
       options.back = back;
    }
 
-#ifdef HAVE_LIBPTHREAD
-   pThread = THRDAPPL::create (this,
-                               &CardgameCollection::changeCards,
-                               (void*)option);
-#else
    changeCards ((void*)option);
-#endif
-   TRACE9 ("CardgameCollection::changeDecks (const ICarddeckSelectDlg) - Thread-ID = "
-           << pThread->getID ());
 }
 
 //-----------------------------------------------------------------------------
@@ -1093,20 +1065,16 @@ void* CardgameCollection::changeCards (void* opt) {
 
    try {
       if ((unsigned int)opt & 1)
-         cardFaces.loadDecks (options.decks);
+         cardFaces.loadDecks (options.decks, false);
       if ((unsigned int)opt & 2)
-         cardFaces.loadBack (options.back);
+         cardFaces.loadBack (options.back, false);
 
-      gdk_threads_enter ();
        ((unsigned int)opt & 0x8000)
            ? cards.addPacket (cardFaces)
            : cards.update ();
-      gdk_threads_leave ();
-      pThread = NULL;
       return this;
    }
    catch (std::string& e) {
-      gdk_threads_enter ();
       Glib::ustring msg ("Couldn't load the card images!\n\n"
                          "Reason: %1");
       msg.replace (msg.find ("%1"), 2, e);
@@ -1119,7 +1087,6 @@ void* CardgameCollection::changeCards (void* opt) {
       Check3 (apMenus[NEW]); Check3 (apMenus[CONNECT]);
       apMenus[NEW]->set_sensitive (false);
       apMenus[CONNECT]->set_sensitive (false);
-      gdk_threads_leave ();
    }
    return NULL;
 }
@@ -1171,8 +1138,7 @@ bool CardgameCollection::restartGame () {
 /// \remarks Cards need an realized (!) parent, so make somehow sure, that the
 ///      window already exists
 //-----------------------------------------------------------------------------
-void* CardgameCollection::loadCards (void*) {
-   gdk_threads_enter ();
+void CardgameCollection::loadCards () {
    Check3 (is_realized ());
    status.push (_("Loading cardimages ..."));
 
@@ -1180,11 +1146,9 @@ void* CardgameCollection::loadCards (void*) {
    if (GLAST <= (unsigned int)options.type)
       options.type = GROVHULT;
    dynamic_cast<Gtk::CheckMenuItem*> (apMenus[ROVHULT + options.type])->set_active ();
-   gdk_threads_leave ();
 
    void* rc (changeCards ((void*)-1));
    if (rc) {
-      gdk_threads_enter ();
       Check3 (apMenus[NEW]); Check3 (apMenus[CONNECT]);
       apMenus[NEW]->set_sensitive (true);
       apMenus[CONNECT]->set_sensitive (true);
@@ -1193,11 +1157,9 @@ void* CardgameCollection::loadCards (void*) {
       if (cmgr.getMode () != ConnectionMgr::CLIENT) {
          status.push (_("Start a new game with Ctrl+N (or Game -> New)"));
       }
-      gdk_threads_leave ();
    }
 
    Check3 (cardFaces.size ());
-   return pThread = NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -1659,10 +1621,8 @@ int CardgameAppl::perform (int, const char**) {
    TRACE5 ("CardgameAppl::perform (int, const char**) - Params: " << args);
    srand (time (NULL));              // Initialize the random number generator
 
-   gdk_threads_enter ();
    CardgameCollection win (options);
    Gtk::Main::run (win);
-   gdk_threads_leave ();
    return 0;
 }
 
@@ -1674,9 +1634,6 @@ int CardgameAppl::perform (int, const char**) {
 /// \returns \c int: Status
 //-----------------------------------------------------------------------------
 int main (int argc, const char* argv[]) {
-   Glib::thread_init (NULL);
-   gdk_threads_init ();
-
    Gtk::Main gtk (&argc, const_cast<char***> (&argv));
    CardgameAppl appl (argc, argv);
    return appl.run ();
