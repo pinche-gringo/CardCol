@@ -959,10 +959,11 @@ ICardPile& Hearts::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// \param player: ID of player sending the message
 /// \param message: Message received from the server
 /// \returns bool: True, if message has completey processed
+/// \throw std::string: In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Hearts::handleMessage (unsigned int player, const char* message) {
+bool Hearts::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
    if (gameStatus () == EXCHANGE) {
-      TRACE1 ("Hearts::handleMessage (unsigned int player, const char*) - "
+      TRACE1 ("Hearts::handleMessage (unsigned int player, const std::string&) - "
               << message << " (" << player << ')');
 
       YGP::Tokenize command (message);
@@ -990,7 +991,7 @@ bool Hearts::handleMessage (unsigned int player, const char* message) {
                   if (stringToNumber (card, command.getActNode ().c_str ()))
                      break;
 
-                  TRACE9 ("Hearts::handleMessage (unsigned int, const char*) - "
+                  TRACE9 ("Hearts::handleMessage (unsigned int, const std::string&) - "
                           << lPlayer << ": " << card);
                   card = players[lPlayer].hand.find (static_cast<unsigned int> (card));
                   Check3 (card < players[lPlayer].hand.size ());
@@ -1000,7 +1001,7 @@ bool Hearts::handleMessage (unsigned int player, const char* message) {
                }
             }
 
-            TRACE2 ("Hearts::handleMessage (unsigned int player, const char*) - "
+            TRACE2 ("Hearts::handleMessage (unsigned int player, const std::string&) - "
                     "Exchanged: " << aExchange[lPlayer].size () << " cards");
             if (aExchange[lPlayer].size () == 3) {
                YGP::ConnectionMgr& cmgr (getConnectionMgr ());

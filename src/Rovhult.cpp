@@ -1547,10 +1547,11 @@ ICardPile& Rovhult::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// \param player: ID of player sending the message
 /// \param message: Message received from the server
 /// \returns bool: True, if message has completey processed
+/// \throw std::string: In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Rovhult::handleMessage (unsigned int player, const char* message) {
+bool Rovhult::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
    if (gameStatus () >= EXCHANGE) {
-      TRACE1 ("Rovhult::handleMessage (unsigned int player, const char*) - "
+      TRACE1 ("Rovhult::handleMessage (unsigned int player, const std::string&) - "
               << message << " (" << player << ')');
 
       YGP::Tokenize command (message);
@@ -1593,7 +1594,7 @@ bool Rovhult::handleMessage (unsigned int player, const char* message) {
                   if (stringToNumber (card, command.getActNode ().c_str ()))
                      break;
 
-                  TRACE8 ("Rovhult::handleMessage (unsigned int, const char*) - "
+                  TRACE8 ("Rovhult::handleMessage (unsigned int, const std::string&) - "
                           << lPlayer << ": " << card);
                   card = pile.find (static_cast<unsigned int> (card));
                   Check3 (card < pile.size ());
@@ -1608,7 +1609,7 @@ bool Rovhult::handleMessage (unsigned int player, const char* message) {
                if (pile.empty ()) {
                   aExchanged |= (1 << lPlayer);
 
-                  TRACE2 ("Rovhult::handleMessage (unsigned int player, const char*) - "
+                  TRACE2 ("Rovhult::handleMessage (unsigned int player, const std::string&) - "
                           "Exchanged: " << std::hex << aExchanged << std::dec);
                      YGP::ConnectionMgr& cmgr (getConnectionMgr ());
                      // Inform other clients

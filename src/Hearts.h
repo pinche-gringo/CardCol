@@ -44,7 +44,7 @@ class Hearts : public Game {
    virtual const char* name () { return "Hearts"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
-   virtual bool handleMessage (unsigned int player, const char* message);
+   virtual bool handleMessage (unsigned int player, const std::string& message) throw (std::string);
 
    static void getPositionOfColours (ICardPile& pile, int result[4]);
 

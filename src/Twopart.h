@@ -44,7 +44,7 @@ class Twopart : public Game {
    virtual const char* name () { return "Twopart"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
-   virtual bool handleMessage (unsigned int player, const char* msg);
+   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
 
  protected:
    virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);

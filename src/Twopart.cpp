@@ -1181,9 +1181,10 @@ ICardPile& Twopart::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// \param player: ID of player sending the message
 /// \param message: Message received from the server
 /// \returns bool: True, if message has completey processed
+/// \throw std::string: In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Twopart::handleMessage (unsigned int player, const char* message) {
-   TRACE1 ("Twopart::handleMessage (unsigned int player, const char*) - "
+bool Twopart::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
+   TRACE1 ("Twopart::handleMessage (unsigned int player, const std::string&) - "
            << message << " (" << player << ')');
     
    YGP::Tokenize command (message);
@@ -1191,7 +1192,7 @@ bool Twopart::handleMessage (unsigned int player, const char* message) {
 
    bool rc (Game::handleMessage (player, message));
    if (cmd == "ActPlayer") {
-      TRACE1 ("Twopart::handleMessage (unsigned int player, const char*) - "
+      TRACE1 ("Twopart::handleMessage (unsigned int player, const std::string&) - "
               "Next player: " << currentPlayer ());
       startPlayer = currentPlayer ();
       makeNextMoves ();
