@@ -1,7 +1,5 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS=Grafix
-
 lib_LTLIBRARIES=libCard.la
 
 libCard_la_LDFLAGS=`gtkmm-config --libs` -version-info $(LIBVERSION) -release $(LIBRELEASE) -no-undefined
