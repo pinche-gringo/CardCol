@@ -26,6 +26,7 @@
 
 
 #include <gtk--/box.h>
+#include <gtk--/main.h>
 #include <gtk--/statusbar.h>
 
 #include <Check.h>
@@ -48,7 +49,7 @@
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             unsigned int rows, unsigned int columns)
    : Gtk::Table (rows, columns), statGame (STOPPED), status (statusbar)
-   , cards (cardset) {
+   , cards (cardset), reStart (false) {
    TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, unsinged int, unsigned int)");
 
    show ();
@@ -63,6 +64,8 @@ Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
 /*--------------------------------------------------------------------------*/
 Game::~Game () {
    TRACE9 ("Game::~Game ()");
+
+   clean ();
 }
 
 
@@ -71,6 +74,8 @@ Game::~Game () {
 /*--------------------------------------------------------------------------*/
 void Game::start () {
    statGame = PLAYING;
+
+   actPlayer = 0;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -78,6 +83,7 @@ void Game::start () {
 /*--------------------------------------------------------------------------*/
 void Game::stop () {
    statGame = STOPPED;
+   clean ();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -101,3 +107,66 @@ void Game::randomizeCardsToPile (ICardPile& pile) const {
    pile.setTopCards (cards.getCards (), false);
 }
 
+/*--------------------------------------------------------------------------*/
+//Purpose   : Moves cards from one pile to another
+//Parameters: dest: Destination pile
+//            source: Source pile
+/*--------------------------------------------------------------------------*/
+void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start) {
+   while (source.numberOfCards () > start)
+      dest.append (source.remove (start));
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Cleans the table
+/*--------------------------------------------------------------------------*/
+void Game::clean () {
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Activates the computer player
+/*--------------------------------------------------------------------------*/
+void Game::makeNextMoves () {
+   TRACE9 ("Game::makeComputerMoves () - *** Start timer ***");
+   Gtk::Main::timeout.connect (slot (this, (actPlayer
+                                     ? &Game::makeComputerMove
+                                     : &Game::enableActPlayer)),
+                               actPlayer ? 1000 : 50);
+   disableLastPlayer ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Enables the cards of the actual player
+/*--------------------------------------------------------------------------*/
+int Game::enableActPlayer () {
+   enablePlayer (actPlayer);
+   return 0;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Enables the cards of the passed player
+//Parameters: player: Player whose cards should be enabled
+/*--------------------------------------------------------------------------*/
+void Game::enablePlayer (unsigned int player) {
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Makes the move for the next player.
+//Returns   : int: Flag for timer, if it should continue (0: no; else: yes)
+/*--------------------------------------------------------------------------*/
+int Game::makeComputerMove () {
+   TRACE5 ("Game::makeComputerMove () - Turn of player " << actPlayer);
+   Check3 (actPlayer);
+
+   if (statGame == TOSTOP) {
+      TRACE8 ("Game::makeCompuerMove () - End game ");
+      stop ();
+      return 0;
+   }
+
+   actPlayer = makeMove (actPlayer);
+
+   if (!actPlayer)
+      enablePlayer (0);
+   return actPlayer > 0;
+}

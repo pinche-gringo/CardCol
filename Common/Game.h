@@ -40,8 +40,8 @@ class Game : public Gtk::Table {
    // Managing
    virtual void start ();
    virtual void stop ();
-   void end () { statGame = TOSTOP; }
-   virtual void playOpen () { }
+   void end (bool restart = false) { reStart = restart; statGame = TOSTOP; }
+   virtual void playOpen (bool) { }
 
    // Status handling
    bool isRunning () const { return statGame >= PLAYING; }
@@ -50,11 +50,23 @@ class Game : public Gtk::Table {
  protected:
    enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, LAST };
 
+   virtual int enableActPlayer ();
+   virtual void enablePlayer (unsigned int player);
    virtual void disableLastPlayer ();
 
+   unsigned int currentPlayer () const { return actPlayer; }
+   void setNextPlayer (unsigned int player) { actPlayer = player; }
+
+   void makeNextMoves ();
+   virtual int makeMove (unsigned int player) = 0;
+
+   virtual void clean ();
    void randomizeCardsToPile (ICardPile& pile) const;
+   static void movePile (ICardPile& dest, ICardPile& source,
+                         unsigned int start = 0);
 
    unsigned int statGame;
+   bool reStart;
 
    Gtk::Statusbar& status;
    CardSet& cards;
@@ -62,6 +74,9 @@ class Game : public Gtk::Table {
    vector<Gtk::Connection> activeCards;
 
  private:
+   int makeComputerMove ();
+
+   int actPlayer;                   // Player who is in turn (needed for timer)
 };
 
 #endif
