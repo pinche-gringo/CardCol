@@ -6,11 +6,8 @@ The following packages are needed
   - My General library; should be available from the same place where you got
     this software).
   - Gtkmm (which itself needs GTK+)
-  - Carddecks; either available from the same place where you get this package
-    or create your own (see the file README for details). Actually they are
-    not really necessary to run the program, but it's somewhat more entertaining
-    if you have real images on your cards instead of GTK+'s default one (might
-    also be easier to differenciate between them ;) ).
+  - Carddecks; e.g. the KDE cardgames provide a huge collection. See also the
+    README.
 
 
 How to build (if extracted from an (tar-)archive)
@@ -56,6 +53,7 @@ Common options for configure
   --disable-nls                 # Disable national language support
   --enable-checks[=level]	# Adds asserts and Checks
   --enable-debug[=level]	# Sets tracelevel & generation of debuginfo
+  --with-carddeck-dir=[DIR]     # Path to the carddecks
 
 If you're using `csh' on an old version of System V, you might need to type
 `sh ./configure' instead to prevent `csh' from trying to execute `configure'

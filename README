@@ -40,30 +40,20 @@ PURPOSE.  See the file COPYING for more details.
 Card decks
 ----------
 
-Are not included. If you happen to have another cardgame installed (like
-GNOME's FreeCell or the KDE patience games), you can try to extract those
-decks.
-
-I prepared a selection of my favorite decks which should be available on the
-same place where you got this package. They are shamelessly stolen from KDE
-with a command like:
-
-   for i in <sourcepath>/*.png; do
-      name=${i##*/}; name=${name%%.png};
-      (pngtopnm $i | ppmtoxpm -name=$name > <destpath>/$name.xpm);
-   done
+Are not included. But the configure process tries to determine, where the
+KDE carddecks are installed and use those.
 
 Of course you can also use other images; just make sure, that the cards are
-numbered from 1.xpm to 52.xpm, starting with the ace of clubs (1.xpm), the ace
-of spades (2.xpm), the ace of hearts (3.xpm), the ace of diamonds (4.xpm) and
+numbered from 1.png to 52.png, starting with the ace of clubs (1.png), the ace
+of spades (2.png), the ace of hearts (3.png), the ace of diamonds (4.png) and
 then (in the same sequence of the colours) down from king, queen, ... to 3, 2.
 
-Take care, that the cards have the same size (I don't do any resizing and I
-think GKT+ neither)!
+The images for the front side must be put in a directory called cards-NAME
+and the images for the back in a directory called decks (and must be called
+deck#.png).
 
-Note that if you create the decks by yourself, you also need to create a
-header called "Cardset-config.h" defining the path where they are installed
-(with something like #define CARDSET_PATH "/usr/...")
+Principally front and back of the cards should have the same size (as
+otherwise flipping a card looks a bit weired).
 
 
 Installation
