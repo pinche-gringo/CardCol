@@ -28,14 +28,6 @@
 #include <gtk--/dialog.h>
 
 
-// Forward declarations
-namespace Gtk {
-   class HBox;
-   class Label;
-   class Button;
-   class Packer;
-}
-   
 using namespace Gtk;
 
 
@@ -49,6 +41,8 @@ class ICarddeckSelectDlg : public Dialog {
 
  protected:
    virtual void command (commands action) = 0;
+   virtual void deckSelect (unsigned int offset);
+   virtual void backSelect (unsigned int offset);
 
  private:
    // Prohibited manager-functions
@@ -60,10 +54,22 @@ class ICarddeckSelectDlg : public Dialog {
    Button ok;
    Button apply;
    Button cancel;
+
+   HBox   boxDecks;
    Label  txtDecks;
+   Button selDeck;
    Packer decks;
 
+   HBox   boxBack;
+   Label  txtBack;
+   Packer backs;
+   Button selBack;
+
    vector<Button*> aDecks;
+   vector<Button*> aBacks;
+   vector<std::string> aFiles;
+
+   static const char* const DEFAULTFILE = "14.xpm";
 };
 
 
