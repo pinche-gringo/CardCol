@@ -63,6 +63,7 @@ class Twopart : public XApplication {
    void enablePlayer (unsigned int player);
    void disableLastPlayer ();
    int  findNextPlayer (unsigned int player);
+   int  findNextPlayerWithCards (unsigned int player);
    void removePlayer (unsigned int player) { bfPlayers &= ~(1 << player); }
    void addPlayer (unsigned int player) { bfPlayers |= 1 << player; }
    unsigned int removePlayersWithoutCards ();
@@ -101,8 +102,9 @@ class Twopart : public XApplication {
    unsigned int bfPlayers;           // Array indicating players still in round
    unsigned int actPlayer;          // Player who is in turn (needed for timer)
 
-   // Variables for endRound
-   unsigned int startPos[NUM_PLAYERS]; // Offset of cards played by each player
+   // Variables to store positions during playing
+   unsigned int startPos[NUM_PLAYERS - 1]; // Offset of cards played by players
+   unsigned int offPos;                             // Offset in startPos-array
    unsigned int startPlayer;  // Player who started round (needed for endRound)
    unsigned int bfOldPlayers;  // Array indicating players while starting round
 
