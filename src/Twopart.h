@@ -48,7 +48,7 @@ class Twopart : public Game {
 
  protected:
    virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile);
-   virtual bool executeRemoteMove (ICardPile& pile, unsigned int card);
+   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target);
 
  private:
    // Status of game
