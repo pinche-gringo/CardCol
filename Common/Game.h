@@ -97,14 +97,13 @@ class Game : public Gtk::Table {
    static void writeError (Socket& socket, unsigned int rc, const std::string& msg);
    static void writeOK (Socket& socket) { return writeMessage (socket, "Error=0"); }
    static void writeMessage (Socket& socket, const std::string& msg);
-   static void checkResponse (const char* msg);
    //@}
 
  protected:
    /// Returns the current player
    unsigned int currentPlayer () const { return actPlayer; }
    /// Sets the next player
-   void setNextPlayer (unsigned int player) { actPlayer = player; }
+   void setNextPlayer (unsigned int player);
 
    void flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end);
    void displayTurn (unsigned int player);
@@ -115,6 +114,9 @@ class Game : public Gtk::Table {
    bool randomizeCardsToPile (ICardPile& pile) const;
    static void movePile (ICardPile& dest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
+
+   bool performCommand (const char* msg);
+   static bool stringToNumber (unsigned long& number, const char* text);
 
    // Handling of won cards (if any)
    bool wonCardsSelected (GdkEvent *event);

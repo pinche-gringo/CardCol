@@ -179,7 +179,8 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
 
             // Read next token; the value must be a number
             if ((token = positions.getNextNode (' ')).empty ()
-                || ((pos = strtol (token.c_str (), &pTail, 10)) > cards.size ())
+                || stringToNumber (pos, token.c_str ())
+                || (pos > cards.size ())
                 || (errno || (pTail && *pTail))) {
                std::string error (_("Not a number: `%1'"));
                error.replace (error.find ("%1"), 2, positions.getActNode ());
@@ -540,37 +541,9 @@ void Game::writeMessage (Socket& socket, const std::string& msg) {
 /// \param msg: Message to write
 //----------------------------------------------------------------------------
 void Game::writeError (Socket& socket, unsigned int rc, const std::string& msg) {
-   std::string error ("Error=98;Msg=\"" + msg);
-   error += '"';
-   writeMessage (socket, error);
-}
-
-//----------------------------------------------------------------------------
-/// Reads the response from the partner.
-///
-/// The response must be in the format:
-/// <pre>  <b>Error</b>=<tt>Number</tt>;<b>Msg</b>="<tt>message</tt>"</pre>
-/// \param socket: Socket to read response from
-//----------------------------------------------------------------------------
-void Game::checkResponse (const char* msg) {
-   std::string message;
-   try {
-      unsigned int rc (0);
-      AttributeParse ap;
-      ATTRIBUTE (ap, std::string, message, "Msg");
-      ATTRIBUTE (ap, unsigned int, rc, "Error");
-
-      ap.assignValues (msg);
-      if (!rc)
-         msg = "";
-   }
-   catch (std::string& error) {
-      message = _("Invalid response!\n\nReason: %1");
-      message.replace (message.find ("%1"), 2, error);
-      Gtk::MessageDialog dlg (message, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dlg.set_title (PACKAGE);
-      dlg.run ();
-   }
+   std::ostringstream error;
+   error << "Error=" << rc << ";Msg=\"" + msg << '"';
+   writeMessage (socket, error.str ());
 }
 
 //----------------------------------------------------------------------------
@@ -579,19 +552,107 @@ void Game::checkResponse (const char* msg) {
 //----------------------------------------------------------------------------
 void Game::handleMessage (const char* msg) {
    TRACE1 ("Game::handleMessage (const char*) - " << msg);
-   Check1 (data == NULL);
+   Check1 (msg);
+   Check2 (!data);
 
-   switch (statGame) {
-   case NONE:
-      statGame = INITIALIZING;
-      data = msg;
-      start ();
-      break;
+   try {
+      switch (statGame) {
+      case NONE:
+         statGame = INITIALIZING;
+         data = msg;
+         start ();
+         break;
 
-   case INITIALIZING:
-      checkResponse (msg);
-      break;
+      case INITIALIZING:
+         break;
+
+      default:                             // Playing (and game specific stati)
+          if (!performCommand (msg)) {
+            std::string error (_("Invalid message `%1'"));
+            error.replace (error.find ("%1"), 2, msg);
+            throw error;
+         }
+         break;
+      }
+   }
+   catch (std::string& error) {
+      ConnectionMgr* cmgr (getConnectionMgr ());
+      if (cmgr && (cmgr->getMode () == ConnectionMgr::CLIENT)) {
+         Check3 (cmgr->getSocket ());
+         writeError (*cmgr->getSocket (), 1, error);
+      }
+
+      std::string message (_("Error processing server command!\n\n%1"));
+      message.replace (message.find ("%1"), 2, error);
+      Gtk::MessageDialog dlg (message, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dlg.set_title (PACKAGE);
+      dlg.run ();
    }
 
    data = NULL;
+}
+
+//----------------------------------------------------------------------------
+/// Sets the player performing the next turn
+/// \param player: Number identifying player (starting with 0)
+/// \remarks: In server mode this information is send to all clients
+//----------------------------------------------------------------------------
+void Game::setNextPlayer (unsigned int player) {
+   TRACE9 ("Game::setNextPlayer (unsigned int) - " << player);
+   actPlayer = player;
+
+   ConnectionMgr* cmgr (getConnectionMgr ());
+   if (cmgr && cmgr->getClients ().size ()) {
+      std::ostringstream msg;
+      msg << "ActPlayer=" << player;
+
+      TRACE9 ("Game::start () - Sending: " << msg.str ());
+      for (std::vector<Socket*>::const_iterator i (cmgr->getClients ().begin ());
+           i != cmgr->getClients ().end (); ++i) {
+         writeMessage (**i, msg.str ());
+      }
+   }
+}
+
+//----------------------------------------------------------------------------
+/// Handles a command the server sent in playing mode
+/// \param msg: Command to perform
+//----------------------------------------------------------------------------
+bool Game::performCommand (const char* msg) {
+   TRACE8 ("Game::performCommand (const char*) - Msg: " << msg);
+   Check1 (msg);
+
+   Tokenize command (msg);
+   std::string cmd (command.getNextNode ('='));
+   TRACE2 ("Game::performCommand (const char*) - Cmd: " << cmd);
+
+   if (cmd == "ActPlayer") {
+      cmd = command.getNextNode (';');
+      TRACE9 ("Game::performCommand (const char*) - Startplayer: " << cmd);
+      unsigned long player;
+      if (stringToNumber (player, cmd.c_str ()))
+         return false;
+
+      // Don't set player directly; maybe we will support once a more-leveled
+      // server system (just kidding).
+      setNextPlayer (player);
+   }
+   else
+      return false;
+
+   return true;
+}
+
+//----------------------------------------------------------------------------
+/// Converts a string into a number
+/// \param number: Target of conversion
+/// \param text: String to convert 
+/// \returns bool: False, if conversion succeeded (\c text contained a number) 
+//----------------------------------------------------------------------------
+bool Game::stringToNumber (unsigned long& number, const char* text) {
+   Check1 (text);
+   char* pTail = NULL;
+   errno = 0;
+   number = strtoul (text, &pTail, 0);
+   return (errno || (pTail && *pTail));
 }
