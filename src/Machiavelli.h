@@ -63,6 +63,8 @@ class Machiavelli : public Game {
    virtual const char* name () { return "Machiavelli"; }
    virtual void playOpen (bool);
 
+   virtual unsigned int numberOfDecks () const { return 4; }
+
    virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
 
  private:

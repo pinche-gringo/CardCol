@@ -57,6 +57,9 @@ class Buraco : public Game {
 
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
+   virtual unsigned int numberOfDecks () const { return 4; }
+   virtual unsigned int numberOfJokers () const { return 3; }
+
    virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
 
    static unsigned int getPoints (const CardWidget& card);
