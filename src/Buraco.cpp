@@ -444,8 +444,9 @@ unsigned int Buraco::ENDPOINTS (2000);
 //Returns   : 0
 /*--------------------------------------------------------------------------*/
    Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
-   Check3 (staple.size ());
-   Check3 (dumped.size ());
+
+   stapleTop = staple.getTopCard ().signal_clicked ().connect
+      (mem_fun (*this, (&Buraco::stapleSelected)));
    dumpedTop = dumped.getTopCard ().signal_clicked ().connect
       (slot (*this, (&Buraco::stapleSelected)));
 
@@ -508,6 +509,11 @@ unsigned int Buraco::ENDPOINTS (2000);
    Check3 (aDNDTable.empty ());
 
    if (dumpedTop.connected ())
+      dumpedTop.disconnect ();
+   if (stapleTop.connected ())
+      stapleTop.disconnect ();
+}
+
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card in the hand
 /*--------------------------------------------------------------------------*/
@@ -531,7 +537,8 @@ unsigned int Buraco::ENDPOINTS (2000);
    menuUndo->set_sensitive (false);
 
    // reserve
-   // If the player has no more cards left (except of joker): Give him the reserve
+   if (containsOnlyJoker (hands[0]))
+      if (!reserve[0].empty ())
          addBuraco (0);
       else if (hands[0].empty ()) {
          points[0] += 100;
@@ -553,6 +560,8 @@ unsigned int Buraco::ENDPOINTS (2000);
    Check3 (staple.size ());
    Check2 (dumped.size ());
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+      // Send played card to all clients (if any)
 
    // Move top card to human and enable the cards in his hand, when idle
    // (means: *after* this signalhandler termintes)
@@ -581,6 +590,7 @@ unsigned int Buraco::ENDPOINTS (2000);
    Check3 (dumped.size ());
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
 
+   if (!gStatus.startGame)
       try {
    if (!((gStatus.startGame)
          || pileHasFittingPair (hands[0], dumped.getTopCard ()))) {
@@ -658,9 +668,9 @@ unsigned int Buraco::ENDPOINTS (2000);
    card.drag_source_set_icon (card.getImage ());
    aDNDHand[&card].connReceive = card.signal_drag_data_received ().connect
       (bind (mem_fun (*this, &Buraco::cardDropped), iCard));
-   aDNDHand[&card] = card.signal_drag_data_received ().connect
+   aDNDHand[&card].connGet = card.signal_drag_data_get ().connect
       (bind (slot (*this, &Buraco::cardDropped), iCard));
-   card.signal_drag_data_get ().connect
+}
       (bind (slot (*this, &Buraco::getDropData), iCard));
 //-----------------------------------------------------------------------------
 /// Stops the drag´n´drop abilities of the passed card
@@ -670,15 +680,16 @@ unsigned int Buraco::ENDPOINTS (2000);
 /*--------------------------------------------------------------------------*/
            << " -> Address: " << &card);
    Check1 (aDNDHand.size ());
-           << " -> Address: " << std::hex << &card << std::dec);
+
    std::map<CardWidget*, CONNECTIONS>::iterator i (aDNDHand.find (&card));
    Check1 (i != aDNDHand.end ());
-   std::map<CardWidget*, SigC::Connection>::iterator i (aDNDHand.find (&card));
+
    card.drag_dest_unset ();
    card.drag_source_unset ();
    i->second.connReceive.disconnect ();
    i->second.connGet.disconnect ();
-   i->second.disconnect ();
+   aDNDHand.erase (i);
+}
 
 //-----------------------------------------------------------------------------
 /// Prepares the passed region of cards for drag´n´drop
@@ -1212,9 +1223,14 @@ int Buraco::cardFitsOnPile (ICardPile& pile, const CardWidget& card) const {
    if (pile.getPosFirst () > 6)
       if (pile.getPosJoker ())
    if (first == -1U)
-      return (posJoker ? isJoker (card)
-              : (pileHasFittingPair (hands[currentPlayer ()], card, false, isJoker (card))
-                 ? 0 : -1));
+      if (posJoker)
+         ICardPile::const_iterator pCard
+             (hands[currentPlayer ()].getFittingCard (card, &cardDistance));
+         ICardPile::const_iterator pCard (getFittingCard (hands[currentPlayer ()], card));
+                                                             &cardDistance);
+             pCard = getFittingCard (hands[currentPlayer ()], card, ++pCard);
+
+   unsigned int pos, move;
    if (pile.getPosition4Card (card, pos, move)) {
    if (last == -1U)
       last = first;
@@ -1467,7 +1483,7 @@ ICardPile::const_iterator Buraco::getFittingCard (const ICardPile& pile,
    TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&, const CardWidget*,"
                                  bool pileHoldsCard, bool withJokers) {
 
-           " bool, bool)  - " << card);
+           " bool, bool) - " << card);
       ICardPile::const_iterator i (pile.getFittingCard (card, pile.begin (),
    unsigned int nrs (0);
    unsigned int bCols (0);
@@ -1485,7 +1501,7 @@ ICardPile::const_iterator Buraco::getFittingCard (const ICardPile& pile,
          TRACE9 ("Buraco::pileHasFittingPair (const ICardPile&, const "
                  "CardWidget*) - " << **p << " differs " << diff);
          if ((((unsigned int)diff) < 4) && !(bCols & (1 << diff))) {
-             if (bCols & (diff ? (0x5 << (diff - 1)) : 0x1))
+             if (bCols & ((diff > 1) ? (0x1b << (diff - 2)) : 0x3))
                  return true;
              bCols |= (1 << diff);
          }
@@ -1510,10 +1526,15 @@ ICardPile::const_iterator Buraco::getFittingCard (const ICardPile& pile,
 bool Buraco::pileHasFittingPair (const ICardPile& pile) {
    TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&)");
         p != pile.end (); ++p)
+   unsigned int jokers (0);
       if (*p != exclude)
-           p != pile.end (); ++p)
-       if (pileHasFittingPair (pile, **p, false))
-          return true;
+         if ((pile.getFittingCard (**p, pile.begin (), &cardDistance) != p)
+       if (isJoker (**p))
+           if (++jokers == 3)
+              return true;
+       else
+          if (pileHasFittingPair (pile, **p, false))
+             return true;
 
 //-----------------------------------------------------------------------------
 /// Compares the cards in the pile with regard of the colour and with special

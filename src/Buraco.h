@@ -78,6 +78,9 @@ class Buraco : public Game {
    bool canGetRidOfCards (unsigned int player);
    bool canDumpCards (unsigned int player, unsigned int cards) const;
    static ICardPile::const_iterator getFittingCard (const ICardPile& pile,
+                                                    const CardWidget& card) {
+      return getFittingCard (pile, card, pile.begin ()); }
+   static ICardPile::const_iterator getFittingCard (const ICardPile& pile,
                                                     const CardWidget& card,
                                                     ICardPile::const_iterator start);
    static bool pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
@@ -127,7 +130,11 @@ class Buraco : public Game {
    SigC::Connection dumpedTop;
    SigC::Connection stapleTop;
 
-   std::map<CardWidget*, SigC::Connection> aDNDHand;
+   typedef struct {
+      SigC::Connection connReceive;
+      SigC::Connection connGet;
+   } CONNECTIONS;
+   std::map<CardWidget*, CONNECTIONS> aDNDHand;
    std::map<CardWidget*, SigC::Connection> aDNDTable;
 
 
