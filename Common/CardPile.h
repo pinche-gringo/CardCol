@@ -106,9 +106,12 @@ class ICardPile {
    int findLastEqual (unsigned int pos) const;
    int findFirstEqual (unsigned int pos) const;
    int find (CardWidget::NUMBERS nr, unsigned int start = 0) const;
+   int find (CardWidget::COLORS color, unsigned int start = 0) const;
 
    bool exists (CardWidget::NUMBERS nr, unsigned int start = 0) const {
       return find (nr, start) != -1; }
+   bool exists (CardWidget::COLORS color, unsigned int start = 0) const {
+      return find (color, start) != -1; }
    bool exists (CardWidget& card) const { exists (&card); }
    bool exists (CardWidget* card) const {
       return ::find (cards.begin (), cards.end (), card) != cards.end (); }
@@ -181,7 +184,7 @@ template <class T> class CardPile : public T, public ICardPile {
       card.showFace (visible);
       return card; }
 
-   virtual void resize (unsigned int pos, PileStyle s) const { }
+   virtual void resize (unsigned int pos, PileStyle s) const { Check (0); }
    virtual void sort (CMPFUNC fnSort) {
       if (cards.size ()) {
          resize (cards.size () - 1, style);

@@ -442,3 +442,17 @@ int ICardPile::find (CardWidget::NUMBERS nr, unsigned int start) const {
 
    return -1;
 }
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Searches for the first card having the passed color
+//Parameters: color: Color to search for
+//            start: Position of start of search
+//Returns   : int: Offset of found card or -1
+/*--------------------------------------------------------------------------*/
+int ICardPile::find (CardWidget::COLORS color, unsigned int start) const {
+   for (; start < cards.size (); ++start)
+      if (cards[start]->color () == color)
+         return start;
+
+   return -1;
+}
