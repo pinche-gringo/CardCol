@@ -136,15 +136,16 @@ Buraco::~Buraco () {
    TRACE9 ("Buraco::~Buraco ()");
    clean ();
    delete pScoreDlg;
+
    // Free team names
    for (std::vector<Player*>::iterator i (nameTeams.begin ());
         i != nameTeams.end (); ++i)
       delete *i;
 
-       delete *i;
+   for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i)
       delete scrlTable[i];
 }
-       delete scrlTable;
+
 
 //-----------------------------------------------------------------------------
 /// Removes a cerrado from the table

@@ -117,6 +117,7 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
 Hearts::~Hearts () {
    TRACE9 ("Hearts::~Hearts ()");
    delete pScoreDlg;
+   clean ();
 }
 
 

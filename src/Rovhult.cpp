@@ -141,6 +141,7 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 //-----------------------------------------------------------------------------
 Rovhult::~Rovhult () {
    TRACE8 ("Rovhult::~Rovhult ()");
+   clean ();
 }
 
 

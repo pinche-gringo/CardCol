@@ -124,12 +124,14 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 //-----------------------------------------------------------------------------
 Twopart::~Twopart () {
    TRACE9 ("Twopart::~Twopart ()");
+   clean ();
 }
 
 //-----------------------------------------------------------------------------
 /// Starts the game
 //-----------------------------------------------------------------------------
 void Twopart::start () {
+   TRACE8 ("Twopart::start ()");
    Game::start ();
    if (randomizeCardsToPile (staple)) {
       // Show cards on the table: For all players put 3 cards in hand
