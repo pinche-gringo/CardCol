@@ -950,8 +950,9 @@ ICardPile& Hearts::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// Handles the messages the server might send for the hearts cardgame
 /// \param player: ID of player sending the message
 /// \param message: Message received from the server
+/// \returns bool: True, if message has completey processed
 //----------------------------------------------------------------------------
-void Hearts::handleMessage (unsigned int player, const char* message) {
+bool Hearts::handleMessage (unsigned int player, const char* message) {
    if (gameStatus () == EXCHANGE) {
       TRACE1 ("Hearts::handleMessage (unsigned int player, const char*) - "
               << message << " (" << player << ')');
@@ -970,10 +971,8 @@ void Hearts::handleMessage (unsigned int player, const char* message) {
             if (!player)
                lPlayer = static_cast<unsigned long> (lPlayer);
 
-            std::string nextCmd (command.getNextNode ('\0'));
-
             register unsigned int save (lPlayer);
-            lPlayer = correctPlayer (lPlayer);
+            lPlayer = (lPlayer - posServer) & 0x3;
             
             // Don't exchange already exchanged cards
             if (save != posServer) {
@@ -1008,14 +1007,11 @@ void Hearts::handleMessage (unsigned int player, const char* message) {
                   startPlaying ();
                }
             }
-
-            if (nextCmd.size ())
-               handleMessage (player, nextCmd.c_str ());
-            return;
+            return true;
          }
       }
    }
-   Game::handleMessage (player, message);
+   return Game::handleMessage (player, message);
 }
 
 //----------------------------------------------------------------------------
