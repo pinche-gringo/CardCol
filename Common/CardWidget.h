@@ -29,6 +29,7 @@
 class CardWidget : public Gtk::Button {
  public:
    CardWidget (const CardImages& set, unsigned int card, bool visible = true);
+   CardWidget (const CardWidget&);
    ~CardWidget ();
 
    // Methods to show card. Note that just the image is changed
@@ -61,7 +62,6 @@ class CardWidget : public Gtk::Button {
 
  private:
    CardWidget ();
-   CardWidget (const CardWidget&);
 
    bool isVisible;
    unsigned int nrCard;

@@ -39,7 +39,7 @@ CardWidget::COLORS CardWidget::transColor[4] = { CLUBS, SPADES, HEARTS, DIAMONDS
 
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Constructor; adds all controls to the dialog
+//Purpose   : Constructor; creates a cardwidget with the passed pixmap
 //Parameters: set: Images of cards
 //            card: Number of image inside the set to display
 //            visible: Flag, if card should be displayed visible
@@ -50,6 +50,20 @@ CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible =
            << card << " (" << visible << ')');
 
    add_pixmap (visible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
+               NULL);
+   set_relief (GTK_RELIEF_NONE);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Copyconstructor; copies the image for the passed cardwidget
+//Parameters: other: Card to copy
+/*--------------------------------------------------------------------------*/
+CardWidget::CardWidget (const CardWidget& other)
+   : isVisible (other.isVisible), nrCard (other.nrCard), deck (other.deck) {
+   TRACE3 ("CardWidget::CardWidget (const CardWidget&) - "
+           << nrCard << " (" << isVisible << ')');
+
+   add_pixmap (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (),
                NULL);
    set_relief (GTK_RELIEF_NONE);
 }
