@@ -1,4 +1,3 @@
-
 //$Id$
 
 //PROJECT     : Cardgames
@@ -303,7 +302,7 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { "",                     "",          0,        SUBMENUEND },
     { _("_Change decks ..."), _("<ctl>C"), CHGDECKS, ITEM },
     { _("_Save settings"),    _("<ctl>S"), SAVESET,  ITEM },
-#if TRACELEVEL >= 0
+#if TRACELEVEL >= 1
     { _("_Debug"),            _("<ctl>D"), DEBUG,    CHECKITEM },
 #endif
     { _("_Help"),             _("<alt>H"), 0,        LASTBRANCH },
@@ -357,6 +356,7 @@ void CardgameCollection::startGame () {
    // Check if game has been changed; if so destroy the old one
    if (oldGame != typeGame) {
       if (game) {
+         game->clean ();
          getClient ().remove (*game);
          delete game;
       }
@@ -546,7 +546,8 @@ void CardgameCollection::userWants2End (unsigned int input) {
          }
          else {
             game->end ((typeGame == oldGame) ? restart : false);
-            restart = false;
+            if (typeGame == oldGame)
+               restart = false;
          }
       }
       else
