@@ -47,7 +47,7 @@ class Buraco : public Game {
  public:
    Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
            const std::vector<Player*>& player, unsigned int posPlayer,
-           Mutex& mxSerialize);
+           YGP::Mutex& mxSerialize);
    virtual ~Buraco ();
 
    virtual void start ();
@@ -61,8 +61,9 @@ class Buraco : public Game {
 
    static unsigned int getPoints (const CardWidget& card);
    static bool isJoker (const CardWidget& card);
+   static int cardDistance (const CardWidget& a, const CardWidget& b);
    static int cardDistance (const CardWidget& a, const CardWidget& b,
-                            bool aceIsOne = true);
+                            bool aceIsOne);
 
  private:
    Buraco (const Buraco& other);
@@ -107,12 +108,6 @@ class Buraco : public Game {
    unsigned int getSeries (ICardPile& playerPile, CardWidget& card,
                            std::map<unsigned int, unsigned int>& aPos,
                            std::vector<unsigned int>& aOrder);
-   static ICardPile::const_iterator getFittingCard (const ICardPile& pile,
-                                                    const CardWidget& card) {
-      return getFittingCard (pile, card, pile.begin ()); }
-   static ICardPile::const_iterator getFittingCard (const ICardPile& pile,
-                                                    const CardWidget& card,
-                                                    ICardPile::const_iterator start);
    static bool pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
                                    bool pileHoldsCard = false, bool withJokers = false);
    static bool pileHasFittingPair (const ICardPile& pile);

@@ -36,12 +36,12 @@
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/messagedialog.h>
 
-#include <Check.h>
-#include <Trace_.h>
-#include <ConnMgr.h>
-#include <ANumeric.h>
-#include <Tokenize.h>
-#include <AttrParse.h>
+#include <YGP/ConnMgr.h>
+#include <YGP/Trace_.h>
+#include <YGP/Tokenize.h>
+#include <YGP/AttrParse.h>
+
+#include <Human.h>
 #include <ScoreDlg.h>
 #include <ComputerPlayer.h>
 
@@ -64,7 +64,7 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                 CardSet& cardset, const std::vector<Player*>& player,
                 unsigned int posPlayer, YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10)
-                unsigned int posPlayer, Mutex& mxSerialize)
+     , startPlayer (-1U) , newPile (_("New pile"))
      , staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK)
      , dumped (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWFACE)
      , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
@@ -279,18 +279,18 @@ int Buraco::makeMove (unsigned int player) {
           ? (isJoker (dumpedCard)
              || playerPile.getFittingCard (dumpedCard, &cardDistance) != playerPile.end ())
           : ((!isJoker (dumpedCard))
-             || getFittingCard (playerPile, dumpedCard) != playerPile.end ())
+             && pileHasFittingPair (playerPile, dumpedCard)
              && ((points[player & 1] > 100)
                  || reserve[player & 1].size ()
                  || (dumped.size () + playerPile.size () > 4)))) {
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
                  || (dumped.size () + playerPile.size () > 3)))) {
-         if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+            std::ostringstream msg;
             msg << "Play=" << dumpedCard.id () << ";Target=3";
 
             if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
                ignoreNextMsg = true;
-            if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+            broadcastMessage (msg.str ());
          }
 
          dumpedCard.show ();
@@ -319,12 +319,12 @@ int Buraco::makeMove (unsigned int player) {
       else {
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
             // Send played card to all clients (if any)
-         if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+            std::ostringstream msg;
             msg << "Play=" << staple.getTopCard ().id () << ";Target=2";
 
             if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
                ignoreNextMsg = true;
-            if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+            broadcastMessage (msg.str ());
          }
 
          dumpedCard.show ();
@@ -404,7 +404,8 @@ int Buraco::executeMove (unsigned int player) {
       while (!((ci == playerPile.end ()) || isJoker (**ci))) {
          ICardPile::const_iterator next (playerPile.getFittingCard (**ci, ci + 1,
       if (!isJoker (**ci)) {
-         ICardPile::const_iterator next (getFittingCard (playerPile, **ci, ci + 1));
+         if ((next != playerPile.end ())
+             && isJoker (*playerPile[playerPile.size () - 1])) {
             TRACE1 ("Buraco::executeMove (unsigned int) - Have two with joker: "
                     << **ci << " and " << **next);
             TRACE1 ("Buraco::executeMove (player) - Have two with joker: "
@@ -478,7 +479,8 @@ int Buraco::executeMove (unsigned int player) {
    for (i = 0; i < playerPile.size () - 1; ++i) {
       ICardPile::const_iterator p (playerPile.getFittingCard (*playerPile[i], playerPile.begin (),
    for (i = 0; i < playerPile.size () - 1; ++i)
-      if (getFittingCard (playerPile, *playerPile[i], playerPile.begin () + i + 1)
+      if (playerPile.getFittingCard (*playerPile[i], playerPile.begin () + i + 1,
+                                     &cardDistance)
           == playerPile.end ())
 
       --i;
@@ -537,7 +539,8 @@ unsigned int Buraco::getSeries (ICardPile& playerPile, CardWidget& card,
    unsigned int bCols (0x4);
 
    for (ICardPile::const_iterator p (playerPile.begin ());
-        ((p = getFittingCard (playerPile, card, p)) != playerPile.end ()); ++p) {
+        ((p = playerPile.getFittingCard (card, p, &cardDistance))
+         != playerPile.end ()); ++p) {
       if (*p == &card) {
          aPos[2] = p - playerPile.begin ();
          aOrder.push_back (2);
@@ -654,7 +657,7 @@ void Buraco::start () {
 
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          dumped.getTopCard ().hide ();
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+   }
 }
 
 //----------------------------------------------------------------------------
@@ -664,14 +667,14 @@ void Buraco::start () {
 void Buraco::setStartPlayer () {
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
       setNextPlayer (startPlayer);
-   if (getConnectionMgr ().getMode () != ConnectionMgr::CLIENT) {
+      broadcastStartPlayer (startPlayer);
    }
 
       // Send startplayer to the clients
-      if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
-         const std::vector<Socket*>& clients (getConnectionMgr ().getClients ());
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
+         const std::vector<YGP::Socket*>& clients (getConnectionMgr ().getClients ());
          unsigned int player ((currentPlayer () - 1) & 0x3);
-         for (std::vector<Socket*>::const_iterator i (clients.begin ());
+         for (std::vector<YGP::Socket*>::const_iterator i (clients.begin ());
               i != clients.end (); ++i) {
             std::ostringstream msg;
             msg << "ActPlayer=" << player;
@@ -765,7 +768,7 @@ void Buraco::enableHumanHand () {
 void Buraco::disableHuman () {
    TRACE2 ("Buraco::disableHuman () - DND: " << aDNDHand.size () << "; "
            << aDNDTable.size ());
-   TRACE2 ("Buarzno::disableHuman () - DND: " << aDNDHand.size () << "; "
+   Game::disableHuman ();
    menuSort->set_sensitive (false);
 
 
@@ -811,12 +814,12 @@ void Buraco::cardSelected (unsigned int iCard) {
 
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+      std::ostringstream msg;
       msg << "Play=" << hands[0][iCard]->id () << ";Target=1";
 
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      broadcastMessage (msg.str ());
    }
 
    unregisterHandDND (*hands[0][iCard]);
@@ -852,12 +855,12 @@ void Buraco::stapleSelected () {
 
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+      std::ostringstream msg;
       msg << "Play=" << staple.getTopCard ().id () << ";Target=2";
 
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      broadcastMessage (msg.str ());
    }
 
    dumpedTop.disconnect ();
@@ -906,12 +909,12 @@ void Buraco::dumpedSelected () {
       return;
    }
       // Send played card to all clients (if any)
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+      std::ostringstream msg;
       msg << "Play=" << dumped.getTopCard ().id () << ";Target=3";
 
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      broadcastMessage (msg.str ());
    }
 
    dumpedTop.disconnect ();
@@ -930,13 +933,13 @@ void Buraco::dumpedSelected () {
 
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
          // Send played card to all clients (if any)
-      if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+         std::ostringstream msg;
          msg << "Play=" << card.id () << ";Target="
              << (tablePiles[0].size () << 16) + 100;
 
          if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
             ++ignoreNextMsg;
-         if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+         broadcastMessage (msg.str ());
       }
 
       BuracoPile& pile (makeNewPile (0 & 1));                // Create new pile
@@ -1230,7 +1233,7 @@ bool Buraco::humanPilesOK (unsigned int except) const {
       // Else check pile to use
       Check1 ((iCard >> 8) < tablePiles[0].size ());
       pile = tablePiles[0][iPile = (iCard >> 8)];
-      Check1 ((iCard >> 8) <= tablePiles[0].size ());
+
       // Only allow dropping of last card, if the game can be ended, or there
       // is still the reserve
       if (!canDumpCards (0, 1, iCard >> 8)) {
@@ -1255,11 +1258,11 @@ bool Buraco::humanPilesOK (unsigned int except) const {
    // End old drag
    context->drag_finish (true, false, time);
    // Send move
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       std::ostringstream msg;
       msg << "Play=" << hands[0][*pValue]->id () << ";Target="
           << (iPile << 16) + iCard + 100;
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
@@ -1571,9 +1574,9 @@ void Buraco::updateInfo () {
    Glib::ustring strInfo (_("Points [Buraco]: %1 [%2] / %3 [%4]"));
    strInfo.replace (strInfo.find ("%1"), 2, YGP::ANumeric::toString (points[0]));
    strInfo.replace (strInfo.find ("%2"), 2, (reserve[0].empty () ? _("N") : _("Y")));
-   strInfo.replace (strInfo.find ("%1"), 2, ANumeric::toString (points[0]));
+   strInfo.replace (strInfo.find ("%3"), 2, YGP::ANumeric::toString (points[1]));
    strInfo.replace (strInfo.find ("%4"), 2, (reserve[1].empty () ? _("N") : _("Y")));
-   strInfo.replace (strInfo.find ("%3"), 2, ANumeric::toString (points[1]));
+
    info.set_text (strInfo);
 }
    info.pop ();
@@ -1598,9 +1601,11 @@ int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
       else {
          ICardPile::const_iterator pCard
              (hands[currentPlayer ()].getFittingCard (card, &cardDistance));
-         ICardPile::const_iterator pCard (getFittingCard (hands[currentPlayer ()], card));
+         if (*pCard == &card)
+             pCard = hands[currentPlayer ()].getFittingCard (card, ++pCard,
                                                              &cardDistance);
-             pCard = getFittingCard (hands[currentPlayer ()], card, ++pCard);
+         return pCard == hands[currentPlayer ()].end () ? -1 : 0;
+   }
 
    unsigned int pos, move;
    if (pile.getPosition4Card (card, pos, move)) {
@@ -1620,9 +1625,9 @@ int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
          do {
             pCard = hand.getFittingCard (pileCard, pCard, &cardDistance);
             if (*pCard == &card)
-            pCard = getFittingCard (hand, pileCard, pCard);
+               pCard = hand.getFittingCard (pileCard, ++pCard, &cardDistance);
             if (pCard == hand.end ())
-               pCard = getFittingCard (hand, pileCard, ++pCard);
+               return -1;
 
             TRACE8 ("Buraco::cardFitsOnPile (unsigned int, const CardWidget&) const -  "
                     "Dist: " << dist << "<->" << cardDistance (**pCard, card));
@@ -1648,12 +1653,12 @@ void Buraco::sendMoveCard (unsigned int pile, unsigned int from, unsigned int to
            << from << "->" << to);
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
-   if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+      std::ostringstream msg;
       msg << "Move=" << from << ";To=" << to << ";Pile=" << pile;
 
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
          const_cast<Buraco*> (this)->ignoreNextMsg = true;
-      if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+      broadcastMessage (msg.str ());
    }
 }
 
@@ -1799,7 +1804,7 @@ bool Buraco::canGetRidOfCards (unsigned int player) const {
       // used: Mark both card as used
       ICardPile::const_iterator o (pile.getFittingCard (**i, i + 1, &cardDistance));
       if ((o != pile.end ()) && !used[o - pile.begin ()]) {
-      ICardPile::const_iterator o (getFittingCard (pile, **i, i + 1));
+         ++piles;
          used.set (i - pile.begin ());
          used.set (o - pile.begin ());
       }
@@ -1890,51 +1895,6 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
 
 //-----------------------------------------------------------------------------
 /// Checks if the passed pile contains a pair matching the passed card
-
-//-----------------------------------------------------------------------------
-/// Returns a card fitting to the passed on
-/// \param pile: Pile to inspect
-/// \param card: Card where to find a fitting one to
-/// \param start: Position where to start the search
-/// \returns \c Position of matching card or pile.end ()
-/// \pre start must be a valid iterator in pile
-//-----------------------------------------------------------------------------
-ICardPile::const_iterator Buraco::getFittingCard (const ICardPile& pile,
-                                                  const CardWidget& card,
-                                                  ICardPile::const_iterator start) {
-   TRACE9 ("Buraco::getFittingCard (const ICardPile&, const CardWidget*,"
-           " iterator) - " << card);
-
-   bool bJoker (isJoker (card));
-   CardWidget::NUMBERS nr (card.number ());
-   CardWidget::COLOURS colour (card.colour ());
-   while (start != pile.end ()) {
-      if (isJoker (**start)) {
-         if (bJoker)
-            break;
-      }
-      else if ((*start)->number () == nr)
-         break;
-      else
-         if (((*start)->colour () == colour)
-             && ((static_cast<unsigned int> (cardDistance (card, **start) + 2)) < 5))
-            break;
-      ++start;
-   }
-
-#if TRACELEVEL > 8
-   if (start == pile.end ()) {
-      TRACE ("Buraco::getFittingCard (const ICardPile&, const CardWidget*,"
-             " iterator) - End");
-   }
-   else {
-      TRACE ("Buraco::getFittingCard (const ICardPile&, const CardWidget*,"
-             " iterator) - Found " << **start);
-   }
-#endif
-   return start;
-}
-
 /// \param pile: Pile to inspect
 /// \param card: Card where to find a pair to
 /// \param withJokers: Flag, if jokers should be inspected
@@ -1948,40 +1908,10 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
 
            " 2x bool) - " << card);
       ICardPile::const_iterator i (pile.getFittingCard (card, pile.begin (),
-   unsigned int nrs (0);
-   unsigned int bCols (0);
-
-   for (ICardPile::const_iterator p (pile.begin ());
-        (p = getFittingCard (pile, card, p)) != pile.end (); ++p) {
-      if (pileHoldsCard && (*p == &card))    // Skip card if its the passed one
-         continue;
-
-      int diff (cardDistance (**p, card));
-      if (diff) {
-         diff = (diff < 0) ? (diff + 2) : (diff + 1);
-         Check3 (diff < 4);
-         TRACE8 ("Buraco::pileHasFittingPair (const ICardPile&, const "
-                 "CardWidget*, 2x bool) - " << **p << " differs " << diff);
-         if ((((unsigned int)diff) < 4) && !(bCols & (1 << diff))) {
-            // The card is valid, if either a card bordering the one the
-            // inspect and this one has been found. Note that for aces the
-            // bordering card must be in the same direction as the card to
-            // to inspect (e.g. K-A-3 is not valid; only Q-K-A!)
-            if ((card.number () == CardWidget::ACE)
-                ? (bCols & (0x1 << (diff ^ 0x1)))
-                : (bCols & (diff ? (0x5 << (diff - 1)) : 0x1)))
-               return true;
-            bCols |= (1 << diff);
-         }
-      }
-      else
-         if (++nrs == 2)
-            return true;
-   }
-   TRACE8 ("Buraco::pileHasFittingPair (const ICardPile&, const "
-           "CardWidget*, 2x bool) - " << card << " matches " << nrs << '/'
-           << std::hex << bCols << std::dec);
-   return (withJokers && !containsNoJoker (pile)) ? (nrs || bCols) : false;
+   return (withJokers
+           ? ((pile.getFittingCard (card, pile.begin (), &cardDistance) != pile.end ())
+              && !containsNoJoker (pile))
+           : pile.hasFittingPair (card, pileHoldsCard, &cardDistance));
 //-----------------------------------------------------------------------------
 /// Checks if the passed pile contains a pair matching the passed card
 /// \param pile: Pile to inspect
@@ -2001,8 +1931,8 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile) {
               return true;
        }
        else
-          if ((getFittingCard (pile, **p) != p)
-              || (getFittingCard (pile, **p, p + 1) != pile.end ()))
+          if ((pile.getFittingCard (**p, pile.begin (), &cardDistance) != p)
+              || (pile.getFittingCard (**p, p + 1, &cardDistance) != pile.end ()))
              return true;
 
 //-----------------------------------------------------------------------------
@@ -2023,6 +1953,16 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
 
 //----------------------------------------------------------------------------
 /// Returns the distance between two cards. The ace also counts as one (if the
+/// other card is a 3 or a 4) and 2's are equal to jokers.
+/// \param a: Card to compare
+/// \param b: Card to compare
+/// \returns \c int: Distance of the two passed cards (a - b)
+//----------------------------------------------------------------------------
+int Buraco::cardDistance (const CardWidget& a, const CardWidget& b) {
+   return cardDistance (a, b, true);
+}
+
+//----------------------------------------------------------------------------
 /// Returns the distance between two cards. The ace also counts as one (if the
 /// other card is a 3 or a 4) and 2's are equal to jokers.
 /// \param a: Card to compare
@@ -2030,10 +1970,10 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
 /// \param aceIsOne: Flag, if aces should (also) be treated as one
 /// \returns \c int: Distance of the two passed cards (a - b)
 //----------------------------------------------------------------------------
-/// \returns \c int: Distance of the two passed cards
+int Buraco::cardDistance (const CardWidget& a, const CardWidget& b, bool aceIsOne) {
    TRACE9 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
            << a << "<->" << b);
-   TRACE9 ("Buraco::cardDistance (const CardWidget&, const CardWidget&) - "
+   TRACE9 ("Buraco::cardDistance (const CardWidget&, const CardWidget&, bool) - "
    bool aJoker (isJoker (a));
    bool bJoker (isJoker (b));
    if (aJoker || bJoker)
@@ -2042,8 +1982,8 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
    if (a.colour () != b.colour ())
       return (a.number () == b.number ()) ? 0 : 99;
       if ((a.number () == CardWidget::ACE)
-       TRACE9 ("Buraco::cardDistance (const CardWidget&, const CardWidget&) - "
-               "Checking for Ace");
+      TRACE9 ("Buraco::cardDistance (const CardWidget&, const CardWidget&, bool) - "
+              "Checking for Ace");
          return -static_cast<int> (b.number ());
           && (b.number () <= CardWidget::FOUR))
                && (a.number () < CardWidget::EIGHT))
@@ -2052,7 +1992,7 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
 
    TRACE4 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
            "Distance: " << a.number () - b.number ());
-   TRACE9 ("Buraco::cardDistance (const CardWidget&, const CardWidget&) - "
+   TRACE9 ("Buraco::cardDistance (const CardWidget&, const CardWidget&, bool) - "
 }
 
 //----------------------------------------------------------------------------
@@ -2075,8 +2015,8 @@ void Buraco::changeNames (const std::vector<Player*>& newPlayer) {
 //----------------------------------------------------------------------------
 /// Returns the passed pile of the player
 /// \param player: Number of player
-/// Changes the names of the playing people
-/// \param newPlayer: Array holding the new player
+/// \param pile: ID of the pile to return
+/// \returns ICardPile*: Pointer to pile to use or NULL
 //----------------------------------------------------------------------------
    if (((pile > 3) && (pile < 100)) || (player >= NUM_PLAYERS))
 ICardPile& Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
@@ -2110,12 +2050,12 @@ bool Buraco::handleMessage (unsigned int player, const char* message) {
    TRACE1 ("Buraco::handleMessage (unsigned int player, const char*) - "
    YGP::Tokenize command (message);
     
-   Tokenize command (message);
+
    bool rc (true);
    if (cmd == "Undo") {
       // Inform clients about cards to play
    if (cmd == "Move") {
-      AttributeParse ap;
+      ATTRIBUTE (ap, unsigned int, card, "Move");
       ATTRIBUTE (ap, unsigned int, dest, "To");
       ATTRIBUTE (ap, unsigned int, iPile, "Pile");
       ap.assignValues (message);
