@@ -280,6 +280,8 @@ void BuracoPile::analyzePile () {
 
    // If there is no first "normal" card, it must be a pile of monos
    if (status.posFirst > 6) {
+      if (size () > 1)        // Only set type, if there are at least two cards
+	 status.type = NUMBER;
       Check2 (status.posJoker < 7);
       status.points = 2000;
 
@@ -298,7 +300,10 @@ void BuracoPile::analyzePile () {
          status.points += 200;
    }
 
-   TRACE9 ("BuracoPile::analyzePile () - Points: " << status.points);
+   TRACE8 ("BuracoPile::analyzePile () - " << status.posFirst << '/'
+	   << status.posLast << '/' << status.posJoker);
+   TRACE9 ("BuracoPile::analyzePile () - Points: " << status.points
+	   << ((status.type == NUMBER) ? " (NUMBER)" : " (COLOUR)"));
 }
 
 //----------------------------------------------------------------------------
