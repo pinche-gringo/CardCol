@@ -108,7 +108,6 @@ class Game : public Gtk::Table {
    unsigned int currentPlayer () const { return actPlayer; }
    /// Sets the next player
    void setNextPlayer (unsigned int player);
-   virtual unsigned int correctPlayer (unsigned int player) const;
 
    void flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end);
    void displayTurn (unsigned int player);

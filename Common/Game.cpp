@@ -101,7 +101,6 @@ void Game::start () {
       clean ();
 
    setGameStatus (PLAYING);
-   actPlayer = posServer;
 
    if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
       std::string msg ("Game=");
@@ -618,13 +617,6 @@ void Game::setNextPlayer (unsigned int player) {
 }
 
 //----------------------------------------------------------------------------
-/// Corrects the player number (as they differ between server and client)
-//----------------------------------------------------------------------------
-unsigned int Game::correctPlayer (unsigned int player) const {
-   return (player - posServer) & 0x3;
-}
-
-//----------------------------------------------------------------------------
 /// Handles a command the server sent in playing mode
 /// \param player: ID of player sending the message
 /// \param msg: Command to perform
@@ -648,7 +640,7 @@ bool Game::performCommand (unsigned int player, const char* msg) {
           || (playTo != "Target"))
          return false;
       Check3 (actPlayer >= 0);
-      ICardPile& pile (getPileOfPlayer (correctPlayer (actPlayer), target));
+      ICardPile& pile (getPileOfPlayer (actPlayer, target));
 
       command = cmd;
       unsigned long lCard (0);
@@ -669,6 +661,16 @@ bool Game::performCommand (unsigned int player, const char* msg) {
       Glib::signal_timeout ().connect
           (bind (slot (*this, &Game::endRemoteMove), actPlayer),
            ComputerPlayer::TIMEOUT);
+   }
+   else if (cmd == "ActPlayer") {
+      cmd = command.getNextNode (';');
+      TRACE9 ("Game::performCommand (unsigned int player, const char*) - "
+              "Next player: " << cmd);
+      unsigned long player;
+      if (stringToNumber (player, cmd.c_str ()))
+         return false;
+ 
+      displayTurn (actPlayer = player);
    }
    else
       return false;
