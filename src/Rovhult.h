@@ -19,7 +19,6 @@
 
 
 #include <map>
-#include <string>
 #include <vector>
 
 #include <gtkmm/label.h>
@@ -35,7 +34,7 @@ class Rovhult : public Game {
  public:
    // Manager functions
    Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<std::string>& names);
+            const std::vector<Glib::ustring>& names);
    ~Rovhult ();
 
    virtual void end (bool restart);
@@ -43,7 +42,7 @@ class Rovhult : public Game {
    virtual void playOpen (bool open);
    virtual void clean ();
    virtual const char* name () { return "Røvhult"; }
-   virtual void changeNames (const std::vector<std::string>& newNames);
+   virtual void changeNames (const std::vector<Glib::ustring>& newNames);
 
  private:
    enum { PREPLAYING = Game::LAST };

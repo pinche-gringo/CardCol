@@ -18,7 +18,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <string>
 #include <vector>
 
 #include <XDialog.h>
@@ -34,10 +33,10 @@ namespace Gtk {
 // Class to enter the names of the players
 class IPlayerDlg : public XDialog {
  public:
-   IPlayerDlg (std::vector<std::string>& names);
+   IPlayerDlg (std::vector<Glib::ustring>& names);
    virtual ~IPlayerDlg ();
 
-   static IPlayerDlg* perform (std::vector<std::string>& names) {
+   static IPlayerDlg* perform (std::vector<Glib::ustring>& names) {
       return new IPlayerDlg (names); }
 
  protected:
@@ -54,8 +53,8 @@ class IPlayerDlg : public XDialog {
       Gtk::Label* label;
       Gtk::Entry* value;
 
-      line (const char* label, std::string& attribute);
-      line (std::string& label, std::string& attribute);
+      line (const char* label, Glib::ustring& attribute);
+      line (Glib::ustring& label, Glib::ustring& attribute);
       ~line ();
 
       void show ();
@@ -63,7 +62,7 @@ class IPlayerDlg : public XDialog {
    } line;
 
    std::vector<line*>        aPlayers;
-   std::vector<std::string>& values;
+   std::vector<Glib::ustring>& values;
 };
 
 
@@ -74,12 +73,12 @@ class PlayerDlg : public IPlayerDlg {
  public:
    typedef void (T::*PCALLBACK) ();
 
-   PlayerDlg (T& parent, PCALLBACK callback, std::vector<std::string>& names)
+   PlayerDlg (T& parent, PCALLBACK callback, std::vector<Glib::ustring>& names)
       : IPlayerDlg (names), obj (parent), pCallback (callback) { }
    virtual ~PlayerDlg () { }
    
    static PlayerDlg* create (T& parent, PCALLBACK callback,
-                              std::vector<std::string>& names) {
+                             std::vector<Glib::ustring>& names) {
       PlayerDlg<T>* dlg (new PlayerDlg (parent, callback, names));
       dlg->get_window ()->set_transient_for (parent.get_window ());
       return dlg;

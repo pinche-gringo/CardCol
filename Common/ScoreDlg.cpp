@@ -42,7 +42,7 @@
 //Purpose   : (Default-)Constructor; Shows the dialog
 //Parameters: playerNames: Vector with names of players
 /*--------------------------------------------------------------------------*/
-ScoreDlg::ScoreDlg (const std::vector<std::string>& playerNames)
+ScoreDlg::ScoreDlg (const std::vector<Glib::ustring>& playerNames)
    : XDialog (OK), client (new Gtk::HBox) {
    TRACE9 ("ScoreDlg::ScoreDlg ()");
    set_title (_("Score"));
@@ -143,10 +143,10 @@ void ScoreDlg::getMinPoints (int& points, unsigned int& player) {
 //Purpose   : Changes the names of the playing people
 //Parameters: newNames: Array holding the new names of the players
 /*--------------------------------------------------------------------------*/
-void ScoreDlg::update (const std::vector<std::string>& playerNames) {
+void ScoreDlg::update (const std::vector<Glib::ustring>& playerNames) {
    Check1 (playerNames.size () <= aColumns.size ());
 
-   std::vector<std::string>::const_iterator p (playerNames.begin ());
+   std::vector<Glib::ustring>::const_iterator p (playerNames.begin ());
    for (std::vector<column*>::iterator i (aColumns.begin ());
         i != aColumns.end (); ++i) {
       (*i)->setTitle (*p);
@@ -170,7 +170,7 @@ ScoreDlg::column::column ()
    pTitle->set_alignment (0.5, 0);
    pSum->set_alignment (1.0, 0);
 
-   pBox->pack_start (*pTitle, false, false, 5);
+   pBox->pack_start (*pTitle, Gtk::PACK_EXPAND_PADDING, 5);
    pBox->pack_end (*pSum, false, false, 3);
    pBox->pack_end (*pSep, false, false, 0);
 }
@@ -201,7 +201,7 @@ void ScoreDlg::column::addEntry (int points) {
 //Purpose   : Sets the "title" (the first line) of the column
 //Parameters: title: New "title"
 /*--------------------------------------------------------------------------*/
-void ScoreDlg::column::setTitle (const std::string& title) {
+void ScoreDlg::column::setTitle (const Glib::ustring& title) {
    Check3 (pTitle);
    pTitle->set_text (title);
 }

@@ -18,7 +18,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <string>
 #include <vector>
 
 #include <gtkmm/label.h>
@@ -34,14 +33,14 @@ class Twopart : public Game {
  public:
    // Manager functions
    Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<std::string>& names);
+            const std::vector<Glib::ustring>& names);
    ~Twopart ();
 
    virtual void start ();
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Twopart"; }
-   virtual void changeNames (const std::vector<std::string>& newNames);
+   virtual void changeNames (const std::vector<Glib::ustring>& newNames);
 
  private:
    // Status of game

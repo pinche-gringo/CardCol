@@ -18,7 +18,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <string>
 #include <vector>
 
 #include <ANumeric.h>
@@ -39,13 +38,13 @@ namespace Gtk {
 // Class to display the score of the cardgames
 class ScoreDlg : public XDialog {
  public:
-   ScoreDlg (const std::vector<std::string>& playerNames);
+   ScoreDlg (const std::vector<Glib::ustring>& playerNames);
    virtual ~ScoreDlg ();
 
-   static ScoreDlg* perform (const std::vector<std::string>& playerNames) {
+   static ScoreDlg* perform (const std::vector<Glib::ustring>& playerNames) {
       return new ScoreDlg (playerNames); }
 
-   void update (const std::vector<std::string>& playerNames);
+   void update (const std::vector<Glib::ustring>& playerNames);
 
    void addPoints (int aPoints[]);
    void addPoints (const std::vector<int>& aPoints);
@@ -72,7 +71,7 @@ class ScoreDlg : public XDialog {
       ~column ();
 
       void addEntry (int points);
-      void setTitle (const std::string& title);
+      void setTitle (const Glib::ustring& title);
 
       int getPoints () const { return pSum->getAttribute (); }
       Gtk::Box& getBox () const { return *pBox; }

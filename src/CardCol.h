@@ -18,7 +18,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <string>
 #include <vector>
 
 #include <gtkmm/table.h>
@@ -52,7 +51,7 @@ class CardgameCollection : public XApplication {
    Gtk::Box& getClient () { return *XApplication::getClient (); }
    Gtk::Statusbar& getStatusbar () { return status; }
    CardSet& getCards () { return cards; }
-   const std::vector<std::string>& getNames () const;
+   const std::vector<Glib::ustring>& getNames () const;
 
  private:
    // IDs for menus

@@ -18,7 +18,6 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <string>
 #include <vector>
 
 #include <gtkmm/label.h>
@@ -35,14 +34,14 @@ class ScoreDlg;
 class Hearts : public Game {
  public:
    Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-           const std::vector<std::string>& names);
+           const std::vector<Glib::ustring>& names);
    virtual ~Hearts ();
 
    virtual void start ();
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Hearts"; }
-   virtual void changeNames (const std::vector<std::string>& newNames);
+   virtual void changeNames (const std::vector<Glib::ustring>& newNames);
 
  private:
    enum Status { EXCHANGE = Game::LAST };

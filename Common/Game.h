@@ -38,7 +38,7 @@ class Game : public Gtk::Table {
    enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, LAST };
 
    Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-         const std::vector<std::string>& playerNames, unsigned int rows,
+         const std::vector<Glib::ustring>& playerNames, unsigned int rows,
          unsigned int columns);
    virtual ~Game ();
 
@@ -50,7 +50,7 @@ class Game : public Gtk::Table {
    virtual void control (unsigned int status) const { }
    virtual void clean ();
    virtual const char* name () = 0;
-   virtual void changeNames (const std::vector<std::string>& newNames);
+   virtual void changeNames (const std::vector<Glib::ustring>& newNames);
 
    // Status handling
    bool isRunning () const { return statGame >= PLAYING; }
@@ -68,7 +68,7 @@ class Game : public Gtk::Table {
 
    void flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end);
    void displayTurn (unsigned int player);
-   void displayTurn (unsigned int player, const std::string& preText);
+   void displayTurn (unsigned int player, const Glib::ustring& preText);
    void makeNextMoves ();
    virtual int makeMove (unsigned int player) = 0;
 
@@ -90,8 +90,8 @@ class Game : public Gtk::Table {
    Gtk::Statusbar& status;
    CardSet& cards;
 
-   std::vector<SigC::Connection>   activeCards;
-   const std::vector<std::string>& names;
+   std::vector<SigC::Connection>     activeCards;
+   const std::vector<Glib::ustring>& names;
 
  private:
    bool makeComputerMove ();

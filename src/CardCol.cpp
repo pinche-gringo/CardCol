@@ -28,6 +28,7 @@
 
 #include <cstdio>
 
+#include <string>
 #include <fstream>
 
 #include <glib.h>
@@ -775,7 +776,7 @@ void CardgameCollection::startGame () {
 //Returns   : The names of the players
 //Remarks   : Can't be inline because of cyclic dependencies to Options
 /*--------------------------------------------------------------------------*/
-const std::vector<std::string>& CardgameCollection::getNames () const {
+const std::vector<Glib::ustring>& CardgameCollection::getNames () const {
    return options.names;
 }
 
@@ -847,7 +848,7 @@ void CardgameCollection::command (int menu) {
       if (inifile) {
          options.strType = options.type + '0';
          INIFile::write (inifile, "Game", options);
-         INIList<std::string>::write (inifile, "Players", options.names);
+         INIList<Glib::ustring>::write (inifile, "Players", options.names);
       }
       break;
    }
@@ -1144,7 +1145,7 @@ bool CardgameAppl::handleOption (const char option) {
          if (type != CardgameCollection::NONE)
             options.type = type;
          else {
-            std::string err (_("-warning: Invalid game type `%1'"));
+            Glib::ustring err (_("-warning: Invalid game type `%1'"));
             err.replace (err.find ("%1"), 2, game);
             std::cerr << PACKAGE << err << '\n';
          }
@@ -1228,16 +1229,15 @@ void CardgameAppl::readINIFile (const char* pFile) {
 
    options.pNameINIFile = pFile;
 
-   std::string Style;
    try {
       INIFILE (pFile);
       INIOBJ (options, Game);
-      INILIST2 (Players, std::string, options.names);
+      INILIST2 (Players, Glib::ustring, options.names);
 
       unsigned int rc (INIFILE_READ ());
    }
    catch (std::string& error) {
-      std::string err ("-warning: Error reading INI-file `%1'");
+      Glib::ustring err ("-warning: Error reading INI-file `%1'");
       err.replace (err.find ("%1"), 2, pFile);
       std::cerr << PACKAGE << err << '\n';
    }
@@ -1246,7 +1246,7 @@ void CardgameAppl::readINIFile (const char* pFile) {
    if (type != CardgameCollection::NONE)
       options.type = type;
    else {
-      std::string err ("-warning: INI-file `%1' contains invalid game type `%2'");
+      Glib::ustring err ("-warning: INI-file `%1' contains invalid game type `%2'");
       err.replace (err.find ("%1"), 2, pFile);
       err.replace (err.find ("%2"), 2, options.strType);
       std::cerr << PACKAGE << err << '\n';

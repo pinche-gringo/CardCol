@@ -38,7 +38,7 @@ class ScoreDlg;
 class Buraco : public Game {
  public:
    Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<std::string>& names);
+            const std::vector<Glib::ustring>& names);
    virtual ~Buraco ();
 
    virtual void start ();

@@ -55,7 +55,7 @@ char Twopart::sortOrder[4];
 //            names: Vector of player-names
 /*--------------------------------------------------------------------------*/
 Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, 
-                  CardSet& cardset, const std::vector<std::string>& names)
+                  CardSet& cardset, const std::vector<Glib::ustring>& names)
    : Game (parent, statusbar, cardset, names, 12, 15)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK)
@@ -345,9 +345,9 @@ int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int 
        : (newPlayer == findNextPlayerWithCards (newPlayer))) {
       player = (gameStatus () == PLAYING) ? ~newPlayer : newPlayer;
 
-      std::string str ((gameStatus () == PLAYING)
-                       ? _("First part ended; Part 2 starts %1")
-                       : _("%1 lost"));
+      Glib::ustring str ((gameStatus () == PLAYING)
+                         ? _("First part ended; Part 2 starts %1")
+                         : _("%1 lost"));
       str.replace (str.find ("%1"), 2, names[player]);
       status.pop ();
       status.push (str);
@@ -383,7 +383,7 @@ int Twopart::makeMove (unsigned int player) {
          unsigned int oldPlayer (player);
          player = pickUpPlayedPile (player);
 
-         std::string stat ( _("%1 can't continue -> Picking up last cards; "));
+         Glib::ustring stat ( _("%1 can't continue -> Picking up last cards; "));
          stat.replace (stat.find ("%1"), 2, names[oldPlayer]);
          displayTurn (player, stat);
       }
@@ -1105,7 +1105,7 @@ int Twopart::findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const {
 //Purpose   : Changes the names of the playing people
 //Parameters: newNames: Array holding the new names of the players
 /*--------------------------------------------------------------------------*/
-void Twopart::changeNames (const std::vector<std::string>& newNames) {
+void Twopart::changeNames (const std::vector<Glib::ustring>& newNames) {
    Game::changeNames (newNames);
 
    for (int i (0); i < NUM_PLAYERS; ++i)

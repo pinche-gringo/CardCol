@@ -48,12 +48,12 @@ const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 //            names: Vector of player-names
 /*--------------------------------------------------------------------------*/
 Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-                const std::vector<std::string>& names)
+                const std::vector<Glib::ustring>& names)
    : Game (parent, statusbar, cardset, names, 14, 10)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , pos2Play (-1U), playedSQ (false), pScoreDlg (NULL)
      , player2Exchange (3) {
-   TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&, const std::vector<std::string>&)");
+   TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&, const std::vector<Glib::ustring>&)");
 
    int width (cards.getCard (0).getImageWidth ());
    int height (cards.getCard (0).getImageHeight ());
@@ -171,7 +171,7 @@ void Hearts::start () {
    }
 
    if (player2Exchange) {
-      std::string stat (_("Select 3 cards to exchange with %1"));
+      Glib::ustring stat (_("Select 3 cards to exchange with %1"));
       stat.replace (stat.find ("%1"), 2, names[player2Exchange]);
       status.pop ();
       status.push (stat);
@@ -375,7 +375,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       pScoreDlg->addPoints (aScore);
       pScoreDlg->show ();
 
-      std::string stat (_("Round ended"));
+      Glib::ustring stat (_("Round ended"));
       unsigned int player;
       int points;
       pScoreDlg->getMaxPoints (points, player);
@@ -853,7 +853,7 @@ unsigned int Hearts::pointsOfPile (ICardPile& pile) {
 //Purpose   : Changes the names of the playing people
 //Parameters: newNames: Array holding the new names of the players
 /*--------------------------------------------------------------------------*/
-void Hearts::changeNames (const std::vector<std::string>& newNames) {
+void Hearts::changeNames (const std::vector<Glib::ustring>& newNames) {
    Game::changeNames (newNames);
 
    for (int i (0); i < NUM_PLAYERS; ++i)

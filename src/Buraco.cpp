@@ -53,20 +53,20 @@ unsigned int Buraco::ENDPOINTS (2000);
 /// \param names: Vector of player-names
                 CardSet& cardset, const std::vector<Player*>& player,
                 unsigned int posPlayer, YGP::Mutex& mxSerialize)
-                  CardSet& cardset, const std::vector<std::string>& names)
+                  CardSet& cardset, const std::vector<Glib::ustring>& names)
    : Game (parent, statusbar, cardset, names, 3, 10), startPlayer (0)
      , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
      , newPile (_("New pile")), target (-1U), pos1 (0), pos2 (0)
      , pScoreDlg (NULL) {
 
-           "std::vector<std::string>&)");
+   for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
        scrlTable[i] = new Gtk::ScrolledWindow ();
 
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Init common staples");
    staple.set_size_request (width, height);
-           "std::vector<std::string>&) - Init common staples");
+   dumped.set_size_request (width, height);
 
    boxTeam[0].pack_end (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
    boxTeam[0].set_size_request (-1, height + 5 * 15);
@@ -83,7 +83,7 @@ unsigned int Buraco::ENDPOINTS (2000);
    names[0].show ();
            "std::vector<Glib::ustring>&) - Attach widgets");
    attach (hands[0], 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
-           "std::vector<std::string>&) - Attach widgets");
+   attach (names[0], 3, 10, 1, 2, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
    attach (hands[0], 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1);
    attach (*scrlTable[0], 0, 10, 2, 3, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
@@ -91,7 +91,7 @@ unsigned int Buraco::ENDPOINTS (2000);
    attach (boxTeam[1], 0, 10, 2, 3);
            "std::vector<Glib::ustring>&) - Show widgets");
    newPile.show ();
-           "std::vector<std::string>&) - Show widgets");
+   staple.show ();
    dumped.show ();
    boxTeam[0].show ();
    boxTeam[1].show ();
@@ -307,8 +307,8 @@ int Buraco::executeMove (unsigned int player) {
                }
             }
             else
-                if (++nrs == 7)
-                    break;
+               if (++nrs == 7)
+                  break;
          }
       }
 
@@ -1108,7 +1108,7 @@ void Buraco::addBuraco (unsigned int player, bool show) {
    Check3 (actPlayers[player]);
    if (show) {
       status.pop ();
-      std::string stat (_("%1 picked up the pile with the dumped cards"));
+      Glib::ustring stat (_("%1 picked up the pile with the dumped cards"));
       stat.replace (stat.find ("%1"), 2, names[player]);
       status.push (stat);
    status.pop ();
@@ -1252,7 +1252,7 @@ void Buraco::removeCerrado (unsigned int player, CardVPile& pile) {
 void Buraco::updateInfo () {
    Glib::ustring strInfo (_("Points [Buraco]: %1 [%2] / %3 [%4]"));
    strInfo.replace (strInfo.find ("%1"), 2, YGP::ANumeric::toString (points[0]));
-   std::string strInfo (_("Points [Buraco]: %1 [%2] / %3 [%4]"));
+   strInfo.replace (strInfo.find ("%2"), 2, (reserve[0].empty () ? _("N") : _("Y")));
    strInfo.replace (strInfo.find ("%1"), 2, ANumeric::toString (points[0]));
    strInfo.replace (strInfo.find ("%2"), 2, 1, (reserve[0].empty () ? 'N' : 'Y'));
    strInfo.replace (strInfo.find ("%3"), 2, ANumeric::toString (points[1]));
@@ -1397,9 +1397,9 @@ void Buraco::endGame () {
    if (!pScoreDlg) {
       pScoreDlg = ScoreDlg::create (nameTeams);
       pScoreDlg->get_window ()->set_transient_for (get_window ());
-      std::vector <std::string> _names;
+      std::vector <Glib::ustring> _names;
       for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
-         std::string name (_("Team %1\n%2/%3"));
+         Glib::ustring name (_("Team %1\n%2/%3"));
          name.replace (name.find ("%1"), 2, 1, char ('1' + i));
          name.replace (name.find ("%2"), 2, names[i << 1]);
          name.replace (name.find ("%3"), 2, names[(i << 1) + 1]);
@@ -1442,7 +1442,7 @@ void Buraco::endGame () {
 
    Glib::ustring stat (_("Round ended"));
    unsigned int player;
-   std::string stat (_("Round ended"));
+   int maxPoints;
    pScoreDlg->getMaxPoints (maxPoints, player);
    TRACE9 ("Buraco::endGame () - Points: " << maxPoints);
    if (maxPoints >= (int)ENDPOINTS) {

@@ -61,12 +61,12 @@ const unsigned int Rovhult::ROWS_PLAYER[NUM_PLAYERS] = { 4, 7, 13, 7 };
 //            names: Vector of player-names
 /*--------------------------------------------------------------------------*/
 Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
-                  CardSet& cardset, const std::vector<std::string>& names)
+                  CardSet& cardset, const std::vector<Glib::ustring>& names)
    : Game (parent, statusbar, cardset, names, 16, 20)
      , staple (ICardPile::VERY_COMPRESSED)
      , played (ICardPile::VERY_COMPRESSED, ICardPile::SHOWFACE) {
     TRACE9 ("Rovhult::Rovhult (Gtk::Box& Gtk::Statusbar&, CardSet&,"
-            " const std::vector<std::string>&)");
+            " const std::vector<Glib::ustring>&)");
 
    staple.show ();
    attach (staple, 3, 4, 2, 7);
@@ -396,7 +396,7 @@ bool Rovhult::cardValid (CardWidget::NUMBERS nr, bool silent) const {
 
    default:
       if (played.size ()) {
-         std::string error;
+         Glib::ustring error;
 
          CardWidget& lastPlayed (played.getTopCard ());
          if (lastPlayed.number () == CardWidget::SEVEN) {
@@ -486,7 +486,7 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
            << player << "; Card " << nr);
    Check3 (player < NUM_PLAYERS);
 
-   std::string stat;
+   Glib::ustring stat;
 
    // If last 4 cards have the same number or ten was played: Don't increase
    // player (except of course, if actual player don't have anymore cards)
@@ -670,7 +670,7 @@ unsigned int Rovhult::movePlayedCardsToLooser (unsigned int nrLooser) {
 
    movePile (players[nrLooser].hand, played);
    players[nrLooser].hand.sortByNumber ();
-   std::string stat (_("%1 can't continue -> Taking whole pile. "));
+   Glib::ustring stat (_("%1 can't continue -> Taking whole pile. "));
    stat.replace (stat.find ("%1"), 2, names[nrLooser]);
    displayTurn (nrLooser =  nextAvailablePlayer (nrLooser), stat);
    return nrLooser;
@@ -1359,7 +1359,7 @@ void Rovhult::end (bool restart) {
 //Purpose   : Changes the names of the playing people
 //Parameters: newNames: Array holding the new names of the players
 /*--------------------------------------------------------------------------*/
-void Rovhult::changeNames (const std::vector<std::string>& newNames) {
+void Rovhult::changeNames (const std::vector<Glib::ustring>& newNames) {
    Game::changeNames (newNames);
 
    for (int i (0); i < NUM_PLAYERS; ++i)

@@ -42,9 +42,9 @@
 //Purpose   : Constructor
 //Parameters: names: Vector of string containing the names of the players
 /*--------------------------------------------------------------------------*/
-IPlayerDlg::IPlayerDlg (std::vector<std::string>& names)
+IPlayerDlg::IPlayerDlg (std::vector<Glib::ustring>& names)
    : XDialog (OKCANCEL), pClient (new Gtk::Table (1, 2)), values (names) {
-   TRACE2 ("IPlayerDlg::IPlayerDlg (std::vector<std::string>&) - Players: "
+   TRACE2 ("IPlayerDlg::IPlayerDlg (std::vector<Glib::ustring>&) - Players: "
            << names.size ());
    Check1 (names.size () > 1);
    Check1 (names.size () < 10);
@@ -56,7 +56,7 @@ IPlayerDlg::IPlayerDlg (std::vector<std::string>& names)
    aPlayers.back ()->attach (*pClient, 0);
 
    for (unsigned int i (1); i < names.size (); ++i) {
-      std::string label (_("Player %1:"));
+      Glib::ustring label (_("Player %1:"));
       label.replace (label.find ("%1"), 2, 1, (char)('0' + i));
       aPlayers.push_back (new line (label, names[i]));
 
@@ -97,10 +97,10 @@ void IPlayerDlg::okEvent () {
 //Parameters: label: Text for label
 //            attribute: Value for entryfield (to be updated)
 /*--------------------------------------------------------------------------*/
-IPlayerDlg::line::line (const char* label, std::string& attribute)
+IPlayerDlg::line::line (const char* label, Glib::ustring& attribute)
    : label (new Gtk::Label (label))
      , value (new Gtk::Entry ()) {
-   TRACE9 ("IPlayerDlg::line::line (const char*, std::string&)");
+   TRACE9 ("IPlayerDlg::line::line (const char*, Glib::ustring&)");
    value->set_text (attribute);
 }
 
@@ -109,10 +109,10 @@ IPlayerDlg::line::line (const char* label, std::string& attribute)
 //Parameters: label: Text for label
 //            attribute: Value for entryfield (to be updated)
 /*--------------------------------------------------------------------------*/
-IPlayerDlg::line::line (std::string& labelVal, std::string& attribute)
+IPlayerDlg::line::line (Glib::ustring& labelVal, Glib::ustring& attribute)
    : label (new Gtk::Label (labelVal))
      , value (new Gtk::Entry ()) {
-   TRACE9 ("IPlayerDlg::line::line (std::string&, std::string&)");
+   TRACE9 ("IPlayerDlg::line::line (Glib::ustring&, Glib::ustring&)");
    value->set_text (attribute);
 }
 

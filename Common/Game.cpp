@@ -51,7 +51,7 @@
 //            columns: Number of columns needed by game
 /*--------------------------------------------------------------------------*/
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<std::string>& playerNames, unsigned int rows,
+            const std::vector<Glib::ustring>& playerNames, unsigned int rows,
             unsigned int columns)
    : Gtk::Table (rows, columns), statGame (INITIALIZING), status (statusbar)
      , cards (cardset), restart (false), pWonPile (NULL), pMenuPopSort (NULL)
@@ -218,7 +218,7 @@ bool Game::makeComputerMove () {
 void Game::displayTurn (unsigned int player) {
    Check1 (player < names.size ());
    status.pop ();
-   std::string stat (_("Turn of %1"));
+   Glib::ustring stat (_("Turn of %1"));
    stat.replace (stat.find ("%1"), 2, names[player]);
    status.push (stat);
 }
@@ -227,9 +227,9 @@ void Game::displayTurn (unsigned int player) {
 //Purpose   : Displays information about whose turn it is
 //Parameters: player: Player in turn
 /*--------------------------------------------------------------------------*/
-void Game::displayTurn (unsigned int player, const std::string& preText) {
+void Game::displayTurn (unsigned int player, const Glib::ustring& preText) {
    status.pop ();
-   std::string stat (_("Turn of %1"));
+   Glib::ustring stat (_("Turn of %1"));
    stat.replace (stat.find ("%1"), 2, names[player]);
    status.push (preText + stat);
 }
@@ -382,6 +382,6 @@ void Game::disableWonCards () {
 //Purpose   : Changes the names of the playing people
 //Parameters: newNames: Array holding the new names of the players
 /*--------------------------------------------------------------------------*/
-void Game::changeNames (const std::vector<std::string>& newNames) {
-   const_cast<std::vector<std::string>&> (names) = newNames;
+void Game::changeNames (const std::vector<Glib::ustring>& newNames) {
+   const_cast<std::vector<Glib::ustring>&> (names) = newNames;
 }
