@@ -54,7 +54,7 @@ CardImages::~CardImages () {
 //Parameters: nr: Number of card to retrieve
 /*--------------------------------------------------------------------------*/
 const Gdk_Pixmap& CardImages::getCardImage (unsigned int nr) const {
-   Check3 (nr < cards ());
+   Check3 (nr < numberOfCards ());
 
    return cards_[nr];
 }
@@ -73,7 +73,7 @@ void CardImages::load (const Gdk_Window& parent, const char* path) throw (std::s
    ANumeric nr;
    Gdk_Color color;
 
-   for (int i = 0; i < cards (); ++i) {
+   for (int i = 0; i < numberOfCards (); ++i) {
       nr = i + 1;
       temp = file + nr.toUnformatedString () + ".xpm";
       TRACE3 ("CardImages::load (const Gdk_Window&, const char*) - File " << temp);

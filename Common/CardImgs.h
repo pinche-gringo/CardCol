@@ -40,7 +40,7 @@ class CardImages {
       cards_.reserve (cards);
       load (parent, path); }
 
-   unsigned int cards () const { return cards_.size (); }
+   unsigned int numberOfCards () const { return cards_.size (); }
 
  private:
    vector<Gdk_Pixmap> cards_;
