@@ -1,3 +1,34 @@
+2003-09-08  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Latest changes added
+
+	* po/de.po, po/en.po, po/es.po: Updated
+
+	* Buraco.cpp, Hearts.cpp, Rovhult.cpp, Twopart.cpp:
+	  Cleaning game while destroying
+
+	* CardCol.cpp: Fixed bug terminating while game is running
+
+	* Buraco.cpp: Fixed analyzing dumped pile; Improved canGetRidOfCards
+
+	* CardCol.cpp, CardCol.h:
+	  Starting a separate thread for each client; combined handeGame/ErrorMessage
+
+	* Common/Game.cpp: Sending error message with trailing \0
+
+2003-09-05  Markus Schwab  <g17m0@lycos.com>
+
+	* Rovhult.cpp: Fixed computer player playing invisible cards from pile
+
+	* Twopart.cpp:
+	  Fixed round ending with equal cards of players without cards
+
+	* Hearts.cpp: Informing about waiting for server after exchanging cards
+
+	* CardCol.cpp: Fixed restarting
+
+	* Buraco.cpp: Fixed reset of start-of-game flag
+
 2003-09-05  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.5.00 commented
