@@ -46,9 +46,11 @@ class RovhultAppl : public XApplication {
    // IDs for menus
    enum { NEW, EXIT, ABOUT };
 
-   void pileSelected (unsigned int player, unsigned int pile);
-   void handSelected (unsigned int player, unsigned int iCard);
+   // Protected manager functions
+   RovhultAppl (const RovhultAppl&);
+   const RovhultAppl& operator= (const RovhultAppl&);
 
+   // Drag and drop handling
    void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
                      guint info, guint32 time, unsigned int player, unsigned int cardPos);
    void cardDroppedOnTable (GdkDragContext* pContext, gint x, gint y,
@@ -58,21 +60,23 @@ class RovhultAppl : public XApplication {
                            GtkSelectionData* pData, guint info, guint32 time,
                            unsigned int playerCard);
 
-   void finishedExchange ();
-   void enablePlayer (unsigned int player);
-   void disablePlayer (unsigned int player);
-
-   // Protected manager functions
-   RovhultAppl (const RovhultAppl&);
-   const RovhultAppl& operator= (const RovhultAppl&);
-
+   void registerHandDND (CardWidget& card, unsigned int player, unsigned int card);
+   void registerTableDND (CardWidget& card, unsigned int player, unsigned int pile);
+   void unregisterDND (CardWidget& card);
+ 
    // Event-handling
    virtual void command (int menu);
+   void pileSelected (unsigned int player, unsigned int pile);
+   void handSelected (unsigned int player, unsigned int iCard);
+   void finishedExchange ();
+   void movePlayedCardsToLooser (unsigned int nrLooser);
 
+   // Helper functions
+   void enablePlayer (unsigned int player);
+   void disableLastPlayer ();
    void cleanTable ();
    void dealCards ();
    void fillStaple ();
-   void movePlayedCardsToLooser (unsigned int nrLooser);
 
    bool clearPlayedIf4Equal ();
    void fillUpPile (ICardPile& pile, unsigned int minCards);
@@ -85,10 +89,6 @@ class RovhultAppl : public XApplication {
 
    void loadCards ();
 
-   void registerHandDND (CardWidget& card, unsigned int player, unsigned int card);
-   void registerTableDND (CardWidget& card, unsigned int player, unsigned int pile);
-   void unregisterDND (CardWidget& card);
- 
    static XApplication::MenuEntry RovhultAppl::menuItems[];
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players

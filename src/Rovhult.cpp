@@ -459,15 +459,23 @@ void RovhultAppl::enablePlayer (unsigned int player) {
                 (bind (slot (this, &RovhultAppl::pileSelected), player, i)));
       }
    }
+
+#if 0
+   // TODO: Enable when there's a solution how to register callbacks caused by
+   // a event, but after the event is handled
+   // If played pile contains cards, register callback to pick up cards
+   if (played.numberOfCards ())
+      activeCards.push_back (played.getTopCard ().clicked.connect
+                             (bind (slot (this, &RovhultAppl::movePlayedCardsToLooser),
+                                    player)));
+#enif
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Disables the cards of the passed player
-//Parameters: player: Player to enable
 /*--------------------------------------------------------------------------*/
-void RovhultAppl::disablePlayer (unsigned int player) {
-   TRACE2 ("RovhultAppl::disablePlayer (unsigned int) - " << player << " - "
-           << activeCards.size () << " cards");
+void RovhultAppl::disableLastPlayer () {
+   TRACE2 ("RovhultAppl::disableLastPlayer () - " << activeCards.size () << " cards");
 
    for (int i (activeCards.size ()); i > 0;) {
       activeCards[--i].disconnect ();
@@ -488,8 +496,19 @@ void RovhultAppl::pileSelected (unsigned int player, unsigned int pile) {
    TRACE1 ("Rovhult::pileSelected (CardVPile*, unsinged int) - "
            << card.color () << '/' << card.number ());
 
-   if (!cardValid (card.number ()))
-       return;
+   if (!cardValid (card.number ())) {                 // Check if card is valid
+      if (reserve[player][pile].numberOfCards () > 1)   // Visible card? Return
+         return;
+
+      disableLastPlayer ();
+      card.setVisible ();
+      reserve[player][pile].removeTopCard ();
+      played.append (card);
+      executeMove ((player - 1) & 0xf, CardWidget::UNREACHABLE);
+      return;
+   }
+   card.setVisible ();
+   disableLastPlayer ();
 
    // Move card (and cards with equal number below) from player to played staple
    do {
@@ -562,6 +581,7 @@ void RovhultAppl::handSelected (unsigned int player, unsigned int pos) {
 
    if (!cardValid (card.number ()))
        return;
+   disableLastPlayer ();
 
    // Move card (and cards with equal number below) from player to played staple
    do {
@@ -589,33 +609,31 @@ void RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
    TRACE3 ("RovhultAppl::executeMove (unsigned int, CardWidget::NUMBERS - " << player)
    Check3 (player < NUM_PLAYERS);
 
-   disablePlayer (player);
    // If last 4 cards have the same number or ten was played: Don't increase player
    if ((nr != CardWidget::TEN) && !clearPlayedIf4Equal ()) {
       ++player;
       player &= 0x3;
 
       std::string stat;
-      status.pop (1);
       if (nr == CardWidget::EIGHT) {
-         std::string stat (_("Skipping player %1; "));
+         stat = _("Skipping player %1; ");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
-         status.push (1, stat);
          ++player;
          player &= 0x3;
       }
 
       // Check if next player has fitting card
       if (!playerCanContinue (player, nr)) {
-         movePlayedCardsToLooser (player++);
-         player &= 0x3;
-
          stat = stat + _("Player %1 can't continue -> Getting whole pile. ");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+
+         movePlayedCardsToLooser (player++);
+         player &= 0x3;
       }
 
       stat = stat + _("Turn of player %1");
       stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
+      status.pop (1);
       status.push (1, stat);
    }
 
@@ -635,10 +653,13 @@ bool RovhultAppl::playerCanContinue (unsigned int player, CardWidget::NUMBERS ca
    if (hands[player].numberOfCards ())
       return playerHandCanContinue (hands[player], card);
 
+   // Check pile: Analyze only visible cards; if there are none, return true
+   bool hasNoVisibleCards (true);
    for (int i (0); i < 3; ++i)
-      if (reserve[player][i].numberOfCards ()) {
+      if (reserve[player][i].numberOfCards () > 1) {
          TRACE5 ("RovhultAppl::playerCanContinue (unsigned int, CardWidget::NUMBERS) const"
                  " - Checking pile " << i);
+         hasNoVisibleCards = false;
 
          CardWidget::NUMBERS nr (reserve[player][i].getTopCard ().number ());
          switch (nr) {
@@ -655,7 +676,7 @@ bool RovhultAppl::playerCanContinue (unsigned int player, CardWidget::NUMBERS ca
          } // end-switch card
       } // endif pile contains cards
 
-   return false;
+   return hasNoVisibleCards ? (card != CardWidget::UNREACHABLE) : false;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -720,9 +741,12 @@ bool RovhultAppl::clearPlayedIf4Equal () {
    int i (2);
    CardWidget& card (played.getTopCard ());
    for (; i < 5; ++i)
-      if (played.at (played.numberOfCards () - i).number () != card.number ())
+      if (played.at (played.numberOfCards () - i).number () != card.number ()) {
+         TRACE8 ("Rovhult::clearPlayedIf4Equal () - found " << i - 1);
          return false;
+      }
 
+   TRACE8 ("Rovhult::clearPlayedIf4Equal () - found 4");
    played.clear ();
    return true;
 }
