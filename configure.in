@@ -97,8 +97,8 @@ AC_OUTPUT([Makefile Common/Makefile src/Makefile intl/Makefile m4/Makefile \
            po/Makefile.in doc/Makefile])
 
 dnl Settings for autoheader
-AH_TOP([#ifndef DIRCOMP_CFG_H
-#define DIRCOMP_CFG_H
+AH_TOP([#ifndef CARDGAMES_CFG_H
+#define CARDGAMES_CFG_H
 
 //$Id$
 
