@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 11.4.2004
-//COPYRIGHT   : Copyright (C) 2004
+//COPYRIGHT   : Copyright (C) 2004, 2005
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #include "SgtMayor.h"
 
 
-const unsigned int SgtMayor::COLS_PLAYER[NUM_PLAYERS] = { 1, 0, 5 };
+const unsigned int SgtMayor::COLS_PLAYER[NUM_PLAYERS] = { 1, 5, 0 };
 const unsigned int SgtMayor::ROWS_PLAYER[NUM_PLAYERS] = { 1, 6, 6 };
 
 
@@ -371,7 +371,8 @@ void SgtMayor::startPlaying () {
       if (startPlayer)
          displayTurn (startPlayer);
       else {
-         displayTurn (0, _("Select the special colour by clicking on a card"));
+         status.pop ();
+	 status.push (_("Select the special colour by clicking on a card"));
 
          for (int i (players[0].hand.size ()); i;)
             activeCards.push_back
@@ -637,8 +638,8 @@ bool SgtMayor::isHighest (const CardWidget& card) const {
 //----------------------------------------------------------------------------
 /// Tries to get the tick with a trump card; returns a bad card, if there's no
 /// trump.
-/// \param pile: Pile to play from 
-/// \return unsigned int: Position of card to play 
+/// \param pile: Pile to play from
+/// \return unsigned int: Position of card to play
 //----------------------------------------------------------------------------
 unsigned int SgtMayor::tryToGetTickWithTrump (const ICardPile& pile) const {
    TRACE8 ("SgtMayor::tryToGetTickWithTrump (const ICardPile&)  - Size" << pile.size ());
@@ -681,8 +682,8 @@ void SgtMayor::makeExchange () {
 
 //----------------------------------------------------------------------------
 /// Exchanges a good card from playerGood with a bad card from player bad
-/// \param playerBad: Player giving away a bad card 
-/// \param playerGood: Player giving away a good card 
+/// \param playerBad: Player giving away a bad card
+/// \param playerGood: Player giving away a good card
 //----------------------------------------------------------------------------
 void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int playerGood) {
    TRACE7 ("SgtMayor::exchangeCards (unsigned int, unsigned int) - Players "
@@ -742,13 +743,13 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
 
 //----------------------------------------------------------------------------
 /// Unmarks the passed card
-/// \param card: Card to unmark 
-/// \return bool: Always false to end the timer 
+/// \param card: Card to unmark
+/// \return bool: Always false to end the timer
 //----------------------------------------------------------------------------
 bool SgtMayor::unmark (const CardWidget* card) {
    Check1 (card);
    TRACE9 ("SgtMayor::unmark (unsigned int) - Unmarking " << *card);
-   Check3 (players[0].hand.findByColour (*card) < players[0].hand.size ());
+   Check3 ((unsigned int)players[0].hand.findByColour (*card) < players[0].hand.size ());
 
    players[0].hand[players[0].hand.findByColour (*card)]->unmark ();
    return false;
