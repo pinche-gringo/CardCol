@@ -509,13 +509,14 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
 	      << "; Next: " << nextHasntColour);
 
       if (pos == -1U) {
+	 Check3 ((playedCards[pTrump->colour ()].count () + cColours[pTrump->colour ()]) <= 13);
 	 bfColours |= ((1 << played[0]->colour ()) << (player << 2));
 	 pos = posColours[pTrump->colour ()];
 	 if ((pos == -1U)
 	     || (nextHasntColour
 		 && !isHighest (*pile[pos])
-		 && ((cColours[pTrump->colour ()] - 1) >
-		     (13 - playedCards[pTrump->colour ()].count ()) / 3)))
+		 && ((cColours[pTrump->colour ()]
+		      + playedCards[pTrump->colour ()].count ()) < 13)))
 	    pos = pile.findLowestCard (pTrump->colour ());
 	 else
 	    pos -= cColours[pTrump->colour ()] - 1;
