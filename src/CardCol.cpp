@@ -36,7 +36,7 @@
 
 #include <YGP/File.h>
 #include <YGP/Check.h>
-#include <YGP/Trace_.h>
+#include <YGP/Trace.h>
 #include <YGP/Socket.h>
 #include <YGP/INIFile.h>
 #include <YGP/ANumeric.h>

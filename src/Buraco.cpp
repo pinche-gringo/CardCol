@@ -37,7 +37,7 @@
 #include <gtkmm/messagedialog.h>
 
 #include <YGP/ConnMgr.h>
-#include <YGP/Trace_.h>
+#include <YGP/ANumeric.h>
 #include <YGP/Tokenize.h>
 #include <YGP/AttrParse.h>
 
