@@ -216,6 +216,7 @@ void ICardPile::insertColorSorted (CardWidget& card) {
 //Parameters: card: Card to remove
 /*--------------------------------------------------------------------------*/
 CardWidget& ICardPile::remove (CardWidget& card) {
+   TRACE8 ("ICardPile::remove (CardWidget&) - Card " << card);
    Check3 (cards.size () > 0);
 
    // Search for card and remove it
@@ -237,9 +238,11 @@ CardWidget& ICardPile::remove (CardWidget& card) {
 //Parameters: card: Card(position) to remove
 /*--------------------------------------------------------------------------*/
 CardWidget& ICardPile::remove (unsigned int pos) {
+   TRACE8 ("ICardPile::remove (unsigned int&) - Card at pos " << pos << " ("
+           << at (pos) << ')');
    Check3 (cards.size () > pos);
 
-   // Remove card on passed position it
+   // Remove card on passed position
    vector<CardWidget*>::iterator i (cards.begin () + pos);
    CardWidget* pTemp (*i); Check3 (pTemp);
 
@@ -392,4 +395,16 @@ void ICardPile::setShowOption (ShowOpt show) {
          (*i)->showFace (showOpt);
       }
    }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Moves the card at pos source to pos dest
+//Parameters: source: Position of card to move
+//            dest: New position of card
+/*--------------------------------------------------------------------------*/
+CardWidget& ICardPile::move (unsigned int dest, unsigned int source) {
+   TRACE5 ("ICardPile::move (unsigned int, unsigned int) - Card from pos "
+           << source << " to " << dest);
+
+   insert (remove (source), dest);
 }

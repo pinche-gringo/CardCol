@@ -78,6 +78,8 @@ class ICardPile {
    virtual CardWidget& remove (CardWidget& card);
    virtual CardWidget& remove (unsigned int pos);
 
+   virtual CardWidget& move (unsigned int dest, unsigned int source);
+
    CardWidget* get (unsigned int id) const;
    CardWidget& at (unsigned int pos) const {
       Check3 (pos < cards.size ()); return *cards[pos]; }
@@ -254,6 +256,11 @@ template <class T> class CardInfoPile : public CardPile<T> {
       return card; }
    virtual CardWidget& remove (unsigned int pos, bool visible) {
       CardPile<T>::remove (pos, visible); }
+
+   virtual CardWidget& move (unsigned int dest, unsigned int source) {
+      CardPile<T>::move (dest, source);
+      setTooltips (); }
+
 
    void showTips (bool on = true) { on ? tt.enable () : tt.disable (); }
 
