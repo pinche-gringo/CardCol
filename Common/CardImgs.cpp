@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 29.03.2002
-//COPYRIGHT   : Anticopyright (A) 2002
+//COPYRIGHT   : Anticopyright (A) 2002, 2003
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ void CardImages::loadDecks (const std::string& path, bool thread) throw (std::st
 
    for (int i = 1; i <= size (); ++i) {
       std::ostringstream out;
-      out << file << i << ".xpm" << std::ends;
+      out << file << i << ".png";
       TRACE9 ("CardImages::loadDecks (const Gdk::Window&, const char*) - File "
               << out.str ());
 
