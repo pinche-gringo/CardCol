@@ -80,7 +80,10 @@ class PlayerDlg : public IPlayerDlg {
    
    static PlayerDlg* create (T& parent, PCALLBACK callback,
                               std::vector<std::string>& names) {
-      return new PlayerDlg<T> (parent, callback, names); }
+      PlayerDlg<T>* dlg (new PlayerDlg (parent, callback, names));
+      dlg->get_window ()->set_transient_for (parent.get_window ());
+      return dlg;
+   }
 
  protected:
    virtual void okEvent () {
