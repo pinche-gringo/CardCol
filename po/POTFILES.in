@@ -14,3 +14,5 @@ src/CardCol.cpp
 src/Hearts.cpp
 Common/ScoreDlg.cpp
 src/Buraco.cpp
+src/Machiavelli.cpp
+src/MachiPile.cpp
