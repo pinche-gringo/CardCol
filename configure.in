@@ -48,6 +48,7 @@ dnl Checks for libraries.
 AC_CHECK_LIB(stdc++, main)
 AC_CHECK_LIB(gmp, main)
 AC_CHECK_LIB(Attr, main)
+AC_CHECK_LIB(XAppl, main,, AC_MSG_ERROR([libXAppl is not installed]))
 
 dnl Checks for header files.
 
