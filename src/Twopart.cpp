@@ -437,10 +437,36 @@ void Twopart::enablePlayer (unsigned int player) {
          (players[player].hand.at (--i).clicked.connect_after
           (bind (slot (this, &Twopart::handSelected), player, i)));
 
+   showTurn (player);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Shows the player in turn as message in status line
+//Parameters: player: Player in turn
+/*--------------------------------------------------------------------------*/
+void Twopart::showTurn (unsigned int player) {
    status.pop (1);
    std::string stat ( _("Turn of player %1"));
    stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
    status.push (1, stat);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Enables the cards of the passed player for part 2 of the game
+//Parameters: player: Player to enable
+/*--------------------------------------------------------------------------*/
+void Twopart::enablePlayer4Part2 (unsigned int player) {
+   Check3 (activeCards.empty ());
+
+   TRACE2 ("Twopart::enablePlayer4Part2 (unsigned int) - Hand of player "
+           << player << " has " << players[player].won.numberOfCards () << " cards");
+
+   for (int i (players[player].won.numberOfCards ()); i;)
+      activeCards.push_back
+         (players[player].won.at (--i).clicked.connect_after
+          (bind (slot (this, &Twopart::wonSelected), player, i)));
+
+   showTurn (player);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -489,27 +515,57 @@ void Twopart::handSelected (unsigned int player, unsigned int pos) {
            << hex << bfPlayers);
    actPlayer = player;
    removePlayer (actPlayer);
-   if (bfPlayers) {
-      while (!(bfPlayers & (1 << actPlayer))) {
-         ++actPlayer;
-         if (actPlayer >= NUM_PLAYERS)
-            actPlayer -= NUM_PLAYERS;
-      }
-   }
+   int newPlayer (actPlayer);
+   if (bfPlayers)
+      while (!(bfPlayers & (1 << newPlayer)))
+         newPlayer = (newPlayer + 1) & 0x3;
    else
-      actPlayer = endRound ();
+      newPlayer = endRound ();
 
-   if (actPlayer < 0) {
-      actPlayer = ~actPlayer;
+   if (newPlayer < 0) {
+      actPlayer = ~newPlayer;
 
       std::string str (_("First part ended; Part 2 starts player %1"));
       str.replace (str.find ("%1"), 2, (char)(actPlayer + '0'));
       status.pop (1);
       status.push (1, str);
+
+      disableLastPlayer ();
+      startPartTwo (actPlayer);
    }
    else {
+      actPlayer = newPlayer;
       makeComputerMoves ();
       disableLastPlayer ();
+   }
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Callback after clicking on a card in won-pile
+//Parameters: player: ID of player
+//            iCard: Offset of card in pile
+/*--------------------------------------------------------------------------*/
+void Twopart::wonSelected (unsigned int player, unsigned int pos) {
+   Check3 (player <= NUM_PLAYERS);
+   Check3 (pos <= players[player].won.numberOfCards ());
+
+   CardWidget* card (&players[player].won.remove (pos));
+   played.append (*card);
+   unsigned int nr (card->number () + 1);
+   CardWidget::COLORS  color (card->color ());
+
+   TRACE3 ("Twopart::wonSelected (unsigned int, unsinged int) - Player "
+           << player << "; Card at " << pos << " = " << *card);
+
+   while (pos
+          && ((card = &players[player].won.at (--pos)),
+              (card->number ()) == (nr - 1))
+          && (card->color () == color)) {
+      TRACE3 ("Twopart::wonSelected (unsigned int, unsinged int) - Player "
+              << player << "; Card at " << pos << " = " << *card);
+
+      nr = card->number ();
+      played.append (players[player].won.remove (pos));
    }
 }
 
@@ -615,7 +671,7 @@ int Twopart:: endRound () {
          // Less than two players left: Activate winner
          if (cPlayers < 2)
             movePlayedCardsToPlayer (nextPlayer);
-#if TRACELEVEL > 3
+#if CHECK > 0
          else
             Check (cPlayers > 1);
 #endif
@@ -649,7 +705,7 @@ int Twopart::findNextPlayer (unsigned int player) {
    if (!bfPlayers)                                // No players left: Return -1
       return -1;
 
-   // Winner has no cards left: Enable next one with cards left
+   // Find first player (starting with the passed one) being still in game
    while (!(bfPlayers & (1 << player)))
       player = (player + 1) & 0x3;
 
@@ -704,24 +760,6 @@ void Twopart::movePlayedCardsToPlayer (unsigned int receiver) {
 
    while (played.numberOfCards ())
       players[receiver].won.append (played.remove (0));
-
-   players[receiver].hand.sortByNumber ();
-}
-
-/*--------------------------------------------------------------------------*/
-//Purpose   : Checks which player has still cards left
-//Parameters: actPlayer: ID of actual player
-//Returns   : int: ID of player or -1 (if none can continue)
-/*--------------------------------------------------------------------------*/
-int Twopart::nextAvailablePlayer (unsigned int actPlayer) const {
-   // We assume (without checking), that acutal player still has cards
-   for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      unsigned int player ((actPlayer + i) & 0x3);
-
-      if (players[player].hand.numberOfCards ())
-         return player;
-   }
-   return -1;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -801,6 +839,20 @@ void Twopart::dealCards () {
 
    bfPlayers = bfOldPlayers = (1 << NUM_PLAYERS) - 1;
    enablePlayer (startPos = actPlayer = startPlayer = 0);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Starts part two of the game
+//Parameters: player: ID of player starting the game
+/*--------------------------------------------------------------------------*/
+void Twopart::startPartTwo (unsigned int player) {
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+      players[i].won.sortByColor ();
+      players[i].won.setStyle (ICardPile::COMPRESSED);
+      players[i].won.setShowOption (ICardPile::SHOWFACE);
+   }
+
+   enablePlayer4Part2 (player);
 }
 
 

@@ -51,21 +51,24 @@ class Twopart : public XApplication {
    // Event-handling
    virtual void command (int menu);
    void handSelected (unsigned int player, unsigned int iCard);
+   void wonSelected (unsigned int player, unsigned int iCard);
 
    // Helper functions
    void movePlayedCardsToPlayer (unsigned int nrLooser);
-   int  nextAvailablePlayer (unsigned int actPlayer) const;
    void enablePlayer (unsigned int player);
-   int  findNextPlayer (unsigned int player);
+   void enablePlayer4Part2 (unsigned int player);
    void disableLastPlayer ();
+   int  findNextPlayer (unsigned int player);
    void removePlayer (unsigned int player) { bfPlayers &= ~(1 << player); }
    void addPlayer (unsigned int player) { bfPlayers |= 1 << player; }
    unsigned int removePlayersWithoutCards ();
    void cleanTable ();
    void dealCards ();
    void fillStaple ();
+   void showTurn (unsigned int player);
+   void startPartTwo (unsigned int player);
 
-   unsigned int pos2Player (unsigned int pos, unsigned int start) const;
+   unsigned int pos2Player (unsigned int pos) const;
 
    int makeComputerMove ();
    void makeComputerMoves () {
@@ -82,6 +85,9 @@ class Twopart : public XApplication {
 
    unsigned int bfPlayers;           // Array indicating players still in round
    unsigned int actPlayer;          // Player who is in turn (needed for timer)
+
+   // Variables for endRound
+   unsigned int startPos;                         // Offset of cards to analyze
    unsigned int startPlayer;  // Player who started round (needed for endRound)
    unsigned int bfOldPlayers;  // Array indicating players while starting round
 
