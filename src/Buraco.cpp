@@ -1583,7 +1583,7 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
       int diff (cardDistance (**p, card));
       if (diff) {
          diff = (diff < 0) ? (diff + 2) : (diff + 1);
-         Check3 (diff < 5);
+         Check3 (diff < 4);
          TRACE9 ("Buraco::pileHasFittingPair (const ICardPile&, const "
                  "CardWidget*, 2x bool) - " << **p << " differs " << diff);
          if ((((unsigned int)diff) < 4) && !(bCols & (1 << diff))) {
@@ -1619,7 +1619,8 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile) {
               return true;
        }
        else
-          if (pileHasFittingPair (pile, **p, false))
+          if ((getFittingCard (pile, **p) != p)
+              || (getFittingCard (pile, **p, p + 1) != pile.end ()))
              return true;
 
 //-----------------------------------------------------------------------------
