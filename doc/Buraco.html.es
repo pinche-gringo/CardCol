@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Anti-Copyright (A) 2003 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003, 2004 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,8 +30,8 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-06-22">
-    <meta name="DC.Rights" content="Anticopyright (A) 2003, distributed under the GNU Free Documentation License">
   </head>
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
 
   <body>
     <h1 align="center">Buraco</h1>

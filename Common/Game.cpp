@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 10.9.2002
-//COPYRIGHT   : Anticopyright (A) 2002, 2003
+//COPYRIGHT   : Copyright (C) 2002 - 2004
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/Socket.h>

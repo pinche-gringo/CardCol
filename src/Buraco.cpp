@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.02.2003
-//COPYRIGHT   : Anticopyright (A) 2003
+//COPYRIGHT   : Copyright (C) 2003 - 2004
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
