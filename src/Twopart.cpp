@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 20.7.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2004
+//COPYRIGHT   : Copyright (C) 2002 - 2005
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include <glibmm/main.h>
 
 #include <gtkmm/box.h>
+#include <gtkmm/stock.h>
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
@@ -64,7 +65,7 @@ char Twopart::sortOrder[4];
 /// \param posPlayer: Position of player for the server
 /// \param mxSerialize: Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
-Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, 
+Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                   CardSet& cardset, const std::vector<Player*>& player,
                   unsigned int posPlayer, YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 12, 15)
@@ -336,10 +337,12 @@ void Twopart::cardSelected (unsigned int pos) {
    CardWidget& card (*players[0].hand[pos]);
    CardWidget::NUMBERS nr (card.number ());
    CardWidget::COLOURS colour (card.colour ());
-      
+
    // Perform validity-check in part 2: Card must have the same colour and be
    // bigger than the last played card or be a (bigger) trump
+   unsigned int start (pos);
    if (gameStatus () == PLAYING2) {
+      start = findStartOfSerie (0, pos);
       Check3 (pTrump);
       if (played.size ()) {
          CardWidget& top (played.getTopCard ());
@@ -349,9 +352,11 @@ void Twopart::cardSelected (unsigned int pos) {
                 && (top.number () >= nr))
              : ((top.colour () != colour)
                 || (top.number () >= nr))) {
-            Gtk::MessageDialog dlg (_("Played card(s) must have the same colour"
-                                      " and must be bigger (or be a trump)!"),
-                                    Gtk::MESSAGE_ERROR);
+            Gtk::MessageDialog dlg
+	       (ngettext ("The played card must have the same colour and must be bigger (or be a trump)!",
+			  "The played cards must have the same colour and must be bigger (or be trumps)!",
+			  pos - start + 1),
+		Gtk::MESSAGE_ERROR);
             dlg.set_title (PACKAGE " - Twopart");
             dlg.run ();
             return;
@@ -359,7 +364,6 @@ void Twopart::cardSelected (unsigned int pos) {
       }
    }
 
-   unsigned int start ((gameStatus () == PLAYING2) ? findStartOfSerie (0, pos) : pos);
    // Inform the others about the move
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
@@ -677,7 +681,7 @@ unsigned int Twopart::findSmallestCard (unsigned int player) const {
       // Stop searching if a trump was found
       if ((card.colour () == pTrump->colour ()) && i)
          break;
-          
+
       if (nrMin >= card.number ()) {
          TRACE8 ("Twopart::findSmallestCard (unsigned int) - New smallest card at "
                  << i << "; Cards: " << (findEndOfSerie (player, i) - i));
@@ -969,7 +973,7 @@ unsigned int Twopart::pos2Player (unsigned int pos) const {
       if (bfPlayers & (1 << start))
          --pos;
    }
-   
+
    TRACE9 ("Twopart::pos2Player (unsigned int) - Calculated player: " << start);
    return start;
 }
@@ -1069,7 +1073,7 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
       players[i].hand.sort (compByColourAccTrumps);
       players[i].hand.setStyle (i ? ICardPile::VERY_COMPRESSED : ICardPile::COMPRESSED);
    }
-   
+
    bfPlayers = (1 << NUM_PLAYERS) - 1;
    pos1Play = pos2Play = -1U;
 
@@ -1189,7 +1193,7 @@ ICardPile* Twopart::getPileOfPlayer (unsigned int player, unsigned int pile) {
 bool Twopart::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
    TRACE1 ("Twopart::handleMessage (unsigned int player, const std::string&) - "
            << message << " (" << player << ')');
-    
+
    YGP::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
@@ -1221,4 +1225,41 @@ bool Twopart::executeRemoteMove (ICardPile& pile, unsigned int target) {
       return false;
    }
    return Game::executeRemoteMove (pile, target);
+}
+
+//-----------------------------------------------------------------------------
+/// Adds game-specific menus
+/// \param mgrUI: UIManager to add to
+//-----------------------------------------------------------------------------
+void Twopart::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
+   Check1 (mgrUI);
+   Glib::ustring ui ("<menubar name='Menu'>"
+		     "  <placeholder name='GameMenu'>"
+		     "    <menu action='MB'>"
+		     "      <menuitem action='Sort'/>"
+		     "      <menuitem action='SortCol'/>"
+		     "    </menu></placeholder></menubar>");
+
+   Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
+   grpAction->add (Gtk::Action::create ("MB", _("_Twopart")));
+   grpAction->add (Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
+					_("_Sort won cards (by number)")),
+		   Gtk::AccelKey ("<ctl><alt>S"),
+		   mem_fun (*this, &Twopart::sortWonByNumber));
+   grpAction->add (Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
+					_("Sort won cards (by _colour)")),
+		   Gtk::AccelKey ("<shft><ctl>S"),
+		   mem_fun (*this, &Twopart::sortWonByColour));
+
+   mgrUI->insert_action_group (grpAction);
+   idMrg = mgrUI->add_ui_from_string (ui);
+}
+
+//-----------------------------------------------------------------------------
+/// Removes the game-specific menus
+/// \param mgrUI: UIManager to remove from
+//-----------------------------------------------------------------------------
+void Twopart::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
+   Check1 (mgrUI);
+   mgrUI->remove_ui (idMrg);
 }

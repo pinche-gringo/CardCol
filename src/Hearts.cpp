@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.12.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2004
+//COPYRIGHT   : Copyright (C) 2002 - 2005
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,14 +29,15 @@
 
 #include <cardgames-cfg.h>
 
+#include <gtkmm/menu.h>
+#include <gtkmm/stock.h>
+#include <gtkmm/statusbar.h>
+#include <gtkmm/messagedialog.h>
+
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
 #include <YGP/Tokenize.h>
-
-#include <gtkmm/menu.h>
-#include <gtkmm/statusbar.h>
-#include <gtkmm/messagedialog.h>
 
 #include <Player.h>
 #include <ScoreDlg.h>
@@ -414,7 +415,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
          std::vector<Player*> player;
          for (unsigned int i (0); i < NUM_PLAYERS; ++i)
             player.push_back (actPlayers[i]);
-         
+
          pScoreDlg = ScoreDlg::create (player);
          pScoreDlg->get_window ()->set_transient_for (get_window ());
       }
@@ -709,7 +710,7 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
 
    if (played.size ()) {
       // Check if cards of the same colour are available
-      return (aPos[played[0]->colour ()] == -1) 
+      return (aPos[played[0]->colour ()] == -1)
          ? findWorstCard (pile, aPos) : findLowerCard (pile, aPos);
    }
    else {
@@ -978,7 +979,7 @@ bool Hearts::handleMessage (unsigned int player, const std::string& message) thr
 
             register unsigned int save (lPlayer);
             lPlayer = (lPlayer - posServer) & 0x3;
-            
+
             // Don't exchange already exchanged cards
             if (save != posServer) {
                command = cards;
@@ -1021,9 +1022,9 @@ bool Hearts::handleMessage (unsigned int player, const std::string& message) thr
 
 //----------------------------------------------------------------------------
 /// Checks if the number of exchanged cards is equal to the passed value.
-/// \param 
-/// \returns 
-/// \pre Game must be in EXCHANGE state 
+/// \param cards: Number of cards to exchange
+/// \returns bool: True, if all cards have been exchanged
+/// \pre Game must be in EXCHANGE state
 //----------------------------------------------------------------------------
 bool Hearts::cardsExchanged (unsigned int cards) {
    Check1 (gameStatus () == EXCHANGE);
@@ -1033,4 +1034,41 @@ bool Hearts::cardsExchanged (unsigned int cards) {
 
    TRACE9 ("Hearts::cardsExchanged (unsigned int) - Remaining: " << cards);
    return !(cards - played.size ());
+}
+
+//-----------------------------------------------------------------------------
+/// Adds game-specific menus
+/// \param mgrUI: UIManager to add to
+//-----------------------------------------------------------------------------
+void Hearts::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
+   Check1 (mgrUI);
+   Glib::ustring ui ("<menubar name='Menu'>"
+		     "  <placeholder name='GameMenu'>"
+		     "    <menu action='MB'>"
+		     "      <menuitem action='Sort'/>"
+		     "      <menuitem action='SortCol'/>"
+		     "    </menu></placeholder></menubar>");
+
+   Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
+   grpAction->add (Gtk::Action::create ("MB", _("H_earts")));
+   grpAction->add (Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
+					_("_Sort won cards (by number)")),
+		   Gtk::AccelKey ("<ctl><alt>S"),
+		   mem_fun (*this, &Hearts::sortWonByNumber));
+   grpAction->add (Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
+					_("Sort won cards (by _colour)")),
+		   Gtk::AccelKey ("<shft><ctl>S"),
+		   mem_fun (*this, &Hearts::sortWonByColour));
+
+   mgrUI->insert_action_group (grpAction);
+   idMrg = mgrUI->add_ui_from_string (ui);
+}
+
+//-----------------------------------------------------------------------------
+/// Removes the game-specific menus
+/// \param mgrUI: UIManager to remove from
+//-----------------------------------------------------------------------------
+void Hearts::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
+   Check1 (mgrUI);
+   mgrUI->remove_ui (idMrg);
 }
