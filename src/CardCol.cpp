@@ -26,6 +26,10 @@
 
 #include <cardgames-cfg.h>
 
+#include <stdio.h>
+#include <errno.h>
+#include <unistd.h>
+
 #include <fstream>
 
 #include <glib.h>
@@ -306,6 +310,7 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { "_Debug",               "<ctl>D",    DEBUG,    CHECKITEM },
 #endif
     { _("_Help"),             _("<alt>H"), 0,        LASTBRANCH },
+    { _("_Content..."),       _("F1"),     CONTENT,  ITEM },
     { _("_About..."),         _("<ctl>A"), ABOUT,    ITEM } };
 
 
@@ -329,9 +334,14 @@ CardgameCollection::CardgameCollection ()
    show ();
 
    // Load cards in background
-   pThread = THRDAPPL::create (this, (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::loadCards,
+   try {
+      pThread = THRDAPPL::create (this, (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::loadCards,
                                NULL);
-   TRACE9 ("CardgameCollection::CardgameCollection () - Thread-ID = " << pThread->getID ());
+      TRACE9 ("CardgameCollection::CardgameCollection () - Thread-ID = " << pThread->getID ());
+   }
+   catch (std::string& e) {
+      XMessageBox::Show (e, _("Error starting thread"), XMessageBox::ERROR);
+   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -421,7 +431,7 @@ void CardgameCollection::command (int menu) {
       break;
 
    case SAVESET: {
-      TRACE2 ("CardgameCollection::command () - Save file " << NAME_INIFILE);
+      TRACE2 ("CardgameCollection::command (int) - Save file " << NAME_INIFILE);
       ofstream inifile (NAME_INIFILE.c_str ());
       
       inifile << "[Game]\nDefault=" << typeGame << "\n\n[Decks]\nFront="
@@ -450,6 +460,35 @@ void CardgameCollection::command (int menu) {
       delete_event_impl (0);
       break;
 
+   case CONTENT: {
+      pid_t pid (fork ());
+      
+      switch (pid) {
+      case 0: {                                         // Child: Start browser
+         string file (DOCUDIR);
+         if (game && game->isRunning ()) {
+            file += game->name ();
+            file += ".html";
+         }
+         else
+            file += "index.html";
+
+         TRACE ("CardgameCollection::command (int) - Show help " << file);
+         execlp ("galeon", "galeon", file.c_str (), NULL);
+         perror (_("Error starting browser for help! Reason"));
+         _exit (1); }
+
+      case -1: {
+         string errMsg (_("Error starting browser for help!\n\nReason: "));
+         errMsg += strerror (errno);
+         gdk_threads_enter ();
+         XMessageBox::Show (errMsg, XMessageBox::ERROR | XMessageBox::OK); }
+         gdk_threads_leave ();
+         break;
+      }
+      } // end-switch
+      break;
+
 #if TRACELEVEL >= 0
    case DEBUG: {
       static bool open = false;
@@ -463,6 +502,7 @@ void CardgameCollection::command (int menu) {
       Check3 (0);
    } // end-switch
 }
+
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback to change the carddecks
 //Parameters: cmd: Selected button of dialog
@@ -492,7 +532,8 @@ void CardgameCollection::changeDecks (ICarddeckSelectDlg::commands cmd) {
          pThread = THRDAPPL::create (this,
                                      (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::changeCards,
                                      (void*)opt);
-         TRACE9 ("CardgameCollection::Twopart () - Thread-ID = " << pThread->getID ());
+         TRACE9 ("CardgameCollection::changeDecks (ICarddeckSelectDlg) - Thread-ID = "
+                 << pThread->getID ());
       }
    }
 

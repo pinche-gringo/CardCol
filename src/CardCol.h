@@ -50,7 +50,8 @@ class CardgameCollection : public XApplication {
 
  private:
    // IDs for menus
-   enum { NEW = 1, END, EXIT, DEBUG, ROVHULT, TWOPART, CHGDECKS, SAVESET, ABOUT };
+   enum { NEW = 1, END, EXIT, DEBUG, ROVHULT, TWOPART, CHGDECKS, SAVESET, ABOUT,
+          CONTENT};
 
    // Protected manager functions
    CardgameCollection (const CardgameCollection&);
