@@ -190,7 +190,7 @@ void ICardPile::insert (CardWidget& card, unsigned int pos) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Inserts a card into the pile
+//Purpose   : Inserts a card into the pile; sorted by number
 //Parameters: card: Card to insert
 /*--------------------------------------------------------------------------*/
 void ICardPile::insertSorted (CardWidget& card) {
@@ -198,6 +198,18 @@ void ICardPile::insertSorted (CardWidget& card) {
    
    insert (card, (upper_bound (cards.begin (), cards.end (),
                               &card, compCardsByNr)
+                  - cards.begin ()));
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Inserts a card into the pile; sorted by color and number
+//Parameters: card: Card to insert
+/*--------------------------------------------------------------------------*/
+void ICardPile::insertColorSorted (CardWidget& card) {
+   TRACE5 ("ICardPile::insertSorted (CardWidget&) - Card " << card);
+   
+   insert (card, (upper_bound (cards.begin (), cards.end (),
+                              &card, compCards)
                   - cards.begin ()));
 }
 

@@ -71,6 +71,7 @@ class ICardPile {
    // Methods to random access pile
    virtual void insert (CardWidget& card, unsigned int pos);
    void insertSorted (CardWidget& card);
+   void insertColorSorted (CardWidget& card);
    void append (CardWidget& card) { setTopCard (card); }
    virtual CardWidget& remove (CardWidget& card);
    virtual CardWidget& remove (unsigned int pos);
