@@ -1,7 +1,7 @@
 //$Id$
 
 //PROJECT     : Cardgames
-//SUBSYSTEM   : General
+//SUBSYSTEM   : src
 //REFERENCES  :
 //TODO        : 
 //BUGS        :
@@ -684,7 +684,7 @@ const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {
 
 //-----------------------------------------------------------------------------
 /// Defaultconstructor; all widget are created
-/// \param type: Type of game to start with
+/// \param opts: Options for the program
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE)
@@ -1166,7 +1166,7 @@ void* CardgameCollection::changeCards (void* opt) {
       Gtk::MessageDialog* dlg (new Gtk::MessageDialog (e, false, Gtk::MESSAGE_ERROR));
       dlg->set_title (PACKAGE);
       dlg->signal_response ().connect
-          (bind (mem_fun (*this, &CardgameCollection::closeDialog), dlg));
+          (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
       dlg->show ();
 
       Check3 (apMenus[NEW]);
@@ -1300,6 +1300,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
 //----------------------------------------------------------------------------
 /// Wait for messages
 /// \param player: ID of player (-1 for server; 0 .. n for clients)
+/// \returns \c void*: NULL
 //----------------------------------------------------------------------------
 void* CardgameCollection::waitForMessages (void* player) {
    TRACE1 ("CardgameCollection::waitForMessage (void*)");
@@ -1439,7 +1440,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
          Gtk::MessageDialog* dlg (new Gtk::MessageDialog (err, false, Gtk::MESSAGE_ERROR));
          dlg->set_title (PACKAGE);
          dlg->signal_response ().connect
-             (bind (mem_fun (*this, &CardgameCollection::closeDialog), dlg));
+             (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
          dlg->show ();
       }
       return true;
@@ -1452,7 +1453,6 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
 /// \param player: Player sending the message (relative to server)
 /// \param msg: Received message to handle
 /// \returns bool: False
-/// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
 bool CardgameCollection::handleMessage (unsigned int player, const std::string msg) {
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - " << msg);
@@ -1496,7 +1496,7 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
       Gtk::MessageDialog* dlg (new Gtk::MessageDialog (error, false, Gtk::MESSAGE_ERROR));
       dlg->set_title (PACKAGE);
       dlg->signal_response ().connect
-          (bind (mem_fun (*this, &CardgameCollection::closeDialog), dlg));
+          (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
       dlg->show ();
    }
 
@@ -1517,7 +1517,7 @@ bool CardgameCollection::showMessage (const std::string msg) {
    Gtk::MessageDialog* dlg (new Gtk::MessageDialog (msg, false, Gtk::MESSAGE_ERROR));
    dlg->set_title (PACKAGE);
    dlg->signal_response ().connect
-       (bind (mem_fun (*this, &CardgameCollection::closeDialog), dlg));
+       (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
    dlg->show ();
    return false;
 }

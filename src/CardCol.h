@@ -20,7 +20,6 @@
 
 #include <vector>
 
-#include <gtkmm/table.h>
 #include <gtkmm/button.h>
 #include <gtkmm/statusbar.h>
 
@@ -38,7 +37,7 @@ class Options;
 class ICarddeckSelectDlg;
 
 
-// Class to handle the Rovhult-cardgame
+// Class to handle the cardgame collection
 class CardgameCollection : public XGP::XApplication {
  public:
    // IDs of games. The games starting with GBURACO get 4 decks!
@@ -67,7 +66,7 @@ class CardgameCollection : public XGP::XApplication {
    const CardgameCollection& operator= (const CardgameCollection&);
 
    // Event-handling
-   void closeDialog (int, const Gtk::Dialog* dlg);
+   static void closeDialog (int, const Gtk::Dialog* dlg);
    virtual void command (int menu);
    virtual void gameEvents (unsigned int status);
    virtual void showAboutbox ();
