@@ -2,7 +2,7 @@
 
 lib_LTLIBRARIES=libCard.la
 
-libCard_la_LDFLAGS=@CARDGAME_LIBS@ -version-info $(LIBVERSION) -release $(LIBRELEASE) -no-undefined
+libCard_la_LDFLAGS=@CARDGAME_LIBS@ -release $(LIBRELEASE) -no-undefined
 
 libCard_la_SOURCES=CardWidget.cpp CardImgs.cpp CardPile.cpp CardSet.cpp \
                    DeckSelect.cpp Game.cpp PlayerDlg.cpp
