@@ -19,16 +19,31 @@
 
 #include <string>
 
+#include <gdk--/pixmap.h>
 #include <gtk--/button.h>
+
+
+class CardSet;
 
 
 // Class to display a card on the screen
 class CardWidget : public Gtk::Button {
  public:
-   CardWidget (const Gdk_Window& parent, const std::string& filename) throw (std::string);
+   CardWidget (const CardSet& set, unsigned int card, bool visible = true);
    ~CardWidget ();
 
+   // Methods to show card. Note that just the image is changed
+   void flip () { setVisible (!isVisible); }
+   void setVisible (bool visible = true);
+   void setInvisible ()  { setVisible (false); }
+
  private:
+   CardWidget ();
+   CardWidget (const CardWidget&);
+
+   bool isVisible;
+   unsigned int nrCard;
+   const CardSet& deck;
 };
 
 #endif
