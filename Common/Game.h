@@ -62,6 +62,7 @@ class Game : public Gtk::Table {
    unsigned int currentPlayer () const { return actPlayer; }
    void setNextPlayer (unsigned int player) { actPlayer = player; }
 
+   void flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end);
    void displayTurn (unsigned int player);
    void displayTurn (unsigned int player, const std::string& preText);
    void makeNextMoves ();
@@ -70,7 +71,7 @@ class Game : public Gtk::Table {
    virtual void clean ();
    void randomizeCardsToPile (ICardPile& pile) const;
    static void movePile (ICardPile& dest, ICardPile& source,
-                         unsigned int start = 0);
+                         unsigned int start = 0, int end = -1);
 
    Gtk::Statusbar& status;
    CardSet& cards;

@@ -135,8 +135,18 @@ void Game::randomizeCardsToPile (ICardPile& pile) const {
 //Parameters: dest: Destination pile
 //            source: Source pile
 /*--------------------------------------------------------------------------*/
-void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start) {
-   while (source.numberOfCards () > start)
+void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start,
+                     int end) {
+   TRACE3 ("Game::movePile (ICardPile&, ICardPile&, unsigned int, int) - "
+           "moving from pos " << start << " to " << end);
+   Check3 (source.numberOfCards ());
+   Check3 (start < source.numberOfCards ());
+   
+   if (end == -1)
+      end = source.numberOfCards () - 1;
+   Check3 (end < source.numberOfCards ()); Check3 (start <= end);
+
+   while (end-- >= (int)start)
       dest.append (source.remove (start));
 }
 
@@ -229,4 +239,37 @@ void Game::displayTurn (unsigned int player, const std::string& preText) {
 void Game::setGameStatus (unsigned int newStatus) {
    statGame = newStatus;
    control (statGame);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Flips the cards the user is about to play
+//Parameters: pile: Pile to manipulate
+//            start: Position of first card to play; update to reflect moving
+//            start: Position of last card to play; update to reflect moving
+//Returns   : unsigned int: Changed position to play
+/*--------------------------------------------------------------------------*/
+void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end) {
+   TRACE2 ("Game::flipCards2Play (ICardPile&, unsigned int, unsigned int) - "
+           "Cards from " << start << " to " << end);
+   Check3 (end < pile.numberOfCards ());
+   Check3 (start <= end);
+
+   bool bFollow (false);
+   do {
+      CardWidget& card (pile.at (start));
+      pile.move (pile.numberOfCards () - 1, start);
+      card.showFace ();
+
+      if ((pile.getStyle () != ICardPile::NORMAL)
+          && bFollow) {
+         Check3 (pile.numberOfCards () > 1);
+         pile.resize (pile.numberOfCards () - 2, ICardPile::COMPRESSED);
+      }
+      bFollow = true;
+   } while (end-- && (start <= end));
+
+   start += pile.numberOfCards () - end - 2;
+   end =  pile.numberOfCards () - 1;
+   TRACE8 ("Game::flipCards2Play (ICardPile&, unsigned int, unsigned int) - "
+           "New positions " << start << " and " << end);
 }
