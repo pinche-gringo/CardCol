@@ -155,7 +155,7 @@ void Machiavelli::start () {
 
       status.pop ();
       status.push (_("You can sort the cards in your hand with drag and drop or put"
-                     " them on the table - hit enter to end turn"));
+                     " them on the table - click the staple to end turn"));
 
       // Set random startplayer (if not already set)
       if (startPlayer == -1U)
