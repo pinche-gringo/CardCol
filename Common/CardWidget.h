@@ -49,6 +49,8 @@ class CardWidget : public Gtk::Button {
    char numberStr () const;
    char colorStr () const;
 
+   const Gdk_Pixmap& getShownImage () const {
+      return isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (); }
    const Gdk_Pixmap& getImage () const { return deck.getCardImage (nrCard); }
    unsigned int getImageHeight () const {
       return const_cast<Gdk_Pixmap&> (deck.getCardImage (nrCard)).height (); }
