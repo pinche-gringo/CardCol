@@ -1,7 +1,13 @@
+Overview of changes in version 0.7.02:
+
+  - Adapted to new automake/-conf
+  - Fixed trap, if no carddecks are found
+  - Searching for KDE carddecks also in /usr/share/apps/carddecks
+
 Overview of changes in version 0.7.01:
 
   - Works with GCC 3.4 and GTKMM 2.4
-  - Needs libYGP 0.6.50
+  - Needs libXGP 0.6.47
 
 Overview of changes in version 0.7.00:
 

@@ -1,3 +1,25 @@
+2004-10-07  Markus Schwab  <markus@markus>
+
+	* ChangeLog, NEWS: Changes of V0.7.02 commented
+
+	* configure.in:
+	  Version to 0.7.02; searching for carddecks also in /usr/share/apps/carddecks
+
+	* src/CardCol.cpp: Fixed comments so that gettext does not complain
+
+	* po/Makevars, po/de.po, po/en.po, po/es.po: Added REPORT-MSGID-BUGS-TO
+
+	* Common/DeckSelect.cpp: Showing apply-button
+
+	* src/CardCol.cpp: Handling missing carddecks with grace
+
+	* Common/DeckSelect.cpp, Common/DeckSelect.h:
+	  Handling missing carddecks in grace
+
+2004-09-18  Markus Schwab  <markus@markus>
+
+	* po/de.po: Changed Sgt.Mayor  message
+
 2004-09-17  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.01 commented
