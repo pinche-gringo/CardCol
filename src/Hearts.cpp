@@ -133,9 +133,9 @@ int Hearts::makeMove (unsigned int player) {
    Check3 (pos2Play == pos1Play);
 
    if (pos2Play == -1U) {
-      pos2Play = pos1Play = findPos2Play (player);
+      pos2Play = pos1Play = findPos2Play (correctPlayer (player));
       TRACE8 ("Hearts::makeMove (unsigned int) - Going to play card at pos " << pos2Play);
-      flipCards2Play (players[player].hand, pos1Play, pos2Play);
+      flipCards2Play (players[correctPlayer (player)].hand, pos1Play, pos2Play);
    }
    else {
       TRACE9 ("Hearts::makeMove (unsigned int) - Playing card at pos " << pos2Play);
@@ -239,8 +239,7 @@ bool Hearts::enableHuman () {
    Check3 (activeCards.empty ());
    Check3 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
 
-   TRACE2 ("Hearts::enableHuman () - Human has " << players[0].hand.size ()
-           << " cards");
+   TRACE2 ("Hearts::enableHuman () - Human has " << players[0].hand.size () << " cards");
 
    for (int i (players[0].hand.size ()); i;)
       activeCards.push_back
@@ -291,12 +290,12 @@ void Hearts::cardSelected (unsigned int iCard) {
       if (gameStatus () == PLAYING) {
          // Send played card to all clients (if any)
          std::ostringstream msg;
-         msg << "Play=" << iCard << ";Target=0";
+         msg << "Play=" << played[played.size () - 1]->id () << ";Target=0";
          if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
             ignoreNextMsg = true;
          broadcastMessage (msg.str ());
 
-         setNextPlayer (calcNextPlayer (0));
+         setNextPlayer (calcNextPlayer (currentPlayer ()));
       }
       else {
          Check3 (gameStatus () == EXCHANGE);
@@ -395,9 +394,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       // Everyone played its card: Search for winner of played pile;
       // clear it and continue with winner
       player = (player - NUM_PLAYERS + check4Winner () + 1) & 0x3;
-      TRACE4 ("Hearts::calcNextPlayer (unsinged int) - Continuing with player "
-              << player);
-      movePile (players[player].won, played);
+      movePile (players[correctPlayer (player)].won, played);
    }
    else
       player = ((player + 1) & 0x3);
@@ -444,6 +441,9 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
 
    if (!player)
       enableWonCards (players[0].won);
+
+   TRACE4 ("Hearts::calcNextPlayer (unsinged int) - Continuing with player "
+           << player);
    return player;
 }
 
@@ -787,7 +787,7 @@ unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[
       Check3 (played.size ());
       CardWidget::NUMBERS highest (played[posWinner]->number ());
       TRACE9 ("Hearts::findLowerCard (const ICardPile&, unsigned int[4]) - Try to"
-              " be below " << played[posWinner]);
+              " be below " << *played[posWinner]);
 
       // Search for a lower card
       unsigned int nrCards (numberOfCards (aPositions, colour));
@@ -805,7 +805,7 @@ unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[
                --card;
 
             TRACE5 ("Hearts::findLowerCard (const ICardPile&, unsigned int[4]) - "
-                    "Playing card at " << card  << ": " << pile[card]);
+                    "Playing card at " << card  << ": " << *pile[card]);
             return card;
          }
       } while (--nrCards);
@@ -821,7 +821,7 @@ unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[
       if (played.size () == (NUM_PLAYERS - 1))
          card = aPositions[colour];
       TRACE5 ("Hearts::findLowerCard (const ICardPile&, unsigned int[4]) - "
-              "Forced to play card at " << card << ": " << pile[card]);
+              "Forced to play card at " << card << ": " << *pile[card]);
       return card;
    }
 }
