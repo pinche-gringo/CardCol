@@ -46,7 +46,9 @@ class CardPile : public Gtk::VBox {
    void setTopCard (CardWidget& newCard, bool visible) {
       newCard.setVisible (visible);
       setTopCard (newCard); }
+
    CardWidget& removeTopCard ();
+   void clear ();
 
    bool existCard (CardWidget& card) const { existCard (&card); }
    bool existCard (CardWidget* card) const {
