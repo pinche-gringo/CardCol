@@ -30,12 +30,9 @@
 #include <Check.h>
 #include <Trace_.h>
 
-#include <gdk/gdk.h>
-
-#include <gtk--/menu.h>
-#include <gtk--/statusbar.h>
-
-#include <XMessageBox.h>
+#include <gtkmm/menu.h>
+#include <gtkmm/statusbar.h>
+#include <gtkmm/messagedialog.h>
 
 #include "Hearts.h"
 
@@ -52,12 +49,12 @@ const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 //            names: Vector of player-names
 /*--------------------------------------------------------------------------*/
 Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-                const vector<string>& names)
+                const std::vector<std::string>& names)
    : Game (parent, statusbar, cardset, names, 14, 10)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , pos2Play (-1U), playedSQ (false), pScoreDlg (NULL)
      , player2Exchange (3) {
-   TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&)");
+   TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&, const std::vector<std::string>&)");
 
    unsigned int width (cards.getCard (0).getImageWidth ());
    unsigned int height (cards.getCard (0).getImageHeight ());
@@ -69,13 +66,13 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + ((i & 1) ? 1 : 5),
               ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
               ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
-              GTK_EXPAND, GTK_EXPAND, 1);
+              Gtk::EXPAND, Gtk::EXPAND, 1);
 
       players[i].won.show ();
       attach (players[i].won, COLS_PLAYER[i],
               COLS_PLAYER[i] + ((i & 1) ? 1 : 5),
               ROWS_PLAYER[i] + ((i == 2) ? 2 : -2),
-              ROWS_PLAYER[i] + ((i == 2) ? 2 : -2) + 1, GTK_EXPAND);
+              ROWS_PLAYER[i] + ((i == 2) ? 2 : -2) + 1, Gtk::EXPAND);
 
       TRACE9 ("Hearts::Hearts () - Set at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i] + ((i == 2) ? 2 : -2));
@@ -83,15 +80,15 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
       players[i].hand.show ();
       attach (players[i].hand, COLS_PLAYER[i],
               COLS_PLAYER[i] + ((i & 1) ? 1 : 5), ROWS_PLAYER[i],
-              ROWS_PLAYER[i] + 1, GTK_EXPAND);
+              ROWS_PLAYER[i] + 1, Gtk::EXPAND);
       TRACE9 ("Hearts::Hearts () - 2nd set at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
 
       players[i].won.setShowOption (ICardPile::SHOWBACK);
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
 
-      players[i].won.set_usize (width + 12 * 7, height + 5);
-      players[i].hand.set_usize (width + 12 * 18, height + 5);
+      players[i].won.set_size_request (width + 12 * 7, height + 5);
+      players[i].hand.set_size_request (width + 12 * 18, height + 5);
 
       players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::COMPRESSED);
       players[i].won.setStyle (ICardPile::VERY_COMPRESSED);
@@ -100,8 +97,8 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
    // Show played area
    played.setStyle (ICardPile::COMPRESSED);
    played.show ();
-   attach (played, 3, 4, 5, 8, 0, 0, 0, 5);
-   played.set_usize (width + 150, height);
+   attach (played, 3, 4, 5, 8, Gtk::SHRINK, Gtk::SHRINK, 5);
+   played.set_size_request (width + 150, height);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -174,10 +171,10 @@ void Hearts::start () {
    }
 
    if (player2Exchange) {
-      string stat (_("Select 3 cards to exchange with %1"));
+      std::string stat (_("Select 3 cards to exchange with %1"));
       stat.replace (stat.find ("%1"), 2, names[player2Exchange]);
-      status.pop (1);
-      status.push (1, stat);
+      status.pop ();
+      status.push (stat);
       setGameStatus (EXCHANGE);
       enableHuman ();
    }
@@ -217,11 +214,11 @@ void Hearts::playOpen (bool open) {
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Enables the cards of the human player
-//Returns   : 0
+//Returns   : Flag, if time should be continued
 //Remarks   : Depending of the status of the game (PLAYING2) also the top
 //            card of the played pile is enabled
 /*--------------------------------------------------------------------------*/
-int Hearts::enableHuman () {
+bool Hearts::enableHuman () {
    Check1 (activeCards.empty ());
    Check1 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
 
@@ -230,14 +227,14 @@ int Hearts::enableHuman () {
 
    for (int i (players[0].hand.numberOfCards ()); i;)
       activeCards.push_back
-         (players[0].hand.at (--i).clicked.connect_after
-           (bind (slot (this, (&Hearts::cardSelected)), i)));
+         (players[0].hand.at (--i).signal_clicked ().connect
+           (bind (slot (*this, (&Hearts::cardSelected)), i)));
 
    if (gameStatus () == EXCHANGE)
       for (int i (played.numberOfCards ()); i;)
          activeCards.push_back
-            (played.at (--i).clicked.connect_after
-             (bind (slot (this, (&Hearts::takeCard)), i)));
+            (played.at (--i).signal_clicked ().connect
+             (bind (slot (*this, (&Hearts::takeCard)), i)));
 
    return Game::enableHuman ();
 }
@@ -376,7 +373,7 @@ unsigned int  Hearts::calcNextPlayer (unsigned int player) {
       pScoreDlg->addPoints (aScore);
       pScoreDlg->show ();
 
-      string stat (_("Round ended"));
+      std::string stat (_("Round ended"));
       unsigned int player, points;
       pScoreDlg->getMaxPoints (points, player);
       if (points >= 100) {
@@ -385,8 +382,8 @@ unsigned int  Hearts::calcNextPlayer (unsigned int player) {
          stat.replace (stat.find ("%1"), 2, names[player]);
       }
 
-      status.pop (1);
-      status.push (1, stat);
+      status.pop ();
+      status.push (stat);
    }
    else
       displayTurn (player);
@@ -420,9 +417,10 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
          // The same color must be played again (if available)
          CardWidget::COLORS color (played.at (0).color ());
          if ((playColor != color) && players[player].hand.exists (color)) {
-            XMessageBox::Show (_("Play first cards with an equal color as "
-                                 "the first played one!"), PACKAGE " - Hearts",
-                               XMessageBox::ERROR);
+            Gtk::MessageDialog dlg (_("Play first cards with an equal color as "
+                                      "the first played one!"), Gtk::MESSAGE_ERROR);
+            dlg.set_title (PACKAGE " - Hearts");
+            dlg.run ();
             return false;
          }
       }
@@ -431,8 +429,10 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
          if (!cardsPlayed) {
             if ((card.color () != CardWidget::CLUBS)
                 && (card.number () != CardWidget::TWO)) {
-               XMessageBox::Show (_("The game must be started with the two of clubs!"),
-                                  PACKAGE " - Hearts", XMessageBox::ERROR);
+               Gtk::MessageDialog dlg (_("The game must be started with the two of clubs!"),
+                                         Gtk::MESSAGE_ERROR);
+               dlg.set_title (PACKAGE " - Hearts");
+               dlg.run ();
                return false;
             }
          }
@@ -440,9 +440,11 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
          // One can start with a heart only if there has been one played before
          if (((playColor == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
              && (players[player].hand.at (0).color () != CardWidget::HEARTS)) {
-            XMessageBox::Show (_("You can't start with a heart, if they have"
-                                 " not been played before!"), PACKAGE " - Hearts",
-                               XMessageBox::ERROR);
+            Gtk::MessageDialog dlg (_("You can't start with a heart, if they have"
+                                      " not been played before!"),
+                                    Gtk::MESSAGE_ERROR);
+            dlg.set_title (PACKAGE " - Hearts");
+            dlg.run ();
             return false;
          }
       }
@@ -451,15 +453,19 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
       if (!cardsPlayed) {
          if ((card.color () == CardWidget::SPADES)
              && (card.number () == CardWidget::QUEEN)) {
-            XMessageBox::Show (_("The queen of spades can't be played in the first"
-                                 " round!"), PACKAGE " - Hearts", XMessageBox::ERROR);
+            Gtk::MessageDialog dlg (_("The queen of spades can't be played in the first"
+                                      " round!"), Gtk::MESSAGE_ERROR);
+            dlg.set_title (PACKAGE " - Hearts");
+            dlg.run ();
             return false;
          }
 
          if (((playColor == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
               && (players[player].hand.at (0).color () != CardWidget::HEARTS)) {
-            XMessageBox::Show (_("Hearts can't be played in the first round!"),
-                               PACKAGE " - Hearts", XMessageBox::ERROR);
+               Gtk::MessageDialog dlg (_("Hearts can't be played in the first round!"),
+                                       Gtk::MESSAGE_ERROR);
+               dlg.set_title (PACKAGE " - Hearts");
+               dlg.run ();
             return false;
          }
       }
@@ -844,7 +850,7 @@ unsigned int Hearts::pointsOfPile (ICardPile& pile) {
 //Purpose   : Changes the names of the playing people
 //Parameters: newNames: Array holding the new names of the players
 /*--------------------------------------------------------------------------*/
-void Hearts::changeNames (const vector<string>& newNames) {
+void Hearts::changeNames (const std::vector<std::string>& newNames) {
    Game::changeNames (newNames);
 
    for (int i (0); i < NUM_PLAYERS; ++i)

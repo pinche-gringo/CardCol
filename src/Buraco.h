@@ -18,10 +18,11 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <string>
 #include <vector>
 
-#include <gtk--/label.h>
-#include <gtk--/button.h>
+#include <gtkmm/label.h>
+#include <gtkmm/button.h>
 
 #include <CardSet.h>
 #include <CardPile.h>
@@ -33,7 +34,7 @@
 class Burazno : public Game {
  public:
    Burazno (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const vector<string>& names);
+            const std::vector<std::string>& names);
    virtual ~Burazno ();
 
    virtual void start ();
@@ -48,7 +49,7 @@ class Burazno : public Game {
 
    //@Section Virtual methods
    virtual int makeMove (unsigned int player);
-   virtual int enableHuman ();
+   virtual bool enableHuman ();
 
    //@Section Event handling
    void cardSelected (unsigned int iCard);
@@ -60,21 +61,22 @@ class Burazno : public Game {
    void registerDND (unsigned int start, unsigned int end);
    void registerDND (unsigned int iCard);
    void unregisterDND (unsigned int card) const;
-   void getDropData (GdkDragContext* pContext, GtkSelectionData* pData,
-                     guint info, guint32 time, unsigned int cardPos);
-   void cardDropped (GdkDragContext* pContext, gint, gint,
+   void getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
+                     GtkSelectionData* pData, guint info, guint32 time,
+                     unsigned int cardPos);
+   void cardDropped (const Glib::RefPtr<Gdk::DragContext>& pContext, gint, gint,
                      GtkSelectionData* pData, guint info, guint32 time,
                      unsigned int card);
 
    CardHPile hands[NUM_PLAYERS];              // For players: Cards in the hand
-   vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];
+   std::vector<CardVPile*> tablePiles[NUM_PLAYERS >> 1];
 
    PseudoInfoPile staple;
    PseudoInfoPile dumped;
 
-   vector<CardWidget*> deck;
+   std::vector<CardWidget*> deck;
 
-   static GtkTargetEntry dndType;
+   static std::vector<Gtk::TargetEntry> dndType;
 };
 
 #endif

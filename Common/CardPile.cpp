@@ -115,8 +115,8 @@ void ICardPile::showTopCardFace (bool visible) {
 //Purpose   : Adds various cards to the pile
 //Parameters: visible: Flag if cardface should be shown or back
 /*--------------------------------------------------------------------------*/
-void ICardPile::setTopCards (const vector<CardWidget*>& staple) {
-   vector<CardWidget*>::const_iterator i;
+void ICardPile::setTopCards (const std::vector<CardWidget*>& staple) {
+   std::vector<CardWidget*>::const_iterator i;
 
    for (i = staple.begin (); i != staple.end (); ++i) {
       Check3 (*i);
@@ -128,8 +128,8 @@ void ICardPile::setTopCards (const vector<CardWidget*>& staple) {
 //Purpose   : Adds various cards to the pile
 //Parameters: visible: Flag if cardface should be shown or back
 /*--------------------------------------------------------------------------*/
-void ICardPile::setTopCards (const vector<CardWidget*>& staple, bool visible) {
-   vector<CardWidget*>::const_iterator i;
+void ICardPile::setTopCards (const std::vector<CardWidget*>& staple, bool visible) {
+   std::vector<CardWidget*>::const_iterator i;
 
    for (i = staple.begin (); i != staple.end (); ++i) {
       Check3 (*i);
@@ -151,7 +151,7 @@ void ICardPile::clear () {
 //Returns   : CardWidget*: Pointer to card with passed ID (or NULL)
 /*--------------------------------------------------------------------------*/
 CardWidget* ICardPile::get (unsigned int id) const {
-   vector<CardWidget*>::const_iterator i;
+   std::vector<CardWidget*>::const_iterator i;
 
    for (i = cards.begin (); i != cards.end (); ++i) {
       Check3 (*i);
@@ -217,7 +217,8 @@ CardWidget& ICardPile::remove (CardWidget& card) {
    Check3 (cards.size () > 0);
 
    // Search for card and remove it
-   vector<CardWidget*>::iterator i (::find (cards.begin (), cards.end (), &card));
+   std::vector<CardWidget*>::iterator i (std::find (cards.begin (),
+                                                    cards.end (), &card));
    Check3 (i != cards.end ());
 
    // Check if we have to resize a card
@@ -240,7 +241,7 @@ CardWidget& ICardPile::remove (unsigned int pos) {
    Check3 (cards.size () > pos);
 
    // Remove card on passed position
-   vector<CardWidget*>::iterator i (cards.begin () + pos);
+   std::vector<CardWidget*>::iterator i (cards.begin () + pos);
    CardWidget* pTemp (*i); Check3 (pTemp);
 
    // Check if we have to resize a card
@@ -348,7 +349,7 @@ int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
    TRACE ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - End = ["
           << first << "-(" << middle << ")-" << last << ')');
    if (first < cards.size ())
-      TRACE ("\t-> " << *cards[first]);
+      TRACE ("\t-> " << *cards[first])
    else
       TRACE ("\t-> Not found");
 #endif
@@ -405,7 +406,7 @@ void ICardPile::setShowOption (ShowOpt show) {
    showOpt = show;
 
    if (showOpt < DONT_CHANGE) {
-      vector<CardWidget*>::iterator i;
+      std::vector<CardWidget*>::iterator i;
 
       for (i = cards.begin (); i != cards.end (); ++i) {
          Check3 (*i);

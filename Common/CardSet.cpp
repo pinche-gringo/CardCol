@@ -69,7 +69,7 @@ void CardSet::shuffle () {
    for (int i (numberOfCards ()); i > 0;) {
       nr = rand () % i--;
       TRACE2 ("CardSet::shuffle () - " << i << " = " << nr);
-      swap (cards_[i], cards_[nr]);
+      std::swap (cards_[i], cards_[nr]);
    }
 }
 
@@ -90,7 +90,7 @@ CardWidget& CardSet::getCard (unsigned int nr) const {
 void CardSet::update () const {
    TRACE3 ("CardSet::update () const");
 
-   for (vector<CardWidget*>::const_iterator i (cards_.begin ());
+   for (std::vector<CardWidget*>::const_iterator i (cards_.begin ());
         i != cards_.end (); ++i)
       (*i)->update ();
 }

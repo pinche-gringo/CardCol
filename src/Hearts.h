@@ -18,9 +18,10 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <string>
 #include <vector>
 
-#include <gtk--/label.h>
+#include <gtkmm/label.h>
 
 #include <CardSet.h>
 #include <CardPile.h>
@@ -30,23 +31,18 @@
 #include <HeartsScore.h>
 
 
-namespace Gtk {
-   class Box;
-};
-
-
 // Class to handle the Hearts cardgame
 class Hearts : public Game {
  public:
    Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-           const vector<string>& names);
+           const std::vector<std::string>& names);
    virtual ~Hearts ();
 
    virtual void start ();
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Hearts"; }
-   virtual void changeNames (const vector<string>& newNames);
+   virtual void changeNames (const std::vector<std::string>& newNames);
 
  private:
    enum Status { EXCHANGE = Game::LAST };
@@ -61,7 +57,7 @@ class Hearts : public Game {
 
    //@Section Virtual methods
    virtual int makeMove (unsigned int player);
-   virtual int enableHuman ();
+   virtual bool enableHuman ();
 
    //@Section Helper methods
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int card);

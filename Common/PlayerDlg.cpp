@@ -27,10 +27,10 @@
 
 #include <Internal.h>
 
-#include <gtk--/box.h>
-#include <gtk--/label.h>
-#include <gtk--/entry.h>
-#include <gtk--/table.h>
+#include <gtkmm/box.h>
+#include <gtkmm/label.h>
+#include <gtkmm/entry.h>
+#include <gtkmm/table.h>
 
 #include <Check.h>
 #include <Trace_.h>
@@ -42,9 +42,10 @@
 //Purpose   : Constructor
 //Parameters: names: Vector of string containing the names of the players
 /*--------------------------------------------------------------------------*/
-IPlayerDlg::IPlayerDlg (vector<string>& names)
+IPlayerDlg::IPlayerDlg (std::vector<std::string>& names)
    : XDialog (OKCANCEL), pClient (new Gtk::Table (1, 2)), values (names) {
-   TRACE2 ("IPlayerDlg::IPlayerDlg (vector<string>&) - Players: " << names.size ());
+   TRACE2 ("IPlayerDlg::IPlayerDlg (std::vector<std::string>&) - Players: "
+           << names.size ());
    Check1 (names.size () > 1);
    Check1 (names.size () < 10);
 
@@ -55,8 +56,8 @@ IPlayerDlg::IPlayerDlg (vector<string>& names)
    aPlayers.back ()->attach (*pClient, 0);
 
    for (unsigned int i (1); i < names.size (); ++i) {
-      string label (_("Player %1:"));
-      label.replace (label.find ("%1"), 2, (char)('0' + i));
+      std::string label (_("Player %1:"));
+      label.replace (label.find ("%1"), 2, 1, (char)('0' + i));
       aPlayers.push_back (new line (label, names[i]));
 
       aPlayers.back ()->show ();
@@ -96,10 +97,10 @@ void IPlayerDlg::okEvent () {
 //Parameters: label: Text for label
 //            attribute: Value for entryfield (to be updated)
 /*--------------------------------------------------------------------------*/
-IPlayerDlg::line::line (const char* label, string& attribute)
+IPlayerDlg::line::line (const char* label, std::string& attribute)
    : label (new Gtk::Label (label))
      , value (new Gtk::Entry ()) {
-   TRACE9 ("IPlayerDlg::line::line (string&, string&)");
+   TRACE9 ("IPlayerDlg::line::line (const char*, std::string&)");
    value->set_text (attribute);
 }
 
@@ -108,10 +109,10 @@ IPlayerDlg::line::line (const char* label, string& attribute)
 //Parameters: label: Text for label
 //            attribute: Value for entryfield (to be updated)
 /*--------------------------------------------------------------------------*/
-IPlayerDlg::line::line (string& labelVal, string& attribute)
+IPlayerDlg::line::line (std::string& labelVal, std::string& attribute)
    : label (new Gtk::Label (labelVal))
      , value (new Gtk::Entry ()) {
-   TRACE9 ("IPlayerDlg::line::line (string&, string&)");
+   TRACE9 ("IPlayerDlg::line::line (std::string&, std::string&)");
    value->set_text (attribute);
 }
 
@@ -141,7 +142,7 @@ void IPlayerDlg::line::show () {
 void IPlayerDlg::line::attach (Gtk::Table& table, unsigned int line) {
    Check3 (label); Check3 (value);
    table.resize (line + 2, 2);
-   table.attach (*label, 1, 2, line + 1, line + 2, GTK_FILL, GTK_FILL, 5, 3);
-   table.attach (*value, 2, 3, line + 1, line + 2, GTK_FILL|GTK_EXPAND,
-                 GTK_FILL|GTK_EXPAND, 5, 3);
+   table.attach (*label, 1, 2, line + 1, line + 2, Gtk::FILL, Gtk::FILL, 5, 3);
+   table.attach (*value, 2, 3, line + 1, line + 2, Gtk::FILL | Gtk::EXPAND,
+                 Gtk::FILL | Gtk::EXPAND, 5, 3);
 }

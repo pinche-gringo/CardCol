@@ -27,8 +27,8 @@
 
 #include <cardgames-cfg.h>
 
-#include <gtk--/label.h>
-#include <gtk--/separator.h>
+#include <gtkmm/label.h>
+#include <gtkmm/separator.h>
 
 #include <Trace_.h>
 
@@ -39,7 +39,7 @@
 //Purpose   : (Default-)Constructor; Shows the dialog
 //Parameters: playerNames: Vector with names of players
 /*--------------------------------------------------------------------------*/
-HeartsScoreDlg::HeartsScoreDlg (const vector<string>& playerNames)
+HeartsScoreDlg::HeartsScoreDlg (const std::vector<std::string>& playerNames)
    : XDialog (OK), client (new Gtk::HBox) {
    TRACE9 ("HeartsScoreDlg::HeartsScoreDlg ()");
    Check1 ((sizeof (aColumns) / sizeof (aColumns[0])) < playerNames.size ());
@@ -52,7 +52,7 @@ HeartsScoreDlg::HeartsScoreDlg (const vector<string>& playerNames)
       client->pack_start (aColumns[i].getBox (), true, true, 5);
 
    client->show ();
-   get_vbox ()->pack_start (*client, false, false, 5);
+   get_vbox ()->pack_start (*client, Gtk::SHRINK, 5);
 
    show ();
 }
@@ -132,7 +132,7 @@ void HeartsScoreDlg::getMinPoints (unsigned int& points, unsigned int& player) {
 //Purpose   : Changes the names of the playing people
 //Parameters: newNames: Array holding the new names of the players
 /*--------------------------------------------------------------------------*/
-void HeartsScoreDlg::update (const vector<string>& playerNames) {
+void HeartsScoreDlg::update (const std::vector<std::string>& playerNames) {
    for (unsigned int i (0);
         i < (sizeof (aColumns) / sizeof (aColumns[0])); ++i)
       aColumns[i].setTitle (playerNames[i]);
@@ -180,7 +180,7 @@ void HeartsScoreDlg::column::addEntry (unsigned int points) {
 //Purpose   : Sets the "title" (the first line) of the column
 //Parameters: title: New "title"
 /*--------------------------------------------------------------------------*/
-void HeartsScoreDlg::column::setTitle (const string& title) {
+void HeartsScoreDlg::column::setTitle (const std::string& title) {
    Check3 (pTitle);
    pTitle->set_text (title);
 }

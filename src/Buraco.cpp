@@ -25,15 +25,18 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <gtk/gtkdnd.h>
+
 #define CHECK 9
 #define TRACELEVEL 9
 #include <Check.h>
 #include <Trace_.h>
 #include <ScoreDlg.h>
 #include "Burazno.h"
+#include "SigCExt.h"
 std::vector<Gtk::TargetEntry> Buraco::dndType;
 
-GtkTargetEntry Burazno::dndType  = { "icon/card", GTK_TARGET_SAME_APP, 0 };
+std::vector<Gtk::TargetEntry> Burazno::dndType;
 unsigned int Buraco::ENDPOINTS (2000);
 
 /*--------------------------------------------------------------------------*/
@@ -44,15 +47,16 @@ unsigned int Buraco::ENDPOINTS (2000);
 //            names: Vector of player-names
 /*--------------------------------------------------------------------------*/
 Burazno::Burazno (Gtk::Box& parent, Gtk::Statusbar& statusbar,
-                  CardSet& cardset, const vector<string>& names)
+                  CardSet& cardset, const std::vector<std::string>& names)
    : Game (parent, statusbar, cardset, names, 3, 3) {
-   TRACE9 ("::Burazno::Burazno (Box&, Statusbar&, CardSet&, const vector<string>&)");
+   TRACE9 ("::Burazno::Burazno (Box&, Statusbar&, CardSet&, const "
+           "std::vector<std::string>&)");
        scrlTable[i] = new Gtk::ScrolledWindow ();
    unsigned int width (cards.getCard (0).getImageWidth ());
    unsigned int height (cards.getCard (0).getImageHeight ());
            "std::vector<Glib::ustring>&) - Init common staples");
-   staple.set_usize (width, height);
-   dumped.set_usize (width, height);
+
+   boxTeam[0].pack_end (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
    boxTeam[0].set_size_request (-1, height + 5 * 15);
    staple.setShowOption (ICardPile::SHOWBACK);
    dumped.setShowOption (ICardPile::SHOWFACE);
@@ -60,10 +64,10 @@ Burazno::Burazno (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    hands[0].setStyle (ICardPile::COMPRESSED);
    hands[0].setShowOption (ICardPile::SHOWFACE);
 
-   attach (hands[0], 3, 10, 0, 1, GTK_EXPAND, 0, 1);
+   attach (hands[0], 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1);
            "std::vector<Glib::ustring>&) - Attach widgets");
-   attach (staple, 0, 1, 0, 1, 0, 0, 1);
-   attach (dumped, 1, 2, 0, 1, 0, 0, 1);
+   attach (staple, 0, 1, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 1);
+   attach (dumped, 1, 2, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 1);
            "std::vector<Glib::ustring>&) - Show widgets");
    hands[0].show ();
    boxTeam[0].show ();
@@ -73,6 +77,10 @@ Burazno::Burazno (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    for (unsigned int i (0); i < 3; ++i)
       for (unsigned int j (0); j < cards.numberOfCards (); ++j)
          deck.push_back (new CardWidget (cards.getCard (j)));
+
+         (Gtk::TargetEntry ("icon/card", Gtk::TARGET_SAME_APP, 0));
+
+         (Gtk::TargetEntry ("icon/card", GTK_TARGET_SAME_APP, 0));
 //-----------------------------------------------------------------------------
 /// Destructor
 /*--------------------------------------------------------------------------*/
@@ -138,7 +146,7 @@ void Burazno::clean () {
 //Remarks   : Depending of the status of the game (PLAYING2) also the top
 //            card of the played pile is enabled
 /*--------------------------------------------------------------------------*/
-int Burazno::enableHuman () {
+bool Burazno::enableHuman () {
 
    Check3 (hands[0].size ());
    for (unsigned int i (0); i < hands[0].size (); ++i) {
@@ -147,8 +155,8 @@ int Burazno::enableHuman () {
    aDNDTable[NULL] = newPile.signal_drag_data_received ().connect
    for (int i (hands[0].numberOfCards ()); i;)
       activeCards.push_back
-         (hands[0].at (--i).clicked.connect_after
-           (bind (slot (this, (&Burazno::cardSelected)), i)));
+         (hands[0].at (--i).signal_clicked ().connect
+           (bind (slot (*this, (&Burazno::cardSelected)), i)));
 
    return Game::enableHuman ();
 //-----------------------------------------------------------------------------
@@ -171,7 +179,7 @@ void Burazno::randomizeClonedCardsToPile (ICardPile& pile) {
    for (int i (deck.size ()); i > 0;) {
       nr = rand () % i--;
       TRACE2 ("Burazno::randomizeClonedCardsToPile (ICardPile&) - " << i << " = " << nr);
-      swap (deck[i], deck[nr]);
+      std::swap (deck[i], deck[nr]);
    }
 
    for (unsigned int i (0); i < deck.size (); ++i)
@@ -186,18 +194,20 @@ void Burazno::registerDND (unsigned int iCard) {
    TRACE9 ("Burazno::registerDND (unsigned int) - Card: " << iCard << " ("
            << hands[0].at (iCard) << ')');
    Check3 (aDNDHand.find (&card) == aDNDHand.end ());
-   static Gdk_Colormap color (get_colormap ());
-   static Gdk_Bitmap bitmap;
-
+   static Glib::RefPtr<Gdk::Bitmap> bitmap;
    CardWidget& card (hands[0].at (iCard));
    card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
-   // Card accepts drops and drags itself
-   card.drag_dest_set (GTK_DEST_DEFAULT_ALL, &dndType, 1, GDK_ACTION_COPY);
-   card.drag_source_set (GDK_BUTTON1_MASK, &dndType, 1, GDK_ACTION_COPY);
-   card.drag_source_set_icon (color, const_cast <Gdk_Pixmap&> (card.getImage ()), bitmap);
-   card.drag_data_received.connect
-      (bind (slot (this, &Burazno::cardDropped), iCard));
-   card.drag_data_get.connect (bind (slot (this, &Burazno::getDropData), iCard));
+   card.drag_source_set
+   card.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
+       Gdk::ACTION_MOVE);
+      (dndType,
+       Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK));
+   aDNDHand[&card].connReceive = card.signal_drag_data_received ().connect
+   card.drag_source_set_icon (get_colormap (), card.getImage (), bitmap);
+   card.signal_drag_data_received ().connect
+      (bind (slot (*this, &Burazno::cardDropped), iCard));
+   card.signal_drag_data_get ().connect
+      (bind (slot (*this, &Burazno::getDropData), iCard));
 //-----------------------------------------------------------------------------
 /// Stops the drag´n´drop abilities of the passed card
 /*--------------------------------------------------------------------------*/
@@ -224,16 +234,16 @@ void Burazno::unregisterDND (unsigned int iCard) const {
 //            card: Number of card where something was dropped at
 //Requieres : pContext, pData not NULL; Expects info to be 0
 /*--------------------------------------------------------------------------*/
-void Burazno::cardDropped (GdkDragContext* pContext, gint, gint,
-                           GtkSelectionData* pData, guint info,
+void Burazno::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
+                           gint, gint, GtkSelectionData* pData, guint info,
                            guint32 time, unsigned int card) {
    static bool second (true);
    second = !second;
    if (second)
       return;
 
-   Check3 (pContext); Check3 (pData);
-   Check3 (!pContext->is_source);
+   Check3 (pData);
+   Check3 (data.get_format () == 8);
    Check3 (pData->length == sizeof (int));
    Check3 (pData->format == 8);
 
@@ -245,14 +255,13 @@ void Burazno::cardDropped (GdkDragContext* pContext, gint, gint,
    TRACE1 ("Burazno::cardDropped (...) - Inserting card " << *pValue
    if (acceptCards != -1U) {
       context->drag_finish (false, false, time);
-   Gdk_DragContext gdc (pContext);
    CardWidget& cardTarget (hands[0].at (card));
    CardWidget& cardMoved (hands[0].remove (*pValue));
    if (*pValue > card)
       ++card;
 
    // End old DND
-   drag_finish (gdc, true, false, time);
+   context->drag_finish (true, false, time);
 
    // Insert moved card
    hands[0].insert (cardMoved, card);
@@ -275,12 +284,13 @@ void Burazno::cardDropped (GdkDragContext* pContext, gint, gint,
 //            cardPos: Position of card (either in hand or pile on table)
 //Requieres : pContext, pData not NULL; Expects info to be 0
 /*--------------------------------------------------------------------------*/
-void Burazno::getDropData (GdkDragContext* pContext, GtkSelectionData* pData,
-                           guint info, guint32 time, unsigned int cardPos) {
+void Burazno::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
+                           GtkSelectionData* pData, guint info, guint32 time,
+                           unsigned int cardPos) {
    TRACE9 ("Burazno::getDropData (...) - Nummer " << cardPos << " for "
            << hands[0].at (cardPos));
-   Check1 (pContext); Check1 (pData); Check1 (!info);
-   Check1 (pContext->is_source);
+   Check1 (pData); Check1 (!info);
+   data.set (data.get_target (), 8, reinterpret_cast <guchar*> (&cardPos),
              sizeof (cardPos));
    gtk_selection_data_set (pData, pData->target, 8, reinterpret_cast <guchar*> (&cardPos),
                            sizeof (cardPos));

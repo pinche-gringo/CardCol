@@ -18,9 +18,10 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <string>
 #include <vector>
 
-#include <gtk--/label.h>
+#include <gtkmm/label.h>
 
 #include <CardSet.h>
 #include <CardPile.h>
@@ -28,25 +29,19 @@
 #include <Game.h>
 
 
-namespace Gtk {
-   class Box;
-};
-
-using namespace Gtk;
-
 // Class to handle the Twopart-cardgame
 class Twopart : public Game {
  public:
    // Manager functions
    Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const vector<string>& names);
+            const std::vector<std::string>& names);
    ~Twopart ();
 
    virtual void start ();
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Twopart"; }
-   virtual void changeNames (const vector<string>& newNames);
+   virtual void changeNames (const std::vector<std::string>& newNames);
 
  private:
    // Status of game
@@ -65,7 +60,7 @@ class Twopart : public Game {
    void movePlayedCardsToPlayer (unsigned int nrPlayer, unsigned int start = 0);
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int start,
                                   unsigned int end);
-   int enableHuman ();
+   bool enableHuman ();
    unsigned int pickUpPlayedPile (unsigned int player);
    int  findNextPlayer (unsigned int player) const;
    int  findNextPlayerWithCards (unsigned int player) const;
@@ -93,7 +88,7 @@ class Twopart : public Game {
    int findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const;
 
 
-   int startPartTwoTimerFnc (unsigned int player);
+   bool startPartTwoTimerFnc (unsigned int player);
    void startPartTwo (unsigned int player);
 
    int makeMove (unsigned int player);

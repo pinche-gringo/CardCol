@@ -26,45 +26,48 @@
 
 #include <cardgames-cfg.h>
 
-#include <gtk--/main.h>
-#include <gtk--/statusbar.h>
-#include <gtk--/accelgroup.h>
+#include <gtk/gtkdnd.h>
+
+#include <glibmm/main.h>
+
+#include <gtkmm/statusbar.h>
+#include <gtkmm/accelgroup.h>
+#include <gtkmm/messagedialog.h>
 
 #include <Check.h>
 #include <Trace_.h>
 
 #include <XAbout.h>
-#include <XMessageBox.h>
 #include <Cardset-config.h>
 
 #include <CardWidget.h>
+
+#include "SigCExt.h"
 #include "Rovhult.h"
 
 
-GtkTargetEntry Rovhult::dndTypeHand  = { "icon/card/hand", GTK_TARGET_SAME_APP, 0 };
-GtkTargetEntry Rovhult::dndTypeTable = { "icon/card/table", GTK_TARGET_SAME_APP, 1 };
+std::vector<Gtk::TargetEntry> Rovhult::dndTypeHand;
+std::vector<Gtk::TargetEntry> Rovhult::dndTypeTable;
 
 
 const unsigned int Rovhult::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
 const unsigned int Rovhult::ROWS_PLAYER[NUM_PLAYERS] = { 4, 7, 13, 7 };
 
-using namespace Gtk;
-
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Defaultconstructor; all widget are created
-//Parameters: parent: Parent widget to display the game in
+//Purpose   : Defaultconstructor; all widgets are created
+//Parameters: parent: Parent widget (box) to display the game in
 //            statusbar: Status bar widget to display information about the game
 //            cardset: Cardset to use
 //            names: Vector of player-names
 /*--------------------------------------------------------------------------*/
 Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
-                  CardSet& cardset, const vector<string>& names)
+                  CardSet& cardset, const std::vector<std::string>& names)
    : Game (parent, statusbar, cardset, names, 16, 20)
      , staple (ICardPile::VERY_COMPRESSED)
      , played (ICardPile::VERY_COMPRESSED, ICardPile::SHOWFACE) {
    staple.show ();
-   attach (staple, 3, 4, 2, 7, 0, 0);
+   attach (staple, 3, 4, 2, 7);
 
    Check3 (cards.numberOfCards ());
    unsigned int width (cards.getCard (0).getImageWidth ());
@@ -78,21 +81,21 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
          players[i].reserve[j].show ();
          attach (players[i].reserve[j], COLS_PLAYER[i] + (j << 1),
                  COLS_PLAYER[i] + 1 + (j << 1), ROWS_PLAYER[i],
-                 ROWS_PLAYER[i] + 2, 0, 0, 0);
+                 ROWS_PLAYER[i] + 2, Gtk::SHRINK, Gtk::SHRINK, 0);
 
          TRACE9 ("Rovhult::Rovhult () - Set at: "
                  << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
 
-         players[i].reserve[j].set_usize (width, height + 5);
+         players[i].reserve[j].set_size_request (width, height + 5);
       }
 
       players[i].name.show ();
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 5,
               ROWS_PLAYER[i] + (i ? 5 : 2),
               ROWS_PLAYER[i] + (i ? 6 : 3),
-              GTK_EXPAND, GTK_EXPAND, 1);
+              Gtk::EXPAND, Gtk::EXPAND, 1);
 
-      players[i].hand.set_usize (width * 3, height);
+      players[i].hand.set_size_request (width * 3, height);
 
       players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::NORMAL);
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
@@ -100,18 +103,25 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       attach (players[i].hand, COLS_PLAYER[i],
               COLS_PLAYER[i] + 5,
               ROWS_PLAYER[i] + (i ? 3 : -3),
-              ROWS_PLAYER[i] + (i ? 3 : -3) + 2
-              , GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 0);
+              ROWS_PLAYER[i] + (i ? 3 : -3) + 2,
+              Gtk::FILL | Gtk::EXPAND, Gtk::FILL | Gtk::EXPAND, 0);
       TRACE9 ("Rovhult::Rovhult () - 2nd set at: "
               << COLS_PLAYER[i] + (i << 1) << '/'
               << ROWS_PLAYER[i] + (i ? 3 : -3));
    }
 
-   played.set_usize (width, height);
-   staple.set_usize (width, height + 50);
+   played.set_size_request (width, height);
+   staple.set_size_request (width, height + 50);
    staple.setShowOption (ICardPile::SHOWBACK);
 
-   attach (played, 7, 11, 5, 14, 0, 0, 1);
+   attach (played, 7, 11, 5, 14, Gtk::SHRINK, Gtk::SHRINK, 1);
+
+   if (dndTypeHand.empty ()) {
+      dndTypeHand.push_back
+         (Gtk::TargetEntry ("icon/card/hand", GTK_TARGET_SAME_APP, HAND));
+      dndTypeTable.push_back
+         (Gtk::TargetEntry ("icon/card/table", GTK_TARGET_SAME_APP, TABLE));
+   }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -153,8 +163,9 @@ void Rovhult::finishedExchange () {
 
    players[0].hand.setStyle (ICardPile::COMPRESSED);
    enableHuman ();
-   staple.getTopCard ().remove_accelerator (*(get_toplevel ()->get_accel_group ()),
-                                            ' ', 0);
+   staple.getTopCard ().remove_accelerator
+      (dynamic_cast<Gtk::Window*> (get_toplevel ())->get_accel_group (), ' ',
+       Gdk::ModifierType (0));
    pileTop.disconnect ();
 
    displayTurn (0);
@@ -244,7 +255,7 @@ void Rovhult::sortReserve (unsigned int player) {
 //Purpose   : Enables the cards of the human player
 //Parameters: player: Player to enable
 /*--------------------------------------------------------------------------*/
-int Rovhult::enableHuman () {
+bool Rovhult::enableHuman () {
    disableHuman (); Check3 (activeCards.empty ());
 
    if (players[0].hand.numberOfCards ()) {
@@ -253,8 +264,8 @@ int Rovhult::enableHuman () {
 
       for (int i (players[0].hand.numberOfCards ()); i;)
          activeCards.push_back
-            (players[0].hand.at (--i).clicked.connect_after
-             (bind (slot (this, &Rovhult::handSelected), i)));
+            (players[0].hand.at (--i).signal_clicked ().connect
+             (bind (slot (*this, &Rovhult::handSelected), i)));
    }
    else {
       TRACE2 ("Rovhult::enableHuman () - Enable reserve of human");
@@ -264,15 +275,15 @@ int Rovhult::enableHuman () {
             TRACE8 ("Rovhult::enableHuman () - Pile " << i << " has "
                     << players[0].reserve[i].numberOfCards () << " card(s)");
             activeCards.push_back
-               (players[0].reserve[i].getTopCard ().clicked.connect_after
-                (bind (slot (this, &Rovhult::pileSelected), i)));
+               (players[0].reserve[i].getTopCard ().signal_clicked ().connect
+                (bind (slot (*this, &Rovhult::pileSelected), i)));
          }
    }
 
    if (played.numberOfCards ()) {
       TRACE2 ("Rovhult::enablePlayer (unsigned int) - Enable last played card");
-      activeCards.push_back (played.getTopCard ().clicked.connect_after
-                             (slot (this, &Rovhult::takeCards)));
+      activeCards.push_back (played.getTopCard ().signal_clicked ().connect
+                             (slot (*this, &Rovhult::takeCards)));
    }
    return Game::enableHuman ();
 }
@@ -307,22 +318,22 @@ void Rovhult::pileSelected (unsigned int pile) {
    if (showsFace)
       playFromPile (pile);
    else
-      Gtk::Main::timeout.connect (bind (slot (this, &Rovhult::playFromPile),
-                                        pile), 1000);
+      Glib::signal_timeout ().connect (bind (slot (*this, &Rovhult::playFromPile),
+                                             pile), 1000);
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Performs playing from a pile
 //Parameters: pile: Offset of selected pile
-//Returns   : int: Always 0 to stop the timer (if called from one, that's it)
+//Returns   : bool: Always false to stop the timer (if called from one, that's it)
 /*--------------------------------------------------------------------------*/
-int Rovhult::playFromPile (unsigned int pile) {
+bool Rovhult::playFromPile (unsigned int pile) {
    Check1 (pile < 3);
    TRACE1 ("Rovhult::playFromPile (unsinged int) - Card at pos " << pile);
 
    setNextPlayer (doPileSelected (0, pile));
    makeNextMoves ();
-   return 0;
+   return false;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -396,9 +407,11 @@ bool Rovhult::cardValid (CardWidget::NUMBERS nr, bool silent) const {
                error = _("Played card must be equal or bigger!");
 
          if (error.size ()) {
-            if (!silent)
-               XMessageBox::Show (error, _("Invalid move"),
-                                  XMessageBox::ERROR | XMessageBox::OK);
+            if (!silent) {
+               Gtk::MessageDialog dlg (error, Gtk::MESSAGE_ERROR);
+               dlg.set_title (_("Invalid move"));
+               dlg.run ();
+            }
             return false;
          }
       }
@@ -481,10 +494,10 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
       player = nextAvailablePlayer (player);
 
       if (nextAvailablePlayer (player) == -1) {
-         status.pop (1);
+         status.pop ();
          stat = _("%1 lost");
          stat.replace (stat.find ("%1"), 2, names[player]);
-         status.push (1, stat);
+         status.push (stat);
          setGameStatus (STOPPED);
          return -1;
       }
@@ -715,16 +728,19 @@ void Rovhult::clean () {
 void Rovhult::registerTableDND (CardWidget& card, unsigned int pile) {
    Check3 (gameStatus () == PREPLAYING);
 
-   static Gdk_Colormap color (get_colormap ());
-   static Gdk_Bitmap bitmap;
+   static Glib::RefPtr<Gdk::Bitmap> bitmap;
 
    // Card accepts drops from hand and drags from table
-   card.drag_dest_set (GTK_DEST_DEFAULT_ALL, &dndTypeHand, 1, GDK_ACTION_COPY);
-   card.drag_source_set (GDK_BUTTON1_MASK, &dndTypeTable, 1, GDK_ACTION_COPY);
-   card.drag_source_set_icon (color, const_cast <Gdk_Pixmap&> (card.getImage ()), bitmap);
-   card.drag_data_received.connect
-      (bind (slot (this, &Rovhult::cardDroppedOnTable), pile));
-   card.drag_data_get.connect (bind (slot (this, &Rovhult::getDropData), pile));
+   card.drag_dest_set (dndTypeHand, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
+   card.drag_source_set
+      (dndTypeTable,
+       Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK));
+
+   card.drag_source_set_icon (get_colormap (), card.getImage (), bitmap);
+   card.signal_drag_data_received ().connect
+      (bind (slot (*this, &Rovhult::cardDroppedOnTable), pile));
+   card.signal_drag_data_get ().connect
+      (bind (slot (*this, &Rovhult::getDropData), pile));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -736,16 +752,19 @@ void Rovhult::registerTableDND (CardWidget& card, unsigned int pile) {
 void Rovhult::registerHandDND (CardWidget& card,  unsigned int iCard) {
    Check3 (gameStatus () == PREPLAYING);
 
-   static Gdk_Colormap color (get_colormap ());
-   static Gdk_Bitmap bitmap;
+   static Glib::RefPtr<Gdk::Bitmap> bitmap;
 
    // Card accepts drops from table and drags from hand
-   card.drag_dest_set (GTK_DEST_DEFAULT_ALL, &dndTypeTable, 1, GDK_ACTION_COPY);
-   card.drag_source_set (GDK_BUTTON1_MASK, &dndTypeHand, 1, GDK_ACTION_COPY);
-   card.drag_source_set_icon (color, const_cast <Gdk_Pixmap&> (card.getImage ()), bitmap);
-   card.drag_data_received.connect
-      (bind (slot (this, &Rovhult::cardDroppedOnHand), iCard));
-   card.drag_data_get.connect (bind (slot (this, &Rovhult::getDropData), iCard));
+   card.drag_dest_set (dndTypeTable, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
+   card.drag_source_set
+      (dndTypeHand,
+       Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK));
+
+   card.drag_source_set_icon (get_colormap (), card.getImage (), bitmap);
+   card.signal_drag_data_received ().connect
+      (bind (slot (*this, &Rovhult::cardDroppedOnHand), iCard));
+   card.signal_drag_data_get ().connect
+      (bind (slot (*this, &Rovhult::getDropData), iCard));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -805,14 +824,15 @@ void Rovhult::dealCards () {
 
    Check3 (staple.numberOfCards ());
    CardWidget& card (staple.getTopCard ());
-   pileTop = card.clicked.connect (slot (this, &Rovhult::finishedExchange));
-   card.add_accelerator ("clicked", *(get_toplevel ()->get_accel_group ()),
-                         ' ', 0, GtkAccelFlags (0));
+   pileTop = card.signal_clicked ().connect (slot (*this, &Rovhult::finishedExchange));
+   card.add_accelerator
+      ("clicked", dynamic_cast<Gtk::Window*> (get_toplevel ())->get_accel_group (),
+      ' ', Gdk::ModifierType (0), Gtk::AccelFlags (0));
 
-   status.pop (1);
-   status.push (1, _("Exchange the cards in your hand with the one on the "
-                     "table (with drag and drop) - press space (or click on the"
-                     " staple) if finished"));
+   status.pop ();
+   status.push (_("Exchange the cards in your hand with the one on the "
+                  "table (with drag and drop) - press space (or click on the"
+                  " staple) if finished"));
 }
 
 /*--------------------------------------------------------------------------*/
@@ -825,14 +845,14 @@ void Rovhult::dealCards () {
 //            pile: Number of pile
 //Requieres : pContext, pData not NULL; Expects info to be 0
 /*--------------------------------------------------------------------------*/
-void Rovhult::cardDroppedOnTable (GdkDragContext* pContext, gint, gint,
-                                  GtkSelectionData* pData, guint info,
+void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
+                                  gint, gint, GtkSelectionData* pData, guint info,
                                   guint32 time, unsigned int pile) {
-   if (info == 1)
+   if (info == TABLE)
       return;
 
-   Check3 (pContext); Check3 (pData);
-   Check3 (!pContext->is_source);
+   Check3 (pData);
+   Check3 (context->get_is_source ());
    Check3 (pData->length == sizeof (int));
    Check3 (pData->format == 8);
 
@@ -844,8 +864,6 @@ void Rovhult::cardDroppedOnTable (GdkDragContext* pContext, gint, gint,
    TRACE1 ("Rovhult::cardDroppedOnTable (...) - Data = "
            << *pValue << " <-> " << pile);
 
-   Gdk_DragContext gdc (pContext);
-
    // Check if player matches
    CardWidget& cardTable (players[0].reserve[pile].removeTopCard ());
    CardWidget& cardHand (players[0].hand.remove (*pValue));
@@ -854,7 +872,7 @@ void Rovhult::cardDroppedOnTable (GdkDragContext* pContext, gint, gint,
            << cardHand.id () << "<->" << cardTable.id ());
 
    // End old dnd
-   drag_finish (gdc, true, false, time);
+   context->drag_finish (true, false, time);
 
    unregisterDND (cardHand);
    unregisterDND (cardTable);
@@ -868,22 +886,22 @@ void Rovhult::cardDroppedOnTable (GdkDragContext* pContext, gint, gint,
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after dropping a card onto onto hand
-//Parameters: pContext: Context of the drag (contains things like source,
+//Parameters: context: Context of the drag (contains things like source,
 //                      target, action, ...)
 //            pData: Describes the thing which was dropped
 //            info: Describes the type of pData (should be 0)
 //            time: Timestamp of the drag
 //            card: Number of card
-//Requieres : pContext, pData not NULL; Expects info to be 0
+//Requieres : pData not NULL; Expects info to be 0
 /*--------------------------------------------------------------------------*/
-void Rovhult::cardDroppedOnHand (GdkDragContext* pContext, gint, gint,
-                                 GtkSelectionData* pData, guint info,
+void Rovhult::cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
+                                 gint, gint, GtkSelectionData* pData, guint info,
                                  guint32 time, unsigned int card) {
    if (!info)
       return;
 
-   Check3 (pContext); Check3 (pData);
-   Check3 (!pContext->is_source);
+   Check3 (pData);
+   Check3 (!context->get_is_source ());
    Check3 (pData->length == (sizeof (int) << 1));
    Check3 (pData->format == 8);
 
@@ -895,8 +913,6 @@ void Rovhult::cardDroppedOnHand (GdkDragContext* pContext, gint, gint,
    TRACE1 ("Rovhult::cardDroppedOnHand (...) - Data = "
            << *pValue << " <-> " << card);
 
-   Gdk_DragContext gdc (pContext);
-
    CardWidget& cardTable (players[0].reserve[*pValue].removeTopCard ());
    CardWidget& cardHand (players[0].hand.remove (card));
 
@@ -904,7 +920,7 @@ void Rovhult::cardDroppedOnHand (GdkDragContext* pContext, gint, gint,
            << cardHand.id () << "<->" << cardTable.id ());
 
    // End old DND
-   drag_finish (gdc, true, false, time);
+   context->drag_finish (true, false, time);
    unregisterDND (cardHand);
    unregisterDND (cardTable);
 
@@ -919,17 +935,18 @@ void Rovhult::cardDroppedOnHand (GdkDragContext* pContext, gint, gint,
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback to query the data to drop
-//Parameters: pContext: Context of the drag (contains things like source,
+//Parameters: context: Context of the drag (contains things like source,
 //                      target, action, ...)
 //            pData: Describes the thing which was dropped
 //            time: Timestamp of the drag
 //            cardPos: Position of card (either in hand or pile on table)
 //Requieres : pContext, pData not NULL; Expects info to be 0
 /*--------------------------------------------------------------------------*/
-void Rovhult::getDropData (GdkDragContext* pContext, GtkSelectionData* pData,
-                           guint info, guint32 time, unsigned int cardPos) {
-   Check3 (pContext); Check3 (pData); Check3 (info < 2);
-   Check3 (pContext->is_source);
+void Rovhult::getDropData (const Glib::RefPtr<Gdk::DragContext>& context,
+                           GtkSelectionData* pData, guint info, guint32 time,
+                           unsigned int cardPos) {
+   Check3 (pData); Check3 (info < 2);
+   Check3 (context->get_is_source ());
 
    gtk_selection_data_set (pData, pData->target, 8, reinterpret_cast <guchar*> (&cardPos),
                            sizeof (cardPos));
@@ -1289,7 +1306,7 @@ void Rovhult::end (bool restart) {
 //Purpose   : Changes the names of the playing people
 //Parameters: newNames: Array holding the new names of the players
 /*--------------------------------------------------------------------------*/
-void Rovhult::changeNames (const vector<string>& newNames) {
+void Rovhult::changeNames (const std::vector<std::string>& newNames) {
    Game::changeNames (newNames);
 
    for (int i (0); i < NUM_PLAYERS; ++i)

@@ -32,6 +32,8 @@
 
 #include <glib.h>
 
+#include <gtkmm/messagedialog.h>
+
 #include <Check.h>
 #include <Trace_.h>
 
@@ -40,7 +42,6 @@
 #include <PathSrch.h>
 
 #include <XAbout.h>
-#include <XMessageBox.h>
 #include <DeckSelect.h>
 
 #include <CardWidget.h>
@@ -52,6 +53,12 @@
 #include <PlayerDlg.h>
 
 #include "CardCol.h"
+
+
+const unsigned int CardgameCollection::USED_CARDS = 52;
+
+const unsigned int CardgameCollection::WIDTH = 760;
+const unsigned int CardgameCollection::HEIGHT = 730;
 
 
 // Pixmap for program
@@ -411,7 +418,7 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
     { _("E_xit"),             _("<ctl>Q"), EXIT,     ITEM },
     { _("_Options"),          _("<alt>O"), 0,        BRANCH },
     { _("_Change game"),      _("<alt>C"), 0,        SUBMENU },
-    {    _("_Røvhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
+    {    _("_Rovhult"),       _("<ctl>R"), ROVHULT,  RADIOITEM },
     {    _("_Twopart"),       _("<ctl>T"), TWOPART,  RADIOITEM },
     {    _("_Hearts"),        _("<ctl>H"), HEARTS,   RADIOITEM },
     {    _("_Burazno"),       _("<ctl>B"), BURAZNO,  LASTRADIOITEM },
@@ -442,7 +449,7 @@ class CardgameAppl : public IVIOApplication {
    virtual int         perform (int argc, const char* argv[]);
    virtual const char* name () const { return PACKAGE; }
    virtual const char* description () const {
-      static string version =
+      static std::string version =
          (PACKAGE " V" VERSION " - "
           + std::string (_("Compiled on"))
           + std::string (" " __DATE__ " - " __TIME__ "\n\n")
@@ -482,10 +489,12 @@ const IVIOApplication::longOptions CardgameAppl::lo[] = {
 //Parameters: type: Type of game to start with
 /*--------------------------------------------------------------------------*/
 CardgameCollection::CardgameCollection (Options& opts)
-   : XApplication (PACKAGE " V" PRG_RELEASE), status ()
-     , cardFaces (USED_CARDS), cards (), pThread (NULL), game (NULL)
+   : XApplication (PACKAGE " V" PRG_RELEASE)
+     , cardFaces (USED_CARDS), pThread (NULL), game (NULL)
      , options (opts), oldGame (NONE), restart (false) {
-   set_usize (WIDTH, HEIGHT);
+   TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
+
+   set_size_request (WIDTH, HEIGHT);
 
    helpBrowser = options.browser;
 
@@ -496,18 +505,20 @@ CardgameCollection::CardgameCollection (Options& opts)
    apMenus[NEW]->set_sensitive (false);
 
    status.show ();
-   getClient ().pack_end (status, false);
+   getClient ().pack_end (status, Gtk::PACK_SHRINK);
 
    show ();
 
    // Load cards in background
    try {
       pThread = THRDAPPL::create (this, (THRDAPPL::THREAD_OBJMEMBER)&CardgameCollection::loadCards,
-                               NULL);
+                                  NULL);
       TRACE9 ("CardgameCollection::CardgameCollection () - Thread-ID = " << pThread->getID ());
    }
    catch (std::string& e) {
-      XMessageBox::Show (e, _("Error starting thread"), XMessageBox::ERROR);
+      Gtk::MessageDialog dlg (e, Gtk::MESSAGE_ERROR);
+      dlg.set_title (_("Error starting thread"));
+      dlg.run ();
    }
 }
 
@@ -562,7 +573,7 @@ void CardgameCollection::startGame () {
    }
 
    Check3 (game);
-   string name (PACKAGE " V" PRG_RELEASE " - ");
+   std::string name (PACKAGE " V" PRG_RELEASE " - ");
    name += game->name ();
    set_title (name);
 
@@ -574,7 +585,7 @@ void CardgameCollection::startGame () {
 //Returns   : The names of the players
 //Remarks   : Can't be inline because of cyclic dependencies to Options
 /*--------------------------------------------------------------------------*/
-const vector<string>& CardgameCollection::getNames () const {
+const std::vector<std::string>& CardgameCollection::getNames () const {
    return options.names;
 }
 
@@ -587,24 +598,26 @@ void CardgameCollection::command (int menu) {
    case NEW:
       if (game && game->isRunning ()) {
          restart = true;
-         XMessageDialog<CardgameCollection>
-            ::Show (*this, &CardgameCollection::userWants2End,
-                    _("A game is already running. Do you really"
-                      " want to end it and start another?"),
-                    PACKAGE, XMessageBox::QUESTION | XMessageBox::YESNO);
+         Gtk::MessageDialog dlg (_("A game is already running. Do you really"
+                                   " want to end it and start another?"),
+                                 Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+         dlg.set_title (PACKAGE);
+         dlg.signal_response ().connect
+            (slot (*this, &CardgameCollection::userWants2End));
       }
       else
          startGame ();
       break;
 
-   case END:
+   case END: {
       Check3 (game && game->isRunning ());
       restart = false;
-      XMessageDialog<CardgameCollection>
-         ::Show (*this, &CardgameCollection::userWants2End,
-                 _("Do you really want to end the game?"),
-                 PACKAGE, XMessageBox::QUESTION | XMessageBox::YESNO);
-      break;
+      Gtk::MessageDialog dlg (_("Do you really want to end the game?"),
+                              Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+      dlg.set_title (PACKAGE);
+      dlg.signal_response ().connect
+         (slot (*this, &CardgameCollection::userWants2End));
+      break; }
 
    case TWOPART:
       options.type = GTWOPART;
@@ -635,25 +648,25 @@ void CardgameCollection::command (int menu) {
 
    case SAVESET: {
       TRACE2 ("CardgameCollection::command (int) - Save file");
-      ofstream inifile (options.pNameINIFile);
+      std::ofstream inifile (options.pNameINIFile);
       if (inifile) {
          options.strType = options.type + '0';
          INIFile::write (inifile, "Game", options);
-         INIList<string>::write (inifile, "Players", options.names);
+         INIList<std::string>::write (inifile, "Players", options.names);
       }
       break;
    }
 
    case EXIT:
-      if (game && game->isRunning ()
-          && (XMessageBox::Show (_("A game is running. Do you really want to quit?"),
-                                 PACKAGE, XMessageBox::QUESTION | XMessageBox::YESNO)
-              != XMessageBox::YES))
-            break;
-
-      Main::quit ();
+      if (game && game->isRunning ()) {
+         Gtk::MessageDialog dlg (_("A game is running. Do you really want to quit?"),
+                                 Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+         dlg.set_title (PACKAGE);
+         if (dlg.run () == Gtk::RESPONSE_YES)
+            hide ();
+      }
       break;
-
+          
 #if TRACELEVEL >= 0
    case DEBUG: {
       static bool open = false;
@@ -673,10 +686,10 @@ void CardgameCollection::command (int menu) {
 //Returns   : Name of file to display
 /*--------------------------------------------------------------------------*/
 const char* CardgameCollection::getHelpfile () {
-   string file (options.helpPath);
+   std::string file (options.helpPath);
    if (file[file.size () - 1] != File::DIRSEPARATOR)
       file += File::DIRSEPARATOR;
-   file += game ? (string (game->name ()) + ".html") : "CardCol.html";
+   file += game ? (std::string (game->name ()) + ".html") : "CardCol.html";
    return file.c_str ();
 }
 
@@ -684,8 +697,8 @@ const char* CardgameCollection::getHelpfile () {
 //Purpose   : Shows the about box for the program
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::showAboutbox () {
-   string ver (_("Anticopyright (A) 2002, 2003 Markus Schwab"
-                 "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
+   std::string ver (_("Anticopyright (A) 2002, 2003 Markus Schwab"
+                      "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
    ver.replace (ver.find ("%1"), 2, __DATE__);
    ver.replace (ver.find ("%2"), 2, __TIME__);
 
@@ -760,12 +773,12 @@ void CardgameCollection::changeCards (void* opt) {
 //             depending on the answer either stops or continues
 //Parameters: input: Button pressed by the user
 /*--------------------------------------------------------------------------*/
-void CardgameCollection::userWants2End (unsigned int input) {
-   if (input == XMessageBox::YES) {
+void CardgameCollection::userWants2End (int input) {
+   if (input == Gtk::RESPONSE_YES) {
       Check3 (game);
       if (game->isRunning ()) {
-         status.pop (1);
-         status.push (1, _("User canceled"));
+         status.pop ();
+         status.push (_("User canceled"));
 
          if (game->canBeStopped ()) {
             game->stop ();
@@ -789,24 +802,24 @@ void CardgameCollection::userWants2End (unsigned int input) {
 void CardgameCollection::loadCards () {
    // Cards need an realized (!) parent, so make somehow sure, that the window
    // already exists
-   Check3 (is_realized ());
 
    gdk_threads_enter ();
-   status.push (1, _("Loading cardimages ..."));
+   Check3 (is_realized ());
+   status.push (_("Loading cardimages ..."));
    gdk_threads_leave ();
 
    // This code needs the game-IDs in a sequence starting with 0!
    if (GLAST <= (unsigned int)options.type)
       options.type = GROVHULT;
-   dynamic_cast<CheckMenuItem*> (apMenus[ROVHULT + options.type])->set_active ();
+   dynamic_cast<Gtk::CheckMenuItem*> (apMenus[ROVHULT + options.type])->set_active ();
 
    cardFaces.load (get_window (), options.decks, options.back);
    cards.addPacket (cardFaces);
 
    gdk_threads_enter ();
    apMenus[NEW]->set_sensitive (true);
-   status.pop (1);
-   status.push (1, _("Start a new game with Ctrl+N (or Game -> New)"));
+   status.pop ();
+   status.push (_("Start a new game with Ctrl+N (or Game -> New)"));
    gdk_threads_leave ();
 
    assert (cardFaces.numberOfCards ());
@@ -843,28 +856,28 @@ void CardgameCollection::gameEvents (unsigned int status) {
 //Purpose   : Displays the help
 /*--------------------------------------------------------------------------*/
 void CardgameAppl::showHelp () const {
-   cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
-        << _(" [OPTIONS]\n\n"
-             "  -g, --game ....... [GAME] Select game to start (default: Røvhult)\n"
-             "  -f, --file ....... [FILE] Use file as INI file\n"
-             "  -b, --browser .... [NAME] Browser to use to display the help\n"
-             "  -d, --help-dir ... [DIR] Directory to search for help\n"
-             "  -V, --version .... Output version information and exit\n"
-             "  -h, -?, --help ... Displays this help and exit\n\n"
-             "Valid values for GAME are Rovhult, Røvhult, Twopart, Hearts and Burazno or the\n"
-             "numbers 0 - 3 (corresponding to the games in the above order).\n\n"
-             "The INI file can have the following entries:")
-        << ("  [Game]\n"
-            "  Type=Twopart\n"
-            "  Helpbrowser=galeon\n"
-            "  Helpdir=/usr/share/doc/Cardgames/\n"
-            "  CardFront=/usr/local/share/Cardsets/Deck1\n"
-            "  CardBack=/usr/local/share/Cardsets/back1.xpm\n\n"
-            "  [Players]\n"
-            "  0=Human\n"
-            "  1=Computer 1\n"
-            "  2=Computer 2\n"
-            "  3=Computer 3\n");
+   std::cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
+             << _(" [OPTIONS]\n\n"
+                  "  -g, --game ....... [GAME] Select game to start (default: Røvhult)\n"
+                  "  -f, --file ....... [FILE] Use file as INI file\n"
+                  "  -b, --browser .... [NAME] Browser to use to display the help\n"
+                  "  -d, --help-dir ... [DIR] Directory to search for help\n"
+                  "  -V, --version .... Output version information and exit\n"
+                  "  -h, -?, --help ... Displays this help and exit\n\n"
+                  "Valid values for GAME are Rovhult, Røvhult, Twopart, Hearts and Burazno or the\n"
+                  "numbers 0 - 3 (corresponding to the games in the above order).\n\n"
+                  "The INI file can have the following entries:")
+             << ("  [Game]\n"
+                 "  Type=Twopart\n"
+                 "  Helpbrowser=galeon\n"
+                 "  Helpdir=/usr/share/doc/Cardgames/\n"
+                 "  CardFront=/usr/local/share/Cardsets/Deck1\n"
+                 "  CardBack=/usr/local/share/Cardsets/back1.xpm\n\n"
+                 "  [Players]\n"
+                 "  0=Human\n"
+                 "  1=Computer 1\n"
+                 "  2=Computer 2\n"
+                 "  3=Computer 3\n");
 }
 
 /*--------------------------------------------------------------------------*/
@@ -884,13 +897,13 @@ bool CardgameAppl::handleOption (const char option) {
          if (type != CardgameCollection::NONE)
             options.type = type;
          else {
-            string err (_("-warning: INI-file contains invalid game type `%1'"));
+            std::string err (_("-warning: INI-file contains invalid game type `%1'"));
             err.replace (err.find ("%1"), 2, game);
-            cerr << PACKAGE << err << '\n';
+            std::cerr << PACKAGE << err << '\n';
          }
       }
       else
-         cerr << PACKAGE << _("-warning: No game specified! Ignoring option `g'\n");
+         std::cerr << PACKAGE << _("-warning: No game specified! Ignoring option `g'\n");
       break; }
 
    case 'd': {
@@ -898,7 +911,7 @@ bool CardgameAppl::handleOption (const char option) {
       if (pDir)
          options.helpPath = pDir;
       else
-         cerr << PACKAGE << _("-warning: No directory specified! Ignoring option `d'\n");
+         std::cerr << PACKAGE << _("-warning: No directory specified! Ignoring option `d'\n");
       break; }
 
    case 'b': {
@@ -906,7 +919,7 @@ bool CardgameAppl::handleOption (const char option) {
       if (pBrowser)
          options.browser = pBrowser;
       else
-         cerr << PACKAGE << _("-warning: No browser specified! Ignoring option `b'\n");
+         std::cerr << PACKAGE << _("-warning: No browser specified! Ignoring option `b'\n");
       break; }
 
    case 'f': {
@@ -914,11 +927,11 @@ bool CardgameAppl::handleOption (const char option) {
       if (pFile)
          readINIFile (pFile);
       else
-         cerr << PACKAGE << _("-warning: No file specified! Ignoring option `f'\n");
+         std::cerr << PACKAGE << _("-warning: No file specified! Ignoring option `f'\n");
       break; }
 
    case 'V':
-      cout << description () << '\n';
+      std::cout << description () << '\n';
       exit (0);
       break;
    }
@@ -977,19 +990,19 @@ void CardgameAppl::readINIFile (const char* pFile) {
       unsigned int rc (INIFILE_READ ());
    }
    catch (std::string& error) {
-      string err ("-warning: Error reading INI-file `%1'");
+      std::string err ("-warning: Error reading INI-file `%1'");
       err.replace (err.find ("%1"), 2, pFile);
-      cerr << PACKAGE << err << '\n';
+      std::cerr << PACKAGE << err << '\n';
    }
 
    CardgameCollection::games type (convertToGameType (options.strType.c_str ()));
    if (type != CardgameCollection::NONE)
       options.type = type;
    else {
-      string err ("-warning: INI-file `%1' contains invalid game type `%2'");
+      std::string err ("-warning: INI-file `%1' contains invalid game type `%2'");
       err.replace (err.find ("%1"), 2, pFile);
       err.replace (err.find ("%2"), 2, options.strType);
-      cerr << PACKAGE << err << '\n';
+      std::cerr << PACKAGE << err << '\n';
    }
 }
 
@@ -1000,16 +1013,15 @@ void CardgameAppl::readINIFile (const char* pFile) {
 //Returns   : int: Status
 /*--------------------------------------------------------------------------*/
 int CardgameAppl::perform (int, const char**) {
+   TRACE5 ("CardgameAppl::perform (int, const char**) - Params: " << args
+           << "; 1 = " << ppArgs[0]);
    srand (time (NULL));              // Initialize the random number generator
 
-   g_thread_init (NULL);
-
-   // Pass real (unprocessed) options to gtkmm/GTK+
-   Main appl (static_cast<int> (args), const_cast <char**> (ppArgs));
-   CardgameCollection win (options);
-
    gdk_threads_enter ();
-   appl.run ();
+   TRACE5 ("CardgameAppl::perform (int, const char**) - Creating window");
+   CardgameCollection win (options);
+   TRACE5 ("CardgameAppl::perform (int, const char**) - Running appl")
+   Gtk::Main::run (win);
    gdk_threads_leave ();
    return 0;
 }
@@ -1022,6 +1034,9 @@ int CardgameAppl::perform (int, const char**) {
 //Returns   : int: Status
 /*--------------------------------------------------------------------------*/
 int main (int argc, const char* argv[]) {
+   Glib::thread_init (NULL);
+
+   Gtk::Main gtk (&argc, const_cast<char***> (&argv));
    CardgameAppl appl (argc, argv);
    return appl.run ();
 }

@@ -26,10 +26,11 @@
 
 #include <cardgames-cfg.h>
 
-#include <gtk--/box.h>
-#include <gtk--/menu.h>
-#include <gtk--/main.h>
-#include <gtk--/statusbar.h>
+#include <glibmm/main.h>
+
+#include <gtkmm/box.h>
+#include <gtkmm/menu.h>
+#include <gtkmm/statusbar.h>
 
 #include <Check.h>
 #include <Trace_.h>
@@ -50,7 +51,7 @@
 //            columns: Number of columns needed by game
 /*--------------------------------------------------------------------------*/
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const vector<string>& playerNames, unsigned int rows,
+            const std::vector<std::string>& playerNames, unsigned int rows,
             unsigned int columns)
    : Gtk::Table (rows, columns), statGame (INITIALIZING), status (statusbar)
      , cards (cardset), restart (false), pWonPile (NULL), pMenuPopSort (NULL)
@@ -132,7 +133,7 @@ void Game::disableHuman () {
 void Game::randomizeCardsToPile (ICardPile& pile) const {
    // Randomize and put cards onto staple
    cards.shuffle ();
-   pile.setTopCards (cards.getCards (), false);
+   pile.setTopCards (cards.getCards ());
 }
 
 /*--------------------------------------------------------------------------*/
@@ -170,28 +171,28 @@ void Game::clean () {
 void Game::makeNextMoves () {
    if (actPlayer >= 0) {
       TRACE9 ("Game::makeNextMoves () - *** Start timer *** for player " << actPlayer);
-      Gtk::Main::timeout.connect (slot (this, (actPlayer
-                                               ? &Game::makeComputerMove
-                                               : &Game::enableHuman)),
-                                  actPlayer ? 700 : 50);
+      Glib::signal_timeout ().connect
+         (slot (*this, (actPlayer
+                        ? &Game::makeComputerMove
+                        : &Game::enableHuman)), actPlayer ? 700 : 50);
       disableHuman ();
    }
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Enables the cards of the human player
-//Returns   : int: 0
+//Returns   : int: false
 /*--------------------------------------------------------------------------*/
-int Game::enableHuman () {
+bool Game::enableHuman () {
    TRACE9 ("Game::enableHuman () - enabling player " << actPlayer);
-   return 0;
+   return false;
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Makes the move for the next player.
 //Returns   : int: Flag for timer, if it should continue (0: no; else: yes)
 /*--------------------------------------------------------------------------*/
-int Game::makeComputerMove () {
+bool Game::makeComputerMove () {
    TRACE5 ("Game::makeComputerMove () - Turn of player " << actPlayer);
    Check3 (actPlayer);
 
@@ -217,10 +218,10 @@ int Game::makeComputerMove () {
 /*--------------------------------------------------------------------------*/
 void Game::displayTurn (unsigned int player) {
    Check1 (player < names.size ());
-   status.pop (1);
+   status.pop ();
    std::string stat (_("Turn of %1"));
    stat.replace (stat.find ("%1"), 2, names[player]);
-   status.push (1, stat);
+   status.push (stat);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -228,10 +229,10 @@ void Game::displayTurn (unsigned int player) {
 //Parameters: player: Player in turn
 /*--------------------------------------------------------------------------*/
 void Game::displayTurn (unsigned int player, const std::string& preText) {
-   status.pop (1);
+   status.pop ();
    std::string stat (_("Turn of %1"));
    stat.replace (stat.find ("%1"), 2, names[player]);
-   status.push (1, preText + stat);
+   status.push (preText + stat);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -286,7 +287,8 @@ void Game::showWonCards (bool show) {
    if (pWonPile) {
       pWonPile->setShowOption (show ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
       pWonPile->setStyle (show ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
-      Gtk::Main::timeout.connect (slot (this, &Game::enableActWonCards), 50);
+      Glib::signal_timeout ().connect
+         (slot (*this, &Game::enableActWonCards), 50);
       disableWonCards ();
    }
 }
@@ -295,7 +297,7 @@ void Game::showWonCards (bool show) {
 //Purpose   : Callback for any event for the top of the won cards
 //Parameters: event: Caused event
 /*--------------------------------------------------------------------------*/
-gint Game::wonCardsSelected (GdkEvent* event) {
+bool Game::wonCardsSelected (GdkEvent* event) {
    TRACE2 ("Game::wonCardsSelected (GdkEvent*) - " << event->type);
 
    if (event->type == GDK_BUTTON_PRESS) {
@@ -312,10 +314,10 @@ gint Game::wonCardsSelected (GdkEvent* event) {
             pMenuPopSort = new Gtk::Menu;
             pMenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem
                                               (_("Sort by number"),
-                                               slot (this, &Game::sortWonByNumber)));
+                                               slot (*this, &Game::sortWonByNumber)));
             pMenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem
                                               (_("Sort by color"),
-                                               slot (this, &Game::sortWonByColor)));
+                                               slot (*this, &Game::sortWonByColor)));
          }
          pMenuPopSort->popup (bev->button, bev->time);
          break; }
@@ -334,7 +336,7 @@ void Game::sortWonByNumber () {
    Check3 (pWonPile);
    pWonPile->sortByNumber ();
    showWonCards ();
-   Gtk::Main::timeout.connect (slot (this, &Game::enableActWonCards), 50);
+   Glib::signal_timeout ().connect (slot (*this, &Game::enableActWonCards), 50);
    disableWonCards ();
 }
 
@@ -346,14 +348,14 @@ void Game::sortWonByColor () {
    Check3 (pWonPile);
    pWonPile->sortByColor ();
    showWonCards ();
-   Gtk::Main::timeout.connect (slot (this, &Game::enableActWonCards), 50);
+   Glib::signal_timeout ().connect (slot (*this, &Game::enableActWonCards), 50);
    disableWonCards ();
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Enables the actual won cards
 /*--------------------------------------------------------------------------*/
-int Game::enableActWonCards () {
+bool Game::enableActWonCards () {
    disableWonCards ();
 
    Check3 (pWonPile);
@@ -361,9 +363,9 @@ int Game::enableActWonCards () {
            << " cards");
    for (int i (pWonPile->numberOfCards ()); i;)
       wonCards.push_back
-         (pWonPile->at (--i).event.connect
-          (slot (this, (&Game::wonCardsSelected))));
-   return 0;
+         (pWonPile->at (--i).signal_event ().connect
+          (slot (*this, (&Game::wonCardsSelected))));
+   return false;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -381,6 +383,6 @@ void Game::disableWonCards () {
 //Purpose   : Changes the names of the playing people
 //Parameters: newNames: Array holding the new names of the players
 /*--------------------------------------------------------------------------*/
-void Game::changeNames (const vector<string>& newNames) {
-   const_cast<vector<string>&> (names) = newNames;
+void Game::changeNames (const std::vector<std::string>& newNames) {
+   const_cast<std::vector<std::string>&> (names) = newNames;
 }

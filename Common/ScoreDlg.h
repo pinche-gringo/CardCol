@@ -40,13 +40,13 @@ namespace Gtk {
 // Class to display the score of the Hearts cardgame
 class HeartsScoreDlg : public XDialog {
  public:
-   HeartsScoreDlg (const vector<string>& playerNames);
+   HeartsScoreDlg (const std::vector<std::string>& playerNames);
    virtual ~HeartsScoreDlg ();
 
-   static HeartsScoreDlg* perform (const vector<string>& playerNames) {
+   static HeartsScoreDlg* perform (const std::vector<std::string>& playerNames) {
       return new HeartsScoreDlg (playerNames); }
 
-   void update (const vector<string>& playerNames);
+   void update (const std::vector<std::string>& playerNames);
 
    void addPoints (unsigned int points0, unsigned int points1,
                    unsigned int points2, unsigned int points3);
@@ -74,14 +74,14 @@ class HeartsScoreDlg : public XDialog {
       ~column ();
 
       void addEntry (unsigned int points);
-      void setTitle (const string& title);
+      void setTitle (const std::string& title);
 
       unsigned int getPoints () const { return pSum->getAttribute (); }
       Gtk::Box& getBox () const { return *pBox; }
 
     private:
       typedef XAttributeLabel2<unsigned int> IntLabel;
-      typedef SmartPtr<IntLabel>            PIntLabel;
+      typedef SmartPtr<IntLabel>             PIntLabel;
 
       PBox       pBox;
       PLabel     pTitle;

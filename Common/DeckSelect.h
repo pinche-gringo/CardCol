@@ -21,16 +21,14 @@
 #include <string>
 #include <vector>
 
-#include <gtk--/box.h>
-#include <gtk--/label.h>
-#include <gtk--/button.h>
-#include <gtk--/table.h>
-#include <gtk--/buttonbox.h>
-#include <gtk--/scrolledwindow.h>
+#include <gtkmm/box.h>
+#include <gtkmm/label.h>
+#include <gtkmm/button.h>
+#include <gtkmm/table.h>
+#include <gtkmm/buttonbox.h>
+#include <gtkmm/scrolledwindow.h>
 
 #include <XDialog.h>
-
-using namespace Gtk;
 
 
 // Class to select the card decks to use
@@ -40,16 +38,17 @@ class ICarddeckSelectDlg : public XDialog {
                        const std::string& back);
    virtual ~ICarddeckSelectDlg ();
 
-   typedef enum { APPLY } commands;
-
    void getSelection (std::string& deck, std::string& back) const {
       deck = aFiles[0] + aFiles[offDeck];
       back = aFiles[0] + aFiles[offBack]; }
 
  protected:
-   virtual void command (commands action);
+   virtual void command (int action);
    virtual void deckSelect (unsigned int offset);
    virtual void backSelect (unsigned int offset);
+
+   Gtk::Button* createButton (const std::string& file);
+   void setButtonImage (Gtk::Button& button, const std::string& file);
 
    int offDeck;
    int offBack;
@@ -61,27 +60,23 @@ class ICarddeckSelectDlg : public XDialog {
    
    const ICarddeckSelectDlg& operator= (const ICarddeckSelectDlg&);
 
-   Button apply;
+   Gtk::HBox   boxDecks;
+   Gtk::Label  txtDecks;
+   Gtk::Button selDeck;
+   Gtk::Table  decks;
+   Gtk::ScrolledWindow scrlDeck;
 
-   HBox   boxDecks;
-   Label  txtDecks;
-   Button selDeck;
-   Table  decks;
-   ScrolledWindow scrlDeck;
+   Gtk::Button selBack;
+   Gtk::HBox   boxBack;
+   Gtk::Label  txtBack;
+   Gtk::Table  backs;
+   Gtk::ScrolledWindow scrlBack;
 
-   Button selBack;
-   HBox   boxBack;
-   Label  txtBack;
-   Table  backs;
-   ScrolledWindow scrlBack;
+   Gtk::HButtonBox box;
 
-   HButtonBox box;
-
-   vector<Button*> aDecks;
-   vector<Button*> aBacks;
-   vector<std::string> aFiles;
-
-   static const char* const DEFAULTFILE = "14.xpm";
+   std::vector<Gtk::Button*> aDecks;
+   std::vector<Gtk::Button*> aBacks;
+   std::vector<std::string> aFiles;
 };
 
 
@@ -104,7 +99,7 @@ class CarddeckSelectDlg : public ICarddeckSelectDlg {
    virtual void okEvent () {
       (obj.*pCallback) (*this);
       ICarddeckSelectDlg::okEvent (); }
-   virtual void command (commands action) {
+   virtual void command (int action) {
       ICarddeckSelectDlg::command (action);
       (obj.*pCallback) (*this); }
 

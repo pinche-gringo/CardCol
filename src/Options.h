@@ -40,14 +40,14 @@ class Options : public Entity {
    Options (const Options& other);
    const Options& operator= (const Options& other);
 
-   string strType;        // %attrib%; Type;        "Rovhult"
+   std::string strType;        // %attrib%; Type;        "Rovhult"
    unsigned int type;
-   string  browser;       // %attrib%; Helpbrowser; "galeon"
-   string  helpPath;      // %attrib%; Helpdir;     DOCUDIR
-   string  decks;         // %attrib%; CardFront;   CARDSET_PATH "/Deck1"
-   string  back;          // %attrib%; CardBack;    CARDSET_PATH "/back1.xpm"
+   std::string  browser;       // %attrib%; Helpbrowser; "galeon"
+   std::string  helpPath;      // %attrib%; Helpdir;     DOCUDIR
+   std::string  decks;         // %attrib%; CardFront;   CARDSET_PATH "/Deck1"
+   std::string  back;          // %attrib%; CardBack;    CARDSET_PATH "/back1.xpm"
 
-   vector<string> names;
+   std::vector<std::string> names;
    const char*    pNameINIFile;
 };
 

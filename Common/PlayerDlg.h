@@ -34,10 +34,10 @@ namespace Gtk {
 // Class to enter the names of the players
 class IPlayerDlg : public XDialog {
  public:
-   IPlayerDlg (vector<string>& names);
+   IPlayerDlg (std::vector<std::string>& names);
    virtual ~IPlayerDlg ();
 
-   static IPlayerDlg* perform (vector<string>& names) {
+   static IPlayerDlg* perform (std::vector<std::string>& names) {
       return new IPlayerDlg (names); }
 
  protected:
@@ -54,16 +54,16 @@ class IPlayerDlg : public XDialog {
       Gtk::Label* label;
       Gtk::Entry* value;
 
-      line (const char* label, string& attribute);
-      line (string& label, string& attribute);
+      line (const char* label, std::string& attribute);
+      line (std::string& label, std::string& attribute);
       ~line ();
 
       void show ();
       void attach (Gtk::Table& table, unsigned int line);
    } line;
 
-   vector<line*> aPlayers;
-   vector<string>& values;
+   std::vector<line*>        aPlayers;
+   std::vector<std::string>& values;
 };
 
 
@@ -74,12 +74,12 @@ class PlayerDlg : public IPlayerDlg {
  public:
    typedef void (T::*PCALLBACK) ();
 
-   PlayerDlg (T& parent, PCALLBACK callback, vector<string>& names)
+   PlayerDlg (T& parent, PCALLBACK callback, std::vector<std::string>& names)
       : IPlayerDlg (names), obj (parent), pCallback (callback) { }
    virtual ~PlayerDlg () { }
    
    static PlayerDlg* create (T& parent, PCALLBACK callback,
-                              vector<string>& names) {
+                              std::vector<std::string>& names) {
       return new PlayerDlg<T> (parent, callback, names); }
 
  protected:

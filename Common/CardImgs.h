@@ -18,9 +18,9 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include <string>
-#include <vector.h>
+#include <vector>
 
-#include <gdk--/pixmap.h>
+#include <gdkmm/pixmap.h>
 
 
 // Class to load & store the images of the used cards
@@ -29,21 +29,21 @@ class CardImages {
    CardImages (unsigned int cards) : cards_ (cards) { }
    ~CardImages ();
 
-   const Gdk_Pixmap& getCardImage (unsigned int nr) const;
+   const Glib::RefPtr<Gdk::Pixmap> getCardImage (unsigned int nr) const;
 
-   const Gdk_Pixmap& getCardBackground () const { return back_; }
-   void setCardBackground (const Gdk_Pixmap& back) { back_ = back; }
+   const Glib::RefPtr<Gdk::Pixmap> getCardBackground () const { return back_; }
+   void setCardBackground (const Glib::RefPtr<Gdk::Pixmap> back) { back_ = back; }
 
-   void loadDecks (const Gdk_Window& parent, const std::string& path,
+   void loadDecks (const Glib::RefPtr<Gdk::Window> parent, const std::string& path,
                   bool thread = true) throw (std::string);
-   void loadBack (const Gdk_Window& parent, const std::string& file,
+   void loadBack (const Glib::RefPtr<Gdk::Window> parent, const std::string& file,
                   bool thread = true) throw (std::string);
-   void load (const Gdk_Window& parent, const std::string& path,
+   void load (const Glib::RefPtr<Gdk::Window> parent, const std::string& path,
               const std::string& back, bool thread = true) throw (std::string) {
       loadDecks (parent, path, true);
       loadBack (parent, back);
    }
-   void load (unsigned int cards, const Gdk_Window& parent,
+   void load (unsigned int cards, const Glib::RefPtr<Gdk::Window> parent,
               const std::string& path, const std::string& back,
               bool thread = true) throw (std::string) {
       cards_.reserve (cards);
@@ -52,8 +52,8 @@ class CardImages {
    unsigned int numberOfCards () const { return cards_.size (); }
 
  private:
-   vector<Gdk_Pixmap> cards_;
-   Gdk_Pixmap back_;
+   std::vector<Glib::RefPtr<Gdk::Pixmap> > cards_;
+   Glib::RefPtr<Gdk::Pixmap> back_;
 
    void unload ();
 };

@@ -24,12 +24,11 @@
 #include <vector>
 #include <algorithm>
 
-#include <gtk--/box.h>
-#include <gtk--/tooltips.h>
-
-#include <ANumeric.h>
+#include <gtkmm/box.h>
+#include <gtkmm/tooltips.h>
 
 #include <Check.h>
+#include <ANumeric.h>
 
 #include <CardWidget.h>
 
@@ -51,9 +50,9 @@ class ICardPile {
    void showTopCardFace (bool visible = true);
    void showTopCardBack () { showTopCardFace (false); }
 
-   void setTopCards (const vector<CardWidget*>& staple);
-   void setTopCards (const vector<CardWidget*>& staple, bool visible);
-   void setTopCards (const vector<CardWidget*>& staple, bool visible, bool lastVisible) {
+   void setTopCards (const std::vector<CardWidget*>& staple);
+   void setTopCards (const std::vector<CardWidget*>& staple, bool visible);
+   void setTopCards (const std::vector<CardWidget*>& staple, bool visible, bool lastVisible) {
       setTopCards (staple, visible);
       showTopCardFace (lastVisible); }
 
@@ -91,10 +90,11 @@ class ICardPile {
    int findByNr (CardWidget& card) const { return find (card, compCardsByNr); }
    int findByColor (CardWidget& card) const { return find (card, compCards); }
    int find1EqualOrBigger (const CardWidget& card, CMPFUNC fnComp) const {
-      CardWidget* const* low (lower_bound (cards.begin (), cards.end (),
-                                           &card, fnComp));
-      return ((low != cards.end () && !fnComp (*low, &card))
-              ? (low - cards.begin ()) : -1); }
+      std::vector<CardWidget*>::const_iterator i
+         (std::lower_bound (cards.begin (), cards.end (),
+                            &card, fnComp));
+      return ((i != cards.end () && !fnComp (*i, &card))
+              ? (i - cards.begin ()) : -1); }
    int find1EqualOrBiggerByNr (CardWidget& card) const {
       return find1EqualOrBigger (card, compCardsByNr); }
    int find1EqualOrBiggerByColor (CardWidget& card) const {
@@ -114,7 +114,7 @@ class ICardPile {
       return find (color, start) != -1; }
    bool exists (CardWidget& card) const { exists (&card); }
    bool exists (CardWidget* card) const {
-      return ::find (cards.begin (), cards.end (), card) != cards.end (); }
+      return std::find (cards.begin (), cards.end (), card) != cards.end (); }
 
    // General management-functions
    virtual void resize (unsigned int pos, PileStyle s);
@@ -132,7 +132,7 @@ class ICardPile {
    void sortByColor () { sort (compCards); }
 
  protected:
-   vector<CardWidget*> cards;
+   std::vector<CardWidget*> cards;
    PileStyle style;
    ShowOpt showOpt;
 
@@ -155,7 +155,7 @@ template <class T> class CardPile : public T, public ICardPile {
 
    virtual void setTopCard (CardWidget& newCard) {
       ICardPile::setTopCard (newCard);
-      pack_start (newCard, false); }
+      pack_start (newCard, Gtk::PACK_SHRINK); }
    void setTopCard (CardWidget& newCard, bool visible) {
       ICardPile::setTopCard (newCard, visible); }
 
@@ -165,7 +165,7 @@ template <class T> class CardPile : public T, public ICardPile {
       return card; }
 
    virtual void insert (CardWidget& card, unsigned int pos) {
-      pack_start (card, false);
+      pack_start (card, Gtk::PACK_SHRINK);
       reorder_child (card, pos);
       ICardPile::insert (card, pos);
    }
@@ -209,7 +209,7 @@ void CardVPile::resize (unsigned int pos, PileStyle s) {
    if (pos != -1) {
       CardWidget& card (*cards[pos]);
       unsigned int height[(int)LAST] = { card.getImageHeight (), 15, 7, 1 };
-      card.set_usize (-1, height[(int)s]);
+      card.set_size_request (-1, height[(int)s]);
    }
 }
 
@@ -217,7 +217,7 @@ void CardHPile::resize (unsigned int pos, PileStyle s) {
    if (pos != -1) {
       CardWidget& card (*cards[pos]);
       unsigned int width[(int)LAST] = { card.getImageWidth (), 18, 7, 1 };
-      card.set_usize (width[(int)s], -1);
+      card.set_size_request (width[(int)s], -1);
    }
 }
 
@@ -226,9 +226,9 @@ void CardHPile::resize (unsigned int pos, PileStyle s) {
 // (especially usefull, if the pile is (very) compressed ;) )
 template <class T> class CardInfoPile : public CardPile<T> {
  public:
-   CardInfoPile (PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE)
-      : CardPile<T> (style, show) {
-      tt.set_delay (2); }
+   CardInfoPile (ICardPile::PileStyle style = NORMAL,
+                 ICardPile::ShowOpt show = DONT_CHANGE)
+      : CardPile<T> (style, show) { }
    virtual ~CardInfoPile () { }
 
    virtual void setTopCard (CardWidget& newCard) {
@@ -239,7 +239,7 @@ template <class T> class CardInfoPile : public CardPile<T> {
 
    virtual CardWidget& removeTopCard () {
       CardWidget& card (CardPile<T>::removeTopCard ());
-      tt.set_tip (card);
+      tt.unset_tip (card);
       setTooltips ();
       return card; }
 
@@ -249,14 +249,14 @@ template <class T> class CardInfoPile : public CardPile<T> {
 
    virtual CardWidget& remove (CardWidget& card) {
       CardPile<T>::remove (card);
-      tt.set_tip (card);
+      tt.unset_tip (card);
       setTooltips ();
       return card; }
    CardWidget& remove (CardWidget& card, bool visible) {
       CardPile<T>::remove (card, visible); }
    virtual CardWidget& remove (unsigned int pos) {
       CardWidget& card (CardPile<T>::remove (pos));
-      tt.set_tip (card);
+      tt.unset_tip (card);
       setTooltips ();
       return card; }
    virtual CardWidget& remove (unsigned int pos, bool visible) {
@@ -302,13 +302,15 @@ class PseudoPile : public Gtk::Button, public ICardPile {
    virtual void resize (unsigned int pos, PileStyle s) {
       Gtk::Button::remove ();
       if (pos == (cards.size () - 1))
-         add_pixmap (cards.back ()->getShownImage (), NULL);
+         add_pixmap (cards.back ()->getShownImage (),
+                     Glib::RefPtr<Gdk::Bitmap> (NULL));
    }
    virtual void sort (CMPFUNC fnSort) {
       if (cards.size ()) {
          resize (cards.size () - 1, style);
          ICardPile::sort (fnSort);
-         add_pixmap (cards.back ()->getShownImage (), NULL); }
+         add_pixmap (cards.back ()->getShownImage (),
+                     Glib::RefPtr<Gdk::Bitmap> (NULL)); }
    }
 };
 
@@ -317,9 +319,7 @@ class PseudoPile : public Gtk::Button, public ICardPile {
 class PseudoInfoPile : public PseudoPile {
  public:
    PseudoInfoPile (ShowOpt show = DONT_CHANGE)
-      : PseudoPile (show) {
-      tt.set_delay (2);
-      setTooltips (); }
+      : PseudoPile (show) { setTooltips (); }
    virtual ~PseudoInfoPile () { }
 
    virtual void setTopCard (CardWidget& newCard) {
@@ -330,7 +330,7 @@ class PseudoInfoPile : public PseudoPile {
 
    virtual CardWidget& removeTopCard () {
       CardWidget& card (PseudoPile::removeTopCard ());
-      tt.set_tip (card);
+      tt.unset_tip (card);
       setTooltips ();
       return card; }
 
@@ -340,7 +340,7 @@ class PseudoInfoPile : public PseudoPile {
 
    virtual CardWidget& remove (CardWidget& card) {
       ICardPile::remove (card);
-      tt.set_tip (card);
+      tt.unset_tip (card);
       setTooltips ();
       return card; }
    CardWidget& remove (CardWidget& card, bool visible) {
@@ -349,7 +349,7 @@ class PseudoInfoPile : public PseudoPile {
       return card; }
    virtual CardWidget& remove (unsigned int pos) {
       CardWidget& card (ICardPile::remove (pos));
-      tt.set_tip (card);
+      tt.unset_tip (card);
       setTooltips ();
       return card; }
    virtual CardWidget& remove (unsigned int pos, bool visible) {

@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include <gtk--/table.h>
+#include <gtkmm/table.h>
 
 // Forward declarations
 namespace Gtk {
@@ -38,7 +38,8 @@ class Game : public Gtk::Table {
    enum { INITIALIZING, STOPPED, TOSTOP, PLAYING, LAST };
 
    Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-         const vector<string>& playerNames, unsigned int rows, unsigned int columns);
+         const std::vector<std::string>& playerNames, unsigned int rows,
+         unsigned int columns);
    virtual ~Game ();
 
    // Managing
@@ -49,7 +50,7 @@ class Game : public Gtk::Table {
    virtual void control (unsigned int status) const { }
    virtual void clean ();
    virtual const char* name () = 0;
-   virtual void changeNames (const vector<string>& newNames);
+   virtual void changeNames (const std::vector<std::string>& newNames);
 
    // Status handling
    bool isRunning () const { return statGame >= PLAYING; }
@@ -59,7 +60,7 @@ class Game : public Gtk::Table {
    void setGameStatus (unsigned int newStatus);
 
  protected:
-   virtual int enableHuman ();
+   virtual bool enableHuman ();
    virtual void disableHuman ();
 
    unsigned int currentPlayer () const { return actPlayer; }
@@ -76,7 +77,7 @@ class Game : public Gtk::Table {
                          unsigned int start = 0, int end = -1);
 
    // Handling of won cards (if any)
-   gint wonCardsSelected (GdkEvent *event);
+   bool wonCardsSelected (GdkEvent *event);
    void showWonCards (bool show = true);
    int  enableWonCards (ICardPile& pile) {
       pWonPile = &pile;
@@ -89,22 +90,21 @@ class Game : public Gtk::Table {
    Gtk::Statusbar& status;
    CardSet& cards;
 
-   vector<Gtk::Connection> activeCards;
-   const vector<string>& names;
+   std::vector<SigC::Connection>   activeCards;
+   const std::vector<std::string>& names;
 
  private:
-   int makeComputerMove ();
+   bool makeComputerMove ();
+   bool enableActWonCards ();
 
    unsigned int statGame;
 
    int actPlayer;                   // Player who is in turn (needed for timer)
    bool restart;
 
-   vector<Gtk::Connection> wonCards;           // Connections to show won cards
-   ICardPile*              pWonPile;
-   Gtk::Menu*              pMenuPopSort;
-
-   int  enableActWonCards ();
+   std::vector<SigC::Connection> wonCards;     // Connections to show won cards
+   ICardPile*                    pWonPile;
+   Gtk::Menu*                    pMenuPopSort;
 };
 
 

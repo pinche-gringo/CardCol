@@ -27,7 +27,10 @@
 
 #include <cardgames-cfg.h>
 
-#include <gtk--/pixmap.h>
+#include <gdkmm/pixmap.h>
+
+#include <gtkmm/stock.h>
+#include <gtkmm/image.h>
 
 #include <Check.h>
 #include <Trace_.h>
@@ -36,6 +39,9 @@
 #include <Cardset-config.h>
 
 #include "DeckSelect.h"
+
+
+static const char* const DEFAULTFILE = "14.xpm";
 
 
 /*--------------------------------------------------------------------------*/
@@ -47,28 +53,27 @@
 ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& deck,
                                         const std::string& back)
    : XDialog (OKCANCEL), txtDecks (_("Available decks"))
-   , apply (_("Apply")), decks (), boxDecks ()
+   , decks (), boxDecks ()
    , txtBack (_("Available backgrounds")), backs (), boxBack ()
    , selDeck (), selBack (), offDeck (-1), offBack (-1)
-   , box (GTK_BUTTONBOX_END, 5), scrlBack (), scrlDeck () {
+   , box (Gtk::BUTTONBOX_END, 5), scrlBack (), scrlDeck () {
    TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (const char*) - " << path
            << " (" << deck << " - " << back << ')');
 
    set_title (_("Select carddeck"));
 
-   apply.clicked.connect (bind (slot (this, &ICarddeckSelectDlg::command), APPLY));
-   addButton (apply);
+   add_button (Gtk::Stock::APPLY, Gtk::RESPONSE_APPLY);
 
-   scrlDeck.set_policy (GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-   scrlBack.set_policy (GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+   scrlDeck.set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+   scrlBack.set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
    boxDecks.pack_start (scrlDeck, true, true, 50);
    boxDecks.pack_start (selDeck, false, false, 5);
-   scrlDeck.add_with_viewport (decks);
+   scrlDeck.add (decks);
 
    boxBack.pack_start (scrlBack, true, true, 50);
    boxBack.pack_start (selBack, false, false, 5);
-   scrlBack.add_with_viewport (backs);
+   scrlBack.add (backs);
 
    Check3 (get_vbox ());
    get_vbox ()->pack_start (txtDecks, false, false, 5);
@@ -83,8 +88,6 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    cardDirs += "Deck*";
    DirectorySearch ds (cardDirs);
 
-   Gdk_Color color;
-
    TRACE8 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Searching in path "
            << cardDirs);
    const File* dir (ds.find (IDirectorySearch::FILE_DIRECTORY
@@ -94,7 +97,6 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 
    show_all ();
 
-   Gdk_Pixmap img;
    while (dir) {
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Found dir "
               << dir->name ());
@@ -109,17 +111,14 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Reading file "
               << file);
 
-      Button* temp (new Button ());
-      temp->clicked.connect (bind (slot (this, &ICarddeckSelectDlg::deckSelect), ++offset));
-      temp->show ();
-
-      img.create_from_xpm (get_window (), color, file);
-      temp->add_pixmap (img, NULL);
+      Gtk::Button* temp (createButton (file));
+      temp->signal_clicked ().connect
+         (bind (slot (*this, &ICarddeckSelectDlg::deckSelect), ++offset));
       aDecks.push_back (temp);
 
       decks.resize ((offset >> 2) + 1, 4);
       decks.attach (*temp, offset & 0x3, (offset & 0x3) + 1, offset >> 2,
-                    (offset >> 2) + 1, 0, 0, 5, 5);
+                    (offset >> 2) + 1, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
 
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Comparing "
               << pathDeck << " with " << deck);
@@ -131,12 +130,15 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    if (offDeck == -1)
       deckSelect (1);
 
+   int height (10), width (10);
+   if (aDecks.size ())
+      aDecks.front ()->get_size_request (width, height);
+   height = (height + 20) * ((offset >> 2) + 1);
+   width = (width + 25) << 2;
+   scrlDeck.set_size_request (width, height < 250 ? height : 250);
+
    TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Decksize = "
-           << (img.width () << 2) << '/'
-           << img.height () * ((offset >> 2) + 1));
-   unsigned int height ((img.height () + 20) * ((offset >> 2) + 1));
-   scrlDeck.set_usize ((img.width () + 25) << 2,
-                       height < 250 ? height : 250);
+           << width << '/' << height);
 
    unsigned int offsetBack (offset + 1);
    dir = ds.find (aFiles[0] + "/back*.xpm", IDirectorySearch::FILE_NORMAL
@@ -146,24 +148,21 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
               "background file " << dir->path () << dir->name ());
       aFiles.push_back (dir->name ());
 
-      Button* temp (new Button ());
-      temp->clicked.connect (bind (slot (this, &ICarddeckSelectDlg::backSelect), ++offset));
-      temp->show ();
+      Gtk::Button* temp (createButton (aFiles[0] + dir->name ()));
+      temp->signal_clicked ().connect
+         (bind (slot (*this, &ICarddeckSelectDlg::backSelect), ++offset));
+      aBacks.push_back (temp);
 
       TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Comparing "
               << (aFiles[0] + dir->name ()) << " with " << back);
       if ((aFiles[0] + dir->name ()) == back)
          backSelect (offset);
 
-      Gdk_Pixmap img;
-      img.create_from_xpm (get_window (), color, aFiles[0] + dir->name ());
-      temp->add_pixmap (img, NULL);
-      aBacks.push_back (temp);
 
       backs.resize (((offset - offsetBack) >> 2) + 1, 4);
       backs.attach (*temp, (offset - offsetBack) & 0x3, ((offset - offsetBack) & 0x3) + 1,
                     (offset - offsetBack) >> 2, ((offset - offsetBack) >> 2) + 1,
-                    0, 0, 5, 5);
+                    Gtk::SHRINK, Gtk::SHRINK, 5, 5);
 
       dir = ds.next ();
    }
@@ -171,12 +170,14 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
       backSelect (offsetBack);
 
    offset -= offBack;
-   TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Decksize = "
-           << (img.width () << 2) << '/'
-           << img.height () * ((offset >> 2) + 1));
-   height = ((img.height () + 20) * ((offset >> 2) + 1));
-   scrlBack.set_usize ((img.width () + 25) << 2,
-                       height < 250 ? height : 250);
+
+   height = 10;
+   width = 10;
+   if (aBacks.size ())
+      aBacks.front ()->get_size_request (width, height);
+   height = (height + 20) * ((offset >> 2) + 1);
+   width = (width + 25) << 2;
+   scrlBack.set_size_request (width, height < 250 ? height : 250);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -185,11 +186,11 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
 ICarddeckSelectDlg::~ICarddeckSelectDlg () {
    TRACE9 ("CarddeckSelectDlg::~CarddeckSelectDlg ()");
 
-   for (vector<Button*>::iterator i (aDecks.begin ());
+   for (std::vector<Gtk::Button*>::iterator i (aDecks.begin ());
         i != aDecks.end (); ++i)
       delete *i;
 
-   for (vector<Button*>::iterator i (aBacks.begin ());
+   for (std::vector<Gtk::Button*>::iterator i (aBacks.begin ());
         i != aBacks.end (); ++i)
       delete *i;
 }
@@ -203,21 +204,10 @@ void ICarddeckSelectDlg::deckSelect (unsigned int offset) {
    TRACE9 ("ICarddeckSelectDlg::deckSelect (const std::string&) - Position "
            << offset);
    Check3 (offset < aFiles.size ());
-
    TRACE3 ("ICarddeckSelectDlg::deckSelect (const std::string&) - Selected "
            << aFiles[0] << aFiles[offset]);
 
-   selDeck.remove ();
-
-   Gdk_Color color;
-   Gdk_Pixmap img;
-   img.create_from_xpm (get_window (), color, aFiles[0] + aFiles[offset]
-                        + File::DIRSEPARATOR + DEFAULTFILE);
-   selDeck.add_pixmap (img, NULL);
-   selDeck.set_relief (GTK_RELIEF_NONE);
-   dynamic_cast <Gtk::Pixmap*> (selDeck.get_child ())->set_alignment (0.0, 0.0);
-
-   offDeck = offset;
+   setButtonImage (selDeck, aFiles[0] + aFiles[offDeck = offset]);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -232,24 +222,42 @@ void ICarddeckSelectDlg::backSelect (unsigned int offset) {
    TRACE3 ("ICarddeckSelectDlg::backSelect (const std::string&) - Selected "
            << aFiles[0] << aFiles[offset]);
 
-   selBack.remove ();
-
-   Gdk_Color color;
-   Gdk_Pixmap img;
-   img.create_from_xpm (get_window (), color, aFiles[0] + aFiles[offset]);
-   selBack.add_pixmap (img, NULL);
-   selBack.set_relief (GTK_RELIEF_NONE);
-
-   dynamic_cast <Gtk::Pixmap*> (selBack.get_child ())->set_alignment (0.0, 0.0);
-
-   offBack = offset;
+   setButtonImage (selBack, aFiles[0] + aFiles[offBack = offset]);
 }
 
 /*--------------------------------------------------------------------------*/
 //Purpose   : Callback after selecting a button
 //Parameters: action: ID of selected button
 /*--------------------------------------------------------------------------*/
-void ICarddeckSelectDlg::command (commands action) {
-   TRACE9 ("ICarddeckSelectDlg::command (commands) - Command: " << action);
-   Check1 (action == APPLY);
+void ICarddeckSelectDlg::command (int action) {
+   TRACE9 ("ICarddeckSelectDlg::command (int) - Command: " << action);
+   Check1 (action == Gtk::RESPONSE_APPLY);
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Creates a pixmap-button, with an image from the passed file
+//Parameters: file: File containing the image
+/*--------------------------------------------------------------------------*/
+Gtk::Button* ICarddeckSelectDlg::createButton (const std::string& file) {
+   Gtk::Button* temp (new Gtk::Button ());
+
+   setButtonImage (*temp, file);
+   temp->show ();
+   return temp;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Sets an image for the passed button
+//Parameters: button: Button to change
+//            file: File containing the image
+/*--------------------------------------------------------------------------*/
+void ICarddeckSelectDlg::setButtonImage (Gtk::Button& button, const std::string& file) {
+   Gdk::Color color;
+   Glib::RefPtr<Gdk::Pixmap> img;
+
+   button.remove ();
+   img->create_from_xpm (get_window (), color, file);
+   button.add_pixmap (img, Glib::RefPtr<Gdk::Bitmap> (NULL));
+   button.set_relief (Gtk::RELIEF_NONE);
+   dynamic_cast <Gtk::Image*> (selBack.get_child ())->set_alignment (0.0, 0.0);
 }

@@ -19,8 +19,8 @@
 
 #include <string>
 
-#include <gdk--/pixmap.h>
-#include <gtk--/button.h>
+#include <gdkmm/pixmap.h>
+#include <gtkmm/button.h>
 
 #include <CardImgs.h>
 
@@ -49,17 +49,21 @@ class CardWidget : public Gtk::Button {
    char numberStr () const;
    char colorStr () const;
 
-   const Gdk_Pixmap& getShownImage () const {
+   const Glib::RefPtr<Gdk::Pixmap> getShownImage () const {
       return isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (); }
-   const Gdk_Pixmap& getImage () const { return deck.getCardImage (nrCard); }
+   const Glib::RefPtr<Gdk::Pixmap> getImage () const { return deck.getCardImage (nrCard); }
    unsigned int getImageHeight () const {
-      return const_cast<Gdk_Pixmap&> (deck.getCardImage (nrCard)).height (); }
+      int x, y;
+      deck.getCardImage (nrCard)->get_size (x, y);
+      return y; }
    unsigned int getImageWidth () const {
-      return const_cast<Gdk_Pixmap&> (deck.getCardImage (nrCard)).width (); }
+      int x, y;
+      deck.getCardImage (nrCard)->get_size (x, y);
+      return x; }
 
    int compareNumber (CardWidget& other) const { return number () - other.number (); }
 
-   friend ostream& operator<< (ostream& out, const CardWidget& card) {
+   friend std::ostream& operator<< (std::ostream& out, const CardWidget& card) {
       out << card.colorStr () << card.numberStr ();
       return out; }
 

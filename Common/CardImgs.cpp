@@ -27,15 +27,16 @@
 #include <errno.h>
 #include <stdlib.h>
 
+#include <sstream>
+
 #include <cardgames-cfg.h>
 
 #include <Check.h>
 #include <Trace_.h>
 
-#include <gtk--/widget.h>
+#include <gtkmm/widget.h>
 
 #include <File.h>
-#include <ANumeric.h>
 
 #include "CardImgs.h"
 
@@ -52,9 +53,8 @@ CardImages::~CardImages () {
 //Purpose   : Retrieves the specified cardnumber
 //Parameters: nr: Number of card to retrieve
 /*--------------------------------------------------------------------------*/
-const Gdk_Pixmap& CardImages::getCardImage (unsigned int nr) const {
+const Glib::RefPtr<Gdk::Pixmap> CardImages::getCardImage (unsigned int nr) const {
    Check3 (nr < numberOfCards ());
-
    return cards_[nr];
 }
 
@@ -65,26 +65,27 @@ const Gdk_Pixmap& CardImages::getCardImage (unsigned int nr) const {
 //            back: File containing background picture
 //            thread: Flag if loading in thread
 /*--------------------------------------------------------------------------*/
-void CardImages::loadDecks (const Gdk_Window& parent, const std::string& path,
+void CardImages::loadDecks (const Glib::RefPtr<Gdk::Window> parent,
+                            const std::string& path,
                             bool thread) throw (std::string) {
-   TRACE1 ("CardImages::loadDecks (const Gdk_Window&, const char*) - " << path);
+   TRACE1 ("CardImages::loadDecks (const Gdk::Window&, const char*) - " << path);
 
    std::string file (path);
    if (file[file.size () - 1] != File::DIRSEPARATOR)
       file += File::DIRSEPARATOR;
 
-   std::string temp;
-   ANumeric nr;
-   Gdk_Color color;
-
-   for (int i = 0; i < numberOfCards (); ++i) {
-      nr = i + 1;
-      temp = file + nr.toUnformatedString () + ".xpm";
-      TRACE3 ("CardImages::loadDecks (const Gdk_Window&, const char*) - File " << temp);
+   for (int i = 1; i <= numberOfCards (); ++i) {
+      std::string temp;
+      std::ostringstream out (temp);
+      out << file << i << ".xpm";
+      TRACE3 ("CardImages::loadDecks (const Gdk::Window&, const char*) - File "
+              << out.str () << "; Temp:" << temp);
 
       if (thread)
          gdk_threads_enter ();
-      cards_[i].create_from_xpm (parent, color, temp);
+
+      Gdk::Color color;
+      cards_[i]->create_from_xpm (parent, color, out.str ());
       if (thread)
          gdk_threads_leave ();
 
@@ -103,15 +104,16 @@ void CardImages::loadDecks (const Gdk_Window& parent, const std::string& path,
 //            back: File containing background picture
 //            thread: Flag if loading in thread
 /*--------------------------------------------------------------------------*/
-void CardImages::loadBack (const Gdk_Window& parent, const std::string& back,
+void CardImages::loadBack (const Glib::RefPtr<Gdk::Window> parent,
+                           const std::string& back,
                            bool thread) throw (std::string) {
-   TRACE1 ("CardImages::loadBack (const Gdk_Window&, const char*) - " << back);
+   TRACE1 ("CardImages::loadBack (const Gdk::Window&, const char*) - " << back);
 
-   Gdk_Color color;
+   Gdk::Color color;
 
    if (thread)
       gdk_threads_enter ();
-   back_.create_from_xpm (parent, color, back);
+   back_->create_from_xpm (parent, color, back);
    if (thread)
       gdk_threads_leave ();
 

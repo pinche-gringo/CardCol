@@ -21,9 +21,9 @@
 #include <string>
 #include <vector>
 
-#include <gtk--/table.h>
-#include <gtk--/button.h>
-#include <gtk--/statusbar.h>
+#include <gtkmm/table.h>
+#include <gtkmm/button.h>
+#include <gtkmm/statusbar.h>
 
 #include <Thread.h>
 
@@ -38,7 +38,6 @@
 class Game;
 class Options;
 class ICarddeckSelectDlg;
-enum ICarddeckSelectDlg::commands;
 
 
 // Class to handle the Rovhult-cardgame
@@ -53,7 +52,7 @@ class CardgameCollection : public XApplication {
    Gtk::Box& getClient () { return *XApplication::getClient (); }
    Gtk::Statusbar& getStatusbar () { return status; }
    CardSet& getCards () { return cards; }
-   const vector<string>& getNames () const;
+   const std::vector<std::string>& getNames () const;
 
  private:
    // IDs for menus
@@ -74,10 +73,9 @@ class CardgameCollection : public XApplication {
    virtual void showAboutbox ();
    virtual const char* getHelpfile ();
 
-
    void changeCards (void* opt);
    void loadCards ();
-   void userWants2End (unsigned int input);
+   void userWants2End (int input);
    void startGame ();
 
    void changeDecks (const ICarddeckSelectDlg& dialog);
@@ -103,12 +101,10 @@ class CardgameCollection : public XApplication {
 
    Game* game;
 
-   static const std::string NAME_INIFILE;
+   static const unsigned int USED_CARDS;
 
-   static const unsigned int USED_CARDS = 52;
-
-   static const unsigned int WIDTH = 760;
-   static const unsigned int HEIGHT = 730;
+   static const unsigned int WIDTH;
+   static const unsigned int HEIGHT;
 };
 
 #endif

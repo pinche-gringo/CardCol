@@ -26,24 +26,19 @@
 
 #include <cardgames-cfg.h>
 
-#include <gtk--/box.h>
-#include <gtk--/main.h>
-#include <gtk--/proxy.h>
-#include <gtk--/statusbar.h>
+#include <glibmm/main.h>
 
-#include <CardSet.h>
+#include <gtkmm/box.h>
+#include <gtkmm/statusbar.h>
+#include <gtkmm/messagedialog.h>
 
 #include <Check.h>
 #include <Trace_.h>
 
-#include <XMessageBox.h>
-
+#include <CardSet.h>
 #include <CardWidget.h>
+
 #include "Twopart.h"
-
-
-using SigC::slot;
-using SigC::bind;
 
 
 const unsigned int Twopart::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
@@ -60,14 +55,14 @@ char Twopart::sortOrder[4];
 //            names: Vector of player-names
 /*--------------------------------------------------------------------------*/
 Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, 
-                  CardSet& cardset, const vector<string>& names)
+                  CardSet& cardset, const std::vector<std::string>& names)
    : Game (parent, statusbar, cardset, names, 12, 15)
      , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
      , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK)
      , bfPlayers ((1 << NUM_PLAYERS) - 1), pTrump (NULL), offPos (0)
         , bfOldPlayers (bfPlayers) {
    staple.show ();
-   attach (staple, 2, 3, 2, 3, 0, 0, 5, 5);
+   attach (staple, 2, 3, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
 
    unsigned int width (cards.getCard (0).getImageWidth ());
    unsigned int height (cards.getCard (0).getImageHeight ());
@@ -79,7 +74,7 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 3,
               ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
               ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
-              GTK_EXPAND, GTK_EXPAND, 1);
+              Gtk::EXPAND, Gtk::EXPAND, 1);
       TRACE9 ("Twopart::Twopart () - Name at: " << COLS_PLAYER[i] << '/'
               << ROWS_PLAYER[i] + ((i == 2) ? 3 : 1));
 
@@ -88,29 +83,29 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
               COLS_PLAYER[i] + 2,
               ROWS_PLAYER[i] + ((i == 2) ? 2 : -2),
               ROWS_PLAYER[i] + ((i == 2) ? 3 : -1),
-              0, 0, 1);
+              Gtk::SHRINK, Gtk::SHRINK, 1);
       TRACE9 ("Twopart::Twopart () - Won pile at: "
               << COLS_PLAYER[i] + 1 << '/' << ROWS_PLAYER[i] + ((i == 2) ? 2 : -2));
 
       players[i].hand.show ();
       attach (players[i].hand, COLS_PLAYER[i],
               COLS_PLAYER[i] + 3, ROWS_PLAYER[i],
-              ROWS_PLAYER[i] + 1, 0, 0, 1);
+              ROWS_PLAYER[i] + 1, Gtk::SHRINK, Gtk::SHRINK, 1);
       TRACE9 ("Twopart::Twopart () - Hand at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
 
       players[i].won.setShowOption (ICardPile::SHOWBACK);
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
 
-      players[i].won.set_usize (width + 20, height + 5);
-      players[i].hand.set_usize (width * 3, height + 5);
+      players[i].won.set_size_request (width + 20, height + 5);
+      players[i].hand.set_size_request (width * 3, height + 5);
    }
 
    played.show ();
-   attach (played, 3, 11, 6, 9, 0, 0, 0, 5);
+   attach (played, 3, 11, 6, 9, Gtk::SHRINK, Gtk::SHRINK, 0, 5);
 
-   played.set_usize (width + 150, height);
-   staple.set_usize (width, height);
+   played.set_size_request (width + 150, height);
+   staple.set_size_request (width, height);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -144,7 +139,7 @@ void Twopart::start () {
 //Remarks   : Depending of the status of the game (PLAYING2) also the top
 //            card of the played pile is enabled
 /*--------------------------------------------------------------------------*/
-int Twopart::enableHuman () {
+bool Twopart::enableHuman () {
    Check3 (activeCards.empty ());
    Check3 (gameStatus () >= PLAYING);
 
@@ -153,14 +148,14 @@ int Twopart::enableHuman () {
 
    for (int i (players[0].hand.numberOfCards ()); i;)
       activeCards.push_back
-         (players[0].hand.at (--i).clicked.connect_after
-           (bind (slot (this, (&Twopart::cardSelected)), i)));
+         (players[0].hand.at (--i).signal_clicked ().connect
+           (bind (slot (*this, (&Twopart::cardSelected)), i)));
 
    if ((gameStatus () == PLAYING2)
        && (played.numberOfCards ()))
       activeCards.push_back
-         (played.getTopCard ().clicked.connect_after
-          (slot (this, (&Twopart::playedSelected))));
+         (played.getTopCard ().signal_clicked ().connect
+          (slot (*this, (&Twopart::playedSelected))));
 
    return Game::enableHuman ();
 }
@@ -273,9 +268,11 @@ bool Twopart::moveSelectedCardToPlayed (unsigned int player,
                 && (top.number () >= nr))
              : ((top.color () != color)
                 || (top.number () >= nr))) {
-            XMessageBox::Show (_("Played card(s) must have the same color and must be "
-                                 "bigger (or be a trump)!"), PACKAGE " - Twopart",
-                               XMessageBox::ERROR);
+            Gtk::MessageDialog dlg (_("Played card(s) must have the same color"
+                                      " and must be bigger (or be a trump)!"),
+                                    Gtk::MESSAGE_ERROR);
+            dlg.set_title (PACKAGE " - Twopart");
+            dlg.run ();
             return false;
          }
       }
@@ -326,7 +323,7 @@ int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int 
    // Check if every player still in game or has already played; end round if so
    // or calculate next player if not
    TRACE7 ("Twopart::executeMove (unsigned int, unsigned int) - Players: "
-           << hex << bfPlayers << dec);
+           << std::hex << bfPlayers << std::dec);
    removePlayer (player);
    int newPlayer (player);
    if (bfPlayers)
@@ -336,7 +333,7 @@ int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int 
       if (pTrump && !pTrump->is_visible ()) {
          pTrump->showFace ();
          pTrump->show ();
-         attach (*pTrump, 2, 3, 2, 3, 0, 0, 5, 5);
+         attach (*pTrump, 2, 3, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
       }
 
       newPlayer = endRound (player);
@@ -352,8 +349,8 @@ int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int 
                        ? _("First part ended; Part 2 starts %1")
                        : _("%1 lost"));
       str.replace (str.find ("%1"), 2, names[player]);
-      status.pop (1);
-      status.push (1, str);
+      status.pop ();
+      status.push (str);
 
       if (gameStatus () == PLAYING)
          startPartTwo (player);
@@ -739,8 +736,9 @@ int Twopart:: endRound (unsigned int player) {
                bfPlayersOut |= (1 << pos2Player (i - *startPos));
          } // endfor check for equal cards
          bfPlayers &= ~bfPlayersOut;
-         TRACE5 ("Twopart::endRound (unsigned int) - Found equal cards; " << cPlayers
-                 << " player(s) still in round (" << hex << bfPlayers << dec << ')');
+         TRACE5 ("Twopart::endRound (unsigned int) - Found equal cards; "
+                 << cPlayers << " player(s) still in round (" << std::hex
+                 << bfPlayers << std::dec << ')');
 
          // Find player to continue
          if (!players[nextPlayer].hand.numberOfCards ())
@@ -972,7 +970,7 @@ void Twopart::dealCards () {
 //Parameters: player: Player starting part II
 //Returns   : int: Value indicating if timer should continue
 /*--------------------------------------------------------------------------*/
-int Twopart::startPartTwoTimerFnc (unsigned int player) {
+bool Twopart::startPartTwoTimerFnc (unsigned int player) {
    TRACE8 ("Twopart::startPartTwoTimerFnc ()");
    TRACE9 ("Twopart::startPartTwoTimerFnc (unsigned int) - Continuing with " << player);
    Check3 (!bfPlayers);
@@ -1026,7 +1024,7 @@ int Twopart::startPartTwoTimerFnc (unsigned int player) {
 
    setNextPlayer (player);
    makeNextMoves ();
-   return 0;
+   return false;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1055,8 +1053,9 @@ bool Twopart::compByColorAccTrumps (const CardWidget* a, const CardWidget* b) {
 void Twopart::startPartTwo (unsigned int player) {
    TRACE9 ("Twopart::startPartTwo (unsigned int) - Continuing with " << player);
 
-   Gtk::Main::timeout.connect (bind (slot (this, &Twopart::startPartTwoTimerFnc),
-                                     player), 50);
+   Glib::signal_timeout ().connect
+      (bind (slot (*this, &Twopart::startPartTwoTimerFnc),
+             player), 50);
    disableHuman ();
 }
 
@@ -1107,7 +1106,7 @@ int Twopart::findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const {
 //Purpose   : Changes the names of the playing people
 //Parameters: newNames: Array holding the new names of the players
 /*--------------------------------------------------------------------------*/
-void Twopart::changeNames (const vector<string>& newNames) {
+void Twopart::changeNames (const std::vector<std::string>& newNames) {
    Game::changeNames (newNames);
 
    for (int i (0); i < NUM_PLAYERS; ++i)

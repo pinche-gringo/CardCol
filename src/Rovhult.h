@@ -18,9 +18,10 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <string>
 #include <vector>
 
-#include <gtk--/label.h>
+#include <gtkmm/label.h>
 
 #include <CardSet.h>
 #include <CardPile.h>
@@ -28,13 +29,12 @@
 #include <Game.h>
 
 
-
 // Class to handle the Rovhult-cardgame
 class Rovhult : public Game {
  public:
    // Manager functions
    Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const vector<string>& names);
+            const std::vector<std::string>& names);
    ~Rovhult ();
 
    virtual void end (bool restart);
@@ -42,24 +42,26 @@ class Rovhult : public Game {
    virtual void playOpen (bool open);
    virtual void clean ();
    virtual const char* name () { return "Røvhult"; }
-   virtual void changeNames (const vector<string>& newNames);
+   virtual void changeNames (const std::vector<std::string>& newNames);
 
  private:
    enum { PREPLAYING = Game::LAST };
+   enum { HAND, TABLE };
 
    // Protected manager functions
    Rovhult (const Rovhult&);
    const Rovhult& operator= (const Rovhult&);
 
    // Drag and drop handling
-   void getDropData (GdkDragContext *pContext, GtkSelectionData* pData,
-                     guint info, guint32 time, unsigned int cardPos);
-   void cardDroppedOnTable (GdkDragContext* pContext, gint x, gint y,
-                            GtkSelectionData* pData, guint info, guint32 time,
-                            unsigned int pile);
-   void cardDroppedOnHand (GdkDragContext* pContext, gint x, gint y,
-                           GtkSelectionData* pData, guint info, guint32 time,
-                           unsigned int card);
+   void getDropData (const Glib::RefPtr<Gdk::DragContext>& context,
+                     GtkSelectionData* pData, guint info, guint32 time,
+                     unsigned int cardPos);
+   void cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
+                            int, int, GtkSelectionData* selection_data, guint,
+                            guint time, unsigned int pile);
+   void cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
+                           int, int, GtkSelectionData* selection_data, guint,
+                           guint time, unsigned int card);
 
    void registerHandDND (CardWidget& card, unsigned int card);
    void registerTableDND (CardWidget& card, unsigned int pile);
@@ -72,14 +74,14 @@ class Rovhult : public Game {
    void finishedExchange ();
    void takeCards ();
 
-   int playFromPile (unsigned int pile);
+   bool playFromPile (unsigned int pile);
    int doPileSelected (unsigned int player, unsigned int pile);
 
    // Helper functions
    unsigned int movePlayedCardsToLooser (unsigned int nrLooser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;
    int  makeMove (unsigned int player);
-   int  enableHuman ();
+   bool enableHuman ();
    void dealCards ();
    CardWidget::NUMBERS playCardsFromHand (unsigned int player, unsigned int start,
                                           unsigned int end);
@@ -130,10 +132,10 @@ class Rovhult : public Game {
       Gtk::Label name;
    } players[NUM_PLAYERS];
 
-   Gtk::Connection pileTop;
+   SigC::Connection pileTop;
 
-   static GtkTargetEntry dndTypeTable;
-   static GtkTargetEntry dndTypeHand;
+   static std::vector<Gtk::TargetEntry> dndTypeHand;
+   static std::vector<Gtk::TargetEntry> dndTypeTable;
 
    unsigned int pos2Play;
    unsigned int pos1Play;

@@ -18,7 +18,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include <string>
-#include <vector.h>
+#include <vector>
 
 
 class CardWidget;
@@ -33,7 +33,7 @@ class CardSet {
    ~CardSet ();
 
    CardWidget& getCard (unsigned int nrCard) const;
-   const vector<CardWidget*>& getCards () const { return cards_; }
+   const std::vector<CardWidget*>& getCards () const { return cards_; }
    unsigned int numberOfCards () const { return cards_.size (); }
 
    void shuffle ();
@@ -42,7 +42,7 @@ class CardSet {
    void update () const;
 
  private:
-   vector<CardWidget*> cards_;
+   std::vector<CardWidget*> cards_;
 };
 
 #endif
