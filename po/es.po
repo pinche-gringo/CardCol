@@ -5,50 +5,140 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.1 ($Revision$)\n"
-"POT-Creation-Date: 2002-04-27 23:11-0500\n"
+"POT-Creation-Date: 2002-07-18 21:28-0500\n"
 "PO-Revision-Date: 2002-04-28 00:15-0500\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: Rovhult/Rovhult.cpp:186
+#: Rovhult/Rovhult.cpp:294
 msgid "_Game"
-msgstr ""
+msgstr "_Juego"
 
-#: Rovhult/Rovhult.cpp:186
+#: Rovhult/Rovhult.cpp:294
 msgid "<alt>G"
-msgstr ""
+msgstr "<alt>J"
 
-#: Rovhult/Rovhult.cpp:187
+#: Rovhult/Rovhult.cpp:295
 msgid "_New"
-msgstr ""
+msgstr "_Nuevo"
 
-#: Rovhult/Rovhult.cpp:187
+#: Rovhult/Rovhult.cpp:295
 msgid "<ctl>N"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:189
+#: Rovhult/Rovhult.cpp:297
 msgid "E_xit"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:189
+#: Rovhult/Rovhult.cpp:297
 msgid "<ctl>Q"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:190
+#: Rovhult/Rovhult.cpp:298
+msgid "_Options"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:298
+msgid "<alt>O"
+msgstr "<alt>J"
+
+#: Rovhult/Rovhult.cpp:299
+msgid "_Debug"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:299
+msgid "<ctl>D"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:300
 msgid "_Help"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:190
+#: Rovhult/Rovhult.cpp:300
 msgid "<alt>H"
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:191
+#: Rovhult/Rovhult.cpp:301
 msgid "_About..."
 msgstr ""
 
-#: Rovhult/Rovhult.cpp:191
-msgid "<alt>a"
+#: Rovhult/Rovhult.cpp:301
+msgid "<ctl>a"
 msgstr ""
+
+#: Rovhult/Rovhult.cpp:392
+#, ycp-format
+msgid ""
+"Anticopyright (A) 2002 Markus Schwab\n"
+"e-mail: g17m0@lycos.com\n"
+"\n"
+"Compiled on %1 at %2"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:738
+msgid "After a 7, the played card must be equal or smaller!"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:739 Rovhult/Rovhult.cpp:747
+msgid "Invalid move"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:746
+msgid "Played card must be equal or bigger!"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:838
+#, ycp-format
+msgid "Player %1 lost"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:845
+#, ycp-format
+msgid "Skipping player %1; "
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:853
+#, ycp-format
+msgid "Player %1 can't continue -> Getting whole pile. "
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:862
+msgid "Pile cleared; "
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:864
+#, c-format, ycp-format
+msgid "Turn of player %1"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:1059
+msgid "Loading cardimages ..."
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:1071
+msgid "Start a new game with Ctrl+N (or Game -> New)"
+msgstr ""
+
+#: Rovhult/Rovhult.cpp:1209
+msgid ""
+"Exchange the cards in your hand with the one on the table (with drag and "
+"drop) - press space (or click on staple) if finished"
+msgstr ""
+
+#: Common/CardImgs.cpp:97
+#, ycp-format
+msgid ""
+"Can't create picture from file `%1'!\n"
+"Reason: %2"
+msgstr ""
+
+#: Common/CardPile.h:248
+#, ycp-format
+msgid "%1 card"
+msgid_plural "%1 cards"
+msgstr[0] "%1 carta"
+msgstr[1] "%1 cartas"
