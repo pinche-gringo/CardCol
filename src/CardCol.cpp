@@ -865,6 +865,7 @@ void CardgameCollection::command (int menu) {
              dlg.set_title (PACKAGE);
              if (dlg.run () == Gtk::RESPONSE_YES) {
                 Check3 (pCommThread);
+                cmgr.changeMode (ConnectionMgr::NONE);
                 pCommThread->cancel ();
                 pCommThread = NULL;
              }
@@ -1221,9 +1222,9 @@ void* CardgameCollection::waitForMessages (void*) {
    Check2 (cmgr.getMode () != ConnectionMgr::NONE);
 
    std::string input;
+   static unsigned int actClient (0);
    try {
       while (true) {
-         static unsigned int actClient (0);
 
          if (cmgr.getMode () == ConnectionMgr::CLIENT)
             cmgr.getSocket ()->read (input);
@@ -1254,7 +1255,6 @@ void* CardgameCollection::waitForMessages (void*) {
 
             TRACE9 ("CardgameCollection::waitForMessages (void*) - Lock (thread)");
             mxThreadCmd.lock ();    // Wait til last message has been processed
-            mxThreadCmd.unlock ();
             TRACE9 ("CardgameCollection::waitForMessages (void*) - Perform cmd");
             Glib::signal_idle ().connect
                 (bind (slot (*this, &CardgameCollection::handleMessage),
@@ -1262,6 +1262,7 @@ void* CardgameCollection::waitForMessages (void*) {
 
             TRACE9 ("CardgameCollection::waitForMessages (void*) - Wait 4 GUI");
             mxGuiCmd.lock ();
+            mxThreadCmd.unlock ();
             mxGuiCmd.unlock ();
             TRACE9 ("CardgameCollection::waitForMessages (void*) - GUI finsished");
          }
@@ -1277,7 +1278,12 @@ void* CardgameCollection::waitForMessages (void*) {
           (bind (slot (*this, &CardgameCollection::showMessage), charmsg));
    }
    catch (std::domain_error& error) {
-      std::string msg (_("Lost connection!"));
+      std::string msg (_("Lost connection to %1!"));
+      Check3 (actClient < aPlayer.size ());
+      msg.replace (msg.find ("%1"), 2, 
+                   (cmgr.getMode () == ConnectionMgr::CLIENT
+                    ? Glib::locale_to_utf8 ("the server")
+                    : aPlayer[actClient]->getName ()));
       char* charmsg (new char [msg.length () + 1]);
       strcpy (charmsg, msg.c_str ());
       Glib::signal_idle ().connect
@@ -1325,7 +1331,7 @@ bool CardgameCollection::handleGameMessage (char* msg) throw (std::string) {
       startGame ();
       mxThreadCmd.unlock ();
    }
-   cmgr.getSocket ()->write ("Error=0");
+   cmgr.getSocket ()->write ("Error=0\0");
    return true;
 }
 
@@ -1386,11 +1392,10 @@ bool CardgameCollection::handleErrorMessage (unsigned int player, char* msg) {
 bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - " << msg);
 
-   mxThreadCmd.lock ();                               // Block message processing
-   TRACE9 ("CardgameCollection::handleMessage (unsigned int, char*) - Locked (main)");
-
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - Unlocking GUI");
    mxGuiCmd.unlock ();
+   mxThreadCmd.lock ();                               // Block message processing
+   TRACE9 ("CardgameCollection::handleMessage (unsigned int, char*) - Locked (main)");
    mxGuiCmd.lock ();
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - Locking GUI");
 
@@ -1404,7 +1409,7 @@ bool CardgameCollection::handleMessage (unsigned int player, char* msg) {
                unlock = false;
          }
          catch (std::string& error) {
-            std::string msg ("Error=99;Msg=\"" + error);
+            std::string msg ("Error=99;Msg=\"" + error + '\0');
             msg += '"';
             try {
                cmgr.getSocket ()->write (msg);
