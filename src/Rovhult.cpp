@@ -462,9 +462,11 @@ void RovhultAppl::command (int menu) {
 /*--------------------------------------------------------------------------*/
 void RovhultAppl::userWants2End (unsigned int input) {
    if (input == XMessageBox::YES) {
-      statGame = TOSTOP;
-      status.pop (1);
-      status.push (1, _("User canceled"));
+      if (statGame == PLAYING) {
+         statGame = TOSTOP;
+         status.pop (1);
+         status.push (1, _("User canceled"));
+      }
       disableLastPlayer ();
       pMenuEnd->set_sensitive (false);
    }
@@ -897,6 +899,7 @@ int RovhultAppl::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
          stat = _("Player %1 lost");
          stat.replace (stat.find ("%1"), 2, (char)(player + '0'));
          status.push (1, stat);
+         statGame = STOPPED;
          pMenuEnd->set_sensitive (false);
          return -1;
       }
@@ -1518,10 +1521,10 @@ int RovhultAppl::makeTurn (unsigned int player) {
 }
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Finds the next card to play (for a computer controlled player)
+//Purpose   : Checks if there are only special cards up to the passed position
 //Parameters: player: Player to inspect
 //            pos: Upper position of cards to inspect
-//Returns   : int: Position of card to play
+//Returns   : bool: True, if there are only special cards
 /*--------------------------------------------------------------------------*/
 bool RovhultAppl::existOnlySpecialCards (unsigned int player, unsigned int pos) const {
    Check3 (player < NUM_PLAYERS);
@@ -1530,8 +1533,7 @@ bool RovhultAppl::existOnlySpecialCards (unsigned int player, unsigned int pos) 
            : (pos < 3));
 
    do {
-       CardWidget::NUMBERS nr (cardAtPos (player, pos)->number ());
-       if ((nr != CardWidget::TEN) && (nr != CardWidget::TWO))
+       if (!isSpecialCard (cardAtPos (player, pos)->number ()))
           return false;
    } while (pos--);
 
@@ -1600,27 +1602,32 @@ int RovhultAppl::findCard2Play (unsigned int player) const {
                     " at pos " << pos);
 
             unsigned int npos = players[player].hand.findLastEqual (pos);
-            if ((npos + 1) < nrCards)
+            if ((npos + 1) < nrCards)     // Cards after 10 available? Yes: Use
                pos = npos + 1;
+            else                                        // Else try to play a 2
+               if (players[player].hand.at (0).number () == CardWidget::TWO)
+                  pos = 0;
          }
 
          TRACE5 ("RovhultAppl::findCard2Play (unsigned int) -  Playing "
                  << players[player].hand.at (pos) << " at pos " << pos);
-
       }
 
       // Now find the last of equal cards; get rid of all of them if:
-      // - it's not the highest card
-      // - it´s the first card
-      // - it's a not that high card (up to 9)
       // - they would complete 4
-      // - the lower cards are only special cards
+      // - there are are only special cards left
+      // - it's not a special card which is
+      //     * not the highest card
+      //     * it´s the first card
+      //     * it's a not that high card (up to 9)
       unsigned int npos (players[player].hand.findLastEqual (pos));
-      if ((npos != (players[player].hand.numberOfCards () - 1))
-          || (pos == 0)
-          || (players[player].hand.at (npos).number () < CardWidget::TEN)
-          || ((numberOfEqualTopCards () + npos - pos) == 4)
-          || (existOnlySpecialCards (player, pos - 1)))
+      Check3 (npos < players[player].hand.numberOfCards);
+      if (((numberOfEqualTopCards () + npos - pos) == 4)
+          || (existOnlySpecialCards (player, players[player].hand.numberOfCards () - 1))
+          || ((!isSpecialCard (players[player].hand.at (0).number ()))
+              && ((npos != (players[player].hand.numberOfCards () - 1))
+                  || (pos == 0)
+                  || (players[player].hand.at (pos).number () < CardWidget::TEN))))
          pos = npos;
 
       return pos;
