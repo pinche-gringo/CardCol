@@ -128,7 +128,7 @@ static unsigned int CARDS_AT_START (137);
 /*--------------------------------------------------------------------------*/
            << "; Target: " << std::hex << (int)target << std::dec);
    Check1 (player); Check1 (player < NUM_PLAYERS);
-           << "; Target: " << (int)target);
+   Check1 (gameStatus () == PLAYING);
 
    Check1 (player); Check1 (player < NUM_PLAYERS);
    Check1 (hands[player].size ());
@@ -145,8 +145,8 @@ static unsigned int CARDS_AT_START (137);
       target = showCardsToPlay (player);
       TRACE8 ("Buraco::makeMove (unsigned int) - Going to play cards to "
               << std::hex << (int)target << std::dec);
-      TRACE8 ("Buraco::makeMove (unsigned int) - Going to play cards at "
-              << (int)target);
+      Check3 (target != -1U);
+      Check1 (pos1Play <= pos2Play);
    }
       Check1 (pos1Play <= pos2Play);
 
@@ -182,28 +182,20 @@ static unsigned int CARDS_AT_START (137);
       // Move played cards to the pile to play
       Check3 (source.size () > pos2Play);
       // Move played cards to pile to play
-      for (; pos1 <= pos2; --pos2)
+      Check3 (source.size () > pos2);
+      for (; (int)pos1 <= (int)pos2; --pos2)
          dest->insert (source.remove (pos1), pos);
       if (gStatus.pickUpPlayed) {
          Check3 (dumped.size ());
             addBuraco (oldPlayer);
          else
-            addReserve (oldPlayer);
-         else {
-            if (hands[oldPlayer].size () && cerrados[oldPlayer & 1]) {
-               for (std::vector<CardVPile*>::iterator p
-                       (tablePiles[oldPlayer & 1].begin ()); 
-                    p != tablePiles[oldPlayer & 1].end (); ++p)
-                  if (containsNoJoker (**p)) {
-                     flipCards2Play (**p, pos1 = 0, pos2 = 0);
-                     target = p - tablePiles[oldPlayer & 1].begin () << 16;
-                  }
-            }
-            else {
+            addReserve (oldPlayer, false);
+               cleanCerrado (oldPlayer);
+               Check3 (points[oldPlayer & 1] > 100);
+               Check3 (cerrados[oldPlayer & 1]);
             }
       }
    }
-         }
    return player;
 }
 
@@ -253,25 +245,31 @@ static unsigned int CARDS_AT_START (137);
 //Returns   : ID for target (32 Bit: Pile << 16 + Position)
 /*--------------------------------------------------------------------------*/
 
-   TRACE8 ("Buraco::executeMove (player) - Checking for 3 in a row");
+   TRACE6 ("Buraco::executeMove (player) - Checking for 3 in a row");
 
    // Check for 3 cards having the same number
    // Check if any card can be added to an existing pile
    unsigned int count (1);
-   unsigned int i (1);
+   unsigned int i (0);
    for (; i < playerPile.size (); ++i) {
+      TRACE8 ("Buraco::executeMove (player) - Analyzing " << playerPile[i]);
       Check3 (playerPile[i]);
 
       // Check if the actual card can be added to an existing pile
       if (tablePiles[player & 1].size ()) {
+         TRACE8 ("Buraco::executeMove (player) - Adding single " << playerPile[i]);
          unsigned int target (cardFitsOnPlayedPile (player, i));
          if ((target != -1U) && canDumpCards (player, 1))
 
    // Check for 3 cards belonging to a serie
 
       // Check if there are 3 (or more) of a kind
-      if (playerPile[i]->number () == playerPile[i - 1]->number ())
-         ++count;
+      if (i && (playerPile[i]->number () == playerPile[i - 1]->number ())) {
+         TRACE8 ("Buraco::executeMove (player) - Adding new pile "
+                 << playerPile[i]);
+         if (++count == 7)
+            break;
+      }
       else {
          if ((count >= 3) && !isJoker (*playerPile[i - 1]))
             break;
@@ -286,6 +284,7 @@ static unsigned int CARDS_AT_START (137);
       }
    TRACE8 ("Buraco::executeMove (unsigned int) - Playing all?");
    if (!unfinishedMonoPiles[player & 1]
+   TRACE8 ("Buraco::executeMove (player) - Playing all?");
    if ((!reserve[player & 1].empty () || cerrados[player & 1]) 
        && canGetRidOfCards (player)) {
       // Find first non-joker
@@ -313,8 +312,8 @@ static unsigned int CARDS_AT_START (137);
          return (tablePiles[player & 1].size () - 1) << 16;
 
       else
+         // Get rid off jokers, if team has already a "cerrado" (7 equal)
          if (cerrados[player & 1]) {
-            // Get rid off jokers, if team has already a "cerrado" (7 equal)
             for (std::vector<CardVPile*>::iterator p (tablePiles[player & 1].begin ());
                  p != tablePiles[player & 1].end (); ++p)
                if (containsNoJoker (**p)) {
@@ -778,7 +777,7 @@ static unsigned int CARDS_AT_START (137);
    // is still the reserve
    if (!canDumpCards (0, 1)) {
       context->drag_finish (false, false, time);
-      Gtk::MessageDialog dlg (_("You can't drop last card!"),
+      Gtk::MessageDialog dlg (_("You can't drop the last card!"),
                               Gtk::MESSAGE_ERROR);
       dlg.set_title (_("Invalid move"));
       dlg.run ();
@@ -1000,8 +999,9 @@ static unsigned int CARDS_AT_START (137);
 //Purpose   : Checks, if the passed pile contains no cards except jokers or 2s.
 //            This is also true for empty piles.
 //Parameters: player: Player getting the reserve
+//            showt: Flag, if info-message should be displayed
 /*--------------------------------------------------------------------------*/
-void Buraco::addReserve (unsigned int player) {
+void Buraco::addReserve (unsigned int player, bool show) {
    undo.pickUp = 1;
    undo.cJokers = hands[player].size ();
       Game::disableHuman ();
@@ -1022,10 +1022,12 @@ void Buraco::addReserve (unsigned int player) {
 
    Check3 (actPlayers.size () > player);
    Check3 (actPlayers[player]);
+   if (show) {
+      status.pop ();
+      std::string stat (_("%1 picked up the played pile"));
+      stat.replace (stat.find ("%1"), 2, names[player]);
+      status.push (stat);
    status.pop ();
-   std::string stat (_("%1 picked up the played pile"));
-   stat.replace (stat.find ("%1"), 2, names[player]);
-   status.push (stat);
 
 
 //-----------------------------------------------------------------------------
@@ -1294,12 +1296,10 @@ bool Buraco::canGetRidOfCards (unsigned int player) {
       if (used[i - pile.begin ()])
    CardVPile::const_iterator i (pile.begin ());
    if (isJoker (**i)) {
-      ++cJokers;
+      cJokers = 1;
       used.set (0);
    }
    for (++i; i != pile.end (); ++i) {
-      Check3 (i != pile.begin ());
-      Check3 (i != pile.end ());
          ++cJokers;
          continue;
       }
@@ -1308,13 +1308,16 @@ bool Buraco::canGetRidOfCards (unsigned int player) {
       // used: Mark both card as used
       ICardPile::const_iterator o (pile.getFittingCard (**i, i + 1, &cardDistance));
       if ((o != pile.end ()) && !used[o - pile.begin ()]) {
-      if (((*i)->number () == (*(i - 1))->number ()) && !used[i - pile.begin ()]) {
+      if (!used[i - pile.begin ()]
+          && (((*i)->number () == (*(i - 1))->number ())
+              || (((*i)->number () == ((*(i - 1))->number () + 1))
+                  && ((*i)->color () == (*(i - 1))->color ())))) {
          used.set (o - pile.begin ());
       }
          used.set (i - pile.begin () - 1);
 
    TRACE9 ("Buraco::canGetRidOfCards (unsigned int) -  " << used.count ()
-   return (used.count () == used.size ()) && (piles <= cJokers);
+   return (used.count () == hands[player].size ()) && (piles <= cJokers);
 //-----------------------------------------------------------------------------
 /// Checks if the player can dump the specified number of cards; a player can
 /*--------------------------------------------------------------------------*/
@@ -1327,7 +1330,7 @@ bool Buraco::canGetRidOfCards (unsigned int player) {
 /*--------------------------------------------------------------------------*/
 bool Buraco::canDumpCards (unsigned int player, unsigned int cards) const {
    unsigned int cPile (hands[player].size ());
-   return (cPile > (cards + 2) || cerrados[player & 1]
+   return (cPile >= (cards + 2) || cerrados[player & 1]
            || !reserve[player & 1].empty ());
 //----------------------------------------------------------------------------
 
@@ -1337,6 +1340,7 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards) const {
 //Parameters: pile: Pile to inspect
 //            card: Card where to find a pair to
 //Returns   : True, if the pile contains a matching pair
+//TODO: Repair for series of colours
 /*--------------------------------------------------------------------------*/
 bool Buraco::pileHasFittingPair (const ICardPile& pile, 
                                  const CardWidget& card) {
