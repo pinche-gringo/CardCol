@@ -9,7 +9,8 @@ EXTRA_DIST=CardCol.shtml.en CardCol.shtml.de CardCol.shtml.es \
 	   Røvhult.html.en Røvhult.html.de Røvhult.html.es \
 	   Twopart.html.en Twopart.html.de Twopart.html.es \
 	   Hearts.html.en Hearts.html.es Hearts.html.de Buraco.html.de \
-	   Buraco.html.en Buraco.html.es
+	   Buraco.html.en Buraco.html.es Machiavelli.html.de \
+	   Machiavelli.html.en Machiavelli.html.es
 
 doc-install:
 	test -d ${DESTINATION} || mkdir ${DESTINATION}
