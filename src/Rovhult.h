@@ -77,7 +77,8 @@ class RovhultAppl : public XApplication {
    int  nextAvailablePlayer (unsigned int actPlayer) const;
    int  makeComputerMove ();
    void makeComputerMoves () {
-      Gtk::Main::timeout.connect (slot (this, &RovhultAppl::makeComputerMove), 1000); }
+      Gtk::Main::timeout.connect (slot (this, &RovhultAppl::makeComputerMove), 1000);
+      disableLastPlayer (); }
    void enablePlayer (unsigned int player);
    void disableLastPlayer ();
    void cleanTable ();
@@ -94,8 +95,8 @@ class RovhultAppl : public XApplication {
    bool playerHandCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const;
    
    int makeTurn (unsigned int player);
-   int findCard2play (unsigned int player) const;
-   void flipCards2play (unsigned int player, unsigned int pos);
+   int findCard2Play (unsigned int player) const;
+   void flipCards2Play (unsigned int player, unsigned int pos);
 
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
    bool existOnlySpecialCards (unsigned int player, unsigned int pos) const;
