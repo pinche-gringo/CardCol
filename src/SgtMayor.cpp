@@ -256,7 +256,7 @@ void SgtMayor::cardSelected (unsigned int iCard) {
       // The same colour must be played again (if available)
       CardWidget::COLOURS colour (played[0]->colour ());
       if ((playColour != colour) && players[0].hand.exists (colour)) {
-         Gtk::MessageDialog dlg (_("Play a card with an equal colour to "
+         Gtk::MessageDialog dlg (_("Play a card with an equal colour as "
                                    "the first played one!"), Gtk::MESSAGE_ERROR);
          dlg.set_title (PACKAGE " - SgtMayor");
          dlg.run ();
@@ -369,12 +369,9 @@ void SgtMayor::startPlaying () {
       }
 
       if (startPlayer)
-         displayTurn (startPlayer, stat);
+         displayTurn (startPlayer);
       else {
-         stat += _("Select the special colour by clicking on a card");
-
-         status.pop ();
-         status.push (stat);
+         displayTurn (0, _("Select the special colour by clicking on a card"));
 
          for (int i (players[0].hand.size ()); i;)
             activeCards.push_back
