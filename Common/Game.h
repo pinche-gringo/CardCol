@@ -29,6 +29,7 @@
 namespace Gtk {
    class Box;
    class Menu;
+   class Dialog;
    class Statusbar;
 };
 class Socket;
@@ -96,6 +97,8 @@ class Game : public Gtk::Table {
  protected:
    virtual ICardPile& getPileOfPlayer (unsigned int player, unsigned int pile) = 0;
    virtual bool executeRemoteMove (ICardPile& pile, unsigned int card);
+
+   void closeDialog (int, const Gtk::Dialog* dlg);
 
    /// \name Communication helper methods
    //@{

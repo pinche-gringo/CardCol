@@ -166,7 +166,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
          ap.assignValues (input);
 
          Tokenize positions (input);
-         TRACE9 ("Game::randomizeCardsToPile (ICardPile&) - Cards: " << cards.size ());
+         TRACE8 ("Game::randomizeCardsToPile (ICardPile&) - Cards: " << cards.size ());
          for (unsigned int i (0); i < (cards.size () - 1); ++i) {
             unsigned long pos (0);
             std::string token;
@@ -183,7 +183,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
                throw error;
             }
 
-            TRACE9 ("Game::randomizeCardsToPile (ICardPile&) const - [" << i
+            TRACE8 ("Game::randomizeCardsToPile (ICardPile&) const - [" << i
                     << "] = " << pos);
             cards.set (i, pos);
          }
@@ -240,7 +240,7 @@ void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start,
 /// Cleans the table
 //-----------------------------------------------------------------------------
 void Game::clean () {
-   TRACE9 ("Game::clean ()");
+   TRACE8 ("Game::clean ()");
    disableWonCards ();
 }
 
@@ -249,7 +249,7 @@ void Game::clean () {
 //-----------------------------------------------------------------------------
 void Game::makeNextMoves () {
    if (actPlayer >= 0) {
-      TRACE9 ("Game::makeNextMoves () - " << actPlayer);
+      TRACE8 ("Game::makeNextMoves () - " << actPlayer);
       Check1 (actPlayer < actPlayers.size ());
       unsigned int timeout (actPlayers[actPlayer]->timeout ());
       if (timeout)
@@ -281,7 +281,7 @@ bool Game::endRemoteMove (unsigned int player) {
 /// Enables the cards of the human player
 //-----------------------------------------------------------------------------
 bool Game::enableHuman () {
-   TRACE9 ("Game::enableHuman () - enabling " << actPlayers[actPlayer]->getName ());
+   TRACE8 ("Game::enableHuman () - enabling " << actPlayers[actPlayer]->getName ());
    return false;
 }
 
@@ -305,7 +305,7 @@ bool Game::makeComputerMove () {
    }
 
    unsigned int newPlayer (makeMove (actPlayer));
-   TRACE9 ("Game::makeComputerMove () - Next player: " << newPlayer);
+   TRACE7 ("Game::makeComputerMove () - Next player: " << newPlayer);
    if (newPlayer == actPlayer)
       return true;
    else {
@@ -412,7 +412,7 @@ void Game::showWonCards (bool show) {
 /// \param event: Caused event
 //-----------------------------------------------------------------------------
 bool Game::wonCardsSelected (GdkEvent* event) {
-   TRACE2 ("Game::wonCardsSelected (GdkEvent*) - " << event->type);
+   TRACE9 ("Game::wonCardsSelected (GdkEvent*) - " << event->type);
 
    if (event->type == GDK_BUTTON_PRESS) {
       GdkEventButton* bev ((GdkEventButton*)(event));
@@ -597,14 +597,27 @@ void Game::handleMessage (unsigned int player, const char* msg) {
          writeError (*getConnectionMgr ().getSocket (), 1, error);
       }
 
-      std::string message (_("Error processing server command!\n\n%1"));
+      std::string message (_("Error processing command!\n\n%1"));
       message.replace (message.find ("%1"), 2, error);
-      Gtk::MessageDialog dlg (message, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dlg.set_title (PACKAGE);
-      dlg.run ();
+      Gtk::MessageDialog* dlg (new Gtk::MessageDialog (message, Gtk::MESSAGE_ERROR,
+                                                       Gtk::BUTTONS_OK));
+      dlg->set_title (PACKAGE);
+      dlg->signal_response ().connect
+          (bind (slot (*this, &Game::closeDialog), dlg));
+      dlg->show ();
    }
 
    data = NULL;
+}
+
+//-----------------------------------------------------------------------------
+/// Frees the passed dialog
+/// \param int: Response of dialog (ignored)
+/// \param dlg: Dialog to close additionally
+//-----------------------------------------------------------------------------
+void Game::closeDialog (int, const Gtk::Dialog* dlg) {
+   Check1 (dlg);
+   delete dlg;
 }
 
 //----------------------------------------------------------------------------
@@ -612,7 +625,7 @@ void Game::handleMessage (unsigned int player, const char* msg) {
 /// \param player: Number identifying player (starting with 0)
 //----------------------------------------------------------------------------
 void Game::setNextPlayer (unsigned int player) {
-   TRACE9 ("Game::setNextPlayer (unsigned int) - " << player);
+   TRACE8 ("Game::setNextPlayer (unsigned int) - " << player);
    actPlayer = player;
 }
 
@@ -643,6 +656,7 @@ bool Game::performCommand (unsigned int player, const char* msg) {
       ICardPile& pile (getPileOfPlayer (actPlayer, target));
 
       command = cmd;
+      unsigned int cards (-1U);
       unsigned long lCard (0);
       unsigned int card (0);
       bool startTimer (false);
@@ -651,10 +665,15 @@ bool Game::performCommand (unsigned int player, const char* msg) {
             return false;
 
          card = pile.find (static_cast <unsigned int> (lCard));
-         Check3 (card < pile.size ());
-         if (card != -1U)
+         if (card != -1U) {
+            Check3 (card < pile.size ());
+            ++cards;
             startTimer = executeRemoteMove (pile, card);
+         }
+         else
+            return false;
       }
+      pos1Play = pos2Play - cards;
 
       if (startTimer) {
          TRACE9 ("Game::performCommand (unsigned int, const char*) - Get lock");
@@ -669,13 +688,18 @@ bool Game::performCommand (unsigned int player, const char* msg) {
    }
    else if (cmd == "ActPlayer") {
       cmd = command.getNextNode (';');
-      TRACE9 ("Game::performCommand (unsigned int player, const char*) - "
+      TRACE8 ("Game::performCommand (unsigned int player, const char*) - "
               "Next player: " << cmd);
       unsigned long player;
       if (stringToNumber (player, cmd.c_str ()))
          return false;
  
       displayTurn (actPlayer = player);
+   }
+   else if (cmd == "Game") {
+      Check3 (command.getNextNode (';') == name ());
+      Check3 (statGame == STOPPED);
+      statGame = NONE;
    }
    else
       return false;
@@ -704,16 +728,9 @@ bool Game::stringToNumber (unsigned long& number, const char* text) {
 /// \returns bool: True, if the timer to execute the move should be set
 //----------------------------------------------------------------------------
 bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) {
-    flipCards2Play (pile, card, card);
-    if (static_cast<int> (pos2Play) < static_cast<int> (card))
-       pos2Play = card;
-    if (pos1Play > card)
-       pos1Play = card;
-    else
-       --pos1Play;
+    flipCards2Play (pile, card, pos2Play = card);
 
-    TRACE9 ("Game::executeRemoteMove (ICardPile&, unsigned int) - " << pos1Play
-            << " - " << pos2Play);
+    TRACE8 ("Game::executeRemoteMove (ICardPile&, unsigned int) - " << pos2Play);
     return true;
 }
 
