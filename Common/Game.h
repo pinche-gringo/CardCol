@@ -25,6 +25,7 @@
 // Forward declarations
 namespace Gtk {
    class Box;
+   class Menu;
    class Statusbar;
 };
 class CardSet;
@@ -57,9 +58,8 @@ class Game : public Gtk::Table {
    void setGameStatus (unsigned int newStatus);
 
  protected:
-   virtual int enableActPlayer ();
-   virtual void enablePlayer (unsigned int player);
-   virtual void disableLastPlayer ();
+   virtual int enableHuman ();
+   virtual void disableHuman ();
 
    unsigned int currentPlayer () const { return actPlayer; }
    void setNextPlayer (unsigned int player) { actPlayer = player; }
@@ -74,6 +74,17 @@ class Game : public Gtk::Table {
    static void movePile (ICardPile& dest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
 
+   // Handling of won cards (if any)
+   gint wonCardsSelected (GdkEvent *event);
+   void showWonCards (bool show = true);
+   int  enableWonCards (ICardPile& pile) {
+      pWonPile = &pile;
+      return enableActWonCards (); }
+   void disableWonCards ();
+
+   void sortWonByNumber ();
+   void sortWonByColor ();
+
    Gtk::Statusbar& status;
    CardSet& cards;
 
@@ -86,6 +97,12 @@ class Game : public Gtk::Table {
 
    int actPlayer;                   // Player who is in turn (needed for timer)
    bool restart;
+
+   vector<Gtk::Connection> wonCards;           // Connections to show won cards
+   ICardPile*              pWonPile;
+   Gtk::Menu*              pMenuPopSort;
+
+   int  enableActWonCards ();
 };
 
 
