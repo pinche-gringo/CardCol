@@ -36,8 +36,6 @@
 #include <gtkmm/accelgroup.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 8
 #include <Check.h>
 #include <Trace_.h>
 #include <ConnMgr.h>
@@ -47,6 +45,7 @@
 
 #include <Player.h>
 #include <CardWidget.h>
+#include <ComputerPlayer.h>
 
 #include "SigCExt.h"
 #include "Rovhult.h"
@@ -363,8 +362,8 @@ bool Rovhult::enableHuman () {
 /// \param pile: Offset of selected pile
 //-----------------------------------------------------------------------------
 void Rovhult::pileSelected (unsigned int pile) {
+   TRACE1 ("Rovhult::pileSelected (unsinged int) - Pile " << pile);
    Check3 (pile < 3);
-   TRACE1 ("Rovhult::pileSelected (unsinged int) - Position " << pile);
 
    ICardPile& actPile (players[0].reserve[pile]);
    CardWidget& card (actPile.getTopCard ());
@@ -373,7 +372,8 @@ void Rovhult::pileSelected (unsigned int pile) {
    // If played from bottom of pile (with invisible cards): Flip card first
    if (!showsFace) {
       for (unsigned int i (0); i < 3; ++i)
-          if (players[0].reserve[i].getTopCard ().showsFace ()) {
+          if (players[0].reserve[i].size ()
+              && players[0].reserve[i].getTopCard ().showsFace ()) {
              Gtk::MessageDialog dlg (_("You must first play the visible cards!"),
                                      Gtk::MESSAGE_ERROR);
              dlg.set_title (_("Invalid move"));
@@ -385,15 +385,30 @@ void Rovhult::pileSelected (unsigned int pile) {
 
    TRACE1 ("Rovhult::pileSelected (unsinged int) - Card " << card);
 
-   if (!cardValid (card.number ()))    // If selected card is not valid: Return
+   if (!cardValid (card.number ())) {  // If selected card is not valid: Return
+      if (!showsFace) {
+         played.append (actPile.removeTopCard ());
+
+         // Inform the others about the move
+         if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
+            // Send played card to all clients (if any)
+            std::ostringstream msg;
+            msg << "Play=" << card.id () << ";Target=" << (pile + 5);
+            if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
+                ignoreNextMsg = true;
+            broadcastMessage (msg.str ());
+         }
+         setNextPlayer (movePlayedCardsToLooser (0));
+         makeNextMoves ();
+      }
       return;
+   }
 
    // Inform the others about the move
    if (getConnectionMgr ().getMode () != ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
       std::ostringstream msg;
-      msg << "Play=" << players[0].reserve[pile].getTopCard ().id ()
-          << ";Target=" << (pile + 1);
+      msg << "Play=" << card.id () << ";Target=" << (pile + 1);
       if (getConnectionMgr ().getMode () == ConnectionMgr::CLIENT)
          ignoreNextMsg = true;
       broadcastMessage (msg.str ());
@@ -404,7 +419,8 @@ void Rovhult::pileSelected (unsigned int pile) {
    if (showsFace)
       playFromPile (pile);
    else
-      Glib::signal_idle ().connect (bind (slot (*this, &Rovhult::playFromPile), pile));
+      Glib::signal_timeout ().connect (bind (slot (*this, &Rovhult::playFromPile),
+                                             pile), ComputerPlayer::TIMEOUT);
 }
 
 //-----------------------------------------------------------------------------
@@ -431,12 +447,11 @@ bool Rovhult::playFromPile (unsigned int pile) {
 int Rovhult::doPileSelected (unsigned int player, unsigned int pile) {
    TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - " 
            << player << '/' << pile);
+   Check1 (player < NUM_PLAYERS); Check1 (pile < 3);
 
    ICardPile* actPile (&players[player].reserve[pile]);
-   CardWidget& card (actPile->removeShownTopCard ());
-
-   Check3 (player < NUM_PLAYERS); Check3 (pile < 3);
    Check3 (actPile->size ());
+   CardWidget& card (actPile->removeShownTopCard ());
 
    // Move card (and visible cards with equal number on other piles) from
    // player to played staple
@@ -793,17 +808,18 @@ unsigned int Rovhult::movePlayedCardsToLooser (unsigned int nrLooser) {
 /// \returns \c int: ID of player or -1 (if none can continue)
 //-----------------------------------------------------------------------------
 int Rovhult::nextAvailablePlayer (unsigned int actPlayer) const {
-   int player (-1);
    // We assume (without checking), that acutal player still has cards
-   for (unsigned int i (1); i < NUM_PLAYERS; ++i)
-      if ((players[player = (actPlayer + i) & 0x3].hand.size ())
-          || players[player].reserve[0].size ()
-          || players[player].reserve[1].size ()
-          || players[player].reserve[2].size ())
-         break;
-
-   TRACE8 ("Rovhult::nextAvailablePlayer (unsigned int) const - Player: " << player);
-   return player;
+   for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
+      actPlayer = (actPlayer + 1) & 0x3;
+      if ((players[actPlayer].hand.size ())
+          || players[actPlayer].reserve[0].size ()
+          || players[actPlayer].reserve[1].size ()
+          || players[actPlayer].reserve[2].size ()) {
+         TRACE8 ("Rovhult::nextAvailablePlayer (unsigned int) const - Player: " << actPlayer);
+         return actPlayer;
+      }
+   }
+   return -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -1113,29 +1129,40 @@ void Rovhult::getDropData (const Glib::RefPtr<Gdk::DragContext>& context,
 //-----------------------------------------------------------------------------
 /// Shows the cards the user is about to play
 /// \param player: Player in turn
-/// \returns \c unsigned int: New position to play
 //-----------------------------------------------------------------------------
-unsigned int Rovhult::showCards2Play (unsigned int player) {
+void Rovhult::showCards2Play (unsigned int player) {
    TRACE2 ("Rovhult::showCards2Play (unsigned int, unsigned int) - "
            "For player " << player);
    Check3 (player < NUM_PLAYERS);
 
-   if (findCard2Play (player, pos1Play, pos2Play) >= 0)
-      if (players[player].hand.size ())
-         flipCards2Play (players[player].hand, pos1Play, pos2Play);
+   findCard2Play (player, pos1Play, pos2Play);
+   if (players[player].hand.size ())
+      flipCards2Play (players[player].hand, pos1Play, pos2Play);
+   else {
+      std::ostringstream msg;
+      ICardPile& pile (players[player].reserve[pos2Play]);
+
+      if ((pos1Play == pos2Play)
+          && (!cardValid (pile.getTopCard ().number (), true))) {
+         pile.getTopCard ().showFace ();
+
+         // Inform the others about the move
+         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
+            // Send played card to all clients (if any)
+            msg << "Play="
+                << players[player].reserve[pos2Play].getTopCard ().id ()
+                << ";Target=" << (pos2Play + 5);
+      }
       else {
          // Inform the others about the move
-         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER) {
+         if (getConnectionMgr ().getMode () == ConnectionMgr::SERVER)
             // Send played card to all clients (if any)
-            std::ostringstream msg;
             msg << "Play="
                 << players[player].reserve[pos2Play].getTopCard ().id ()
                 << ";Target=" << (pos2Play + 1);
-            broadcastMessage (msg.str ());
-         }
-         players[player].reserve[pos2Play].getTopCard ().showFace ();
       }
-   return pos2Play;
+      broadcastMessage (msg.str ());
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -1229,11 +1256,9 @@ bool Rovhult::existOnlySpecialCards (const ICardPile& pile, unsigned int start,
 /// \param player: Player to inspect
 /// \param start: Position of (first) card to play
 /// \param end: Position of (last) card to play
-/// \returns \c int: Position of card to play; if it is negative, than the
-///     cards was played from an "hidden" staple (and should not be displayed)
 //-----------------------------------------------------------------------------
-int Rovhult::findCard2Play (unsigned int player, unsigned int& start,
-                            unsigned int& end) const {
+void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
+                             unsigned int& end) const {
    TRACE2 ("Rovhult::findCard2Play (unsigned int) - Player " << player);
    Check3 (player < NUM_PLAYERS);
 
@@ -1349,7 +1374,7 @@ int Rovhult::findCard2Play (unsigned int player, unsigned int& start,
                      || (players[player].hand[start]->number () < CardWidget::TEN))))
          ? last : start;
 
-      return start;
+      return;
    }
    else {
       TRACE5 ("Rovhult::findCard2Play (unsigned int) - Analyzing reserve");
@@ -1386,7 +1411,7 @@ int Rovhult::findCard2Play (unsigned int player, unsigned int& start,
 
                   TRACE7 ("Rovhult::findCard2Play (unsigned int) - Playing "
                           "visible card " << card << " at pos " << end);
-                  return end;
+                  return;
                }
             }
          }
@@ -1399,13 +1424,10 @@ int Rovhult::findCard2Play (unsigned int player, unsigned int& start,
             ++start;
             Check3 (start < 3);
          }
-
-         CardWidget& card (players[player].reserve[end = start].getTopCard ());
-         TRACE7 ("Rovhult::findCard2Play (unsigned int) - Playing invisible "
-                 "card " << card << " at pos " << start);
-         return cardValid (card.number (), true) ? 0 : -1;
+         end = start;
+         TRACE7 ("Rovhult::findCard2Play (unsigned int) - Playing invisible card "
+                 << players[player].reserve[end].getTopCard () << " at pos " << end);
       }
-      Check3 (0);
    }
 }
 
@@ -1494,14 +1516,26 @@ void Rovhult::changeNames (const std::vector<Player*>& newPlayer) {
 //----------------------------------------------------------------------------
 ICardPile& Rovhult::getPileOfPlayer (unsigned int player, unsigned int pile) {
    Check1 (player < NUM_PLAYERS);
-   Check1 (pile < 5);
+   Check1 (pile < 8);
    TRACE8 ("Rovhult::getPileOfPlayer (unsigned int, unsigned int) - Player "
            << player << "; Pile " << pile);
-   return static_cast<ICardPile&> (pile
-                                   ? ((pile == 4)
-                                      ? static_cast<ICardPile&> (played)
-                                      : players[player].reserve[pile - 1])
-                                   : players[player].hand);
+
+   if (pile >= 5) {
+      ICardPile& pile (players[player].reserve[pile - 5]);
+      Check3 (pile.size ());
+      if (cardValid (pile.getTopCard ().number (), true))
+         return pile;
+      else {
+         played.append (pile.removeTopCard ());
+         return played;
+      }
+   }
+
+   return (pile
+           ? ((pile == 4)
+              ? static_cast<ICardPile&> (played)
+              : static_cast<ICardPile&> (players[player].reserve[pile - 1]))
+           : static_cast<ICardPile&> (players[player].hand));
 }
 
 //----------------------------------------------------------------------------
@@ -1584,6 +1618,8 @@ bool Rovhult::handleMessage (unsigned int player, const char* message) {
                      }
                }
             }
+            else
+               ignoreNextMsg = false;
             return true;
          }
       }
@@ -1601,12 +1637,17 @@ bool Rovhult::executeRemoteMove (ICardPile& pile, unsigned int target) {
       Check3 (gameStatus () == PLAYING);
       TRACE7 ("Rovhult::executeRemoteMove (ICardPile&, unsigned int) - Target " << target);
 
-      if (target == 4)
-         setNextPlayer (movePlayedCardsToLooser (currentPlayer ()));
-      else {
-         Check3 (!players[currentPlayer ()].hand.size ());
-         setNextPlayer (doPileSelected (currentPlayer (), target - 1));
+      if (target >= 4) {
+         if (&pile == &played) {
+            setNextPlayer (movePlayedCardsToLooser (currentPlayer ()));
+            pos1Play = pos2Play = -1U;
+            return false;
+         }
+         target -= 4;
       }
+
+      Check3 (!players[currentPlayer ()].hand.size ());
+      setNextPlayer (doPileSelected (currentPlayer (), target - 1));
       pos1Play = pos2Play = -1U;
       return false;
    }
