@@ -769,7 +769,6 @@ void CardgameCollection::startGame () {
    // Check if the game has been changed; if so destroy the old one
    if (oldGame != options.type) {
       if (game) {
-         game->clean ();
          getClient ().remove (*game);
          delete game;
       }
@@ -1378,6 +1377,8 @@ bool CardgameCollection::handleErrorMessage (unsigned int player, char* msg) {
       return true;
    }
    catch (std::string& e) {
+      TRACE9 ("CardgameCollection::handleErrorMessage (unsigned int, char*) - "
+              "Error parsing: " << e);
       return false;
    }
 }
