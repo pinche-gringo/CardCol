@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 9.9.2002
-//COPYRIGHT   : Anticopyright (A) 2002
+//COPYRIGHT   : Anticopyright (A) 2002, 2003
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,23 +35,23 @@
 #include <Check.h>
 #include <Trace_.h>
 
+#include <File.h>
 #include <INIFile.h>
 #include <PathSrch.h>
 
 #include <XAbout.h>
 #include <XMessageBox.h>
-#include <Cardset-config.h>
 #include <DeckSelect.h>
 
 #include <CardWidget.h>
-#include <Hearts.h>
-#include <Rovhult.h>
-#include <Twopart.h>
+#include "Hearts.h"
+#include "Rovhult.h"
+#include "Twopart.h"
+#include "Options.h"
 #include <PlayerDlg.h>
 
 #include "CardCol.h"
 
-const std::string CardgameCollection::NAME_INIFILE = PathSearch::expandNode ("~/.cardgames");
 
 // Pixmap for program
 const char* CardgameCollection::xpmGame[] = {
@@ -313,14 +313,64 @@ XApplication::MenuEntry CardgameCollection::menuItems[] = {
 #endif
 };
 
+
+// VIO-Application part of the Cardgames; cares about reading the INI-file and
+// processing the options
+class CardgameAppl : public IVIOApplication {
+ public:
+   CardgameAppl (const int argc, const char* argv[])
+      : IVIOApplication (argc, argv, lo) { }
+   ~CardgameAppl () { }
+
+ protected:
+   virtual void readINIFile (const char* pFile);
+   virtual bool handleOption (const char option);
+
+   // Program-handling
+   virtual bool        shallShowInfo () const { return false; }
+   virtual int         perform (int argc, const char* argv[]);
+   virtual const char* name () const { return PACKAGE; }
+   virtual const char* description () const
+      { return PACKAGE " V" VERSION " - Compiled on " __DATE__ " - " __TIME__
+               "\n\nAuthor: Markus Schwab; e-Mail: g17m0@lycos.com"
+               "\nDistributed under the terms of the GNU General Public License"; }
+
+   // Help-handling
+   virtual void showHelp () const;
+
+ private:
+   // Prohobited manager functions
+   CardgameAppl ();
+   CardgameAppl (const CardgameAppl&);
+   const CardgameAppl& operator= (const CardgameAppl&);
+
+   Options options;
+
+   static CardgameCollection::games convertToGameType (const char* pText);
+
+   static const longOptions lo[];
+};
+
+const IVIOApplication::longOptions CardgameAppl::lo[] = {
+   { IVIOAPPL_HELP_OPTION },
+   { "browser", 'b' },
+   { "help-dir", 'd' },
+   { "file", 'f' },
+   { "version", 'V' },
+   { NULL, '\0' } };
+
+
 /*--------------------------------------------------------------------------*/
 //Purpose   : Defaultconstructor; all widget are created
+//Parameters: type: Type of game to start with
 /*--------------------------------------------------------------------------*/
-CardgameCollection::CardgameCollection ()
+CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE), status ()
      , cardFaces (USED_CARDS), cards (), pThread (NULL), game (NULL)
-     , typeGame (GROVHULT), oldGame (NONE), restart (false) {
+     , options (opts), oldGame (NONE), restart (false) {
    set_usize (WIDTH, HEIGHT);
+
+   helpBrowser = options.browser;
 
    // Create controls
    addMenus (menuItems, sizeof (menuItems) / sizeof (menuItems[0]));
@@ -332,11 +382,6 @@ CardgameCollection::CardgameCollection ()
    getClient ().pack_end (status, false);
 
    show ();
-
-   names.push_back ("Human");
-   names.push_back ("Player 1");
-   names.push_back ("Player 2");
-   names.push_back ("Player 3");
 
    // Load cards in background
    try {
@@ -362,18 +407,18 @@ CardgameCollection::~CardgameCollection () {
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::startGame () {
    TRACE6 ("CardgameCollection::startGame () - Old game type " << oldGame
-           << " -> New: " << typeGame);
+           << " -> New: " << options.type);
 
    // Check if game has been changed; if so destroy the old one
-   if (oldGame != typeGame) {
+   if (oldGame != options.type) {
       if (game) {
          game->clean ();
          getClient ().remove (*game);
          delete game;
       }
 
-      oldGame = typeGame;
-      switch (typeGame) {
+      oldGame = CardgameCollection::games (options.type);
+      switch (oldGame) {
       case GROVHULT:
          game = new TGame<Rovhult, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
@@ -400,6 +445,15 @@ void CardgameCollection::startGame () {
    set_title (name);
 
    game->start ();
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Returns the names of the players
+//Returns   : The names of the players
+//Remarks   : Can't be inline because of cyclic dependencies to Options
+/*--------------------------------------------------------------------------*/
+const vector<string>& CardgameCollection::getNames () const {
+   return options.names;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -431,37 +485,36 @@ void CardgameCollection::command (int menu) {
       break;
 
    case TWOPART:
-      typeGame = GTWOPART;
+      options.type = GTWOPART;
       break;
 
    case ROVHULT:
-      typeGame = GROVHULT;
+      options.type = GROVHULT;
       break;
 
    case HEARTS:
-      typeGame = GHEARTS;
+      options.type = GHEARTS;
       break;
 
    case CHGDECKS:
       CarddeckSelectDlg<CardgameCollection>
          ::create (*this, &CardgameCollection::changeDecks,
-                   CARDSET_PATH, pathDeck, pathBack);
+                   CARDSET_PATH, options.decks, options.back);
       break;
 
    case CHGNAMES:
       PlayerDlg<CardgameCollection>
-         ::create (*this, &CardgameCollection::changePlayernames, names);
+         ::create (*this, &CardgameCollection::changePlayernames, options.names);
       break;
 
    case SAVESET: {
-      TRACE2 ("CardgameCollection::command (int) - Save file " << NAME_INIFILE);
-      ofstream inifile (NAME_INIFILE.c_str ());
-      
-      inifile << "[Game]\nDefault=" << typeGame << "Helpbrowser=" << helpBrowser
-              << "\n\n[Decks]\nFront=" << pathDeck << "\nBack=" << pathBack
-               << "\n\n[Players]\n";
-      for (unsigned int i (0); i < names.size (); ++i)
-         inifile << i << '=' << names[i] << '\n';
+      TRACE2 ("CardgameCollection::command (int) - Save file");
+      ofstream inifile (options.pNameINIFile);
+      if (inifile) {
+         options.strType = options.type + '0';
+         INIFile::write (inifile, "Game", options);
+         INIList<string>::write (inifile, "Players", options.names);
+      }
       break;
    }
 
@@ -494,7 +547,10 @@ void CardgameCollection::command (int menu) {
 //Returns   : Name of file to display
 /*--------------------------------------------------------------------------*/
 const char* CardgameCollection::getHelpfile () {
-   string file (DOCUDIR);
+   string file ("file://");
+   file += options.helpPath;
+   if (file[file.size () - 1] != File::DIRSEPARATOR)
+      file += File::DIRSEPARATOR;
    file += game ? (string (game->name ()) + ".html") : "index.html";
    return file.c_str ();
 }
@@ -503,7 +559,7 @@ const char* CardgameCollection::getHelpfile () {
 //Purpose   : Shows the about box for the program
 /*--------------------------------------------------------------------------*/
 void CardgameCollection::showAboutbox () {
-   string ver (_("Anticopyright (A) 2002 Markus Schwab"
+   string ver (_("Anticopyright (A) 2002, 2003 Markus Schwab"
                  "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
    ver.replace (ver.find ("%1"), 2, __DATE__);
    ver.replace (ver.find ("%2"), 2, __TIME__);
@@ -519,7 +575,7 @@ void CardgameCollection::showAboutbox () {
 void CardgameCollection::changePlayernames () {
    TRACE2 ("CardgameCollection::changePlayernames");
    if (game)
-      game->changeNames (names);
+      game->changeNames (options.names);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -532,13 +588,13 @@ void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
    std::string deck, back;
    dialog.getSelection (deck, back);
    unsigned int option (0);
-   if (deck != pathDeck) {
+   if (deck != options.decks) {
       option = 1;
-      pathDeck = deck;
+      options.decks = deck;
    }
-   if (back != pathBack) {
+   if (back != options.back) {
       option |= 2;
-      pathBack = back;
+      options.back = back;
    }
 
    pThread = THRDAPPL::create (this,
@@ -560,13 +616,13 @@ void CardgameCollection::changeCards (void* opt) {
    // shown
    Check3 (this->is_realized ());
    
-   TRACE3 ("CardgameCollection::changeCards (void*) - Use " << pathDeck
-           << " and " << pathBack);
+   TRACE3 ("CardgameCollection::changeCards (void*) - Use " << options.decks
+           << " and " << options.back);
 
    if ((unsigned int)opt & 1)
-      cardFaces.loadDecks (get_window (), pathDeck);
+      cardFaces.loadDecks (get_window (), options.decks);
    if ((unsigned int)opt & 2)
-      cardFaces.loadBack (get_window (), pathBack);
+      cardFaces.loadBack (get_window (), options.back);
 
    gdk_threads_enter ();
    cards.update ();
@@ -592,8 +648,8 @@ void CardgameCollection::userWants2End (unsigned int input) {
                startGame ();
          }
          else {
-            game->end ((typeGame == oldGame) ? restart : false);
-            if (typeGame == oldGame)
+            game->end ((options.type == oldGame) ? restart : false);
+            if (options.type == oldGame)
                restart = false;
          }
       }
@@ -614,34 +670,12 @@ void CardgameCollection::loadCards () {
    status.push (1, _("Loading cardimages ..."));
    gdk_threads_leave ();
 
-   pathDeck = CARDSET_PATH "/Deck1";
-   pathBack = CARDSET_PATH "/back1.xpm";
-
-   helpBrowser = "galeon";
-
-   try {
-      INIFILE (NAME_INIFILE.c_str ());
-      INISECTION (Decks);
-      INIATTR2 (Decks, std::string, pathDeck, Front);
-      INIATTR2 (Decks, std::string, pathBack, Back);
-      INISECTION (Game);
-      INIATTR2 (Game, unsigned int, (unsigned int)typeGame, Default);
-      INIATTR2 (Game, std::string, helpBrowser, Helpbrowser);
-      INILIST2 (Players, std::string, names);
-
-      unsigned int rc (INIFILE_READ ());
-   }
-   catch (std::string& error) {
-      cerr << PACKAGE "-warning: Error reading INI-file '"
-           << NAME_INIFILE << "'\n" << error << '\n';
-   }
-
    // This code needs the game-IDs in a sequence starting with 0!
-   if (GLAST <= (unsigned int)typeGame)
-      typeGame = GROVHULT;
-   dynamic_cast<CheckMenuItem*> (apMenus[ROVHULT + typeGame])->set_active ();
+   if (GLAST <= (unsigned int)options.type)
+      options.type = GROVHULT;
+   dynamic_cast<CheckMenuItem*> (apMenus[ROVHULT + options.type])->set_active ();
 
-   cardFaces.load (get_window (), pathDeck, pathBack);
+   cardFaces.load (get_window (), options.decks, options.back);
    cards.addPacket (cardFaces);
 
    gdk_threads_enter ();
@@ -681,21 +715,178 @@ void CardgameCollection::gameEvents (unsigned int status) {
 
 
 /*--------------------------------------------------------------------------*/
-//Purpose   : Entrypoint of application
-//Parameters: argc: Number of parameters
-//            argv: Array with pointer to parameter
+//Purpose   : Displays the help
+/*--------------------------------------------------------------------------*/
+void CardgameAppl::showHelp () const {
+   cout << "Collection of cardgames\n\nUsage: " PACKAGE " [OPTIONS]\n\n"
+      "  -g, --game ....... [GAME] Select game to start (default: Rovhult)\n"
+      "  -f, --file ....... [FILE] Use file as INI file\n"
+      "  -b, --browser .... [NAME] Browser to use to display the help\n"
+      "  -d, --help-dir ... [DIR] Directory to search for help\n"
+      "  -V, --version .... Output version information and exit\n"
+      "  -h, -?, --help ... Displays this help and exit\n\n"
+      "Valid values for GAME are Rovhult, Røvhult, Twopart and Hearts or the numbers\n"
+      "0, 1 and 2 (corresponding to the games in the above order).\n\n"
+      "The INI file can have the following entries:\n\n"
+      "  [Game]\n"
+      "  Type=Twopart\n"
+      "  Helpbrowser=galeon\n"
+      "  Helpdir=/usr/share/doc/Cardgames/\n"
+      "  CardFront=/usr/local/share/Cardsets/Deck1\n"
+      "  CardBack=/usr/local/share/Cardsets/back1.xpm\n\n"
+      "  [Players]\n"
+      "  0=Human\n"
+      "  1=Computer 1\n"
+      "  2=Computer 2\n"
+      "  3=Computer 3\n";
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Checks the validity of the passed option
+//Parameters: option: Actual option
+//Returns   : bool: Status; false: Invalid option/option-value
+//Require   : option not '\0´'
+/*--------------------------------------------------------------------------*/
+bool CardgameAppl::handleOption (const char option) {
+   Check3 (option != '\0');
+
+   switch (option) {
+   case 'g': {
+      const char* game (getOptionValue ());
+      if (game) {
+         CardgameCollection::games type (convertToGameType (game));
+         if (type != CardgameCollection::NONE)
+            options.type = type;
+         else
+            cerr << PACKAGE "-warning: INI-file contains invalid game type `"
+                 << game << "'\n";
+      }
+      else
+         cerr << PACKAGE "-warning: No game specified! Ignoring option `g'\n";
+      break; }
+
+   case 'd': {
+      const char* pDir (getOptionValue ());
+      if (pDir)
+         options.helpPath = pDir;
+      else
+         cerr << PACKAGE "-warning: No directory specified! Ignoring option `d'\n";
+      break; }
+
+   case 'b': {
+      const char* pBrowser (getOptionValue ());
+      if (pBrowser)
+         options.browser = pBrowser;
+      else
+         cerr << PACKAGE "-warning: No browser specified! Ignoring option `b'\n";
+      break; }
+
+   case 'f': {
+      const char* pFile (getOptionValue ());
+      if (pFile)
+         readINIFile (pFile);
+      else
+         cerr << PACKAGE "-warning: No file specified! Ignoring option `f'\n";
+      break; }
+
+   case 'V':
+      cout << description () << '\n'; exit (0);
+      break;
+   }
+
+   return true;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Converts a text to a game type
+//Parameters: pText: Text to convert
+//Returns   : Type of game as understood by the CardgameCollection
+/*--------------------------------------------------------------------------*/
+CardgameCollection::games CardgameAppl::convertToGameType (const char* pText) {
+   static struct {
+      const char* pText;
+      CardgameCollection::games value;
+   } values[] = { { "Rovhult", CardgameCollection::GROVHULT },
+                  { "Røvhult", CardgameCollection::GROVHULT },
+                  { "Twopart", CardgameCollection::GTWOPART },
+                  { "Hearts", CardgameCollection::GHEARTS },
+                  { "0", CardgameCollection::GROVHULT },
+                  { "1", CardgameCollection::GTWOPART },
+                  { "2", CardgameCollection::GHEARTS } };
+
+   for (unsigned int i (0); i < (sizeof (values) / sizeof (values[0])); ++i)
+      if (!strcmp (values[i].pText, pText))
+         return values[i].value;
+
+   return CardgameCollection::NONE;
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Reads the options of the INI-file
+//Parameters: pFile: Pointer to filename
+//Requieres : pFile not NULL
+/*--------------------------------------------------------------------------*/
+void CardgameAppl::readINIFile (const char* pFile) {
+   TRACE5 ("CardgameAppl::readINIFile (const char*) - " << pFile);
+   Check3 (pFile);
+
+   options.names.push_back ("Human");
+   options.names.push_back ("Player 1");
+   options.names.push_back ("Player 2");
+   options.names.push_back ("Player 3");
+
+   options.pNameINIFile = pFile;
+
+   std::string Style;
+   try {
+      INIFILE (pFile);
+      INIOBJ (options, Game);
+      INILIST2 (Players, std::string, options.names);
+
+      unsigned int rc (INIFILE_READ ());
+   }
+   catch (std::string& error) {
+      cerr << PACKAGE "-warning: Error reading INI-file '" << pFile << "'\n"
+           << error << '\n';
+   }
+
+   CardgameCollection::games type (convertToGameType (options.strType.c_str ()));
+   if (type != CardgameCollection::NONE)
+      options.type = type;
+   else
+      cerr << PACKAGE "-warning: INI-file contains invalid game type `"
+           << options.strType << "'\n";
+}
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Performs the job of the applications
+//Parameters: int: Number of parameters (without options)
+//            const char*: Array with pointer to arguments
 //Returns   : int: Status
 /*--------------------------------------------------------------------------*/
-int main (int argc, char* argv[]) {
+int CardgameAppl::perform (int, const char**) {
    srand (time (NULL));              // Initialize the random number generator
 
    g_thread_init (NULL);
 
-   Main appl (argc,argv);
-   CardgameCollection win;
+   // Pass real (unprocessed) options to gtkmm/GTK+
+   Main appl (static_cast<int> (args), const_cast <char**> (ppArgs));
+   CardgameCollection win (options);
 
    gdk_threads_enter ();
    appl.run ();
    gdk_threads_leave ();
    return 0;
+}
+
+
+/*--------------------------------------------------------------------------*/
+//Purpose   : Entrypoint of application
+//Parameters: argc: Number of parameters
+//            argv: Array with pointer to parameter
+//Returns   : int: Status
+/*--------------------------------------------------------------------------*/
+int main (int argc, const char* argv[]) {
+   CardgameAppl appl (argc, argv);
+   return appl.run ();
 }

@@ -32,9 +32,11 @@
 #include <CardPile.h>
 #include <CardImgs.h>
 
+#include <IVIOAppl.h>
 #include <XApplication.h>
 
 class Game;
+class Options;
 class ICarddeckSelectDlg;
 enum ICarddeckSelectDlg::commands;
 
@@ -42,14 +44,16 @@ enum ICarddeckSelectDlg::commands;
 // Class to handle the Rovhult-cardgame
 class CardgameCollection : public XApplication {
  public:
+   typedef enum { NONE = -1, GROVHULT = 0, GTWOPART, GHEARTS, GLAST } games;
+
    // Manager functions
-   CardgameCollection ();
+   CardgameCollection (Options& opts);
    ~CardgameCollection ();
 
    Gtk::Box& getClient () { return *XApplication::getClient (); }
    Gtk::Statusbar& getStatusbar () { return status; }
    CardSet& getCards () { return cards; }
-   const vector<string>& getNames () const { return names; }
+   const vector<string>& getNames () const;
 
  private:
    // IDs for menus
@@ -92,17 +96,12 @@ class CardgameCollection : public XApplication {
    typedef OThread<CardgameCollection> THRDAPPL;
    THRDAPPL* pThread;
 
-   std::string pathDeck;
-   std::string pathBack;
+   Options& options;
 
-   typedef enum { NONE = -1, GROVHULT = 0, GTWOPART, GHEARTS, GLAST } games;
-   games typeGame;
    games oldGame;
    bool restart;
 
    Game* game;
-
-   vector<string> names;
 
    static const std::string NAME_INIFILE;
 
