@@ -43,7 +43,7 @@ class ConnectionMgr;
 class Game : public Gtk::Table {
  public:
    /// Stati of the game
-   enum { NONE,                            ///< Class created; game not started
+   enum { NONE = 0,                        ///< Class created; game not started
           INITIALIZING,          ///< Initialization phase (dealing cards, ...)
           STOPPED,                                     ///< Game has been ended
           TOSTOP,        ///< Game should be ended (but can't be at the moment)
@@ -80,6 +80,7 @@ class Game : public Gtk::Table {
    /// Handling the actual game status
    unsigned int gameStatus () const { return statGame; }
    void setGameStatus (unsigned int newStatus);
+   bool isShowingCardsToPlay () const { return pos1Play != -1U; }
    //@}
 
    void setPlayerPosition (unsigned int posPlayer) { posServer = posPlayer; }
@@ -113,7 +114,7 @@ class Game : public Gtk::Table {
    void displayTurn (unsigned int player);
    void displayTurn (unsigned int player, const Glib::ustring& preText);
    void makeNextMoves ();
-   void endRemoteMove ();
+   bool endRemoteMove (unsigned int player);
    virtual int makeMove (unsigned int player) = 0;
 
    bool randomizeCardsToPile (ICardPile& pile) const;

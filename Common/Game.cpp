@@ -268,11 +268,15 @@ void Game::makeNextMoves () {
 //-----------------------------------------------------------------------------
 /// Ends the move of the passed remote player. This contains of executing the
 /// move and re-enable receiving of messages
-/// @param player: ID of remote player
+/// \param player: ID of remote player
+/// \returns bool: False
 //-----------------------------------------------------------------------------
-void Game::endRemoteMove () {
-   makeNextMoves ();
+bool Game::endRemoteMove (unsigned int player) {
+   TRACE8 ("Game::endRemoteMove () - " << player);
    mxSerializeMsgs.unlock ();
+   Glib::signal_idle ().connect
+       (bind (slot (*actPlayers[player], &Player::makeTurn), this));
+   return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -612,8 +616,6 @@ void Game::setNextPlayer (unsigned int player) {
 
       broadcastMessage (msg.str ());
    }
-   else
-      actPlayer = correctPlayer (actPlayer);
 }
 
 //----------------------------------------------------------------------------
@@ -640,7 +642,7 @@ bool Game::performCommand (unsigned int player, const char* msg) {
    if (cmd == "ActPlayer") {
        cmd = command.getNextNode (';');
       TRACE9 ("Game::performCommand (unsigned int player, const char*) - "
-              "Startplayer: " << cmd);
+              "Next player: " << cmd);
       unsigned long player;
       if (stringToNumber (player, cmd.c_str ()))
          return false;
@@ -658,7 +660,7 @@ bool Game::performCommand (unsigned int player, const char* msg) {
       if (stringToNumber (target, strTarget.c_str ())
           || playTo != "Target")
          return false;
-      ICardPile& pile (getPileOfPlayer (actPlayer, target));
+      ICardPile& pile (getPileOfPlayer (correctPlayer (actPlayer), target));
 
       command = cmd;
       unsigned int cards (0);
@@ -669,13 +671,15 @@ bool Game::performCommand (unsigned int player, const char* msg) {
             return false;
 
          card = lCard - cards++;
-         flipCards2Play (pile, card, card);
-
-         mxSerializeMsgs.lock ();
-         Glib::signal_timeout ().connect
-             (bind_return (slot (*this, &Game::endRemoteMove), false),
-              ComputerPlayer::TIMEOUT);
+         flipCards2Play (pile, pos1Play = card, pos2Play = card);
       }
+
+      TRACE9 ("Game::performCommand (unsigned int, const char*) - Get lock");
+      mxSerializeMsgs.lock ();
+      TRACE9 ("Game::performCommand (unsigned int, const char*) - Perform move");
+      Glib::signal_timeout ().connect
+          (bind (slot (*this, &Game::endRemoteMove), actPlayer),
+           ComputerPlayer::TIMEOUT);
    }
    else
       return false;
