@@ -19,6 +19,7 @@
 
 
 #include <vector>
+#include <bitset>
 
 #include <gtkmm/label.h>
 
@@ -70,12 +71,14 @@ class SgtMayor : public Game {
 
    //@Section Computer player
    unsigned int findPos2Play (unsigned int player);
+   bool isHighest (const CardWidget& card) const;
+   unsigned int tryToGetTickWithTrump (const ICardPile& pile) const;
 
    static const unsigned int NUM_PLAYERS = 3;              // Number of players
 
    struct {
       CardHPile  hand;                        // For players: Cards in the hand
-      Gtk::HBox  won;                                              // Won ticks
+      CardHPile  won;                                              // Won ticks
       Gtk::Label name;
       Gtk::Label neededTicks;
    } players[NUM_PLAYERS];
@@ -84,6 +87,8 @@ class SgtMayor : public Game {
    CardWidget* pTrump;
 
    unsigned int startPlayer;
+   std::bitset<52> playedCards;
+   unsigned int playedColours[4];
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];

@@ -99,7 +99,9 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardse
       players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::COMPRESSED);
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
       players[i].hand.set_size_request (width + 17 * (i ? 7 : 18), height + 5);
-      players[i].won.set_size_request (width + 17 * 7, height + 20);
+      players[i].won.set_size_request (width + 17 * 7, height + 5);
+      players[i].won.setStyle (ICardPile::QUITE_COMPRESSED);
+      players[i].won.setShowOption (ICardPile::SHOWBACK);
    }
 
    // Show played area
@@ -162,6 +164,7 @@ void SgtMayor::start () {
       Check3 (!pExchange);
       pExchange = &pile.removeTopCard ();
 
+      memset (playedColours, '\0', sizeof (playedColours));
       startPlaying ();
    }
 }
@@ -196,6 +199,16 @@ void SgtMayor::playOpen (bool open) {
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       players[i].hand.setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
       players[i].hand.setStyle (open ? ICardPile::COMPRESSED : ICardPile::QUITE_COMPRESSED);
+   }
+
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+      players[i].won.setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
+      players[i].won.setStyle (open ? ICardPile::COMPRESSED : ICardPile::QUITE_COMPRESSED);
+
+      for (CardVPile::iterator c (players[i].won.begin ());
+           c != players[i].won.end (); ++c)
+         if (((c - players[i].won.begin ()) % 3) != 2)
+            open ? (*c)->show () : (*c)->hide ();
    }
 }
 
@@ -272,10 +285,9 @@ void SgtMayor::cardColourSelect (unsigned int iCard) {
 
    showTrump (players[0].hand[iCard]->colour ());
    disableHuman ();
-   displayTurn (0);
-
-   Glib::signal_idle ().connect
-       (bind_return (slot (*this, &SgtMayor::enableHuman), false));
+   displayTurn (startPlayer);
+   setNextPlayer (startPlayer);
+   makeNextMoves ();
 }
 
 //-----------------------------------------------------------------------------
@@ -334,7 +346,6 @@ void SgtMayor::startPlaying () {
    else
       displayTurn (startPlayer, _("Nobodoy can exchange the two of clubs; "));
 
-
    // Find special colour
    ICardPile& pile (players[startPlayer].hand);
    int number[] = { 0, 0, 0, 0 };
@@ -366,8 +377,62 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
    Check1 (player < NUM_PLAYERS);
    TRACE8 ("SgtMayor::findPos2Play (unsigned int) - Player " << player);
 
-   
-   return 0;
+   unsigned int pos (0);
+   switch (played.size ()) {
+   case 0:
+      // Try to find a highest card
+      while (pos < players[player].hand.size ()) {
+         pos = players[player].hand.findLastEqualColour (pos);
+         if (isHighest (*players[player].hand[pos]))
+             break;
+         ++pos;
+      }
+
+      if (pos >= players[player].hand.size ())
+         pos = players[player].hand.findLowestCard (pTrump->colour ());
+      break;
+
+   case 1:
+      pos = players[player].hand.find1EqualOrBiggerByColour (*played[0]);
+      if ((pos == -1U)
+          || (players[player].hand[pos]->colour () != played[0]->colour ()))
+         pos = (players[player].hand.exists (played[0]->colour ())
+                ? players[player].hand.find (played[0]->colour ())
+                : tryToGetTickWithTrump (players[player].hand));
+      else {
+         unsigned int highest (players[player].hand.findLastEqualColour (pos));
+         pos = (isHighest (*players[player].hand[highest])
+                ? highest : players[player].hand.findFirstEqualColour (pos));
+      }
+      break;
+
+   case 2:
+      // The tick is taken by the second player with a trump. Either play a
+      // small card or use a bigger trump.
+      if ((played[0]->colour () != pTrump->colour ())
+          && (played[1]->colour () == pTrump->colour ())) {
+         pos = players[player].hand.find (played[0]->colour ());
+         if (pos == -1U) {
+            pos = players[player].hand.find1EqualOrBiggerByColour (*played[1]);
+            if (pos == -1U)
+               pos = players[player].hand.findLowestCard (pTrump->colour ());
+         }
+      }
+      else {
+         pos = players[player].hand.find1EqualOrBiggerByColour (*played[0]);
+         if ((pos == -1U)
+             || (players[player].hand[pos]->colour () != played[0]->colour ()))
+            pos = (players[player].hand.exists (played[0]->colour ())
+                   ? players[player].hand.find (played[0]->colour ())
+                   : tryToGetTickWithTrump (players[player].hand));
+      }
+      break;
+
+   default:
+      Check3 (0);
+   }
+   Check3 (pos < players[player].hand.size ());
+   return pos;
 }
 
 //-----------------------------------------------------------------------------
@@ -427,28 +492,107 @@ void SgtMayor::showTrump (CardWidget::COLOURS colour) {
 }
 
 //----------------------------------------------------------------------------
-/// Plays the passed card
+/// Plays the passed card; find winner and give him the cards at the end of a
+/// turn.
 /// \param player: Player on turn
 /// \param card: Card to play 
 /// \returns unsigned int: Next player; or -1U, if end of game
 //----------------------------------------------------------------------------
 unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
-   TRACE9 ("SgtMayor::playCard (unsigned int, unsigned int) - Player " << player);
+   TRACE3 ("SgtMayor::playCard (unsigned int, unsigned int) - Player " << player);
 
    movePile (played, players[player].hand, card, card);
+   playedCards.set (players[player].hand[card]->number ());
+   ++playedColours[players[player].hand[card]->colour ()];
 
    if (played.size () == NUM_PLAYERS) {
-      CardVPile* wonPile (new CardVPile (ICardPile::VERY_COMPRESSED,
-                                         ICardPile::SHOWBACK));
-      wonPile->show ();
+      // Find the winner
+      CardVPile::const_iterator i (played.begin ());
+      CardWidget::NUMBERS nr ((*i)->number ());
+      CardWidget::COLOURS col ((*i)->colour ());
+      unsigned int bestPlayer (0);
 
-      while (played.size ())
-         wonPile->insert (played.removeTopCard (), 0);
+      Check3 (pTrump);
+      while (++i != played.end ()) {
+         TRACE8 ("SgtMayor::playCard (unsigned int, unsigned int) - Comparing "
+                 << (**(i - 1)) << " - " << **i);
 
-      players[player].won.pack_start (*wonPile);
+         if ((col != pTrump->colour ())
+             && ((*i)->colour () == pTrump->colour ())) {
+            TRACE9 ("SgtMayor::playCard (unsigned int, unsigned int) - Found trump ");
+            col = pTrump->colour ();
+            nr = (*i)->number ();
+            bestPlayer = i - played.begin ();
+            continue;
+         }
+
+         if (((*i)->number () > nr) && ((*i)->colour () == col)) {
+            TRACE9 ("SgtMayor::playCard (unsigned int, unsigned int) - New best card " << **i);
+            nr = (*i)->number ();
+            bestPlayer = i - played.begin ();
+         }
+      }
+      TRACE9 ("SgtMayor::playCard (unsigned int, unsigned int) - Calc. winner from "
+              << player << " and " << bestPlayer);
+      player = (player + 1 + bestPlayer) % NUM_PLAYERS;
+      TRACE9 ("SgtMayor::playCard (unsigned int, unsigned int) - Winner " << player);
+
+      // Move the cards to his won pile (but show only one of them)
+      while (played.size () > 1) {
+         CardWidget& card (played.remove (0));
+         card.hide ();
+         players[player].won.append (card);
+      }
+      players[player].won.append (played.removeTopCard ());
       Check3 (played.empty ());
    }
+   else
+      player = calcNextPlayer (player);
 
-   displayTurn (player = calcNextPlayer (player));
-   return player;
+   if (players[player].hand.size ()) {
+      displayTurn (player);
+      return player;
+   }
+
+   status.pop ();
+   status.push (_("Game ended"));
+   setGameStatus (STOPPED);
+   return -1U;
+}
+
+//----------------------------------------------------------------------------
+/// Checks if the passed card is the highest card of its colours, which has
+/// not been played.
+/// \param card: Card to inspect 
+/// \return bool: True, if card is the highest unplayed one 
+//----------------------------------------------------------------------------
+bool SgtMayor::isHighest (const CardWidget& card) const {
+   TRACE8 ("SgtMayor::isHighest (const CardWidget&) - " << card);
+
+   int nr (card.number () - 4);
+   while (nr > 0) {
+      if (!playedCards[nr])
+         return false;
+      nr -= 4;
+   }
+   return true;
+}
+
+//----------------------------------------------------------------------------
+/// Tries to get the tick with a trump card; returns a bad card; if there's no
+/// trump.
+/// \param pile: Pile to play from 
+/// \return unsigned int: Position of card to play 
+/// \Throw 
+/// \Pre 
+/// \Remarks 
+//----------------------------------------------------------------------------
+unsigned int SgtMayor::tryToGetTickWithTrump (const ICardPile& pile) const {
+   TRACE8 ("SgtMayor::tryToGetTickWithTrump (const ICardPile&)  - Size" << pile.size ());
+   Check3 (pile.size ());
+
+   unsigned int pos (pile.find (pTrump->colour ()));
+   if (pos == -1U)
+      pos = pile.findLowestCard (pTrump->colour ());
+   return pos;
 }
