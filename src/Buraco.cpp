@@ -276,10 +276,42 @@ int Burazno::executeMove (unsigned int player) {
    // Check if all cards in the hand can (and should) be played
    TRACE8 ("Buraco::executeMove (unsigned int) - Playing all?");
    if (!unfinishedMonoPiles[player & 1]
-   if (reserve[player & 1].size () || buraznos[player & 1]) {
-      unsigned int target (canGetRidOfCards (player));
-      if (target != -1U)
-         return target;
+   if ((reserve[player & 1].size () || buraznos[player & 1]) 
+       && canGetRidOfCards (player)) {
+      // Find first non-joker
+      std::vector<CardWidget*>::iterator i (playerPile.begin ());
+      for (;i != playerPile.end (); ++i) {
+         if (!isJoker (**i))
+            break;
+      }
+      // If non joker found
+      if (i != playerPile.end ()) {
+         Check3 ((i + 1) != playerPile.end ());
+         Check3 ((*i)->number () == (*(i + 1))->number ());
+         unsigned int pos (i - playerPile.begin ());
+         playerPile.move (playerPile.size () - 1, pos);
+         playerPile.move (playerPile.size () - 1, pos);
+         if (!isJoker (*playerPile[playerPile.size () - 2])) {
+            Check3 (isJoker (*playerPile[0]));
+            playerPile.move (playerPile.size () - 1, 0);
+      }
+
+         // Create new pile with the found pair and a joker
+         CardVPile& pile (makeNewPile (player & 1));
+         flipCards2Play (playerPile, pos1 = playerPile.size () - 3,
+                         pos2 = playerPile.size () - 1);
+         return (tablePiles[player & 1].size () - 1) << 16;
+
+      else
+         if (buraznos[player & 1]) {
+            // Get rid off jokers, if team has already a burazno
+            for (std::vector<CardVPile*>::iterator p (tablePiles[player & 1].begin ());
+                 p != tablePiles[player & 1].end (); ++p)
+               if (containsNoJoker (**p)) {
+                  flipCards2Play (playerPile, pos1 = 0, pos2 = 0);
+                  return (p - tablePiles[player & 1].begin ()) << 16;
+               }
+         }
    if (containsOnlyJoker (playerPile))
       if (!reserve[player & 1].empty ()) {
          addBuraco (player);
@@ -1111,7 +1143,7 @@ int Burazno::cardFitsOnPile (ICardPile& pile, CardWidget& card) const {
          unsigned int maxDiff ((posJoker == -1U) ? 1
                                : ((posJoker < first) || (posJoker > last)) ? 2 : 1);
          unsigned int diff (pile[first]->number () - card.number ());
-         TRACE9 ("Burazno::cardFitsOnPile (CardVPile&, CardWidget&) - Differences: "
+         TRACE9 ("Burazno::cardFitsOnPile (CardVPile&, CardWidget&) - Diff (start): "
                  << diff << "; max: " << maxDiff);
          Check3 (diff);
          if (diff <= maxDiff) {
@@ -1124,7 +1156,9 @@ int Burazno::cardFitsOnPile (ICardPile& pile, CardWidget& card) const {
          }
 
          // Test if card fits at other end
-         diff = card.number () - pile[first]->number ();
+         diff = card.number () - pile[last]->number ();
+         TRACE9 ("Burazno::cardFitsOnPile (CardVPile&, CardWidget&) - Diff (end): "
+                 << diff << "; max: " << maxDiff);
          if (diff <= maxDiff) {
             if ((diff == 2) && posJoker < last) {
                Check3 (!first);
@@ -1162,19 +1196,35 @@ void Burazno::endGame () {
 //Purpose   : Checks if the player can get rid of all cards in his hand
 //            except of the jokers
 //Parameters: player: Player whose cards should be inspected
-//Returns   : Pile where cards should be played to
+//Returns   : True: if all cards can be played
 /*--------------------------------------------------------------------------*/
-unsigned int Burazno::canGetRidOfCards (unsigned int player) {
+bool Burazno::canGetRidOfCards (unsigned int player) {
    TRACE5 ("Burazno::canGetRidOfCards (unsigned int) - Checking player " << player);
-   std::bitset<200> cards;
+   std::bitset<200> used; Check3 (hands[player - 1].size () < used.size ());
    CardHPile& pile (hands[player - 1]);
    unsigned int piles (0);
-   for (CardVPile::const_iterator i (pile.begin ()); i != pile.end (); ++i) {
-      if (isJoker (**i))
-          continue;
+   for (ICardPile::const_iterator i (pile.begin ()); i != pile.end (); ++i) {
+      if (used[i - pile.begin ()])
+   CardVPile::const_iterator i (pile.begin ());
+   if (isJoker (**i)) {
+      ++cJokers;
+      used.set (0);
+   }
+   for (++i; i != pile.end (); ++i) {
+      Check3 (i != pile.begin ());
+      Check3 (i != pile.end ());
+         ++cJokers;
+         continue;
+      }
+
+      // If there are equal cards (and the first card is not already marked as
       // used: Mark both card as used
-      for (CardVPile::const_iterator j (i); j != pile.end (); ++j) {
-         
+      ICardPile::const_iterator o (pile.getFittingCard (**i, i + 1, &cardDistance));
+      if ((o != pile.end ()) && !used[o - pile.begin ()]) {
+      if (((*i)->number () == (*(i - 1))->number ()) && !used[i - pile.begin ()]) {
+         used.set (o - pile.begin ());
+      }
+         used.set (i - pile.begin () - 1);
 
    TRACE9 ("Buraco::canGetRidOfCards (unsigned int) -  " << used.count ()
-   return -1U;
+   return (used.count () == used.size ()) && (piles <= cJokers);
