@@ -135,7 +135,7 @@ CardWidget& BuracoPile::remove (unsigned int pos, bool visible) {
 ///    card, if the pile has only one card)
 /// - Ordinary card: Check if the card "fits": Either the same number as the
 ///   other (first and last) card, or the same colour and the number in serie.
-/// \param card: Card to inspect. 
+/// \param card: Card to inspect.
 /// \param pos: Position of card to play, or -1U if can't be played
 /// \param move: Position to move joker to or -1U
 /// \returns bool: True, if card fits on pile
@@ -150,10 +150,11 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
 
    // Joker played on a pile without joker: Valid
    if (Buraco::isJoker (card) && ((status.posFirst > 6) || (status.posJoker > 6))) {
-      pos = (status.type == NUMBER) ? 1
-          : (((status.posFirst < 7)
-              && (operator[] (status.posFirst)->number () == CardWidget::ACE))
-             ? (status.posLast + 1) : 0);
+      pos = ((status.type == NUMBER)
+	     ? 1
+	     : ((((status.posFirst < 7))
+		&& (operator[] (status.posFirst)->number () == CardWidget::ACE))
+		? (status.posLast + 1) : 0));
       return true;
    }
 
@@ -180,13 +181,12 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
           && (status.type != NUMBER)) {
          // This code assumes that the (potentially) coloured pile is sorted
          // from lower card to higher cards (strict ascending).
-         // First check, if a joker can be replaced
+         // First check, if a joker in between other cards can be replaced
          if ((status.posJoker < 7)
              && (Buraco::cardDistance (card, *operator[] (status.posFirst))
                  == static_cast<int> (status.posJoker))) {
-            if (status.posJoker
-                && ((status.posJoker < status.posLast)
-                    || (card.number () == CardWidget::ACE)))
+            if ((status.posJoker && (status.posJoker < status.posLast))
+		|| (card.number () == CardWidget::ACE))
                move = ((((status.posJoker > status.posFirst)
                          ? operator[] (status.posFirst)->number ()
                          : card.number ()) == CardWidget::ACE)
@@ -214,19 +214,22 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
 
             if (diff && (diff <= maxDiff)) {
                pos = status.posFirst - diff + 1;
-               if (((diff == 2) && (status.posJoker > status.posFirst)
-                    && ((operator[] (status.posFirst)->number () != CardWidget::ACE)
-                        || (size () < 3)))
-                   || ((diff == 1) && (card.number () == CardWidget::ACE)
-                       && !status.posJoker && !pos)) {
-                  Check3 (!status.posFirst);
-
-                  move = ((((status.posJoker > status.posFirst)
-                            ? operator[] (status.posFirst)->number ()
-                            : card.number ()) == CardWidget::ACE)
-                          ? status.posLast : 0);
-		  ++pos;
-               }
+	       if ((status.posJoker < 7)) {
+		  if ((diff == 2)
+		      ? ((status.posJoker > status.posFirst)
+			 && ((operator[] (status.posFirst)->number () != CardWidget::ACE)
+			     || (size () < 3)))
+		      : ((card.number () == CardWidget::ACE)
+			 ? (!status.posJoker && (pos == 1))
+			 : ((card.number () == CardWidget::KING)
+			    && (!pos && status.posJoker)))) {
+		     move = ((((status.posJoker > status.posFirst)
+			       ? operator[] (status.posFirst)->number ()
+			       : card.number ()) == CardWidget::ACE)
+			     ? status.posLast : 0);
+		     move ? --pos : ++pos;
+		  }
+	       }
                return true;
             }
          }
