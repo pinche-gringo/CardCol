@@ -400,19 +400,7 @@ void Machiavelli::changeNames (const std::vector<Player*>& newPlayer) {
 void Machiavelli::setStartPlayer () {
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
       setNextPlayer (startPlayer);
-
-      // Send startplayer to the clients
-      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
-         const std::vector<YGP::Socket*>& clients (getConnectionMgr ().getClients ());
-         unsigned int player ((currentPlayer () - 1) & 0x3);
-         for (std::vector<YGP::Socket*>::const_iterator i (clients.begin ());
-              i != clients.end (); ++i) {
-            std::ostringstream msg;
-            msg << "ActPlayer=" << player;
-            writeMessage (**i, msg.str ());
-            player = (player + 1) & 0x3;
-         }
-      }
+      broadcastStartPlayer (startPlayer);
    }
 
    dealCard (startPlayer);
@@ -1515,7 +1503,7 @@ ICardPile* Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile)
 }
 
 //----------------------------------------------------------------------------
-/// Handles the messages the server might send for the twopart cardgame
+/// Handles the messages the server might send for the Machiavelli cardgame
 /// \param player: ID of the player sending the message
 /// \param message: Message received from the server
 /// \returns bool: True, if message has been processed completey
