@@ -1194,6 +1194,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       Check3 (move != pile->getPosJoker ());
       Check3 (pile->getPosJoker () != 7);
       sendMoveCard (iPile, pile->getPosJoker (), move);
+      pile->move (move, pile->getPosJoker ());
    }
 
    // Send move
@@ -1374,8 +1375,6 @@ void Buraco::addBuraco (unsigned int player, bool show) {
       status.push (stat);
    status.pop ();
 
-   points[player & 1] += 100;
-
 //-----------------------------------------------------------------------------
 /// Hides the joker, which are displayed when picking up the buraco
 /// \param pile: Pile holding the jokers shown
@@ -1468,6 +1467,7 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
       if (move != -1U) {
 	 Check3 (pile.getPosJoker () != 7);
          sendMoveCard (bestPile, pile.getPosJoker (), move);
+         pile.move (move, pile.getPosJoker ());
       }
 
       pos1Play = pos2Play = iCard;
@@ -1656,6 +1656,8 @@ void Buraco::endGame () {
    }
    points[0] += reserve[0].empty () ? 100 : -100;
    points[1] += reserve[1].empty () ? 100 : -100;
+   pScoreDlg->addPoints (points);
+
    // Sum up all cards on the table
    for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
       int sum (0);
@@ -1677,7 +1679,7 @@ void Buraco::endGame () {
               << sum << '/' << monoPile);
       points[i] = ((points[i] < (reserve[i].size () ? 100 : 300)) ? -sum : sum) - monoPile;
    }
-      points[i] = ((points[i] < 200) ? -sum : sum) - monoPile;
+
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       for (std::vector<CardWidget*>::const_iterator c (hands[i].begin ());
            c != hands[i].end (); ++c)
