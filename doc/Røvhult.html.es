@@ -107,7 +107,7 @@
       vale de acuerdo con las reglas, se tiene que sacarla y las dem&aacute;s
       del mot&oacute;n jugado.</p>
 
-    <p>La barra de estado muestra que est&aacute; pasando!</p>
+    <p>&iexcl;La barra de estado muestra que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
     <p>Despu&eacute;s de iniciar se encuentra desplazadas las cartas (de
@@ -126,10 +126,10 @@
 
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
-      Tirar y depositar significa hacer clic con un but&oacute;n de el
-      mouse en una carta, se sigue empujando el but&oacute;n y se tira la
-      carta a su destinaci&oacute;n. El fin de esa actividad se se ejecuta
-      con dejar el but&oacute;n.</p>
+      <i>Tirar y depositar</i> significa hacer clic con un bot&oacute;n del
+      mouse en una carta, se sigue empujando el bot&oacute;n y se tira la
+      carta a su destino. El fin de esa actividad se ejecuta
+      con dejar el bot&oacute;n.</p>
 
     <hr size=3 noshade>
     <table width="100%">

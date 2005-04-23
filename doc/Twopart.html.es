@@ -95,7 +95,7 @@
 
     <p>El &uacute;ltimo jugador que ya tiene cartas pierda.</p>
 
-    <p>La barra de estado muestra que est&aacute; pasando!</p>
+    <p>&iexcl;La barra de estado muestra que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
     <p>Despu&eacute;s iniciar se encuentra (de izquierda a derecha y de arriba a
