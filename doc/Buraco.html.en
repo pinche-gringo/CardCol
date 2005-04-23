@@ -110,7 +110,7 @@
       pile without finishing it, it also has 1.000 points - but negative!</p>
 
     <p>Furhter 100 points one get for taking up the buraco and for ending the
-      game.</p>
+      game; 100 points are substracted, if the buraco was not taken.</p>
 
     <p>Finally one adds the points of the cards itself: Those on the table are
       added and those in the hand are substracted. A joker counts 50 points, a
@@ -134,7 +134,8 @@
         the number of its cards, if the mouse is put over.</li>
 
       <li>The cards of the player. Presorted by numbers, but re-sortable with
-        drag and drop<a href="Buraco.html.en#Note1"><sup>1</sup></a>.</li>
+        drag and drop<a href="Buraco.html.en#Note1"><sup>1</sup></a> or
+        the entries in the <tt>Buraco</tt> menu.</li>
 
       <li>The piles on the table of team 1. Cards can be added to that piles
         with drag und drop<a href="Buraco.html.en#Note1"><sup>1</sup></a> (if

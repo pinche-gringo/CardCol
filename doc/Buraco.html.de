@@ -120,7 +120,8 @@
       geschlossen, bringt er 1.000 Minuspunkte!</p>
 
     <p>Weitere (jeweils) 100 Punkte gibt es f&uuml;r das Aufnehmen des Buraco
-      und das Beenden des Spiels.</p>
+      und das Beenden des Spiels; 100 Punkte werden abgezogen, wenn der
+      Buraco nicht aufgenommen wurde.</p>
 
     <p>Abschlie&szlig;end (nachdem ein Spieler seine letzte Karte entweder
       gespielt oder abgeworfen hat), werden die Punkte der Karten
@@ -146,7 +147,8 @@
         wird.</li>
       <li>Die Karten des Spielers. Anfangs sortiert nach Nummern, aber mit
         Ziehen und Ablegen (drag und drop)<a
-        href="Buraco.html.de#Note1"><sup>1</sup></a> sortierbar.</li>
+        href="Buraco.html.de#Note1"><sup>1</sup></a> oder &uuml;ber
+        das Men&uuml; <tt>Buraco</tt> sortierbar.</li>
       <li>Die Stapel am Tisch von Team 1. Zu diesen Karten k&ouml;nnen mit
         Ziehen und Ablegen (drag und drop)<a
         href="Buraco.html.de#Note1"><sup>1</sup></a> weitere Karten
