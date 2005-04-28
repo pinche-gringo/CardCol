@@ -60,7 +60,4 @@ class Options : public YGP::Entity {
    const char*    pNameINIFile;
 };
 
-
-#include "Options.meta"
-
 #endif
