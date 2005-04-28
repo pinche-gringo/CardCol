@@ -32,6 +32,9 @@
 #include <CardPile.h>
 #include <CardImgs.h>
 
+#include "GameTypes.h"
+
+
 class Game;
 class Options;
 class ICarddeckSelectDlg;
@@ -40,10 +43,6 @@ class ICarddeckSelectDlg;
 // Class to handle the cardgame collection
 class CardgameCollection : public XGP::XApplication {
  public:
-   // IDs of games. The games starting with GBURACO get 4 decks!
-   typedef enum { NONE = -1U, GROVHULT = 0, GTWOPART, GHEARTS, GBURACO,
-                  GMACHIAVELLI, GSGTMAYOR, GLAST } games;
-
    // Manager functions
    CardgameCollection (Options& opts);
    ~CardgameCollection ();
@@ -76,7 +75,7 @@ class CardgameCollection : public XGP::XApplication {
    void connect ();
 #endif
    void exit ();
-   void changeGame (games game);
+   void changeGame (int game);
    void showChangeDeckDlg ();
    void changeNames ();
    void savePreferences ();
@@ -126,7 +125,7 @@ class CardgameCollection : public XGP::XApplication {
 
    unsigned int playerPos;
 
-   games oldGame;
+   int oldGame;
    unsigned int restart;
 
    Game* game;
