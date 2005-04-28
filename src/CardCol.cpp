@@ -61,7 +61,9 @@
 #include "Twopart.h"
 #include "SgtMayor.h"
 #include "Machiavelli.h"
+
 #include "Options.h"
+#include "Options.meta"
 
 #include "CardCol.h"
 
@@ -601,7 +603,7 @@ class CardgameAppl : public YGP::IVIOApplication {
       : IVIOApplication (argc, argv, lo) { }
    ~CardgameAppl () { }
 
-   static CardgameCollection::games convertToGameType (const char* pText);
+   static int convertToGameType (const char* pText);
 
  protected:
    virtual void readINIFile (const char* pFile);
@@ -659,7 +661,7 @@ const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE)
-     , options (opts), playerPos (0), oldGame (NONE)
+     , options (opts), playerPos (0), oldGame (GameTypes::NONE)
      , restart (false), game (NULL) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
 
@@ -720,22 +722,22 @@ CardgameCollection::CardgameCollection (Options& opts)
    // xgettext: For translations: Write the Rovhult as o-slash
    grpAction->add (apMenus[ROVHULT] = Gtk::RadioAction::create (grpGames, "Rovhult", _("_Rovhult")),
 		   Gtk::AccelKey (_("<ctl>R")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), GROVHULT));
+		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::ROVHULT));
    grpAction->add (apMenus[TWOPART] = Gtk::RadioAction::create (grpGames, "Twopart", _("_Twopart")),
 		   Gtk::AccelKey (_("<ctl>T")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), GTWOPART));
+		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::TWOPART));
    grpAction->add (apMenus[HEARTS] = Gtk::RadioAction::create (grpGames, "Hearts", _("_Hearts")),
 		   Gtk::AccelKey (_("<ctl>H")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), GHEARTS));
+		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::HEARTS));
    grpAction->add (apMenus[BURACO] = Gtk::RadioAction::create (grpGames, "Buraco", _("_Buraco")),
 		   Gtk::AccelKey (_("<ctl>B")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), GBURACO));
+		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::BURACO));
    grpAction->add (apMenus[SGTMAYOR] = Gtk::RadioAction::create (grpGames, "SgtMayor", _("_Sgt. Mayor")),
 		   Gtk::AccelKey (_("<ctl>Y")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), GSGTMAYOR));
+		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::SGTMAYOR));
    grpAction->add (apMenus[MACHIAVELLI] = Gtk::RadioAction::create (grpGames, "Machiavelli", _("_Machiavelli")),
 		   Gtk::AccelKey (_("<ctl>M")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), GMACHIAVELLI));
+		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::MACHIAVELLI));
 
    grpAction->add (Gtk::Action::create ("ChgDecks", _("Change _decks ...")),
 		   Gtk::AccelKey (_("<ctl>D")),
@@ -845,7 +847,7 @@ void CardgameCollection::startGame () {
       oldDecks = game->numberOfDecks ();
       oldJoker = game->numberOfJokers ();
 
-      if (oldGame != options.type) {
+      if (oldGame != (int)options.type) {
 	 // Remove menubar and update GUI to not interfere with new game
 	 game->removeMenus (mgrUI);
 	 Glib::RefPtr<Glib::MainContext> ctx (Glib::MainContext::get_default ());
@@ -856,35 +858,35 @@ void CardgameCollection::startGame () {
       }
    }
 
-   if (oldGame != options.type) {
-      oldGame = CardgameCollection::games (options.type);
+   if (oldGame != (int)options.type) {
+      oldGame = options.type;
       switch (oldGame) {
-      case GROVHULT:
+      case GameTypes::ROVHULT:
          game = new TGame<Rovhult, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 
-      case GTWOPART:
+      case GameTypes::TWOPART:
          game = new TGame<Twopart, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 
-      case GHEARTS:
+      case GameTypes::HEARTS:
          game = new TGame<Hearts, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 
-      case GBURACO:
+      case GameTypes::BURACO:
          game = new TGame<Buraco, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 
-      case GMACHIAVELLI:
+      case GameTypes::MACHIAVELLI:
          game = new TGame<Machiavelli, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 
-      case GSGTMAYOR:
+      case GameTypes::SGTMAYOR:
          game = new TGame<SgtMayor, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
@@ -1012,9 +1014,9 @@ void CardgameCollection::endGame () {
 /// Changes the type of the next game
 /// \param game: Type of the next game
 //-----------------------------------------------------------------------------
-void CardgameCollection::changeGame (games game) {
+void CardgameCollection::changeGame (int game) {
    TRACE9 ("CardgameCollection::changeGame (games) - " << game);
-   Check3 (game < GLAST);
+   Check3 ((unsigned int)game < GameTypes::LAST);
 
    options.type = game;
 }
@@ -1235,7 +1237,7 @@ bool CardgameCollection::restartGame () {
       }
       else {
          TRACE9 ("CardgameCollection::restartGame () - Delaying stop of game");
-         game->end ((options.type == oldGame) ? restart : false);
+         game->end (((int)options.type == oldGame) ? restart : false);
          return false;
       }
    }
@@ -1256,8 +1258,8 @@ void CardgameCollection::loadCards () {
    status.push (_("Loading cardimages ..."));
 
    // This code needs the game-IDs in a sequence starting with 0!
-   if (GLAST <= (unsigned int)options.type)
-      options.type = GROVHULT;
+   if (GameTypes::LAST <= options.type)
+      options.type = GameTypes::ROVHULT;
    Glib::RefPtr<Gtk::ToggleAction>::cast_dynamic (apMenus[ROVHULT + options.type])->set_active ();
 
    void* rc (changeCards ((void*)-1));
@@ -1444,8 +1446,8 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
    TRACE3 ("CardgameCollection::handleGlobalMessage (unsigned int, char*) - " << cmd);
 
    if (cmd == "Game") {
-      games type (CardgameAppl::convertToGameType (param.c_str ()));
-      if (type == NONE) {
+      int type (CardgameAppl::convertToGameType (param.c_str ()));
+      if (type == GameTypes::NONE) {
          std::string msg (_("Invalid game type: `%1'"));
          msg.replace (msg.find ("%1"), 2, param);
          throw msg;
@@ -1584,7 +1586,7 @@ void CardgameCollection::doStartGame () {
 void CardgameAppl::showHelp () const {
    std::cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
              << _(" [OPTIONS]\n\n")
-       // For translations: Write the Rovhult as o-slash
+      /* For translations: Write the Rovhult as o-slash */
              << "  -g, --game ......... " << _("[GAME] Select game to start (default: Rovhult)\n")
              << "  -f, --file ......... " << _("[FILE] Use file as INI file\n")
              << "  -b, --browser ...... " << _("[NAME] Browser to use to display the help\n")
@@ -1600,9 +1602,9 @@ void CardgameAppl::showHelp () const {
              << "  -V, --version ...... " << _("Output version information and exit\n")
              << "  -h, -?, --help ..... " << _("Displays this help and exit\n\n")
 
-       // For translations: Write one of the Rovhults with 'ø'
+      /* For translations: Write one of the Rovhults with 'ø' */
              << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts, Buraco,\n"
-                  "Machiavelli, SgtMayor or the numbers 0 - 5 (corresponding to the games in the above order).\n\n")
+                  "Machiavelli, SgtMayor or the numbers 0 - 5 (corresponding to the games in the\nabove order).\n\n")
              << _("The INI file can have the following entries:\n\n")
              <<  "  [Game]\n"
                  "  Type=Twopart\n"
@@ -1630,8 +1632,8 @@ bool CardgameAppl::handleOption (const char option) {
    case 'g': {
       const char* game (getOptionValue ());
       if (game) {
-         CardgameCollection::games type (convertToGameType (game));
-         if (type != CardgameCollection::NONE)
+         int type (convertToGameType (game));
+         if (type != GameTypes::NONE)
             options.type = type;
          else {
             Glib::ustring err (_("-warning: Invalid game type `%1'"));
@@ -1734,40 +1736,31 @@ bool CardgameAppl::handleOption (const char option) {
 /// \param pText: Text to convert
 /// \returns \c Type of game as understood by the CardgameCollection
 //-----------------------------------------------------------------------------
-CardgameCollection::games CardgameAppl::convertToGameType (const char* pText) {
+int CardgameAppl::convertToGameType (const char* pText) {
    TRACE9 ("CardgameAppl::convertToGameType (const char*) - " << pText);
 
-   static struct {
-      const char* pText;
-      CardgameCollection::games value;
-   } values[] = { { "Rovhult", CardgameCollection::GROVHULT },
-                  { "Røvhult", CardgameCollection::GROVHULT },
-                  { "Twopart", CardgameCollection::GTWOPART },
-                  { "Hearts", CardgameCollection::GHEARTS },
-                  { "Buraco", CardgameCollection::GBURACO },
-                  { "Machiavelli", CardgameCollection::GMACHIAVELLI },
-                  { "SgtMayor", CardgameCollection::GSGTMAYOR },
-                  { "0", CardgameCollection::GROVHULT },
-                  { "1", CardgameCollection::GTWOPART },
-                  { "2", CardgameCollection::GHEARTS },
-                  { "3", CardgameCollection::GBURACO },
-                  { "4", CardgameCollection::GMACHIAVELLI },
-                  { "5", CardgameCollection::GSGTMAYOR } };
+   if (!strcmp (pText, "Rovhult"))
+      return GameTypes::ROVHULT;
 
-   for (unsigned int i (0); i < (sizeof (values) / sizeof (values[0])); ++i)
-      if (!strcmp (values[i].pText, pText)) {
-         TRACE9 ("CardgameAppl::convertToGameType (const char*) - Result:  "
-                 << values[i].value);
-         return values[i].value;
+   GameTypes types;
+   try {
+      return types[pText];
+   }
+   catch (std::out_of_range&) {
+      try {
+	 YGP::ANumeric value (pText);
+	 if (types.exists (value))
+	    return (int)value;
       }
-
-   return CardgameCollection::NONE;
+      catch (std::invalid_argument&) { }
+   }
+   return GameTypes::NONE;
 }
 
 //-----------------------------------------------------------------------------
 /// Reads the options of the INI-file
 /// \param pFile: Pointer to filename
-/// \param Requieres : pFile not NULL
+/// \pre pFile not NULL
 //-----------------------------------------------------------------------------
 void CardgameAppl::readINIFile (const char* pFile) {
    TRACE5 ("CardgameAppl::readINIFile (const char*) - " << pFile);
@@ -1794,8 +1787,8 @@ void CardgameAppl::readINIFile (const char* pFile) {
       std::cerr << PACKAGE << err << '\n';
    }
 
-   CardgameCollection::games type (convertToGameType (options.strType.c_str ()));
-   if (type != CardgameCollection::NONE)
+   int type (convertToGameType (options.strType.c_str ()));
+   if (type != GameTypes::NONE)
       options.type = type;
    else {
       Glib::ustring err ("-warning: INI-file `%1' contains invalid game type `%2'");
