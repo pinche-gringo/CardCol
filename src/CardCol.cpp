@@ -28,6 +28,7 @@
 #include <cardgames-cfg.h>
 
 #include <cstdio>
+#include <cerrno>
 #include <cstdlib>
 
 #include <string>
@@ -59,6 +60,7 @@
 #include "Buraco.h"
 #include "Rovhult.h"
 #include "Twopart.h"
+#include "Settings.h"
 #include "SgtMayor.h"
 #include "Machiavelli.h"
 
@@ -661,7 +663,7 @@ const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE)
-     , options (opts), playerPos (0), oldGame (GameTypes::NONE)
+     , options (opts), playerPos (0), oldGame (GameTypes::NONE), actGame (opts.type)
      , restart (false), game (NULL) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
 
@@ -693,6 +695,8 @@ CardgameCollection::CardgameCollection (Options& opts)
 		     "    </menu>"
 		     "    <menuitem action='ChgDecks'/>"
 		     "    <menuitem action='ChgNames'/>"
+		     "    <menuitem action='Prefs'/>"
+		     "    <separator/>"
 		     "    <menuitem action='SavePrefs'/>"
 #if TRACELEVEL >= 1
 		     "    <separator/>"
@@ -745,6 +749,9 @@ CardgameCollection::CardgameCollection (Options& opts)
    grpAction->add (Gtk::Action::create ("ChgNames", _("Change _names ...")),
 		   Gtk::AccelKey (_("<ctl>C")),
 		   mem_fun (*this, &CardgameCollection::changeNames));
+   grpAction->add (Gtk::Action::create ("Prefs", Gtk::Stock::PREFERENCES),
+		   Gtk::AccelKey (_("F9")),
+		   mem_fun (*this, &CardgameCollection::editPreferences));
    grpAction->add (Gtk::Action::create ("SavePrefs", Gtk::Stock::SAVE,
 					_("_Save preferences")),
 		   mem_fun (*this, &CardgameCollection::savePreferences));
@@ -838,7 +845,7 @@ CardgameCollection::~CardgameCollection () {
 //-----------------------------------------------------------------------------
 void CardgameCollection::startGame () {
    TRACE6 ("CardgameCollection::startGame () - Old game type " << oldGame
-           << " -> New: " << options.type);
+           << " -> New: " << actGame);
 
    // Check if the game has been changed; if so destroy the old one
    unsigned int oldDecks (0), oldJoker (0);
@@ -847,7 +854,7 @@ void CardgameCollection::startGame () {
       oldDecks = game->numberOfDecks ();
       oldJoker = game->numberOfJokers ();
 
-      if (oldGame != (int)options.type) {
+      if (oldGame != actGame) {
 	 // Remove menubar and update GUI to not interfere with new game
 	 game->removeMenus (mgrUI);
 	 Glib::RefPtr<Glib::MainContext> ctx (Glib::MainContext::get_default ());
@@ -858,8 +865,8 @@ void CardgameCollection::startGame () {
       }
    }
 
-   if (oldGame != (int)options.type) {
-      oldGame = options.type;
+   if (oldGame != actGame) {
+      oldGame = actGame;
       switch (oldGame) {
       case GameTypes::ROVHULT:
          game = new TGame<Rovhult, CardgameCollection>
@@ -1018,7 +1025,7 @@ void CardgameCollection::changeGame (int game) {
    TRACE9 ("CardgameCollection::changeGame (games) - " << game);
    Check3 ((unsigned int)game < GameTypes::LAST);
 
-   options.type = game;
+   actGame = game;
 }
 
 //-----------------------------------------------------------------------------
@@ -1039,6 +1046,13 @@ void CardgameCollection::changeNames () {
 }
 
 //-----------------------------------------------------------------------------
+/// Edits the preferences
+//-----------------------------------------------------------------------------
+void CardgameCollection::editPreferences () {
+   Settings::create (get_window (), options);
+}
+
+//-----------------------------------------------------------------------------
 /// Saves the settings
 //-----------------------------------------------------------------------------
 void CardgameCollection::savePreferences () {
@@ -1050,6 +1064,15 @@ void CardgameCollection::savePreferences () {
       for (unsigned int i (0); i < aPlayer.size (); ++i)
 	 options.names[i] = aPlayer[i]->getName ();
       YGP::INIList<Glib::ustring>::write (inifile, "Player", options.names);
+
+      YGP::INIFile::writeSectionHeader (inifile, "Buraco");
+      inifile << "EndPoints=" << Buraco::ENDPOINTS << '\n';
+   }
+   else {
+      Glib::ustring msg (_("Couldn't save options (to file %1)!\n\nReason: %2."));
+      msg.replace (msg.find ("%1"), 2, options.pNameINIFile);
+      msg.replace (msg.find ("%2"), 2, strerror (errno));
+      Gtk::MessageDialog (msg, false, Gtk::MESSAGE_ERROR).run ();
    }
 }
 
@@ -1170,7 +1193,6 @@ void* CardgameCollection::changeCards (void* opt) {
    // Cards need an realized (!) parent, so ensure that the window is already
    // shown
    Check3 (this->is_realized ());
-   
    TRACE3 ("CardgameCollection::changeCards (void*) - Use " << options.decks
            << " and " << options.back);
 
@@ -1237,7 +1259,7 @@ bool CardgameCollection::restartGame () {
       }
       else {
          TRACE9 ("CardgameCollection::restartGame () - Delaying stop of game");
-         game->end (((int)options.type == oldGame) ? restart : false);
+         game->end ((actGame == oldGame) ? restart : false);
          return false;
       }
    }
@@ -1453,7 +1475,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
          throw msg;
       }
 
-      options.type = type;
+      actGame = type;
       if (game) {
          restart = true;
          if (restartGame ())
@@ -1744,7 +1766,7 @@ int CardgameAppl::convertToGameType (const char* pText) {
 
    GameTypes types;
    try {
-      return types[pText];
+      return types[_(pText)];
    }
    catch (std::out_of_range&) {
       try {
@@ -1778,6 +1800,9 @@ void CardgameAppl::readINIFile (const char* pFile) {
       INIFILE (pFile);
       INIOBJ (options, Game);
       INILIST2 (Player, Glib::ustring, options.names);
+
+      INISECTION (Buraco);
+      INIATTR2 (Buraco, unsigned int, Buraco::ENDPOINTS, EndPoints);
 
       INIFILE_READ ();
    }

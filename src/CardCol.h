@@ -78,6 +78,7 @@ class CardgameCollection : public XGP::XApplication {
    void changeGame (int game);
    void showChangeDeckDlg ();
    void changeNames ();
+   void editPreferences ();
    void savePreferences ();
 #if TRACELEVEL >= 0
    void toggleDebug ();
@@ -125,7 +126,7 @@ class CardgameCollection : public XGP::XApplication {
 
    unsigned int playerPos;
 
-   int oldGame;
+   int oldGame, actGame;
    unsigned int restart;
 
    Game* game;
