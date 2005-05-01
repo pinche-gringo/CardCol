@@ -31,6 +31,7 @@
 
 
 class Options : public YGP::Entity {
+   friend class Settings;
    friend class CardgameAppl;
    friend class CardgameCollection;
 
