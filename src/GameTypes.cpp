@@ -25,6 +25,11 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <cardgames-cfg.h>
+
+#include <glibmm/convert.h>
+#include <glibmm/ustring.h>
+
 #include "GameTypes.h"
 
 
@@ -32,12 +37,16 @@
 /// Default constructor
 //-----------------------------------------------------------------------------
 GameTypes::GameTypes () {
-   insert (std::make_pair ((int)ROVHULT, "Røvhult"));
-   insert (std::make_pair ((int)TWOPART, "Twopart"));
-   insert (std::make_pair ((int)HEARTS, "Hearts"));
-   insert (std::make_pair ((int)BURACO, "Buraco"));
-   insert (std::make_pair ((int)MACHIAVELLI, "Machiavelli"));
-   insert (std::make_pair ((int)SGTMAYOR, "SgtMayor"));
+   Glib::ustring rovhult (_("Rovhult"));
+   if (rovhult == "Rovhult")
+      rovhult = Glib::locale_to_utf8 ("Røvhult");
+
+   insert (std::make_pair ((int)ROVHULT, rovhult));
+   insert (std::make_pair ((int)TWOPART, _("Twopart")));
+   insert (std::make_pair ((int)HEARTS, _("Hearts")));
+   insert (std::make_pair ((int)BURACO, _("Buraco")));
+   insert (std::make_pair ((int)MACHIAVELLI, _("Machiavelli")));
+   insert (std::make_pair ((int)SGTMAYOR, _("SgtMayor")));
 }
 
 //-----------------------------------------------------------------------------
