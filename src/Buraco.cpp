@@ -54,6 +54,9 @@ std::vector<Gtk::TargetEntry> Buraco::dndType;
 
 unsigned int Buraco::ENDPOINTS (2000);
 
+
+//-----------------------------------------------------------------------------
+/// Constructor
 /// \param parent: Parent widget to display the game in
 /// \param statusbar: Status bar widget to display information about the game
 /// \param cardset: Cardset to use
@@ -522,7 +525,7 @@ void Buraco::start () {
       pScoreDlg->getMaxPoints (points, player);
       if (points >= (int)ENDPOINTS) {
          delete pScoreDlg;
-      if (points >= 2000) {
+         pScoreDlg = NULL;
       }
    }
 
@@ -1123,25 +1126,25 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
    if (iCard == -1U) {     // If card was dropped on the new pile: Create pile
       // Check validity of drop
       if (!(isJoker (moved)
-      // Only allow dropping on new pile while having < 5 cards, if the game
-      // can be ended, or there is still the reserve
-      if (!canDumpCards (0, 3)) {
+            ? pileHasFittingPair (hands[0], &moved)
+            : pileHasFittingPair (hands[0], moved, acceptCards == -1U))) {
+         context->drag_finish (false, false, time);
+         Gtk::MessageDialog dlg (_("There are no cards to make a valid new pile!"),
                                  Gtk::MESSAGE_ERROR);
-         Gtk::MessageDialog dlg ((_((hands[0].size () <= 5)
-                                    ? N_("You can't end the game (there's no \"cerrado\")!")
-                                    : N_("Not enough cards to make new pile!"))),
+         dlg.set_title (_("Invalid move"));
          dlg.run ();
          return;
       }
 
       // Only allow dropping on new pile while having < 5 cards, if the game
       // can be ended, or there is still the reserve
-      // Check validity of drop
-      if (!(isJoker (moved)
-            ? pileHasFittingPair (hands[0], &moved)
-            : pileHasFittingPair (hands[0], moved, acceptCards == -1U))) {
+      if (!canDumpCards (0, 3)) {
+         context->drag_finish (false, false, time);
+         Gtk::MessageDialog dlg ((_((hands[0].size () <= 5)
                                     ? N_("You can't end the game (there's no \"cerrado\")!")
-         Gtk::MessageDialog dlg (_("There are no cards to make a valid new pile!"),
+                                    : N_("Not enough cards to make new pile!"))),
+                                 Gtk::MESSAGE_ERROR);
+         dlg.set_title (_("Invalid move"));
          dlg.run ();
          return;
       }
@@ -1695,7 +1698,7 @@ void Buraco::endGame () {
    TRACE9 ("Buraco::endGame () - Points: " << maxPoints);
    if (maxPoints >= (int)ENDPOINTS) {
       stat = _("Game ended; Team %1 won");
-   if (maxPoints >= 2000) {
+      stat.replace (stat.find ("%1"), 2, 1, (char)('1' + player));
    }
 
    // Move cards of partners to first player and show them

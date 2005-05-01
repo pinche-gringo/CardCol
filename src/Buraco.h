@@ -44,6 +44,10 @@ class ScoreDlg;
 /**Class handling the Buraco cardgame
  */
 class Buraco : public Game {
+   friend class Settings;
+   friend class CardgameAppl;
+   friend class CardgameCollection;
+
  public:
    Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
            const std::vector<Player*>& player, unsigned int posPlayer,
@@ -213,6 +217,8 @@ class Buraco : public Game {
    Glib::RefPtr<Gtk::Action> menuUndo;
    Glib::RefPtr<Gtk::Action> menuSort;
    Glib::RefPtr<Gtk::Action> menuSort2;
+
+   static unsigned int ENDPOINTS;
 };
 
 #endif
