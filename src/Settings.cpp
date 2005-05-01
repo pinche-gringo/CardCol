@@ -66,23 +66,20 @@ Settings::Settings (Options& options)
    Gtk::Notebook& nb (*manage (new Gtk::Notebook));
    Gtk::Table& pagGeneral (*manage (new Gtk::Table (2, 2)));
 
-   Gtk::Label* lbl (manage (new Gtk::Label (_("_Timeout (for computer player):"), true)));
-   lbl->set_justify (Gtk::JUSTIFY_LEFT);
+   Gtk::Label* lbl (manage (new Gtk::Label (_("_Delay of computer player (ms):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true)));
    lbl->set_mnemonic_widget (timeout);
-   pagGeneral.attach (*lbl,    0, 1, 0, 1, Gtk::EXPAND, Gtk::FILL, 5);
+   pagGeneral.attach (*lbl,    0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5);
    pagGeneral.attach (timeout, 1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
 
-   lbl = manage (new Gtk::Label (_("_Default game:"), true));
-   lbl->set_justify (Gtk::JUSTIFY_LEFT);
+   lbl = manage (new Gtk::Label (_("_Default game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
    lbl->set_mnemonic_widget (gameType);
-   pagGeneral.attach (*lbl,     0, 1, 1, 2, Gtk::EXPAND, Gtk::FILL, 5);
+   pagGeneral.attach (*lbl,     0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5);
    pagGeneral.attach (gameType, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
 
    gameType.set_active_text (types[options.type]);
 
    Gtk::Box& pagBuraco (*manage (new Gtk::HBox));
-   lbl = manage (new Gtk::Label (_("_Points to end game:"), true));
-   lbl->set_justify (Gtk::JUSTIFY_LEFT);
+   lbl = manage (new Gtk::Label (_("_Points to end game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
    lbl->set_mnemonic_widget (maxBuracoPoints);
    pagBuraco.pack_start (*lbl, Gtk::PACK_SHRINK, 5);
    pagBuraco.pack_start (maxBuracoPoints, Gtk::PACK_EXPAND_WIDGET, 5);
