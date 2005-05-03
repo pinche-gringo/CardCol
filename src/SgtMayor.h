@@ -29,6 +29,11 @@
 #include <Game.h>
 
 
+namespace YGP {
+   class Tokenize;
+}
+
+
 // Class to handle the Hearts cardgame
 class SgtMayor : public Game {
  public:
@@ -66,12 +71,15 @@ class SgtMayor : public Game {
 
    //@Section Helper methods
    void exchangeCards (unsigned int playerBad, unsigned int posBad, unsigned int playerGood);
+   void exchangeCards (unsigned int playerBad, unsigned int posBad,
+		       unsigned int playerGood, unsigned int posGood);
    void exchangeCards (unsigned int playerBad, unsigned int playerGood);
    void directExchange (unsigned int playerBad, unsigned int posBad,
 			unsigned int playerGood, unsigned int posGood);
    void delayedExchange (unsigned int playerBad, unsigned int posBad,
 			 unsigned int playerGood, unsigned int posGood);
    void showTrump (CardWidget::COLOURS);
+   void doShowTrump (CardWidget::COLOURS);
    void makeExchange ();
    void displayExchangeStatus ();
    void startPlaying ();
@@ -80,6 +88,7 @@ class SgtMayor : public Game {
       return (++player >= NUM_PLAYERS) ? 0 : player;
    }
    static std::string formatNumber (int nr);
+   static bool readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned long& player);
 
    //@Section Computer player
    unsigned int findPos2Play (unsigned int player);
