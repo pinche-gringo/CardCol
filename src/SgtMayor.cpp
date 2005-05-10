@@ -148,7 +148,7 @@ int SgtMayor::makeMove (unsigned int player) {
       player = playCard (player, pos1Play);
       pos1Play = pos2Play = -1U;
    }
-   return ((player + posServer) < NUM_PLAYERS) ? player : player + posServer;
+   return convertPlayer (player);
 }
 
 //-----------------------------------------------------------------------------
@@ -191,14 +191,14 @@ void SgtMayor::start () {
 /// Shows the ticks each player needs
 //-----------------------------------------------------------------------------
 void SgtMayor::showNeededTicks () {
-   TRACE9 ("SgtMayor::showNeededTicks () - Startplayer " << currentPlayer ());
+   TRACE9 ("SgtMayor::showNeededTicks () - Startplayer " << startPlayer);
    // Separate this from dealing the cards, to give the client a chance to
    // receive and perform the ActPlayer-message (to set the start-player)
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       char neededTicks[NUM_PLAYERS] = { '9', '3', '5' };
       Glib::ustring needed (_("(needs %1 ticks)"));
       needed.replace (needed.find ("%1"), 2, 1, neededTicks[i]);
-      players[(i + currentPlayer ()) % NUM_PLAYERS].neededTicks.set_text (needed);
+      players[(i + startPlayer) % NUM_PLAYERS].neededTicks.set_text (needed);
    }
 }
 
@@ -308,7 +308,7 @@ void SgtMayor::cardSelected (unsigned int iCard) {
 
    unsigned int player (playCard (0, iCard));
    if (player != -1U) {
-      setNextPlayer (player);
+      setNextPlayer (convertPlayer (player));
       makeNextMoves ();
    }
    else
@@ -326,7 +326,6 @@ void SgtMayor::cardColourSelect (unsigned int iCard) {
 
    showTrump (players[0].hand[iCard]->colour ());
    disableHuman ();
-   displayTurn (startPlayer);
    makeNextMoves ();
 }
 
@@ -386,18 +385,14 @@ bool SgtMayor::exchangeSpade2 () {
              (bind (mem_fun (*this, &SgtMayor::unmark), target), 1000);
       }
 
-      if ((exchgPlayer + posServer) >= NUM_PLAYERS)
-	 exchgPlayer += posServer;
-      Check3 (exchgPlayer < actPlayers.size ());
       stat = _("%1 exchanged the 2 of spades; ");
-      stat.replace (stat.find ("%1"), 2, actPlayers[exchgPlayer]->getName ());
+      stat.replace (stat.find ("%1"), 2, actPlayers[convertPlayer (exchgPlayer)]->getName ());
    }
    else
       stat = _("Nobodoy can exchange the 2 of spades; ");
 
    if (startPlayer) {
-      unsigned int displayPlayer (((startPlayer + posServer) < NUM_PLAYERS)
-				  ? startPlayer : startPlayer + posServer);
+      unsigned int displayPlayer (convertPlayer (startPlayer));
       TRACE9 ("SgtMayor::exchangeSpade2 () - Startplayer: " << startPlayer);
       if (displayPlayer > getConnectionMgr ().getClients ().size ())
 	 displayTurn (displayPlayer, stat);
@@ -619,8 +614,7 @@ void SgtMayor::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
 
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      players[i].name.set_text
-	 (actPlayers[((i + posServer) < NUM_PLAYERS) ? i : ((i + posServer) & 0x3) ]->getName ());
+      players[i].name.set_text (actPlayers[convertPlayer (i)]->getName ());
 }
 
 //----------------------------------------------------------------------------
@@ -649,12 +643,14 @@ bool SgtMayor::readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned l
    std::string strCard (src.getNextNode (';'));
    std::string from (src.getNextNode ('='));
    std::string strPlayer (src.getNextNode (';'));
+   TRACE9 ("SgtMayor::readCardInfo (...) - " << strCard << '/' << from << '/' << strPlayer);
    if ((from == "From")
        && !stringToNumber (card, strCard.c_str ())
        && (card < 17)
        && !stringToNumber (player, strPlayer.c_str ())
        && (player < NUM_PLAYERS))
       return true;
+   TRACE9 ("SgtMayor::readCardInfo (...) - Failed!");
    return false;
 }
 
@@ -675,7 +671,7 @@ bool SgtMayor::handleMessage (unsigned int player, const std::string& message) t
       unsigned long card1, card2;
       unsigned long player1, player2;
       if (readCardInfo (command, card1, player1)
-	  && (command.getNextNode (';') == "with")
+	  && (command.getNextNode ('=') == "With")
 	  && (readCardInfo (command, card2, player2))) {
 	 exchangeCards (player1, card1, player2, card2);
 	 return true;
@@ -696,7 +692,7 @@ bool SgtMayor::handleMessage (unsigned int player, const std::string& message) t
    if (cmd == "ActPlayer") {
       startPlayer = currentPlayer ();
       if ((startPlayer + posServer - 1) >= NUM_PLAYERS)
-	 setNextPlayer (startPlayer -= 1);
+	 startPlayer -= 1;
       TRACE9 ("SgtMayor::handleMessage (unsigned int player, const std::string&) - Start with "
 	      << startPlayer);
       showNeededTicks ();
@@ -712,7 +708,6 @@ bool SgtMayor::handleMessage (unsigned int player, const std::string& message) t
 //----------------------------------------------------------------------------
 void SgtMayor::showTrump (CardWidget::COLOURS colour) {
    TRACE9 ("SgtMayor::showTrump (CardWidget::COLOURS) - " << colour);
-
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
 	 ignoreNextMsg = true;
@@ -730,6 +725,7 @@ void SgtMayor::showTrump (CardWidget::COLOURS colour) {
 /// \param colour: The special colour to display
 //----------------------------------------------------------------------------
 void SgtMayor::doShowTrump (CardWidget::COLOURS colour) {
+   TRACE9 ("SgtMayor::showTrump (CardWidget::COLOURS) - " << colour);
    for (unsigned int i (0); i < cards.size (); ++i) {
       if ((cards.getCards ()[i]->number () == CardWidget::ACE)
           && (cards.getCards ()[i]->colour () == colour)) {
@@ -738,6 +734,7 @@ void SgtMayor::doShowTrump (CardWidget::COLOURS colour) {
          pTrump->show ();
          pTrump->showFace ();
          attach (*pTrump, 0, 1, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 5, 1);
+	 displayTurn (convertPlayer (startPlayer));
          return;
       }
    }
@@ -806,7 +803,7 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
 
    if (players[player].hand.size ()) {
       Check3 ((posServer + player) < actPlayers.size ());
-      displayTurn (((player + posServer) < NUM_PLAYERS) ? player : player + posServer);
+      displayTurn (convertPlayer (player));
       return player;
    }
 
@@ -821,15 +818,15 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
 
       if (diffTicks[player] > 5) {
 	 Glib::ustring won (_("; %1 won"));
-	 won.replace (won.find ("%1"), 2, actPlayers[player]->getName ());
+	 won.replace (won.find ("%1"), 2, actPlayers[convertPlayer (player)]->getName ());
 	 stat += won;
       }
       player = calcNextPlayer (player);
    }
 
    stat.replace (stat.find ("%1"), 2, actPlayers[0]->getName ());
-   stat.replace (stat.find ("%3"), 2, actPlayers[1]->getName ());
-   stat.replace (stat.find ("%5"), 2, actPlayers[2]->getName ());
+   stat.replace (stat.find ("%3"), 2, actPlayers[convertPlayer (1)]->getName ());
+   stat.replace (stat.find ("%5"), 2, actPlayers[convertPlayer (2)]->getName ());
 
    stat.replace (stat.find ("%2"), 2, formatNumber (*diffTicks));
    stat.replace (stat.find ("%4"), 2, formatNumber (diffTicks[1]));
@@ -1064,11 +1061,11 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
    // Broadcast exchange-info to others
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       std::ostringstream msg;
-      msg << "Exchange=" << posGood << ";From" << playerGood
-          << ";With" << posBad << ";From" << posBad;
+      msg << "Exchange=" << posGood << ";From=" << playerGood
+          << ";With=" << posBad << ";From=" << posBad;
 
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-         ignoreNextMsg = true;
+         ++ignoreNextMsg;
 
       broadcastMessage (msg.str ());
    }
