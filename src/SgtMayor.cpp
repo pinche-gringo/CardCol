@@ -191,6 +191,7 @@ void SgtMayor::start () {
 /// Shows the ticks each player needs
 //-----------------------------------------------------------------------------
 void SgtMayor::showNeededTicks () {
+   TRACE9 ("SgtMayor::showNeededTicks () - Startplayer " << currentPlayer ());
    // Separate this from dealing the cards, to give the client a chance to
    // receive and perform the ActPlayer-message (to set the start-player)
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
@@ -346,13 +347,12 @@ void SgtMayor::cardExchange (unsigned int iCard) {
    Check3 (0);
 }
 
-
 //-----------------------------------------------------------------------------
-/// Starts the playing phase of the game
+/// Exchanges the two of spades
+/// \returns bool: False, if a human must exchange the two of spades
 //-----------------------------------------------------------------------------
-void SgtMayor::startPlaying () {
-   TRACE7 ("SgtMayor::startPlaying ()");
-   Check3 (!diffTicks[0]); Check3 (!diffTicks[1]); Check3 (!diffTicks[2]);
+bool SgtMayor::exchangeSpade2 () {
+   TRACE9 ("SgtMayor::exchangeSpade2 ()");
 
    unsigned int exchgPlayer (-1U);
    unsigned int exchgCard (0);
@@ -363,7 +363,7 @@ void SgtMayor::startPlaying () {
             if ((players[i].hand[exchgCard]->number () == CardWidget::TWO)
                 && (players[i].hand[exchgCard]->colour () == CardWidget::SPADES)) {
                exchgPlayer = i;
-               TRACE9 ("SgtMayor::startPlaying () - Player " << i << " exchanges "
+               TRACE7 ("SgtMayor::exchangeSpade2 () - Player " << i << " exchanges "
                        << *players[exchgPlayer].hand[exchgCard] << " with " << *pExchange);
 	       playedCards[CardWidget::SPADES].set (CardWidget::TWO);
                break;
@@ -379,9 +379,6 @@ void SgtMayor::startPlaying () {
       pExchange = &exchg;
       pExchange->showBack ();
 
-      stat = _("%1 exchanged the 2 of spades; ");
-      stat.replace (stat.find ("%1"), 2, actPlayers[exchgPlayer]->getName ());
-
       // Mark the exchanged card, if the human received it
       if (!exchgPlayer) {
          players[0].hand[target]->mark ();
@@ -389,25 +386,55 @@ void SgtMayor::startPlaying () {
              (bind (mem_fun (*this, &SgtMayor::unmark), target), 1000);
       }
 
-      if (startPlayer)
-         displayTurn (startPlayer, stat);
-      else {
-         status.pop ();
-	 stat += _("Select the special colour");
-	 status.push (stat);
-
-         for (int i (players[0].hand.size ()); i;)
-            activeCards.push_back
-               (players[0].hand[--i]->signal_clicked ().connect
-                (bind (mem_fun (*this, (&SgtMayor::cardColourSelect)), i)));
-         return;
-      }
+      if ((exchgPlayer + posServer) >= NUM_PLAYERS)
+	 exchgPlayer += posServer;
+      Check3 (exchgPlayer < actPlayers.size ());
+      stat = _("%1 exchanged the 2 of spades; ");
+      stat.replace (stat.find ("%1"), 2, actPlayers[exchgPlayer]->getName ());
    }
    else
-      displayTurn (startPlayer, _("Nobodoy can exchange the 2 of spades; "));
+      stat = _("Nobodoy can exchange the 2 of spades; ");
+
+   if (startPlayer) {
+      unsigned int displayPlayer (((startPlayer + posServer) < NUM_PLAYERS)
+				  ? startPlayer : startPlayer + posServer);
+      TRACE9 ("SgtMayor::exchangeSpade2 () - Startplayer: " << startPlayer);
+      if (displayPlayer > getConnectionMgr ().getClients ().size ())
+	 displayTurn (displayPlayer, stat);
+      else {
+	 status.pop ();
+	 stat += _("Waiting for %1 to select the special colour ...");
+	 stat.replace (stat.find ("%1"), 2,
+		       actPlayers[displayPlayer]->getName ());
+	 status.push (stat);
+      }
+   }
+   else {
+      status.pop ();
+      stat += _("Select the special colour");
+      status.push (stat);
+
+      for (int i (players[0].hand.size ()); i;)
+	 activeCards.push_back
+	    (players[0].hand[--i]->signal_clicked ().connect
+	     (bind (mem_fun (*this, (&SgtMayor::cardColourSelect)), i)));
+      return false;
+   }
+   return true;
+}
+
+//-----------------------------------------------------------------------------
+/// Starts the playing phase of the game
+//-----------------------------------------------------------------------------
+void SgtMayor::startPlaying () {
+   TRACE7 ("SgtMayor::startPlaying ()");
+   Check3 (!diffTicks[0]); Check3 (!diffTicks[1]); Check3 (!diffTicks[2]);
 
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
-      if (startPlayer > getConnectionMgr ().getClients ().size ()) {
+      setNextPlayer (startPlayer);
+
+      if (exchangeSpade2 ()
+	  && (startPlayer > getConnectionMgr ().getClients ().size ())) {
 	 // Find special colour
 	 ICardPile& pile (players[startPlayer].hand);
 	 int number[] = { 0, 0, 0, 0 };
@@ -425,10 +452,9 @@ void SgtMayor::startPlaying () {
 	       trumpColour = i;
 	 }
 	 showTrump ((CardWidget::COLOURS)trumpColour);
+	 makeNextMoves ();
       }
-      setNextPlayer (startPlayer);
    }
-   makeNextMoves ();
 }
 
 //-----------------------------------------------------------------------------
@@ -604,8 +630,11 @@ void SgtMayor::changeNames (const std::vector<Player*>& newPlayer) {
 /// \returns ICardPile*: Pointer to pile to use or NULL
 //----------------------------------------------------------------------------
 ICardPile* SgtMayor::getPileOfPlayer (unsigned int player, unsigned int pile) {
+   TRACE9 ("SgtMayor::getPileOfPlayer (2x unsigned int) - Player " << player << "; " << pile);
    if ((player + posServer) >= NUM_PLAYERS)
       player -= posServer;
+   Check3 (player < NUM_PLAYERS);
+   Check3 (!pile);
    return ((player >= NUM_PLAYERS) || pile) ? NULL : &players[player].hand;
 }
 
@@ -659,13 +688,20 @@ bool SgtMayor::handleMessage (unsigned int player, const std::string& message) t
 	    doShowTrump ((CardWidget::COLOURS)trumpColour);
 	 else
 	    showTrump ((CardWidget::COLOURS)trumpColour);
+	 makeNextMoves ();
 	 return true;
       }
    }
    bool rc (Game::handleMessage (player, message));
-   if (cmd == "ActPlayer")
+   if (cmd == "ActPlayer") {
+      startPlayer = currentPlayer ();
+      if ((startPlayer + posServer - 1) >= NUM_PLAYERS)
+	 setNextPlayer (startPlayer -= 1);
+      TRACE9 ("SgtMayor::handleMessage (unsigned int player, const std::string&) - Start with "
+	      << startPlayer);
       showNeededTicks ();
-
+      exchangeSpade2 ();
+   }
    return rc;
 }
 
