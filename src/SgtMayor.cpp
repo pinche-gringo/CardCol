@@ -35,15 +35,14 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
 #include <YGP/ANumeric.h>
 #include <YGP/Tokenize.h>
 
-#include <Player.h>
+#include <RemotePlayer.h>
+#include <ComputerPlayer.h>
 
 #include "SgtMayor.h"
 
@@ -182,8 +181,10 @@ void SgtMayor::start () {
 	 playedCards[i].reset ();
       bfColours = 0;
 
-      showNeededTicks ();
-      makeExchange ();
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
+	 showNeededTicks ();
+	 makeExchange ();
+      }
    }
 }
 
@@ -260,9 +261,9 @@ bool SgtMayor::enableHuman () {
    Check3 (activeCards.empty ());
    TRACE2 ("SgtMayor::enableHuman () - Human has " << players[0].hand.size () << " cards");
 
-   for (int i (players[0].hand.size ()); i;)
+   for (int i (players[0].hand.size () - 1); i >= 0; --i)
       activeCards.push_back
-         (players[0].hand[--i]->signal_clicked ().connect
+         (players[0].hand[i]->signal_clicked ().connect
            (bind (mem_fun (*this, (&SgtMayor::cardSelected)), i)));
 
    return Game::enableHuman ();
@@ -326,6 +327,7 @@ void SgtMayor::cardColourSelect (unsigned int iCard) {
 
    showTrump (players[0].hand[iCard]->colour ());
    disableHuman ();
+   exchangeSpade2 ();
    makeNextMoves ();
 }
 
@@ -340,10 +342,10 @@ void SgtMayor::cardExchange (unsigned int iCard) {
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       if (diffTicks[i] < 0) {
          exchangeCards (0, iCard, i);
-         return;
+         break;
       }
    }
-   Check3 (0);
+   disableHuman ();
 }
 
 //-----------------------------------------------------------------------------
@@ -409,9 +411,9 @@ bool SgtMayor::exchangeSpade2 () {
       stat += _("Select the special colour");
       status.push (stat);
 
-      for (int i (players[0].hand.size ()); i;)
+      for (int i (players[0].hand.size () - 1); i >= 0; --i)
 	 activeCards.push_back
-	    (players[0].hand[--i]->signal_clicked ().connect
+	    (players[0].hand[i]->signal_clicked ().connect
 	     (bind (mem_fun (*this, (&SgtMayor::cardColourSelect)), i)));
       return false;
    }
@@ -425,30 +427,29 @@ void SgtMayor::startPlaying () {
    TRACE7 ("SgtMayor::startPlaying ()");
    Check3 (!diffTicks[0]); Check3 (!diffTicks[1]); Check3 (!diffTicks[2]);
 
-   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
-      setNextPlayer (startPlayer);
+   setNextPlayer (startPlayer);
+   if (exchangeSpade2 ()
+       && (typeid (*actPlayers[convertPlayer (startPlayer)])
+	   == typeid (ComputerPlayer))) {
+      // Find special colour
+      ICardPile& pile (players[startPlayer].hand);
+      int number[] = { 0, 0, 0, 0 };
+      int points[] = { 0, 0, 0, 0 };
 
-      if (exchangeSpade2 ()
-	  && (startPlayer > getConnectionMgr ().getClients ().size ())) {
-	 // Find special colour
-	 ICardPile& pile (players[startPlayer].hand);
-	 int number[] = { 0, 0, 0, 0 };
-	 int points[] = { 0, 0, 0, 0 };
-
-	 for (unsigned int i (0); i < (pile.size () - 1); ++i) {
-	    ++number[pile[i]->colour ()];
-	    points[pile[i]->colour ()] += pile[i]->number () + 1;
-	 }
-
-	 unsigned int trumpColour (0);
-	 for (unsigned int i (1); i < 4; ++i) {
-	    if ((number[i] > number[i - 1])
-		|| ((number[i] == number[i - 1]) && (points[i] > points[i - 1])))
-	       trumpColour = i;
-	 }
-	 showTrump ((CardWidget::COLOURS)trumpColour);
-	 makeNextMoves ();
+      for (unsigned int i (0); i < (pile.size () - 1); ++i) {
+	 ++number[pile[i]->colour ()];
+	 points[pile[i]->colour ()] += pile[i]->number () + 1;
       }
+
+      unsigned int trumpColour (0);
+      for (unsigned int i (1); i < 4; ++i) {
+	 if ((number[i] > number[i - 1])
+	     || ((number[i] == number[i - 1]) && (points[i] > points[i - 1])))
+	    trumpColour = i;
+      }
+      showTrump ((CardWidget::COLOURS)trumpColour);
+      exchangeSpade2 ();
+      makeNextMoves ();
    }
 }
 
@@ -643,14 +644,12 @@ bool SgtMayor::readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned l
    std::string strCard (src.getNextNode (';'));
    std::string from (src.getNextNode ('='));
    std::string strPlayer (src.getNextNode (';'));
-   TRACE9 ("SgtMayor::readCardInfo (...) - " << strCard << '/' << from << '/' << strPlayer);
    if ((from == "From")
        && !stringToNumber (card, strCard.c_str ())
        && (card < 17)
        && !stringToNumber (player, strPlayer.c_str ())
        && (player < NUM_PLAYERS))
       return true;
-   TRACE9 ("SgtMayor::readCardInfo (...) - Failed!");
    return false;
 }
 
@@ -673,7 +672,16 @@ bool SgtMayor::handleMessage (unsigned int player, const std::string& message) t
       if (readCardInfo (command, card1, player1)
 	  && (command.getNextNode ('=') == "With")
 	  && (readCardInfo (command, card2, player2))) {
-	 exchangeCards (player1, card1, player2, card2);
+	 player1 = (NUM_PLAYERS + player1 - posServer) % NUM_PLAYERS;
+	 player2 = (NUM_PLAYERS + player2 - posServer) % NUM_PLAYERS;
+
+	 status.pop ();
+	 if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT) {
+	    doExchangeCards (player2, card2, player1, card1);
+	 }
+	 else
+	    exchangeCards (player2, card2, player1, card1);
+	 makeExchange ();
 	 return true;
       }
    }
@@ -696,7 +704,7 @@ bool SgtMayor::handleMessage (unsigned int player, const std::string& message) t
       TRACE9 ("SgtMayor::handleMessage (unsigned int player, const std::string&) - Start with "
 	      << startPlayer);
       showNeededTicks ();
-      exchangeSpade2 ();
+      makeExchange ();
    }
    return rc;
 }
@@ -893,27 +901,46 @@ unsigned int SgtMayor::tryToGetTickWithTrump (const ICardPile& pile) const {
 /// round.
 //----------------------------------------------------------------------------
 void SgtMayor::makeExchange () {
-   TRACE5 ("SgtMayor::makeExchange () - Exchanging cards: " << (char)('0' + diffTicks[0]));
+   TRACE5 ("SgtMayor::makeExchange () - Exchanging cards: " << (*diffTicks > 0 ? (int)*diffTicks : 0) + (diffTicks[1] > 0 ? (int)diffTicks[1] : 0) + (diffTicks[2] > 0 ? (int)diffTicks[2] : 0));
+   Check3 (*diffTicks + diffTicks[1] == -diffTicks[2]);
 
-   int humanExchanged (diffTicks[0]);
-   for (unsigned int i (1); i < NUM_PLAYERS; ++i)
-      while (diffTicks[i] > 0)
-         for (unsigned int j (1); j < NUM_PLAYERS; ++j)
-            if (diffTicks[(j + i) % 3] < 0)
-               exchangeCards (i, (j + i) % 3);
+   for (unsigned int i (startPlayer); (i - startPlayer) < NUM_PLAYERS; ++i) {
+      TRACE9 ("SgtMayor::makeExchange () - " << i % NUM_PLAYERS << "'s ticks: " << (int)diffTicks[i % NUM_PLAYERS]);
 
-   if (diffTicks[0] > 0) {
-      displayExchangeStatus ();
+      while (diffTicks[i % NUM_PLAYERS] > 0) {
+	 Check3 ((diffTicks[(i + 1) % NUM_PLAYERS] < 0)
+		 || (diffTicks[(i + 2) % NUM_PLAYERS] < 0));
 
-      for (int i (players[0].hand.size ()); i;)
-         activeCards.push_back
-            (players[0].hand[--i]->signal_clicked ().connect
-             (bind (mem_fun (*this, (&SgtMayor::cardExchange)), i)));
+	 for (unsigned int j (1); j < NUM_PLAYERS; ++j) {
+	    TRACE9 ("SgtMayor::makeExchange () - With " << (i + j) % NUM_PLAYERS << "'s ticks: " << (int)diffTicks[(i + j) % NUM_PLAYERS]);
+	    if (diffTicks[(j + i) % NUM_PLAYERS] < 0) {
+	       if (i % NUM_PLAYERS) {
+		  if ((getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+		      || (typeid (*actPlayers[convertPlayer (i % NUM_PLAYERS)])
+			  == typeid (RemotePlayer))) {
+		     Glib::ustring msg (_("Waiting for %1 to exchange cards ..."));
+		     msg.replace (msg.find ("%1"), 2, actPlayers[convertPlayer (i % NUM_PLAYERS)]->getName ());
+		     status.push (msg);
+		     return;
+		  }
+		  else
+		     exchangeCards (i % NUM_PLAYERS, (i + j) % NUM_PLAYERS);
+	       }
+	       else {
+		  Check3 (diffTicks[0] > 0);
+		  displayExchangeStatus ();
+
+		  for (int i (players[0].hand.size () - 1); i >= 0; --i)
+		     activeCards.push_back
+			(players[0].hand[i]->signal_clicked ().connect
+			 (bind (mem_fun (*this, (&SgtMayor::cardExchange)), i)));
+		  return;
+	       }
+	    }
+	 }
+      }
    }
-   else
-      if (!humanExchanged)
-	 startPlaying ();
-
+   startPlaying ();
 }
 
 //-----------------------------------------------------------------------------
@@ -923,12 +950,12 @@ void SgtMayor::displayExchangeStatus () {
    Glib::ustring msg;
    unsigned int exchg (1);
 
-   if (diffTicks[1] && diffTicks[2]) {
+   if ((diffTicks[1] < 0) && (diffTicks[2] < 0)) {
       msg = _("You can exchange %1 %2; %4 with %3 (and than %5 with %6)!");
 
       msg.replace (msg.find ("%4"), 2, 1, (char)((diffTicks[1] < 0) ? ('0' - diffTicks[1]) : ('0' + diffTicks[1])));
       msg.replace (msg.find ("%5"), 2, 1,  (char)((diffTicks[2] < 0) ? ('0' - diffTicks[2]) : ('0' + diffTicks[2])));
-      msg.replace (msg.find ("%6"), 2, actPlayers[2]->getName ());
+      msg.replace (msg.find ("%6"), 2, actPlayers[convertPlayer (2)]->getName ());
    }
    else {
       msg = _("You can exchange %1 %2 with %3!");
@@ -937,7 +964,7 @@ void SgtMayor::displayExchangeStatus () {
    }
    msg.replace (msg.find ("%1"), 2, 1, (char)((diffTicks[0] < 0) ? ('0' - diffTicks[0]) : ('0' + diffTicks[0])));
    msg.replace (msg.find ("%2"), 2, (ngettext ("bad card", "bad cards", (diffTicks[0] < 0) ? -diffTicks[0] : diffTicks[0])));
-   msg.replace (msg.find ("%3"), 2, actPlayers[exchg]->getName ());
+   msg.replace (msg.find ("%3"), 2, actPlayers[convertPlayer (exchg)]->getName ());
 
    status.pop ();
    status.push (msg);
@@ -997,15 +1024,6 @@ void SgtMayor::delayedExchange (unsigned int playerBad, unsigned int posBad,
    }
    Check3 (playerGood); Check3 (!playerBad);
 
-   if (diffTicks[0])
-      displayExchangeStatus ();
-   else {
-      status.pop ();
-
-      Glib::signal_timeout ().connect
-	 (bind_return (mem_fun (*this, &SgtMayor::startPlaying), false), 2000);
-   }
-
    CardWidget& bad (*players[0].hand.at (posBad));
    TRACE9 ("SgtMayor::delayedExchange (4x unsigned int ) - Player "
            << playerBad << " and " << playerGood << " exchanges "
@@ -1045,6 +1063,7 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
 
 //----------------------------------------------------------------------------
 /// Exchanges a good card from playerGood with a bad card from player bad
+/// and informs the connected partners about it
 /// \param playerBad: Player giving away a bad card
 /// \param posBad: Position of bad card to give away
 /// \param playerGood: Player giving away a good card
@@ -1061,14 +1080,30 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
    // Broadcast exchange-info to others
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       std::ostringstream msg;
-      msg << "Exchange=" << posGood << ";From=" << playerGood
-          << ";With=" << posBad << ";From=" << posBad;
+      msg << "Exchange=" << posGood << ";From=" << (playerGood + posServer) % NUM_PLAYERS
+          << ";With=" << posBad << ";From=" << (playerBad + posServer) % NUM_PLAYERS;
 
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-         ++ignoreNextMsg;
-
+         ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
+   doExchangeCards (playerBad, posBad, playerGood, posGood);
+}
+
+//----------------------------------------------------------------------------
+/// Exchanges a good card from playerGood with a bad card from player bad
+/// \param playerBad: Player giving away a bad card
+/// \param posBad: Position of bad card to give away
+/// \param playerGood: Player giving away a good card
+//----------------------------------------------------------------------------
+void SgtMayor::doExchangeCards (unsigned int playerBad, unsigned int posBad,
+				unsigned int playerGood, unsigned int posGood) {
+   TRACE7 ("SgtMayor::doExchangeCards (4x unsigned int int) - Players "
+           << playerBad << " and " << playerGood);
+   Check1 (playerBad < NUM_PLAYERS);
+   Check1 (playerGood < NUM_PLAYERS);
+   Check1 (posBad < players[playerBad].hand.size ());
+   Check1 (posGood < players[playerGood].hand.size ());
 
    --diffTicks[playerBad];
    ++diffTicks[playerGood];
@@ -1077,12 +1112,10 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
       directExchange (playerBad, posBad, playerGood, posGood);
    else
       delayedExchange (playerBad, posBad, playerGood, posGood);
-
-   disableHuman ();
 }
 
 //----------------------------------------------------------------------------
-/// Exchanges the passed card with the one first in the played area (if any)
+/// Exchanges the passed card with the first one in the played area (if any)
 /// \param card: Pointer to card to exchange
 /// \param destPlayer: Player to get the card
 /// \return bool: Always false to end the timer
@@ -1100,11 +1133,7 @@ bool SgtMayor::exchangeMarked (CardWidget* card, unsigned int destPlayer) {
    players[0].hand.insertColourSorted (played.remove (0));
    players[destPlayer].hand.insertColourSorted (hand);
 
-   if (diffTicks[0])
-      for (int i (players[0].hand.size ()); i;)
-	 activeCards.push_back
-	    (players[0].hand[--i]->signal_clicked ().connect
-	     (bind (mem_fun (*this, (&SgtMayor::cardExchange)), i)));
+   makeExchange ();
    return false;
 }
 

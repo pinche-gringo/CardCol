@@ -70,6 +70,7 @@ class SgtMayor : public Game {
    virtual bool enableHuman ();
 
    //@Section Helper methods
+   bool exchangeSpade2 ();
    void exchangeCards (unsigned int playerBad, unsigned int posBad, unsigned int playerGood);
    void exchangeCards (unsigned int playerBad, unsigned int posBad,
 		       unsigned int playerGood, unsigned int posGood);
@@ -78,6 +79,9 @@ class SgtMayor : public Game {
 			unsigned int playerGood, unsigned int posGood);
    void delayedExchange (unsigned int playerBad, unsigned int posBad,
 			 unsigned int playerGood, unsigned int posGood);
+   void doExchangeCards (unsigned int playerBad, unsigned int posBad,
+			 unsigned int playerGood, unsigned int posGood);
+   void showNeededTicks ();
    void showTrump (CardWidget::COLOURS);
    void doShowTrump (CardWidget::COLOURS);
    void makeExchange ();
@@ -86,6 +90,9 @@ class SgtMayor : public Game {
    unsigned int playCard (unsigned int player, unsigned int card);
    static unsigned int calcNextPlayer (unsigned int player) {
       return (++player >= NUM_PLAYERS) ? 0 : player;
+   }
+   unsigned int convertPlayer (unsigned int player) {
+      return (((player + posServer) < NUM_PLAYERS) ? player : player + posServer);
    }
    static std::string formatNumber (int nr);
    static bool readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned long& player);
