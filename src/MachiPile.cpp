@@ -268,7 +268,7 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
 
    if (diff < 0) {
       diff = -diff;
-      diffTable = --diffTable;
+      diffTable = -diffTable;
    }
 
    nr = 1;
