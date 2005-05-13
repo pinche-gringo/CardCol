@@ -289,7 +289,8 @@ bool Game::endRemoteMove (unsigned int player) {
 /// Enables the cards of the human player
 //-----------------------------------------------------------------------------
 bool Game::enableHuman () {
-   TRACE8 ("Game::enableHuman () - enabling " << actPlayers[actPlayer]->getName ());
+   Check3 (!actPlayer);
+   TRACE8 ("Game::enableHuman () - enabling " << actPlayers[0]->getName ());
    return false;
 }
 
@@ -352,8 +353,7 @@ void Game::setGameStatus (unsigned int newStatus) {
 //-----------------------------------------------------------------------------
 /// Flips the cards the user is about to play
 /// \param pile: Pile to manipulate
-/// \param start: Position of first card to play; update to reflect moving
-/// \param start: Position of last card to play; update to reflect moving
+/// \param cards: String containing the (comma-separated) IDs of the cards to flip
 //-----------------------------------------------------------------------------
 void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std::string) {
    TRACE2 ("Game::flipCards2Play (ICardPile&, const std::string&) - Cards " << cards);
@@ -590,6 +590,28 @@ void Game::broadcastMessage (const std::string& msg) const {
          writeMessage (**i, msg);
    else
        writeMessage (*cmgr.getSocket (), msg);
+}
+
+//----------------------------------------------------------------------------
+/// Writes a set-startplayer message to all clients
+/// \param startplayer: Startplayer
+//----------------------------------------------------------------------------
+void Game::broadcastStartPlayer (unsigned int startplayer) {
+   // Send startplayer to the clients
+   const YGP::ConnectionMgr& cmgr (getConnectionMgr ());
+   if (cmgr.getMode () == YGP::ConnectionMgr::SERVER) {
+      TRACE3 ("Game::broadcastStartPlayer (unsigned int) - " << startplayer);
+
+      const std::vector<YGP::Socket*>& clients (cmgr.getClients ());
+      unsigned int player ((startplayer - 1) & 0x3);
+      for (std::vector<YGP::Socket*>::const_iterator i (clients.begin ());
+	   i != clients.end (); ++i) {
+	 std::ostringstream msg;
+	 msg << "ActPlayer=" << player;
+	 writeMessage (**i, msg.str ());
+	 player = (player - 1) & 0x3;
+      }
+   }
 }
 
 //----------------------------------------------------------------------------

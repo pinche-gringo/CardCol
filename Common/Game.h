@@ -128,6 +128,7 @@ class Game : public Gtk::Table {
    static void writeOK (YGP::Socket& socket) { return writeMessage (socket, "Error=0"); }
    static void writeMessage (YGP::Socket& socket, const std::string& msg);
    void broadcastMessage (const std::string& msg) const;
+   void broadcastStartPlayer (unsigned int startplayer);
    //@}
 
    /// Returns the current player
