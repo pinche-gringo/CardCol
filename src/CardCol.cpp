@@ -1341,7 +1341,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
 
       restart = false;
       break;
-   } 
+   }
 }
 
 #ifdef HAVE_LIBPTHREAD
@@ -1366,14 +1366,14 @@ void CardgameCollection::initCommunication () {
    if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT) {
       status.pop ();
       status.push (_("Waiting for the server to start the game ..."));
-      aCommThreads.push_back (THRDAPPL::create (this, &CardgameCollection::waitForMessages,
-                                                (void*)-1));
+      aCommThreads.push_back (THRDAPPL::create2 (this, &CardgameCollection::waitForMessages,
+						 (void*)-1));
       aCommThreads[0]->allowCancelation ();
    }
    else
       for (unsigned int i (0); i < cmgr.getClients ().size (); ++i) {
-         aCommThreads.push_back (THRDAPPL::create (this, &CardgameCollection::waitForMessages,
-                                                (void*)i));
+         aCommThreads.push_back (THRDAPPL::create2 (this, &CardgameCollection::waitForMessages,
+						    (void*)i));
          aCommThreads[i]->allowCancelation ();
       }
 }
@@ -1383,11 +1383,11 @@ void CardgameCollection::initCommunication () {
 /// \param player: ID of player (-1 for server; 0 .. n for clients)
 /// \returns \c void*: NULL
 //----------------------------------------------------------------------------
-void* CardgameCollection::waitForMessages (void* player) {
+void* CardgameCollection::waitForMessages (void* thread) {
    TRACE1 ("CardgameCollection::waitForMessage (void*)");
    Check2 (cmgr.getMode () != YGP::ConnectionMgr::NONE);
 
-   int iPlayer ((int)player);
+   int iPlayer ((int)((YGP::Thread*)thread)->getArgs ());
    Check2 ((cmgr.getMode () == YGP::ConnectionMgr::CLIENT)
            ? (iPlayer == -1) : (iPlayer < (int)cmgr.getClients ().size ()));
 
@@ -1441,6 +1441,7 @@ void* CardgameCollection::waitForMessages (void* player) {
           (bind (mem_fun (*this, &CardgameCollection::showMessage), msg));
    }
 
+   aCommThreads.erase (find (aCommThreads.begin (), aCommThreads.end (), thread));
    return NULL;
 }
 
@@ -1492,14 +1493,19 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
       if (param != "0") {
          cmd.clear ();
          YGP::AttributeParse ap;
-         ATTRIBUTE (ap, std::string, param, "Error");
          ATTRIBUTE (ap, std::string, cmd, "Msg");
 
-         if (cmd.empty ())
-            cmd = static_cast<std::string> (_("Unspecified error"));
+	 try {
+	    ap.assignValues (message.getNextNode ('\0').c_str ());
+	    if (cmd.empty ())
+	       cmd = static_cast<std::string> (_("Unspecified error"));
+	 }
+	 catch (std::string& e) {
+	    cmd = _("Invalid message received!");
+	 }
 
          Glib::ustring err (_("%1 send error %2\n\n%3"));
-         err.replace (err.find ("%1"), 2, 
+         err.replace (err.find ("%1"), 2,
                       (cmgr.getMode () == YGP::ConnectionMgr::CLIENT
                        ? _("The server")
                        : aPlayer[player]->getName ()));
@@ -1527,7 +1533,7 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - " << msg);
 
    mxGuiCmd.unlock ();
-   mxThreadCmd.lock ();                               // Block message processing
+   mxThreadCmd.lock ();                             // Block message processing
    mxGuiCmd.lock ();
 
    bool unlock (true);
@@ -1626,7 +1632,9 @@ void CardgameAppl::showHelp () const {
 
       /* For translations: Write one of the Rovhults with 'ø' */
              << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts, Buraco,\n"
-                  "Machiavelli, SgtMayor or the numbers 0 - 5 (corresponding to the games in the\nabove order).\n\n")
+                  "Machiavelli, SgtMayor, the numbers 0 - 5 (corresponding to the games\n"
+		  "in the above order) or the translation of the name (as displayed in the "
+		  "titlebar).\n\n")
              << _("The INI file can have the following entries:\n\n")
              <<  "  [Game]\n"
                  "  Type=Twopart\n"
