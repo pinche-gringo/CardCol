@@ -75,7 +75,7 @@ class Rovhult : public Game {
    void registerTableDND (CardWidget& card, unsigned int pile);
    void unregisterDND (CardWidget& card) const;
    void unregisterDND ();
- 
+
    // Event-handling
    void pileSelected (unsigned int pile);
    void handSelected (unsigned int pos);
@@ -103,7 +103,7 @@ class Rovhult : public Game {
 
    bool playerCanContinue (unsigned int player, CardWidget::NUMBERS card) const;
    bool playerHandCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const;
-   
+
    int makeTurn (unsigned int player);
    void findCard2Play (unsigned int player, unsigned int& start, unsigned int& end) const;
    void showCards2Play (unsigned int player);

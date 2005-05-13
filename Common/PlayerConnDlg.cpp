@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.07.2003
-//COPYRIGHT   : Copyright (C) 2002 - 2004
+//COPYRIGHT   : Copyright (C) 2003 - 2005
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -224,7 +224,7 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
    }
    catch (std::domain_error& err) {
       error = _("Error sending player name!\n\nReason: %1");
-      error.replace (error.find ("%1"), 2, err.what ()); 
+      error.replace (error.find ("%1"), 2, err.what ());
    }
    catch (std::string& err) {
       error = _("Invalid response from server!\n\nReason: %1");
@@ -291,14 +291,14 @@ YGP::Socket* PlayerConnectDlg::addClient (int socket) {
    }
    catch (std::domain_error& err) {
       error = _("Error getting player name!\n\nReason: %1");
-      error.replace (error.find ("%1"), 2, err.what ()); 
+      error.replace (error.find ("%1"), 2, err.what ());
    }
    catch (std::string& err) {
       sock->write ("Error=99;Msg=\"");
       sock->write (err);
       sock->write ("\"");
       error = _("Error analyzing input from client!\n\nReason: %1");
-      error.replace (error.find ("%1"), 2, err); 
+      error.replace (error.find ("%1"), 2, err);
    }
    if (error.size ()) {
       Gtk::MessageDialog dlg (error, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
