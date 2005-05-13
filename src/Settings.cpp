@@ -53,13 +53,13 @@ Settings* Settings::instance (NULL);
 Settings::Settings (Options& options)
    : XGP::XDialog (OKCANCEL),
      adjPoints (0, 0, 100000.0, 1, 100),
-     adjTimeout (0, 0, 10000.0, 1, 100),
+     adjTimeout (0, 100.0, 10000.0, 1, 100),
      gameType (types),
      timeout (ComputerPlayer::TIMEOUT, adjTimeout),
      maxBuracoPoints (Buraco::ENDPOINTS, adjPoints),
      startGame (options.type) {
    Check3 (instance == NULL);
-   instance =  this;
+   instance = this;
 
    set_title (_("Preferences"));
 
@@ -71,7 +71,7 @@ Settings::Settings (Options& options)
    pagGeneral.attach (*lbl,    0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5);
    pagGeneral.attach (timeout, 1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
 
-   lbl = manage (new Gtk::Label (_("_Default game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl = manage (new Gtk::Label (_("D_efault game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
    lbl->set_mnemonic_widget (gameType);
    pagGeneral.attach (*lbl,     0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5);
    pagGeneral.attach (gameType, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
