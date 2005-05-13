@@ -327,7 +327,6 @@ void SgtMayor::cardColourSelect (unsigned int iCard) {
 
    showTrump (players[0].hand[iCard]->colour ());
    disableHuman ();
-   exchangeSpade2 ();
    makeNextMoves ();
 }
 
@@ -396,15 +395,15 @@ bool SgtMayor::exchangeSpade2 () {
    if (startPlayer) {
       unsigned int displayPlayer (convertPlayer (startPlayer));
       TRACE9 ("SgtMayor::exchangeSpade2 () - Startplayer: " << startPlayer);
-      if (displayPlayer > getConnectionMgr ().getClients ().size ())
-	 displayTurn (displayPlayer, stat);
-      else {
+      if (typeid (*actPlayers[displayPlayer]) == typeid (RemotePlayer)) {
 	 status.pop ();
 	 stat += _("Waiting for %1 to select the special colour ...");
 	 stat.replace (stat.find ("%1"), 2,
 		       actPlayers[displayPlayer]->getName ());
 	 status.push (stat);
       }
+      else
+	 displayTurn (displayPlayer, stat);
    }
    else {
       status.pop ();
@@ -427,10 +426,9 @@ void SgtMayor::startPlaying () {
    TRACE7 ("SgtMayor::startPlaying ()");
    Check3 (!diffTicks[0]); Check3 (!diffTicks[1]); Check3 (!diffTicks[2]);
 
-   setNextPlayer (startPlayer);
+   setNextPlayer (convertPlayer (startPlayer));
    if (exchangeSpade2 ()
-       && (typeid (*actPlayers[convertPlayer (startPlayer)])
-	   == typeid (ComputerPlayer))) {
+       && (typeid (*actPlayers[currentPlayer ()]) == typeid (ComputerPlayer))) {
       // Find special colour
       ICardPile& pile (players[startPlayer].hand);
       int number[] = { 0, 0, 0, 0 };
@@ -448,7 +446,6 @@ void SgtMayor::startPlaying () {
 	    trumpColour = i;
       }
       showTrump ((CardWidget::COLOURS)trumpColour);
-      exchangeSpade2 ();
       makeNextMoves ();
    }
 }
