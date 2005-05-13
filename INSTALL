@@ -119,7 +119,6 @@ Compilers and Options
 Common options/targets for make
 -------------------------------
 
-  - check			# Runs some tests on (some) classes
   - install			# Installs the whole thing
   - clean                       # Deletes the files created during the make
   - uninstall                   # Uninstalls (after you found out what crap
