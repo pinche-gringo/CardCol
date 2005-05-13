@@ -177,9 +177,9 @@ bool Twopart::enableHuman () {
    TRACE2 ("Twopart::enableHuman () - Has " << players[0].hand.size ()
            << " cards");
 
-   for (int i (players[0].hand.size ()); i;)
+   for (int i (players[0].hand.size () - 1); i >= 0; --i)
       activeCards.push_back
-         (players[0].hand[--i]->signal_clicked ().connect
+         (players[0].hand[i]->signal_clicked ().connect
            (bind (mem_fun (*this, (&Twopart::cardSelected)), i)));
 
    if ((gameStatus () == PLAYING2)
@@ -519,7 +519,7 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
          for (start = 0;
               start < players[player].hand.size (); ++start)
             if ((played.exists (players[player].hand[start]->number (), *startPos))
-                && ((posMaxEqual == -1) 
+                && ((posMaxEqual == -1)
                     || (played[start]->number () >= maxEqualNr))) {
                TRACE2 ("Twopart::findPos2Play (unsigned int) - Having equal card at "
                        << start);
@@ -1157,7 +1157,7 @@ void Twopart::changeNames (const std::vector<Player*>& newPlayer) {
 }
 
 //----------------------------------------------------------------------------
-/// Changes the names of the playing people
+/// Converts a pile-number to the actual pile
 /// \param newPlayer: Array holding the new player
 /// \param pile: ID of the pile to return
 /// \returns ICardPile*: Pile corresponding to the passed number or NULL
@@ -1175,7 +1175,7 @@ ICardPile* Twopart::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// Handles the messages the server might send for the Twopart cardgame
 /// \param player: ID of player sending the message
 /// \param message: Message received from the server
-/// \returns bool: True, if message has completey processed
+/// \returns bool: True, if message has been completey processed
 /// \throw std::string: In case of an error an describing text
 //----------------------------------------------------------------------------
 bool Twopart::handleMessage (unsigned int player, const std::string& message) throw (std::string) {

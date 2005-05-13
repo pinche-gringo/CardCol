@@ -249,11 +249,10 @@ typedef CardPile<Gtk::VBox>  CardVPile;
 typedef CardPile<Gtk::HBox>  CardHPile;
 
 
-/**Implementation of the resize() methods for Gtk::VBox
- */
-inline void CardVPile::resize (unsigned int pos, PileStyle s) {
+/// Implementation of the resize() methods for Gtk::VBox
+template <> inline void CardVPile::resize (unsigned int pos, PileStyle s) {
    ICardPile::resize (pos, s); }
-inline void CardVPile::resize (CardWidget& card, PileStyle s) {
+template <> inline void CardVPile::resize (CardWidget& card, PileStyle s) {
    if (s == TOTALLY_COMPRESSED)
       card.hide ();
    else {
@@ -264,11 +263,10 @@ inline void CardVPile::resize (CardWidget& card, PileStyle s) {
    }
 }
 
-/**Implementation of the resize() methods for Gtk::HBox
- */
-inline void CardHPile::resize (unsigned int pos, PileStyle s) {
+///Implementation of the resize() methods for Gtk::HBox
+template <> inline void CardHPile::resize (unsigned int pos, PileStyle s) {
    ICardPile::resize (pos, s); }
-inline void CardHPile::resize (CardWidget& card, PileStyle s) {
+template <> inline void CardHPile::resize (CardWidget& card, PileStyle s) {
    if (s == TOTALLY_COMPRESSED)
       card.hide ();
    else {

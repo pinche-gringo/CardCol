@@ -242,15 +242,15 @@ bool Hearts::enableHuman () {
    Check3 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
    TRACE2 ("Hearts::enableHuman () - Human has " << players[0].hand.size () << " cards");
 
-   for (int i (players[0].hand.size ()); i;)
+   for (int i (players[0].hand.size () - 1); i >= 0; --i)
       activeCards.push_back
-         (players[0].hand[--i]->signal_clicked ().connect
+         (players[0].hand[i]->signal_clicked ().connect
            (bind (mem_fun (*this, (&Hearts::cardSelected)), i)));
 
    if (gameStatus () == EXCHANGE)
-      for (int i (played.size ()); i;)
+      for (int i (played.size () - 1); i >= 0; --i)
          activeCards.push_back
-            (played[--i]->signal_clicked ().connect
+            (played[i]->signal_clicked ().connect
              (bind (mem_fun (*this, (&Hearts::takeCard)), i)));
 
    return Game::enableHuman ();
@@ -942,7 +942,7 @@ void Hearts::changeNames (const std::vector<Player*>& newPlayer) {
 }
 
 //----------------------------------------------------------------------------
-/// Changes the names of the playing people
+/// Converts a pile-number to the actual pile
 /// \param newPlayer: Array holding the new player
 /// \param pile: ID of the pile to return
 /// \returns ICardPile*: Pointer to pile to use or NULL
@@ -955,7 +955,7 @@ ICardPile* Hearts::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// Handles the messages the server might send for the hearts cardgame
 /// \param player: ID of player sending the message
 /// \param message: Message received from the server
-/// \returns bool: True, if message has completey processed
+/// \returns bool: True, if message has been completey processed
 /// \throw std::string: In case of an error an describing text
 //----------------------------------------------------------------------------
 bool Hearts::handleMessage (unsigned int player, const std::string& message) throw (std::string) {

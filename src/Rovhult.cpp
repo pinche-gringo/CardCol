@@ -41,7 +41,6 @@
 #include <YGP/ConnMgr.h>
 #include <YGP/Tokenize.h>
 
-#include <Player.h>
 #include <CardWidget.h>
 #include <ComputerPlayer.h>
 
@@ -264,7 +263,7 @@ void Rovhult::exchangeAutoplayerCards () {
 
 //----------------------------------------------------------------------------
 /// Broadcasts the exchanged cards to the clients
-/// \param player: Player whose cards to send 
+/// \param player: Player whose cards to send
 //----------------------------------------------------------------------------
 void Rovhult::sendExchangedCards (unsigned int player) {
    // Send starting positions to the clients
@@ -319,9 +318,9 @@ bool Rovhult::enableHuman () {
       TRACE2 ("Rovhult::enableHuman () - Has " << players[0].hand.size ()
               << " card(s) in the hand");
 
-      for (int i (players[0].hand.size ()); i;)
+      for (int i (players[0].hand.size () - 1); i >= 0; --i)
          activeCards.push_back
-            (players[0].hand[--i]->signal_clicked ().connect
+            (players[0].hand[i]->signal_clicked ().connect
              (bind (mem_fun (*this, &Rovhult::handSelected), i)));
    }
    else {
@@ -433,7 +432,7 @@ bool Rovhult::playFromPile (unsigned int pile) {
 /// \returns \c int: player to continue
 //-----------------------------------------------------------------------------
 int Rovhult::doPileSelected (unsigned int player, unsigned int pile) {
-   TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - " 
+   TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - "
            << player << '/' << pile);
    Check1 (player < NUM_PLAYERS); Check1 (pile < 3);
 
@@ -653,7 +652,7 @@ bool Rovhult::playerCanContinue (unsigned int player, CardWidget::NUMBERS card) 
 
    if (card == CardWidget::UNREACHABLE)
       return false;
- 
+
    if (players[player].hand.size ())
       return playerHandCanContinue (players[player].hand, card);
 
@@ -744,7 +743,7 @@ unsigned int Rovhult::numberOfEqualTopCards () const {
    while (i <= nrCards) {
       TRACE9 ("Rovhult::numberOfEqualTopCards () const - Checking "
               << played[nrCards - i] << " with " << card);
-      
+
       if (played[nrCards - i]->number () != card.number ()) {
          TRACE8 ("Rovhult::numberOfEqualTopCards () const - found " << i);
          break;
@@ -921,7 +920,7 @@ void Rovhult::unregisterDND () {
       activeCards[i].disconnect ();
       disconnectCardInHand (card);
    }
-   
+
    for (unsigned int i (0);
         i < (sizeof (players[0].reserve) / sizeof (players[0].reserve[0]));
         ++i) {
@@ -1011,9 +1010,8 @@ void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
    Check3 (!context->get_is_source ());
    Check3 (data.get_length () == sizeof (int));
    Check3 (data.get_format () == 8);
-
    Check3 (pile < 3);
-   
+
    unsigned int* pValue (reinterpret_cast <unsigned int*>
                          (const_cast<guint8*> (data.get_data ())));
    Check3 (pValue);
@@ -1025,7 +1023,7 @@ void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
    context->drag_finish (true, false, time);
 
    Glib::signal_idle ().connect
-       (bind (mem_fun (*this, &Rovhult::doSwapCards), pile, *pValue));
+      (bind (mem_fun (*this, &Rovhult::doSwapCards), pile, *pValue));
 }
 
 //-----------------------------------------------------------------------------
@@ -1277,10 +1275,9 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
                       != -1))
               && cardValid (players[player].hand[hpPos]->number (), true)))
          ? hpPos : players[player].hand.findFirstEqualOrBigger (cardMin);
-   
       TRACE6 ("Rovhult::findCard2Play (unsigned int) - First matching card"
               " at pos " << start);
-   
+
       // Check if no matching normal card is found or found card is bigger than
       // the played 7. If so, use special card instead
       // We know one card must match as "playerCanContinue" reported this player
@@ -1493,8 +1490,8 @@ void Rovhult::changeNames (const std::vector<Player*>& newPlayer) {
 }
 
 //----------------------------------------------------------------------------
-/// Changes the names of the playing people
-/// \param newPlayer: Array holding the new player
+/// Converts a pile-number to the actual pile
+/// \param player: Actual player
 /// \param pile: ID of the pile to return
 ///    - 0: Play from hand
 ///    - 1 - 3: Play from pile 0 - 2
@@ -1531,7 +1528,7 @@ ICardPile* Rovhult::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// Handles the messages the server might send for the Rovhult cardgame
 /// \param player: ID of player sending the message
 /// \param message: Message received from the server
-/// \returns bool: True, if message has completey processed
+/// \returns bool: True, if message has been completey processed
 /// \throw std::string: In case of an error an describing text
 //----------------------------------------------------------------------------
 bool Rovhult::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
