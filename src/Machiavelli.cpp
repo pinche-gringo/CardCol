@@ -1697,11 +1697,11 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 		   mem_fun (*this, (&Machiavelli::endTurn)));
    grpAction->add (Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
 					_("_Sort cards (by number)")),
-		   Gtk::AccelKey ("<ctl><alt>S"),
+		   Gtk::AccelKey ("<shft>S"),
 		   mem_fun (*this, &Machiavelli::sortHand));
    grpAction->add (Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
 					_("Sort cards (by _colour)")),
-		   Gtk::AccelKey ("<shft><ctl>S"),
+		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Machiavelli::sortHandByColour));
 
 
