@@ -62,7 +62,7 @@ class SgtMayor : public Game {
    void cardSelected (unsigned int iCard);
    void cardExchange (unsigned int iCard);
    void cardColourSelect (unsigned int iCard);
-   bool exchangeMarked (CardWidget* card, unsigned int destPlayer);
+   bool unmarkExchanged (CardWidget* cardHuman);
    bool unmark (unsigned int card);
 
    //@Section Virtual methods
