@@ -45,7 +45,7 @@
 #include "Hearts.h"
 
 
-const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = { 3, 9, 3, 1 };
+const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = { 3, 1, 3, 9 };
 const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 
 
@@ -1053,11 +1053,11 @@ void Hearts::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    grpAction->add (Gtk::Action::create ("MB", _("H_earts")));
    grpAction->add (Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
 					_("_Sort won cards (by number)")),
-		   Gtk::AccelKey ("<ctl><alt>S"),
+		   Gtk::AccelKey ("<shft>S"),
 		   mem_fun (*this, &Hearts::sortWonByNumber));
    grpAction->add (Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
 					_("Sort won cards (by _colour)")),
-		   Gtk::AccelKey ("<shft><ctl>S"),
+		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Hearts::sortWonByColour));
 
    mgrUI->insert_action_group (grpAction);

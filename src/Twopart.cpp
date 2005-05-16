@@ -50,7 +50,7 @@
 #include "Twopart.h"
 
 
-const unsigned int Twopart::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
+const unsigned int Twopart::COLS_PLAYER[NUM_PLAYERS] = { 7, 1, 7, 13 };
 const unsigned int Twopart::ROWS_PLAYER[NUM_PLAYERS] = { 4,  8, 10, 8 };
 
 char Twopart::sortOrder[4];
@@ -1232,11 +1232,11 @@ void Twopart::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    grpAction->add (Gtk::Action::create ("MB", _("_Twopart")));
    grpAction->add (Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
 					_("_Sort won cards (by number)")),
-		   Gtk::AccelKey ("<ctl><alt>S"),
+		   Gtk::AccelKey ("<shft>S"),
 		   mem_fun (*this, &Twopart::sortWonByNumber));
    grpAction->add (Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
 					_("Sort won cards (by _colour)")),
-		   Gtk::AccelKey ("<shft><ctl>S"),
+		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Twopart::sortWonByColour));
 
    mgrUI->insert_action_group (grpAction);
