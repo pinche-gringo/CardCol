@@ -51,7 +51,7 @@ std::vector<Gtk::TargetEntry> Rovhult::dndTypeHand;
 std::vector<Gtk::TargetEntry> Rovhult::dndTypeTable;
 
 
-const unsigned int Rovhult::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
+const unsigned int Rovhult::COLS_PLAYER[NUM_PLAYERS] = { 7, 1, 7, 13 };
 const unsigned int Rovhult::ROWS_PLAYER[NUM_PLAYERS] = { 4, 7, 13, 7 };
 
 
@@ -114,7 +114,7 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
               ROWS_PLAYER[i] + (i ? 3 : -3) + 2,
               Gtk::FILL | Gtk::EXPAND, Gtk::FILL | Gtk::EXPAND, 0);
       TRACE9 ("Rovhult::Rovhult () - 2nd set at: "
-              << COLS_PLAYER[i] + (i << 1) << '/'
+              << COLS_PLAYER[i] << '/'
               << ROWS_PLAYER[i] + (i ? 3 : -3));
    }
 
