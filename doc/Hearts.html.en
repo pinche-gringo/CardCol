@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003, 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2002-12-31">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -48,9 +48,9 @@
       After that exchange it starts the player having the two of clubs (with
       exactly that card).</p>
 
-    <p>The player continue clockwise. At the end of the turn the player who played
-      the highest card (with the colour of the first one) gets the played pile
-      starts the next turn.</p>
+    <p>The player continue counter-clockwise. At the end of the turn
+      the player who played the highest card (with the colour of the
+      first one) gets the played pile starts the next turn.</p>
 
     <p>If there are no cards left the number of (bad) points are counted. Each
       heart counts as one point and the queen of spade counts thirteen points. If a
@@ -83,7 +83,7 @@
       <li>The cards of the human player. On top his won cards, below the cards in
         his hand. The won cards can be inspected by clicking on them;
         right-clicking allows to sort them.</li>
-      <li>In the next line it's the same with computer players 3 and 1. In
+      <li>In the next line it's the same with computer players 1 and 3. In
         between them there's the played pile.</li>
       <li>In the last line there are the cards of computer player 2</li>
     </ul>

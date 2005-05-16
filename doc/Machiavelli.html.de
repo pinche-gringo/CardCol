@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-11-29">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -64,7 +64,7 @@
       drag and drop<a href="Machiavelli.html.de#Note1"><sup>1</sup></a>.
 
     <p>Kann/will der Spieler keine Karten ablegen, setzt der n&auml;chste
-      Spieler (im Uhrzeigersinn) fort, der noch Karten hat. Dies wird durch
+      Spieler (gegen den Uhrzeigersinn) fort, der noch Karten hat. Dies wird durch
       Anklicken des Reservestapels angezeigt. Sollten dabei Stapel in einem
       ung&uuml;tigen Zustand sein, erscheint ein Fenster mit einer
       Fehlerinformation. Dieses Fenster erm&ouml;glicht auch ein Undo des

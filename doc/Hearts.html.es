@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003, 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-10">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -48,7 +48,7 @@
       Despu&eacute;s del intercambio, comienza el jugador que tenga el dos
       de tr&eacute;boles (con esa carta misma).</p>
 
-    <p>Los jugadores siguen en la direcci&oacute;n de las agujas del reloj. &Eacute;l
+    <p>Los jugadores siguen contra la direcci&oacute;n de las agujas del reloj. &Eacute;l
       que jug&oacute; la carta m&aacute;s alta (con el palo de la primera carta)
       consigue las cartas jugadas y comenzar&aacute; el pr&oacute;ximo turno.</p>
 
@@ -83,7 +83,7 @@
       <li>Las cartas del jugador humano. Por arriba sus cartas ganadas encima de
         sus cartas en su mano. Se puede chequearlas con hacer clic en ellas; hacer
         clic con la tecla derecha permite sortearlas.</li>
-      <li>En la l&iacute;nea pr&oacute;xima es lo mismo con los jugadores 3 y 1. Entre ellos se
+      <li>En la l&iacute;nea pr&oacute;xima es lo mismo con los jugadores 1 y 3. Entre ellos se
         encuentran las cartas jugadas.</li>
       <li>En la l&iacute;nea &uacute;ltima est&aacute;n las cartas del jugador 2.</li>
     </ul>

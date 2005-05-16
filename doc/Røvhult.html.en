@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2002-07-20">
-    <meta name="DC.Rights" content="Copyright (C) 2002 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2002 - 2005, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -59,7 +59,7 @@
     <p>To actually start the game, click on the card you want to play. The cards
       are sorted and the clicked card is played.</p>
 
-    <p>In a clockwise turn the players put down their cards, which
+    <p>In counter-clockwise turns the players put down their cards, which
       must be equal or bigger than the last played one. Note that you
       can put down any amount of cards with equal numbers (e.g. the
       &spades; 5 and the &clubs; 5). After playing the player must pick
@@ -119,7 +119,7 @@
         the remaining cards).</li>
      <li>The cards of the human player; above the cards in the hand, below
         the cards on the table.</li>
-      <li>In the next line it's the same with computer players 3 and 1. In
+      <li>In the next line it's the same with computer players 1 and 3. In
         between them there's the played pile (which also shows the number of
         the cards inside, is the mouse rests over it).</li>
       <li>In the last line there's computer player 2</li>

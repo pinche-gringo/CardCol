@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2004, 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2004-04-18">
-    <meta name="DC.Rights" content="Copyright (C) 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2004, 2005; distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -51,7 +51,7 @@
       two of spades change this card again against any other). Then the
       actual game starts according to the following rules:</p>
 
-    <p>It starts the player needingt to get 9 ticks.</p>
+    <p>The player needing 9 ticks starts the game.</p>
 
     <p>Each turn can be started by any colour. Then you must stick with this
       colour; or, if a player doesn't have any card of this colour, play any

@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003, 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-11">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -46,7 +46,7 @@
       muy imaginativo).</p>
 
     <p>En la primera parte todos los jugadores comienzan con tres cartas
-      en su mano que juegan en la direcci&oacute;n del las aguajas de reloj.</p>
+      en su mano que juegan contra la direcci&oacute;n del las aguajas de reloj.</p>
 
     <p>Luego de todos los jugadores ponen su carta, &eacute;l con la carta
       m&aacute;s alta (sin importancia del palo) consiegue todas. Si hay
@@ -111,8 +111,8 @@
           encima de sus cartas en su mano. Se puede inspectarlas con hacer
           clic en las; hacer clic con la tecla derecha permite
           sortearlas.</p></li>
-      <li><p>En la linea proxima es lo mismo con los jugadores 3 y
-          1. &Eacute;ntrelos se encuentre el mont&oacute;n de las cartas
+      <li><p>En la linea proxima es lo mismo con los jugadores 1 y 3.
+          &Eacute;ntrelos se encuentre el mont&oacute;n de las cartas
           jugados.</p></li>
       <li><p>En la linea &uacute;ltima son las cartas del jugador 2.</p></li>
     </ul>

@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-11-30">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -62,7 +62,7 @@
       href="Machiavelli.html.en#Note1"><sup>1</sup></a>.
 
     <p>If the player can't or won't continue, continues the next player still
-      having cards (clockwise). This end of the turn is indicated by clicking
+      having cards (counter-clockwise). This end of the turn is indicated by clicking
       in the pile of the reserve. If there are piles in an invalid condition
       appears a window with an error message. This window also allows an undo
       of the last or all actions in the actual turn.</p>

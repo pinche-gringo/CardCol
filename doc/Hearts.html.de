@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003, 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-10">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -48,7 +48,7 @@
       Spieler der anschlie&szlig;end die Kreuz-2 hat, beginnt das Spiel (mit
       eben jener Karte).</p>
 
-    <p>Die Spieler setzen im Uhrzeigersinn fort. Der Spieler mit der h&ouml;chsten
+    <p>Die Spieler setzen gegen Uhrzeigersinn fort. Der Spieler mit der h&ouml;chsten
       Karte (der zuerst gespielten Farbe) bekommt den gespielten Stapel und
       startet die n&auml;chste Runde.</p>
 
@@ -85,7 +85,7 @@
         seiner Hand. Die gewonnenen Karten k&ouml;nnen durch Anklicken betrachtet
         werden; ein Rechts-Klick erm&ouml;glicht zu&auml;tzlich sortieren.</li>
       <li>In der n&auml;chsten Reihe befinden sich die Karten der Computer-Spieler
-        3 und 1. Zwischen ihnen ist der Stapel der gespielten Karten.</li>
+        1 und 3. Zwischen ihnen ist der Stapel der gespielten Karten.</li>
       <li>In der letzten Reihe sind die Karten von Computer-Spieler 2.</li>
     </ul>
 

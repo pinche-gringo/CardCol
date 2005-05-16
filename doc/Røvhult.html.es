@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-11">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -58,7 +58,7 @@
     <p>Para empezar el juego, se tiene que hacer clic encima de la carta que
      se quisiera jugar.</p>
 
-    <p>El juego continua en la direcci&oacute;n del las aguajas de
+    <p>El juego continua contra la direcci&oacute;n del las aguajas de
       reloj. Todos los jugadores ponen sus cartas, que deben tener un
       n&uacute;mero igual o mayor que la &uacute;ltima carta jugada. Tiene en
       cuenta que se puede poner cada n&uacute;mero de cartas con
@@ -119,7 +119,7 @@
         mostrando su n&uacute;mero de las cartas).</li>
       <li>Las cartas del jugador humano. Por arriba sus cartas de mano; por
         abajo las de la mesa.</li>
-      <li>En la linea proxima es lo mismo con los jugadores 3 y 1. Entre ellos
+      <li>En la linea proxima es lo mismo con los jugadores 1 y 3. Entre ellos
         se encuentre el puesto de las cartas jugadas.</li>
       <li>En la linea &uacute;ltima son las cartas del jugador 2.</li>
     </ul>

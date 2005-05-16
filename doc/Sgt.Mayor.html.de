@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2004, 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2004-04-18">
-    <meta name="DC.Rights" content="Copyright (C) 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2004, 2005; distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -58,7 +58,7 @@
       wenn ein Spieler diese Farbe nicht besitzt kann er eine beliebige andere
       spielen (Trumpf oder nicht).</p>
 
-    <p>Nachdem alle Spieler ihre Karte abgelegt haben, gewinnt den gespielten
+    <p>Nachdem alle Spieler (im Uhrzeigersinn) ihre Karte abgelegt haben, gewinnt den gespielten
       Stapel der Spieler mit der h&ouml;chsten Karte (der Farbe der zuerst
       gespielten Karte oder dem h&ouml;chsten Trumpf). Der Gewinner startet
       dann die n&auml;chste Runde.</p>

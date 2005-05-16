@@ -31,7 +31,7 @@
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-06-22">
   </head>
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
 
   <body>
     <h1 align="center">Buraco</h1>
@@ -71,7 +71,7 @@
 
     <p>Si el jugador no puede (o no quiere) poner m&aacute;s cartas,
       tiene que botar una (con hacer clic en ella) y el pr&oacute;ximo
-      jugador (en el sentido de las agujas de reloj) contin&uacute;a.</p>
+      jugador (contra del sentido de las aguajas de reloj) contin&uacute;a.</p>
 
     <p>Reglas adicionales:</p>
     <ul>

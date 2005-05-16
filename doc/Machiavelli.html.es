@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-06-22">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -63,7 +63,7 @@
       href="Machiavelli.html.es#Note1"><sup>1</sup></a>)</p>
 
     <p>Si el jugador no puede (o quiere) continuar, continua el pr&oacute;ximo
-      jugador que sigue con cartas en su mano (en las auguajas de reloj). El
+      jugador que sigue con cartas en su mano (contra del sentido de las aguajas de reloj). El
       fin del turno se indica con hacer clic en el mot&oacute;n de reserva.</p>
 
     <p>El &uacute;ltimo jugador con cartas pierde.</p>

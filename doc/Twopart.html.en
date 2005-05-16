@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003, 2004 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2002-08-18">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -46,7 +46,7 @@
       not very imaginative).</p>
 
     <p>In the first part every player starts with tree cards in his
-      hand which they play clockwise.</p>
+      hand which they play counter-clockwise.</p>
 
     <p>After every player (with cards left) has put one down, the one who
       played the highest card (regardless of the colour) gets all of them. If
@@ -108,7 +108,7 @@
         is shown here.</li>
       <li>The cards of the human player. The won cards (above) become visible,
         if they are clicked into; right-clicking allows to sort them.</li>
-      <li>In the next line it's the same with computer players 3 and 1. In
+      <li>In the next line it's the same with computer players 1 and 3. In
         between them there's the played pile (which also shows the number of
         the cards inside, is the mouse rests over it).</li>
       <li>In the last line there's computer player 2</li>

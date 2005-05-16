@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-06-22">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2004, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -69,7 +69,7 @@
       piles.</p>
 
     <p>If the player can't or want play anymore cards, he must dump one (by
-      clicking on it) and the next player (clockwise) continues.</p>
+      clicking on it) and the next player (counter-clockwise) continues.</p>
 
     <p>Further rules are:</p>
     <ul>
