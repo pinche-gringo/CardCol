@@ -931,7 +931,7 @@ void CardgameCollection::startGame () {
    name += " - " PACKAGE " V" PRG_RELEASE;
    set_title (name);
 
-#if SAVE_GAME
+#ifdef SAVE_GAME
    if (options.gameFile.size () && options.load) {
       std::ifstream input (options.gameFile.c_str ());
       char buffer[1024];
@@ -944,7 +944,7 @@ void CardgameCollection::startGame () {
    if (cmgr.getMode () != YGP::ConnectionMgr::CLIENT) {
       game->start ();
 
-#if SAVE_GAME
+#ifdef SAVE_GAME
       if (options.gameFile.size () && !options.load) {
          std::ofstream output (options.gameFile.c_str ());
          output << game->getCardOrder ();
