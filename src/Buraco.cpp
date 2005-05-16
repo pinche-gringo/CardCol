@@ -47,6 +47,7 @@
 #include <ScoreDlg.h>
 #include <ComputerPlayer.h>
 
+#include "Buraco.h"
 
 
 std::vector<Gtk::TargetEntry> Buraco::dndType;
@@ -255,7 +256,7 @@ int Buraco::makeMove (unsigned int player) {
          if (reserve[oldPlayer & 1].size ())
             addBuraco (oldPlayer);
          else
-            addBuraco (oldPlayer, false);
+            if (source.empty ()) {
                cleanCerrado (oldPlayer);
                Check3 (points[oldPlayer & 1] > 100);
                points[oldPlayer & 1] += 100;
@@ -397,7 +398,9 @@ int Buraco::executeMove (unsigned int player) {
              && ((points[(player + 1) & 1] < 101)
                  || (nrs > 6)
              && ((points[(player + 1) & 1] < 100)
-                 || (nrs > 6)))
+		     && (hands[(player + 1) % 3].size () > 3))))
+          : ((nrs > aPos.size ()) ? (nrs > 2) : (aPos.size () > 2))) {
+	 unsigned int firstPos (i);
          if (nrs < aPos.size ()) {
             nrs = aPos.size ();
             i = playerPile.sortColourSerie (aPos, aOrder);
@@ -1337,9 +1340,9 @@ bool Buraco::containsNoJoker (const std::vector<CardWidget*>& pile) {
 /// \param player: Player getting the reserve
 //-----------------------------------------------------------------------------
 void Buraco::addBuraco (unsigned int player) {
-/// \param showt: Flag, if info-message should be displayed
    TRACE3 ("Buraco::addBuraco (unsigned int) - " << player);
-void Buraco::addBuraco (unsigned int player, bool show) {
+   Check1 (player < NUM_PLAYERS);
+
    undo.pickUp = 1;
    undo.cJokers = hands[player].size ();
 
@@ -1368,19 +1371,52 @@ void Buraco::addBuraco (unsigned int player, bool show) {
 
    Check3 (actPlayers.size () > player);
    Check3 (actPlayers[player]);
-   if (show) {
-      Check3 (actPlayers.size () > player);
-      Check3 (actPlayers[player]);
 
-      status.pop ();
-      Glib::ustring stat (_("%1 picked up the burraco"));
-      stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
-      status.push (stat);
+   // If the computer-player had jokers left, show them
+   if (player && undo.cJokers) {
+      TRACE3 ("Buraco::addBuraco (unsigned int) - Jokers: " << undo.cJokers);
+      for (ICardPile::iterator i (hands[player].begin () + 11);
+	   i != hands[player].end (); ++i) {
+	 (*i)->showFace ();
+	 hands[player].resize (**i, ICardPile::COMPRESSED);
+      }
+      hands[player].resize (10 + undo.cJokers, ICardPile::NORMAL);
+
+      Glib::signal_timeout ().connect
+	 (bind (sigc::ptr_fun (&Buraco::hideJoker), &hands[player], undo.cJokers),
+	  ComputerPlayer::TIMEOUT - 20);
+   }
+
    status.pop ();
+   Glib::ustring stat (_("%1 picked up the burraco"));
+   stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
+   status.push (stat);
+   updateInfo ();
+}
 
 //-----------------------------------------------------------------------------
 /// Hides the joker, which are displayed when picking up the buraco
 /// \param pile: Pile holding the jokers shown
+/// \param cJokers: Numer of jokers shown
+/// \returns bool: false
+//-----------------------------------------------------------------------------
+bool Buraco::hideJoker (ICardPile* pile, unsigned int cJokers) {
+   TRACE9 ("Buraco::hideJoker (ICardPile&, unsigned int) - " << cJokers);
+   Check1 (pile);
+   Check1 (cJokers);
+   Check1 (cJokers < pile->size ());
+
+   for (ICardPile::iterator i (pile->begin () + 11); i != pile->end (); ++i) {
+      (*i)->showBack ();
+      pile->resize (**i, ICardPile::VERY_COMPRESSED);
+   }
+   pile->resize (10 + cJokers, ICardPile::NORMAL);
+   return false;
+}
+
+//-----------------------------------------------------------------------------
+/// Makes a new pile for the passed team.
+/// \param team: Which team to make the pile for
 /// \returns BuracoPile&: New created pile
 //-----------------------------------------------------------------------------
 BuracoPile& Buraco::makeNewPile (unsigned int team) {
@@ -1432,10 +1468,12 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
       // one having picked up the reserve already played (the missing card
       // might be in there) and the oponent can't finish. And of course not,
       // if you have 7 monos in your hand!
-      // might be in there) and the oponent can't finish
+      int posPile ((*p)->size ());
+      if (isJoker (card)
           ? (((((*p)->size () == 6) && ((*p)->getPosJoker () > 6))
 	      && ((hands[player].size () - iCard) < 7)
               && (((reserve[player & 1].empty ()
+                    && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco
                          == 0x3)))
                    || (points[player & 1] > 100))
                   || reserve[(player + 1) & 1].empty ()
@@ -1487,8 +1525,6 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
 bool Buraco::isJoker (const CardWidget& card) {
    return ((card.number () == CardWidget::TWO)
            || (card.number () > CardWidget::ACE));
-   TRACE9 ("Buraco::isJoker (const CardWidget&) const - " << card << " = "
-           << card.number ());
 }
 
 //-----------------------------------------------------------------------------
@@ -2164,11 +2200,11 @@ void Buraco::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 						   _("_Sort cards (by number)")),
 		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Buraco::sortHand));
-		   Gtk::AccelKey ("<ctl><alt>S"),
+   grpAction->add (menuSort2 = Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
 						    _("Sort cards (by _colour)")),
 		   Gtk::AccelKey ("<shft>S"),
 		   mem_fun (*this, &Buraco::sortHandByColour));
-		   Gtk::AccelKey ("<shft><ctl>S"),
+
    mgrUI->insert_action_group (grpAction);
    idMrg = mgrUI->add_ui_from_string (ui);
 

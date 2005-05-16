@@ -107,7 +107,8 @@ class Buraco : public Game {
    void enableCard (unsigned int pos);
    static bool containsOnlyJoker (const std::vector<CardWidget*>& pile);
    static bool containsNoJoker (const std::vector<CardWidget*>& pile);
-   void addBuraco (unsigned int player, bool show = true);
+   static bool hideJoker (ICardPile* pile, unsigned int cJokers);
+   void addBuraco (unsigned int player);
    unsigned int showCardsToPlay (unsigned int player);
    int  executeMove (unsigned int player);
    void endGame ();
