@@ -678,22 +678,36 @@ unsigned int ICardPile::sortColourSerie (std::map<unsigned int, unsigned int>& a
    unsigned int pos (1);
    for (std::vector<unsigned int>::reverse_iterator p (aOrder.rbegin ());
         p != aOrder.rend (); ++p) {
-      std::map<unsigned int, unsigned int>::const_iterator v;
-      if ((v = aPos.find (*p)) != aPos.end ()) {
-          TRACE9 ("ICardPile::sortColourSeries (...) - Moving " << v->second
-                  << " to end " << ((*p < 2) ? *p : 0));
-          Check3 ((p - aOrder.rbegin ()) >= 0);
-          // Move the card to the end of the staple; If it belongs before the
-          // first card move it before the other cards.
-          move (size () - pos, v->second);
-          unsigned int oldOrder (*p);
-          if (((p + 1) != aOrder.rend ()) && (*(p + 1) < oldOrder))
-             ++pos;
-      }
+      std::map<unsigned int, unsigned int>::const_iterator v (aPos.find (*p));
+      Check3 (v != aPos.end ());
+      TRACE9 ("ICardPile::sortColourSeries (...) - Moving " << v->second
+	      << " to end " << ((*p < 2) ? *p : 0));
+      Check3 ((p - aOrder.rbegin ()) >= 0);
+      // Move the card to the end of the staple; If it belongs before the
+      // first card move it before the other cards.
+      move (size () - pos, v->second);
+      unsigned int oldOrder (*p);
+      if (((p + 1) != aOrder.rend ()) && (*(p + 1) < oldOrder))
+	 ++pos;
    }
    TRACE9 ("ICardPile::sortColourSeries (...) - Moved "
            << size () - aPos.size () << " cards");
    return size () - aPos.size ();
+}
+
+//-----------------------------------------------------------------------------
+/// Helper-function to correct the found matching cards
+/// \param elem: Element to remove from the found ones
+/// \param aPos: Map holding the positions of the cards in the pile
+/// \param aOrder: Sorted order of the cards
+//-----------------------------------------------------------------------------
+void ICardPile::deleteElement (unsigned int elem,
+			       std::map<unsigned int, unsigned int>& aPos,
+			       std::vector<unsigned int>& aOrder) {
+   Check3 (aPos.find (elem) != aPos.end ());
+   Check3 (std::find (aOrder.begin (), aOrder.end (), elem) != aOrder.end ());
+   aOrder.erase (std::find (aOrder.begin (), aOrder.end (), elem));
+   aPos.erase (aPos.find (elem));
 }
 
 //----------------------------------------------------------------------------
@@ -773,32 +787,31 @@ unsigned int ICardPile::getSeries (CardWidget& card,
 
    // Delete cards having no direct access to the analyzed one
    if ((bCols & 0x3) == 0x1) {
-      Check3 (aPos.find (0) != aPos.end ());
       Check3 (aPos.find (1) == aPos.end ());
-      aPos.erase (aPos.find (0));
+      deleteElement (0, aPos, aOrder);
+      bCols &= ~0x1;
    }
    if ((bCols & 0x18) == 0x10) {
-      Check3 (aPos.find (4) != aPos.end ());
       Check3 (aPos.find (3) == aPos.end ());
-      aPos.erase (aPos.find (4));
+      deleteElement (4, aPos, aOrder);
+      bCols &= ~0x10;
    }
 
    // Special handling of series of colours for an ace, to avoid the problem
    // with 3-K-A of one colour.
    if (card.number () == CardWidget::ACE) {
        if ((bCols & 0xa) == 0xa) {
-          std::map<unsigned int, unsigned int>::iterator i;
           if ((bCols & 0x18) == 0x18) {
-             if ((i = aPos.find (0)) != aPos.end ())
-                aPos.erase (i);
-             if ((i = aPos.find (1)) != aPos.end ())
-                aPos.erase (i);
+             if (aPos.find (0) != aPos.end ())
+		deleteElement (0, aPos, aOrder);
+             if (aPos.find (1) != aPos.end ())
+		deleteElement (1, aPos, aOrder);
           }
           else {
-             if ((i = aPos.find (3)) != aPos.end ())
-                aPos.erase (i);
-             if ((i = aPos.find (4)) != aPos.end ())
-                aPos.erase (i);
+             if (aPos.find (3) != aPos.end ())
+		deleteElement (3, aPos, aOrder);
+             if (aPos.find (4) != aPos.end ())
+		deleteElement (4, aPos, aOrder);
           }
        }
    }

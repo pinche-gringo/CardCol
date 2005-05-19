@@ -178,6 +178,11 @@ class ICardPile : public std::vector<CardWidget*> {
  protected:
    PileStyle style;
    ShowOpt showOpt;
+
+ private:
+   static void deleteElement (unsigned int elem,
+			      std::map<unsigned int, unsigned int>& aPos,
+			      std::vector<unsigned int>& aOrder);
 };
 
 
