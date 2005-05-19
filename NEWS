@@ -1,3 +1,16 @@
+Overview of changes in version 0.7.20:
+
+  - Added network ability to Sgt. Mayor
+  - Improved Sgt. Mayor's computer player
+  - Added settings dialogue
+  - Drag and drop can be done with button 1
+  - Machiavelli can sort the cards in the hand
+  - Buraco shows now the jokers, when taking the Buraco
+  - Fixed Buraco's computer-player
+  - Improved Buraco's spanish help-text (Thanks to Sonia Cárdenas)
+  - Now all games are played in counter-clockwise direction
+  - Removed warnings when compiling with GCC-4
+
 Overview of changes in version 0.7.10:
 
   - Improved Sgt. Mayor's computer player

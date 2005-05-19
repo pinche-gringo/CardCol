@@ -1,3 +1,175 @@
+2005-05-19  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.20 docommented
+
+	* po/de.po, po/en.po, po/es.po: Added messages of settings-dialogue
+
+	* src/MachiPile.cpp:
+	  Fixed bug introduced to hasMatching3rd() by last change
+
+	* src/CardCol.cpp: Changed name of subsystem
+
+	* src/BuracoPile.cpp:
+	  Removing a card might now set the type back to undefined
+
+	* Common/CardPile.cpp, Common/CardPile.h:
+	  Fixed sorting colour-series of with an ace as one, when having also a king
+
+2005-05-16  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Twopart.html.en, doc/Twopart.html.es, doc/Buraco.html.de, doc/Buraco.html.en, doc/Buraco.html.es, doc/CardCol.shtml.de, doc/CardCol.shtml.en, doc/CardCol.shtml.es, doc/Hearts.html.de, doc/Hearts.html.en, doc/Hearts.html.es, doc/Machiavelli.html.de, doc/Machiavelli.html.en, doc/Machiavelli.html.es, doc/Røvhult.html.de, doc/Røvhult.html.en, doc/Røvhult.html.es, doc/Sgt.Mayor.html.de, doc/Sgt.Mayor.html.en, doc/Sgt.Mayor.html.es, doc/Twopart.html.de, doc/index.shtml:
+	  Changed copyright; Updated order of playing
+
+	* src/CardCol.cpp: Fixed compilation when SAVE_GAME is undefined
+
+	* src/SgtMayor.h: Renamed exchangeMarked to unmarkExchanged
+
+	* src/Machiavelli.cpp: Changed accelerator-key for sort-menuentries
+
+	* src/Hearts.cpp, src/Twopart.cpp:
+	  Playing in counter-clockwise direction; Changed accelerators
+
+	* src/Rovhult.cpp: Playing in counter-clockwise direction
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Showing jokers, when taking buracos; Changed accels in Buraco-menu
+
+2005-05-15  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SgtMayor.cpp: Changed card-exchange (exchanging directly); Fixes
+
+2005-05-13  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.in:
+	  Version to 0.7.20; Needing XGP 0.7.20; Fixes for new autoconf
+
+	* src/CardCol.cpp:
+	  Correctly displaying errormsg send by clients; Fixed comm-thread-cleanup
+
+	* po/POTFILES.in: Added Settings.cpp and GameTypes.cpp
+
+	* Common/PlayerConnDlg.cpp: Removed trailing spaces
+
+	* Common/Game.cpp, Common/Game.h: Added broadcastStartPlayer()
+
+	* Common/Human.cpp, Common/RemotePlayer.cpp, Common/ComputerPlayer.cpp:
+	  Changed copyright
+
+	* Common/CardPile.h: Fixed warnings, when compiling with GCC-4
+
+	* README: Typo fixed
+
+	* INSTALL: Removed check-maketarget
+
+	* src/Settings.cpp:
+	  Left-align labels; Computer-timeout is from 100 to 10000
+
+	* src/Rovhult.h: Removed trailing spaces
+
+	* src/Rovhult.cpp, src/Twopart.cpp:
+	  Fixed warnings, when compiling with GCC-4
+
+	* src/MachiPile.cpp: Fixed calculating matching 3rd card
+
+	* src/Hearts.cpp: Fixed warnings, when compiling with GCC-4
+
+	* src/SgtMayor.cpp: Fixed network-playing
+
+2005-05-12  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SgtMayor.cpp, src/SgtMayor.h:
+	  Implemented card-exchange via network
+
+2005-05-10  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SgtMayor.cpp:
+	  Fixes (can now play a game via network; but exchange fails
+
+	* src/SgtMayor.cpp: Bugfixes in network-code
+
+2005-05-04  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SgtMayor.cpp: Further fixes in network-code
+
+2005-05-03  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SgtMayor.cpp, src/SgtMayor.h: Some progress with network ability
+
+2005-05-01  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp, src/CardCol.h:
+	  Reading and storing Buraco's endpoints
+
+	* src/Settings.cpp: Left-aligning labels
+
+	* src/Options.h: Added settings as friend
+
+	* src/Makefile.am: Added settings dialogue
+
+	* src/GameTypes.cpp: Translating names
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Needed points to end game can be changed
+
+2005-04-30  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Settings.cpp, src/Settings.h: New file.
+
+2005-04-28  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.h: Removed games-enum in favor of GameTypes
+
+	* src/Options.h: Don't include Options.meta anymore
+
+	* src/CardCol.cpp: Using new GameTypes-enum
+
+	* src/Makefile.am: Added GameTypes
+
+	* src/GameTypes.cpp, src/GameTypes.h: New file.
+
+2005-04-23  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Machiavelli.html.es, doc/Røvhult.html.es, doc/Sgt.Mayor.html.es, doc/Twopart.html.es:
+	  Added missing ¡
+
+	* doc/Buraco.html.de, doc/Buraco.html.en: Explaining new features
+
+	* doc/Buraco.html.es: Improved
+
+2005-04-19  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp, src/Twopart.cpp, src/Rovhult.cpp:
+	  Using new broadcastStartPlayer-method
+
+	* src/BuracoPile.cpp:
+	  Better replacing jokers (moving them to appropriate end of pile)
+
+	* src/Buraco.cpp: Not taking the buraco costs 100 points
+
+2005-03-21  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Buraco.html.de, doc/Buraco.html.en, doc/Buraco.html.es, doc/CardCol.shtml.de, doc/Machiavelli.html.de, doc/Machiavelli.html.en, doc/Machiavelli.html.es, doc/Røvhult.html.de, doc/Røvhult.html.en, doc/Røvhult.html.es:
+	  Changed description of DND to work with every button
+
+2005-03-09  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp:
+	  Fixed bug undoing closing a pile; Moved broadcast of startplayer to game
+
+2005-03-05  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp, src/Rovhult.cpp: DND can be done with button 1
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  Can sort cards; DND can be done with button-1
+
+	* Common/CardPile.h: Made comp*-Methods public
+
+	* Common/CardWidget.cpp:
+	  Removed on_button_press_event; Emitting clicked-signal only when x/y are set
+
+	* Common/CardWidget.h: Removed save-values
+
 2005-02-27  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.10 commented
@@ -575,7 +747,7 @@
 	* src/MachiPile.cpp:
 	  Improved analyzePile; added checkIntegrity; fixed getPosition4Card
 
-src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
+2003-11-18  Markus Schwab  <g17m0@lycos.com>
 
 	* src/Buraco.cpp:
 	  Changed can't make a pile-message; Removed compiler warning
@@ -1289,7 +1461,7 @@ src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
 
 	* Common/CardWidget.h: Method getShownImage added
 
-	* Common/CardPile.cpp: 
+	* Common/CardPile.cpp:
 	  Resizing after removing last button; resize is not const anymore
 
 	* Common/CardPile.h: PseudoPiles (Piles displayed as buttons) added
@@ -1515,7 +1687,7 @@ src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
 
 2003-01-02  Markus Schwab  <g17m0@lycos.com>
 
-	* src/Twopart.cpp: 
+	* src/Twopart.cpp:
 	  Checks (for pos in number of cards) corrected; Empty for removed
 
 	* src/Hearts.h: Method check4Winner added
@@ -1622,7 +1794,8 @@ src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
 	* bin/Rovhult.h:
 	  Interface changes because of calculating of played position only once
 
-	* bin/Rovhult.cpp: - Fixed bug
+	* bin/Rovhult.cpp:
+	  - Fixed bug
 	  - Changed handling if user can't continue: Now picks up pile with delay (Bug 8)
 	  - Cards to play are only calculated once
 	  - If a 6 should be played and there's also a 7, play them instead
@@ -1741,7 +1914,7 @@ src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
 	  Games moved into single application and therefore into own subdir;
 	  Version to 0.2
 
-	* Makefile.am: 
+	* Makefile.am:
 	  Games moved into single application and therefore into own subdir
 
 	* bin/Twopart.cpp, bin/Twopart.h: First version with combined games
@@ -1750,8 +1923,8 @@ src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
 
 2002-09-09  Markus Schwab  <g17m0@lycos.com>
 
-	* ChangeLog: Changes in V0.1.03 documented
-	
+	* ChangeLog: Changes of V0.1.03 documented
+
 	* po/de.po, po/en.po, po/es.po: Actualized for V0.1.03
 
 	* po/POTFILES.in: DeckSelect added
@@ -1799,7 +1972,7 @@ src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
 	* Common/CardSet.cpp, Common/CardSet.h, Common/CardWidget.cpp, Common/CardWidget.h:
 	  Method to update (images) added
 
-	* Common/CardImgs.cpp, Common/CardImgs.h: 
+	* Common/CardImgs.cpp, Common/CardImgs.h:
 	  load-methods got flag if loaded in thread
 
 	* Twopart/Twopart.cpp: Passing path to cards for loading; Minor fixes
@@ -1807,12 +1980,12 @@ src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
 	* Common/Makefile.am:
 	  Subdirs Grafix removed (Decks are now in separate project)
 
-	* Common/CardPile.cpp, Common/CardPile.h: 
+	* Common/CardPile.cpp, Common/CardPile.h:
 	  resize gets position in list as parameter
 
 	* Common/CardImgs.h, Common/CardImgs.cpp: load gets path(s) as input
 
-	* Common/DeckSelect.cpp, Common/DeckSelect.h: 
+	* Common/DeckSelect.cpp, Common/DeckSelect.h:
 	  Shows available cards and backgrounds
 
 2002-09-04  Markus Schwab  <g17m0@lycos.com>
@@ -1834,7 +2007,7 @@ src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
 
 	* Common/CardPile.h: Fixed find and exists methods
 
-	* Twopart/Twopart.h: 
+	* Twopart/Twopart.h:
 	  New methods declared; startPartTwo starts computer player at once
 
 	* Twopart/Twopart.cpp: Fixed and improved computer player
@@ -1858,12 +2031,9 @@ src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
 
 2002-08-21  Markus Schwab  <g17m0@lycos.com>
 
-	* ChangeLog, NEWS: Changes up to V0.1.02 commented
-	
-	* po/de.po, po/en.po, po/es.po: Actualized for V0.1.02
+	* ChangeLog, NEWS: Changes of V0.1.02 commented
 
-	* Twopart/Twopart.cpp:
-	  Fixed restarting (status set top STOPPED; GPF caused by deleted trump)
+	* po/de.po, po/en.po, po/es.po: Actualized for V0.1.02
 
 	* po/POTFILES.in: Twopart.cpp added
 
@@ -1991,7 +2161,7 @@ src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
 	* Twopart/Twopart.cpp: Bit of game logic added
 
 	* Common/CardWidget.cpp, Common/CardWidget.h:
-	  Methods to seperately print color and numbers added
+	  Methods to separately print colour and numbers added
 
 2002-07-22  Markus Schwab  <g17m0@lycos.com>
 
@@ -2008,7 +2178,7 @@ src/2003-11-18  Markus Schwab  <g17m0@lycos.com>
 2002-07-20  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog: Actualized for V0.1.01
-	
+
 	* Rovhult/Rovhult.cpp:
 	  Computer player shows (invisble) card on pile if valid; Debug menu flexible
 
