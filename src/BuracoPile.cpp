@@ -271,10 +271,11 @@ void BuracoPile::analyzePile () {
    if (status.posLast > 6)
       status.posLast = status.posFirst;
 
-   if (status.posFirst != status.posLast)
-      status.type = ((operator[] (status.posFirst)->number ()
+   status.type = ((status.posFirst != status.posLast)
+		  ? ((operator[] (status.posFirst)->number ()
                       == operator[] (status.posLast)->number ())
-                     ? NUMBER : COLOUR);
+                     ? NUMBER : COLOUR)
+		  : UNDEFINED);
 
    TRACE9 ("BuracoPile::analyzePile () - " << status.posJoker << '/'
            << status.posFirst << '/' << status.posLast << ' '
