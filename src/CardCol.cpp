@@ -1,7 +1,7 @@
 //$Id$
 
 //PROJECT     : Cardgames
-//SUBSYSTEM   : src
+//SUBSYSTEM   : Application
 //REFERENCES  :
 //TODO        :
 //BUGS        :
