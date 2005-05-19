@@ -1,7 +1,7 @@
 //$Id$
 
 //PROJECT     : Cardgames
-//SUBSYSTEM   : MachiavelliPile
+//SUBSYSTEM   : Machiavelli
 //REFERENCES  :
 //TODO        :
 //BUGS        :
@@ -255,7 +255,7 @@ void MachiPile::checkIntegrity () throw (Glib::ustring) {
 ///     found!
 //----------------------------------------------------------------------------
 bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& match,
-                               unsigned int& nr) const {
+				unsigned int& nr) const {
    Check1 (pair.size () == 2);
    CardWidget *card (operator[] (0));
    int diff (cardDistance (*pair[1], *pair[0]));
@@ -268,7 +268,7 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
 
    if (diff < 0) {
       diff = -diff;
-      diffTable = -diffTable;
+      --diffTable;
    }
 
    nr = 1;
