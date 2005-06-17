@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.7.20, [g17m0@lycos.com], CardCol)
+AC_INIT(Cardgames, 0.7.21, [g17m0@lycos.com], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -91,9 +91,9 @@ AC_ARG_WITH(carddeck-dir,
             AC_HELP_STRING([--with-carddeck-dir=DIR], [Path to the carddecks]),
             [test -n "$withval" && CARDDECKS_DIR=$withval])
 
+AC_MSG_CHECKING(for KDE carddecks)
 dnl Try to find the KDE carddecks (if not specified)
-if test -n $CARDDECKS_DIR; then
-   AC_MSG_CHECKING(for KDE carddecks)
+if test -z $CARDDECKS_DIR; then
    if test -d "/opt/kde3/share/apps/carddecks"; then
       CARDDECKS_DIR="/opt/kde3/share/apps/carddecks"
    else
@@ -118,6 +118,12 @@ if test -n $CARDDECKS_DIR; then
    fi
 fi
 AC_MSG_RESULT($CARDDECKS_DIR)
+if test ! -d "$CARDDECKS_DIR"; then
+   AC_MSG_ERROR("Directory $CARDDECKS_DIR does not exist!")
+fi
+if test ! -d "$CARDDECKS_DIR/decks"; then
+   AC_MSG_ERROR("Directory $CARDDECKS_DIR does not seem to hold carddecks!!")
+fi
 
 AC_DEFINE_UNQUOTED(CARDDECKS_DIR, "$CARDDECKS_DIR",
                    [Directory holding the carddecks])
