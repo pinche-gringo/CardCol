@@ -56,10 +56,12 @@
 #include <PlayerDlg.h>
 #include <DeckSelect.h>
 
+
 #include "Hearts.h"
 #include "Buraco.h"
 #include "Rovhult.h"
 #include "Twopart.h"
+#include "ChatDlg.h"
 #include "Settings.h"
 #include "SgtMayor.h"
 #include "Machiavelli.h"
@@ -664,7 +666,7 @@ const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE)
      , options (opts), playerPos (0), oldGame (GameTypes::NONE), actGame (opts.type)
-     , restart (false), game (NULL) {
+     , restart (false), game (NULL), dlgChat (NULL) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
 
    setIconProgram (xpmGame);
@@ -680,6 +682,7 @@ CardgameCollection::CardgameCollection (Options& opts)
 #ifdef HAVE_LIBPTHREAD
 		     "    <separator/>"
 		     "    <menuitem action='Connect'/>"
+		     "    <menuitem action='Chat'/>"
 #endif
 		     "    <separator/>"
 		     "    <menuitem action='Quit'/>"
@@ -715,6 +718,10 @@ CardgameCollection::CardgameCollection (Options& opts)
 		   Gtk::AccelKey (_("<shft><ctl>C")),
 		   mem_fun (*this, &CardgameCollection::connect));
    apMenus[CONNECT]->set_sensitive (false);
+   grpAction->add (apMenus[CHAT] = Gtk::Action::create ("Chat", _("_Chat ...")),
+		   Gtk::AccelKey (_("<alt><ctl>C")),
+		   mem_fun (*this, &CardgameCollection::showChatDlg));
+   apMenus[CHAT]->set_sensitive (false);
 #endif
    grpAction->add (Gtk::Action::create ("Quit", Gtk::Stock::QUIT),
 		   mem_fun (*this, &CardgameCollection::exit));
@@ -1032,17 +1039,15 @@ void CardgameCollection::changeGame (int game) {
 /// Opens a dialog allowing to change the card decks
 //-----------------------------------------------------------------------------
 void CardgameCollection::showChangeDeckDlg () {
-   CarddeckSelectDlg<CardgameCollection>
-      ::create (*this, &CardgameCollection::changeDecks,
-		CARDDECKS_DIR, options.decks, options.back);
+   CarddeckSelectDlg<CardgameCollection>::create
+      (*this, &CardgameCollection::changeDecks, CARDDECKS_DIR, options.decks, options.back);
 }
 
 //-----------------------------------------------------------------------------
 /// Opens a dialog allowing to change the names of the players
 //-----------------------------------------------------------------------------
 void CardgameCollection::changeNames () {
-   PlayerDlg<CardgameCollection>
-      ::create (*this, &CardgameCollection::changePlayernames, aPlayer);
+   PlayerDlg<CardgameCollection>::create (*this, &CardgameCollection::changePlayernames, aPlayer);
 }
 
 //-----------------------------------------------------------------------------
@@ -1376,6 +1381,8 @@ void CardgameCollection::initCommunication () {
 						    (void*)i));
          aCommThreads[i]->allowCancelation ();
       }
+
+   apMenus[CHAT]->set_sensitive ();
 }
 
 //----------------------------------------------------------------------------
@@ -1489,6 +1496,10 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
       cmgr.getSocket ()->write ("Error=0\0");
       return -1U;
    }
+   else if (cmd == "Msg") {
+      Check2 (dlgChat);
+      dlgChat->addMessage (aPlayer[player]->getName (), Glib::locale_to_utf8 (param));
+   }
    else if (cmd == "Error") {
       if (param != "0") {
          cmd.clear ();
@@ -1595,6 +1606,51 @@ bool CardgameCollection::showMessage (const std::string msg) {
        (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
    dlg->show ();
    return false;
+}
+
+//-----------------------------------------------------------------------------
+/// Opens a dialog to chat with the connected persons
+//-----------------------------------------------------------------------------
+void CardgameCollection::showChatDlg () {
+   if (dlgChat)
+      ; // TODO: Activate existing dialog
+   else
+      dlgChat = ChatDlg::create (get_window ());
+
+   dlgChat->signalSend.connect (mem_fun (*this, &CardgameCollection::sendMessage));
+}
+
+//-----------------------------------------------------------------------------
+/// Sends the passes message to the partners
+/// \param msg: Message to send
+//-----------------------------------------------------------------------------
+void CardgameCollection::sendMessage (const Glib::ustring& msg) {
+   TRACE9 ("CardgameCollection::sendMessage (const Glib::ustring&) - " << msg);
+   Check2 (dlgChat);
+
+   try {
+      std::string sendString ("Msg=\"");
+      sendString += Glib::locale_from_utf8 (msg);
+      sendString += "\";User=\"";
+      sendString += aPlayer[0]->getName ();
+      sendString+= "\"\0";
+
+      if (cmgr.getMode () == YGP::ConnectionMgr::SERVER) {
+	 dlgChat->addMessage (aPlayer[0]->getName (), msg);
+
+	 for (std::vector<YGP::Socket*>::const_iterator i (cmgr.getClients ().begin ());
+	      i != cmgr.getClients ().end (); ++i) {
+	    Check (*i);
+	    (*i)->write (sendString);
+	 }
+      }
+      else {
+	 Check3 (cmgr.getSocket ());
+	 cmgr.getSocket ()->write (sendString);
+      }
+   }
+   catch (std::string& e) { }
+
 }
 #endif
 

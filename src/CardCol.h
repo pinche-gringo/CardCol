@@ -37,6 +37,7 @@
 
 class Game;
 class Options;
+class ChatDlg;
 class ICarddeckSelectDlg;
 
 
@@ -59,7 +60,7 @@ class CardgameCollection : public XGP::XApplication {
    // IDs for menus
    enum { NEW = 0, END,
 #ifdef HAVE_LIBPTHREAD
-	  CONNECT,
+	  CONNECT, CHAT,
 #endif
 	  ROVHULT, TWOPART, HEARTS, BURACO, MACHIAVELLI, SGTMAYOR, LAST };
    Glib::RefPtr<Gtk::Action> apMenus[LAST];
@@ -73,6 +74,7 @@ class CardgameCollection : public XGP::XApplication {
    void endGame ();
 #ifdef HAVE_LIBPTHREAD
    void connect ();
+   void showChatDlg ();
 #endif
    void exit ();
    void changeGame (int game);
@@ -105,6 +107,7 @@ class CardgameCollection : public XGP::XApplication {
    int handleGlobalMessage (unsigned int player, const std::string& msg) throw (std::string);
    bool handleMessage (unsigned int player, const std::string msg);
    bool showMessage (const std::string msg);
+   void sendMessage (const Glib::ustring& msg);
 #endif
 
    static const char* xpmGame[];
@@ -130,6 +133,7 @@ class CardgameCollection : public XGP::XApplication {
    unsigned int restart;
 
    Game* game;
+   ChatDlg* dlgChat;
 
    static const unsigned int WIDTH;
    static const unsigned int HEIGHT;
