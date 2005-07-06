@@ -1216,11 +1216,7 @@ void* CardgameCollection::changeCards (void* opt) {
       Glib::ustring msg ("Couldn't load the card images!\n\n"
                          "Reason: %1");
       msg.replace (msg.find ("%1"), 2, e);
-      Gtk::MessageDialog* dlg (new Gtk::MessageDialog (e, false, Gtk::MESSAGE_ERROR));
-      dlg->set_title (PACKAGE);
-      dlg->signal_response ().connect
-          (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
-      dlg->show ();
+      showMessage (msg);
 
       Check3 (apMenus[NEW]);
       apMenus[NEW]->set_sensitive (false);
@@ -1231,6 +1227,21 @@ void* CardgameCollection::changeCards (void* opt) {
 #endif
    }
    return NULL;
+}
+
+//----------------------------------------------------------------------------
+/// Shows an error from the communication thread
+/// \param msg: Received message to handle
+/// \returns bool: False
+/// \remarks msg wil be deleted at the end
+//----------------------------------------------------------------------------
+bool CardgameCollection::showMessage (const std::string msg) {
+   Gtk::MessageDialog* dlg (new Gtk::MessageDialog (msg, false, Gtk::MESSAGE_ERROR));
+   dlg->set_title (PACKAGE);
+   dlg->signal_response ().connect
+       (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
+   dlg->show ();
+   return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -1497,8 +1508,28 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
       return -1U;
    }
    else if (cmd == "Msg") {
-      Check2 (dlgChat);
-      dlgChat->addMessage (aPlayer[player]->getName (), Glib::locale_to_utf8 (param));
+      cmd.clear ();
+      param.clear ();
+
+      YGP::AttributeParse ap;
+      ATTRIBUTE (ap, std::string, cmd, "Msg");
+      ATTRIBUTE (ap, std::string, param, "Sender");
+
+      try {
+	 ap.assignValues (msg);
+      }
+      catch (std::string& e) {
+	 cmd = _("Invalid message received!");
+      }
+      if (cmd.size () && param.size ()) {
+	 showChatDlg ();
+	 dlgChat->addMessage (param, cmd);
+
+	 if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
+	    broadcastMsg (msg, player);
+
+	 return true;
+      }
    }
    else if (cmd == "Error") {
       if (param != "0") {
@@ -1522,12 +1553,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
                        : aPlayer[player]->getName ()));
          err.replace (err.find ("%2"), 2, param);
          err.replace (err.find ("%3"), 2, _(cmd.c_str ()));
-
-         Gtk::MessageDialog* dlg (new Gtk::MessageDialog (err, false, Gtk::MESSAGE_ERROR));
-         dlg->set_title (PACKAGE);
-         dlg->signal_response ().connect
-             (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
-         dlg->show ();
+	 showMessage (err);
       }
       return true;
    }
@@ -1561,29 +1587,12 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
       std::string msg ("Error=99;Msg=\"");
       msg += error;
       msg += "\"\0";
-      try {
-         if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
-            for (std::vector<YGP::Socket*>::const_iterator i (cmgr.getClients ().begin ());
-                 i != cmgr.getClients ().end (); ++i) {
-               Check (*i);
-               (*i)->write (msg);
-            }
-         else {
-            Check3 (cmgr.getSocket ());
-            cmgr.getSocket ()->write (msg);
-         }
-      }
-      catch (std::string& e) { }
+      broadcastMsg (msg);
 
       Glib::ustring message (_("Error processing command `%1'!\n\n%2"));
       message.replace (message.find ("%1"), 2, msg);
       message.replace (message.find ("%2"), 2, _(error.c_str ()));
-
-      Gtk::MessageDialog* dlg (new Gtk::MessageDialog (error, false, Gtk::MESSAGE_ERROR));
-      dlg->set_title (PACKAGE);
-      dlg->signal_response ().connect
-          (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
-      dlg->show ();
+      showMessage (message);
    }
 
    TRACE9 ("CardgameCollection::handleMessages (unsigned int, char*) - Unlock (main): " << int(unlock));
@@ -1593,31 +1602,16 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
    return false;
 }
 
-//----------------------------------------------------------------------------
-/// Shows an error from the communication thread
-/// \param msg: Received message to handle
-/// \returns bool: False
-/// \remarks msg wil be deleted at the end
-//----------------------------------------------------------------------------
-bool CardgameCollection::showMessage (const std::string msg) {
-   Gtk::MessageDialog* dlg (new Gtk::MessageDialog (msg, false, Gtk::MESSAGE_ERROR));
-   dlg->set_title (PACKAGE);
-   dlg->signal_response ().connect
-       (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
-   dlg->show ();
-   return false;
-}
-
 //-----------------------------------------------------------------------------
 /// Opens a dialog to chat with the connected persons
 //-----------------------------------------------------------------------------
 void CardgameCollection::showChatDlg () {
    if (dlgChat)
       ; // TODO: Activate existing dialog
-   else
+   else {
       dlgChat = ChatDlg::create (get_window ());
-
-   dlgChat->signalSend.connect (mem_fun (*this, &CardgameCollection::sendMessage));
+      dlgChat->signalSend.connect (mem_fun (*this, &CardgameCollection::sendMessage));
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -1628,29 +1622,41 @@ void CardgameCollection::sendMessage (const Glib::ustring& msg) {
    TRACE9 ("CardgameCollection::sendMessage (const Glib::ustring&) - " << msg);
    Check2 (dlgChat);
 
+   if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
+      dlgChat->addMessage (aPlayer[0]->getName (), msg);
+
+   std::string sendString ("Msg=\"");
+   sendString += Glib::locale_from_utf8 (msg);
+   sendString += "\";Sender=\"";
+   sendString += aPlayer[0]->getName ();
+   sendString+= "\"\0";
+
+   broadcastMsg (sendString);
+}
+
+//-----------------------------------------------------------------------------
+/// Broadcast a message to all partners
+/// \param msg: Message to broadcast
+/// \param exclude: Partner to exclude (-1: None
+//-----------------------------------------------------------------------------
+void CardgameCollection::broadcastMsg (const Glib::ustring& msg, unsigned int exclude) {
+   TRACE9 ("CardgameCollection::broadcastMsg (const Glib::ustring&, unsigned int) - " << msg);
    try {
-      std::string sendString ("Msg=\"");
-      sendString += Glib::locale_from_utf8 (msg);
-      sendString += "\";User=\"";
-      sendString += aPlayer[0]->getName ();
-      sendString+= "\"\0";
-
       if (cmgr.getMode () == YGP::ConnectionMgr::SERVER) {
-	 dlgChat->addMessage (aPlayer[0]->getName (), msg);
-
 	 for (std::vector<YGP::Socket*>::const_iterator i (cmgr.getClients ().begin ());
-	      i != cmgr.getClients ().end (); ++i) {
-	    Check (*i);
-	    (*i)->write (sendString);
-	 }
+	      i != cmgr.getClients ().end (); ++i)
+	    if (exclude != (unsigned int)(i - cmgr.getClients ().begin ())) {
+	       Check (*i);
+	       (*i)->write (msg);
+	    }
       }
       else {
 	 Check3 (cmgr.getSocket ());
-	 cmgr.getSocket ()->write (sendString);
+	 cmgr.getSocket ()->write (msg);
       }
    }
-   catch (std::string& e) { }
-
+   catch (std::string& e) {
+   }
 }
 #endif
 

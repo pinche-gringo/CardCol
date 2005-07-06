@@ -86,6 +86,7 @@ class CardgameCollection : public XGP::XApplication {
    void toggleDebug ();
 #endif
 
+   bool showMessage (const std::string msg);
    static void closeDialog (int, const Gtk::Dialog* dlg);
    virtual void gameEvents (unsigned int status);
    virtual void showAboutbox ();
@@ -106,8 +107,8 @@ class CardgameCollection : public XGP::XApplication {
    void* waitForMessages (void*);
    int handleGlobalMessage (unsigned int player, const std::string& msg) throw (std::string);
    bool handleMessage (unsigned int player, const std::string msg);
-   bool showMessage (const std::string msg);
    void sendMessage (const Glib::ustring& msg);
+   void broadcastMsg (const Glib::ustring& msg, unsigned int exclude = -1U);
 #endif
 
    static const char* xpmGame[];
