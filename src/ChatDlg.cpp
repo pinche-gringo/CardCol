@@ -32,8 +32,6 @@
 #include <gtkmm/button.h>
 #include <gtkmm/textview.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
@@ -59,7 +57,7 @@ ChatDlg::ChatDlg ()
    Check2 (get_action_area ());
    Gtk::Button& send (*manage (new Gtk::Button (_("_Send"), true)));
    get_action_area ()->pack_start (send, Gtk::PACK_SHRINK, 5);
-   send.can_default ();
+   send.set_flags (Gtk::CAN_DEFAULT);
    send.grab_default ();
    send.signal_clicked ().connect (mem_fun (*this, &ChatDlg::sendMessage));
 
