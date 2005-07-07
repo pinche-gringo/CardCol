@@ -6,7 +6,8 @@ CardCol_SOURCES=Twopart.cpp Rovhult.cpp Hearts.cpp Buraco.cpp Buraco.h \
 		Twopart.h Rovhult.h Hearts.h Options.h CardCol.h BuracoPile.cpp \
 		BuracoPile.h Machiavelli.cpp Machiavelli.h MachiPile.cpp \
 		MachiPile.h SgtMayor.cpp SgtMayor.h GameTypes.cpp GameTypes.h \
-		Settings.cpp Settings.h ChatDlg.cpp ChatDlg.h CardCol.cpp
+		Settings.cpp Settings.h ChatDlg.cpp ChatDlg.h CardColNet.cpp \
+		CardColAppl.cpp CardCol.cpp CardColAppl.h
 
 INCLUDES = @INCLUDES@ -I../Common @CARDGAME_CFLAGS@
 
