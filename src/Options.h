@@ -23,8 +23,6 @@
 
 #include <cardgames-cfg.h>
 
-#include <XGP/XApplication.h>
-
 #include "CardCol.h"
 
 #include <YGP/Entity.h>
