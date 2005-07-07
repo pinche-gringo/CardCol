@@ -26,7 +26,6 @@
 #include <YGP/Mutex.h>
 #include <YGP/Thread.h>
 #include <YGP/ConnMgr.h>
-#include <YGP/IVIOAppl.h>
 
 #include <CardSet.h>
 #include <CardPile.h>
@@ -34,14 +33,22 @@
 
 #include "GameTypes.h"
 
+#include <XGP/XApplication.h>
+
+
+namespace Gtk {
+   class Dialog;
+}
 
 class Game;
+class Player;
 class Options;
 class ChatDlg;
 class ICarddeckSelectDlg;
 
 
-// Class to handle the cardgame collection
+/**Class to handle the cardgame collection
+ */
 class CardgameCollection : public XGP::XApplication {
  public:
    // Manager functions
@@ -73,8 +80,16 @@ class CardgameCollection : public XGP::XApplication {
    void newGame ();
    void endGame ();
 #ifdef HAVE_LIBPTHREAD
+   void autoConnect (const Options& options);
    void connect ();
    void showChatDlg ();
+   bool stopClientWaiting ();
+   void initCommunication ();
+   void* waitForMessages (void*);
+   int handleGlobalMessage (unsigned int player, const std::string& msg) throw (std::string);
+   bool handleMessage (unsigned int player, const std::string msg);
+   void sendMessage (const Glib::ustring& msg);
+   void broadcastMsg (const Glib::ustring& msg, unsigned int exclude = -1U);
 #endif
    void exit ();
    void changeGame (int game);
@@ -102,15 +117,6 @@ class CardgameCollection : public XGP::XApplication {
    void changePlayernames ();
    void makePlayer ();
 
-#ifdef HAVE_LIBPTHREAD
-   void initCommunication ();
-   void* waitForMessages (void*);
-   int handleGlobalMessage (unsigned int player, const std::string& msg) throw (std::string);
-   bool handleMessage (unsigned int player, const std::string msg);
-   void sendMessage (const Glib::ustring& msg);
-   void broadcastMsg (const Glib::ustring& msg, unsigned int exclude = -1U);
-#endif
-
    static const char* xpmGame[];
    static const char* xpmAuthor[];
 
@@ -119,13 +125,15 @@ class CardgameCollection : public XGP::XApplication {
    CardImages cardFaces;
    CardSet cards;
 
+#ifdef HAVE_LIBPTHREAD
    typedef YGP::OThread<CardgameCollection> THRDAPPL;
    std::vector<THRDAPPL*> aCommThreads;
-
-   Options& options;
    YGP::Mutex mxThreadCmd;
    YGP::Mutex mxGuiCmd;
    YGP::ConnectionMgr cmgr;
+#endif
+
+   Options& options;
    std::vector<Player*> aPlayer;
 
    unsigned int playerPos;
