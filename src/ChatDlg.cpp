@@ -31,6 +31,7 @@
 #include <gtkmm/entry.h>
 #include <gtkmm/button.h>
 #include <gtkmm/textview.h>
+#include <gtkmm/scrolledwindow.h>
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -47,11 +48,17 @@ ChatDlg::ChatDlg ()
    TRACE9 ("ChatDlg::ChatDlg ()");
    set_title (_("Chat"));
 
+   Gtk::ScrolledWindow& scrlMsgs (*new Gtk::ScrolledWindow);
+   scrlMsgs.set_shadow_type (Gtk::SHADOW_ETCHED_IN);
+   scrlMsgs.add (*manage (tvMsgs));
+   scrlMsgs.set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+
    tvMsgs->set_editable (false);
+   tvMsgs->set_wrap_mode (Gtk::WRAP_WORD);
    tvMsgs->set_buffer (msgs);
 
    Check2 (get_vbox ());
-   get_vbox ()->pack_start (*manage (tvMsgs), Gtk::PACK_EXPAND_WIDGET, 5);
+   get_vbox ()->pack_start (*manage (&scrlMsgs), Gtk::PACK_EXPAND_WIDGET, 5);
    get_vbox ()->pack_start (*manage (txtMsg), Gtk::PACK_SHRINK, 5);
 
    Check2 (get_action_area ());
@@ -105,4 +112,8 @@ void ChatDlg::addMessage (const Glib::ustring& sender, const Glib::ustring& msg)
    msgs->insert (msgs->end (), _(": "));
    msgs->insert (msgs->end (), msg);
    msgs->insert (msgs->end (), "\n");
+
+   Gtk::TextIter i (msgs->end ());
+   tvMsgs->scroll_to (i, 0.0);
+   txtMsg->grab_focus ();
 }
