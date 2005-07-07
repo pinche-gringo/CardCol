@@ -27,7 +27,6 @@
 
 #include <cardgames-cfg.h>
 
-#include <cstdio>
 #include <cerrno>
 #include <cstdlib>
 
@@ -45,10 +44,8 @@
 #include <YGP/ANumeric.h>
 #include <YGP/Tokenize.h>
 #include <YGP/PathSrch.h>
-#include <YGP/AttrParse.h>
 
 #include <XGP/XAbout.h>
-#include <XGP/XAttribute.h>
 
 #include <Human.h>
 #include <ComputerPlayer.h>
@@ -61,7 +58,6 @@
 #include "Buraco.h"
 #include "Rovhult.h"
 #include "Twopart.h"
-#include "ChatDlg.h"
 #include "Settings.h"
 #include "SgtMayor.h"
 #include "Machiavelli.h"
@@ -69,20 +65,13 @@
 #include "Options.h"
 #include "Options.meta"
 
+#include "CardColAppl.h"
+
 #include "CardCol.h"
 
 
 const unsigned int CardgameCollection::WIDTH (760);
 const unsigned int CardgameCollection::HEIGHT (750);
-
-#ifdef HAVE_LIBPTHREAD
-#  include <YGP/Socket.h>
-#  include <PlayerConnDlg.h>
-
-#  define DEFPORT                31338
-#  define STRING(nr)             #nr
-static const unsigned int PORT (DEFPORT);
-#endif
 
 
 // Pixmap for program
@@ -599,66 +588,6 @@ static char * xpmJoker[] = {
 ".q..qnnnnnnnnnnnnn7nn7nnnnnnnn7nnnnn7nnn7nn7nn7nn7nn7nn7nnn7n7nn7nn9..qq"};
 
 
-// VIO-Application part of the Cardgames; cares about reading the INI-file and
-// processing the options
-class CardgameAppl : public YGP::IVIOApplication {
- public:
-   CardgameAppl (const int argc, const char* argv[])
-      : IVIOApplication (argc, argv, lo) { }
-   ~CardgameAppl () { }
-
-   static int convertToGameType (const char* pText);
-
- protected:
-   virtual void readINIFile (const char* pFile);
-   virtual bool handleOption (const char option);
-
-   // Program-handling
-   virtual bool        shallShowInfo () const { return false; }
-   virtual int         perform (int argc, const char* argv[]);
-   virtual const char* name () const { return PACKAGE_NAME; }
-   virtual const char* description () const {
-      static std::string version =
-         (PACKAGE " V" VERSION " - "
-          + std::string (_("Compiled on"))
-          + std::string (" " __DATE__ " - " __TIME__ "\n\n")
-          + std::string (_("Copyright (C) 2002 - 2005 Markus Schwab; e-mail: g17m0@lycos.com"
-                           "\nDistributed under the terms of the GNU General "
-                           "Public License")));
-      return version.c_str (); }
-
-   // Help-handling
-   virtual void showHelp () const;
-
- private:
-   // Prohobited manager functions
-   CardgameAppl ();
-   CardgameAppl (const CardgameAppl&);
-   const CardgameAppl& operator= (const CardgameAppl&);
-
-   Options options;
-
-   static const longOptions lo[];
-};
-
-const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {
-   { IVIOAPPL_HELP_OPTION },
-   { "game", 'g' },
-   { "browser", 'b' },
-   { "dir-help", 'd' },
-   { "file", 'f' },
-#ifdef HAVE_LIBPTHREAD
-   { "listen-at", 'l' },
-   { "connect-to", 'c' },
-#endif
-   { "version", 'V' },
-#ifdef SAVE_GAME
-   { "save-game", 'S' },
-   { "load-game", 'L' },
-#endif
-   { NULL, '\0' } };
-
-
 //-----------------------------------------------------------------------------
 /// Defaultconstructor; all widget are created
 /// \param opts: Options for the program
@@ -792,22 +721,8 @@ CardgameCollection::CardgameCollection (Options& opts)
        (bind_return (mem_fun (*this, &CardgameCollection::loadCards), false));
    makePlayer ();
 
-
 #ifdef HAVE_LIBPTHREAD
-   if (options.port.size ()) {
-      TRACE9 ("CardgameCollection::CardgameCollection (Options&) - Connect: "
-              << options.target << '-' << options.port);
-      if (options.target.size ())
-         playerPos = PlayerConnectDlg::perform (aPlayer, cmgr, options.target,
-                                                options.port);
-      else
-          playerPos = PlayerConnectDlg::perform (aPlayer, cmgr, options.port);
-
-      TRACE1 ("CardgameCollection::CardgameCollection (Options&) - "
-              << cmgr.getMode () << "; Pos: " << playerPos);
-      if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
-         initCommunication ();
-   }
+   autoConnect (options);
 #endif
 }
 
@@ -990,23 +905,8 @@ void CardgameCollection::newGame () {
       }
    }
    else {
-#ifdef HAVE_LIBPTHREAD
-      if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT) {
-	 Gtk::MessageDialog dlg (_("Stop waiting for the server to start the game and start a local one?"),
-				 false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-	 dlg.set_title (PACKAGE);
-	 if (dlg.run () == Gtk::RESPONSE_YES) {
-	    Check3 (aCommThreads.size () == 1);
-	    cmgr.changeMode (YGP::ConnectionMgr::NONE);
-	    aCommThreads[0]->cancel ();
-	    delete aCommThreads[0];
-	    aCommThreads.clear ();
-	 }
-	 else
-	    return;
-      }
-#endif
-      startGame ();
+      if (stopClientWaiting ())
+	 startGame ();
    }
 }
 
@@ -1360,306 +1260,6 @@ void CardgameCollection::gameEvents (unsigned int status) {
    }
 }
 
-#ifdef HAVE_LIBPTHREAD
-//-----------------------------------------------------------------------------
-/// Opens a dialog allowing to connect to other computers
-//-----------------------------------------------------------------------------
-void CardgameCollection::connect () {
-   playerPos = PlayerConnectDlg::perform (aPlayer, PORT, cmgr);
-   TRACE1 ("CardgameCollection::connect () - Mode: " << cmgr.getMode ()
-	   << "; Pos: " << playerPos);
-   if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
-      initCommunication ();
-}
-
-//-----------------------------------------------------------------------------
-/// Initializes the communication
-//-----------------------------------------------------------------------------
-void CardgameCollection::initCommunication () {
-   Check2 (cmgr.getMode () != YGP::ConnectionMgr::NONE);
-   Check2 (aCommThreads.empty ());
-
-   if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT) {
-      status.pop ();
-      status.push (_("Waiting for the server to start the game ..."));
-      aCommThreads.push_back (THRDAPPL::create2 (this, &CardgameCollection::waitForMessages,
-						 (void*)-1));
-      aCommThreads[0]->allowCancelation ();
-   }
-   else
-      for (unsigned int i (0); i < cmgr.getClients ().size (); ++i) {
-         aCommThreads.push_back (THRDAPPL::create2 (this, &CardgameCollection::waitForMessages,
-						    (void*)i));
-         aCommThreads[i]->allowCancelation ();
-      }
-
-   apMenus[CHAT]->set_sensitive ();
-}
-
-//----------------------------------------------------------------------------
-/// Wait for messages
-/// \param player: ID of player (-1 for server; 0 .. n for clients)
-/// \returns \c void*: NULL
-//----------------------------------------------------------------------------
-void* CardgameCollection::waitForMessages (void* thread) {
-   TRACE1 ("CardgameCollection::waitForMessage (void*)");
-   Check2 (cmgr.getMode () != YGP::ConnectionMgr::NONE);
-
-   int iPlayer ((int)((YGP::Thread*)thread)->getArgs ());
-   Check2 ((cmgr.getMode () == YGP::ConnectionMgr::CLIENT)
-           ? (iPlayer == -1) : (iPlayer < (int)cmgr.getClients ().size ()));
-
-   std::string input;
-   YGP::Socket* sock ((iPlayer == -1) ? cmgr.getSocket () : cmgr.getClients ()[iPlayer]);
-   Check3 ((iPlayer == -1) ? playerPos : true);
-   iPlayer = (iPlayer == -1) ? (aPlayer.size () - playerPos) : (iPlayer + 1);
-   unsigned int cont (true);
-   try {
-      while (cont) {
-         sock->read (input);
-
-         TRACE7 ("CardgameCollection::waitForMessage (void*) - `" << input << '\'');
-         if (input.empty ()) {
-            std::string msg (_("Lost connection to %1!"));
-            Check3 (static_cast<unsigned int>(iPlayer) < aPlayer.size ());
-            msg.replace (msg.find ("%1"), 2, aPlayer[iPlayer]->getName ());
-            cont = false;
-            throw msg;
-         }
-
-         YGP::Tokenize messages (input);
-         std::string message;
-         while ((message = messages.getNextNode ('\0')).size ()) {
-            TRACE9 ("CardgameCollection::waitForMessages (void*) - Lock (thread)");
-            mxThreadCmd.lock ();    // Wait til last message has been processed
-            TRACE9 ("CardgameCollection::waitForMessages (void*) - Perform cmd " << message);
-
-            Glib::signal_idle ().connect
-               (bind (mem_fun (*this, &CardgameCollection::handleMessage),
-                      iPlayer, message));
-            mxGuiCmd.lock ();
-            mxThreadCmd.unlock ();
-            mxGuiCmd.unlock ();
-            TRACE9 ("CardgameCollection::waitForMessages (void*) - Handled msg");
-         }
-      }
-   }
-   catch (std::string& error) {
-      std::string msg (_("Error receiving data!\n\nReason: %1"));
-      msg.replace (msg.find ("%1"), 2, error);
-
-      Glib::signal_idle ().connect
-          (bind (mem_fun (*this, &CardgameCollection::showMessage), msg));
-   }
-   catch (std::domain_error& error) {
-      std::string msg (_("Lost connection to %1!"));
-      Check3 (static_cast<unsigned int> (iPlayer) < aPlayer.size ());
-      msg.replace (msg.find ("%1"), 2, aPlayer[iPlayer]->getName ());
-      Glib::signal_idle ().connect
-          (bind (mem_fun (*this, &CardgameCollection::showMessage), msg));
-   }
-
-   aCommThreads.erase (find (aCommThreads.begin (), aCommThreads.end (), thread));
-   return NULL;
-}
-
-//----------------------------------------------------------------------------
-/// Handles received global messages: Those are:
-///   - Error messages (to display error messages):
-///      <pre>  <b>Error</b>=<tt>Number</tt>;<b>Msg</b>="<tt>message</tt>"</pre>
-///   - Game messages (to restart a game):
-///      <pre>  <b>Game</b>=<tt>Name</tt>;
-///   - ActPlayer messages (to set the next player; handled here to determine
-///       from where to read data from):
-///      <pre>  <b>ActPlayer</b>=<tt>player</tt>;
-/// \param player: Player sending the message
-/// \param msg: Received message to handle
-/// \returns int: True: Message was a supported message and has been processed;
-///     -1 if Message was handled, but not fully processed yet; else false
-//----------------------------------------------------------------------------
-int CardgameCollection::handleGlobalMessage (unsigned int player,
-                                             const std::string& msg) throw (std::string) {
-   TRACE5 ("CardgameCollection::handleGlobalMessage (unsigned int, char*) - " << msg);
-
-   YGP::Tokenize message (msg);
-   std::string cmd (message.getNextNode ('='));
-   std::string param (message.getNextNode (';'));
-   TRACE3 ("CardgameCollection::handleGlobalMessage (unsigned int, char*) - " << cmd);
-
-   if (cmd == "Game") {
-      int type (CardgameAppl::convertToGameType (param.c_str ()));
-      if (type == GameTypes::NONE) {
-         std::string msg (_("Invalid game type: `%1'"));
-         msg.replace (msg.find ("%1"), 2, param);
-         throw msg;
-      }
-
-      actGame = type;
-      if (game) {
-         restart = true;
-         if (restartGame ())
-            mxThreadCmd.unlock ();
-      }
-      else {
-          startGame ();
-          mxThreadCmd.unlock ();
-      }
-      cmgr.getSocket ()->write ("Error=0\0");
-      return -1U;
-   }
-   else if (cmd == "Msg") {
-      cmd.clear ();
-      param.clear ();
-
-      YGP::AttributeParse ap;
-      ATTRIBUTE (ap, std::string, cmd, "Msg");
-      ATTRIBUTE (ap, std::string, param, "Sender");
-
-      try {
-	 ap.assignValues (msg);
-      }
-      catch (std::string& e) {
-	 cmd = _("Invalid message received!");
-      }
-      if (cmd.size () && param.size ()) {
-	 showChatDlg ();
-	 dlgChat->addMessage (param, cmd);
-
-	 if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
-	    broadcastMsg (msg, player);
-
-	 return true;
-      }
-   }
-   else if (cmd == "Error") {
-      if (param != "0") {
-         cmd.clear ();
-         YGP::AttributeParse ap;
-         ATTRIBUTE (ap, std::string, cmd, "Msg");
-
-	 try {
-	    ap.assignValues (message.getNextNode ('\0').c_str ());
-	    if (cmd.empty ())
-	       cmd = static_cast<std::string> (_("Unspecified error"));
-	 }
-	 catch (std::string& e) {
-	    cmd = _("Invalid message received!");
-	 }
-
-         Glib::ustring err (_("%1 send error %2\n\n%3"));
-         err.replace (err.find ("%1"), 2,
-                      (cmgr.getMode () == YGP::ConnectionMgr::CLIENT
-                       ? _("The server")
-                       : aPlayer[player]->getName ()));
-         err.replace (err.find ("%2"), 2, param);
-         err.replace (err.find ("%3"), 2, _(cmd.c_str ()));
-	 showMessage (err);
-      }
-      return true;
-   }
-   return false;
-}
-
-//----------------------------------------------------------------------------
-/// Handles received messages
-/// \param player: Player sending the message (relative to server)
-/// \param msg: Received message to handle
-/// \returns bool: False
-//----------------------------------------------------------------------------
-bool CardgameCollection::handleMessage (unsigned int player, const std::string msg) {
-   TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - " << msg);
-
-   mxGuiCmd.unlock ();
-   mxThreadCmd.lock ();                             // Block message processing
-   mxGuiCmd.lock ();
-
-   bool unlock (true);
-   try {
-      int rc (handleGlobalMessage (player, msg));
-      if ((rc == -1)
-          || (!rc && (game && !game->ignoreMessage ()
-                      && !game->handleMessage (player, msg))))
-         unlock = false;
-   }
-   catch (std::string& error) {
-      TRACE9 ("CardgameCollection::handleMessage (unsigned int, const std::string)"
-              " - Error " << error);
-      std::string msg ("Error=99;Msg=\"");
-      msg += error;
-      msg += "\"\0";
-      broadcastMsg (msg);
-
-      Glib::ustring message (_("Error processing command `%1'!\n\n%2"));
-      message.replace (message.find ("%1"), 2, msg);
-      message.replace (message.find ("%2"), 2, _(error.c_str ()));
-      showMessage (message);
-   }
-
-   TRACE9 ("CardgameCollection::handleMessages (unsigned int, char*) - Unlock (main): " << int(unlock));
-   if (unlock)
-      mxThreadCmd.unlock ();
-
-   return false;
-}
-
-//-----------------------------------------------------------------------------
-/// Opens a dialog to chat with the connected persons
-//-----------------------------------------------------------------------------
-void CardgameCollection::showChatDlg () {
-   if (dlgChat)
-      ; // TODO: Activate existing dialog
-   else {
-      dlgChat = ChatDlg::create (get_window ());
-      dlgChat->signalSend.connect (mem_fun (*this, &CardgameCollection::sendMessage));
-   }
-}
-
-//-----------------------------------------------------------------------------
-/// Sends the passes message to the partners
-/// \param msg: Message to send
-//-----------------------------------------------------------------------------
-void CardgameCollection::sendMessage (const Glib::ustring& msg) {
-   TRACE9 ("CardgameCollection::sendMessage (const Glib::ustring&) - " << msg);
-   Check2 (dlgChat);
-
-   if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
-      dlgChat->addMessage (aPlayer[0]->getName (), msg);
-
-   std::string sendString ("Msg=\"");
-   sendString += Glib::locale_from_utf8 (msg);
-   sendString += "\";Sender=\"";
-   sendString += aPlayer[0]->getName ();
-   sendString+= "\"\0";
-
-   broadcastMsg (sendString);
-}
-
-//-----------------------------------------------------------------------------
-/// Broadcast a message to all partners
-/// \param msg: Message to broadcast
-/// \param exclude: Partner to exclude (-1: None
-//-----------------------------------------------------------------------------
-void CardgameCollection::broadcastMsg (const Glib::ustring& msg, unsigned int exclude) {
-   TRACE9 ("CardgameCollection::broadcastMsg (const Glib::ustring&, unsigned int) - " << msg);
-   try {
-      if (cmgr.getMode () == YGP::ConnectionMgr::SERVER) {
-	 for (std::vector<YGP::Socket*>::const_iterator i (cmgr.getClients ().begin ());
-	      i != cmgr.getClients ().end (); ++i)
-	    if (exclude != (unsigned int)(i - cmgr.getClients ().begin ())) {
-	       Check (*i);
-	       (*i)->write (msg);
-	    }
-      }
-      else {
-	 Check3 (cmgr.getSocket ());
-	 cmgr.getSocket ()->write (msg);
-      }
-   }
-   catch (std::string& e) {
-   }
-}
-#endif
-
 //----------------------------------------------------------------------------
 /// Starts the game and unlocks a (locked) msg-handling mutex
 //----------------------------------------------------------------------------
@@ -1668,260 +1268,4 @@ void CardgameCollection::doStartGame () {
 #ifdef HAVE_LIBPTHREAD
    mxThreadCmd.unlock ();
 #endif
-}
-
-//-----------------------------------------------------------------------------
-/// Displays the help
-//-----------------------------------------------------------------------------
-void CardgameAppl::showHelp () const {
-   std::cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
-             << _(" [OPTIONS]\n\n")
-      /* For translations: Write the Rovhult as o-slash */
-             << "  -g, --game ......... " << _("[GAME] Select game to start (default: Rovhult)\n")
-             << "  -f, --file ......... " << _("[FILE] Use file as INI file\n")
-             << "  -b, --browser ...... " << _("[NAME] Browser to use to display the help\n")
-             << "  -d, --dir-help ..... " << _("[DIR] Directory to search for help\n")
-#ifdef HAVE_LIBPTHREAD
-             << "  -l, --listen-at .... " << _("[PORT] Awaits connections on port PORT\n")
-             << "  -c, --connect-to ... " << _("[SERVER[:PORT]] Connects to SERVER:PORT\n")
-#endif
-#ifdef SAVE_GAME
-             << "  -S, --save-game .... " << _("[FILE] Saves game into FILE\n")
-             << "  -L, --load-game .... " << _("[FILE] Load game from FILE\n")
-#endif
-             << "  -V, --version ...... " << _("Output version information and exit\n")
-             << "  -h, -?, --help ..... " << _("Displays this help and exit\n\n")
-
-      /* For translations: Write one of the Rovhults with 'ø' */
-             << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts, Buraco,\n"
-                  "Machiavelli, SgtMayor, the numbers 0 - 5 (corresponding to the games\n"
-		  "in the above order) or the translation of the name (as displayed in the "
-		  "titlebar).\n\n")
-             << _("The INI file can have the following entries:\n\n")
-             <<  "  [Game]\n"
-                 "  Type=Twopart\n"
-                 "  Helpbrowser=galeon\n"
-                 "  Helpdir=/usr/share/doc/Cardgames/\n"
-                 "  CardFront=/usr/share/carddecks/cards-default\n"
-                 "  CardBack=/usr/share/carddecks/decks/deck1.png\n\n"
-                 "  [Player]\n"
-                 "  0=Human\n"
-                 "  1=Computer 1\n"
-                 "  2=Computer 2\n"
-                 "  3=Computer 3\n";
-}
-
-//-----------------------------------------------------------------------------
-/// Checks the validity of the passed option
-/// \param option: Actual option
-/// \returns \c bool: Status; false: Invalid option/option-value Require :
-///     option not '\0´'
-//-----------------------------------------------------------------------------
-bool CardgameAppl::handleOption (const char option) {
-   Check3 (option != '\0');
-
-   switch (option) {
-   case 'g': {
-      const char* game (getOptionValue ());
-      if (game) {
-         int type (convertToGameType (game));
-         if (type != GameTypes::NONE)
-            options.type = type;
-         else {
-            Glib::ustring err (_("-warning: Invalid game type `%1'"));
-            err.replace (err.find ("%1"), 2, game);
-            std::cerr << PACKAGE << err << '\n';
-         }
-      }
-      else
-         std::cerr << PACKAGE << _("-warning: No game specified! Ignoring option `g'\n");
-      break; }
-
-   case 'd': {
-      const char* pDir (getOptionValue ());
-      if (pDir)
-         options.helpPath = pDir;
-      else
-         std::cerr << PACKAGE << _("-warning: No directory specified! Ignoring option `d'\n");
-      break; }
-
-   case 'b': {
-      const char* pBrowser (getOptionValue ());
-      if (pBrowser)
-         options.browser = pBrowser;
-      else
-         std::cerr << PACKAGE << _("-warning: No browser specified! Ignoring option `b'\n");
-      break; }
-
-   case 'f': {
-      const char* pFile (getOptionValue ());
-      if (pFile)
-         readINIFile (pFile);
-      else
-         std::cerr << PACKAGE << _("-warning: No file specified! Ignoring option `f'\n");
-      break; }
-
-#ifdef HAVE_LIBPTHREAD
-   case 'l': {
-      const char* port (getOptionValue ());
-      if (port)
-         options.port = port;
-      else
-         std::cerr << PACKAGE << _("-warning: No port specified! Ignoring option `l'\n");
-      break; }
-
-   case 'c': {
-      const char* target (getOptionValue ());
-      if (target) {
-         char* port (strchr (target, ':'));
-         if (port) {
-            options.target.assign (target, port - target);
-            options.port = port + 1;
-         }
-         else {
-             options.target = target;
-             options.port = STRING (DEFPORT);
-         }
-      }
-      else
-         std::cerr << PACKAGE << _("-warning: No target specified! Ignoring option `c'\n");
-      break; }
-#endif
-
-   case 'V':
-      std::cout << description () << '\n';
-      exit (0);
-      break;
-
-#ifdef SAVE_GAME
-   case 'L':
-   case 'S':
-      const char* file (getOptionValue ());
-      if (file) {
-         if (options.gameFile.size ()) {
-            std::string info (_("-warning: Option `%1' has already been specified!"
-                                "\nOverwriting old setting\n"));
-            info.replace (info.find ("%1"), 2, 1, (options.load ? 'L' : 'S'));
-            std::cerr << PACKAGE  << info;
-         }
-
-         options.gameFile = file;
-         options.load = (option == 'L');
-      }
-      else {
-         std::string info (_("-warning: No file specified! Ignoring option `%1'\n"));
-         info.replace (info.find ("%1"), 2, 1, option);
-         std::cerr << PACKAGE << info;
-      }
-      break;
-#endif
-
-   default:
-      return false;
-   }
-
-   return true;
-}
-
-//-----------------------------------------------------------------------------
-/// Converts a text to a game type
-/// \param pText: Text to convert
-/// \returns \c Type of game as understood by the CardgameCollection
-//-----------------------------------------------------------------------------
-int CardgameAppl::convertToGameType (const char* pText) {
-   TRACE9 ("CardgameAppl::convertToGameType (const char*) - " << pText);
-
-   if (!strcmp (pText, "Rovhult"))
-      return GameTypes::ROVHULT;
-
-   GameTypes types;
-   try {
-      return types[_(pText)];
-   }
-   catch (std::out_of_range&) {
-      try {
-	 YGP::ANumeric value (pText);
-	 if (types.exists (value))
-	    return (int)value;
-      }
-      catch (std::invalid_argument&) { }
-   }
-   return GameTypes::NONE;
-}
-
-//-----------------------------------------------------------------------------
-/// Reads the options of the INI-file
-/// \param pFile: Pointer to filename
-/// \pre pFile not NULL
-//-----------------------------------------------------------------------------
-void CardgameAppl::readINIFile (const char* pFile) {
-   TRACE5 ("CardgameAppl::readINIFile (const char*) - " << pFile);
-   Check3 (pFile);
-
-   if (options.names.empty ()) {
-      options.names.push_back (_("Human"));
-      options.names.push_back (_("Player 1"));
-      options.names.push_back (_("Player 2"));
-      options.names.push_back (_("Player 3"));
-      options.pNameINIFile = pFile;
-   }
-
-   try {
-      INIFILE (pFile);
-      INIOBJ (options, Game);
-      INILIST2 (Player, Glib::ustring, options.names);
-
-      INISECTION (Buraco);
-      INIATTR2 (Buraco, unsigned int, Buraco::ENDPOINTS, EndPoints);
-
-      INIFILE_READ ();
-   }
-   catch (std::string& error) {
-      Glib::ustring err ("-warning: Error reading INI-file `%1'");
-      err.replace (err.find ("%1"), 2, pFile);
-      std::cerr << PACKAGE << err << '\n';
-   }
-
-   int type (convertToGameType (options.strType.c_str ()));
-   if (type != GameTypes::NONE)
-      options.type = type;
-   else {
-      Glib::ustring err ("-warning: INI-file `%1' contains invalid game type `%2'");
-      err.replace (err.find ("%1"), 2, pFile);
-      err.replace (err.find ("%2"), 2, options.strType);
-      std::cerr << PACKAGE << err << '\n';
-   }
-}
-
-//-----------------------------------------------------------------------------
-/// Performs the job of the applications
-/// \param int: Number of parameters (without options)
-/// \param const char*: Array with pointer to arguments
-/// \returns \c int: Status
-//-----------------------------------------------------------------------------
-int CardgameAppl::perform (int, const char**) {
-   TRACE5 ("CardgameAppl::perform (int, const char**) - Params: " << args);
-   srand (time (NULL));              // Initialize the random number generator
-
-   CardgameCollection win (options);
-   Gtk::Main::run (win);
-   return 0;
-}
-
-
-//-----------------------------------------------------------------------------
-/// Entrypoint of application
-/// \param argc: Number of parameters
-/// \param argv: Array with pointer to parameter
-/// \returns \c int: Status
-//-----------------------------------------------------------------------------
-int main (int argc, const char* argv[]) {
-   YGP::IVIOApplication::initI18n (PACKAGE, LOCALEDIR);
-#ifdef HAVE_LIBPTHREAD
-   Glib::thread_init ();
-#endif
-
-   Gtk::Main gtk (&argc, const_cast<char***> (&argv));
-   CardgameAppl appl (argc, argv);
-   return appl.run ();
 }
