@@ -41,6 +41,7 @@
 #include <Game.h>
 #include <Player.h>
 #include <PlayerConnDlg.h>
+#include <ComputerPlayer.h>
 
 #include "ChatDlg.h"
 
@@ -66,9 +67,9 @@ bool CardgameCollection::stopClientWaiting () {
 	 aCommThreads.clear ();
       }
       else
-	 return true;
+	 return false;
    }
-   return false;
+   return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -80,6 +81,8 @@ void CardgameCollection::connect () {
 	   << "; Pos: " << playerPos);
    if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
       initCommunication ();
+   else
+      apMenus[CHAT]->set_sensitive (false);
 }
 
 //-----------------------------------------------------------------------------
@@ -96,12 +99,15 @@ void CardgameCollection::initCommunication () {
 						 (void*)-1));
       aCommThreads[0]->allowCancelation ();
    }
-   else
+   else {
+      broadcastNames ();
+
       for (unsigned int i (0); i < cmgr.getClients ().size (); ++i) {
          aCommThreads.push_back (THRDAPPL::create2 (this, &CardgameCollection::waitForMessages,
 						    (void*)i));
          aCommThreads[i]->allowCancelation ();
       }
+   }
 
    apMenus[CHAT]->set_sensitive ();
 }
@@ -169,7 +175,31 @@ void* CardgameCollection::waitForMessages (void* thread) {
           (bind (mem_fun (*this, &CardgameCollection::showMessage), msg));
    }
 
+   // The server must change the disconnected remote to a computer controled player
+   if (cmgr.getMode () == YGP::ConnectionMgr::SERVER) {
+      TRACE7 ("CardgameCollection::waitForMessages (void*) - Removing " << aPlayer[iPlayer]->getName ());
+      Player* oldPlayer (aPlayer[iPlayer]); Check3 (oldPlayer);
+      aPlayer[iPlayer] = new ComputerPlayer (oldPlayer->getName ());
+      delete oldPlayer;
+   }
+   // while the client changes all remote to computer controled player
+   else {
+      std::vector<Player*>::iterator i (aPlayer.begin ()); Check3 (i != aPlayer.end ());
+      for (++i; i != aPlayer.end (); ++i) {
+	 Player* oldPlayer (*i); Check3 (oldPlayer);
+	 *i = new ComputerPlayer (oldPlayer->getName ());
+	 delete oldPlayer;
+      }
+   }
+   cmgr.disconnect (sock);
+
    aCommThreads.erase (find (aCommThreads.begin (), aCommThreads.end (), thread));
+   if (aCommThreads.empty ()) {
+      apMenus[CHAT]->set_sensitive (false);
+      cmgr.changeMode (YGP::ConnectionMgr::NONE);
+   }
+
+   TRACE7 ("CardgameCollection::waitForMessages (void*) - Finished");
    return NULL;
 }
 
@@ -239,6 +269,22 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
 	    broadcastMsg (msg, player);
 
 	 return true;
+      }
+   }
+   else if (cmd == "ChgNames") {
+      if (cmgr.getMode () == YGP::ConnectionMgr::SERVER) {
+	 aPlayer[player]->setName (param);
+	 broadcastNames ();
+      }
+      else {
+	 unsigned int pos (-playerPos);
+	 YGP::Tokenize split (param);
+	 while (split.getNextNode ('\n').size ()) {
+	    TRACE9 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int)"
+		    "- Setting " << split.getActNode ());
+
+	    aPlayer[pos++ % aPlayer.size ()]->setName (split.getActNode ());
+	 }
       }
    }
    else if (cmd == "Error") {
@@ -317,9 +363,10 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
 //-----------------------------------------------------------------------------
 void CardgameCollection::showChatDlg () {
    if (dlgChat)
-      ; // TODO: Activate existing dialog
+      dlgChat->present ();
    else {
       dlgChat = ChatDlg::create (get_window ());
+      dlgChat->signal_response ().connect (mem_fun (*this, &CardgameCollection::closeChat));
       dlgChat->signalSend.connect (mem_fun (*this, &CardgameCollection::sendMessage));
    }
 }
@@ -336,7 +383,7 @@ void CardgameCollection::sendMessage (const Glib::ustring& msg) {
       dlgChat->addMessage (aPlayer[0]->getName (), msg);
 
    std::string sendString ("Msg=\"");
-   sendString += Glib::locale_from_utf8 (msg);
+   sendString += msg;
    sendString += "\";Sender=\"";
    sendString += aPlayer[0]->getName ();
    sendString+= "\"\0";
@@ -349,7 +396,7 @@ void CardgameCollection::sendMessage (const Glib::ustring& msg) {
 /// \param msg: Message to broadcast
 /// \param exclude: Partner to exclude (-1: None
 //-----------------------------------------------------------------------------
-void CardgameCollection::broadcastMsg (const Glib::ustring& msg, unsigned int exclude) {
+void CardgameCollection::broadcastMsg (const std::string& msg, unsigned int exclude) {
    TRACE9 ("CardgameCollection::broadcastMsg (const Glib::ustring&, unsigned int) - " << msg);
    try {
       if (cmgr.getMode () == YGP::ConnectionMgr::SERVER) {
@@ -388,6 +435,44 @@ void CardgameCollection::autoConnect (const Options& options) {
       if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
          initCommunication ();
    }
+}
+
+//-----------------------------------------------------------------------------
+/// Resets the dlgChat-member
+//-----------------------------------------------------------------------------
+void CardgameCollection::closeChat (int) {
+   TRACE9 ("CardgameCollection::closeChat (int)");
+   dlgChat = NULL;
+}
+
+//-----------------------------------------------------------------------------
+/// Removes the threads for communication
+//-----------------------------------------------------------------------------
+void CardgameCollection::removeCommThreads () {
+   for (std::vector<THRDAPPL*>::iterator i (aCommThreads.begin ());
+        i != aCommThreads.end (); ++i) {
+       (*i)->cancel ();
+       delete *i;
+   }
+   aCommThreads.clear ();
+}
+
+//-----------------------------------------------------------------------------
+/// Informs the partners about the names of the players
+//-----------------------------------------------------------------------------
+void CardgameCollection::broadcastNames () {
+   TRACE9 ("CardgameCollection::broadcastNames ()");
+   Check2 (cmgr.getMode () != YGP::ConnectionMgr::NONE);
+
+   std::string msg ("ChgNames=");
+   if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
+      for (std::vector<Player*>::iterator i (aPlayer.begin ());
+	   i != aPlayer.end (); ++i)
+	 msg += (*i)->getName () + std::string (1, '\n');
+   else
+      msg += aPlayer[0]->getName ();
+
+   broadcastMsg (msg);
 }
 
 #endif
