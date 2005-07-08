@@ -58,7 +58,7 @@ class CardgameCollection : public XGP::XApplication {
    Gtk::Box& getClient () { return *XGP::XApplication::getClient (); }
    Gtk::Statusbar& getStatusbar () { return status; }
    CardSet& getCards () { return cards; }
-   const std::vector<Player*>& getPlayer () const;
+   const std::vector<Player*>& getPlayer () const { return aPlayer; }
    YGP::ConnectionMgr& getConnectionMgr () { return cmgr; };
    YGP::Mutex& getClientMutex () { return mxThreadCmd; }
    const unsigned int getPlayerPosition () const { return playerPos; }
@@ -83,13 +83,16 @@ class CardgameCollection : public XGP::XApplication {
    void autoConnect (const Options& options);
    void connect ();
    void showChatDlg ();
+   void closeChat (int);
    bool stopClientWaiting ();
+   void removeCommThreads ();
    void initCommunication ();
    void* waitForMessages (void*);
    int handleGlobalMessage (unsigned int player, const std::string& msg) throw (std::string);
    bool handleMessage (unsigned int player, const std::string msg);
    void sendMessage (const Glib::ustring& msg);
-   void broadcastMsg (const Glib::ustring& msg, unsigned int exclude = -1U);
+   void broadcastMsg (const std::string& msg, unsigned int exclude = -1U);
+   void broadcastNames ();
 #endif
    void exit ();
    void changeGame (int game);
@@ -131,18 +134,18 @@ class CardgameCollection : public XGP::XApplication {
    YGP::Mutex mxThreadCmd;
    YGP::Mutex mxGuiCmd;
    YGP::ConnectionMgr cmgr;
+   unsigned int playerPos;
+
+   ChatDlg* dlgChat;
 #endif
 
    Options& options;
    std::vector<Player*> aPlayer;
 
-   unsigned int playerPos;
-
    int oldGame, actGame;
    unsigned int restart;
 
    Game* game;
-   ChatDlg* dlgChat;
 
    static const unsigned int WIDTH;
    static const unsigned int HEIGHT;
