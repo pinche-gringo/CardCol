@@ -57,6 +57,8 @@ ChatDlg::ChatDlg ()
    tvMsgs->set_wrap_mode (Gtk::WRAP_WORD);
    tvMsgs->set_buffer (msgs);
 
+   txtMsg->set_activates_default ();
+
    Check2 (get_vbox ());
    get_vbox ()->pack_start (*manage (&scrlMsgs), Gtk::PACK_EXPAND_WIDGET, 5);
    get_vbox ()->pack_start (*manage (txtMsg), Gtk::PACK_SHRINK, 5);
