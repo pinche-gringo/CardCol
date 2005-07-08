@@ -594,8 +594,12 @@ static char * xpmJoker[] = {
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE)
-     , options (opts), playerPos (0), oldGame (GameTypes::NONE), actGame (opts.type)
-     , restart (false), game (NULL), dlgChat (NULL) {
+#ifdef HAVE_LIBPTHREAD
+     , playerPos (0) , dlgChat (NULL)
+#endif
+     , options (opts)
+     , oldGame (GameTypes::NONE), actGame (opts.type)
+     , restart (false), game (NULL) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
 
    setIconProgram (xpmGame);
@@ -753,12 +757,7 @@ CardgameCollection::~CardgameCollection () {
       delete *i;
 
 #ifdef HAVE_LIBPTHREAD
-   for (std::vector<THRDAPPL*>::iterator i (aCommThreads.begin ());
-        i != aCommThreads.end (); ++i) {
-       (*i)->cancel ();
-       delete *i;
-   }
-   aCommThreads.clear ();
+   removeCommThreads ();
 #endif
 }
 
@@ -877,15 +876,6 @@ void CardgameCollection::startGame () {
    }
    else
       game->setGameStatus (Game::NONE);
-}
-
-//-----------------------------------------------------------------------------
-/// Returns the player
-/// \returns \c The player
-/// \remarks Can't be inline because of cyclic dependencies to Options
-//-----------------------------------------------------------------------------
-const std::vector<Player*>& CardgameCollection::getPlayer () const {
-   return aPlayer;
 }
 
 //-----------------------------------------------------------------------------
@@ -1061,6 +1051,10 @@ void CardgameCollection::showAboutbox () {
 //-----------------------------------------------------------------------------
 void CardgameCollection::changePlayernames () {
    TRACE2 ("CardgameCollection::changePlayernames");
+#ifdef HAVE_LIBPTHREAD
+   broadcastNames ();
+#endif
+
    if (game)
       game->changeNames (aPlayer);
 }
