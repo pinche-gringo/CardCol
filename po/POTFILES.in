@@ -12,6 +12,8 @@ Common/Game.cpp
 Common/PlayerDlg.cpp
 Common/PlayerConnDlg.cpp
 src/CardCol.cpp
+src/CardColNet.cpp
+src/CardColAppl.cpp
 src/Hearts.cpp
 Common/ScoreDlg.cpp
 src/Buraco.cpp
@@ -20,3 +22,4 @@ src/MachiPile.cpp
 src/SgtMayor.cpp
 src/Settings.cpp
 src/GameTypes.cpp
+XGP/ChatDlg.cpp
