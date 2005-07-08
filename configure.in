@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.7.21, [g17m0@lycos.com], CardCol)
+AC_INIT(Cardgames, 0.7.30, [g17m0@lycos.com], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -52,7 +52,7 @@ if test $ac_cv_lib_pthread_main = no; then
 fi
 
 PKG_CHECK_MODULES(CARDGAME, gtkmm-2.4 >= 2.4.0 gthread-2.0 > 2.2.0
-                  YGP >= 0.6.40 XGP >= 0.7.20)
+                  YGP >= 0.7.21 XGP >= 0.7.20)
 AC_SUBST(CARDGAME_CFLAGS)
 AC_SUBST(CARDGAME_LIBS)
 
@@ -110,7 +110,7 @@ if test -z $CARDDECKS_DIR; then
                   CARDDECKS_DIR="/usr/share/apps/carddecks"
                else
                   CARDDECKS_DIR="/opt/kde3/share/apps/carddecks"
-                  AC_MSG_WARN(using default)
+                  AC_MSG_NOTICE(using default)
                fi
             fi
          fi
