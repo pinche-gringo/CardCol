@@ -1,3 +1,71 @@
+2005-07-14  g17m0@lycos.com  <markus@markus>
+
+	* ChangeLog, NEWS: Changes of V0.7.30 docommented
+
+	* po/de.po, po/en.po, po/es.po: Added messages from ChatDlg
+
+	* po/POTFILES.in: Fixed location of ChatDlg
+
+	* src/CardColNet.cpp: Disable chat, if client stops waiting for server
+
+	* src/CardColAppl.cpp, src/CardColAppl.h:
+	  Moved description() from header to source
+
+	* src/CardColAppl.cpp: Fixed comment, so gettext does not complain
+
+	* src/CardColNet.cpp:
+	  Fixed transmitting received chat-messages (for more than 2 players
+
+2005-07-08  g17m0@lycos.com  <markus@markus>
+
+	* doc/CardCol.shtml.en, doc/index.shtml: Fixes
+
+	* po/POTFILES.in: Added new CardCol-splits and ChatDlg
+
+	* configure.in: Needing libYGP 0.7.21
+
+	* src/CardCol.h:
+	  Added new prototypes; network-needed variables are defined conditionally
+
+	* src/CardCol.cpp: Changing names is transmitted to the clients
+
+	* src/ChatDlg.cpp: Enter in the msg-line sends message
+
+	* src/CardColNet.cpp:
+	  Changing names is send to clients; Disconnecting doesn't end game
+
+2005-07-07  g17m0@lycos.com  <markus@markus>
+
+	* src/ChatDlg.cpp: Added scrollbars and word-wrap
+
+	* src/Options.h: Removed including XApplication.h
+
+	* src/Makefile.am: Splitted CardCol.cpp in various parts
+
+	* src/CardCol.h: Conditionally defining communication-things
+
+	* src/CardCol.cpp: Removed net- and console-parts to own files
+
+	* src/CardColAppl.cpp, src/CardColAppl.h, src/CardColNet.cpp: New file.
+
+2005-07-06  g17m0@lycos.com  <markus@markus>
+
+	* src/CardCol.cpp, src/CardCol.h: Finished chat; Cleanup
+
+	* src/ChatDlg.cpp: Setting send as default-button
+
+2005-07-04  g17m0@lycos.com  <markus@markus>
+
+	* src/Makefile.am: Added ChatDlg
+
+	* src/CardCol.h, src/CardCol.cpp: First draft with ChatDlg
+
+	* src/ChatDlg.h, src/ChatDlg.cpp: New file.
+
+2005-06-17  g17m0@lycos.com  <markus@markus>
+
+	* configure.in: Fixed setting carddeck directory; Version to 0.7.21
+
 2005-05-19  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.20 docommented

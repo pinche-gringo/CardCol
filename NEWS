@@ -1,8 +1,15 @@
+Overview of changes in version 0.7.30:
+
+  - Added a dialog to chat/communicate with others
+  - Fixed configure-option --with-carddeck-dir
+  - Improved playing via network
+
+
 Overview of changes in version 0.7.20:
 
   - Added network ability to Sgt. Mayor
   - Improved Sgt. Mayor's computer player
-  - Added settings dialogue
+  - Added settings dialog
   - Drag and drop can be done with button 1
   - Machiavelli can sort the cards in the hand
   - Buraco shows now the jokers, when taking the Buraco
