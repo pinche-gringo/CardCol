@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.6 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2005-07-14 18:47-0400\n"
+"POT-Creation-Date: 2005-07-14 19:13-0400\n"
 "PO-Revision-Date: 2005-05-13 12:08-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -372,45 +372,45 @@ msgstr ""
 msgid "Stop waiting for the server to start the game and start a local one?"
 msgstr ""
 
-#: src/CardColNet.cpp:97
+#: src/CardColNet.cpp:99
 msgid "Waiting for the server to start the game ..."
 msgstr ""
 
-#: src/CardColNet.cpp:139 src/CardColNet.cpp:171
+#: src/CardColNet.cpp:141 src/CardColNet.cpp:173
 msgid "Lost connection to %1!"
 msgstr ""
 
-#: src/CardColNet.cpp:164
+#: src/CardColNet.cpp:166
 msgid ""
 "Error receiving data!\n"
 "\n"
 "Reason: %1"
 msgstr ""
 
-#: src/CardColNet.cpp:233
+#: src/CardColNet.cpp:235
 msgid "Invalid game type: `%1'"
 msgstr ""
 
-#: src/CardColNet.cpp:263 src/CardColNet.cpp:302
+#: src/CardColNet.cpp:265 src/CardColNet.cpp:304
 msgid "Invalid message received!"
 msgstr ""
 
-#: src/CardColNet.cpp:299
+#: src/CardColNet.cpp:301
 msgid "Unspecified error"
 msgstr ""
 
-#: src/CardColNet.cpp:305
+#: src/CardColNet.cpp:307
 msgid ""
 "%1 send error %2\n"
 "\n"
 "%3"
 msgstr ""
 
-#: src/CardColNet.cpp:308
+#: src/CardColNet.cpp:310
 msgid "The server"
 msgstr ""
 
-#: src/CardColNet.cpp:348
+#: src/CardColNet.cpp:350
 msgid ""
 "Error processing command `%1'!\n"
 "\n"
@@ -550,15 +550,12 @@ msgid "Compiled on"
 msgstr ""
 
 #: src/CardColAppl.cpp:313
-#, fuzzy
 msgid ""
 "Copyright (C) 2002 - 2005 Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
 msgstr ""
-"Copyright © 2002 - 2005 Markus Schwab\n"
-"e-mail: g17m0@lycos.com\n"
-"\n"
-"Compiled on %1 at %2"
+"Copyright © 2002 - 2005 Markus Schwab; e-mail: g17m0@lycos.com\n"
+"Distributed under the terms of the GNU General Public License"
 
 #: src/Hearts.cpp:188
 msgid "Select 3 cards to exchange with %1"
