@@ -209,9 +209,10 @@ void* CardgameCollection::waitForMessages (void* thread) {
 ///      <pre>  <b>Error</b>=<tt>Number</tt>;<b>Msg</b>="<tt>message</tt>"</pre>
 ///   - Game messages (to restart a game):
 ///      <pre>  <b>Game</b>=<tt>Name</tt>;
-///   - ActPlayer messages (to set the next player; handled here to determine
-///       from where to read data from):
-///      <pre>  <b>ActPlayer</b>=<tt>player</tt>;
+///   - Chat messages (to communicate with other):
+///      <pre>  <b>Msg</b>=<tt>message</tt>;<b>Sender</b>=<tt>who</tt>;
+///   - Name messages (to change the name of the players):
+///      <pre>  <b>ChgNames</b>=<tt>lines-with-names</tt>;
 /// \param player: Player sending the message
 /// \param msg: Received message to handle
 /// \returns int: True: Message was a supported message and has been processed;
@@ -266,8 +267,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
 	 dlgChat->addMessage (param, cmd);
 
 	 if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
-	    broadcastMsg (msg, player);
-
+	    broadcastMsg (msg, player - 1);
 	 return true;
       }
    }
@@ -379,8 +379,7 @@ void CardgameCollection::sendMessage (const Glib::ustring& msg) {
    TRACE9 ("CardgameCollection::sendMessage (const Glib::ustring&) - " << msg);
    Check2 (dlgChat);
 
-   if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
-      dlgChat->addMessage (aPlayer[0]->getName (), msg);
+   dlgChat->addMessage (aPlayer[0]->getName (), msg);
 
    std::string sendString ("Msg=\"");
    sendString += msg;
@@ -394,10 +393,10 @@ void CardgameCollection::sendMessage (const Glib::ustring& msg) {
 //-----------------------------------------------------------------------------
 /// Broadcast a message to all partners
 /// \param msg: Message to broadcast
-/// \param exclude: Partner to exclude (-1: None
+/// \param exclude: Partner to exclude (Zero-based; -1: None)
 //-----------------------------------------------------------------------------
 void CardgameCollection::broadcastMsg (const std::string& msg, unsigned int exclude) {
-   TRACE9 ("CardgameCollection::broadcastMsg (const Glib::ustring&, unsigned int) - " << msg);
+   TRACE9 ("CardgameCollection::broadcastMsg (const Glib::ustring&, unsigned int) - " << msg << "; Exclude: " << exclude);
    try {
       if (cmgr.getMode () == YGP::ConnectionMgr::SERVER) {
 	 for (std::vector<YGP::Socket*>::const_iterator i (cmgr.getClients ().begin ());
