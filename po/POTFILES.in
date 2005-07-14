@@ -22,4 +22,4 @@ src/MachiPile.cpp
 src/SgtMayor.cpp
 src/Settings.cpp
 src/GameTypes.cpp
-XGP/ChatDlg.cpp
+src/ChatDlg.cpp
