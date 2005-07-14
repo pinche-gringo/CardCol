@@ -86,7 +86,7 @@ void CardgameAppl::showHelp () const {
              << "  -V, --version ...... " << _("Output version information and exit\n")
              << "  -h, -?, --help ..... " << _("Displays this help and exit\n\n")
 
-      /* For translations: Write one of the Rovhults with 'ø' */
+      /* For translations: Write one of the Rovhults as an O with slash */
              << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts, Buraco,\n"
                   "Machiavelli, SgtMayor, the numbers 0 - 5 (corresponding to the games\n"
 		  "in the above order) or the translation of the name (as displayed in the "
