@@ -302,6 +302,20 @@ int CardgameAppl::perform (int, const char**) {
    return 0;
 }
 
+//-----------------------------------------------------------------------------
+/// Shows a description of the program
+//-----------------------------------------------------------------------------
+const char* CardgameAppl::description () const {
+   static std::string version
+      (PACKAGE " V" VERSION " - "
+       + std::string (_("Compiled on"))
+       + std::string (" " __DATE__ " - " __TIME__ "\n\n")
+       + std::string (_("Copyright (C) 2002 - 2005 Markus Schwab; e-mail: g17m0@lycos.com"
+			"\nDistributed under the terms of the GNU General "
+			"Public License")));
+   return version.c_str ();
+ }
+
 
 //-----------------------------------------------------------------------------
 /// Entrypoint of application
