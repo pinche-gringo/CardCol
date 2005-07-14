@@ -65,6 +65,8 @@ bool CardgameCollection::stopClientWaiting () {
 	 aCommThreads[0]->cancel ();
 	 delete aCommThreads[0];
 	 aCommThreads.clear ();
+
+	 apMenus[CHAT]->set_sensitive (false);
       }
       else
 	 return false;
