@@ -376,7 +376,7 @@ int Buraco::executeMove (unsigned int player) {
          unsigned int target (cardFitsOnPlayedPile (player, p - playerPile.begin ()));
          TRACE8 ("Buraco::executeMove (player) - Adding card " << **p << '?');
             return target;
-         if ((target != -1U) && canDumpCards (player, 1, target >> 16))
+      }
 
    // Check for 3 cards belonging to a serie
    unsigned int i (0);
@@ -1505,7 +1505,7 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
       Check3 (pos <= pile.size ());
       if ((move != -1U) && canDumpCards (player, 1, ((int)target) >> 16)) {
          Check3 (move <= pile.size ());
-      if (move != -1U) {
+      if ((move != -1U) && canDumpCards (player, 1, target >> 16)) {
 	 Check3 (pile.getPosJoker () != 7);
          sendMoveCard (bestPile, pile.getPosJoker (), move);
          pile.move (move, pile.getPosJoker ());
