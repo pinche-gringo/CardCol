@@ -397,7 +397,7 @@ int Buraco::executeMove (unsigned int player) {
               || (nrs > 5))
              && ((points[(player + 1) & 1] < 101)
                  || (nrs > 6)
-             && ((points[(player + 1) & 1] < 100)
+		 || ((hands[(player + 2) % 3].size () > 5)
 		     && (hands[(player + 1) % 3].size () > 3))))
           : ((nrs > aPos.size ()) ? (nrs > 2) : (aPos.size () > 2))) {
 	 unsigned int firstPos (i);
@@ -409,7 +409,13 @@ int Buraco::executeMove (unsigned int player) {
 
 	 bool canDump (canDumpCards (player, nrs));
          if (!unfinishedMonoPiles[player & 1]
-         if (canDumpCards (player, nrs) || (nrs-- > 3)) {
+	     && (canDump
+         if (canDump
+	     || (nrs > 4)
+	     || ((nrs > 3) && (points[player & 1] > 100))) {
+	    if (!canDump && (points[player & 1] <= 100) && (nrs < 7))
+	    if (isJoker (*playerPile[firstPos]))
+	       ++unfinishedMonoPiles[player & 1];
             pos1Play = firstPos;
             pos2Play = firstPos + nrs - 1;
             pos1Play = i;
