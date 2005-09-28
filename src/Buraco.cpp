@@ -38,6 +38,8 @@
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/scrolledwindow.h>
 
+#include <YGP/Check.h>
+#include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
 #include <YGP/ANumeric.h>
 #include <YGP/Tokenize.h>
@@ -374,7 +376,7 @@ int Buraco::executeMove (unsigned int player) {
            p != playerPile.end (); ++p) {
          TRACE8 ("Buraco::executeMove (unsigned int) - Adding card " << **p << '?');
          unsigned int target (cardFitsOnPlayedPile (player, p - playerPile.begin ()));
-         TRACE8 ("Buraco::executeMove (player) - Adding card " << **p << '?');
+         if (target != -1U)
             return target;
       }
 
@@ -383,7 +385,7 @@ int Buraco::executeMove (unsigned int player) {
    for (; i < playerPile.size (); ++i) {
       TRACE8 ("Buraco::executeMove (unsigned int) - Analyzing card " << *playerPile[i]);
 
-      TRACE8 ("Buraco::executeMove (player) - Analyzing card " << *playerPile[i]);
+      std::map<unsigned int, unsigned int> aPos;                   // diff, pos
       std::vector<unsigned int> aOrder;
       unsigned int nrs (playerPile.getSeries (*playerPile[i], aPos, aOrder,
                                               &cardDistance));
@@ -402,33 +404,39 @@ int Buraco::executeMove (unsigned int player) {
           : ((nrs > aPos.size ()) ? (nrs > 2) : (aPos.size () > 2))) {
 	 unsigned int firstPos (i);
          if (nrs < aPos.size ()) {
+            firstPos = playerPile.sortColourSerie (aPos, aOrder);
             nrs = aPos.size ();
-            i = playerPile.sortColourSerie (aPos, aOrder);
+         }
          if (nrs > 7)
             nrs = 7;
 
 	 bool canDump (canDumpCards (player, nrs));
          if (!unfinishedMonoPiles[player & 1]
 	     && (canDump
-         if (canDump
-	     || (nrs > 4)
-	     || ((nrs > 3) && (points[player & 1] > 100))) {
-	    if (!canDump && (points[player & 1] <= 100) && (nrs < 7))
+		 || (nrs > 4)
+		 || ((nrs > 3) && (points[player & 1] > 100)))) {
+	    if (!canDump && (points[player & 1] < 101) && (nrs < 7))
+	       --nrs;
+
 	    if (isJoker (*playerPile[firstPos]))
 	       ++unfinishedMonoPiles[player & 1];
+
+            // Create new pile with the found cards
+            makeNewPile (player & 1);
             pos1Play = firstPos;
             pos2Play = firstPos + nrs - 1;
-            pos1Play = i;
-            pos2Play = i + nrs - 1;
+            return (tablePiles[player & 1].size () - 1) << 16;
+         }
       }
    }
 
    // Check if all cards in the hand can (and should) be played
    TRACE8 ("Buraco::executeMove (unsigned int) - Playing all?");
    if (!unfinishedMonoPiles[player & 1]
-   TRACE8 ("Buraco::executeMove (player) - Playing all?");
-   if ((points[player & 1] > 100)
-       || (reserve[player & 1].size () && canGetRidOfCards (player))) {
+       && ((points[player & 1] > 100)
+	   || (reserve[player & 1].size () && canGetRidOfCards (player)))) {
+      ICardPile::const_iterator ci (playerPile.begin ());
+      // If pile still has normal cards (no joker)
       while (!((ci == playerPile.end ()) || isJoker (**ci))) {
          ICardPile::const_iterator next (playerPile.getFittingCard (**ci, ci + 1,
                                                                     &cardDistance));
@@ -436,7 +444,7 @@ int Buraco::executeMove (unsigned int player) {
              && isJoker (*playerPile[playerPile.size () - 1])) {
             TRACE1 ("Buraco::executeMove (unsigned int) - Have two with joker: "
                     << **ci << " and " << **next);
-            TRACE1 ("Buraco::executeMove (player) - Have two with joker: "
+            int diff (cardDistance (**next, **ci));
             Check3 (diff ? (*next)->colour () == (*ci)->colour () : true);
             if (diff < 0) {
                Check3 (diff >= -2);
@@ -565,6 +573,7 @@ void Buraco::start () {
       points[0] = points[1] = 0;
       unfinishedMonoPiles[0] = unfinishedMonoPiles[1] = 0;
       updateInfo ();
+
       // Set random startplayer (if not already set)
       if (startPlayer == -1U)
          startPlayer = rand () & 0x3;
@@ -1188,6 +1197,11 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       }
 
       if ((pile->size () == 1)
+	  && isJoker (pile->getTopCard ())
+	  && isJoker (moved))
+	 ++unfinishedMonoPiles[0];
+   }
+
    // End old drag
    context->drag_finish (true, false, time);
    activeCards[*pValue].disconnect ();
@@ -1511,7 +1525,7 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
       Check3 (pos <= pile.size ());
       if ((move != -1U) && canDumpCards (player, 1, ((int)target) >> 16)) {
          Check3 (move <= pile.size ());
-      if ((move != -1U) && canDumpCards (player, 1, target >> 16)) {
+         Check3 (move != pile.getPosJoker ());
 	 Check3 (pile.getPosJoker () != 7);
          sendMoveCard (bestPile, pile.getPosJoker (), move);
          pile.move (move, pile.getPosJoker ());
@@ -1554,6 +1568,9 @@ void Buraco::removeCerrado (unsigned int player, BuracoPile& pile) {
    points[team] += pile.getPoints ();
 
    if (pile.getPoints () > 999)
+      --unfinishedMonoPiles[team];
+   updateInfo ();
+}
 
 //-----------------------------------------------------------------------------
 /// Actualizes the info-part of the statusbar
@@ -1815,8 +1832,10 @@ bool Buraco::canGetRidOfCards (unsigned int player) const {
 /// Checks if the player can dump the specified number of cards; a player can
 /// only dump all of his cards, if:
 ///   - The team has a cerrado
-/// only dump all of his cards, if: - The team has a cerrado - The team still
-/// has the reserve
+///   - The team still has the reserve
+///   - The player can close a pile, with the cards to play
+/// \param player: Player to analyze
+/// \param cards: Number of cards player wants to play
 /// \param pile: Pile player is going to play its card to (or -1 for a new one)
 /// \returns \c True, if card can be played
 //-----------------------------------------------------------------------------
@@ -1832,15 +1851,22 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
 
    bool enoughCards ((hands[player].size () > (cards + 1))
 		     || reserve[player & 1].size ());
-   return ((hands[player].size () > (cards + 1))
-           || (points[player & 1] > 100)
-           || reserve[player & 1].size ()
-           || ((pile != -1U)
-               && (((tablePiles[player & 1][pile]->size () + cards) >= 7)
-                   || (((tablePiles[player & 1][pile]->size () + cards) == 6)
-                       && ((hands[player].size () - cards) == 1)
-                       && canClosePile (player, pile))))
-           || (cards >= 7));
+   bool canDump (enoughCards
+		 || (points[player & 1] > 100)
+		 || ((pile != -1U)
+		     && (((tablePiles[player & 1][pile]->size () + cards) >= 7)
+			 || (((tablePiles[player & 1][pile]->size () + cards) == 6)
+			     && ((hands[player].size () - cards) == 1)
+			     && canClosePile (player, pile))))
+		 || (cards >= 7));
+   TRACE9 ("Buraco::canDumpCards (3x unsigned int) - Can dump:  " << (canDump ? "Yes" : "No"));
+   return ((unfinishedMonoPiles[player & 1] && !enoughCards)
+	   ? (((unfinishedMonoPiles[player & 1] == 1)
+	       && ((pile != -1U) && (tablePiles[player & 1][pile]->getPoints () < 0)))
+	      ? canDump : false)
+	   : canDump);
+}
+
 //----------------------------------------------------------------------------
 /// Checks if the player can with his two cards left close the passed pile
 /// \param player: Player to inspect

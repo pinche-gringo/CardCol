@@ -157,6 +157,7 @@ class Buraco : public Game {
    std::vector<BuracoPile*> tablePiles[NUM_PLAYERS >> 1];     // Piles on table
    std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
    int points[NUM_PLAYERS >> 1];                       // Number of points/team
+   unsigned int unfinishedMonoPiles[NUM_PLAYERS >> 1];
 
    Gtk::ScrolledWindow* scrlTable[NUM_PLAYERS >> 1];   // Scroll-ctrls for table
 
