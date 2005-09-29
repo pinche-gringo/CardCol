@@ -308,7 +308,6 @@ unsigned int Buraco::showCardsToPlay (unsigned int player) {
             broadcastMessage (msg.str ());
          }
 
-         dumpedCard.show ();
          playerPile.insertSorted (dumped.removeTopCard (), compByNumberWithJokers);
          if (dumped.size ())
             gStatus.pickUpPlayed = 1;
@@ -346,11 +345,11 @@ unsigned int Buraco::showCardsToPlay (unsigned int player) {
             broadcastMessage (msg.str ());
          }
 
-         dumpedCard.show ();
          playerPile.insertSorted (staple.removeTopCard (), compByNumberWithJokers);
       }
 
       gStatus.startGame = 0;
+      dumpedCard.show ();
    }
 
    if (target == -1U)
@@ -376,7 +375,7 @@ int Buraco::executeMove (unsigned int player) {
            p != playerPile.end (); ++p) {
          TRACE8 ("Buraco::executeMove (unsigned int) - Adding card " << **p << '?');
          unsigned int target (cardFitsOnPlayedPile (player, p - playerPile.begin ()));
-         if (target != -1U)
+         if ((target != -1U) && canDumpCards (player, 1, ((int)target) >> 16))
             return target;
       }
 
@@ -411,10 +410,9 @@ int Buraco::executeMove (unsigned int player) {
             nrs = 7;
 
 	 bool canDump (canDumpCards (player, nrs));
-         if (!unfinishedMonoPiles[player & 1]
-	     && (canDump
-		 || (nrs > 4)
-		 || ((nrs > 3) && (points[player & 1] > 100)))) {
+         if (canDump
+	     || (nrs > 4)
+	     || ((nrs > 3) && (points[player & 1] > 100))) {
 	    if (!canDump && (points[player & 1] < 101) && (nrs < 7))
 	       --nrs;
 
@@ -427,6 +425,8 @@ int Buraco::executeMove (unsigned int player) {
             pos2Play = firstPos + nrs - 1;
             return (tablePiles[player & 1].size () - 1) << 16;
          }
+	 else
+	    hands[player].sort (compByNumberWithJokers);
       }
    }
 
@@ -1849,8 +1849,7 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
    Check1 (hands[player].size () >= cards);
    Check1 (cards <= 7);
 
-   bool enoughCards ((hands[player].size () > (cards + 1))
-		     || reserve[player & 1].size ());
+   bool enoughCards ((hands[player].size () > (cards + 1)) || reserve[player & 1].size ());
    bool canDump (enoughCards
 		 || (points[player & 1] > 100)
 		 || ((pile != -1U)
@@ -1859,10 +1858,11 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
 			     && ((hands[player].size () - cards) == 1)
 			     && canClosePile (player, pile))))
 		 || (cards >= 7));
-   TRACE9 ("Buraco::canDumpCards (3x unsigned int) - Can dump:  " << (canDump ? "Yes" : "No"));
+   TRACE7 ("Buraco::canDumpCards (3x unsigned int) - Can dump: " << (canDump ? "Yes" : "No"));
    return ((unfinishedMonoPiles[player & 1] && !enoughCards)
 	   ? (((unfinishedMonoPiles[player & 1] == 1)
-	       && ((pile != -1U) && (tablePiles[player & 1][pile]->getPoints () < 0)))
+	       && ((pile != -1U)
+		   ? (tablePiles[player & 1][pile]->getPoints () < 0) : false))
 	      ? canDump : false)
 	   : canDump);
 }
