@@ -394,7 +394,7 @@ int Buraco::executeMove (unsigned int player) {
       //     reserve and the other team has no burraco and the reserve
       //   - Play the bigger of the found matching cards, if there are >= 3
       if (isJoker (*playerPile[i])
-          ? ((((nrs > 4) && (reserve[player & 1].size ()))
+          ? ((((nrs > 4) && reserve[player & 1].size ())
               || (nrs > 5))
              && ((points[(player + 1) & 1] < 101)
                  || (nrs > 6)
@@ -410,11 +410,9 @@ int Buraco::executeMove (unsigned int player) {
             nrs = 7;
 
 	 bool canDump (canDumpCards (player, nrs));
-         if (canDump
-	     || (nrs > 4)
-	     || ((nrs > 3) && (points[player & 1] > 100))) {
-	    if (!canDump && (points[player & 1] < 101) && (nrs < 7))
-	       --nrs;
+         if (canDump || (nrs > 5)) {
+	    if (!canDump)
+	       nrs = 3;
 
 	    if (isJoker (*playerPile[firstPos]))
 	       ++unfinishedMonoPiles[player & 1];
