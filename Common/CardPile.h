@@ -80,7 +80,7 @@ class ICardPile : public std::vector<CardWidget*> {
    //@{
    virtual unsigned int insert (CardWidget& card, unsigned int pos);
    unsigned int insertSorted (CardWidget& card, CMPFUNC fnSort = compCardsByNr);
-   unsigned int  insertColourSorted (CardWidget& card) {
+   unsigned int insertColourSorted (CardWidget& card) {
       return insertSorted (card, compCards); }
    void append (CardWidget& card) { setTopCard (card); }
    virtual CardWidget& remove (CardWidget& card);
