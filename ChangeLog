@@ -1,4 +1,34 @@
-2005-07-14  g17m0@lycos.com  <markus@markus>
+2005-09-29  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.31 docommented
+
+	* configure.in: Version to 0.7.31
+
+	* Common/CardPile.h: Formatting changed
+
+	* po/de.po, po/en.po, po/es.po: Line-numbers actualized
+
+	* src/Buraco.cpp: Fixed checking, if last cards can be played
+
+	* src/Buraco.cpp:
+	  Fixed ending game without having cerrado; Fixed checking if can be ended
+
+2005-09-28  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Can't end game, if a pile of monos is started, but not finished
+
+2005-09-27  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp:
+	  Fixed computer ending game without cerrado, when having only 6 monos
+
+2005-09-17  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp:
+	  Checking if card to play can be played, before moving jokers on table
+
+2005-07-14  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.30 docommented
 
@@ -16,7 +46,7 @@
 	* src/CardColNet.cpp:
 	  Fixed transmitting received chat-messages (for more than 2 players
 
-2005-07-08  g17m0@lycos.com  <markus@markus>
+2005-07-08  Markus Schwab  <g17m0@lycos.com>
 
 	* doc/CardCol.shtml.en, doc/index.shtml: Fixes
 
@@ -34,7 +64,7 @@
 	* src/CardColNet.cpp:
 	  Changing names is send to clients; Disconnecting doesn't end game
 
-2005-07-07  g17m0@lycos.com  <markus@markus>
+2005-07-07  Markus Schwab  <g17m0@lycos.com>
 
 	* src/ChatDlg.cpp: Added scrollbars and word-wrap
 
@@ -48,13 +78,13 @@
 
 	* src/CardColAppl.cpp, src/CardColAppl.h, src/CardColNet.cpp: New file.
 
-2005-07-06  g17m0@lycos.com  <markus@markus>
+2005-07-06  Markus Schwab  <g17m0@lycos.com>
 
 	* src/CardCol.cpp, src/CardCol.h: Finished chat; Cleanup
 
 	* src/ChatDlg.cpp: Setting send as default-button
 
-2005-07-04  g17m0@lycos.com  <markus@markus>
+2005-07-04  Markus Schwab  <g17m0@lycos.com>
 
 	* src/Makefile.am: Added ChatDlg
 
@@ -62,7 +92,7 @@
 
 	* src/ChatDlg.h, src/ChatDlg.cpp: New file.
 
-2005-06-17  g17m0@lycos.com  <markus@markus>
+2005-06-17  Markus Schwab  <g17m0@lycos.com>
 
 	* configure.in: Fixed setting carddeck directory; Version to 0.7.21
 

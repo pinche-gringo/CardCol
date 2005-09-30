@@ -1,3 +1,10 @@
+Overview of changes in version 0.7.31:
+
+  - Buraco: Can't end a game, when a pile of jokers is not finished
+  - Buraco: Computer doesn't move jokers when card fits, but can't be played
+  - Buraco: Fixed computer ending, without having cerrado, when having 6 jokers
+
+
 Overview of changes in version 0.7.30:
 
   - Added a dialog to chat/communicate with others
@@ -18,6 +25,7 @@ Overview of changes in version 0.7.20:
   - Now all games are played in counter-clockwise direction
   - Removed warnings when compiling with GCC-4
 
+
 Overview of changes in version 0.7.10:
 
   - Improved Sgt. Mayor's computer player
@@ -27,6 +35,7 @@ Overview of changes in version 0.7.10:
   - Fixed trap in Buraco when undoing move
   - Added game-specific menus to Hearts, Twopart and Sgt. Mayor
 
+
 Overview of changes in version 0.7.03:
 
   - Fixed bugs in Buraco
@@ -35,21 +44,25 @@ Overview of changes in version 0.7.03:
   - Sgt. Mayors plays now in clockwise direction, as the other games
   - Needs libYGP 0.7.01
 
+
 Overview of changes in version 0.7.02:
 
   - Adapted to new automake/-conf
   - Fixed trap, if no carddecks are found
   - Searching for KDE carddecks also in /usr/share/apps/carddecks
 
+
 Overview of changes in version 0.7.01:
 
   - Works with GCC 3.4 and GTKMM 2.4
   - Needs libXGP 0.6.47
 
+
 Overview of changes in version 0.7.00:
 
   - New game: Sergeant Mayor (with a quite d(r)aft computer player)
   - Fixed Buraco ending the game without cerrado when picking up dumped cards
+
 
 Overview of changes in version 0.6.22:
 
@@ -62,6 +75,7 @@ Overview of changes in version 0.6.22:
   - Fixed Buraco's (rare) problem make a new pile after picking up dumped cards
   - Fixed Buraco's logic determining if to play all cards
 
+
 Overview of changes in version 0.6.21:
 
   - Improved usability of Machiavelli (Enter to end turn)
@@ -69,11 +83,13 @@ Overview of changes in version 0.6.21:
   - Fixed some bugs in Machiavelli
   - Needs libYGP 0.6.45
 
+
 Overview of changes in version 0.6.20:
 
   - Added (finally) network ability to Machiavelli
   - Installing documentation automatically (hence removed make doc-(un)install)
   - Fixed bug in Buraco: Human could make a pile with 2 jokers, but no pair
+
 
 Overview of changes in version 0.6.10:
 
@@ -81,6 +97,7 @@ Overview of changes in version 0.6.10:
   - Added documentation for Machiavelli
   - Fixed undoing in Machiavelli
   - Needs libYGP 0.6.41
+
 
 Overview of changes in version 0.6.00:
 
@@ -90,10 +107,12 @@ Overview of changes in version 0.6.00:
   - Improved Buraco's computer player selecting card to dump
   - Needs libYGP 0.6.40
 
+
 Overview of changes in version 0.5.10:
 
   - Games can be loaded and saved (if enabled while configuring) - this is
     just an option to test rare situations.
+
 
 Overview of changes in version 0.5.05:
 
@@ -103,6 +122,7 @@ Overview of changes in version 0.5.05:
   - Prohibiting resorting of cards after picking up pile (til pile is put down)
   - Fixed check if player has fitting pair (without joker) when picking up pile
   - Fixed translations of the game
+
 
 Overview of changes in version 0.5.04:
 
@@ -114,6 +134,7 @@ Overview of changes in version 0.5.04:
   - Fixed making first "cerrado" with last cards
   - Fixed computer player not playing pile of 7 joker in some cases
 
+
 Overview of changes in version 0.5.03:
 
   - Displaying the cards of all Buraco players
@@ -124,6 +145,7 @@ Overview of changes in version 0.5.03:
   - Fixed computer player taking up dumped pile with joker
   - Needs libYGP 0.6.30
 
+
 Overview of changes in version 0.5.02:
 
   - Fixed bug replacing the joker in colour series
@@ -131,10 +153,12 @@ Overview of changes in version 0.5.02:
   - Updated INSTALL (installation from CVS)
   - Updated version info in po files (which hold the translated messages)
 
+
 Overview of changes in version 0.5.01:
 
   - Changed manual sorting of cards in hand of human players in Buraco
   - Searching for the best pile to play cards to
+
 
 Overview of changes in version 0.5.00:
 
@@ -148,6 +172,7 @@ Overview of changes in version 0.5.00:
   - Renamed [Players]-section in INI-file to [Player]
   - Needs library YGP 0.6.21
 
+
 Overview of changes in version 0.4.00:
 
   - New game: Buraco
@@ -159,10 +184,12 @@ Overview of changes in version 0.4.00:
   - Cards must now be in png-format (which allows to use KDE's cards directly)
   - Fixed bug in Hearts (Human could play any club in round 1)
 
+
 Overview of changes in version 0.3.02:
 
   - Hearts ends now at 100 points (and not 101)
   - Fixed bug in Hearts (played Queen of spades in round 1)
+
 
 Overview of changes in version 0.3.01:
 
@@ -171,6 +198,7 @@ Overview of changes in version 0.3.01:
   - Exchange of cards is analogue to Windows version in turn with everyone
   - Documentation (of Hearts; also tranlations in german and spanish)
   - Fixes
+
 
 Overview of changes in version 0.3.00:
 
@@ -185,6 +213,7 @@ Overview of changes in version 0.3.00:
   - INI-file can contain more options (like browser and help-dir)
   - Display help to the program or to the running game (by pressing F1)
 
+
 Overview of changes in version 0.2.00:
 
   - Combined the games into one application
@@ -193,11 +222,13 @@ Overview of changes in version 0.2.00:
   - Computer-player moves cards to the end of the staple before playing
   - Dialog to select carddecks improved (adapts size to show all decks)
 
+
 Overview of changes in version 0.1.03:
 
   - Twopart got computer-player
   - Carddecks separated; can be changed during the game
   - Improved Røvhult's computer player
+
 
 Overview of changes in version 0.1.02:
 
@@ -205,11 +236,13 @@ Overview of changes in version 0.1.02:
   - Fixes within Røvhult
   - Twopart finished without computer-player
 
+
 Overview of changes in version 0.1.01:
 
   - Interationalization
   - Røvhult got computer-player
   - Cardpiles display number of cards if mouse stops over (like tooltips)
+
 
 Overview of changes in version 0.1.00:
 
