@@ -289,7 +289,6 @@ unsigned int Buraco::showCardsToPlay (unsigned int player) {
       gStatus.startTurn = 0;
 
       CardWidget& dumpedCard (dumped.getTopCard ());
-
       if (gStatus.startGame
           ? (isJoker (dumpedCard)
              || playerPile.getFittingCard (dumpedCard, &cardDistance) != playerPile.end ())
@@ -1050,6 +1049,10 @@ void Buraco::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
       *pValue = temp;
    }
 
+   // DND within hand directly after picking up the buraco disables undoing
+   if (undo.pickUp)
+      menuUndo->set_sensitive (false);
+
    Glib::signal_idle ().connect
        (bind (mem_fun (*this, &Buraco::doRegisterHand), card, *pValue));
 }
@@ -1174,20 +1177,20 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       Check1 ((iCard >> 8) < tablePiles[0].size ());
       pile = tablePiles[0][iPile = (iCard >> 8)];
 
-      // Only allow dropping of last card, if the game can be ended, or there
-      // is still the reserve
-      if (!canDumpCards (0, 1, iCard >> 8)) {
+      if ((iCard = cardFitsOnPile (iPile, moved)) == -1U) {
          context->drag_finish (false, false, time);
-         Gtk::MessageDialog dlg (_("You can't end the game (there's no \"cerrado\")!"),
+         Gtk::MessageDialog dlg (_("This card does not fit on that pile!"),
                                  Gtk::MESSAGE_ERROR);
          dlg.set_title (_("Invalid move"));
          dlg.run ();
          return;
       }
 
-      if ((iCard = cardFitsOnPile (iPile, moved)) == -1U) {
+      // Only allow dropping of last card, if the game can be ended, or there
+      // is still the reserve
+      if (!canDumpCards (0, 1, iCard >> 8)) {
          context->drag_finish (false, false, time);
-         Gtk::MessageDialog dlg (_("This card does not fit on that pile!"),
+         Gtk::MessageDialog dlg (_("You can't end the game (there's no \"cerrado\")!"),
                                  Gtk::MESSAGE_ERROR);
          dlg.set_title (_("Invalid move"));
          dlg.run ();
@@ -1213,10 +1216,17 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
    unsigned int move (-1U);
    pile->getPosition4Card (moved, iCard, move);
    Check3 (iCard <= pile->size ());
+
+   TRACE4 ("Buraco::cardDroppedOnTable (...) - Undo:  " << iPile << "; " << iCard
+	   << "; " << *pValue << ": " << acceptCards << '/' << pile->getPosJoker ());
+   undo.assign (iPile, iCard, *pValue, acceptCards);
+   menuUndo->set_sensitive ();
+
    if (move != -1U) {
       Check3 (move <= pile->size ());
       Check3 (move != pile->getPosJoker ());
       Check3 (pile->getPosJoker () != 7);
+      undo.monoPos = pile->getPosJoker ();
       sendMoveCard (iPile, pile->getPosJoker (), move);
       pile->move (move, pile->getPosJoker ());
    }
@@ -1235,11 +1245,6 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
    registerTableDND (moved, (iPile << 8) + iCard);
    if (iCard < (pile->size () - 1))
       registerTableDND (iPile, iCard + 1, pile->size () - 1);
-
-   TRACE9 ("Buraco::cardDroppedOnTable (...) - Undo:  " << iPile << "; " << iCard
-	   << "; " << *pValue << ": " << acceptCards);
-   undo.assign (iPile, iCard, *pValue, acceptCards);
-   menuUndo->set_sensitive ();
 
    // Remove pile, if it contains 7 cards
    if (pile->size () == 7)
@@ -1362,7 +1367,7 @@ void Buraco::addBuraco (unsigned int player) {
    Check1 (player < NUM_PLAYERS);
 
    undo.pickUp = 1;
-   undo.cJokers = hands[player].size ();
+   unsigned int cJokers (hands[player].size ());
 
    ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = (player >> 1);
    // Disable the cards in the hand (if the human gets the cards)
@@ -1391,18 +1396,18 @@ void Buraco::addBuraco (unsigned int player) {
    Check3 (actPlayers[player]);
 
    // If the computer-player had jokers left, show them
-   if (player && undo.cJokers) {
-      TRACE3 ("Buraco::addBuraco (unsigned int) - Jokers: " << undo.cJokers);
+   if (player && cJokers) {
+      TRACE3 ("Buraco::addBuraco (unsigned int) - Jokers: " << cJokers);
       for (ICardPile::iterator i (hands[player].begin () + 11);
 	   i != hands[player].end (); ++i) {
 	 (*i)->showFace ();
 	 hands[player].resize (**i, ICardPile::COMPRESSED);
       }
-      hands[player].resize (10 + undo.cJokers, ICardPile::NORMAL);
+      hands[player].resize (10 + cJokers, ICardPile::NORMAL);
 
       Glib::signal_timeout ().connect
-	 (bind (sigc::ptr_fun (&Buraco::hideJoker), &hands[player], undo.cJokers),
-	  ComputerPlayer::TIMEOUT - 20);
+	 (bind (sigc::ptr_fun (&Buraco::hideJoker), &hands[player], cJokers),
+	  ComputerPlayer::TIMEOUT - 30);
    }
 
    status.pop ();
@@ -2307,6 +2312,9 @@ void Buraco::undoLast (unsigned int player) {
       delete &src;
    }
 
+   if (undo.monoPos != 7)
+      src.move (src.getPosJoker (), undo.monoPos);
+
    menuUndo->set_sensitive (false);
    enableHumanHand ();
 }
@@ -2317,6 +2325,10 @@ void Buraco::undoLast (unsigned int player) {
 void Buraco::sortHand () {
    disableHuman ();
    hands[0].sort (compByNumberWithJokers);
+
+   // Sorting directly after picking up the buraco disables undoing
+   if (undo.pickUp)
+      menuUndo->set_sensitive (false);
    enableHumanHand ();
 }
 
@@ -2326,5 +2338,9 @@ void Buraco::sortHand () {
 void Buraco::sortHandByColour () {
    disableHuman ();
    hands[0].sort (compByColourWithJokers);
+
+   // Sorting directly after picking up the buraco disables undoing
+   if (undo.pickUp)
+      menuUndo->set_sensitive (false);
    enableHumanHand ();
 }

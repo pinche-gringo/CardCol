@@ -196,11 +196,11 @@ class Buraco : public Game {
 
    typedef struct undoValue {
       unsigned int destPile : 8;
-      unsigned int destPos  : 4;
+      unsigned int destPos  : 3;
       unsigned int srcPos   : 7;
       unsigned int blocked  : 7;
       unsigned int pickUp   : 1;
-      unsigned int cJokers  : 4;
+      unsigned int monoPos  : 3;
 
       void assign (unsigned int targetPile, unsigned int targetPos,
 		   unsigned int pos, unsigned int acceptCard) {
@@ -208,8 +208,8 @@ class Buraco : public Game {
 	 destPos = targetPos;
 	 srcPos = pos;
 	 blocked = acceptCard;
-	 pickUp = 0;
-	 cJokers = 0; }
+	 monoPos = 7;
+	 pickUp = 0; }
    } undoValue;
    undoValue undo;
 
