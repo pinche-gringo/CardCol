@@ -632,13 +632,14 @@ void Buraco::clean () {
 /// \returns \c 0
 //-----------------------------------------------------------------------------
 bool Buraco::enableHuman () {
-   Check3 (staple.size ()); Check3 (dumped.size ());
    Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
 
-   stapleTop = staple.getTopCard ().signal_clicked ().connect
-      (mem_fun (*this, (&Buraco::stapleSelected)));
-   dumpedTop = dumped.getTopCard ().signal_clicked ().connect
-      (mem_fun (*this, (&Buraco::dumpedSelected)));
+   if (staple.size ())
+      stapleTop = staple.getTopCard ().signal_clicked ().connect
+	 (mem_fun (*this, (&Buraco::stapleSelected)));
+   if (dumped.size ())
+      dumpedTop = dumped.getTopCard ().signal_clicked ().connect
+	 (mem_fun (*this, (&Buraco::dumpedSelected)));
 
    return Game::enableHuman ();
 }
@@ -765,7 +766,6 @@ void Buraco::cardSelected (unsigned int iCard) {
 //-----------------------------------------------------------------------------
 void Buraco::stapleSelected () {
    TRACE5 ("Buraco::stapleSelected ()");
-   Check1 (gameStatus () == PLAYING);
    Check3 (staple.size ());
    Check2 (dumped.size ());
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
@@ -794,15 +794,21 @@ void Buraco::stapleSelected () {
 //-----------------------------------------------------------------------------
 void Buraco::doStapleSelected () {
    TRACE5 ("Buraco::doStapleSelected ()");
-   Check1 (gameStatus () == PLAYING);
    Check2 (staple.size ());
    Check2 (dumped.size ());
 
-   dumped.getTopCard ().show ();
-   unsigned int player (currentPlayer ());
-   hands[player].append (staple.removeTopCard ());
-   if (!player)
-      enableHumanHand ();
+   if (gameStatus () == STOPPED) {
+      dumped.append (staple.removeTopCard ());
+      enableHuman ();
+   }
+   else {
+      dumped.getTopCard ().show ();
+      unsigned int player (currentPlayer ());
+      hands[player].append (staple.removeTopCard ());
+
+      if (!player)
+	 enableHumanHand ();
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -810,73 +816,77 @@ void Buraco::doStapleSelected () {
 //-----------------------------------------------------------------------------
 void Buraco::dumpedSelected () {
    TRACE5 ("Buraco::dumpedSelected ()");
-   Check1 (gameStatus () == PLAYING);
    Check3 (dumped.size ());
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
-
-   if (!gStatus.startGame)
-      try {
-	 CardWidget& card (dumped.getTopCard ());
-	 if (isJoker (card))
-	    throw _("You can't pick up monos!");
-
-         if (!pileHasFittingPair (hands[0], dumped.getTopCard ()))
-	    throw _("You need a fitting pair to pick up the pile of dumped cards!");
-      }
-      catch (Glib::ustring& e) {
-	 Gtk::MessageDialog dlg (e, Gtk::MESSAGE_ERROR);
-	 dlg.set_title (_("Invalid move"));
-	 dlg.run ();
-	 return;
-      }
-
-   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-      // Send played card to all clients (if any)
-      std::ostringstream msg;
-      msg << "Play=" << dumped.getTopCard ().id () << ";Target=3";
-
-      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-         ignoreNextMsg = true;
-      broadcastMessage (msg.str ());
-   }
-
    dumpedTop.disconnect ();
    stapleTop.disconnect ();
 
-   // Special handling of player starting the game and can choose one of the
-   // first two cards
-   CardWidget& card (dumped.removeTopCard ());
-   card.show ();
-   if (gStatus.startGame) {
-      Check3 (dumped.size () == 0);
-      hands[0].append (card);
-   }
-   else {
-      Check3 (pileHasFittingPair (hands[0], card));
+   if (gameStatus () != STOPPED) {
+      if (!gStatus.startGame)
+	 try {
+	    CardWidget& card (dumped.getTopCard ());
+	    if (isJoker (card))
+	       throw _("You can't pick up monos!");
+
+	    if (!pileHasFittingPair (hands[0], dumped.getTopCard ()))
+	       throw _("You need a fitting pair to pick up the pile of dumped cards!");
+	 }
+	 catch (Glib::ustring& e) {
+	    Gtk::MessageDialog dlg (e, Gtk::MESSAGE_ERROR);
+	    dlg.set_title (_("Invalid move"));
+	    dlg.run ();
+	    return;
+	 }
 
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-         // Send played card to all clients (if any)
-         std::ostringstream msg;
-         msg << "Play=" << card.id () << ";Target="
-             << (tablePiles[0].size () << 16) + 100;
+	 // Send played card to all clients (if any)
+	 std::ostringstream msg;
+	 msg << "Play=" << dumped.getTopCard ().id () << ";Target=3";
 
-         if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-            ++ignoreNextMsg;
-         broadcastMessage (msg.str ());
+	 if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+	    ignoreNextMsg = true;
+	 broadcastMessage (msg.str ());
       }
 
-      BuracoPile& pile (makeNewPile (0 & 1));                // Create new pile
-      pile.setTopCard (card);                            // with picked up card
+      // Special handling of player starting the game and can choose one of the
+      // first two cards
+      CardWidget& card (dumped.removeTopCard ());
+      card.show ();
+      if (gStatus.startGame) {
+	 Check3 (dumped.size () == 0);
+	 hands[0].append (card);
+      }
+      else {
+	 Check3 (pileHasFittingPair (hands[0], card));
 
-      acceptCards = hands[0].size ();;
-      if (dumped.size ())
-         movePile (hands[0], dumped);
+	 if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+	    // Send played card to all clients (if any)
+	    std::ostringstream msg;
+	    msg << "Play=" << card.id () << ";Target="
+		<< (tablePiles[0].size () << 16) + 100;
+
+	    if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+	       ++ignoreNextMsg;
+	    broadcastMessage (msg.str ());
+	 }
+
+	 BuracoPile& pile (makeNewPile (0 & 1));             // Create new pile
+	 pile.setTopCard (card);                         // with picked up card
+
+	 acceptCards = hands[0].size ();;
+	 if (dumped.size ())
+	    movePile (hands[0], dumped);
+      }
+
+      // Enable the cards in humans hand, when idle (means: *after* this
+      // signalhandler terminates)
+      Glib::signal_idle ().connect
+	 (bind_return (mem_fun (*this, &Buraco::enableHumanHand), false));
    }
-
-   // Enable the cards in humans hand, when idle (means: *after* this
-   // signalhandler terminates)
-   Glib::signal_idle ().connect
-       (bind_return (mem_fun (*this, &Buraco::enableHumanHand), false));
+   else {
+      staple.append (dumped.removeTopCard ());
+      enableHuman ();
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -884,8 +894,8 @@ void Buraco::dumpedSelected () {
 //-----------------------------------------------------------------------------
 void Buraco::doDumpedSelected () {
    TRACE5 ("Buraco::doDumpedSelected () - " << gStatus.startGame);
-   Check1 (gameStatus () == PLAYING);
    Check3 (dumped.size ());
+   Check3 (gameStatus () == PLAYING);
    unsigned int player (currentPlayer ());
 
    dumped.getTopCard ().show ();
@@ -1188,7 +1198,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 
       // Only allow dropping of last card, if the game can be ended, or there
       // is still the reserve
-      if (!canDumpCards (0, 1, iCard >> 8)) {
+      if (!canDumpCards (0, 1, iPile)) {
          context->drag_finish (false, false, time);
          Gtk::MessageDialog dlg (_("You can't end the game (there's no \"cerrado\")!"),
                                  Gtk::MESSAGE_ERROR);
@@ -1773,6 +1783,7 @@ void Buraco::endGame () {
    status.push (stat);
 
    setGameStatus (STOPPED);
+   enableHuman ();
 }
 
 
