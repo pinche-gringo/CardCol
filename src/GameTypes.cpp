@@ -38,8 +38,12 @@
 //-----------------------------------------------------------------------------
 GameTypes::GameTypes () {
    Glib::ustring rovhult (_("Rovhult"));
-   if (rovhult == "Rovhult")
-      rovhult = Glib::locale_to_utf8 ("Røvhult");
+   if (rovhult == "Rovhult") {
+      try {
+	 rovhult = Glib::locale_to_utf8 ("Røvhult");
+      }
+      catch (Glib::Error&) {}
+   }
 
    insert (std::make_pair ((int)ROVHULT, rovhult));
    insert (std::make_pair ((int)TWOPART, _("Twopart")));
