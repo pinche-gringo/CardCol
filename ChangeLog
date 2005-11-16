@@ -1,3 +1,24 @@
+2005-11-16  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.32 docommented
+
+	* Makefile.am: Removed m4-directory from SUBDIRS
+
+	* po/de.po, po/en.po, po/es.po: Actualized line-numbers
+
+	* configure.in: Improved check for carddeck-dir; Version to 0.7.32
+
+	* src/CardCol.cpp: Using GameTypes to display the name of the game
+
+	* src/Buraco.cpp:
+	  Staple & dumped cards can be inspected after game; Fixed check for enough cards
+
+	* src/GameTypes.cpp: Catching convert-errors for Røvhult
+
+2005-10-11  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp, src/Buraco.h: Undo restores position of monos
+
 2005-09-29  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.31 docommented

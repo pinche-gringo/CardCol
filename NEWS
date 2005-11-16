@@ -1,3 +1,13 @@
+Overview of changes in version 0.7.32:
+
+  - config: Checking for carddecks in more directories
+  - Buraco: Test first if card fits on pile, before warning about missing cards
+  - Buraco: Undoing undoes moving of jokers caused by last move
+  - Buraco: Sorting cards after taking buraco disables undo
+  - Buraco: The dumped cards and tose of the reserve  can be shown after game
+  - Røvhult: Fixed setting title when not using an ISO-8895-1 encoding
+
+
 Overview of changes in version 0.7.31:
 
   - Buraco: Can't end a game, when a pile of jokers is not finished
