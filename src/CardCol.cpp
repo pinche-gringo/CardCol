@@ -779,7 +779,7 @@ void CardgameCollection::startGame () {
 	 // Remove menubar and update GUI to not interfere with new game
 	 game->removeMenus (mgrUI);
 	 Glib::RefPtr<Glib::MainContext> ctx (Glib::MainContext::get_default ());
-	 while (ctx->iteration (false));
+	 while (ctx->iteration (false)) ;
 
          getClient ().remove (*game);
          delete game;
@@ -848,7 +848,8 @@ void CardgameCollection::startGame () {
    }
 
    Check3 (game);
-   Glib::ustring name (Glib::locale_to_utf8 (game->name ()));
+   GameTypes types;
+   Glib::ustring name (types[actGame]);
    name += " - " PACKAGE " V" PRG_RELEASE;
    set_title (name);
 
