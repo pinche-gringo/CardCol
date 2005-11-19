@@ -1,3 +1,10 @@
+Overview of changes in version 0.7.33:
+
+  - Fixed changing names (when not playing over a network)
+  - Fixed writing INI-file (with non-ASCII chars in names) in non-UTF8 locales
+  - Fixed changing game-specific menus when switching games
+
+
 Overview of changes in version 0.7.32:
 
   - config: Checking for carddecks in more directories

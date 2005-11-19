@@ -1,3 +1,19 @@
+2005-11-19  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.33 docommented
+
+	* configure.in: Version to 0.7.33
+
+	* po/de.po, po/en.po, po/es.po: Actualized line-numbers
+
+	* src/Buraco.cpp, src/Hearts.cpp, src/Machiavelli.cpp, src/SgtMayor.cpp, src/Twopart.cpp:
+	  Made game-specific menu-IDs unique (different to other games)
+
+2005-11-18  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp:
+	  Fixed writing INI-file in non-utf8 locales; Fixed setting names in local game
+
 2005-11-16  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.32 docommented
@@ -2568,7 +2584,7 @@
 
 2002-05-09  Markus Schwab  <g17m0@lycos.com>
 
-	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h: 
+	* Rovhult/Rovhult.cpp, Rovhult/Rovhult.h:
 	  Prg-icon changed; Cards loaded in background
 
 	* Common/Makefile.am: CardSet added
@@ -2586,7 +2602,7 @@
 
 	* Common/CardSet.cpp, Common/CardSet.h: New file.
 
-	* Common/CardImgs.cpp, Common/CardImgs.h: 
+	* Common/CardImgs.cpp, Common/CardImgs.h:
 	  Renamed to CardImages; Hardcoded size of set removed
 
 2002-05-08  Markus Schwab  <g17m0@lycos.com>
@@ -2613,7 +2629,7 @@
 	* Common/CardWidget.cpp, Common/CardWidget.h:
 	  Constructor has parent of card as parameter
 
-	* Common/CardImgs.cpp, Common/CardImgs.h: 
+	* Common/CardImgs.cpp, Common/CardImgs.h:
 	  load-method has parent of card as parameter
 
 	* Common/CardPile.cpp: removeTopCard fixed
