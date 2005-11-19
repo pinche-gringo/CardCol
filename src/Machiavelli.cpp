@@ -1676,13 +1676,13 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Glib::ustring ui ("<menubar name='Menu'>"
 		     "  <placeholder name='GameMenu'>"
 		     "    <menu action='Machi'>"
-		     "      <menuitem action='Undo'/>"
-		     "      <menuitem action='UndoAll'/>"
+		     "      <menuitem action='MachiUndo'/>"
+		     "      <menuitem action='MachiUndoAll'/>"
 		     "      <separator/>"
-		     "      <menuitem action='Sort'/>"
-		     "      <menuitem action='SortCol'/>"
+		     "      <menuitem action='MachiSort'/>"
+		     "      <menuitem action='MachiSortCol'/>"
 		     "      <separator/>"
-		     "      <menuitem action='EndTurn'/>"
+		     "      <menuitem action='MachiEndTurn'/>"
 		     "    </menu></placeholder></menubar>");
 
    Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
@@ -1690,16 +1690,16 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    grpAction->add (undo1 = Gtk::Action::create ("Undo", Gtk::Stock::UNDO),
 		   Gtk::AccelKey ("<ctl>Z"),
 		   bind (mem_fun (*this, &Machiavelli::undoMove), 1));
-   grpAction->add (undoAll = Gtk::Action::create ("UndoAll", _("Undo _all")),
+   grpAction->add (undoAll = Gtk::Action::create ("MachiUndoAll", _("Undo _all")),
 		   Gtk::AccelKey ("<ctl><alt>Z"),
 		   bind (mem_fun (*this, &Machiavelli::undoMove), -1U));
-   grpAction->add (Gtk::Action::create ("EndTurn", _("_End turn")),
+   grpAction->add (Gtk::Action::create ("MachiEndTurn", _("_End turn")),
 		   mem_fun (*this, (&Machiavelli::endTurn)));
-   grpAction->add (Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
+   grpAction->add (Gtk::Action::create ("MachiSort", Gtk::Stock::SORT_ASCENDING,
 					_("_Sort cards (by number)")),
 		   Gtk::AccelKey ("<shft>S"),
 		   mem_fun (*this, &Machiavelli::sortHand));
-   grpAction->add (Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
+   grpAction->add (Gtk::Action::create ("MachiSortCol", Gtk::Stock::SORT_ASCENDING,
 					_("Sort cards (by _colour)")),
 		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Machiavelli::sortHandByColour));
