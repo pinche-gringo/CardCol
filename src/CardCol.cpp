@@ -74,6 +74,20 @@ const unsigned int CardgameCollection::WIDTH (760);
 const unsigned int CardgameCollection::HEIGHT (750);
 
 
+/// Writes the contents of the passed values to the passed stream
+/// (in its own section named \c section).
+/// \param stream: Stream to write to
+/// \param section: Name of section to write
+/// \param values: Values to write
+template <>
+void YGP::INIList<Glib::ustring>::write (std::ostream& stream, const char* section, const std::vector<Glib::ustring>& values) {
+   writeHeader (stream, section);
+   for (unsigned int i (0); i < values.size (); ++i)
+     stream << i << '=' << values[i].c_str () << '\n';
+   stream << '\n';
+ }
+
+
 // Pixmap for program
 const char* CardgameCollection::xpmGame[] = {
    /* width height ncolors chars_per_pixel */
@@ -1053,7 +1067,8 @@ void CardgameCollection::showAboutbox () {
 void CardgameCollection::changePlayernames () {
    TRACE2 ("CardgameCollection::changePlayernames");
 #ifdef HAVE_LIBPTHREAD
-   broadcastNames ();
+   if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
+      broadcastNames ();
 #endif
 
    if (game)
