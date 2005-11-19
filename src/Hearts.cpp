@@ -1045,17 +1045,17 @@ void Hearts::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Glib::ustring ui ("<menubar name='Menu'>"
 		     "  <placeholder name='GameMenu'>"
 		     "    <menu action='MB'>"
-		     "      <menuitem action='Sort'/>"
-		     "      <menuitem action='SortCol'/>"
+		     "      <menuitem action='HeartSort'/>"
+		     "      <menuitem action='HeartSortCol'/>"
 		     "    </menu></placeholder></menubar>");
 
    Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
    grpAction->add (Gtk::Action::create ("MB", _("H_earts")));
-   grpAction->add (Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
+   grpAction->add (Gtk::Action::create ("HeartSort", Gtk::Stock::SORT_ASCENDING,
 					_("_Sort won cards (by number)")),
 		   Gtk::AccelKey ("<shft>S"),
 		   mem_fun (*this, &Hearts::sortWonByNumber));
-   grpAction->add (Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
+   grpAction->add (Gtk::Action::create ("HeartSortCol", Gtk::Stock::SORT_ASCENDING,
 					_("Sort won cards (by _colour)")),
 		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Hearts::sortWonByColour));

@@ -835,6 +835,7 @@ void Buraco::dumpedSelected () {
 	    Gtk::MessageDialog dlg (e, Gtk::MESSAGE_ERROR);
 	    dlg.set_title (_("Invalid move"));
 	    dlg.run ();
+	    enableHuman ();
 	    return;
 	 }
 
@@ -2227,26 +2228,27 @@ bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) {
 /// \param mgrUI: UIManager to add to
 //-----------------------------------------------------------------------------
 void Buraco::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
+   TRACE1 ("Buraco::addMenus (Glib::RefPtr<Gtk::UIManager>");
    Check1 (mgrUI);
    Glib::ustring ui ("<menubar name='Menu'>"
 		     "  <placeholder name='GameMenu'>"
 		     "    <menu action='MB'>"
-		     "      <menuitem action='Undo'/>"
+		     "      <menuitem action='BuracoUndo'/>"
 		     "      <separator/>"
-		     "      <menuitem action='Sort'/>"
-		     "      <menuitem action='SortCol'/>"
+		     "      <menuitem action='BuracoSort'/>"
+		     "      <menuitem action='BuracoSortCol'/>"
 		     "    </menu></placeholder></menubar>");
 
    Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
    grpAction->add (Gtk::Action::create ("MB", _("_Buraco")));
-   grpAction->add (menuUndo = Gtk::Action::create ("Undo", Gtk::Stock::UNDO),
+   grpAction->add (menuUndo = Gtk::Action::create ("BuracoUndo", Gtk::Stock::UNDO),
 		   Gtk::AccelKey (_("<ctl>Z")),
 		   mem_fun (*this, &Buraco::undoMove));
-   grpAction->add (menuSort = Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
+   grpAction->add (menuSort = Gtk::Action::create ("BuracoSort", Gtk::Stock::SORT_ASCENDING,
 						   _("_Sort cards (by number)")),
 		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Buraco::sortHand));
-   grpAction->add (menuSort2 = Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
+   grpAction->add (menuSort2 = Gtk::Action::create ("BuracoSortCol", Gtk::Stock::SORT_ASCENDING,
 						    _("Sort cards (by _colour)")),
 		   Gtk::AccelKey ("<shft>S"),
 		   mem_fun (*this, &Buraco::sortHandByColour));

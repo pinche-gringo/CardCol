@@ -1224,17 +1224,17 @@ void Twopart::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Glib::ustring ui ("<menubar name='Menu'>"
 		     "  <placeholder name='GameMenu'>"
 		     "    <menu action='MB'>"
-		     "      <menuitem action='Sort'/>"
-		     "      <menuitem action='SortCol'/>"
+		     "      <menuitem action='TwopartSort'/>"
+		     "      <menuitem action='TwopartSortCol'/>"
 		     "    </menu></placeholder></menubar>");
 
    Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
    grpAction->add (Gtk::Action::create ("MB", _("_Twopart")));
-   grpAction->add (Gtk::Action::create ("Sort", Gtk::Stock::SORT_ASCENDING,
+   grpAction->add (Gtk::Action::create ("TwopartSort", Gtk::Stock::SORT_ASCENDING,
 					_("_Sort won cards (by number)")),
 		   Gtk::AccelKey ("<shft>S"),
 		   mem_fun (*this, &Twopart::sortWonByNumber));
-   grpAction->add (Gtk::Action::create ("SortCol", Gtk::Stock::SORT_ASCENDING,
+   grpAction->add (Gtk::Action::create ("TwopartSortCol", Gtk::Stock::SORT_ASCENDING,
 					_("Sort won cards (by _colour)")),
 		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Twopart::sortWonByColour));
