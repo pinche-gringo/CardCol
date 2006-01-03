@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.7.33, [g17m0@lycos.com], CardCol)
+AC_INIT(Cardgames, 0.7.40, [g17m0@lycos.com], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -51,7 +51,7 @@ if test $ac_cv_lib_pthread_main = no; then
    AC_MSG_WARN(libpthread is not installed! Disabling network features)
 fi
 
-PKG_CHECK_MODULES(CARDGAME, gtkmm-2.4 >= 2.4.0 gthread-2.0 > 2.2.0
+PKG_CHECK_MODULES(CARDGAME, gtkmm-2.4 >= 2.6.0 gthread-2.0 > 2.2.0
                   YGP >= 0.7.21 XGP >= 0.7.20)
 AC_SUBST(CARDGAME_CFLAGS)
 AC_SUBST(CARDGAME_LIBS)
@@ -87,13 +87,13 @@ AC_ARG_ENABLE(saving,
                   CXXFLAGS="$CXXFLAGS -DSAVE_GAME";
               fi)
 
-AC_ARG_WITH(carddeck-dir,
-            AC_HELP_STRING([--with-carddeck-dir=DIR], [Path to the carddecks]),
-            [test -n "$withval" && CARDDECKS_DIR=$withval])
+AC_ARG_WITH(kde-carddir,
+            AC_HELP_STRING([--with-kdecard-dir=DIR], [Path to the KDE carddecks]),
+            [test -n "$withval" && KDECARDS_DIR=$withval])
 
 AC_MSG_CHECKING(for KDE carddecks)
 dnl Try to find the KDE carddecks (if not specified)
-if test -z $CARDDECKS_DIR; then
+if test -z $KDECARDS_DIR; then
    for dir in /opt/kde3/share/apps/carddecks /usr/share/kde3/share/apps/carddecks \
               /usr/kde3/share/apps/carddecks /usr/share/kde3/apps/carddecks \
 	      /usr/share/apps/carddecks /usr/local/share/apps/carddecks \
@@ -101,26 +101,64 @@ if test -z $CARDDECKS_DIR; then
               /usr/kde/3.2/share/apps/carddecks /usr/kde/3.3/share/apps/carddecks \
               /usr/kde/3.4/share/apps/carddecks /usr/kde/3.5/share/apps/carddecks; do
       if test -d $dir/; then
-         CARDDECKS_DIR=$dir/
+         KDECARDS_DIR=$dir/
 	 break
       fi
    done
 
-   if test -z $CARDDECKS_DIR; then
-      CARDDECKS_DIR="/opt/kde3/share/apps/carddecks"
+   if test -z $KDECARDS_DIR; then
+      KDECARDS_DIR="/opt/kde3/share/apps/carddecks"
       AC_MSG_NOTICE(using default)
    fi
 fi
-AC_MSG_RESULT($CARDDECKS_DIR)
-if test ! -d "$CARDDECKS_DIR"; then
-   AC_MSG_ERROR("Directory $CARDDECKS_DIR does not exist!")
-fi
-if test ! -d "$CARDDECKS_DIR/decks"; then
-   AC_MSG_ERROR("Directory $CARDDECKS_DIR does not seem to hold carddecks!")
+
+HAVE_CARDS=0
+AC_MSG_RESULT($KDECARDS_DIR)
+if test ! -d "$KDECARDS_DIR"; then
+   AC_MSG_WARN("Directory $KDECARDS_DIR does not exist!")
+else
+   if test ! -d "$KDECARDS_DIR/decks"; then
+      AC_MSG_WARN("Directory $KDECARDS_DIR does not seem to hold KDE carddecks!")
+   else
+      HAVE_CARDS=1
+   fi
 fi
 
-AC_DEFINE_UNQUOTED(CARDDECKS_DIR, "$CARDDECKS_DIR",
-                   [Directory holding the carddecks])
+AC_ARG_WITH(cardpics,
+            AC_HELP_STRING([--with-cardpic-dir=DIR], [Path to cardpics]),
+            [test -n "$withval" && CARDPIC_DIR=$withval])
+
+AC_MSG_CHECKING(for cardpics)
+dnl Try to find the cardpics (if not specified)
+if test -z $CARDPICS_DIR; then
+   for dir in /usr/share/games/cardpics/images /usr/share/cardpics/images; do
+      if test -d $dir/; then
+         CARDPICS_DIR=$dir/
+	 break
+      fi
+   done
+
+   if test -z $CARDPICS_DIR; then
+      CARDPICS_DIR=/usr/share/games/cardpics/images
+      AC_MSG_NOTICE(using default)
+   fi
+fi
+
+AC_MSG_RESULT($CARDPICS_DIR)
+if test ! -d "$CARDPICS_DIR"; then
+   AC_MSG_WARN("Directory $CARDPICS_DIR does not exist!")
+else
+   HAVE_CARDS=1
+fi
+
+if test $HAVE_CARDS -eq 0; then
+   AC_MSG_ERROR("Didn't find any carddecks!")
+fi
+
+AC_DEFINE_UNQUOTED(KDECARDS_DIR, "$KDECARDS_DIR",
+                   [Directory holding the KDE carddecks])
+AC_DEFINE_UNQUOTED(CARDPICS_DIR, "$CARDPICS_DIR",
+                   [Directory holding the cardpics])
 
 AC_OUTPUT([Makefile Common/Makefile src/Makefile intl/Makefile po/Makefile.in doc/Makefile])
 
