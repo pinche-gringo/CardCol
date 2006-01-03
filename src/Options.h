@@ -45,8 +45,8 @@ class Options : public YGP::Entity {
    unsigned int type;
    std::string  browser;       // %attrib%; Helpbrowser; "galeon"
    std::string  helpPath;      // %attrib%; Helpdir;     DOCUDIR
-   std::string  decks;         // %attrib%; CardFront;   CARDDECKS_DIR "/cards-default"
-   std::string  back;          // %attrib%; CardBack;    CARDDECKS_DIR "/decks/deck1.png"
+   std::string  decks;         // %attrib%; CardFront;   CARDDECKS_DIR "cards-default/"
+   std::string  back;          // %attrib%; CardBack;    CARDDECKS_DIR "decks/deck1.png"
    std::string  target;
    std::string  port;
 
