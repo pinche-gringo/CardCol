@@ -26,4 +26,4 @@ uninstall-local:
 	  echo " rm -f $(DESTDIR)$(docudir)/$$f"; \
 	  rm -f $(DESTDIR)$(docudir)/$$f; \
 	 done
-	rmdir -f $(DESTDIR)$(docudir)
+	rmdir $(DESTDIR)$(docudir)
