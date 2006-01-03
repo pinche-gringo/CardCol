@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 29.8.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2004
+//COPYRIGHT   : Copyright (C) 2002 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <gtkmm/stock.h>
 #include <gtkmm/image.h>
 #include <gtkmm/messagedialog.h>
+#include <gtkmm/scrolledwindow.h>
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -41,29 +42,31 @@
 #include "DeckSelect.h"
 
 
-static const char* const DEFAULTFILE = "14.png";
-
-
 //-----------------------------------------------------------------------------
 /// Constructor; adds all controls to the dialog
-/// \param path: Path to carddecks
 /// \param deck: Name of deck to preselect
 /// \param back: Name of back to preselect
 //-----------------------------------------------------------------------------
-ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& deck,
-                                        const std::string& back)
-   : XGP::XDialog (_("Select carddeck"), OKCANCEL)
-     , offDeck (-1), offBack (-1)
-     , boxDecks (), txtDecks (_("Available decks")), selDeck (), decks ()
-     , selBack (), boxBack (), txtBack (_("Available backgrounds")), backs ()
-     , box (Gtk::BUTTONBOX_END, 5) {
-   TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (const char*) - " << path
-           << " (" << deck << " - " << back << ')');
+DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
+   : XGP::XDialog (_("Select carddeck"), OKCANCEL),
+     txtDecks (_("Available decks")),
+     txtBack (_("Available backgrounds")) {
+   TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (2x const std::string&) - " << deck << " - " << back);
 
-   boxDecks.pack_start (decks, true, true, 50);
+   Gtk::ScrolledWindow* scrl (new Gtk::ScrolledWindow);
+   scrl->set_shadow_type (Gtk::SHADOW_ETCHED_IN);
+   scrl->add (decks);
+   scrl->set_policy (Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+
+   boxDecks.pack_start (*manage (scrl), true, true, 50);
    boxDecks.pack_start (selDeck, false, 5);
 
-   boxBack.pack_start (backs, true, true, 50);
+   scrl = new Gtk::ScrolledWindow;
+   scrl->set_shadow_type (Gtk::SHADOW_ETCHED_IN);
+   scrl->add (backs);
+   scrl->set_policy (Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+
+   boxBack.pack_start (*manage (scrl), true, true, 50);
    boxBack.pack_start (selBack, false, 5);
 
    Check3 (get_vbox ());
@@ -72,194 +75,162 @@ ICarddeckSelectDlg::ICarddeckSelectDlg (const char* path, const std::string& dec
    get_vbox ()->pack_start (txtBack, false, false, 5);
    get_vbox ()->pack_start (boxBack, true, true, 5);
 
-   std::string cardDirs (path ? path : CARDDECKS_DIR);
-   if (cardDirs.size ()
-       && (cardDirs[cardDirs.size () - 1] != YGP::File::DIRSEPARATOR))
-      cardDirs += YGP::File::DIRSEPARATOR;
-   aFiles.push_back (cardDirs);
+   mDecks = Gtk::ListStore::create (cols);
+   decks.set_model (mDecks);
+
+   decks.signal_selection_changed ().connect (mem_fun (*this, &DeckSelectDlg::deckSelected));
+
+#ifdef KDECARDS_DIR
+   std::string cardDirs (KDECARDS_DIR); Check3 (cardDirs[cardDirs.size () - 1] == YGP::File::DIRSEPARATOR);
    cardDirs += "cards-*";
    YGP::DirectorySearch ds (cardDirs);
 
-   TRACE8 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Searching in path "
+   TRACE8 ("DeckSelectDlg::DeckSelectDlg (const char*) - Searching in path "
            << cardDirs);
    const YGP::File* dir (ds.find (YGP::IDirectorySearch::FILE_DIRECTORY
                                   | YGP::IDirectorySearch::FILE_READONLY));
-   unsigned int offset (0);
-
-   show_all ();
-
    while (dir) {
-      TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Found dir "
-              << dir->name ());
-
-      std::string pathDeck (aFiles[0]);
-      aFiles.push_back (dir->name ());
-      pathDeck += dir->name ();
-
-      std::string file (pathDeck);
+      Gtk::TreeRow row (*mDecks->append ());
+      std::string file (dir->path ());
+      file += dir->name ();
       file += YGP::File::DIRSEPARATOR;
-      file += DEFAULTFILE;
-      TRACE6 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Reading file "
-              << file);
+      row[cols.path] = file;
+      row[cols.name] = dir->name () + 6;
 
-      Gtk::Button* temp (createButton (file));
-      temp->signal_clicked ().connect
-         (bind (mem_fun (*this, &ICarddeckSelectDlg::deckSelect), offset));
-      aDecks.push_back (temp);
+      file += "14.png";
+      row[cols.icon] = getImage (file);
 
-      decks.add (*temp);
-
-      TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Comparing "
-              << pathDeck << " with " << deck);
-      if (pathDeck == deck)
-         deckSelect (offset);
+      TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
+              << (std::string (dir->path ()) + dir->name ()) << " with " << deck);
+      if ((std::string (dir->path ()) + dir->name ()) == deck)
+         decks.select_path (mDecks->get_path (row));
 
       dir = ds.next ();
-      ++offset;
    }
+#endif
+#ifdef CARDPICS_DIR
+   Gtk::TreeRow row (*mDecks->append ());
+   row[cols.path] = CARDPICS_DIR;
+   row[cols.name] = "Cardpics";
+   row[cols.icon] = getImage (CARDPICS_DIR "24.png");
 
-   int height (50), width (50);
-   if (aDecks.size ())
-      aDecks.front ()->get_size_request (width, height);
-   height = (height + 20) * ((offset >> 2) + 1);
-   width = (width + 25) << 2;
-   TRACE1 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*, const"
-           "std::string&, const std::string&) - Decksize:  " << width
-           << '/' << (height < 250 ? height : 250));
-   decks.set_size_request (width + 25, height < 270 ? height : 270);
+   TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
+	   << CARDPICS_DIR "24.png" << " with " << deck);
+   if (deck == CARDPICS_DIR)
+      decks.select_path (mDecks->get_path (row));
+#endif
 
-   if ((offDeck == -1) && (aFiles.size () > 1))
-      deckSelect (1);
+   unsigned int height (132 * ((mDecks->children ().size () >> 2) + 1));
+   decks.set_size_request ((mDecks->children ().size () > 3) ? 20 + (88 << 2) : 20 + 88 * mDecks->children ().size (),
+			   height < 270 ? height : 270);
 
-   unsigned int offsetBack (offset + 1);
-   std::string pathDecks (aFiles[0] + "decks/");
+   mBacks = Gtk::ListStore::create (cols);
+   backs.set_model (mBacks);
+   backs.signal_selection_changed ().connect (mem_fun (*this, &DeckSelectDlg::backSelected));
+
+#ifdef KDECARDS_DIR
+   std::string pathDecks (KDECARDS_DIR "decks/");
    dir = ds.find (pathDecks + "deck*.png", YGP::IDirectorySearch::FILE_NORMAL
                   | YGP::IDirectorySearch::FILE_READONLY);
    while (dir) {
-      TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Reading "
-              "background file " << dir->path () << dir->name ());
-      aFiles.push_back (dir->name ());
+      Gtk::TreeRow row (*mBacks->append ());
+      row[cols.path] = pathDecks + dir->name ();
+      row[cols.icon] = getImage (pathDecks + dir->name ());
 
-      Gtk::Button* temp (createButton (pathDecks + dir->name ()));
-      temp->signal_clicked ().connect
-         (bind (mem_fun (*this, &ICarddeckSelectDlg::backSelect), ++offset));
-      aBacks.push_back (temp);
-
-      TRACE9 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*) - Comparing "
+      TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
               << (pathDecks + dir->name ()) << " with " << back);
       if ((pathDecks + dir->name ()) == back)
-         backSelect (offset);
+         backs.select_path (mBacks->get_path (row));
 
-      backs.add (*temp);
       dir = ds.next ();
    }
-   if ((offBack == -1) && (aFiles.size () > static_cast<unsigned int> (offBack)))
-      backSelect (offsetBack);
+#endif
 
-   offset -= offBack;
+#ifdef CARDPICS_DIR
+   row = (*mBacks->append ());
+   row[cols.path] = CARDPICS_DIR;
+   row[cols.icon] = getImage (CARDPICS_DIR "78.png");
 
-   height = width = 50;
-   if (aBacks.size ())
-      aBacks.front ()->get_size_request (width, height);
-   height = (height + 20) * ((offset >> 2) + 1);
-   width = (width + 25) << 2;
-   TRACE1 ("ICarddeckSelectDlg::ICarddeckSelectDlg (const char*, const"
-           "std::string&, const std::string&) - Backsize:  " << width
-           << '/' << (height < 250 ? height : 250));
-   backs.set_size_request (width + 25, height < 270 ? height : 270);
+   TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
+	   << CARDPICS_DIR "78.png" << " with " << deck);
+   if (back == CARDPICS_DIR "78.png")
+      backs.select_path (mBacks->get_path (row));
+#endif
 
-   if ((offDeck != -1) || (offBack != -1)) {
+   height = 132 * ((mBacks->children ().size () >> 2) + 1);
+   backs.set_size_request ((mBacks->children ().size () > 3) ? 20 + (88 << 2) : 20 + 88 * mBacks->children ().size (),
+			   height < 270 ? height : 270);
+
+   if (mDecks->children ().size () || mBacks->children ().size ()) {
       Gtk::Button& apply (*manage (new Gtk::Button (Gtk::Stock::APPLY)));
       apply.signal_clicked ().connect
-	 (bind (mem_fun (*this, &ICarddeckSelectDlg::command), Gtk::RESPONSE_APPLY));
+	 (bind (mem_fun (*this, &DeckSelectDlg::command), Gtk::RESPONSE_APPLY));
       get_action_area ()->pack_end (apply, false, false, 5);
       apply.show ();
    }
    else
       ok->set_sensitive (false);
+
+   decks.set_pixbuf_column (cols.icon);
+   decks.set_text_column (cols.name);
+   backs.set_pixbuf_column (cols.icon);
+
+   show_all ();
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-ICarddeckSelectDlg::~ICarddeckSelectDlg () {
+DeckSelectDlg::~DeckSelectDlg () {
    TRACE9 ("CarddeckSelectDlg::~CarddeckSelectDlg ()");
-
-   for (std::vector<Gtk::Button*>::iterator i (aDecks.begin ());
-        i != aDecks.end (); ++i)
-      delete *i;
-
-   for (std::vector<Gtk::Button*>::iterator i (aBacks.begin ());
-        i != aBacks.end (); ++i)
-      delete *i;
 }
 
-
-//-----------------------------------------------------------------------------
-/// Callback after selecting a carddeck
-/// \param offset: Position of name in aFiles array
-//-----------------------------------------------------------------------------
-void ICarddeckSelectDlg::deckSelect (unsigned int offset) {
-   TRACE9 ("ICarddeckSelectDlg::deckSelect (const std::string&) - Position "
-           << offset);
-   Check3 (offset < aFiles.size ());
-   TRACE3 ("ICarddeckSelectDlg::deckSelect (const std::string&) - Selected "
-           << aFiles[0] << aFiles[offset + 1]);
-
-   setButtonImage (selDeck, aFiles[0] + aFiles[offDeck = offset + 1]
-                   + YGP::File::DIRSEPARATOR + DEFAULTFILE);
-}
-
-//-----------------------------------------------------------------------------
-/// Callback after selecting a background
-/// \param offset: Position of name in aFiles array
-//-----------------------------------------------------------------------------
-void ICarddeckSelectDlg::backSelect (unsigned int offset) {
-   TRACE9 ("ICarddeckSelectDlg::backSelect (const std::string&) - Position "
-           << offset);
-   Check3 (offset < aFiles.size ());
-
-   TRACE3 ("ICarddeckSelectDlg::backSelect (const std::string&) - Selected "
-           << aFiles[0] << "decks/" << aFiles[offset]);
-
-   setButtonImage (selBack, aFiles[0] + "decks" + YGP::File::DIRSEPARATOR
-                   + aFiles[offBack = offset]);
-}
 
 //-----------------------------------------------------------------------------
 /// Callback after selecting a button
 /// \param action: ID of selected button
 //-----------------------------------------------------------------------------
-void ICarddeckSelectDlg::command (int action) {
-   TRACE9 ("ICarddeckSelectDlg::command (int) - Command: " << action);
+void DeckSelectDlg::command (int action) {
+   TRACE9 ("DeckSelectDlg::command (int) - Command: " << action);
+   if (action == Gtk::RESPONSE_APPLY) {
+      std::string deck, back;
+      if (decks.get_selected_items ().size ()) {
+	 Gtk::TreePath path (*(decks.get_selected_items ().begin ()));
+	 Gtk::TreeRow row (*mDecks->get_iter (path));
+	 deck = row[cols.path];
+      }
+
+      if (backs.get_selected_items ().size ()) {
+	 Gtk::TreePath path (*(backs.get_selected_items ().begin ()));
+	 Gtk::TreeRow row (*mBacks->get_iter (path));
+	 back = row[cols.path];
+      }
+      setDecks.emit (deck, back);
+   }
 }
 
 //-----------------------------------------------------------------------------
-/// Creates a pixmap-button, with an image from the passed file
-/// \param file: File containing the image
+/// Callback after selecting the OK button
 //-----------------------------------------------------------------------------
-Gtk::Button* ICarddeckSelectDlg::createButton (const std::string& file) {
-   TRACE9 ("ICarddeckSelectDlg::createButton (const std::string&) - " << file);
-   Gtk::Button* temp (new Gtk::Button ());
-
-   setButtonImage (*temp, file);
-   temp->show ();
-   return temp;
+void DeckSelectDlg::okEvent () {
+   command (Gtk::RESPONSE_APPLY);
+   XGP::XDialog::okEvent ();
 }
 
 //-----------------------------------------------------------------------------
-/// Sets an image for the passed button
-/// \param button: Button to change
+/// Returns an image specified by the passed file
 /// \param file: File containing the image
+/// \returns Glib::RefPtr<Gdk::Pixbuf>: Created image
 //-----------------------------------------------------------------------------
-void ICarddeckSelectDlg::setButtonImage (Gtk::Button& button, const std::string& file) {
-   TRACE9 ("ICarddeckSelectDlg::setButtonImage (Gtk::Button&, const std::string&) - "
-           << file);
+Glib::RefPtr<Gdk::Pixbuf> DeckSelectDlg::getImage (const std::string& file) {
+   TRACE9 ("DeckSelectDlg::setButtonImage (const std::string&) - " << file);
    Glib::RefPtr<Gdk::Pixbuf> imgBuf;
    std::string err;
 
    try {
       imgBuf = Gdk::Pixbuf::create_from_file (file.c_str ());
+      if ((imgBuf->get_height () != 72) || (imgBuf->get_width () != 96))
+	 imgBuf = imgBuf->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
    }
    catch (Gdk::PixbufError& e) {
       err = e.what ();
@@ -276,20 +247,37 @@ void ICarddeckSelectDlg::setButtonImage (Gtk::Button& button, const std::string&
       msg.replace (msg.find ("%2"), 2, err);
       Gtk::MessageDialog dlg (msg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dlg.run ();
-      return;
    }
 
-   Glib::RefPtr<Gdk::Pixmap> img;
-   Glib::RefPtr<Gdk::Bitmap> bitmap;
+   return imgBuf;
+}
 
-   button.remove ();
-   imgBuf->render_pixmap_and_mask (img, bitmap, 0);
+//-----------------------------------------------------------------------------
+/// Callback after changing the selected deck
+//-----------------------------------------------------------------------------
+void DeckSelectDlg::deckSelected () {
+   TRACE8 ("DeckSelectDlg::deckSelected ()");
 
-   int x, y;
-   button.add_pixmap (img, bitmap);
-   img->get_size (x, y);
-   button.set_size_request (x + 6, y + 6);
+   if (decks.get_selected_items ().size ()) {
+      Gtk::TreePath path (*(decks.get_selected_items ().begin ()));
+      Gtk::TreeRow row (*mDecks->get_iter (path));
+      Glib::RefPtr<Gdk::Pixbuf> img (row[cols.icon]);
 
-   button.set_relief (Gtk::RELIEF_NONE);
-   dynamic_cast <Gtk::Image*> (button.get_child ())->set_alignment (0.0, 0.0);
+      selDeck.set (img);
+   }
+}
+
+//-----------------------------------------------------------------------------
+/// Callback after changing the selected back
+//-----------------------------------------------------------------------------
+void DeckSelectDlg::backSelected () {
+   TRACE8 ("DeckSelectDlg::backSelected ()");
+
+   if (backs.get_selected_items ().size ()) {
+      Gtk::TreePath path (*(backs.get_selected_items ().begin ()));
+      Gtk::TreeRow row (*mBacks->get_iter (path));
+      Glib::RefPtr<Gdk::Pixbuf> img (row[cols.icon]);
+
+      selBack.set (img);
+   }
 }

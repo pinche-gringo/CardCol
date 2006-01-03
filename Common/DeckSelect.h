@@ -19,96 +19,75 @@
 
 
 #include <string>
-#include <vector>
 
 #include <gtkmm/box.h>
 #include <gtkmm/label.h>
-#include <gtkmm/button.h>
-#include <gtkmm/buttonbox.h>
+#include <gtkmm/image.h>
+#include <gtkmm/iconview.h>
+#include <gtkmm/liststore.h>
 
-#include <XGP/Folder.h>
 #include <XGP/XDialog.h>
 
 
 // Class to select the card decks to use
-class ICarddeckSelectDlg : public XGP::XDialog {
- public:
-   ICarddeckSelectDlg (const char* path, const std::string& deck,
-                       const std::string& back);
-   virtual ~ICarddeckSelectDlg ();
+class DeckSelectDlg : public XGP::XDialog {
+ private:
+   /**Class describing the columns in the deck-lists
+    */
+   class DeckColumns : public Gtk::TreeModel::ColumnRecord {
+    public:
+      DeckColumns () { add (path); add (name); add (icon); }
 
-   void getSelection (std::string& deck, std::string& back) const {
-      deck = (offDeck == -1) ? "" : (aFiles[0] + aFiles[offDeck]);
-      back = (offBack == -1) ? "" : (aFiles[0] + "decks/" + aFiles[offBack]); }
+      Gtk::TreeModelColumn<std::string> path;
+      Gtk::TreeModelColumn<Glib::ustring> name;
+      Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > icon;
+   };
+
+ public:
+   DeckSelectDlg (const std::string& deck, const std::string& back);
+   virtual ~DeckSelectDlg ();
+
+   /// Creates a DeckSelect-dialog on the heap
+   /// \param deck: Pre-selected deck
+   /// \param back: Pre-selected back
+   /// \returns DeckSelectDlg*: Created dialog
+   static DeckSelectDlg* create (const std::string& deck, const std::string& back) {
+      DeckSelectDlg* dlg (new DeckSelectDlg (deck, back));
+      dlg->signal_response ().connect (mem_fun (*dlg, &DeckSelectDlg::free));
+      return dlg; }
+
+   /// Signal emitted, when changing deck/back is confirmed
+   SigC::Signal2<void, const std::string&, const std::string&> setDecks;
 
  protected:
+   virtual void okEvent ();
    virtual void command (int action);
-   virtual void deckSelect (unsigned int offset);
-   virtual void backSelect (unsigned int offset);
 
-   Gtk::Button* createButton (const std::string& file);
-   void setButtonImage (Gtk::Button& button, const std::string& file);
-
-   int offDeck;
-   int offBack;
+   Glib::RefPtr<Gdk::Pixbuf> getImage (const std::string& file);
 
  private:
    // Prohibited manager-functions
-   ICarddeckSelectDlg ();
-   ICarddeckSelectDlg (const ICarddeckSelectDlg&);
-   
-   const ICarddeckSelectDlg& operator= (const ICarddeckSelectDlg&);
+   DeckSelectDlg ();
+   DeckSelectDlg (const DeckSelectDlg&);
 
-   Gtk::HBox   boxDecks;
-   Gtk::Label  txtDecks;
-   Gtk::Button selDeck;
-   XGP::Folder decks;
+   void deckSelected ();
+   void backSelected ();
 
-   Gtk::Button selBack;
-   Gtk::HBox   boxBack;
-   Gtk::Label  txtBack;
-   XGP::Folder backs;
+   const DeckSelectDlg& operator= (const DeckSelectDlg&);
 
-   Gtk::HButtonBox box;
+   DeckColumns cols;
+   Glib::RefPtr<Gtk::ListStore> mDecks;
+   Glib::RefPtr<Gtk::ListStore> mBacks;
 
-   std::vector<Gtk::Button*> aDecks;
-   std::vector<Gtk::Button*> aBacks;
-   std::vector<std::string> aFiles;
-};
+   Gtk::HBox     boxDecks;
+   Gtk::Label    txtDecks;
+   Gtk::Image    selDeck;
+   Gtk::IconView decks;
 
-
-template <class T>
-class CarddeckSelectDlg : public ICarddeckSelectDlg {
- public:
-   typedef void (T::*PCALLBACK) (const ICarddeckSelectDlg&);
-
-   CarddeckSelectDlg (T& parent, PCALLBACK callback, const char* path,
-                      const std::string& deck, const std::string& back)
-      : ICarddeckSelectDlg (path, deck, back), obj (parent), pCallback (callback) { }
-   virtual ~CarddeckSelectDlg () { }
-
-   static CarddeckSelectDlg* create (T& parent, PCALLBACK callback, const char* path,
-                                     const std::string& deck, const std::string& back) {
-      CarddeckSelectDlg<T>* dlg (new CarddeckSelectDlg (parent, callback,
-							path, deck, back));
-      dlg->signal_response ().connect (mem_fun (*dlg, &CarddeckSelectDlg<T>::free));
-      dlg->get_window ()->set_transient_for (parent.get_window ());
-      return dlg;
-   }
-
- protected:
-   virtual void okEvent () {
-      (obj.*pCallback) (*this);
-      ICarddeckSelectDlg::okEvent (); }
-   virtual void command (int action) {
-      ICarddeckSelectDlg::command (action);
-      if (action == Gtk::RESPONSE_APPLY)
-         (obj.*pCallback) (*this);
-   }
-
- private:
-   T&        obj;
-   PCALLBACK pCallback;
+   Gtk::Image    selBack;
+   Gtk::HBox     boxBack;
+   Gtk::Label    txtBack;
+   Gtk::IconView backs;
 };
 
 
