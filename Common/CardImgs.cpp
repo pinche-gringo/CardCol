@@ -65,8 +65,10 @@ static std::string convert2CardpicsFile (unsigned int nrImage) {
    Check3 (nrImage < 52);
 
    // Special handling of aces
-   if (nrImage < 5)
+   if (nrImage < 4)
       nrImage *= 14;
+   else if (nrImage < 12)
+      nrImage = ((59 - nrImage) >> 2) + ((nrImage & 3) * 14);
    else
       nrImage = ((55 - nrImage) >> 2) + ((nrImage & 3) * 14);
 
