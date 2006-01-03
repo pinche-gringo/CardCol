@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 9.9.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2005
+//COPYRIGHT   : Copyright (C) 2002 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -53,7 +53,6 @@
 #include <PlayerDlg.h>
 #include <DeckSelect.h>
 
-
 #include "Hearts.h"
 #include "Buraco.h"
 #include "Rovhult.h"
@@ -61,6 +60,14 @@
 #include "Settings.h"
 #include "SgtMayor.h"
 #include "Machiavelli.h"
+
+#ifdef KDECARDS_DIR
+#  define CARDDECKS_DIR     KDECARDS_DIR
+#elif defined CARDPICS_DIR
+#  define CARDDECKS_DIR     CARDPICS_DIR
+#else
+#  define CARDDECKS_DIR     ""
+#endif
 
 #include "Options.h"
 #include "Options.meta"
@@ -944,8 +951,9 @@ void CardgameCollection::changeGame (int game) {
 /// Opens a dialog allowing to change the card decks
 //-----------------------------------------------------------------------------
 void CardgameCollection::showChangeDeckDlg () {
-   CarddeckSelectDlg<CardgameCollection>::create
-      (*this, &CardgameCollection::changeDecks, CARDDECKS_DIR, options.decks, options.back);
+   DeckSelectDlg& dlg (*DeckSelectDlg::create (options.decks, options.back));
+   dlg.get_window ()->set_transient_for (get_window ());
+   dlg.setDecks.connect (mem_fun (this, &CardgameCollection::changeDecks));
 }
 
 //-----------------------------------------------------------------------------
@@ -1077,13 +1085,12 @@ void CardgameCollection::changePlayernames () {
 
 //-----------------------------------------------------------------------------
 /// Callback to change the carddecks
-/// \param cmd: Selected button of dialog
+/// \param deck: Deck to set
+/// \param back: Back of cards to set
 //-----------------------------------------------------------------------------
-void CardgameCollection::changeDecks (const ICarddeckSelectDlg& dialog) {
-   TRACE2 ("CardgameCollection::changeDecks (const ICarddeckSelectDlg&)");
+void CardgameCollection::changeDecks (const std::string& deck, const std::string& back) {
+   TRACE2 ("CardgameCollection::changeDecks (2x const std::string&)");
 
-   std::string deck (options.decks), back (options.back);
-   dialog.getSelection (deck, back);
    unsigned int option (0);
    if (deck.size () && (deck != options.decks)) {
       option = 1;
