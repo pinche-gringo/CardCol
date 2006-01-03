@@ -52,6 +52,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
      txtDecks (_("Available decks")),
      txtBack (_("Available backgrounds")) {
    TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (2x const std::string&) - " << deck << " - " << back);
+   Check1 (deck[deck.size () - 1] == YGP::File::DIRSEPARATOR);
 
    Gtk::ScrolledWindow* scrl (new Gtk::ScrolledWindow);
    scrl->set_shadow_type (Gtk::SHADOW_ETCHED_IN);
@@ -101,8 +102,8 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
       row[cols.icon] = getImage (file);
 
       TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
-              << (std::string (dir->path ()) + dir->name ()) << " with " << deck);
-      if ((std::string (dir->path ()) + dir->name ()) == deck)
+              << (std::string)row[cols.path] << " with " << deck);
+      if (deck == (std::string)row[cols.path])
          decks.select_path (mDecks->get_path (row));
 
       dir = ds.next ();
@@ -115,7 +116,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
    row[cols.icon] = getImage (CARDPICS_DIR "24.png");
 
    TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
-	   << CARDPICS_DIR "24.png" << " with " << deck);
+	   << CARDPICS_DIR << " with " << deck);
    if (deck == CARDPICS_DIR)
       decks.select_path (mDecks->get_path (row));
 #endif
@@ -148,7 +149,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
 
 #ifdef CARDPICS_DIR
    row = (*mBacks->append ());
-   row[cols.path] = CARDPICS_DIR;
+   row[cols.path] = CARDPICS_DIR "78.png";
    row[cols.icon] = getImage (CARDPICS_DIR "78.png");
 
    TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
