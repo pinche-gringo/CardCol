@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 7.7.2005
-//COPYRIGHT   : Copyright (C) 2005
+//COPYRIGHT   : Copyright (C) 2005, 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 
 #include <cstdio>
 
+#include <YGP/File.h>
 #include <YGP/INIFile.h>
 
 #include <XGP/XAttribute.h>
@@ -96,7 +97,7 @@ void CardgameAppl::showHelp () const {
                  "  Type=Twopart\n"
                  "  Helpbrowser=galeon\n"
                  "  Helpdir=/usr/share/doc/Cardgames/\n"
-                 "  CardFront=/usr/share/carddecks/cards-default\n"
+                 "  CardFront=/usr/share/carddecks/cards-default/\n"
                  "  CardBack=/usr/share/carddecks/decks/deck1.png\n\n"
                  "  [Player]\n"
                  "  0=Human\n"
@@ -285,6 +286,9 @@ void CardgameAppl::readINIFile (const char* pFile) {
       err.replace (err.find ("%2"), 2, options.strType);
       std::cerr << PACKAGE << err << '\n';
    }
+
+   if (options.decks[options.decks.size () - 1] != YGP::File::DIRSEPARATOR)
+      options.decks += YGP::File::DIRSEPARATOR;
 }
 
 //-----------------------------------------------------------------------------
