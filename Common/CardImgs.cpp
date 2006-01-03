@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 29.03.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2004
+//COPYRIGHT   : Copyright (C) 2002 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include <cerrno>
 #include <cstdlib>
 
+#include <iomanip>
 #include <sstream>
 
 #include <cardgames-cfg.h>
@@ -38,6 +39,43 @@
 #include <gtkmm/widget.h>
 
 #include "CardImgs.h"
+
+
+#ifdef KDECARDS_DIR
+//-----------------------------------------------------------------------------
+/// Converts an image-number to a file-name (KDE-style)
+/// \param nrImage: Number of image to convert (in the range 0 - 51)
+/// \returns std::string: Filename (KDE-style)
+//-----------------------------------------------------------------------------
+static std::string convert2KDEFile (unsigned int nrImage) {
+   Check3 (nrImage < 52);
+   std::ostringstream out;
+   out << (nrImage + 1) << ".png";
+   return out.str ();
+}
+#endif
+
+#ifdef CARDPICS_DIR
+//-----------------------------------------------------------------------------
+/// Converts an image-number to a file-name (Cardpics-style)
+/// \param nrImage: Number of image to convert (in the range 0 - 51)
+/// \returns std::string: Filename (Cardpics-style)
+//-----------------------------------------------------------------------------
+static std::string convert2CardpicsFile (unsigned int nrImage) {
+   Check3 (nrImage < 52);
+
+   // Special handling of aces
+   if (nrImage < 5)
+      nrImage *= 14;
+   else
+      nrImage = ((55 - nrImage) >> 2) + ((nrImage & 3) * 14);
+
+   std::ostringstream out;
+   out << std::setw (2)
+       << std::setfill ('0') << nrImage << ".png";
+   return out.str ();
+}
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -74,18 +112,39 @@ void CardImages::loadDecks (const std::string& path, bool thread) throw (std::st
 
    std::string err;
 
-   for (int i = 1; i <= 52; ++i) {
-      std::ostringstream out;
-      out << file << i << ".png";
-      TRACE9 ("CardImages::loadDecks (const Gdk::Window&, const char*) - File "
-              << out.str ());
+   typedef std::string (*PCONVERT)(unsigned int);
+
+#ifdef KDECARDS_DIR
+#  ifdef CARDPICS_DIR
+   PCONVERT fnConvert (&convert2KDEFile);
+   TRACE1 ("CardImages::loadDecks (const Gdk::Window&, const char*) - " << path.substr (0, strlen (KDECARDS_DIR))
+	   << "<->" << KDECARDS_DIR);
+   if (path.substr (0, strlen (KDECARDS_DIR)) != KDECARDS_DIR)
+      fnConvert = convert2CardpicsFile;
+#  else
+   PCONVERT fnConvert (&convert2CardpicsFile);
+#  endif
+#else
+#  ifdef CARDPICS_DIR
+   PCONVERT fnConvert (&convert2KDEFile);
+#  else
+#     error No supported cards installed!
+#  endif
+#endif
+
+   std::string actFile;
+   for (int i (0); i < 52; ++i) {
+      actFile = file + fnConvert (i);
+      TRACE9 ("CardImages::loadDecks (const Gdk::Window&, const char*) - File " << actFile);
 
       if (thread)
          gdk_threads_enter ();
 
       try {
-         cards_[i - 1] = Gdk::Pixbuf::create_from_file (out.str ());
-         Check3 (cards_[i - 1]);
+         cards_[i] = Gdk::Pixbuf::create_from_file (actFile);
+	 if ((cards_[i]->get_height () != 72) || (cards_[i]->get_width () != 96))
+	    cards_[i] = cards_[i]->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+         Check3 (cards_[i]);
       }
       catch (Gdk::PixbufError& e) {
          err = e.what ();
@@ -118,6 +177,8 @@ void CardImages::loadBack (const std::string& back,
       gdk_threads_enter ();
    try {
       back_ = Gdk::Pixbuf::create_from_file (back);
+      if ((back_->get_height () != 72) || (back_->get_width () != 96))
+	 back_ = back_->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
    }
    catch (Gdk::PixbufError& e) {
       err = e.what ();
