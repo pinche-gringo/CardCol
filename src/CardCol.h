@@ -116,7 +116,7 @@ class CardgameCollection : public XGP::XApplication {
    void startGame ();
    void doStartGame ();
 
-   void changeDecks (const ICarddeckSelectDlg& dialog);
+   void changeDecks (const std::string& deck, const std::string& back);
    void changePlayernames ();
    void makePlayer ();
 
