@@ -59,7 +59,9 @@ Common options for configure
   --enable-checks[=level]	# Adds asserts and Checks
   --enable-debug[=level]	# Sets tracelevel & generation of debuginfo
   --enable-saving               # Games can be saved and loaded (for testing)
-  --with-carddeck-dir=[DIR]     # Path to the carddecks
+  --with-kde-carddir=[DIR]  	# Path to the KDE carddecks
+  --with-gnome-carddir=[DIR]    # Path to the GNOME carddecks
+  --with-carddpics-dir=[DIR]    # Path to the "cardpics" carddecks
 
 If you're using `csh' on an old version of System V, you might need to type
 `sh ./configure' instead to prevent `csh' from trying to execute `configure'
