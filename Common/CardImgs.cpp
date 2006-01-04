@@ -41,27 +41,126 @@
 #include "CardImgs.h"
 
 
-#ifdef KDECARDS_DIR
+/**Helper-class to actually load cardimages
+ */
+class ImageLoader {
+ public:
+   ImageLoader () { TRACE1 ("ImageLoader::ImageLoader ()"); }
+   virtual ~ImageLoader ();
+
+   virtual std::string convert2File (unsigned int nrImage);
+   virtual void loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
+			    const std::string& path) throw (Glib::ustring);
+   virtual void loadBack (Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& path) throw (Glib::ustring);
+
+ protected:
+   Glib::RefPtr<Gdk::Pixbuf> loadImage (const std::string& file) throw (Glib::ustring);
+};
+
+
 //-----------------------------------------------------------------------------
-/// Converts an image-number to a file-name (KDE-style)
+/// Destructor
+//-----------------------------------------------------------------------------
+ImageLoader::~ImageLoader () {
+}
+
+
+//-----------------------------------------------------------------------------
+/// Loads the cards (faces)
+/// \param cards: Vector of pixbufs to load the cards into
+/// \param path: Path to files
+//-----------------------------------------------------------------------------
+void ImageLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
+			      const std::string& path) throw (Glib::ustring) {
+   TRACE1 ("ImageLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tPath: " << path);
+
+   std::string file (path);
+   if (file[file.size () - 1] != YGP::File::DIRSEPARATOR)
+      file += YGP::File::DIRSEPARATOR;
+
+   std::string actFile;
+   for (unsigned int i (0); i < 52; ++i) {
+      actFile = file + convert2File (i);
+      TRACE8 ("CardImages::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tFile: " << actFile);
+
+      cards[i] = loadImage (actFile);
+      if ((cards[i]->get_height () != 72) || (cards[i]->get_width () != 96))
+	 cards[i] = cards[i]->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+      Check3 (cards[i]);
+   } // end-for
+}
+
+//-----------------------------------------------------------------------------
+/// Loads the card (back)
+/// \param back: Pixbuf to load the card into
+/// \param file: File to load from
+//-----------------------------------------------------------------------------
+void ImageLoader::loadBack (Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& file) throw (Glib::ustring) {
+   back = loadImage (file);
+   if ((back->get_height () != 72) || (back->get_width () != 96))
+      back = back->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+}
+
+//-----------------------------------------------------------------------------
+/// Loads an image from the passed file
+/// \param file: File to load
+/// \returns Glib::RefPtr<Gdk::Pixbuf>: Created image
+/// \throw Glib::ustring: An describing text in case of error
+//-----------------------------------------------------------------------------
+Glib::RefPtr<Gdk::Pixbuf> ImageLoader::loadImage (const std::string& file) throw (Glib::ustring) {
+   Glib::RefPtr<Gdk::Pixbuf> img;
+   try {
+      img = Gdk::Pixbuf::create_from_file (file);
+   }
+   catch (Gdk::PixbufError& e) {
+      throw e.what ();
+   }
+   catch (Glib::FileError& e) {
+      throw e.what ();
+   }
+   catch (...) {
+      throw Glib::ustring (_("Unknown error"));
+   }
+   return img;
+}
+
+
+//-----------------------------------------------------------------------------
+/// Converts an image-number to a file-name. Default style: nrImage -> "(nrImage +1).png"
 /// \param nrImage: Number of image to convert (in the range 0 - 51)
 /// \returns std::string: Filename (KDE-style)
 //-----------------------------------------------------------------------------
-static std::string convert2KDEFile (unsigned int nrImage) {
+std::string ImageLoader::convert2File (unsigned int nrImage) {
    Check3 (nrImage < 52);
    std::ostringstream out;
    out << (nrImage + 1) << ".png";
    return out.str ();
 }
-#endif
 
 #ifdef CARDPICS_DIR
+/**Helper-class to load cardpcis cardimages
+ */
+class CardpicsLoader : public ImageLoader {
+ public:
+   CardpicsLoader () { TRACE1 ("CardpicsLoader::CardpicsLoader ()"); }
+   virtual ~CardpicsLoader ();
+
+   virtual std::string convert2File (unsigned int nrImage);
+};
+
+//-----------------------------------------------------------------------------
+/// Destructor
+//-----------------------------------------------------------------------------
+CardpicsLoader::~CardpicsLoader () {
+}
+
+
 //-----------------------------------------------------------------------------
 /// Converts an image-number to a file-name (Cardpics-style)
 /// \param nrImage: Number of image to convert (in the range 0 - 51)
 /// \returns std::string: Filename (Cardpics-style)
 //-----------------------------------------------------------------------------
-static std::string convert2CardpicsFile (unsigned int nrImage) {
+std::string CardpicsLoader::convert2File (unsigned int nrImage) {
    Check3 (nrImage < 52);
 
    // Special handling of aces
@@ -79,6 +178,64 @@ static std::string convert2CardpicsFile (unsigned int nrImage) {
 }
 #endif
 
+#ifdef GNOMECARDS_DIR
+/**Helper-class to load the GNOME cardimages
+ */
+class GnomeLoader : public ImageLoader {
+ public:
+   GnomeLoader () { TRACE1 ("GnomeLoader::GnomeLoader ()"); }
+   virtual ~GnomeLoader ();
+
+   virtual void loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
+			    const std::string& path) throw (Glib::ustring);
+   virtual void loadBack (Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& path) throw (Glib::ustring);
+};
+
+
+//-----------------------------------------------------------------------------
+/// Destructor
+//-----------------------------------------------------------------------------
+GnomeLoader::~GnomeLoader () {
+}
+
+
+//-----------------------------------------------------------------------------
+/// Loads the cards (faces)
+/// \param cards: Vector of pixbufs to load the cards into
+/// \param path: Path to files
+//-----------------------------------------------------------------------------
+void GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
+			      const std::string& path) throw (Glib::ustring) {
+   TRACE1 ("GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\t" << path);
+   Glib::RefPtr<Gdk::Pixbuf> img (loadImage (path));
+
+   for (unsigned int i (0); i < 52; ++i) {
+      unsigned int x (((i < 4) ? i : (55 - i)) >> 2);
+      unsigned int y (i & 3);
+      if (y)
+	 y = 4 - y;
+      TRACE8 ("GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tPosition "
+	      << x << '/' << y);
+
+      cards[i] = Gdk::Pixbuf::create_subpixbuf (img, 79 * x, 123 * y, 79, 123);
+      if ((cards[i]->get_height () != 72) || (cards[i]->get_width () != 96))
+	 cards[i] = cards[i]->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+      Check3 (cards[i]);
+   } // end-for
+}
+
+//-----------------------------------------------------------------------------
+/// Loads the card (back)
+/// \param back: Pixbuf to load the card into
+/// \param file: File to load from
+//-----------------------------------------------------------------------------
+void GnomeLoader::loadBack (Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& file) throw (Glib::ustring) {
+   Glib::RefPtr<Gdk::Pixbuf> img (loadImage (file));
+   back = Gdk::Pixbuf::create_subpixbuf (img, 79 * 2, 123 << 2, 79, 123);
+   back = back->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+}
+#endif
+
 
 //-----------------------------------------------------------------------------
 /// Destructor
@@ -93,7 +250,7 @@ CardImages::~CardImages () {
 /// \param nr: Number of card to retrieve
 //-----------------------------------------------------------------------------
 const Glib::RefPtr<Gdk::Pixbuf> CardImages::getCardImage (unsigned int nr) const {
-   TRACE8 ("CardImages::getCardImage (unsigned int) - Request for card " << nr);
+   TRACE9 ("CardImages::getCardImage (unsigned int) - Request for card " << nr);
    Check1 (nr < size ());
    Check3 (cards_[nr]);
    return cards_[nr];
@@ -102,98 +259,39 @@ const Glib::RefPtr<Gdk::Pixbuf> CardImages::getCardImage (unsigned int nr) const
 //-----------------------------------------------------------------------------
 /// Loads the cards (faces)
 /// \param path: Path to files
-/// \param thread: Flag if loading in thread
 //-----------------------------------------------------------------------------
-void CardImages::loadDecks (const std::string& path, bool thread) throw (std::string) {
-   TRACE1 ("CardImages::loadDecks (const Gdk::Window&, const char*) - " << path
-           << "; Threaded: " << (thread ? "Yes" : "No"));
+void CardImages::loadDecks (const std::string& path) throw (Glib::ustring) {
+   TRACE1 ("CardImages::loadDecks (const std::string&) - " << path);
 
-   std::string file (path);
-   if (file[file.size () - 1] != YGP::File::DIRSEPARATOR)
-      file += YGP::File::DIRSEPARATOR;
-
-   std::string err;
-
-   typedef std::string (*PCONVERT)(unsigned int);
-
-#ifdef KDECARDS_DIR
-#  ifdef CARDPICS_DIR
-   PCONVERT fnConvert (&convert2KDEFile);
-   TRACE1 ("CardImages::loadDecks (const Gdk::Window&, const char*) - " << path.substr (0, strlen (KDECARDS_DIR))
-	   << "<->" << KDECARDS_DIR);
-   if (path.substr (0, strlen (KDECARDS_DIR)) != KDECARDS_DIR)
-      fnConvert = convert2CardpicsFile;
-#  else
-   PCONVERT fnConvert (&convert2CardpicsFile);
-#  endif
-#else
-#  ifdef CARDPICS_DIR
-   PCONVERT fnConvert (&convert2KDEFile);
-#  else
-#     error No supported cards installed!
-#  endif
+   ImageLoader* ldr (NULL);
+#ifdef GNOMECARDS_DIR
+   if (!path.compare (0, strlen (GNOMECARDS_DIR), GNOMECARDS_DIR))
+      ldr = new GnomeLoader;
+   else
 #endif
+#ifdef CARDPICS_DIR
+   if (path == CARDPICS_DIR)
+      ldr = new CardpicsLoader;
+   else
+#endif
+   ldr = new ImageLoader;
 
-   std::string actFile;
-   for (int i (0); i < 52; ++i) {
-      actFile = file + fnConvert (i);
-      TRACE9 ("CardImages::loadDecks (const Gdk::Window&, const char*) - File " << actFile);
-
-      if (thread)
-         gdk_threads_enter ();
-
-      try {
-         cards_[i] = Gdk::Pixbuf::create_from_file (actFile);
-	 if ((cards_[i]->get_height () != 72) || (cards_[i]->get_width () != 96))
-	    cards_[i] = cards_[i]->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
-         Check3 (cards_[i]);
-      }
-      catch (Gdk::PixbufError& e) {
-         err = e.what ();
-      }
-      catch (Glib::FileError& e) {
-         err = e.what ();
-      }
-      catch (...) {
-         err = _("Unknown error");
-      }
-      if (thread)
-         gdk_threads_leave ();
-
-      if (err.size ())
-         throw (err);
-   }
+   ldr->loadFronts (cards_, path);
 }
 
 //-----------------------------------------------------------------------------
 /// Loads the background card
 /// \param back: File containing background picture
-/// \param thread: Flag if loading in thread
+/// \throw Glib::ustring: An describing text in case of error
 //-----------------------------------------------------------------------------
-void CardImages::loadBack (const std::string& back,
-                           bool thread) throw (std::string) {
-   TRACE1 ("CardImages::loadBack (const Gdk::Window&, const char*) - " << back);
-   std::string err;
+void CardImages::loadBack (const std::string& back) throw (Glib::ustring) {
+   ImageLoader* ldr (NULL);
+#ifdef GNOMECARDS_DIR
+   if (!back.compare (0, strlen (GNOMECARDS_DIR), GNOMECARDS_DIR))
+      ldr = new GnomeLoader;
+   else
+#endif
+   ldr = new ImageLoader;
 
-   if (thread)
-      gdk_threads_enter ();
-   try {
-      back_ = Gdk::Pixbuf::create_from_file (back);
-      if ((back_->get_height () != 72) || (back_->get_width () != 96))
-	 back_ = back_->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
-   }
-   catch (Gdk::PixbufError& e) {
-      err = e.what ();
-   }
-   catch (Glib::FileError& e) {
-      err = e.what ();
-   }
-   catch (...) {
-      err = _("Unknown error");
-   }
-   if (thread)
-      gdk_threads_leave ();
-
-   if (err.size ())
-      throw (err);
+   ldr->loadBack (back_, back);
 }
