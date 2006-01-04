@@ -41,17 +41,26 @@ class CardImages {
    const Glib::RefPtr<Gdk::Pixbuf> getCardBackground () const { return back_; }
    void setCardBackground (const Glib::RefPtr<Gdk::Pixbuf> back) { back_ = back; }
 
-   void loadDecks ( const std::string& path, bool thread = true) throw (std::string);
-   void loadBack (const std::string& file, bool thread = true) throw (std::string);
-   void load (const std::string& path, const std::string& back,
-              bool thread = true) throw (std::string) {
-      loadDecks (path, true);
+   void loadDecks (const std::string& path) throw (Glib::ustring);
+   void loadBack (const std::string& file) throw (Glib::ustring);
+
+
+   /// Loads the cards (faces and background)
+   /// \param path: Path to files
+   /// \param back: File containing background picture
+   /// \throw Glib::ustring: An describing text in case of error
+   void load (const std::string& path, const std::string& back) throw (Glib::ustring) {
+      loadDecks (path);
       loadBack (back);
    }
-   void load (unsigned int cards, const std::string& path,
-              const std::string& back, bool thread = true) throw (std::string) {
+   /// Loads the cards (faces and background)
+   /// \param cards: Number of cards expected
+   /// \param path: Path to files
+   /// \param back: File containing background picture
+   /// \throw Glib::ustring: An describing text in case of error
+   void load (unsigned int cards, const std::string& path, const std::string& back) throw (Glib::ustring) {
       cards_.reserve (cards);
-      load (path, back, thread); }
+      load (path, back); }
 
    unsigned int size () const { return cards_.size (); }
 
