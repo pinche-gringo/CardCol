@@ -25,7 +25,7 @@ Various card games; til now they consist of:
 
 The whole thing is:
 
-Copyright (C) 2002 - 2005 Markus Schwab <g17m0@lycos.com>
+Copyright (C) 2002 - 2006 Markus Schwab <g17m0@lycos.com>
 ---------------------------------------------------------
 
 The package is distributed under the GNU General Public License; in the hope
@@ -37,9 +37,10 @@ file COPYING for details.
 Card decks
 ----------
 
-Are not included. But the configure process tries to determine, where
-either the KDE carddecks (from the KDE games) or the cardpics (see
-http://www.nongnu.org/cardpics/) are installed and use those.
+Are not included. But the configure process tries to determine, where either
+the GNOME carddecks (from the GNOME games), the KDE carddecks (from the KDE
+games) or the cardpics (see http://www.nongnu.org/cardpics/) are installed
+and use those.
 
 
 Installation
