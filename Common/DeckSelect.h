@@ -63,7 +63,7 @@ class DeckSelectDlg : public XGP::XDialog {
    virtual void okEvent ();
    virtual void command (int action);
 
-   Glib::RefPtr<Gdk::Pixbuf> getImage (const std::string& file);
+   Glib::RefPtr<Gdk::Pixbuf> getImage (const std::string& file, bool scale = true);
 
  private:
    // Prohibited manager-functions
