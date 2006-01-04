@@ -73,6 +73,9 @@ class DeckSelectDlg : public XGP::XDialog {
    void deckSelected ();
    void backSelected ();
 
+   void deckActivated (const Gtk::TreeModel::Path& deck);
+   void backActivated (const Gtk::TreeModel::Path& back);
+
    const DeckSelectDlg& operator= (const DeckSelectDlg&);
 
    DeckColumns cols;

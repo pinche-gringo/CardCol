@@ -80,6 +80,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
    decks.set_model (mDecks);
 
    decks.signal_selection_changed ().connect (mem_fun (*this, &DeckSelectDlg::deckSelected));
+   decks.signal_item_activated ().connect (mem_fun (*this, &DeckSelectDlg::deckActivated));
 
 #ifdef KDECARDS_DIR
    std::string cardDirs (KDECARDS_DIR); Check3 (cardDirs[cardDirs.size () - 1] == YGP::File::DIRSEPARATOR);
@@ -128,6 +129,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
    mBacks = Gtk::ListStore::create (cols);
    backs.set_model (mBacks);
    backs.signal_selection_changed ().connect (mem_fun (*this, &DeckSelectDlg::backSelected));
+   backs.signal_item_activated ().connect (mem_fun (*this, &DeckSelectDlg::backActivated));
 
 #ifdef KDECARDS_DIR
    std::string pathDecks (KDECARDS_DIR "decks/");
@@ -281,4 +283,42 @@ void DeckSelectDlg::backSelected () {
 
       selBack.set (img);
    }
+}
+
+//-----------------------------------------------------------------------------
+/// Callback when a deck is activated
+/// \param path: Activated deck
+//-----------------------------------------------------------------------------
+void DeckSelectDlg::deckActivated (const Gtk::TreeModel::Path& path) {
+   TRACE8 ("DeckSelectDlg::deckActivated (const Gtk::TreeModel::Path&)");
+
+   std::string deck, back;
+   Gtk::TreeRow row (*mDecks->get_iter (path));
+   deck = row[cols.path];
+
+   if (backs.get_selected_items ().size ()) {
+      Gtk::TreePath path (*(backs.get_selected_items ().begin ()));
+      Gtk::TreeRow row (*mBacks->get_iter (path));
+      back = row[cols.path];
+   }
+   setDecks.emit (deck, back);
+}
+
+//-----------------------------------------------------------------------------
+/// Callback when a back is activated
+/// \param path: Activated back
+//-----------------------------------------------------------------------------
+void DeckSelectDlg::backActivated (const Gtk::TreeModel::Path& path) {
+   TRACE8 ("DeckSelectDlg::backActivated (const Gtk::TreeModel::Path&)");
+
+   std::string deck, back;
+   Gtk::TreeRow row (*mBacks->get_iter (path));
+   back = row[cols.path];
+
+   if (decks.get_selected_items ().size ()) {
+      Gtk::TreePath path (*(decks.get_selected_items ().begin ()));
+      Gtk::TreeRow row (*mDecks->get_iter (path));
+      deck = row[cols.path];
+   }
+   setDecks.emit (deck, back);
 }
