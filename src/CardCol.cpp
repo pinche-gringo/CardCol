@@ -1058,7 +1058,7 @@ const char* CardgameCollection::getHelpfile () {
 /// Shows the about box for the program
 //-----------------------------------------------------------------------------
 void CardgameCollection::showAboutbox () {
-   std::string ver (_("Copyright (C) 2002 - 2005 Markus Schwab"
+   std::string ver (_("Copyright (C) 2002 - 2006 Markus Schwab"
                       "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
    ver.replace (ver.find ("%1"), 2, __DATE__);
    ver.replace (ver.find ("%2"), 2, __TIME__);
@@ -1120,16 +1120,16 @@ void* CardgameCollection::changeCards (void* opt) {
 
    try {
       if ((unsigned int)opt & 1)
-         cardFaces.loadDecks (options.decks, false);
+         cardFaces.loadDecks (options.decks);
       if ((unsigned int)opt & 2)
-         cardFaces.loadBack (options.back, false);
+         cardFaces.loadBack (options.back);
 
        ((unsigned int)opt & 0x8000)
            ? cards.addPacket (cardFaces)
            : cards.update ();
       return this;
    }
-   catch (std::string& e) {
+   catch (Glib::ustring& e) {
       Glib::ustring msg ("Couldn't load the card images!\n\n"
                          "Reason: %1");
       msg.replace (msg.find ("%1"), 2, e);
