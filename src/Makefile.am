@@ -9,9 +9,9 @@ CardCol_SOURCES=Twopart.cpp Rovhult.cpp Hearts.cpp Buraco.cpp Buraco.h \
 		Settings.cpp Settings.h ChatDlg.cpp ChatDlg.h CardColNet.cpp \
 		CardColAppl.cpp CardCol.cpp CardColAppl.h
 
-INCLUDES = @INCLUDES@ -I../Common @CARDGAME_CFLAGS@
+INCLUDES = @INCLUDES@ -I../Common @DEPENDENCIES_CFLAGS@
 
-CardCol_LDFLAGS=-L../Common -lCard @CARDGAME_LIBS@ @LTLIBINTL@
+CardCol_LDFLAGS=-L../Common -lCard @DEPENDENCIES_LIBS@ @LTLIBINTL@
 DEFS = @DEFS@ -Wall
 
 EXTRA_DIST=Options.meta
