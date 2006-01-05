@@ -1,3 +1,71 @@
+2006-01-04  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.40 docommented
+
+	* configure.in: Only defining carddirs, if cards are found
+
+	* po/de.po, po/en.po, po/es.po: Copyright to 2006
+
+	* configure.in: Searching for GNOME carddecks
+
+	* INSTALL: Added new configure-options to find carddecks
+
+	* README: Changed copyright; Mentioning handling of GNOME carddecks
+
+	* AUTHORS: Changed game-game Burazno to Buraco
+
+	* Common/CardImgs.cpp: Handling GNOME carddecks
+
+	* src/CardColAppl.cpp: Set copyright from 2002 - 2006
+
+	* src/CardCol.cpp:
+	  Adapted to new CardImgs-interface (without thread-flag)
+
+	* Common/CardImgs.h: Handling GNOME carddecks
+
+	* Common/Makefile.am, src/Makefile.am:
+	  Replaced CARDGAME_{CFLAGS,LIBS} with DEPENDENCIES_{CFLAGS,LIBS}
+
+	* Common/DeckSelect.cpp, Common/DeckSelect.h:
+	  Also displaying GNOME carddecks
+
+2006-01-03  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/DeckSelect.cpp, Common/DeckSelect.h:
+	  Added callback for activating a deck/back
+
+	* doc/Makefile.am: Removed -f from rmdir
+
+	* po/de.po, po/en.po, po/es.po:
+	  Actualized references to files; Setting version to 0.7 (finally)
+
+	* configure.in: Version to 0.7.40; Testing for cardpicks carddecks
+
+	* README: Added handling of cardpics-deck
+
+	* INSTALL: Needing Gtkmm 2.6
+
+	* src/CardCol.cpp:
+	  Adapted to DeckSelect interface; Defining CARDDECKS_DIR acc. to installation
+
+	* src/CardColAppl.cpp: Make sure the card-deck ends with a slash
+
+	* src/Options.h:
+	  Don't use slashes to separate CARDDECKS_DIR and following value
+
+	* src/CardCol.h: Adapted to the new DeckSelect interface
+
+	* Common/DeckSelect.cpp:
+	  Fixed setting path for cardpics-back; Decks need be terminated with '/'
+
+	* Common/CardImgs.cpp:
+	  Fixed bug displaying king of clubs & kipping knight between J and Q (cardpics)
+
+	* Common/CardImgs.cpp: Handling also Cardpics images
+
+	* Common/DeckSelect.cpp, Common/DeckSelect.h:
+	  Supporting cardpics as images; Signals change of images; Using Gtk::IconView
+
 2005-11-19  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.33 docommented

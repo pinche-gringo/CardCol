@@ -1,3 +1,12 @@
+Overview of changes in version 0.7.40:
+
+  - Support GNOME carddecks and cardpics (not only KDE carddecks)
+  - Carddecks to use can be enabled/disabled while configuring
+  - All cards are resized to 72x96
+  - DeckSelect-dialog uses signals to inform about changes
+  - Needing gtkmm 2.6
+
+
 Overview of changes in version 0.7.33:
 
   - Fixed changing names (when not playing over a network)
