@@ -51,10 +51,10 @@ if test $ac_cv_lib_pthread_main = no; then
    AC_MSG_WARN(libpthread is not installed! Disabling network features)
 fi
 
-PKG_CHECK_MODULES(CARDGAME, gtkmm-2.4 >= 2.6.0 gthread-2.0 > 2.2.0
+PKG_CHECK_MODULES(DEPENDENCIES, gtkmm-2.4 >= 2.6.0 gthread-2.0 > 2.2.0
                   YGP >= 0.7.21 XGP >= 0.7.20)
-AC_SUBST(CARDGAME_CFLAGS)
-AC_SUBST(CARDGAME_LIBS)
+AC_SUBST(DEPENDENCIES_CFLAGS)
+AC_SUBST(DEPENDENCIES_LIBS)
 
 dnl Checks for header files.
 
@@ -68,9 +68,9 @@ AC_ARG_ENABLE(debug,
                              [Enables additional traces]),
               if test "$enableval" != "no"; then
                   test "$enableval" == "yes" && enableval=0
-                  CXXFLAGS="-g -O2 -DTRACELEVEL=$enableval";
+                  CXXFLAGS="-g -DTRACELEVEL=$enableval $CXXFLAGS";
               else
-                  CXXFLAGS="-O2 -UTRACELEVEL"; fi)
+                  CXXFLAGS="-UTRACELEVEL $CXXFLAGS"; fi)
 AC_ARG_ENABLE(checks,
               AC_HELP_STRING([[[[[--enable-checks[=LEVEL]]]]]],
                              [Enables additional (internal) checks]),
@@ -87,68 +87,119 @@ AC_ARG_ENABLE(saving,
                   CXXFLAGS="$CXXFLAGS -DSAVE_GAME";
               fi)
 
+HAVE_CARDS=0
 AC_ARG_WITH(kde-carddir,
-            AC_HELP_STRING([--with-kdecard-dir=DIR], [Path to the KDE carddecks]),
+            AC_HELP_STRING([--with-kde-carddir=DIR], [Path to the KDE carddecks]),
             [test -n "$withval" && KDECARDS_DIR=$withval])
 
-AC_MSG_CHECKING(for KDE carddecks)
-dnl Try to find the KDE carddecks (if not specified)
-if test -z $KDECARDS_DIR; then
-   for dir in /opt/kde3/share/apps/carddecks /usr/share/kde3/share/apps/carddecks \
-              /usr/kde3/share/apps/carddecks /usr/share/kde3/apps/carddecks \
-	      /usr/share/apps/carddecks /usr/local/share/apps/carddecks \
-              /usr/kde/3.0/share/apps/carddecks /usr/kde/3.1/share/apps/carddecks \
-              /usr/kde/3.2/share/apps/carddecks /usr/kde/3.3/share/apps/carddecks \
-              /usr/kde/3.4/share/apps/carddecks /usr/kde/3.5/share/apps/carddecks; do
-      if test -d $dir/; then
-         KDECARDS_DIR=$dir/
-	 break
+if test "$KDECARDS_DIR" != "no"; then
+   AC_MSG_CHECKING(for KDE carddecks)
+   dnl Try to find the KDE carddecks (if not specified)
+   if test -z "$KDECARDS_DIR"; then
+      for dir in /opt/kde3/share/apps/carddecks /usr/share/kde3/share/apps/carddecks \
+                 /usr/kde3/share/apps/carddecks /usr/share/kde3/apps/carddecks \
+		 /usr/share/apps/carddecks /usr/local/share/apps/carddecks \
+		 /usr/kde/3.0/share/apps/carddecks /usr/kde/3.1/share/apps/carddecks \
+		 /usr/kde/3.2/share/apps/carddecks /usr/kde/3.3/share/apps/carddecks \
+		 /usr/kde/3.4/share/apps/carddecks /usr/kde/3.5/share/apps/carddecks; do
+	 if test -d "$dir/"; then
+	    KDECARDS_DIR="$dir/"
+	    break
+	 fi
+      done
+
+      if test -z "$KDECARDS_DIR"; then
+	 KDECARDS_DIR=/opt/kde3/share/apps/carddecks/
+	 AC_MSG_NOTICE(using default)
       fi
-   done
-
-   if test -z $KDECARDS_DIR; then
-      KDECARDS_DIR="/opt/kde3/share/apps/carddecks"
-      AC_MSG_NOTICE(using default)
-   fi
-fi
-
-HAVE_CARDS=0
-AC_MSG_RESULT($KDECARDS_DIR)
-if test ! -d "$KDECARDS_DIR"; then
-   AC_MSG_WARN("Directory $KDECARDS_DIR does not exist!")
-else
-   if test ! -d "$KDECARDS_DIR/decks"; then
-      AC_MSG_WARN("Directory $KDECARDS_DIR does not seem to hold KDE carddecks!")
    else
-      HAVE_CARDS=1
+      test "${KDECARDS_DIR%/}" == "$KDECARDS_DIR" && KDECARDS_DIR="$KDECARDS_DIR/"
+   fi
+
+   AC_MSG_RESULT($KDECARDS_DIR)
+   if test -d "$KDECARDS_DIR"; then
+      if test -d "$KDECARDS_DIR/decks"; then
+	 HAVE_CARDS=1
+      else
+	 AC_MSG_WARN("Directory `$KDECARDS_DIR' does not seem to hold KDE carddecks!")
+      fi
+   else
+      AC_MSG_WARN("Directory `$KDECARDS_DIR' does not exist!")
    fi
 fi
 
-AC_ARG_WITH(cardpics,
-            AC_HELP_STRING([--with-cardpic-dir=DIR], [Path to cardpics]),
+AC_ARG_WITH(gnome-carddir,
+            AC_HELP_STRING([--with-gnome-carddir=DIR], [Path to the GNOME carddecks]),
+            [test -n "$withval" && GNOMECARDS_DIR=$withval])
+
+if test "$GNOMECARDS_DIR" != "no"; then
+   AC_MSG_CHECKING(for GNOME carddecks)
+   dnl Try to find the GNOME carddecks (if not specified)
+   if test -z "$GNOMECARDS_DIR"; then
+      for dir in /usr/share/pixmaps/gnome-games-common/cards \
+	         /usr/share/gnome/pixmaps/gnome-games-common/cards \
+	         /usr/share/gnome/gnome-games-common/cards \
+	         /usr/share/gnome/cards /usr/share/pixmaps/gnome/cards \
+	         /usr/share/gnome/pixmaps/cards; do
+	 if test -d "$dir/"; then
+	    GNOMECARDS_DIR="$dir/"
+	    break
+	 fi
+      done
+
+      if test -z "$GNOMECARDS_DIR"; then
+	 GNOMECARDS_DIR=/usr/share/pixmaps/gnome-games-common/cards/
+	 AC_MSG_NOTICE(using default)
+      fi
+   else
+      test "${GNOMECARDS_DIR%/}" == "$GNOMECARDS_DIR" && GNOMECARDS_DIR="$GNOMECARDS_DIR/"
+   fi
+
+   AC_MSG_RESULT($GNOMECARDS_DIR)
+   if test -d "$GNOMECARDS_DIR"; then
+      if test -f "$GNOMECARDS_DIR/bonded.png"; then
+	 HAVE_CARDS=1
+      else
+	 AC_MSG_WARN("Directory `$GNOMECARDS_DIR' does not seem to hold GNOME carddecks!")
+      fi
+   else
+      AC_MSG_WARN("Directory `$GNOMECARDS_DIR' does not exist!")
+   fi
+fi
+
+AC_ARG_WITH(cardpics-dir,
+            AC_HELP_STRING([--with-cardpics-dir=DIR], [Path to cardpics]),
             [test -n "$withval" && CARDPIC_DIR=$withval])
 
-AC_MSG_CHECKING(for cardpics)
-dnl Try to find the cardpics (if not specified)
-if test -z $CARDPICS_DIR; then
-   for dir in /usr/share/games/cardpics/images /usr/share/cardpics/images; do
-      if test -d $dir/; then
-         CARDPICS_DIR=$dir/
-	 break
+if test "$CARDPIC_DIR" != "no"; then
+   AC_MSG_CHECKING(for cardpics)
+   dnl Try to find the cardpics (if not specified)
+   if test -z "$CARDPICS_DIR"; then
+      for dir in /usr/share/games/cardpics/images /usr/share/cardpics/images; do
+	 if test -d "$dir/"; then
+	    CARDPICS_DIR="$dir/"
+	    break
+	 fi
+      done
+
+      if test -z "$CARDPICS_DIR"; then
+	 CARDPICS_DIR=/usr/share/games/cardpics/images
+	 AC_MSG_NOTICE(using default)
       fi
-   done
-
-   if test -z $CARDPICS_DIR; then
-      CARDPICS_DIR=/usr/share/games/cardpics/images
-      AC_MSG_NOTICE(using default)
+   else
+      test "${CARDPICS_DIR%/}" == "$CARDPICS_DIR" && CARDPICS_DIR="$CARDPICS_DIR/"
    fi
-fi
 
-AC_MSG_RESULT($CARDPICS_DIR)
-if test ! -d "$CARDPICS_DIR"; then
-   AC_MSG_WARN("Directory $CARDPICS_DIR does not exist!")
-else
-   HAVE_CARDS=1
+   AC_MSG_RESULT($CARDPICS_DIR)
+   if test -d "$CARDPICS_DIR"; then
+      if test -f "$CARDPICS_DIR/00.png"; then
+	 HAVE_CARDS=1
+      else
+	 AC_MSG_WARN("Directory `$CARDPICS_DIR' does not seem to hold cardpics!")
+      fi
+   else
+      AC_MSG_WARN("Directory `$CARDPICS_DIR' does not exist!")
+   fi
 fi
 
 if test $HAVE_CARDS -eq 0; then
@@ -157,6 +208,8 @@ fi
 
 AC_DEFINE_UNQUOTED(KDECARDS_DIR, "$KDECARDS_DIR",
                    [Directory holding the KDE carddecks])
+AC_DEFINE_UNQUOTED(GNOMECARDS_DIR, "$GNOMECARDS_DIR",
+                   [Directory holding the GNOME carddecks])
 AC_DEFINE_UNQUOTED(CARDPICS_DIR, "$CARDPICS_DIR",
                    [Directory holding the cardpics])
 
