@@ -120,6 +120,8 @@ if test "$KDECARDS_DIR" != "no"; then
    if test -d "$KDECARDS_DIR"; then
       if test -d "$KDECARDS_DIR/decks"; then
 	 HAVE_CARDS=1
+	 AC_DEFINE_UNQUOTED(KDECARDS_DIR, "$KDECARDS_DIR",
+                            [Directory holding the KDE carddecks])
       else
 	 AC_MSG_WARN("Directory `$KDECARDS_DIR' does not seem to hold KDE carddecks!")
       fi
@@ -159,6 +161,8 @@ if test "$GNOMECARDS_DIR" != "no"; then
    if test -d "$GNOMECARDS_DIR"; then
       if test -f "$GNOMECARDS_DIR/bonded.png"; then
 	 HAVE_CARDS=1
+	 AC_DEFINE_UNQUOTED(GNOMECARDS_DIR, "$GNOMECARDS_DIR",
+                            [Directory holding the GNOME carddecks])
       else
 	 AC_MSG_WARN("Directory `$GNOMECARDS_DIR' does not seem to hold GNOME carddecks!")
       fi
@@ -194,6 +198,8 @@ if test "$CARDPIC_DIR" != "no"; then
    if test -d "$CARDPICS_DIR"; then
       if test -f "$CARDPICS_DIR/00.png"; then
 	 HAVE_CARDS=1
+	 AC_DEFINE_UNQUOTED(CARDPICS_DIR, "$CARDPICS_DIR",
+                            [Directory holding the cardpics])
       else
 	 AC_MSG_WARN("Directory `$CARDPICS_DIR' does not seem to hold cardpics!")
       fi
@@ -205,13 +211,6 @@ fi
 if test $HAVE_CARDS -eq 0; then
    AC_MSG_ERROR("Didn't find any carddecks!")
 fi
-
-AC_DEFINE_UNQUOTED(KDECARDS_DIR, "$KDECARDS_DIR",
-                   [Directory holding the KDE carddecks])
-AC_DEFINE_UNQUOTED(GNOMECARDS_DIR, "$GNOMECARDS_DIR",
-                   [Directory holding the GNOME carddecks])
-AC_DEFINE_UNQUOTED(CARDPICS_DIR, "$CARDPICS_DIR",
-                   [Directory holding the cardpics])
 
 AC_OUTPUT([Makefile Common/Makefile src/Makefile intl/Makefile po/Makefile.in doc/Makefile])
 
