@@ -1,12 +1,12 @@
 # English translation of the cardgames
-# Copyright (A) 2002 - 2005 Markus Schwab
+# Copyright (C) 2002 - 2006 Markus Schwab
 # Markus Schwab <g17m0@lycos.com>, 2004.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.7 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2006-01-03 18:56-0400\n"
+"POT-Creation-Date: 2006-01-04 19:57-0400\n"
 "PO-Revision-Date: 2005-05-13 12:08-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -61,7 +61,7 @@ msgid ""
 "drop) - click on one card to start playing"
 msgstr ""
 
-#: Common/CardImgs.cpp:158 Common/CardImgs.cpp:192 Common/DeckSelect.cpp:243
+#: Common/CardImgs.cpp:122 Common/DeckSelect.cpp:279
 msgid "Unknown error"
 msgstr ""
 
@@ -111,7 +111,7 @@ msgstr ""
 msgid "Available backgrounds"
 msgstr ""
 
-#: Common/DeckSelect.cpp:246
+#: Common/DeckSelect.cpp:282
 msgid ""
 "Error loading image from file `%1'!\n"
 "\n"
@@ -346,12 +346,12 @@ msgstr ""
 
 #: src/CardCol.cpp:1061
 msgid ""
-"Copyright (C) 2002 - 2005 Markus Schwab\n"
+"Copyright (C) 2002 - 2006 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
 "\n"
 "Compiled on %1 at %2"
 msgstr ""
-"Copyright © 2002 - 2005 Markus Schwab\n"
+"Copyright © 2002 - 2006 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
 "\n"
 "Compiled on %1 at %2"
@@ -551,10 +551,10 @@ msgstr ""
 
 #: src/CardColAppl.cpp:317
 msgid ""
-"Copyright (C) 2002 - 2005 Markus Schwab; e-mail: g17m0@lycos.com\n"
+"Copyright (C) 2002 - 2006 Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
 msgstr ""
-"Copyright © 2002 - 2005 Markus Schwab; e-mail: g17m0@lycos.com\n"
+"Copyright © 2002 - 2006 Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
 
 #: src/Hearts.cpp:188
