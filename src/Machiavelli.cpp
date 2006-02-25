@@ -1675,7 +1675,7 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
    Glib::ustring ui ("<menubar name='Menu'>"
 		     "  <placeholder name='GameMenu'>"
-		     "    <menu action='Machi'>"
+		     "    <menu action='MB'>"
 		     "      <menuitem action='MachiUndo'/>"
 		     "      <menuitem action='MachiUndoAll'/>"
 		     "      <separator/>"
@@ -1686,8 +1686,8 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 		     "    </menu></placeholder></menubar>");
 
    Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
-   grpAction->add (Gtk::Action::create ("Machi", _("_Machiavelli")));
-   grpAction->add (undo1 = Gtk::Action::create ("Undo", Gtk::Stock::UNDO),
+   grpAction->add (Gtk::Action::create ("MB", _("_Machiavelli")));
+   grpAction->add (undo1 = Gtk::Action::create ("MachiUndo", Gtk::Stock::UNDO),
 		   Gtk::AccelKey ("<ctl>Z"),
 		   bind (mem_fun (*this, &Machiavelli::undoMove), 1));
    grpAction->add (undoAll = Gtk::Action::create ("MachiUndoAll", _("Undo _all")),
