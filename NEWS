@@ -1,3 +1,9 @@
+Overview of changes in version 0.7.41:
+
+  - Fixed displaying Machiavelli-specific menu
+  - Can be compiled with GCC 4.1
+
+
 Overview of changes in version 0.7.40:
 
   - Support GNOME carddecks and cardpics (not only KDE carddecks)
@@ -20,7 +26,7 @@ Overview of changes in version 0.7.32:
   - Buraco: Test first if card fits on pile, before warning about missing cards
   - Buraco: Undoing undoes moving of jokers caused by last move
   - Buraco: Sorting cards after taking buraco disables undo
-  - Buraco: The dumped cards and tose of the reserve  can be shown after game
+  - Buraco: The dumped cards and those of the reserve  can be shown after game
   - Røvhult: Fixed setting title when not using an ISO-8895-1 encoding
 
 

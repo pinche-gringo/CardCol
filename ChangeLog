@@ -1,3 +1,18 @@
+2006-04-03  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.41 docommented
+
+	* configure.in: Version to 0.7.41
+
+	* po/de.po, po/en.po, po/es.po: Actualized
+
+	* src/Buraco.h, src/CardCol.cpp:
+	  Removed compile-errors when compiling with GCC 4.1
+
+2006-02-25  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp: Fixed displaying game-specific menu
+
 2006-01-04  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.40 docommented
