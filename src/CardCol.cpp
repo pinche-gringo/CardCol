@@ -81,18 +81,22 @@ const unsigned int CardgameCollection::WIDTH (760);
 const unsigned int CardgameCollection::HEIGHT (750);
 
 
+namespace YGP {
+
 /// Writes the contents of the passed values to the passed stream
 /// (in its own section named \c section).
 /// \param stream: Stream to write to
 /// \param section: Name of section to write
 /// \param values: Values to write
 template <>
-void YGP::INIList<Glib::ustring>::write (std::ostream& stream, const char* section, const std::vector<Glib::ustring>& values) {
+void INIList<Glib::ustring>::write (std::ostream& stream, const char* section, const std::vector<Glib::ustring>& values) {
    writeHeader (stream, section);
    for (unsigned int i (0); i < values.size (); ++i)
      stream << i << '=' << values[i].c_str () << '\n';
    stream << '\n';
  }
+
+}
 
 
 // Pixmap for program

@@ -124,7 +124,7 @@ class Buraco : public Game {
    static bool compByNumberWithJokers (const CardWidget* a, const CardWidget* b);
    static bool compByColourWithJokers (const CardWidget* a, const CardWidget* b);
    void makeTeamNames (std::vector<Player*>& names) const;
-   void Buraco::setStartPlayer ();
+   void setStartPlayer ();
 
    //@Section to handle piles on table
    BuracoPile& makeNewPile (unsigned int team);
