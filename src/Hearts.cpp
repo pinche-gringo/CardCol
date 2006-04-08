@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.12.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2005
+//COPYRIGHT   : Copyright (C) 2002 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -45,8 +45,8 @@
 #include "Hearts.h"
 
 
-const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = { 3, 1, 3, 9 };
-const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
+const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = { 5, 3, 5, 9 };
+const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 10, 7 };
 
 
 //-----------------------------------------------------------------------------
@@ -61,56 +61,73 @@ const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 9, 7 };
 Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
                 const std::vector<Player*>& player, unsigned int posPlayer,
                 YGP::Mutex& mxSerialize)
-   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 14, 10)
-     , playedSQ (false), player2Exchange (3)
-     , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
-     , pScoreDlg (NULL)
+   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 18, 12),
+     playedSQ (false), player2Exchange (3),
+     played (ICardPile::COMPRESSED, ICardPile::SHOWFACE),
+     pScoreDlg (NULL)
  {
    TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&, ...");
+   CardHPile* hand0 (new CardHPile); players[0].hand = hand0;
+   CardHPile* won0 (new CardHPile); players[0].won = won0;
+   CardHPile* hand2 (new CardHPile); players[2].hand = hand2;
+   CardHPile* won2 (new CardHPile); players[2].won = won2;
+
+   CardVPile* hand1 (new CardVPile); players[1].hand = hand1;
+   CardVPile* won1 (new CardVPile); players[1].won = won1;
+   CardVPile* hand3 (new CardVPile); players[3].hand = hand3;
+   CardVPile* won3 (new CardVPile); players[3].won = won3;
 
    int width (cards.getCard (0).getImageWidth ());
    int height (cards.getCard (0).getImageHeight ());
 
+   attach (*won0, COLS_PLAYER[0], COLS_PLAYER[0] + 3,
+	   ROWS_PLAYER[0] - 2, ROWS_PLAYER[0] - 1, Gtk::EXPAND);
+   attach (*hand0, COLS_PLAYER[0], COLS_PLAYER[0] + 3,
+	   ROWS_PLAYER[0], ROWS_PLAYER[0] + 1, Gtk::EXPAND);
+   won0->set_size_request (width + 12 * 7, height + 5);
+   hand0->set_size_request (width + 12 * 18, height + 5);
+
+   attach (*won1, COLS_PLAYER[1] - 2, COLS_PLAYER[1] - 1,
+	   ROWS_PLAYER[1], ROWS_PLAYER[1] + 1, Gtk::EXPAND);
+   attach (*hand1, COLS_PLAYER[1], COLS_PLAYER[1] + 1,
+	   ROWS_PLAYER[1], ROWS_PLAYER[1] + 1, Gtk::EXPAND);
+   won1->set_size_request (width + 5, height + 12 * 7);
+   hand1->set_size_request (width + 5, height + 12 * 7);
+
+   attach (*won2, COLS_PLAYER[2], COLS_PLAYER[2] + 3,
+	   ROWS_PLAYER[2] + 4, ROWS_PLAYER[2] + 5, Gtk::EXPAND);
+   attach (*hand2, COLS_PLAYER[2], COLS_PLAYER[2] + 3,
+	   ROWS_PLAYER[2], ROWS_PLAYER[2] + 1, Gtk::EXPAND);
+   won2->set_size_request (width + 12 * 7, height + 5);
+   hand2->set_size_request (width + 12 * 18, height + 5);
+
+   attach (*won3, COLS_PLAYER[3] + 2, COLS_PLAYER[3] + 3,
+	   ROWS_PLAYER[3], ROWS_PLAYER[3] + 1, Gtk::EXPAND);
+   attach (*hand3, COLS_PLAYER[3], COLS_PLAYER[3] + 1,
+	   ROWS_PLAYER[3], ROWS_PLAYER[3] + 1, Gtk::EXPAND);
+   won3->set_size_request (width + 5, height + 12 * 7);
+   hand3->set_size_request (width + 5, height + 12 * 7);
+
    // Show and attach card-piles
    changeNames (player);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      players[i].name.show ();
-      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + ((i & 1) ? 1 : 5),
-              ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
-              ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
+      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + ((i & 1) ? 1 : 3),
+	      ROWS_PLAYER[i] + 2, ROWS_PLAYER[i] + 3,
               Gtk::EXPAND, Gtk::EXPAND, 1);
 
-      players[i].won.show ();
-      attach (players[i].won, COLS_PLAYER[i],
-              COLS_PLAYER[i] + ((i & 1) ? 1 : 5),
-              ROWS_PLAYER[i] + ((i == 2) ? 2 : -2),
-              ROWS_PLAYER[i] + ((i == 2) ? 2 : -2) + 1, Gtk::EXPAND);
+      players[i].won->setShowOption (ICardPile::SHOWBACK);
+      players[i].hand->setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
 
-      TRACE9 ("Hearts::Hearts () - Set at: "
-              << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i] + ((i == 2) ? 2 : -2));
-
-      players[i].hand.show ();
-      attach (players[i].hand, COLS_PLAYER[i],
-              COLS_PLAYER[i] + ((i & 1) ? 1 : 5), ROWS_PLAYER[i],
-              ROWS_PLAYER[i] + 1, Gtk::EXPAND);
-      TRACE9 ("Hearts::Hearts () - 2nd set at: "
-              << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
-
-      players[i].won.setShowOption (ICardPile::SHOWBACK);
-      players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
-
-      players[i].won.set_size_request (width + 12 * 7, height + 5);
-      players[i].hand.set_size_request (width + 12 * 18, height + 5);
-
-      players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::COMPRESSED);
-      players[i].won.setStyle (ICardPile::VERY_COMPRESSED);
+      players[i].hand->setStyle ((i & 1) ? ICardPile::QUITE_COMPRESSED : ICardPile::COMPRESSED);
+      players[i].won->setStyle (ICardPile::VERY_COMPRESSED);
    }
 
    // Show played area
    played.setStyle (ICardPile::COMPRESSED);
-   played.show ();
-   attach (played, 3, 4, 5, 8, Gtk::SHRINK, Gtk::SHRINK, 5);
+   attach (played, 6, 7, 7, 8, Gtk::SHRINK, Gtk::SHRINK, 5);
    played.set_size_request (width + 150, height);
+
+   show_all ();
 }
 
 //-----------------------------------------------------------------------------
@@ -136,11 +153,11 @@ int Hearts::makeMove (unsigned int player) {
    if (pos2Play == -1U) {
       pos2Play = pos1Play = findPos2Play (player);
       TRACE8 ("Hearts::makeMove (unsigned int) - Going to play card at pos " << pos2Play);
-      flipCards2Play (players[player].hand, pos1Play, pos2Play);
+      flipCards2Play (*players[player].hand, pos1Play, pos2Play);
    }
    else {
       TRACE9 ("Hearts::makeMove (unsigned int) - Playing card at pos " << pos2Play);
-      ICardPile& pile (players[player].hand);
+      ICardPile& pile (*players[player].hand);
       Check3 (pos2Play < pile.size ());
       aPlayed[pile[pos2Play]->colour ()]++;
       if ((pile[pos2Play]->colour () == CardWidget::SPADES)
@@ -163,7 +180,7 @@ void Hearts::start () {
 
    // Hide won pile again (if not in debug-mode)
 #if TRACELEVEL > 0
-   if (players[1].won.getShowOption () == ICardPile::SHOWBACK)
+   if (players[1].won->getShowOption () == ICardPile::SHOWBACK)
 #endif
       showWonCards (false);
 
@@ -172,7 +189,7 @@ void Hearts::start () {
    if (randomizeCardsToPile (pile)) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          for (unsigned int j (0); j < (cards.size () / NUM_PLAYERS); ++j)
-            players[(i - posServer) & 0x3].hand.insertColourSorted (pile.removeTopCard ());
+            players[(i - posServer) & 0x3].hand->insertColourSorted (pile.removeTopCard ());
 
       if (pScoreDlg) {
          unsigned int player;
@@ -207,8 +224,8 @@ void Hearts::start () {
 void Hearts::clean () {
    TRACE9 ("Hearts::clean ()");
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      players[i].hand.clear ();
-      players[i].won.clear ();
+      players[i].hand->clear ();
+      players[i].won->clear ();
    }
 
    played.clear ();
@@ -222,13 +239,13 @@ void Hearts::clean () {
 //-----------------------------------------------------------------------------
 void Hearts::playOpen (bool open) {
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      players[i].hand.setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
-      players[i].hand.setStyle (open ? ICardPile::COMPRESSED : ICardPile::QUITE_COMPRESSED);
-      players[i].won.setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
-      players[i].won.setStyle (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
+      players[i].hand->setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
+      players[i].hand->setStyle (open ? ICardPile::COMPRESSED : ICardPile::QUITE_COMPRESSED);
+      players[i].won->setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
+      players[i].won->setStyle (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
    }
-   players[0].won.setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
-   players[0].won.setStyle (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
+   players[0].won->setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
+   players[0].won->setStyle (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
 }
 
 //-----------------------------------------------------------------------------
@@ -240,11 +257,11 @@ void Hearts::playOpen (bool open) {
 bool Hearts::enableHuman () {
    Check3 (activeCards.empty ());
    Check3 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
-   TRACE2 ("Hearts::enableHuman () - Human has " << players[0].hand.size () << " cards");
+   TRACE2 ("Hearts::enableHuman () - Human has " << players[0].hand->size () << " cards");
 
-   for (int i (players[0].hand.size () - 1); i >= 0; --i)
+   for (int i (players[0].hand->size () - 1); i >= 0; --i)
       activeCards.push_back
-         (players[0].hand[i]->signal_clicked ().connect
+         ((*players[0].hand)[i]->signal_clicked ().connect
            (bind (mem_fun (*this, (&Hearts::cardSelected)), i)));
 
    if (gameStatus () == EXCHANGE)
@@ -265,8 +282,8 @@ void Hearts::takeCard (unsigned int iCard) {
    Check1 (iCard < played.size ());
    Check1 (gameStatus () == EXCHANGE);
 
-   movePile (players[0].hand, played, iCard, iCard);
-   players[0].hand.sortByColour ();
+   movePile (*players[0].hand, played, iCard, iCard);
+   players[0].hand->sortByColour ();
    makeNextMoves ();
 }
 
@@ -276,14 +293,14 @@ void Hearts::takeCard (unsigned int iCard) {
 //-----------------------------------------------------------------------------
 void Hearts::cardSelected (unsigned int iCard) {
    TRACE5 ("Hearts::cardSelected (unsigned int) - Position " << iCard);
-   Check1 (iCard < players[0].hand.size ());
+   Check1 (iCard < players[0].hand->size ());
    Check3 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
    Check3 (pos1Play == -1U);
    Check3 (pos2Play == -1U);
 
    // Hide won pile again (if not in debug-mode)
 #if TRACELEVEL > 0
-   if (players[1].won.getShowOption () == ICardPile::SHOWBACK)
+   if (players[1].won->getShowOption () == ICardPile::SHOWBACK)
 #endif
       showWonCards (false);
 
@@ -349,8 +366,8 @@ void Hearts::startPlaying () {
    // Search for startplayer
    unsigned int nextPlayer (0);
    for (unsigned int i (1); i < NUM_PLAYERS; ++i)
-      if ((players[i].hand[0]->number () == CardWidget::TWO)
-          && (players[i].hand[0]->colour () == CardWidget::CLUBS)) {
+      if (((*players[i].hand)[0]->number () == CardWidget::TWO)
+          && ((*players[i].hand)[0]->colour () == CardWidget::CLUBS)) {
          TRACE7 ("Hearts::startPlaying () - Start with player " << i);
          nextPlayer = i;
          break;
@@ -363,7 +380,7 @@ void Hearts::startPlaying () {
         && nextPlayer)
        || ((cmgr.getMode () == YGP::ConnectionMgr::SERVER)
            && (nextPlayer > getConnectionMgr ().getClients ().size ())))
-      flipCards2Play (players[nextPlayer].hand, pos1Play = 0, pos2Play = 0);
+      flipCards2Play (*players[nextPlayer].hand, pos1Play = 0, pos2Play = 0);
 
    player2Exchange = (player2Exchange - 1) & 0x3;
 
@@ -402,12 +419,12 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       // Everyone played its card: Search for winner of played pile;
       // clear it and continue with winner
       player = (player - NUM_PLAYERS + check4Winner () + 1) & 0x3;
-      movePile (players[player].won, played);
+      movePile (*players[player].won, played);
    }
    else
       player = ((player + 1) & 0x3);
 
-   if (!players[player].hand.size ()) {
+   if (!players[player].hand->size ()) {
       player = -1U;
       setGameStatus (STOPPED);
       if (!pScoreDlg) {
@@ -422,7 +439,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
 
       int aScore[NUM_PLAYERS];
       for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-         aScore[i] = pointsOfPile (players[i].won);
+         aScore[i] = pointsOfPile (*players[i].won);
          if (aScore[i] == 26) {
             aScore[0] = aScore[1] = aScore[2] = aScore[3] = 26;
             aScore[i] = 0;
@@ -453,7 +470,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       displayTurn (player);
 
    if (!player)
-      enableWonCards (players[0].won);
+      enableWonCards (*players[0].won);
 
    TRACE4 ("Hearts::calcNextPlayer (unsinged int) - Continuing with player "
            << player);
@@ -470,20 +487,20 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
    TRACE5 ("Hearts::moveSelectedCardToPlayed (unsigned int, unsigned int) - Player "
            << player << "; Pos.  " << card);
    Check1 (player < NUM_PLAYERS);
-   Check1 (card < players[player].hand.size ());
+   Check1 (card < players[player].hand->size ());
    Check1 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
 
    if (gameStatus () == PLAYING) {
-      CardWidget& actCard (*players[player].hand[card]);
+      CardWidget& actCard (*(*players[player].hand)[card]);
       CardWidget::COLOURS playColour (actCard.colour ());
       unsigned int cardsPlayed (0);
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-         cardsPlayed += players[i].won.size ();
+         cardsPlayed += players[i].won->size ();
 
       if (played.size ()) {
          // The same colour must be played again (if available)
          CardWidget::COLOURS colour (played[0]->colour ());
-         if ((playColour != colour) && players[player].hand.exists (colour)) {
+         if ((playColour != colour) && players[player].hand->exists (colour)) {
             Gtk::MessageDialog dlg (_("Play first cards with an equal colour as "
                                       "the first played one!"), Gtk::MESSAGE_ERROR);
             dlg.set_title (PACKAGE " - Hearts");
@@ -506,7 +523,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
 
          // One can start with a heart only if there has been one played before
          if (((playColour == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
-             && (players[player].hand[0]->colour () != CardWidget::HEARTS)) {
+             && ((*players[player].hand)[0]->colour () != CardWidget::HEARTS)) {
             Gtk::MessageDialog dlg (_("You can't start with a heart, if they have"
                                       " not been played before!"),
                                     Gtk::MESSAGE_ERROR);
@@ -528,7 +545,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
          }
 
          if (((playColour == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
-              && (players[player].hand[0]->colour () != CardWidget::HEARTS)) {
+              && ((*players[player].hand)[0]->colour () != CardWidget::HEARTS)) {
                Gtk::MessageDialog dlg (_("Hearts can't be played in the first round!"),
                                        Gtk::MESSAGE_ERROR);
                dlg.set_title (PACKAGE " - Hearts");
@@ -537,11 +554,11 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
          }
       }
 
-      Check3 (playColour < (sizeof (aPlayed) / sizeof (aPlayed[0])));
+      Check3 ((unsigned int)playColour < (sizeof (aPlayed) / sizeof (aPlayed[0])));
       aPlayed[playColour]++;
    }
 
-   movePile (played, players[player].hand, card, card);
+   movePile (played, *players[player].hand, card, card);
    return true;
 }
 
@@ -565,7 +582,7 @@ void Hearts::exchangeCards () {
          TRACE8 ("Hearts::exchangeCards () - Player " << i);
 
          int posColours[4];
-         ICardPile& source (players[i].hand);
+         ICardPile& source (*players[i].hand);
          getPositionOfColours (source, posColours);
 
          unsigned int moved (0);
@@ -648,7 +665,7 @@ void Hearts::exchangeCards () {
       TRACE9 ("Hearts::exchangeCards () - " << i << " gives to "
               << ((i + player2Exchange) & 0x3));
       Check3 (aExchange[i].size () == 3);
-      ICardPile& target (players[(i + player2Exchange) & 0x3].hand);
+      ICardPile& target (*players[(i + player2Exchange) & 0x3].hand);
       movePile (target, aExchange[i]);
 
       target.sortByColour ();
@@ -704,7 +721,7 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
    Check1 (player < NUM_PLAYERS);
    TRACE8 ("Hearts::findPos2Play (unsigned int)");
 
-   ICardPile& pile (players[player].hand);
+   ICardPile& pile (*players[player].hand);
    int aPos[4];
    getPositionOfColours (pile, aPos);
 
@@ -854,7 +871,7 @@ unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[
    // Search for queen of spades or any heart or a high card
    unsigned int cardsPlayed (0);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      cardsPlayed += players[i].won.size ();
+      cardsPlayed += players[i].won->size ();
 
    if (cardsPlayed) {
       TRACE5 ("Hearts::findWorstCard (const ICardPile&, const int[4]) - Searching"
@@ -948,7 +965,7 @@ void Hearts::changeNames (const std::vector<Player*>& newPlayer) {
 /// \returns ICardPile*: Pointer to pile to use or NULL
 //----------------------------------------------------------------------------
 ICardPile* Hearts::getPileOfPlayer (unsigned int player, unsigned int pile) {
-   return ((player >= NUM_PLAYERS) || pile) ? NULL : &players[player].hand;
+   return ((player >= NUM_PLAYERS) || pile) ? NULL : players[player].hand;
 }
 
 //----------------------------------------------------------------------------
@@ -990,10 +1007,10 @@ bool Hearts::handleMessage (unsigned int player, const std::string& message) thr
 
                   TRACE9 ("Hearts::handleMessage (unsigned int, const std::string&) - "
                           << lPlayer << ": " << card);
-                  card = players[lPlayer].hand.find (static_cast<unsigned int> (card));
-                  Check3 (card < players[lPlayer].hand.size ());
+                  card = players[lPlayer].hand->find (static_cast<unsigned int> (card));
+                  Check3 (card < players[lPlayer].hand->size ());
                   if (card != -1U)
-                     movePile (aExchange[lPlayer], players[lPlayer].hand,
+                     movePile (aExchange[lPlayer], *players[lPlayer].hand,
                                card, card);
                }
             }

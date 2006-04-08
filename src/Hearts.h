@@ -94,8 +94,8 @@ class Hearts : public Game {
    ICardPile aExchange[NUM_PLAYERS];        // Cards the players are exchanging
 
    struct {
-      CardHPile  hand;                        // For players: Cards in the hand
-      CardHPile  won;                                              // Won cards
+      ICardPile*  hand;                       // For players: Cards in the hand
+      ICardPile*  won;                                             // Won cards
       Gtk::Label name;
    } players[NUM_PLAYERS];
    CardHPile played;
