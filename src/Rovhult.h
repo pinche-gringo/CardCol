@@ -43,7 +43,7 @@ class Rovhult : public Game {
    virtual void start ();
    virtual void playOpen (bool open);
    virtual void clean ();
-   virtual const char* name () { return "Røvhult"; }
+   virtual const char* name () { return "R\xC3\xB8vhult"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
    virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
