@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2002-07-20">
-    <meta name="DC.Rights" content="Copyright (C) 2002 - 2005, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2002 - 2006, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -53,7 +53,7 @@
 
     <p>Die sichtbaren Karten auf dem Tisch k&ouml;nnen mit denen in der Hand
       getauscht werden (mit &laquo;Ziehen und Ablegen&raquo; - drag and drop
-      <a href="Røvhult.html.de#Note1"><sup>1</sup></a>). Normalerweise
+      <a href="#Note1"><sup>1</sup></a>). Normalerweise
       versucht man, &quot;gute&quot; Karten auf den Tisch zu bekommen, aber
       das ist nat&uuml;rlich Geschmackssache.</p>
 

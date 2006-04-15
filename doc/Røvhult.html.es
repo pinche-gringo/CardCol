@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-11">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2006, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -51,7 +51,7 @@
 
     <p>Las cartas visibles de la mesa se puede cambiar con las en la mano (con
       tirar y depositar - drag and drop <a
-      href="Røvhult.html.es#Note1"><sup>1</sup></a>). Generalmente se trata de
+      href="#Note1"><sup>1</sup></a>). Generalmente se trata de
       poner cartas &quot;buenas&quot; (de acuerdo de las reglas siguentes) a
       la mesa, pero eso es una pregunta del gusto.</p>
 
