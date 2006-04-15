@@ -296,7 +296,7 @@ unsigned int Buraco::showCardsToPlay (unsigned int player) {
              && pileHasFittingPair (playerPile, dumpedCard)
              && ((points[player & 1] > 100)
                  || reserve[player & 1].size ()
-                 || (dumped.size () + playerPile.size () > 4)))) {
+                 || (dumped.size () + playerPile.size ()) > 4))) {
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
             // Send played card to all clients (if any)
             std::ostringstream msg;
@@ -830,6 +830,13 @@ void Buraco::dumpedSelected () {
 
 	    if (!pileHasFittingPair (hands[0], dumped.getTopCard ()))
 	       throw _("You need a fitting pair to pick up the pile of dumped cards!");
+
+	    // Don't allow picking up the pile, if that would force the game
+	    // to end without having neither buraco nor reserve
+	    if (((dumped.size () + hands[0].size ()) < 5)
+		&& (points[0] < 200) && reserve[0].empty ())
+	       throw _("Picking up the staple would leave you without cards\n"
+		       "and you can't end the game now!");
 	 }
 	 catch (Glib::ustring& e) {
 	    Gtk::MessageDialog dlg (e, Gtk::MESSAGE_ERROR);
