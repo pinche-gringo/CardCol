@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-06-22">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2006, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -107,7 +107,7 @@
         </td>
         <td><a href="Hearts.html.es">Anterior</a><br>(Corazones)</td>
         <td><a href="CardCol.html.es">Contenido</a></td>
-        <td><a href="Røvhult.html.es">Pr&oacute;ximo</a><br>(R&oslash;vhult)</td>
+        <td><a href="R%C3%B8vhult.html.es">Pr&oacute;ximo</a><br>(R&oslash;vhult)</td>
       </tr>
     </table>
   </body>

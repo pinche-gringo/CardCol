@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2004, 2005 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2004, 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2004-04-18">
-    <meta name="DC.Rights" content="Copyright (C) 2004, 2005; distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2004, 2006; distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -102,7 +102,7 @@
             <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
           </address>
         </td>
-        <td><a href="Røvhult.html.de">Vorherige</a><br>(R&oslash;vhult)</td>
+        <td><a href="R%C3%B8vhult.html.de">Vorherige</a><br>(R&oslash;vhult)</td>
         <td><a href="CardCol.html.de">&Uuml;berblick</a></td>
         <td><a href="Twopart.html.de">N&auml;chste</a><br>(Twopart)</td>
       </tr>
