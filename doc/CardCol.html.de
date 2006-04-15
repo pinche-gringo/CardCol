@@ -1,0 +1,120 @@
+<!-- -*-HTML-*- -->
+<!-- $Id$ -->
+
+<!--
+  Copyright (C) 2003 - 2006 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//DE"
+        "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <title>Cardgames - Eine Sammlung von Kartenspielen f&uuml;r mehrere Personen</title>
+
+    <meta name="description" content="Beschreibung der Kartenspiele">
+    <meta name="keywords" content="documentation, dokumentation, docu, doku, spiel, game, card, cardgame, kartenspiel">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2003-02-10">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2006,
+    distributed under the GNU Free Documentation License">
+  </head>
+
+  <body>
+    <h1 align="center">Allgemeine Informationen zu den Kartenspielen</h1>
+    <hr size="2">
+
+    <p>Dies ist eine Sammlung von Kartenspielen, die ich von verschiedenen
+      Leuten gelernt habe; im Allgemeinen w&auml;hrend einer Reise (was
+      schl&auml;gt besser die Zeit w&auml;hrend einer &gt; 10st&uuml;ndigen
+      Bus/Bahn/was-auch-immer-Reise tot, als ein gutes Kartenspiel?</p>
+
+    <p>Alle Spiele sind f&uuml;r mehrere Personen (&uuml;ber ein Netzwerk oder
+      mit Computer-Spieler).  Sollte jemand Solit&auml;rspiele suchen, kann
+      ich die exzellenten KDE-Kartenspiele empfehlen.</p>
+
+    <p>Vertrieben wird das Programm unter der GNU General Public License, die
+      prinizipell folgendes aussagt (Details findet man in der in diesem Paket
+      enthaltenen Datei <tt>COPYING</tt> oder auf der
+      <a href="http://www.gnu.org/">GNU Homepage (http://www.gnu.org)</a>):</p>
+
+    <blockquote><em><p>Dieses Programm ist freie Software. Sie k&ouml;nnen es
+        unter den Bedingungen der GNU General Public License, wie von der
+        Free Software Foundation herausgegeben, weitergeben und/oder
+        modifizieren, entweder unter Version 2 der Lizenz oder (wenn Sie
+        es w&uuml;nschen) jeder sp&auml;teren Version.</p>
+
+      <p>Der Vertrieb dieses Programms erfolgt in der Hoffnung,
+        n&uuml;tzlich zu sein, aber OHNE JEGLICHE GEW&AUML;HRLEISTUNG - sogar
+        ohne die implizite Gew&auml;hrleistung der MARKTREIFE oder der
+        EIGNUNG F&UUML;R EINEN BESTIMMTEN ZWECK.  Details finden Sie in der
+        GNU General Public License.</p></em></blockquote>
+
+    <h2>Autor</h2>
+    <p>Sowohl die Dokumentation als auch das Spiel wurden von Markus Schwab
+      erstellt.</p>
+
+    <h2>Spiele</h2>
+    <p>Zur Zeit existieren die folgenden Spiele:</p>
+
+    <table>
+      <tbody><tr><td>&nbsp;&nbsp;<a href="Buraco.html.de">Buraco </a></td><td> -   Canasta mit lateinamerikanischem Einschlag</td></tr>
+        <tr><td>&nbsp;&nbsp;<a href="Hearts.html.de">Hearts </a></td><td> -   Ein Spiel, in dem man sie besser nicht bekommt</td></tr>
+	<tr><td>&nbsp;&nbsp;<a href="Machiavelli.html.de">Machiavelli </a></td><td> -   Sortiere Karten bis man keine mehr hat</td></tr>
+	<tr><td>&nbsp;&nbsp;<a href="RÃ¸vhult.html.de">R&oslash;vhult </a></td><td> -   Ein international bekanntes Spiel (alias Arsehole, ...)</td></tr>
+	<tr><td>&nbsp;&nbsp;<a href="Sgt.Mayor.html.de">Sgt. Mayor </a></td><td> -   Mach Deine Stiche oder Du wirst es b&uuml;&szlig;en</td></tr>
+	<tr><td>&nbsp;&nbsp;<a href="Twopart.html.de">Twopart </a></td><td> -   Ein Kartenspiel aus Norwegen (in zwei Teilen)</td></tr>
+    </tbody></table>
+
+    <h2>Aufruf</h2>
+    <p>Prinzipell startet man das Programm ohne jegliche Optionen, also etwa</p>
+
+    <pre>   CardCol</pre>
+
+    <p>Je nach Version des Spieles (oder den Optionen beim Konfigurieren)
+      existieren unterschiedliche Optionen zur Steuerung des Programms.</p>
+
+    <pre>   CardCol --help</pre>
+
+    <p>liefert eine Hilfe zum Aufruf.</p>
+
+    <h2>Gr&uuml;&szlig;e und Danksagung</h2>
+    <p>Eine feste Umarmung an Ingrid und Jonathan, die mir alle Tricks von
+      <tt>Buraco</tt> beigebracht haben und es mit mir stundenlang gespielt
+      haben.</p>
+
+    <p>Ein "Gr&uuml;tzi" an Micheal (Miguel) Suttner, von dem ich
+      <tt>Machiavelli</tt> habe.</p>
+
+    <p>Ein lautes Hallo an Verónica, Tanja und Graham f&uuml;r das
+      Beibringen von <tt>Sgt. Mayor</tt>.</p>
+
+    <p>Gr&uuml;&szlig;e an Andreas, Jakob und Janus, von denen ich
+      <tt>Røvhult</tt> lernte.</p>
+
+    <p>Dank an Ann-Karin, Arne, Bårn und Solveing, da&szlig; sie mir
+      <tt>Twopart</tt> beigebracht haben.</p>
+
+    <p>Hearts ist Teil von Windows 98 (und m&ouml;glicherweise auch anderen
+      Versionen).</p>
+
+    <hr noshade="noshade" size="2">
+    <address>
+      <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+    </address>
+  </body></html>
