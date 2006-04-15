@@ -2,7 +2,7 @@
 
 INSTALL_DOCU=CardCol.shtml.en CardCol.shtml.de CardCol.shtml.es \
 	     CardCol.html.en CardCol.html.de CardCol.html.es \
-	     Røvhult.html.en Røvhult.html.de Røvhult.html.es \
+             RÃ¸vhult.html.de RÃ¸vhult.html.en RÃ¸vhult.html.es \
 	     Twopart.html.en Twopart.html.de Twopart.html.es \
 	     Hearts.html.en Hearts.html.es Hearts.html.de Buraco.html.de \
 	     Buraco.html.en Buraco.html.es Machiavelli.html.de \
@@ -27,3 +27,4 @@ uninstall-local:
 	  rm -f $(DESTDIR)$(docudir)/$$f; \
 	 done
 	rmdir $(DESTDIR)$(docudir)
+
