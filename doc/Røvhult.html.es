@@ -139,7 +139,7 @@
             <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
           </address>
         </td>
-        <td><a href="Hearts.html.es">Anterior</a><br>(Corazones)</td>
+        <td><a href="Machiavelli.html.es">Anterior</a><br>(Machiavelli)</td>
         <td><a href="CardCol.html.es">Contenido</a></td>
         <td><a href="Sgt.Mayor.html.es">Pr&oacute;ximo</a><br>(Sgt. Mayor)</td>
       </tr>
