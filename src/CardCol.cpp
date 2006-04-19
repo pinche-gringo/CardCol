@@ -917,7 +917,8 @@ void CardgameCollection::newGame () {
       dlg.set_title (PACKAGE);
       if (dlg.run () == Gtk::RESPONSE_YES) {
 	 restart = true;
-	 restartGame ();
+	 Glib::signal_idle ().connect
+	    (bind_return (mem_fun (*this, &CardgameCollection::restartGame), false));
       }
    }
    else {
@@ -1009,10 +1010,11 @@ void CardgameCollection::exit () {
 	 dlg.set_title (PACKAGE);
 	 if (dlg.run () == Gtk::RESPONSE_YES) {
 	    if (game->canBeStopped ())
-	       game->stop ();
+	       Glib::signal_idle ().connect
+		  (mem_fun (*this, &CardgameCollection::terminateGameAndExit));
 	    else {
-	       restart = -1U;
-	       game->end (false);
+	       Glib::signal_idle ().connect
+		  (mem_fun (*this, &CardgameCollection::wait4EndGameAndExit));
 	       return;
 	    }
 	 }
@@ -1021,6 +1023,27 @@ void CardgameCollection::exit () {
       }
    }
    hide ();
+}
+
+//-----------------------------------------------------------------------------
+/// Stops the game and quits application
+/// \returns bool: Always false
+//-----------------------------------------------------------------------------
+bool CardgameCollection::terminateGameAndExit () {
+   Check2 (game);
+   game->stop ();
+   return false;
+}
+
+//-----------------------------------------------------------------------------
+/// Waits til the game can be ended; stops it and quits application
+/// \returns bool: Always false
+//-----------------------------------------------------------------------------
+bool CardgameCollection::wait4EndGameAndExit () {
+   Check2 (game);
+   restart = -1U;
+   game->end (false);
+   return false;
 }
 
 #if TRACELEVEL >= 0

@@ -116,6 +116,9 @@ class CardgameCollection : public XGP::XApplication {
    void startGame ();
    void doStartGame ();
 
+   bool terminateGameAndExit ();
+   bool wait4EndGameAndExit ();
+
    void changeDecks (const std::string& deck, const std::string& back);
    void changePlayernames ();
    void makePlayer ();
