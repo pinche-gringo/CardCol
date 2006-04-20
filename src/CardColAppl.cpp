@@ -36,7 +36,10 @@
 
 #include <Player.h>
 
-#include "Buraco.h"
+#ifdef WITH_BURACO
+#  include "Buraco.h"
+#endif
+#include "GameTypes.h"
 
 #include "CardColAppl.h"
 
@@ -88,11 +91,16 @@ void CardgameAppl::showHelp () const {
              << "  -h, -?, --help ..... " << _("Displays this help and exit\n\n")
 
       /* For translations: Write one of the Rovhults as an O with slash */
-             << _("Valid values for GAME are Rovhult, Rovhult, Twopart, Hearts, Buraco,\n"
-                  "Machiavelli, SgtMayor, the numbers 0 - 5 (corresponding to the games\n"
-		  "in the above order) or the translation of the name (as displayed in the "
-		  "titlebar).\n\n")
-             << _("The INI file can have the following entries:\n\n")
+             << _("Valid values for GAME are - unless disabled while configuring - Buraco, Hearts,\n"
+		  "Machiavelli, Rovhult, SgtMayor, Twopart and the numbers 0 - 5 (corresponding\n"
+		  "to the games in the above order) or the translation of the name (as displayed\n"
+		  "below).\n\nAvailable games:\n\n");
+
+   GameTypes types;
+   for (GameTypes::const_iterator i (types.begin ()); i != types.end (); ++i)
+      std::cout << "  " << i->first << ": " << i->second << '\n';
+
+   std::cout << _("\nThe INI file can have the following entries:\n\n")
              <<  "  [Game]\n"
                  "  Type=Twopart\n"
                  "  Helpbrowser=galeon\n"
@@ -236,8 +244,9 @@ int CardgameAppl::convertToGameType (const char* pText) {
    catch (std::out_of_range&) {
       try {
 	 YGP::ANumeric value (pText);
-	 if (types.exists (value))
-	    return (int)value;
+	 int iVal (value);
+	 if (types.exists (iVal))
+	    return iVal;
       }
       catch (std::invalid_argument&) { }
    }
@@ -266,8 +275,10 @@ void CardgameAppl::readINIFile (const char* pFile) {
       INIOBJ (options, Game);
       INILIST2 (Player, Glib::ustring, options.names);
 
+#ifdef WITH_BURACO
       INISECTION (Buraco);
       INIATTR2 (Buraco, unsigned int, Buraco::ENDPOINTS, EndPoints);
+#endif
 
       INIFILE_READ ();
    }
