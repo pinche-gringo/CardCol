@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.7 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2006-04-19 20:51-0400\n"
+"POT-Creation-Date: 2006-04-20 00:26-0400\n"
 "PO-Revision-Date: 2005-05-19 16:24-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -461,7 +461,7 @@ msgstr ""
 "\n"
 "%2"
 
-#: src/CardColAppl.cpp:75
+#: src/CardColAppl.cpp:76
 msgid ""
 "Collection of cardgames\n"
 "\n"
@@ -471,7 +471,7 @@ msgstr ""
 "\n"
 "Modo de empleo: "
 
-#: src/CardColAppl.cpp:76
+#: src/CardColAppl.cpp:77
 msgid ""
 " [OPTIONS]\n"
 "\n"
@@ -479,43 +479,43 @@ msgstr ""
 " [OPCIONES]\n"
 "\n"
 
-#: src/CardColAppl.cpp:78
+#: src/CardColAppl.cpp:79
 msgid "[GAME] Select game to start (default: Rovhult)\n"
 msgstr "[JUEGO] Selecta juego para empezar (por defecto: Røvhult)\n"
 
-#: src/CardColAppl.cpp:79
+#: src/CardColAppl.cpp:80
 msgid "[FILE] Use file as INI file\n"
 msgstr "[FICHERO] Usa fichero como archivo de initializar\n"
 
-#: src/CardColAppl.cpp:80
+#: src/CardColAppl.cpp:81
 msgid "[NAME] Browser to use to display the help\n"
 msgstr "[NOMBRE] Browser para mostrar la ayuda\n"
 
-#: src/CardColAppl.cpp:81
+#: src/CardColAppl.cpp:82
 msgid "[DIR] Directory to search for help\n"
 msgstr "[DIR] Directorio donde se busca la ayuda\n"
 
-#: src/CardColAppl.cpp:83
+#: src/CardColAppl.cpp:84
 msgid "[PORT] Awaits connections on port PORT\n"
 msgstr "[PUERTO] Espera a conecciones a puerto PUERTO\n"
 
-#: src/CardColAppl.cpp:84
+#: src/CardColAppl.cpp:85
 msgid "[SERVER[:PORT]] Connects to SERVER:PORT\n"
 msgstr "[SERVIDOR][:PUERTO] Conecta a SERVIDOR:PUERTO\n"
 
-#: src/CardColAppl.cpp:87
+#: src/CardColAppl.cpp:88
 msgid "[FILE] Saves game into FILE\n"
 msgstr "[FICHERO] Guarda juego en FICHERO\n"
 
-#: src/CardColAppl.cpp:88
+#: src/CardColAppl.cpp:89
 msgid "[FILE] Load game from FILE\n"
 msgstr "[FICHERO] Abre juego de FICHERO\n"
 
-#: src/CardColAppl.cpp:90
+#: src/CardColAppl.cpp:91
 msgid "Output version information and exit\n"
 msgstr "Informa de la versión y finaliza\n"
 
-#: src/CardColAppl.cpp:91
+#: src/CardColAppl.cpp:92
 msgid ""
 "Displays this help and exit\n"
 "\n"
@@ -523,7 +523,7 @@ msgstr ""
 "Muestra esta ayuda y finaliza\n"
 "\n"
 
-#: src/CardColAppl.cpp:94
+#: src/CardColAppl.cpp:95
 msgid ""
 "Valid values for GAME are - unless disabled while configuring - Buraco, "
 "Hearts,\n"
@@ -533,53 +533,53 @@ msgid ""
 "displayed\n"
 "below).\n"
 "\n"
-"Available games:\n"
-"\n"
 msgstr ""
 "Valores validos por JUEGO son - si no les están excluido durante la\n"
-"configuración - Buraco, Hearts, Machiavelli Røvhult, SgtMayor, Twopart y los\n"
-"números 0 - 5 (de acuerdo con el juego en el orden de arriba) ó las\n"
-"traducciones de los nombres (como mostrado abajo).\n"
-"\n"
-"Juegos disponibles:\n"
+"configuración - Buraco, Hearts, Machiavelli, Røvhult (o Rovhult), SgtMayor,\n"
+"Twopart y los números 0 - 5 (de acuerdo con el juego en el orden de arriba) "
+"o\n"
+"las traducciones de los nombres (como mostrado abajo).\n"
 "\n"
 
-#: src/CardColAppl.cpp:103
+#: src/CardColAppl.cpp:101
 msgid ""
 "\n"
 "The INI file can have the following entries:\n"
 "\n"
-msgstr "\nEl archivo de inicialicación puede tener las siguentes entradas:\n\n"
+msgstr ""
+"\n"
+"El archivo de inicialicación puede tener las siguentes entradas:\n"
+"\n"
 
-#: src/CardColAppl.cpp:134
+#: src/CardColAppl.cpp:132
 msgid "-warning: Invalid game type `%1'"
 msgstr "-aviso: Tipo de juego '%1' invalido"
 
-#: src/CardColAppl.cpp:140
+#: src/CardColAppl.cpp:138
 msgid "-warning: No game specified! Ignoring option `g'\n"
 msgstr "-aviso: ¡No juego especificado! Ignora opción 'g'\n"
 
-#: src/CardColAppl.cpp:148
+#: src/CardColAppl.cpp:146
 msgid "-warning: No directory specified! Ignoring option `d'\n"
 msgstr "-aviso: ¡No directorio especificado! Ignora opción 'd'\n"
 
-#: src/CardColAppl.cpp:156
+#: src/CardColAppl.cpp:154
 msgid "-warning: No browser specified! Ignoring option `b'\n"
 msgstr "-aviso: ¡No browser especificado! Ignora opción 'b'\n"
 
-#: src/CardColAppl.cpp:164
+#: src/CardColAppl.cpp:162
 msgid "-warning: No file specified! Ignoring option `f'\n"
 msgstr "-aviso: ¡No fichero especificado! Ignora opción 'f'\n"
 
-#: src/CardColAppl.cpp:173
+#: src/CardColAppl.cpp:176
 msgid "-warning: No port specified! Ignoring option `l'\n"
 msgstr "-aviso: ¡No puerto especificado! Ignora opción 'l'\n"
 
-#: src/CardColAppl.cpp:190
+#: src/CardColAppl.cpp:193
 msgid "-warning: No target specified! Ignoring option `c'\n"
 msgstr "-aviso: ¡No destincación especificado! Ignora opción 'c'\n"
 
-#: src/CardColAppl.cpp:205
+#: src/CardColAppl.cpp:208
 msgid ""
 "-warning: Option `%1' has already been specified!\n"
 "Overwriting old setting\n"
@@ -587,37 +587,45 @@ msgstr ""
 "-avios: ¡Opción '%1' ya especificado!\n"
 "Sobreescribo propiedad antigua\n"
 
-#: src/CardColAppl.cpp:215
+#: src/CardColAppl.cpp:218
 msgid "-warning: No file specified! Ignoring option `%1'\n"
 msgstr "-aviso: ¡No fichero especificado! Ignora opción '%1'\n"
 
-#: src/CardColAppl.cpp:266
+#: src/CardColAppl.cpp:269
 msgid "Human"
 msgstr "Persona"
 
-#: src/CardColAppl.cpp:267
+#: src/CardColAppl.cpp:270
 msgid "Player 1"
 msgstr "Jugador 1"
 
-#: src/CardColAppl.cpp:268
+#: src/CardColAppl.cpp:271
 msgid "Player 2"
 msgstr "Jugador 2"
 
-#: src/CardColAppl.cpp:269
+#: src/CardColAppl.cpp:272
 msgid "Player 3"
 msgstr "Jugador 3"
 
-#: src/CardColAppl.cpp:326
+#: src/CardColAppl.cpp:329
 msgid "Compiled on"
 msgstr "Compilada al"
 
-#: src/CardColAppl.cpp:328
+#: src/CardColAppl.cpp:331
 msgid ""
 "Copyright (C) 2002 - 2006 Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
 msgstr ""
 "Copyright (C) 2002 - 2006 Markus Schwab; correo-e: g17m0@lycos.com\n"
 "Distribuido bajo las condicones de la GNU Licensia General Públic"
+
+#: src/CardColAppl.cpp:342
+msgid ""
+"Available games:\n"
+"\n"
+msgstr ""
+"Juegos disponibles:\n"
+"\n"
 
 #: src/Hearts.cpp:205
 msgid "Select 3 cards to exchange with %1"
