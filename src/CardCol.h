@@ -18,6 +18,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <cardgames-cfg.h>
+
 #include <vector>
 
 #include <gtkmm/button.h>
@@ -30,8 +32,6 @@
 #include <CardSet.h>
 #include <CardPile.h>
 #include <CardImgs.h>
-
-#include "GameTypes.h"
 
 #include <XGP/XApplication.h>
 
@@ -69,7 +69,26 @@ class CardgameCollection : public XGP::XApplication {
 #ifdef HAVE_LIBPTHREAD
 	  CONNECT, CHAT,
 #endif
-	  ROVHULT, TWOPART, HEARTS, BURACO, MACHIAVELLI, SGTMAYOR, LAST };
+	  STARTGAMES_MENU = CHAT,
+#ifdef WITH_BURACO
+	  BURACO,
+#endif
+#ifdef WITH_HEARTS
+	  HEARTS,
+#endif
+#ifdef WITH_MACHIAVELLI
+	  MACHIAVELLI,
+#endif
+#ifdef WITH_ROVHULT
+	  ROVHULT,
+#endif
+#ifdef WITH_SGTMAYOR
+	  SGTMAYOR,
+#endif
+#ifdef WITH_TWOPART
+	  TWOPART,
+#endif
+	  LAST };
    Glib::RefPtr<Gtk::Action> apMenus[LAST];
 
    // Protected manager functions

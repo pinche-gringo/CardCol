@@ -18,6 +18,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <cardgames-cfg.h>
+
 #include <string>
 
 #include <gtkmm/entry.h>
@@ -61,7 +63,9 @@ class Settings : public XGP::XDialog {
    GameTypes types;
    XGP::EnumEntry gameType;
    XGP::XAttributeSpinEntry<unsigned int> timeout;
+#ifdef WITH_BURACO
    XGP::XAttributeSpinEntry<unsigned int> maxBuracoPoints;
+#endif
 
    static XGP::XAttributeSpinEntry<unsigned int> Settings::* intFields[];
    static Settings* instance;

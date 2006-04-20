@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 28.4.2005
-//COPYRIGHT   : Copyright (C) 2005
+//COPYRIGHT   : Copyright (C) 2005, 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,14 +34,20 @@
 
 #include <ComputerPlayer.h>
 
-#include "Buraco.h"
+#ifdef WITH_BURACO
+#  include "Buraco.h"
+#endif
 #include "Options.h"
 
 #include "Settings.h"
 
 
 XGP::XAttributeSpinEntry<unsigned int> Settings::* Settings::intFields[] =
-   { &Settings::timeout, &Settings::maxBuracoPoints };
+   { &Settings::timeout,
+#ifdef WITH_BURACO
+     &Settings::maxBuracoPoints
+#endif
+   };
 
 Settings* Settings::instance (NULL);
 
@@ -56,7 +62,9 @@ Settings::Settings (Options& options)
      adjTimeout (0, 100.0, 10000.0, 1, 100),
      gameType (types),
      timeout (ComputerPlayer::TIMEOUT, adjTimeout),
+#ifdef WITH_BURACO
      maxBuracoPoints (Buraco::ENDPOINTS, adjPoints),
+#endif
      startGame (options.type) {
    Check3 (instance == NULL);
    instance = this;
@@ -77,15 +85,19 @@ Settings::Settings (Options& options)
    pagGeneral.attach (gameType, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
 
    gameType.set_active_text (types[options.type]);
+   nb.append_page (pagGeneral, _("_General"), true);
 
+#ifdef WITH_BURACO
    Gtk::Box& pagBuraco (*manage (new Gtk::HBox));
    lbl = manage (new Gtk::Label (_("_Points to end game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
    lbl->set_mnemonic_widget (maxBuracoPoints);
    pagBuraco.pack_start (*lbl, Gtk::PACK_SHRINK, 5);
    pagBuraco.pack_start (maxBuracoPoints, Gtk::PACK_EXPAND_WIDGET, 5);
 
-   nb.append_page (pagGeneral, _("_General"), true);
    nb.append_page (pagBuraco, _("_Buraco"), true);
+#else
+   nb.set_show_tabs (0);
+#endif
 
    get_vbox ()->pack_start (nb, true, true, 5);
    show_all_children ();

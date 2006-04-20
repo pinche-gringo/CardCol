@@ -18,6 +18,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <cardgames-cfg.h>
+
 #include <YGP/MetaEnum.h>
 
 
@@ -26,8 +28,27 @@
 */
 class GameTypes : public YGP::MetaEnum {
  public:
-   enum { NONE = -1, ROVHULT = 0, TWOPART, HEARTS, BURACO, MACHIAVELLI,
-	  SGTMAYOR, LAST };
+   enum {
+#ifdef WITH_BURACO
+	  BURACO,
+#endif
+#ifdef WITH_HEARTS
+	  HEARTS,
+#endif
+#ifdef WITH_MACHIAVELLI
+	  MACHIAVELLI,
+#endif
+#ifdef WITH_ROVHULT
+	  ROVHULT,
+#endif
+#ifdef WITH_SGTMAYOR
+	  SGTMAYOR,
+#endif
+#ifdef WITH_TWOPART
+	  TWOPART,
+#endif
+	  LAST,
+	  NONE = -1 };
 
    GameTypes ();
    ~GameTypes ();

@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 28.04.2005
-//COPYRIGHT   : Copyright (C) 2005
+//COPYRIGHT   : Copyright (C) 2005, 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@
 /// Default constructor
 //-----------------------------------------------------------------------------
 GameTypes::GameTypes () {
+#ifdef WITH_ROVHULT
    Glib::ustring rovhult (_("Rovhult"));
    if (rovhult == "Rovhult") {
       try {
@@ -46,11 +47,22 @@ GameTypes::GameTypes () {
    }
 
    insert (std::make_pair ((int)ROVHULT, rovhult));
+#endif
+#ifdef WITH_TWOPART
    insert (std::make_pair ((int)TWOPART, _("Twopart")));
+#endif
+#ifdef WITH_HEARTS
    insert (std::make_pair ((int)HEARTS, _("Hearts")));
+#endif
+#ifdef WITH_BURACO
    insert (std::make_pair ((int)BURACO, _("Buraco")));
+#endif
+#ifdef WITH_MACHIAVELLI
    insert (std::make_pair ((int)MACHIAVELLI, _("Machiavelli")));
+#endif
+#ifdef WITH_SGTMAYOR
    insert (std::make_pair ((int)SGTMAYOR, _("SgtMayor")));
+#endif
 }
 
 //-----------------------------------------------------------------------------

@@ -27,6 +27,10 @@
 
 #include <cardgames-cfg.h>
 
+#if !(defined (WITH_HEARTS) || defined (WITH_BURACO) || defined (WITH_TWOPART) || defined (WITH_ROVHULT) || defined (WITH_SGTMAYOR) || defined (WITH_MACHIAVELLI))
+#  error All games are disabled!
+#endif
+
 #include <cerrno>
 #include <cstdlib>
 
@@ -48,18 +52,32 @@
 #include <XGP/XAbout.h>
 
 #include <Human.h>
-#include <ComputerPlayer.h>
-
 #include <PlayerDlg.h>
 #include <DeckSelect.h>
+#include <ComputerPlayer.h>
 
-#include "Hearts.h"
-#include "Buraco.h"
-#include "Rovhult.h"
-#include "Twopart.h"
+#include "GameTypes.h"
+
+#ifdef WITH_HEARTS
+#  include "Hearts.h"
+#endif
+#ifdef WITH_BURACO
+#  include "Buraco.h"
+#endif
+#ifdef WITH_ROVHULT
+#  include "Rovhult.h"
+#endif
+#ifdef WITH_TWOPART
+#  include "Twopart.h"
+#endif
+#ifdef WITH_SGTMAYOR
+#  include "SgtMayor.h"
+#endif
+#ifdef WITH_MACHIAVELLI
+#  include "Machiavelli.h"
+#endif
+
 #include "Settings.h"
-#include "SgtMayor.h"
-#include "Machiavelli.h"
 
 #ifdef KDECARDS_DIR
 #  define CARDDECKS_DIR     KDECARDS_DIR
@@ -625,7 +643,7 @@ CardgameCollection::CardgameCollection (Options& opts)
      , options (opts)
      , oldGame (GameTypes::NONE), actGame (opts.type)
      , restart (false), game (NULL) {
-   TRACE9 ("CardGameCollection::CardGameCollection (Options&)");
+   TRACE9 ("CardGameCollection::CardGameCollection (Options&) - Game: " << actGame);
 
    setIconProgram (xpmGame);
    set_default_size (WIDTH, HEIGHT);
@@ -647,12 +665,24 @@ CardgameCollection::CardgameCollection (Options& opts)
 		     "  </menu>"
 		     "  <menu action='Options'>"
 		     "    <menu action='ChgGame'>"
-		     "      <menuitem action='Rovhult'/>"
-		     "      <menuitem action='Twopart'/>"
-		     "      <menuitem action='Hearts'/>"
+#ifdef WITH_BURACO
 		     "      <menuitem action='Buraco'/>"
-		     "      <menuitem action='SgtMayor'/>"
+#endif
+#ifdef WITH_HEARTS
+		     "      <menuitem action='Hearts'/>"
+#endif
+#ifdef WITH_MACHIAVELLI
 		     "      <menuitem action='Machiavelli'/>"
+#endif
+#ifdef WITH_ROVHULT
+		     "      <menuitem action='Rovhult'/>"
+#endif
+#ifdef WITH_SGTMAYOR
+		     "      <menuitem action='SgtMayor'/>"
+#endif
+#ifdef WITH_TWOPART
+		     "      <menuitem action='Twopart'/>"
+#endif
 		     "    </menu>"
 		     "    <menuitem action='ChgDecks'/>"
 		     "    <menuitem action='ChgNames'/>"
@@ -688,25 +718,37 @@ CardgameCollection::CardgameCollection (Options& opts)
    grpAction->add (Gtk::Action::create ("ChgGame", _("_Change game")));
 
    Gtk::RadioButtonGroup grpGames;
+#ifdef WITH_BURACO
+   grpAction->add (apMenus[BURACO] = Gtk::RadioAction::create (grpGames, "Buraco", _("_Buraco")),
+		   Gtk::AccelKey (_("<ctl>B")),
+		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::BURACO));
+#endif
+#ifdef WITH_HEARTS
+   grpAction->add (apMenus[HEARTS] = Gtk::RadioAction::create (grpGames, "Hearts", _("_Hearts")),
+		   Gtk::AccelKey (_("<ctl>H")),
+		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::HEARTS));
+#endif
+#ifdef WITH_MACHIAVELLI
+   grpAction->add (apMenus[MACHIAVELLI] = Gtk::RadioAction::create (grpGames, "Machiavelli", _("_Machiavelli")),
+		   Gtk::AccelKey (_("<ctl>M")),
+		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::MACHIAVELLI));
+#endif
+#ifdef WITH_ROVHULT
    // xgettext: For translations: Write the Rovhult as o-slash
    grpAction->add (apMenus[ROVHULT] = Gtk::RadioAction::create (grpGames, "Rovhult", _("_Rovhult")),
 		   Gtk::AccelKey (_("<ctl>R")),
 		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::ROVHULT));
-   grpAction->add (apMenus[TWOPART] = Gtk::RadioAction::create (grpGames, "Twopart", _("_Twopart")),
-		   Gtk::AccelKey (_("<ctl>T")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::TWOPART));
-   grpAction->add (apMenus[HEARTS] = Gtk::RadioAction::create (grpGames, "Hearts", _("_Hearts")),
-		   Gtk::AccelKey (_("<ctl>H")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::HEARTS));
-   grpAction->add (apMenus[BURACO] = Gtk::RadioAction::create (grpGames, "Buraco", _("_Buraco")),
-		   Gtk::AccelKey (_("<ctl>B")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::BURACO));
+#endif
+#ifdef WITH_SGTMAYOR
    grpAction->add (apMenus[SGTMAYOR] = Gtk::RadioAction::create (grpGames, "SgtMayor", _("_Sgt. Mayor")),
 		   Gtk::AccelKey (_("<ctl>Y")),
 		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::SGTMAYOR));
-   grpAction->add (apMenus[MACHIAVELLI] = Gtk::RadioAction::create (grpGames, "Machiavelli", _("_Machiavelli")),
-		   Gtk::AccelKey (_("<ctl>M")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::MACHIAVELLI));
+#endif
+#ifdef WITH_TWOPART
+   grpAction->add (apMenus[TWOPART] = Gtk::RadioAction::create (grpGames, "Twopart", _("_Twopart")),
+		   Gtk::AccelKey (_("<ctl>T")),
+		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::TWOPART));
+#endif
 
    grpAction->add (Gtk::Action::create ("ChgDecks", _("Change _decks ...")),
 		   Gtk::AccelKey (_("<ctl>D")),
@@ -814,35 +856,47 @@ void CardgameCollection::startGame () {
    if (oldGame != actGame) {
       oldGame = actGame;
       switch (oldGame) {
+#ifdef WITH_ROVHULT
       case GameTypes::ROVHULT:
          game = new TGame<Rovhult, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
+#endif
 
+#ifdef WITH_TWOPART
       case GameTypes::TWOPART:
          game = new TGame<Twopart, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
+#endif
 
+#ifdef WITH_HEARTS
       case GameTypes::HEARTS:
          game = new TGame<Hearts, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
+#endif
 
+#ifdef WITH_BURACO
       case GameTypes::BURACO:
          game = new TGame<Buraco, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
+#endif
 
+#ifdef WITH_MACHIAVELLI
       case GameTypes::MACHIAVELLI:
          game = new TGame<Machiavelli, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
+#endif
 
+#ifdef WITH_SGTMAYOR
       case GameTypes::SGTMAYOR:
          game = new TGame<SgtMayor, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
+#endif
 
       default:
          Check (0);
@@ -982,14 +1036,17 @@ void CardgameCollection::savePreferences () {
    TRACE2 ("CardgameCollection::savePreferences () - Save file " << options.pNameINIFile);
    std::ofstream inifile (options.pNameINIFile);
    if (inifile) {
-      options.strType = options.type + '0';
+      GameTypes types;
+      options.strType = types[options.type];
       YGP::INIFile::write (inifile, "Game", options);
       for (unsigned int i (0); i < aPlayer.size (); ++i)
 	 options.names[i] = aPlayer[i]->getName ();
       YGP::INIList<Glib::ustring>::write (inifile, "Player", options.names);
 
+#ifdef WITH_BURACO
       YGP::INIFile::writeSectionHeader (inifile, "Buraco");
       inifile << "EndPoints=" << Buraco::ENDPOINTS << '\n';
+#endif
    }
    else {
       Glib::ustring msg (_("Couldn't save options (to file %1)!\n\nReason: %2."));
@@ -1240,9 +1297,9 @@ void CardgameCollection::loadCards () {
    status.push (_("Loading cardimages ..."));
 
    // This code needs the game-IDs in a sequence starting with 0!
-   if (GameTypes::LAST <= options.type)
-      options.type = GameTypes::ROVHULT;
-   Glib::RefPtr<Gtk::ToggleAction>::cast_dynamic (apMenus[ROVHULT + options.type])->set_active ();
+   if (options.type >= GameTypes::LAST)
+      options.type = 0;
+   Glib::RefPtr<Gtk::ToggleAction>::cast_dynamic (apMenus[STARTGAMES_MENU + options.type + 1])->set_active ();
 
    void* rc (changeCards ((void*)-1));
    if (rc) {
