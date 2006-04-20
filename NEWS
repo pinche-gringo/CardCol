@@ -1,3 +1,14 @@
+Overview of changes in version 0.7.50:
+
+  - Hearts: Improved layout
+  - Application got an option -G to list the available games
+  - Buraco: Fixed taking dumped pile when this would end the game
+  - Improved responseness to quit-application/end-game messageboxes
+  - Games can be disabled during configure
+  - Rename Røvhult*-files (of documentation) to UTF-8
+  - Fixed some errors in english documentation
+
+
 Overview of changes in version 0.7.41:
 
   - Fixed displaying Machiavelli-specific menu

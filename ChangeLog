@@ -1,3 +1,64 @@
+2006-04-20  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.50 docommented
+
+	* src/CardColAppl.cpp, src/CardColAppl.h:
+	  Added option -G to list available games
+
+	* po/de.po, po/en.po, po/es.po: Separated messages for available games
+
+2006-04-19  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.7.50 docommented
+
+	* configure.in: Gams can be disabled; Version to 0.7.50
+
+	* po/de.po, po/en.po, po/es.po: Actualized for 0.7.50
+
+	* src/CardColAppl.cpp, src/CardCol.cpp, src/CardCol.h, src/CardColNet.cpp, src/GameTypes.cpp, src/GameTypes.h, src/Makefile.am, src/Settings.cpp, src/Settings.h:
+	  Compiling games conditionally
+
+2006-04-18  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp, src/CardCol.h:
+	  Improve responseness to quit-application/end-game messageboxe
+
+2006-04-14  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp: Fixed player picking up dumped pile ending game
+
+	* src/Rovhult.h: name() returns the name in UTF-8; not Latin-1
+
+	* doc/CardCol.html.de, doc/CardCol.html.en, doc/CardCol.html.es:
+	  New file.
+
+	* doc/Makefile.am: Removed the shtml-files
+
+	* doc/CardCol.shtml.de, doc/CardCol.shtml.en, doc/CardCol.shtml.es:
+	  Deleted
+
+	* doc/Machiavelli.html.de, doc/Machiavelli.html.en, doc/Machiavelli.html.es, doc/Sgt.Mayor.html.de, doc/Sgt.Mayor.html.en, doc/Sgt.Mayor.html.es:
+	  Fixed linking to Røvhult (with UTF-8 name)
+
+	* doc/Røvhult.html.de, doc/Røvhult.html.en, doc/Røvhult.html.es:
+	  Fixed link to previous game
+
+	* doc/CardCol.shtml.de, doc/CardCol.shtml.en, doc/CardCol.shtml.es:
+	  Changed copyright; regenerating *html-files
+
+	* doc/Makefile.am: Using UTF-8 name for Røvhult
+
+	* doc/Røvhult.html.de, doc/Røvhult.html.en, doc/Røvhult.html.es:
+	  Anchoring to self without using the file-name
+
+2006-04-07  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp, src/Hearts.h: Improved layout
+
+2006-04-06  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Machiavelli.html.en: Fixes
+
 2006-04-03  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.41 docommented
