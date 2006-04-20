@@ -50,6 +50,7 @@ const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {
    { "browser", 'b' },
    { "dir-help", 'd' },
    { "file", 'f' },
+   { "list-games", 'G' },
 #ifdef HAVE_LIBPTHREAD
    { "listen-at", 'l' },
    { "connect-to", 'c' },
@@ -94,11 +95,8 @@ void CardgameAppl::showHelp () const {
              << _("Valid values for GAME are - unless disabled while configuring - Buraco, Hearts,\n"
 		  "Machiavelli, Rovhult, SgtMayor, Twopart and the numbers 0 - 5 (corresponding\n"
 		  "to the games in the above order) or the translation of the name (as displayed\n"
-		  "below).\n\nAvailable games:\n\n");
-
-   GameTypes types;
-   for (GameTypes::const_iterator i (types.begin ()); i != types.end (); ++i)
-      std::cout << "  " << i->first << ": " << i->second << '\n';
+		  "below).\n\n");
+   showGames ();
 
    std::cout << _("\nThe INI file can have the following entries:\n\n")
              <<  "  [Game]\n"
@@ -163,6 +161,11 @@ bool CardgameAppl::handleOption (const char option) {
       else
          std::cerr << PACKAGE << _("-warning: No file specified! Ignoring option `f'\n");
       break; }
+
+   case 'G':
+      showGames ();
+      exit (0);
+      break;
 
 #ifdef HAVE_LIBPTHREAD
    case 'l': {
@@ -330,6 +333,16 @@ const char* CardgameAppl::description () const {
 			"Public License")));
    return version.c_str ();
  }
+
+//-----------------------------------------------------------------------------
+/// Shows the available games
+//-----------------------------------------------------------------------------
+void CardgameAppl::showGames () const {
+   GameTypes types;
+   std::cout << _("Available games:\n\n");
+   for (GameTypes::const_iterator i (types.begin ()); i != types.end (); ++i)
+      std::cout << "  " << i->first << ": " << i->second << '\n';
+}
 
 
 //-----------------------------------------------------------------------------

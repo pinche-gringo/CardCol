@@ -58,6 +58,7 @@ class CardgameAppl : public YGP::IVIOApplication {
 
    // Help-handling
    virtual void showHelp () const;
+   void showGames () const;
 
  private:
    // Prohobited manager functions
