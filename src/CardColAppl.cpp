@@ -77,6 +77,7 @@ void CardgameAppl::showHelp () const {
              << _(" [OPTIONS]\n\n")
       /* For translations: Write the Rovhult as o-slash */
              << "  -g, --game ......... " << _("[GAME] Select game to start (default: Rovhult)\n")
+             << "  -G, --list-games ... " << _("List available games\n")
              << "  -f, --file ......... " << _("[FILE] Use file as INI file\n")
              << "  -b, --browser ...... " << _("[NAME] Browser to use to display the help\n")
              << "  -d, --dir-help ..... " << _("[DIR] Directory to search for help\n")
