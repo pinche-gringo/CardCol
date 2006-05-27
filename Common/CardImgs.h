@@ -63,6 +63,7 @@ class CardImages {
       load (path, back); }
 
    unsigned int size () const { return cards_.size (); }
+   bool hasBack () const { return back_; }
 
  private:
    std::vector<Glib::RefPtr<Gdk::Pixbuf> > cards_;
