@@ -1176,11 +1176,11 @@ void CardgameCollection::changeDecks (const std::string& deck, const std::string
    TRACE2 ("CardgameCollection::changeDecks (2x const std::string&)");
 
    unsigned int option (0);
-   if (deck.size () && (deck != options.decks)) {
+   if ((deck.size () && (deck != options.decks)) || !cardFaces.size ()) {
       option = 1;
       options.decks = deck;
    }
-   if (back.size () && (back != options.back)) {
+   if ((back.size () && (back != options.back)) || !cardFaces.hasBack ()) {
       option |= 2;
       options.back = back;
    }
@@ -1195,6 +1195,8 @@ void CardgameCollection::changeDecks (const std::string& deck, const std::string
 //-----------------------------------------------------------------------------
 void* CardgameCollection::changeCards (void* opt) {
    TRACE2 ("CardgameCollection::changeCards (void*) - Option: " << opt);
+   if (!opt)
+      return this;
 
    // Cards need an realized (!) parent, so ensure that the window is already
    // shown
@@ -1202,32 +1204,34 @@ void* CardgameCollection::changeCards (void* opt) {
    TRACE3 ("CardgameCollection::changeCards (void*) - Use " << options.decks
            << " and " << options.back);
 
+   void* rc (NULL);
+   bool enable (false);
    try {
-      if ((unsigned int)opt & 1)
+      if ((unsigned int)opt & 1) {
          cardFaces.loadDecks (options.decks);
+	 cards.getCards ().size () ? cards.update () : cards.addPacket (cardFaces);
+      }
       if ((unsigned int)opt & 2)
          cardFaces.loadBack (options.back);
 
-       ((unsigned int)opt & 0x8000)
-           ? cards.addPacket (cardFaces)
-           : cards.update ();
-      return this;
+      enable = true;
+      rc = this;
    }
    catch (Glib::ustring& e) {
       Glib::ustring msg ("Couldn't load the card images!\n\n"
                          "Reason: %1");
       msg.replace (msg.find ("%1"), 2, e);
       showMessage (msg);
+   }
 
-      Check3 (apMenus[NEW]);
-      apMenus[NEW]->set_sensitive (false);
+   Check3 (apMenus[NEW]);
+   apMenus[NEW]->set_sensitive (enable);
 
 #ifdef HAVE_LIBPTHREAD
-      Check3 (apMenus[CONNECT]);
-      apMenus[CONNECT]->set_sensitive (false);
+   Check3 (apMenus[CONNECT]);
+   apMenus[CONNECT]->set_sensitive (enable);
 #endif
-   }
-   return NULL;
+   return rc;
 }
 
 //----------------------------------------------------------------------------
