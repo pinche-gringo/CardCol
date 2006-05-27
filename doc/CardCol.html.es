@@ -60,9 +60,9 @@
         elecci&oacute;n) de cualquier versi&oacute;n posterior.</p>
 
       <p>&Eacute;ste se destribuye con la esperanza de que sea &uacute;til,
-        pero SIN NINGUNA GARANT&IACUTE;A, ni siquiera la garant&iacute;a
+        pero SIN NINGUNA GARANT&Iacute;A, ni siquiera la garant&iacute;a
         impl&iacute;cita de COMERCIABILIDAD o CONVENIENCIA PARA UN
-        PROP&OACUTE;SITO PARTICULAR.  V&eacute;ase la GNU Licensia General
+        PROP&Oacute;SITO PARTICULAR.  V&eacute;ase la GNU Licensia General
         P&uacute;blico para m&aacute;s detalles).</p></em></blockquote>
 
     <h2>Autor</h2>
