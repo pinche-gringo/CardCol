@@ -154,9 +154,9 @@ if test "$KDECARDS_DIR" != "no"; then
       for dir in /opt/kde3/share/apps/carddecks /usr/share/kde3/share/apps/carddecks \
                  /usr/kde3/share/apps/carddecks /usr/share/kde3/apps/carddecks \
 		 /usr/share/apps/carddecks /usr/local/share/apps/carddecks \
-		 /usr/kde/3.0/share/apps/carddecks /usr/kde/3.1/share/apps/carddecks \
-		 /usr/kde/3.2/share/apps/carddecks /usr/kde/3.3/share/apps/carddecks \
-		 /usr/kde/3.4/share/apps/carddecks /usr/kde/3.5/share/apps/carddecks; do
+		 /usr/kde/3.5/share/apps/carddecks /usr/kde/3.4/share/apps/carddecks \
+		 /usr/kde/3.3/share/apps/carddecks /usr/kde/3.2/share/apps/carddecks \
+		 /usr/kde/3.1/share/apps/carddecks /usr/kde/3.0/share/apps/carddecks; do
 	 if test -d "$dir/"; then
 	    KDECARDS_DIR="$dir/"
 	    break
