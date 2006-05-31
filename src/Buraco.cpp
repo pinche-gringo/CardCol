@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.02.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2005
+//COPYRIGHT   : Copyright (C) 2003 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -2295,7 +2295,7 @@ void Buraco::undoMove () {
 /// \param player: Player whose turn to undo
 //-----------------------------------------------------------------------------
 void Buraco::undoLast (unsigned int player) {
-   TRACE9 ("Buraco::undoLast (unsigned int) - " << player << ": " << undo.destPile
+   TRACE4 ("Buraco::undoLast (unsigned int) - " << player << ": " << undo.destPile
 	   << '-' << undo.destPos << "->" << undo.srcPos);
    if (!player)
       disableHuman ();
@@ -2333,7 +2333,7 @@ void Buraco::undoLast (unsigned int player) {
    }
 
    if (undo.monoPos != 7)
-      src.move (src.getPosJoker (), undo.monoPos);
+      src.move (undo.monoPos, src.getPosJoker ());
 
    menuUndo->set_sensitive (false);
    enableHumanHand ();
