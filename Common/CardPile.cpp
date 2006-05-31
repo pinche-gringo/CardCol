@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 03.04.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2005
+//COPYRIGHT   : Copyright (C) 2002 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -505,7 +505,6 @@ void ICardPile::setShowOption (ShowOpt show) {
 void ICardPile::move (unsigned int dest, unsigned int source) {
    TRACE5 ("ICardPile::move (unsigned int, unsigned int) - Card from pos "
            << source << " to " << dest);
-
    insert (remove (source), dest);
 }
 
