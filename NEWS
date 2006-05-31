@@ -1,3 +1,12 @@
+Overview of changes in version 0.7.51:
+
+  - Fixed undoing moves which moved a joker in a pile
+  - Fixed re-enabling menus after loading valid card-images
+  - Fixed german translation
+  - Fixed spanish help-text of application
+  - Test for KDE carddecks checks first for new versions
+
+
 Overview of changes in version 0.7.50:
 
   - Hearts: Improved layout
