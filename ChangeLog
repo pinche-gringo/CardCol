@@ -1,3 +1,32 @@
+2006-05-31  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Commented changes in V0.7.51
+
+	* po/de.po, po/en.po, po/es.po: Actualized
+
+	* configure.in: Checking first for newer versions of KDE
+
+	* NEWS: Commented changes in V0.7.51
+
+	* src/Buraco.cpp:
+	Fixed undoing moves which moved a joker in a pile of at least 3
+
+	* Common/CardPile.cpp: Changed formatting
+
+2006-05-26  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/CardCol.html.es: Fixed upper-case letters with acutes
+
+	* Common/CardImgs.h: Added hasBack()
+
+	* src/CardCol.cpp: Re-enablign menus after setting valid cards
+
+2006-04-22  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.in: Version to 0.7.51; Fixed define for ngetttext
+
+	* src/CardColAppl.cpp: Showing option -G in helptext
+
 2006-04-20  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.7.50 docommented
