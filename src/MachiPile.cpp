@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2005
+//COPYRIGHT   : Copyright (C) 2003 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -217,14 +217,14 @@ void MachiPile::analyzePile () {
 
 //----------------------------------------------------------------------------
 /// Checks the integrity of the object
-/// \throw std::string describing the error
+/// \throw PileError describing the error
 //----------------------------------------------------------------------------
-void MachiPile::checkIntegrity () throw (Glib::ustring) {
+void MachiPile::checkIntegrity () throw (PileError) {
    if (size () < 3)
-      throw _("Not enough cards (must be at least 3)!");
+      throw PileError (_("Not enough cards (must be at least 3)!"));
 
    if (type == UNDEFINED)
-      throw _("Invalid type!");
+      throw PileError (_("Invalid type!"));
 
    for (const_iterator i (begin ()); (i + 1) != end (); ++i)
       if ((type == COLOUR)
@@ -235,7 +235,7 @@ void MachiPile::checkIntegrity () throw (Glib::ustring) {
          Glib::ustring error (_("Card %1 does not fit!"));
          error.replace (error.find ("%1"), 2,
                         YGP::ANumeric::toString ((i + 1) - begin ()));
-         throw error;
+         throw PileError (error);
       }
 }
 

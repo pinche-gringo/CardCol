@@ -2120,9 +2120,9 @@ ICardPile* Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// \param player: ID of the player sending the message
 /// \param message: Message received from the server
 /// \returns bool: True, if message has been processed completey
-/// \throw std::string: In case of an error an describing text
+/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Buraco::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
+bool Buraco::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    TRACE1 ("Buraco::handleMessage (unsigned int player, const std::string&) - "
            << message << " (" << player << ')');
 
@@ -2146,10 +2146,10 @@ bool Buraco::handleMessage (unsigned int player, const std::string& message) thr
       ap.assignValues (message);
 
       if (iPile >= tablePiles[currentPlayer () & 1].size ())
-         throw std::string ("Invalid pile!");
+         throw YGP::ParseError (N_("Invalid pile!"));
       ICardPile& pile (*tablePiles[currentPlayer () & 1][iPile]);
       if ((card >= pile.size ()) || (dest >= pile.size ()))
-         throw std::string ("Invalid card!");
+         throw YGP::ParseError (N_("Invalid card!"));
 
       pile.move (dest, card);
    }
@@ -2178,8 +2178,9 @@ bool Buraco::handleMessage (unsigned int player, const std::string& message) thr
 ///    - \c dest == 2: Pick up from staple
 ///    - \c dest == 3: Pick up from dumped pile
 ///    - \c dest == 100 + pile/card: Played from hand to table pile \c pile
+/// \throw YGP::ParseError: In case of an invalid value
 //----------------------------------------------------------------------------
-bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) {
+bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) throw (YGP::ParseError) {
    TRACE8 ("Buraco::executeRemoteMove (ICardPile&, unsigned int) - " << dest
            << "; Target: " << target);
    Check1 ((dest < 4) || (dest >= 100));
@@ -2210,7 +2211,7 @@ bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) {
          if (((dest >> 16) >= tablePiles[currentPlayer () & 1].size ())
              || (tablePiles[currentPlayer () & 1][dest >> 16]->size ()
                  < (dest & 0xffff)))
-            throw std::string ("Invalid target specification!");
+            throw YGP::ParseError (N_("Invalid target specification!"));
 
 	 Check3 (pos1Play != -1U); Check3 (pos2Play != -1U);
 	 if (pos1Play == pos2Play)

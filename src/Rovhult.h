@@ -46,11 +46,11 @@ class Rovhult : public Game {
    virtual const char* name () { return "R\xC3\xB8vhult"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
 
-   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
+   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
 
  protected:
    virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
-   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target);
+   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target) throw (YGP::ParseError);
 
  private:
    enum { EXCHANGE = Game::LAST, EXCHANGED };

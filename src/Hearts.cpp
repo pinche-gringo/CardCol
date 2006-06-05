@@ -973,9 +973,9 @@ ICardPile* Hearts::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// \param player: ID of player sending the message
 /// \param message: Message received from the server
 /// \returns bool: True, if message has been completey processed
-/// \throw std::string: In case of an error an describing text
+/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Hearts::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
+bool Hearts::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    if (gameStatus () == EXCHANGE) {
       TRACE1 ("Hearts::handleMessage (unsigned int player, const std::string&) - "
               << message << " (" << player << ')');

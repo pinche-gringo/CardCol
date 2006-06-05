@@ -24,6 +24,7 @@
 #include <gtkmm/uimanager.h>
 
 #include <YGP/Mutex.h>
+#include <YGP/Exception.h>
 
 
 // Forward declarations
@@ -35,8 +36,8 @@ namespace Gtk {
    class Statusbar;
 };
 namespace YGP {
-class Socket;
-class ConnectionMgr;
+   class Socket;
+   class ConnectionMgr;
 }
 class Player;
 class CardSet;
@@ -82,7 +83,7 @@ class Game : public Gtk::Table {
    virtual unsigned int numberOfJokers () const { return 0; }
    //@}
 
-   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
+   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
    bool ignoreMessage ();
 
    /// \name Status handling
@@ -119,7 +120,7 @@ class Game : public Gtk::Table {
 
  protected:
    virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile) = 0;
-   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target);
+   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target) throw (YGP::ParseError);
    virtual unsigned int getActTarget () const;
 
    /// \name Communication helper methods
@@ -137,7 +138,7 @@ class Game : public Gtk::Table {
    void setNextPlayer (unsigned int player);
 
    void flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end);
-   void flipCards2Play (ICardPile& pile, const std::string& cards) throw (std::string);
+   void flipCards2Play (ICardPile& pile, const std::string& cards) throw (YGP::ParseError);
    void displayTurn (unsigned int player);
    void displayTurn (unsigned int player, const Glib::ustring& preText);
    void makeNextMoves ();
@@ -148,7 +149,7 @@ class Game : public Gtk::Table {
    static void movePile (ICardPile& dest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
 
-   bool performCommand (unsigned int player, const std::string& msg) throw (std::string);
+   bool performCommand (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
    static bool stringToNumber (unsigned long& number, const char* text);
 
    // Handling of won cards (if any)

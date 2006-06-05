@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 10.9.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2005
+//COPYRIGHT   : Copyright (C) 2002 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -182,7 +182,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
                 || (pos >= cards.size ())
                 || (errno || (pTail && *pTail))) {
                std::string error (N_("Invalid card specification!"));
-               throw error;
+               throw YGP::CommError (error);
             }
 
             TRACE9 ("Game::randomizeCardsToPile (ICardPile&) const - [" << i
@@ -191,10 +191,10 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
          }
          writeOK (*cmgr.getSocket ());
       }
-      catch (std::string& error) {
-         writeError (*cmgr.getSocket (), 99, error);
+      catch (YGP::CommError& error) {
+         writeError (*cmgr.getSocket (), 99, error.what ());
          Glib::ustring err (_("Received invalid input from the server!\n\nReason: %1"));
-         err.replace (err.find ("%1"), 2, _(error.c_str ()));
+         err.replace (err.find ("%1"), 2, _(error.what ()));
          Gtk::MessageDialog dlg (err, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
          dlg.set_title (PACKAGE);
          dlg.run ();
@@ -354,8 +354,9 @@ void Game::setGameStatus (unsigned int newStatus) {
 /// Flips the cards the user is about to play
 /// \param pile: Pile to manipulate
 /// \param cards: String containing the (comma-separated) IDs of the cards to flip
+/// \throw YGP::ParseError: If invalid numbers for cards are found
 //-----------------------------------------------------------------------------
-void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std::string) {
+void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (YGP::ParseError) {
    TRACE2 ("Game::flipCards2Play (ICardPile&, const std::string&) - Cards " << cards);
    Check1 (cards.size ());
 
@@ -366,7 +367,7 @@ void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std
    while (tokCards.getNextNode (' ').size ()) {
       if (stringToNumber (card, tokCards.getActNode ().c_str ())) {
          std::string error (N_("Invalid card specification!"));
-         throw error;
+         throw YGP::ParseError (error);
       }
 
       card = pile.find (static_cast <unsigned int> (card));
@@ -391,7 +392,7 @@ void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (std
                  "Card " << tokCards.getActNode () << " not found in "
                  << pile.size () << " cards");
          std::string error ("Card not found!");
-         throw error;
+         throw YGP::ParseError (error);
       }
    } // end-while string has data
    pos2Play = pile.size () - 1;
@@ -624,7 +625,7 @@ void Game::writeMessage (YGP::Socket& socket, const std::string& msg) {
       socket.write (msg);
       socket.write ("\0", 1);
    }
-   catch (std::domain_error& error) {
+   catch (YGP::CommError& error) {
       std::string err (_("Can't write message!\n\nReason: %1"));
       err.replace (err.find ("%1"), 2, error.what ());
       Gtk::MessageDialog dlg (msg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
@@ -651,9 +652,9 @@ void Game::writeError (YGP::Socket& socket, unsigned int rc, const std::string& 
 /// \param msg: Message to handle
 /// \returns bool: True, if the message has been processed completely; else
 ///    (if message is still pending) false
-/// \throw std::string: In case of an error an describing string
+/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing string
 //----------------------------------------------------------------------------
-bool Game::handleMessage (unsigned int player, const std::string& msg) throw (std::string) {
+bool Game::handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError) {
    TRACE1 ("Game::handleMessage (unsigned int player, const std::string&) - " << msg
            << " (" << player << ')');
    Check1 (msg.size ());
@@ -692,9 +693,9 @@ void Game::setNextPlayer (unsigned int player) {
 /// \param player: ID of player sending the message
 /// \param msg: Command to perform
 /// \returns bool: Flag, if command has been performed completely
-/// \throws std::string: Describing the error
+/// \throws YGP::ParseError, YGP::CommError: Describing the error
 //----------------------------------------------------------------------------
-bool Game::performCommand (unsigned int player, const std::string& msg) throw (std::string) {
+bool Game::performCommand (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError) {
    TRACE8 ("Game::performCommand (unsigned int player, const std::string&) - "
            << msg << " (" << player << ')');
    Check1 (msg.size ());
@@ -711,12 +712,12 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (s
       unsigned long target (-1UL);
       if (stringToNumber (target, strTarget.c_str ())
           || (playTo != "Target"))
-         throw std::string (N_("Invalid target!"));
+         throw YGP::ParseError (N_("Invalid target!"));
 
       Check3 (actPlayer >= 0);
       ICardPile* pile (getPileOfPlayer (actPlayer, target));
       if (!pile)
-         throw std::string (N_("Invalid target!"));
+         throw YGP::ParseError (N_("Invalid target!"));
       flipCards2Play (*pile, cmd);
 
       // Inform clients about cards to play
@@ -739,7 +740,7 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (s
               "Next player: " << cmd);
       unsigned long player;
       if (stringToNumber (player, cmd.c_str ()))
-         throw std::string (N_("Invalid number"));
+         throw YGP::ParseError (N_("Invalid number"));
 
       actPlayer = player;
       if (statGame == PLAYING)
@@ -751,7 +752,7 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (s
          broadcastMessage ("End");
    }
    else
-      throw std::string (N_("Unknown command!"));
+      throw YGP::ParseError (N_("Unknown command!"));
    return true;
 }
 
@@ -774,8 +775,9 @@ bool Game::stringToNumber (unsigned long& number, const char* text) {
 /// \param pile: Pile to move to/from
 /// \param card: ID of target, where to play the card
 /// \returns bool: True, if the timer to execute the move should be set
+/// \throw YGP::ParseError: In case of an invalid value
 //----------------------------------------------------------------------------
-bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) {
+bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) throw (YGP::ParseError) {
    TRACE8 ("Game::executeRemoteMove (ICardPile&, unsigned int) - " << pos2Play);
    return true;
 }

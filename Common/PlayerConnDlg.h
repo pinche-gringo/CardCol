@@ -46,7 +46,7 @@ class PlayerConnectDlg : public XGP::ConnectDlg {
 
  protected:
    /// \name Connection management
-   virtual void connect (const Glib::ustring& target, unsigned int port) throw (std::domain_error);
+   virtual void connect (const Glib::ustring& target, unsigned int port) throw (YGP::CommError);
    virtual YGP::Socket* addClient (int socket);
 
    Gtk::Label* connected;

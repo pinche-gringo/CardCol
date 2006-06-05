@@ -22,6 +22,8 @@
 
 #include <gdkmm/pixbuf.h>
 
+#include <YGP/Exception.h>
+
 
 /**Class to load & store the images of the used cards
 */
@@ -41,15 +43,15 @@ class CardImages {
    const Glib::RefPtr<Gdk::Pixbuf> getCardBackground () const { return back_; }
    void setCardBackground (const Glib::RefPtr<Gdk::Pixbuf> back) { back_ = back; }
 
-   void loadDecks (const std::string& path) throw (Glib::ustring);
-   void loadBack (const std::string& file) throw (Glib::ustring);
+   void loadDecks (const std::string& path) throw (YGP::FileError);
+   void loadBack (const std::string& file) throw (YGP::FileError);
 
 
    /// Loads the cards (faces and background)
    /// \param path: Path to files
    /// \param back: File containing background picture
-   /// \throw Glib::ustring: An describing text in case of error
-   void load (const std::string& path, const std::string& back) throw (Glib::ustring) {
+   /// \throw YGP::FileError: An describing text in case of error
+   void load (const std::string& path, const std::string& back) throw (YGP::FileError) {
       loadDecks (path);
       loadBack (back);
    }
@@ -57,8 +59,8 @@ class CardImages {
    /// \param cards: Number of cards expected
    /// \param path: Path to files
    /// \param back: File containing background picture
-   /// \throw Glib::ustring: An describing text in case of error
-   void load (unsigned int cards, const std::string& path, const std::string& back) throw (Glib::ustring) {
+   /// \throw YGP::FileError: An describing text in case of error
+   void load (unsigned int cards, const std::string& path, const std::string& back) throw (YGP::FileError) {
       cards_.reserve (cards);
       load (path, back); }
 

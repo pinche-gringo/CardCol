@@ -28,6 +28,7 @@
 #include <YGP/Mutex.h>
 #include <YGP/Thread.h>
 #include <YGP/ConnMgr.h>
+#include <YGP/Exception.h>
 
 #include <CardSet.h>
 #include <CardPile.h>
@@ -107,7 +108,7 @@ class CardgameCollection : public XGP::XApplication {
    void removeCommThreads ();
    void initCommunication ();
    void* waitForMessages (void*);
-   int handleGlobalMessage (unsigned int player, const std::string& msg) throw (std::string);
+   int handleGlobalMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError);
    bool handleMessage (unsigned int player, const std::string msg);
    void sendMessage (const Glib::ustring& msg);
    void broadcastMsg (const std::string& msg, unsigned int exclude = -1U);

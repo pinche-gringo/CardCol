@@ -18,6 +18,8 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <stdexcept>
+
 #include <CardPile.h>
 
 
@@ -25,6 +27,14 @@
  */
 class MachiPile : public CardHPile {
  public:
+   /**Exception indicating an error in the pile
+    */
+   class PileError : public std::runtime_error {
+   public:
+      PileError (const std::string& what) : std::runtime_error (what) { }
+   };
+
+
    typedef enum { UNDEFINED, NUMBER, COLOUR } TYPE;
 
    MachiPile ();
@@ -53,7 +63,7 @@ class MachiPile : public CardHPile {
    static int cardDistance (const CardWidget& a, const CardWidget& b,
                             ACEFLAG aceIsOne);
 
-   void checkIntegrity () throw (Glib::ustring);
+   void checkIntegrity () throw (PileError);
 
  private:
    MachiPile (const MachiPile& other);

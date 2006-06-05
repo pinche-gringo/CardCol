@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.07.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2005
+//COPYRIGHT   : Copyright (C) 2003 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -159,10 +159,10 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
 /// Connects this application to a server
 /// \param target: Name or IP address of the server
 /// \param port: Port the server is listening at
-/// \throw std::domain_error: Does not throw;
+/// \throw YGP::CommError: Does not throw;
 //----------------------------------------------------------------------------
 void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
-    throw (std::domain_error) {
+    throw (YGP::CommError) {
    TRACE3 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - "
            << target << ':' << port);
    Glib::ustring error;
@@ -222,7 +222,7 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
       if ((c != aPlayer.size ()) || (posPlayer >= aPlayer.size ()))
          throw std::string (_("Wrong number of players!"));
    }
-   catch (std::domain_error& err) {
+   catch (YGP::CommError& err) {
       error = _("Error sending player name!\n\nReason: %1");
       error.replace (error.find ("%1"), 2, err.what ());
    }
@@ -289,7 +289,7 @@ YGP::Socket* PlayerConnectDlg::addClient (int socket) {
       TRACE8 ("PlayerConnectDlg::addClient (int) - Sending players: " << input);
       sock->write (input);
    }
-   catch (std::domain_error& err) {
+   catch (YGP::CommError& err) {
       error = _("Error getting player name!\n\nReason: %1");
       error.replace (error.find ("%1"), 2, err.what ());
    }

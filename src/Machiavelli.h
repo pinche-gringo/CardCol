@@ -68,7 +68,7 @@ class Machiavelli : public Game {
 
    virtual unsigned int numberOfDecks () const { return 4; }
 
-   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
+   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
 
  private:
    Machiavelli ();

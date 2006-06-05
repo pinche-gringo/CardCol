@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 28.3.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2005
+//COPYRIGHT   : Copyright (C) 2002 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -1529,9 +1529,9 @@ ICardPile* Rovhult::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// \param player: ID of player sending the message
 /// \param message: Message received from the server
 /// \returns bool: True, if message has been completey processed
-/// \throw std::string: In case of an error an describing text
+/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Rovhult::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
+bool Rovhult::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    if (gameStatus () >= EXCHANGE) {
       TRACE1 ("Rovhult::handleMessage (unsigned int player, const std::string&) - "
               << message << " (" << player << ')');
@@ -1614,8 +1614,9 @@ bool Rovhult::handleMessage (unsigned int player, const std::string& message) th
 /// Executes the remote move locally
 /// \param pile: Pile to move to/from
 /// \param target: ID of target as send by the partner
+/// \throw YGP::ParseError: In case of an error
 //----------------------------------------------------------------------------
-bool Rovhult::executeRemoteMove (ICardPile& pile, unsigned int target) {
+bool Rovhult::executeRemoteMove (ICardPile& pile, unsigned int target) throw (YGP::ParseError) {
    if (target) {
       Check3 (gameStatus () == PLAYING);
       TRACE7 ("Rovhult::executeRemoteMove (ICardPile&, unsigned int) - Target " << target);

@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 11.4.2004
-//COPYRIGHT   : Copyright (C) 2004, 2005
+//COPYRIGHT   : Copyright (C) 2004 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -669,9 +669,9 @@ bool SgtMayor::readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned l
 /// \param player: ID of player sending the message
 /// \param message: Message received from the server
 /// \returns bool: True, if message has been completey processed
-/// \throw std::string: In case of an error an describing text
+/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
 //----------------------------------------------------------------------------
-bool SgtMayor::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
+bool SgtMayor::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    TRACE1 ("SgtMayor::handleMessage (unsigned int player, const std::string&) - "
 	   << message << " (" << player << ')');
    YGP::Tokenize command (message);
@@ -689,7 +689,7 @@ bool SgtMayor::handleMessage (unsigned int player, const std::string& message) t
 	 card1 = players[player1].hand.find (static_cast <unsigned int> (card1));
 	 card2 = players[player2].hand.find (static_cast <unsigned int> (card2));
 	 if ((card1 == -1U) || (card2 == -1U))
-	    throw std::string ("Card not found!");
+	    throw YGP::ParseError (N_("Card not found!"));
 
 	 status.pop ();
 	 if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT) {

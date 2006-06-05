@@ -66,7 +66,7 @@ class Buraco : public Game {
    virtual unsigned int numberOfDecks () const { return 4; }
    virtual unsigned int numberOfJokers () const { return 3; }
 
-   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (std::string);
+   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
 
    static unsigned int getPoints (const CardWidget& card);
    static bool isJoker (const CardWidget& card);
@@ -86,7 +86,7 @@ class Buraco : public Game {
    virtual void disableHuman ();
 
    virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
-   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target);
+   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target) throw (YGP::ParseError);
    virtual unsigned int getActTarget () const;
 
    //@Section Event handling

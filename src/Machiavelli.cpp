@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2005
+//COPYRIGHT   : Copyright (C) 2003 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -1362,13 +1362,13 @@ void Machiavelli::checkPiles (YGP::StatusObject& obj) const {
        try {
            (*i)->checkIntegrity ();
        }
-       catch (Glib::ustring& error) {
+       catch (MachiPile::PileError& error) {
            TRACE9 ("Machiavelli::checkPiles () const - " << (i - tablePiles.begin ())
-                   << ": " << error);
+                   << ": " << error.what ());
            Glib::ustring msg (_("Pile %1: %2\n"));
            msg.replace (msg.find ("%1"), 2,
                         YGP::ANumeric::toString (i - tablePiles.begin () + 1));
-           msg.replace (msg.find ("%2"), 2, error);
+           msg.replace (msg.find ("%2"), 2, error.what ());
            obj.setMessage (YGP::StatusObject::ERROR, msg);
        }
    }
@@ -1507,9 +1507,9 @@ ICardPile* Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile)
 /// \param player: ID of the player sending the message
 /// \param message: Message received from the server
 /// \returns bool: True, if message has been processed completey
-/// \throw std::string: In case of an error an describing text
+/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Machiavelli::handleMessage (unsigned int player, const std::string& message) throw (std::string) {
+bool Machiavelli::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    TRACE1 ("Machiavelli::handleMessage (unsigned int player, const std::string&) - "
            << message << " (" << player << ')');
 
@@ -1551,7 +1551,7 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
          if (stringToNumber (posPile, tokCards.getActNode ().c_str ())) {
             std::string error ("Not a card number: `%1'");
             error.replace (error.find ("%1"), 2, tokCards.getActNode ());
-            throw error;
+            throw YGP::ParseError (error);
          }
 
          unsigned int pile ((posPile >> 8) & 0xff);
@@ -1561,10 +1561,10 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
                  " - Add from " << pile << " cards " << posSrc << '-' << (posSrc + nr - 1));
 
          if (pile >= tablePiles.size ())
-            throw std::string ("Invalid source pile");
+            throw YGP::ParseError (N_("Invalid source pile"));
          ICardPile& srcPile (*tablePiles[pile]);
          if ((posSrc + nr) > srcPile.size ())
-            throw std::string ("Invalid cards");
+            throw YGP::ParseError (N_("Invalid cards"));
 
          posPiles.push_back (posPile);
 
@@ -1582,7 +1582,7 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
       unsigned int targetPile (target >> 16);
       if (targetPile > tablePiles.size ()) {
          target = -1U;
-         throw std::string ("Invalid target pile");
+         throw YGP::ParseError (N_("Invalid target pile"));
       }
 
       if (targetPile == tablePiles.size ())
@@ -1611,7 +1611,7 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
       ap.assignValues (message);
 
       if ((dest >= tablePiles.size ()) && (dest != 255))
-         throw std::string ("Invalid destination pile!");
+         throw YGP::ParseError (N_("Invalid destination pile!"));
       if (create) {
          Check3 (dest != 255);
          makeNewPile (dest);
@@ -1620,18 +1620,18 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
       ICardPile* srcPile (NULL);
       try {
          if (destPos > pile.size ())
-            throw std::string ("Invalid position in destination pile!");
+            throw YGP::ParseError (N_("Invalid position in destination pile!"));
 
          if (src >= tablePiles.size ())
-            throw std::string ("Invalid source pile!");
+            throw YGP::ParseError (N_("Invalid source pile!"));
           srcPile = tablePiles[src];
          if ((card2 < card1) || (card2 >= srcPile->size ()))
-            throw std::string ("Invalid cards!");
+            throw YGP::ParseError (N_("Invalid cards!"));
       }
-      catch (std::string& error) {
+      catch (...) {
          if (create)
             removePile (dest);
-         throw error;
+         throw;
       }
 
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)

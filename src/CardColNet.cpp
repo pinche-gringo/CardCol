@@ -170,7 +170,7 @@ void* CardgameCollection::waitForMessages (void* thread) {
       Glib::signal_idle ().connect
           (bind (mem_fun (*this, &CardgameCollection::showMessage), msg));
    }
-   catch (std::domain_error& error) {
+   catch (YGP::CommError& error) {
       std::string msg (_("Lost connection to %1!"));
       Check3 (static_cast<unsigned int> (iPlayer) < aPlayer.size ());
       msg.replace (msg.find ("%1"), 2, aPlayer[iPlayer]->getName ());
@@ -222,7 +222,7 @@ void* CardgameCollection::waitForMessages (void* thread) {
 ///     -1 if Message was handled, but not fully processed yet; else false
 //----------------------------------------------------------------------------
 int CardgameCollection::handleGlobalMessage (unsigned int player,
-                                             const std::string& msg) throw (std::string) {
+                                             const std::string& msg) throw (YGP::ParseError) {
    TRACE5 ("CardgameCollection::handleGlobalMessage (unsigned int, char*) - " << msg);
 
    YGP::Tokenize message (msg);
@@ -235,7 +235,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
       if (type == GameTypes::NONE) {
          std::string msg (_("Invalid game type: `%1'"));
          msg.replace (msg.find ("%1"), 2, param);
-         throw msg;
+         throw YGP::ParseError (msg);
       }
 
       actGame = type;
@@ -262,7 +262,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
       try {
 	 ap.assignValues (msg);
       }
-      catch (std::string& e) {
+      catch (YGP::ParseError& e) {
 	 cmd = _("Invalid message received!");
       }
       if (cmd.size () && param.size ()) {
@@ -301,7 +301,7 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
 	    if (cmd.empty ())
 	       cmd = static_cast<std::string> (_("Unspecified error"));
 	 }
-	 catch (std::string& e) {
+	 catch (YGP::ParseError& e) {
 	    cmd = _("Invalid message received!");
 	 }
 
@@ -340,17 +340,17 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
                       && !game->handleMessage (player, msg))))
          unlock = false;
    }
-   catch (std::string& error) {
+   catch (std::exception& error) {
       TRACE9 ("CardgameCollection::handleMessage (unsigned int, const std::string)"
               " - Error " << error);
       std::string msg ("Error=99;Msg=\"");
-      msg += error;
+      msg += error.what ();
       msg += "\"\0";
       broadcastMsg (msg);
 
       Glib::ustring message (_("Error processing command `%1'!\n\n%2"));
       message.replace (message.find ("%1"), 2, msg);
-      message.replace (message.find ("%2"), 2, _(error.c_str ()));
+      message.replace (message.find ("%2"), 2, _(error.what ()));
       showMessage (message);
    }
 
@@ -414,8 +414,7 @@ void CardgameCollection::broadcastMsg (const std::string& msg, unsigned int excl
 	 cmgr.getSocket ()->write (msg);
       }
    }
-   catch (std::string& e) {
-   }
+   catch (std::exception& e) { }
 }
 
 //-----------------------------------------------------------------------------
