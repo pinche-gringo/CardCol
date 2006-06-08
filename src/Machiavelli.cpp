@@ -1561,10 +1561,10 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
                  " - Add from " << pile << " cards " << posSrc << '-' << (posSrc + nr - 1));
 
          if (pile >= tablePiles.size ())
-            throw YGP::ParseError (N_("Invalid source pile"));
+            throw YGP::ParseError (N_("Invalid source pile!"));
          ICardPile& srcPile (*tablePiles[pile]);
          if ((posSrc + nr) > srcPile.size ())
-            throw YGP::ParseError (N_("Invalid cards"));
+            throw YGP::ParseError (N_("Invalid cards!"));
 
          posPiles.push_back (posPile);
 
@@ -1582,7 +1582,7 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
       unsigned int targetPile (target >> 16);
       if (targetPile > tablePiles.size ()) {
          target = -1U;
-         throw YGP::ParseError (N_("Invalid target pile"));
+         throw YGP::ParseError (N_("Invalid destination pile!"));
       }
 
       if (targetPile == tablePiles.size ())
