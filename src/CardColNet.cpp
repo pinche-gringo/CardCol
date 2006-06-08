@@ -342,7 +342,7 @@ bool CardgameCollection::handleMessage (unsigned int player, const std::string m
    }
    catch (std::exception& error) {
       TRACE9 ("CardgameCollection::handleMessage (unsigned int, const std::string)"
-              " - Error " << error);
+              " - Error " << error.what ());
       std::string msg ("Error=99;Msg=\"");
       msg += error.what ();
       msg += "\"\0";
