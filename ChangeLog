@@ -1,3 +1,26 @@
+2006-06-07  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Commented changes of V0.7.52
+
+	* src/Machiavelli.cpp: Unified error-messages
+
+	* po/de.po, po/en.po, po/es.po:
+	  Translating error-messages of communication
+
+	* configure.in: Version to 0.7.52; Needing libYGP 0.8.00
+
+	* src/CardColAppl.cpp: Improved error-handling of reading INI-file
+
+	* src/CardColNet.cpp: Fixed trace
+
+	* src/Rovhult.cpp:
+	  Showing 10s if played from table (not only marking them)
+
+2006-06-05  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.h, src/MachiPile.cpp, src/MachiPile.h, src/Machiavelli.cpp, src/Machiavelli.h, src/Rovhult.cpp, src/Rovhult.h, src/SgtMayor.cpp, src/SgtMayor.h, src/Twopart.cpp, src/Twopart.h, Common/CardImgs.cpp, Common/CardImgs.h, Common/Game.cpp, Common/Game.h, Common/PlayerConnDlg.cpp, Common/PlayerConnDlg.h, src/Buraco.cpp, src/Buraco.h, src/CardCol.h, src/CardColAppl.cpp, src/CardColNet.cpp, src/Hearts.cpp:
+	  Adapted to exception-handling of libYGP 0.8.00
+
 2006-05-31  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Commented changes in V0.7.51
@@ -9,7 +32,7 @@
 	* NEWS: Commented changes in V0.7.51
 
 	* src/Buraco.cpp:
-	Fixed undoing moves which moved a joker in a pile of at least 3
+	  Fixed undoing moves which moved a joker in a pile of at least 3
 
 	* Common/CardPile.cpp: Changed formatting
 
