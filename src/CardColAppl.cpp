@@ -286,11 +286,12 @@ void CardgameAppl::readINIFile (const char* pFile) {
 
       INIFILE_READ ();
    }
+   catch (YGP::FileError&) { }
    catch (std::exception& error) {
-      Glib::ustring err ("-warning: Error reading INI-file `%1': %2");
+      Glib::ustring err (_("-warning: Error reading INI-file `%1'! %2\n"));
       err.replace (err.find ("%1"), 2, pFile);
       err.replace (err.find ("%2"), 2, error.what ());
-      std::cerr << PACKAGE << err << '\n';
+      std::cerr << name () << err;
    }
 
    int type (convertToGameType (options.strType.c_str ()));
