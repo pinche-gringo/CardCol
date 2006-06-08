@@ -1129,7 +1129,8 @@ void Rovhult::showCards2Play (unsigned int player) {
 
       for (unsigned int i (pos1Play); i <= pos2Play; ++i) {
          Check3 (players[player].reserve[i].size ());
-         (pile.size () || (target > 3))
+         ((pile.size () || (target > 3))
+	  && (players[player].reserve[i].getTopCard ().number () != CardWidget::TEN))
             ? players[player].reserve[i].getTopCard ().mark ()
             : players[player].reserve[i].getTopCard ().showFace ();
       }
