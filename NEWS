@@ -1,3 +1,9 @@
+Overview of changes in version 0.7.52:
+
+  - Adapted to libYGP 0.8.00
+  - Improved Røvhult playing 10s from table
+
+
 Overview of changes in version 0.7.51:
 
   - Fixed undoing moves which moved a joker in a pile
