@@ -505,7 +505,6 @@ bool Rovhult::cardValid (CardWidget::NUMBERS nr, bool silent) const {
          }
       }
    } // end-switch
-
    return true;
 }
 
@@ -1129,10 +1128,10 @@ void Rovhult::showCards2Play (unsigned int player) {
 
       for (unsigned int i (pos1Play); i <= pos2Play; ++i) {
          Check3 (players[player].reserve[i].size ());
-         ((pile.size () || (target > 3))
-	  && (players[player].reserve[i].getTopCard ().number () != CardWidget::TEN))
-            ? players[player].reserve[i].getTopCard ().mark ()
-            : players[player].reserve[i].getTopCard ().showFace ();
+         CardWidget& card (players[player].reserve[i].getTopCard ());
+	 ((pile.size () > 1) || (target > 3)
+	  || (players[player].reserve[i].getTopCard ().number () != CardWidget::TEN))
+	    ? card.mark () : card.showFace ();
       }
 
       // Inform the others about the move
