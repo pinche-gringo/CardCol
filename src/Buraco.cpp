@@ -279,8 +279,9 @@ unsigned int Buraco::showCardsToPlay (unsigned int player) {
    TRACE2 ("Buraco::showCardsToPlay (unsigned int) - " << player << " ("
            << gStatus.startGame << '/' << gStatus.startTurn << ')');
 
-   if (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco)
-       == (player >> 1))
+   if (gStatus.startTurn
+       && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco)
+	   == (player >> 1)))
       ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = 0x3;
 
    ICardPile& playerPile (hands[player]);
@@ -1387,7 +1388,9 @@ void Buraco::addBuraco (unsigned int player) {
    undo.pickUp = 1;
    unsigned int cJokers (hands[player].size ());
 
+   // Storing player picking up the buraco
    ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = (player >> 1);
+
    // Disable the cards in the hand (if the human gets the cards)
    if (!player) {
       Game::disableHuman ();
@@ -1517,8 +1520,8 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
                     && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco
                          == 0x3)))
                    || (points[player & 1] > 100))
-                  || reserve[(player + 1) & 1].empty ()
-                  || (points[(player + 1) & 1] > 100)))
+                  || reserve[!(player & 1)].empty ()
+                  || (points[!(player & 1)] > 100)))
              || (((*p)->size () > 2) && ((*p)->getPosFirst () > 6)))
           : ((posPile = cardFitsOnPile (p - tablePiles[player & 1].begin (), card))
              != -1)) {
