@@ -82,6 +82,8 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
    decks.signal_selection_changed ().connect (mem_fun (*this, &DeckSelectDlg::deckSelected));
    decks.signal_item_activated ().connect (mem_fun (*this, &DeckSelectDlg::deckActivated));
 
+   Glib::RefPtr<Gdk::Pixbuf> actImg;
+
 #ifdef KDECARDS_DIR
    std::string cardDirs (KDECARDS_DIR); Check3 (cardDirs[cardDirs.size () - 1] == YGP::File::DIRSEPARATOR);
    cardDirs += "cards-*";
@@ -100,26 +102,33 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
       row[cols.name] = dir->name () + 6;
 
       file += "14.png";
-      row[cols.icon] = getImage (file);
+      actImg = getImage (file);
+      if (actImg) {
+	 row[cols.icon] = actImg;
 
-      TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
-              << (std::string)row[cols.path] << " with " << deck);
-      if (deck == (std::string)row[cols.path])
-         decks.select_path (mDecks->get_path (row));
+	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
+		 << (std::string)row[cols.path] << " with " << deck);
+	 if (deck == (std::string)row[cols.path])
+	    decks.select_path (mDecks->get_path (row));
+      }
+      else
+	 mDecks->erase (row);
 
       dir = ds.next ();
    }
 #endif
 #ifdef CARDPICS_DIR
-   Gtk::TreeRow row (*mDecks->append ());
-   row[cols.path] = CARDPICS_DIR;
-   row[cols.name] = "Cardpics";
-   row[cols.icon] = getImage (CARDPICS_DIR "24.png");
+   if ((actImg = getImage (CARDPICS_DIR "24.png"))) {
+      Gtk::TreeRow row (*mDecks->append ());
+      row[cols.path] = CARDPICS_DIR;
+      row[cols.name] = "Cardpics";
+      row[cols.icon] = actImg;
 
-   TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
-	   << CARDPICS_DIR << " with " << deck);
-   if (deck == CARDPICS_DIR)
-      decks.select_path (mDecks->get_path (row));
+      TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
+	      << CARDPICS_DIR << " with " << deck);
+      if (deck == CARDPICS_DIR)
+	 decks.select_path (mDecks->get_path (row));
+   }
 #endif
 
    unsigned int height (132 * ((mDecks->children ().size () >> 2) + 1));
@@ -136,28 +145,32 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
    dir = ds.find (pathDecks + "deck*.png", YGP::IDirectorySearch::FILE_NORMAL
                   | YGP::IDirectorySearch::FILE_READONLY);
    while (dir) {
-      Gtk::TreeRow row (*mBacks->append ());
-      row[cols.path] = pathDecks + dir->name ();
-      row[cols.icon] = getImage (pathDecks + dir->name ());
+      if ((actImg = getImage (pathDecks + dir->name ()))) {
+	 Gtk::TreeRow row (*mBacks->append ());
+	 row[cols.path] = pathDecks + dir->name ();
+	 row[cols.icon] = actImg;
 
-      TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
-              << (pathDecks + dir->name ()) << " with " << back);
-      if ((pathDecks + dir->name ()) == back)
-         backs.select_path (mBacks->get_path (row));
+	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
+		 << (pathDecks + dir->name ()) << " with " << back);
+	 if ((pathDecks + dir->name ()) == back)
+	    backs.select_path (mBacks->get_path (row));
+      }
 
       dir = ds.next ();
    }
 #endif
 
 #ifdef CARDPICS_DIR
-   row = (*mBacks->append ());
-   row[cols.path] = CARDPICS_DIR "78.png";
-   row[cols.icon] = getImage (CARDPICS_DIR "78.png");
+   if ((actImg = getImage (CARDPICS_DIR "78.png"))) {
+      Gtk::TreeRow row (*mBacks->append ());
+      row[cols.path] = CARDPICS_DIR "78.png";
+      row[cols.icon] = actImg;
 
-   TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
-	   << CARDPICS_DIR "78.png" << " with " << deck);
-   if (back == CARDPICS_DIR "78.png")
-      backs.select_path (mBacks->get_path (row));
+      TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
+	      << CARDPICS_DIR "78.png" << " with " << deck);
+      if (back == CARDPICS_DIR "78.png")
+	 backs.select_path (mBacks->get_path (row));
+   }
 #endif
 
 #ifdef GNOMECARDS_DIR
@@ -168,26 +181,28 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
       Gtk::TreeRow row (*mDecks->append ());
       std::string file (GNOMECARDS_DIR);
       file += gfile->name ();
-      row[cols.path] = file;
-      row[cols.name] = file.substr (strlen (GNOMECARDS_DIR), strlen (gfile->name ()) - 4);
-      Glib::RefPtr<Gdk::Pixbuf> img (getImage (file, false));
-      Glib::RefPtr<Gdk::Pixbuf> dest (Gdk::Pixbuf::create_subpixbuf (img, 790, 369, 79, 123));
-      row[cols.icon] = dest->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+      actImg = getImage (file, false);
+      if (actImg) {
+	 row[cols.path] = file;
+	 row[cols.name] = file.substr (strlen (GNOMECARDS_DIR), strlen (gfile->name ()) - 4);
+	 Glib::RefPtr<Gdk::Pixbuf> dest (Gdk::Pixbuf::create_subpixbuf (actImg, 790, 369, 79, 123));
+	 row[cols.icon] = dest->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
 
-      TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
-              << (std::string (GNOMECARDS_DIR) + gfile->name ()) << " with " << deck);
-      if (deck == (std::string (GNOMECARDS_DIR) + gfile->name ()))
-         decks.select_path (mDecks->get_path (row));
+	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
+		 << (std::string (GNOMECARDS_DIR) + gfile->name ()) << " with " << deck);
+	 if (deck == (std::string (GNOMECARDS_DIR) + gfile->name ()))
+	    decks.select_path (mDecks->get_path (row));
 
-      row = (*mBacks->append ());
-      row[cols.path] = file;
-      dest = Gdk::Pixbuf::create_subpixbuf (img, 79 * 2, 123 << 2, 79, 123);
-      row[cols.icon] = dest->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+	 row = (*mBacks->append ());
+	 row[cols.path] = file;
+	 dest = Gdk::Pixbuf::create_subpixbuf (actImg, 79 * 2, 123 << 2, 79, 123);
+	 row[cols.icon] = dest->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
 
-      TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
-              << (std::string (GNOMECARDS_DIR) + gfile->name ()) << " with " << back);
-      if (back == (std::string (GNOMECARDS_DIR) + gfile->name ()))
-	 backs.select_path (mBacks->get_path (row));
+	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
+		 << (std::string (GNOMECARDS_DIR) + gfile->name ()) << " with " << back);
+	 if (back == (std::string (GNOMECARDS_DIR) + gfile->name ()))
+	    backs.select_path (mBacks->get_path (row));
+      }
 
       gfile = gs.next ();
    }
