@@ -1,3 +1,24 @@
+2006-07-12  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.7.53 commented
+
+	* configure.in: Version to 0.7.53
+
+	* po/de.po, po/en.po, po/es.po: Actualized
+
+2006-07-11  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp:
+	Fixed computer finishing piles, even if its partner picked up the Buraco
+
+	* Common/DeckSelect.cpp:
+	  Error loading an image does simply not display that image (not trap)
+
+2006-06-24  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Rovhult.cpp:
+	  Fixed showing 10s if played from bottom of table (not only marking them)
+
 2006-06-07  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Commented changes of V0.7.52

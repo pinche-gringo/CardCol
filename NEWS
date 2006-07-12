@@ -1,7 +1,14 @@
+Overview of changes in version 0.7.53:
+
+  - Røvhult's computer-player shows 10s, when playing covered card from table
+  - Fixed crash, when dialog to show card images can't load an image
+  - Fixed computer finishing piles, even if its partner picked up the Buraco
+
+
 Overview of changes in version 0.7.52:
 
   - Adapted to libYGP 0.8.00
-  - Improved Røvhult playing 10s from table
+  - Improved visual feedback of Røvhult playing 10s from table
 
 
 Overview of changes in version 0.7.51:
