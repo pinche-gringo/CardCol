@@ -1135,168 +1135,143 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
            << " in pile");
    Check3 (*pValue < hands[0].size ());
 
-   // Check if all piles (except those to which card is dropped) are valid
-   if (!humanPilesOK (iCard >> 8)) {
-      context->drag_finish (false, false, time);
-      Gtk::MessageDialog dlg (_("You need to fill up other piles first!"),
-                              Gtk::MESSAGE_ERROR);
-      dlg.set_title (_("Invalid move"));
-      dlg.run ();
-      return;
-   }
+   try {
+      // Check if all piles (except those to which card is dropped) are valid
+      if (!humanPilesOK (iCard >> 8))
+	 throw Glib::ustring (_("You need to fill up other piles first!"));
 
-   CardWidget& moved (*hands[0][*pValue]);
-   TRACE4 ("Buraco::cardDroppedOnTable (...) - Card dropped: " << moved);
+      CardWidget& moved (*hands[0][*pValue]);
+      TRACE4 ("Buraco::cardDroppedOnTable (...) - Card dropped: " << moved);
 
-   if ((acceptCards != -1U)
-       && isJoker (moved) || (*pValue >= acceptCards)) {
-      context->drag_finish (false, false, time);
-      Gtk::MessageDialog dlg (_("You must play your cards (without \"monos\"), when you picked up the pile!"),
-                              Gtk::MESSAGE_ERROR);
-      dlg.set_title (_("Invalid move"));
-      dlg.run ();
-      return;
-   }
+      if ((acceptCards != -1U)
+	  && isJoker (moved) || (*pValue >= acceptCards))
+	 throw Glib::ustring (_("You must play your cards (without \"monos\"), when you picked up the pile!"));
 
-   // Move dropped card to a (new) pile on the table
-   unsigned int iPile;
-   BuracoPile* pile (NULL);
-   if (iCard == -1U) {     // If card was dropped on the new pile: Create pile
-      // Check validity of drop
-      if (!(isJoker (moved)
-            ? pileHasFittingPair (hands[0], &moved)
-            : pileHasFittingPair (hands[0], moved, acceptCards == -1U))) {
-         context->drag_finish (false, false, time);
-         Gtk::MessageDialog dlg (_("There are no cards to make a valid new pile!"),
-                                 Gtk::MESSAGE_ERROR);
-         dlg.set_title (_("Invalid move"));
-         dlg.run ();
-         return;
+      // Move dropped card to a (new) pile on the table
+      unsigned int iPile;
+      BuracoPile* pile (NULL);
+      if (iCard == -1U) {     // If card was dropped on the new pile: Create pile
+	 // Check validity of drop
+	 if (!(isJoker (moved)
+	       ? pileHasFittingPair (hands[0], &moved)
+	       : pileHasFittingPair (hands[0], moved, acceptCards == -1U)))
+	    throw Glib::ustring (_("There are no cards to make a valid new pile!"));
+
+	 // Only allow dropping on new pile while having < 5 cards, if the game
+	 // can be ended, or there is still the reserve
+	 if (!canDumpCards (0, 3))
+	    throw Glib::ustring (_(*unfinishedMonoPiles
+				   ? N_("You can't end the game (a pile of monos is not finished)!")
+				   : ((hands[0].size () <= 5)
+				      ? N_("You can't end the game (there's no \"cerrado\")!")
+				      : N_("Not enough cards to make new pile!"))));
+
+	 iPile = tablePiles[0].size ();
+	 pile = &makeNewPile (0); Check3 (tablePiles[0].size ());
+	 iCard = 0;
+      }
+      else {
+	 // Else check pile to use
+	 Check1 ((iCard >> 8) < tablePiles[0].size ());
+	 pile = tablePiles[0][iPile = (iCard >> 8)];
+
+	 if ((iCard = cardFitsOnPile (iPile, moved)) == -1U)
+	    throw Glib::ustring (_("This card does not fit on that pile!"));
+
+	 // Only allow dropping of last card, if the game can be ended, or there
+	 // is still the reserve
+	 if (!canDumpCards (0, 1, iPile))
+	    throw Glib::ustring (_("You can't end the game (there's no \"cerrado\")!"));
+
+	 if ((pile->size () == 1)
+	     && isJoker (pile->getTopCard ())
+	     && isJoker (moved))
+	    ++unfinishedMonoPiles[0];
       }
 
-      // Only allow dropping on new pile while having < 5 cards, if the game
-      // can be ended, or there is still the reserve
-      if (!canDumpCards (0, 3)) {
-         context->drag_finish (false, false, time);
-         Gtk::MessageDialog dlg ((_((hands[0].size () <= 5)
-                                    ? N_("You can't end the game (there's no \"cerrado\")!")
-                                    : N_("Not enough cards to make new pile!"))),
-                                 Gtk::MESSAGE_ERROR);
-         dlg.set_title (_("Invalid move"));
-         dlg.run ();
-         return;
+      // End old drag
+      context->drag_finish (true, false, time);
+      activeCards[*pValue].disconnect ();
+      activeCards.erase (activeCards.begin () + *pValue);
+
+      // Unregister old card
+      hands[0].remove (*pValue);
+      unregisterHandDND (moved);
+
+      // Insert card into pile and register it for DND
+      unsigned int move (-1U);
+      pile->getPosition4Card (moved, iCard, move);
+      Check3 (iCard <= pile->size ());
+
+      TRACE4 ("Buraco::cardDroppedOnTable (...) - Undo:  " << iPile << "; " << iCard
+	      << "; " << *pValue << ": " << acceptCards << '/' << pile->getPosJoker ());
+      undo.assign (iPile, iCard, *pValue, acceptCards);
+      menuUndo->set_sensitive ();
+
+      if (move != -1U) {
+	 Check3 (move <= pile->size ());
+	 Check3 (move != pile->getPosJoker ());
+	 Check3 (pile->getPosJoker () != 7);
+	 undo.monoPos = pile->getPosJoker ();
+	 sendMoveCard (iPile, pile->getPosJoker (), move);
+	 pile->move (move, pile->getPosJoker ());
       }
 
-      iPile = tablePiles[0].size ();
-      pile = &makeNewPile (0); Check3 (tablePiles[0].size ());
-      iCard = 0;
-   }
-   else {
-      // Else check pile to use
-      Check1 ((iCard >> 8) < tablePiles[0].size ());
-      pile = tablePiles[0][iPile = (iCard >> 8)];
-
-      if ((iCard = cardFitsOnPile (iPile, moved)) == -1U) {
-         context->drag_finish (false, false, time);
-         Gtk::MessageDialog dlg (_("This card does not fit on that pile!"),
-                                 Gtk::MESSAGE_ERROR);
-         dlg.set_title (_("Invalid move"));
-         dlg.run ();
-         return;
+      // Send move
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+	 std::ostringstream msg;
+	 msg << "Play=" << moved.id () << ";Target="
+	     << (iPile << 16) + iCard + 100;
+	 if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+	    ignoreNextMsg = true;
+	 broadcastMessage (msg.str ());
       }
 
-      // Only allow dropping of last card, if the game can be ended, or there
-      // is still the reserve
-      if (!canDumpCards (0, 1, iPile)) {
-         context->drag_finish (false, false, time);
-         Gtk::MessageDialog dlg (_("You can't end the game (there's no \"cerrado\")!"),
-                                 Gtk::MESSAGE_ERROR);
-         dlg.set_title (_("Invalid move"));
-         dlg.run ();
-         return;
-      }
+      pile->insert (moved, iCard);
+      registerTableDND (moved, (iPile << 8) + iCard);
+      if (iCard < (pile->size () - 1))
+	 registerTableDND (iPile, iCard + 1, pile->size () - 1);
 
-      if ((pile->size () == 1)
-	  && isJoker (pile->getTopCard ())
-	  && isJoker (moved))
-	 ++unfinishedMonoPiles[0];
-   }
+      // Remove pile, if it contains 7 cards
+      if (pile->size () == 7)
+	 removeCerrado (0, *pile);
 
-   // End old drag
-   context->drag_finish (true, false, time);
-   activeCards[*pValue].disconnect ();
-   activeCards.erase (activeCards.begin () + *pValue);
-
-   // Unregister old card
-   hands[0].remove (*pValue);
-   unregisterHandDND (moved);
-
-   // Insert card into pile and register it for DND
-   unsigned int move (-1U);
-   pile->getPosition4Card (moved, iCard, move);
-   Check3 (iCard <= pile->size ());
-
-   TRACE4 ("Buraco::cardDroppedOnTable (...) - Undo:  " << iPile << "; " << iCard
-	   << "; " << *pValue << ": " << acceptCards << '/' << pile->getPosJoker ());
-   undo.assign (iPile, iCard, *pValue, acceptCards);
-   menuUndo->set_sensitive ();
-
-   if (move != -1U) {
-      Check3 (move <= pile->size ());
-      Check3 (move != pile->getPosJoker ());
-      Check3 (pile->getPosJoker () != 7);
-      undo.monoPos = pile->getPosJoker ();
-      sendMoveCard (iPile, pile->getPosJoker (), move);
-      pile->move (move, pile->getPosJoker ());
-   }
-
-   // Send move
-   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-      std::ostringstream msg;
-      msg << "Play=" << moved.id () << ";Target="
-          << (iPile << 16) + iCard + 100;
-      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-         ignoreNextMsg = true;
-      broadcastMessage (msg.str ());
-   }
-
-   pile->insert (moved, iCard);
-   registerTableDND (moved, (iPile << 8) + iCard);
-   if (iCard < (pile->size () - 1))
-      registerTableDND (iPile, iCard + 1, pile->size () - 1);
-
-   // Remove pile, if it contains 7 cards
-   if (pile->size () == 7)
-      removeCerrado (0, *pile);
-
-   // Accept again the jokers, if the pile has has now three cards (jokers are
-   // disabled, if the human picked up the dumped pile.
-   if (pile->size () == 3) {
-      acceptCards = -1U;
-      menuSort->set_sensitive ();
-      menuSort2->set_sensitive ();
-   }
-   else
-      if (acceptCards != -1U)
-         --acceptCards;
-
-   // If the player has no more cards left (except of joker): Give him the reserve
-   if (containsOnlyJoker (hands[0]) && humanPilesOK ())
-      if (!reserve[0].empty ()) {
-         addBuraco (0);
-         return;
+      // Accept again the jokers, if the pile has has now three cards (jokers are
+      // disabled, if the human picked up the dumped pile.
+      if (pile->size () == 3) {
+	 acceptCards = -1U;
+	 menuSort->set_sensitive ();
+	 menuSort2->set_sensitive ();
       }
       else
-         if (hands[0].empty ()) {
-            points[0] += 100;
-            endGame ();
-            return;
-         }
+	 if (acceptCards != -1U)
+	    --acceptCards;
 
-   // Re-register the cards in the hand of the human for DND
-   if (*pValue < hands[0].size ())
-      registerHandDND (*pValue, hands[0].size () - 1);
-   Check3 (aDNDHand.size () == hands[0].size ());
+      // If the player has no more cards left (except of joker): Give him the reserve
+      if (containsOnlyJoker (hands[0]) && humanPilesOK ())
+	 if (!reserve[0].empty ()) {
+	    addBuraco (0);
+	    return;
+	 }
+	 else
+	    if (hands[0].empty ()) {
+	       points[0] += 100;
+	       endGame ();
+	       return;
+	    }
+
+      // Re-register the cards in the hand of the human for DND
+      if (*pValue < hands[0].size ())
+	 registerHandDND (*pValue, hands[0].size () - 1);
+      Check3 (aDNDHand.size () == hands[0].size ());
+   }
+   catch (Glib::ustring& error) {
+      context->drag_finish (false, false, time);
+      Gtk::MessageDialog dlg (error, Gtk::MESSAGE_ERROR);
+      dlg.set_title (_("Invalid move"));
+      dlg.run ();
+      return;
+   }
 }
 
 //-----------------------------------------------------------------------------
