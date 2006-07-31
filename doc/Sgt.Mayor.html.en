@@ -24,7 +24,7 @@
 
 <html>
   <head>
-    <title>Sgt. Mayor - Get your ticks or regret it</title>
+    <title>Sgt. Mayor - Get your tricks or regret it</title>
     <meta name="description" content="Documentation of the Sgt. Mayor cardgame">
     <meta name="keywords" content="Documentation, Docu, Sgt. Mayor; game, card, cardgame">
 
@@ -45,15 +45,15 @@
     <p>The game is played by only 3 persons, who each get 17 carts. The
       missing 52th can be exchanged from the person owing the 2 of spades.</p>
 
-    <p>The players have to get 9, 5 and 3 ticks respectively. It starts the
-      player needing to get 9 ticks by selecting the colour of the trumps
+    <p>The players have to get 9, 5 and 3 tricks respectively. It starts the
+      player needing to get 9 tricks by selecting the colour of the trumps
       (should this be spades, can the player which previously exchanged the
       two of spades change this card again against any other). Then the
       actual game starts according to the following rules:</p>
 
-    <p>The player needing 9 ticks starts the game.</p>
+    <p>The player needing 9 tricks starts the game.</p>
 
-    <p>Each turn can be started by any colour. Then you must stick with this
+    <p>Each turn can be started by any colour. Then you must strick with this
       colour; or, if a player doesn't have any card of this colour, play any
       colour (be it a trump or not).</p>
 
@@ -61,16 +61,16 @@
       the colour of the first played card or with the highest trump). The
       winner starts the next round.</p>
 
-    <p>The difference between the made and the proposed ticks is important in
-      the next round. The or those player having too much ticks can give this
-      difference of any (usually bad) cards to those having too less ticks.
+    <p>The difference between the made and the proposed tricks is important in
+      the next round. The or those player having too much tricks can give this
+      difference of any (usually bad) cards to those having too less tricks.
       Those people must return their heighest cards of these colours (or - if
       they shouldn't have cards with that colour - any (even bad) card).</p>
 
-    <p>The next round starts the player which before needed to get 5 ticks.
-      Now he must get 9 ticks.</p>
+    <p>The next round starts the player which before needed to get 5 tricks.
+      Now he must get 9 tricks.</p>
 
-    <p>The game ends, if one persons gets more than 5 ticks too much.</p>
+    <p>The game ends, if one persons gets more than 5 tricks too much.</p>
 
     <p>The status line gives some information about what's going on!</p>
 
