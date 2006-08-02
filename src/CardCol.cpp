@@ -636,13 +636,13 @@ static char * xpmJoker[] = {
 /// \param opts: Options for the program
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
-   : XApplication (PACKAGE " V" PRG_RELEASE)
+   : XApplication (PACKAGE " V" PRG_RELEASE),
 #ifdef HAVE_LIBPTHREAD
-     , playerPos (0) , dlgChat (NULL)
+     dlgChat (NULL),
 #endif
-     , options (opts)
-     , oldGame (GameTypes::NONE), actGame (opts.type)
-     , restart (false), game (NULL) {
+     playerPos (0) , options (opts),
+     oldGame (GameTypes::NONE), actGame (opts.type),
+     restart (false), game (NULL) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&) - Game: " << actGame);
 
    setIconProgram (xpmGame);
@@ -786,7 +786,9 @@ CardgameCollection::CardgameCollection (Options& opts)
    getClient ().pack_end (status, Gtk::PACK_SHRINK);
 
    show ();
+#ifdef HAVE_LIBPTHREAD
    mxGuiCmd.lock ();
+#endif
 
    Glib::signal_idle ().connect
        (bind_return (mem_fun (*this, &CardgameCollection::loadCards), false));
@@ -976,7 +978,9 @@ void CardgameCollection::newGame () {
       }
    }
    else {
+#ifdef HAVE_LIBPTHREAD
       if (stopClientWaiting ())
+#endif
 	 startGame ();
    }
 }

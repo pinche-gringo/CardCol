@@ -66,11 +66,11 @@ class CardgameCollection : public XGP::XApplication {
 
  private:
    // IDs for menus
-   enum { NEW = 0, END,
+   enum { NEW = 0,
 #ifdef HAVE_LIBPTHREAD
 	  CONNECT, CHAT,
 #endif
-	  STARTGAMES_MENU = CHAT,
+	  END, STARTGAMES_MENU = END,
 #ifdef WITH_BURACO
 	  BURACO,
 #endif
@@ -154,13 +154,13 @@ class CardgameCollection : public XGP::XApplication {
 #ifdef HAVE_LIBPTHREAD
    typedef YGP::OThread<CardgameCollection> THRDAPPL;
    std::vector<THRDAPPL*> aCommThreads;
-   YGP::Mutex mxThreadCmd;
    YGP::Mutex mxGuiCmd;
-   YGP::ConnectionMgr cmgr;
-   unsigned int playerPos;
 
    ChatDlg* dlgChat;
 #endif
+   YGP::Mutex mxThreadCmd;
+   YGP::ConnectionMgr cmgr;
+   unsigned int playerPos;
 
    Options& options;
    std::vector<Player*> aPlayer;
