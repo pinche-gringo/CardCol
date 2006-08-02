@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.7 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2006-07-11 17:22-0400\n"
+"POT-Creation-Date: 2006-08-01 22:56-0400\n"
 "PO-Revision-Date: 2005-05-19 16:24-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -24,10 +24,8 @@ msgid "You must first play the visible cards!"
 msgstr "¡Primero se tiene que usar las cartas visibles!"
 
 #: src/Rovhult.cpp:366 src/Rovhult.cpp:501 src/Buraco.cpp:728
-#: src/Buraco.cpp:844 src/Buraco.cpp:1054 src/Buraco.cpp:1143
-#: src/Buraco.cpp:1156 src/Buraco.cpp:1172 src/Buraco.cpp:1185
-#: src/Buraco.cpp:1203 src/Buraco.cpp:1214 src/Machiavelli.cpp:745
-#: src/Machiavelli.cpp:769
+#: src/Buraco.cpp:844 src/Buraco.cpp:1054 src/Buraco.cpp:1271
+#: src/Machiavelli.cpp:752 src/Machiavelli.cpp:776
 msgid "Invalid move"
 msgstr "¡El turno realizado es inválido!"
 
@@ -39,7 +37,7 @@ msgstr "¡Despues de una 7, la proxima carta tiene que ser igual o menor!"
 msgid "The played card must be equal or bigger!"
 msgstr "¡La carta que juega tiene que ser mayor o igual!"
 
-#: src/Rovhult.cpp:602 src/Twopart.cpp:417 src/Machiavelli.cpp:1481
+#: src/Rovhult.cpp:602 src/Twopart.cpp:417 src/Machiavelli.cpp:1488
 msgid "%1 lost"
 msgstr "%1 perdió"
 
@@ -287,7 +285,7 @@ msgstr "_Opciones"
 msgid "_Change game"
 msgstr "Cambiar el _juego"
 
-#: src/CardCol.cpp:722 src/Buraco.cpp:2254 src/Settings.cpp:97
+#: src/CardCol.cpp:722 src/Buraco.cpp:2229 src/Settings.cpp:97
 msgid "_Buraco"
 msgstr ""
 
@@ -303,7 +301,7 @@ msgstr "_Corazones"
 msgid "<ctl>H"
 msgstr "<ctl>O"
 
-#: src/CardCol.cpp:732 src/Machiavelli.cpp:1689
+#: src/CardCol.cpp:732 src/Machiavelli.cpp:1696
 msgid "_Machiavelli"
 msgstr ""
 
@@ -355,17 +353,17 @@ msgstr ""
 msgid "_Save preferences"
 msgstr "_Guardar opciónes"
 
-#: src/CardCol.cpp:968
+#: src/CardCol.cpp:970
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 "Un juego ya está activo. ¿Seguro que quieres terminarlo y comencar de nuevo?"
 
-#: src/CardCol.cpp:989
+#: src/CardCol.cpp:993
 msgid "Do you really want to end the game?"
 msgstr "¿Seguro que quieres terminar el juego activo?"
 
-#: src/CardCol.cpp:1052
+#: src/CardCol.cpp:1056
 msgid ""
 "Couldn't save options (to file %1)!\n"
 "\n"
@@ -375,11 +373,11 @@ msgstr ""
 "\n"
 "Causa: %2"
 
-#: src/CardCol.cpp:1065
+#: src/CardCol.cpp:1069
 msgid "A game is running. Do you really want to quit?"
 msgstr "Un juego está activo. ¿Seguro que quieres terminar?"
 
-#: src/CardCol.cpp:1145
+#: src/CardCol.cpp:1149
 msgid ""
 "Copyright (C) 2002 - 2006 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
@@ -391,15 +389,15 @@ msgstr ""
 "\n"
 "Compilado el %1 a las %2"
 
-#: src/CardCol.cpp:1273
+#: src/CardCol.cpp:1277
 msgid "User canceled"
 msgstr "Usario terminó"
 
-#: src/CardCol.cpp:1301
+#: src/CardCol.cpp:1305
 msgid "Loading cardimages ..."
 msgstr "Abriendo las imágenes de las cartas ..."
 
-#: src/CardCol.cpp:1320
+#: src/CardCol.cpp:1324
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Comienca un juego nuevo con Ctrl+N (o Juego -> Nuevo)"
 
@@ -639,7 +637,7 @@ msgstr ""
 msgid "Select 3 cards to exchange with %1"
 msgstr "Selecte 3 cartas para cambiar con %1"
 
-#: src/Hearts.cpp:453 src/Buraco.cpp:1777
+#: src/Hearts.cpp:453 src/Buraco.cpp:1752
 msgid "Round ended"
 msgstr "Turno terminó"
 
@@ -675,7 +673,7 @@ msgstr "_Corazones"
 msgid "Score"
 msgstr "Puntos"
 
-#: src/Buraco.cpp:74 src/Machiavelli.cpp:74
+#: src/Buraco.cpp:74 src/Machiavelli.cpp:81
 msgid "New pile"
 msgstr "Pila nueva"
 
@@ -710,46 +708,50 @@ msgstr ""
 msgid "You need to fill up other piles first!"
 msgstr "¡Necesitas llenar las otras pilas primero!"
 
-#: src/Buraco.cpp:1154
+#: src/Buraco.cpp:1148
 msgid ""
 "You must play your cards (without \"monos\"), when you picked up the pile!"
 msgstr ""
 "¡Después de coger la pila de las cartas echadas se tiene que jugar sus "
 "cartas antiguas!"
 
-#: src/Buraco.cpp:1170
+#: src/Buraco.cpp:1158
 msgid "There are no cards to make a valid new pile!"
 msgstr "¡No tienes cartas para crear una pila con tres semejantes!"
 
-#: src/Buraco.cpp:1182 src/Buraco.cpp:1212
+#: src/Buraco.cpp:1164
+msgid "You can't end the game (a pile of monos is not finished)!"
+msgstr "¡No puedes terminar el juego (no tienes cerrado un motón de monos)!"
+
+#: src/Buraco.cpp:1166 src/Buraco.cpp:1184
 msgid "You can't end the game (there's no \"cerrado\")!"
 msgstr "¡No puedes terminar el juego (no tienes ningún cerrado)!"
 
-#: src/Buraco.cpp:1183
+#: src/Buraco.cpp:1167
 msgid "Not enough cards to make new pile!"
 msgstr "¡No tienes las suficientes cartas para hacer una nueva pila!"
 
-#: src/Buraco.cpp:1201 src/Machiavelli.cpp:743
+#: src/Buraco.cpp:1179 src/Machiavelli.cpp:750
 msgid "This card does not fit on that pile!"
 msgstr "¡Esta carta no sirve para esta pila!"
 
-#: src/Buraco.cpp:1435
+#: src/Buraco.cpp:1410
 msgid "%1 picked up the burraco"
 msgstr "%1 tomó el burraco"
 
-#: src/Buraco.cpp:1603
+#: src/Buraco.cpp:1578
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr "Puntos [Buraco]: %1 [%2] / %3 [%4]"
 
-#: src/Buraco.cpp:1605 src/Buraco.cpp:1607
+#: src/Buraco.cpp:1580 src/Buraco.cpp:1582
 msgid "N"
 msgstr ""
 
-#: src/Buraco.cpp:1605 src/Buraco.cpp:1607
+#: src/Buraco.cpp:1580 src/Buraco.cpp:1582
 msgid "Y"
 msgstr "S"
 
-#: src/Buraco.cpp:1720
+#: src/Buraco.cpp:1695
 msgid ""
 "Team %1\n"
 "%2/%3"
@@ -757,39 +759,39 @@ msgstr ""
 "Equipo %1\n"
 "%2/%3"
 
-#: src/Buraco.cpp:1783
+#: src/Buraco.cpp:1758
 msgid "Game ended; Team %1 won"
 msgstr "Juego terminó; Equipo %1 ganó"
 
-#: src/Buraco.cpp:2152
+#: src/Buraco.cpp:2127
 msgid "Invalid pile!"
 msgstr "¡Pila inválido!"
 
-#: src/Buraco.cpp:2155
+#: src/Buraco.cpp:2130
 msgid "Invalid card!"
 msgstr "¡Carta inválida!"
 
-#: src/Buraco.cpp:2217
+#: src/Buraco.cpp:2192
 msgid "Invalid target specification!"
 msgstr "¡Pila final inválida!"
 
-#: src/Buraco.cpp:2256
+#: src/Buraco.cpp:2231
 msgid "<ctl>Z"
 msgstr ""
 
-#: src/Buraco.cpp:2259 src/Machiavelli.cpp:1699
+#: src/Buraco.cpp:2234 src/Machiavelli.cpp:1706
 msgid "_Sort cards (by number)"
 msgstr "Ordena cartas (por _números)"
 
-#: src/Buraco.cpp:2263 src/Machiavelli.cpp:1703
+#: src/Buraco.cpp:2238 src/Machiavelli.cpp:1710
 msgid "Sort cards (by _colour)"
 msgstr "Ordena cartas (por _pinta)"
 
-#: src/Machiavelli.cpp:76 src/Machiavelli.cpp:1696
+#: src/Machiavelli.cpp:83 src/Machiavelli.cpp:1703
 msgid "_End turn"
 msgstr "_Fin del turno"
 
-#: src/Machiavelli.cpp:166
+#: src/Machiavelli.cpp:173
 msgid ""
 "You can sort the cards in your hand with drag and drop or put them on the "
 "table - click the staple to end turn"
@@ -797,58 +799,58 @@ msgstr ""
 "Se puede ordenar las cartas en la mano con tirar y depositar o ponerlas a la "
 "mesa - hace click en el motón de reserve para terminar el turno"
 
-#: src/Machiavelli.cpp:424 src/Machiavelli.cpp:1449
+#: src/Machiavelli.cpp:431 src/Machiavelli.cpp:1456
 msgid "Can't end turn: The piles are not valid!"
 msgstr ""
 "No se puede terminar el turno: ¡Los motones por la mesa no son validadas!"
 
-#: src/Machiavelli.cpp:430
+#: src/Machiavelli.cpp:437
 msgid "_Undo all"
 msgstr "Deshacer (_todo)"
 
-#: src/Machiavelli.cpp:431
+#: src/Machiavelli.cpp:438
 msgid "Undo _last"
 msgstr "_Deshacer (último)"
 
-#: src/Machiavelli.cpp:767
+#: src/Machiavelli.cpp:774
 msgid "Card is not on the edge of the origen - try splitting the origin first!"
 msgstr ""
 "La carta no está al límite del motón del origien - ¡trata de separarlo "
 "primero!"
 
-#: src/Machiavelli.cpp:1341
+#: src/Machiavelli.cpp:1348
 msgid "Taking last card! Solve the game (somehow) ..."
 msgstr "¡Tomando a la úlitma carta! Resuelva el juego (cómo sea) ..."
 
-#: src/Machiavelli.cpp:1343
+#: src/Machiavelli.cpp:1350
 msgid "Game over"
 msgstr "Juego terminado"
 
-#: src/Machiavelli.cpp:1368
+#: src/Machiavelli.cpp:1375
 msgid "Pile %1: %2\n"
 msgstr "Pila %1: %2\n"
 
-#: src/Machiavelli.cpp:1451
+#: src/Machiavelli.cpp:1458
 msgid "Could end turn: The piles are OK!"
 msgstr "Podría terminar el turno: ¡Los motones son validadas!"
 
-#: src/Machiavelli.cpp:1564 src/Machiavelli.cpp:1626
+#: src/Machiavelli.cpp:1571 src/Machiavelli.cpp:1633
 msgid "Invalid source pile!"
 msgstr "¡Pila de origen inválido!"
 
-#: src/Machiavelli.cpp:1567 src/Machiavelli.cpp:1629
+#: src/Machiavelli.cpp:1574 src/Machiavelli.cpp:1636
 msgid "Invalid cards!"
 msgstr "¡Cartas invalidas!"
 
-#: src/Machiavelli.cpp:1585 src/Machiavelli.cpp:1614
+#: src/Machiavelli.cpp:1592 src/Machiavelli.cpp:1621
 msgid "Invalid destination pile!"
 msgstr "¡Pila final inválida!"
 
-#: src/Machiavelli.cpp:1623
+#: src/Machiavelli.cpp:1630
 msgid "Invalid position in destination pile!"
 msgstr "¡Posición en pila final inválida!"
 
-#: src/Machiavelli.cpp:1693
+#: src/Machiavelli.cpp:1700
 msgid "Undo _all"
 msgstr "Deshace _todo"
 
