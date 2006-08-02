@@ -52,6 +52,13 @@
 #include "Machiavelli.h"
 
 
+// Some Windows-header seems to define ERROR
+#ifdef ERROR
+#  undef ERROR
+#endif
+
+
+
 enum { HAND, TABLE };
 static std::vector<Gtk::TargetEntry> dndTypeHand;
 static std::vector<Gtk::TargetEntry> dndTypeTable;
