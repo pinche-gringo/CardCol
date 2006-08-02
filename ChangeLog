@@ -1,3 +1,29 @@
+2006-08-02  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.7.54 docomented
+
+	* src/CardCol.cpp, src/CardCol.h: Fixed compiliation without libpthread
+
+	* src/Machiavelli.cpp:
+	  Undefining ERROR, if defined (needed using MinGW)
+
+	* po/de.po, po/en.po, po/es.po:
+	  Added message informing about unclosed pile of joker (Buraco)
+
+	* configure.in: Version to 0.7.54
+
+	* README: Clearified source of Hearts
+
+2006-07-31  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/CardCol.html.en, doc/Sgt.Mayor.html.en:
+	  Fixed using the word 'ticks' to 'tricks'
+
+2006-07-30  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp:
+	  Corrected message when closing with an unfinished pile of monos
+
 2006-07-12  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Changes of V0.7.53 commented
@@ -9,7 +35,7 @@
 2006-07-11  Markus Schwab  <g17m0@lycos.com>
 
 	* src/Buraco.cpp:
-	Fixed computer finishing piles, even if its partner picked up the Buraco
+	  Fixed computer finishing piles, even if its partner picked up the Buraco
 
 	* Common/DeckSelect.cpp:
 	  Error loading an image does simply not display that image (not trap)
