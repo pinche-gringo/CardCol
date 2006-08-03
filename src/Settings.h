@@ -60,11 +60,17 @@ class Settings : public XGP::XDialog {
    Gtk::Adjustment adjPoints;
    Gtk::Adjustment adjTimeout;
 
-   GameTypes types;
    XGP::EnumEntry gameType;
    XGP::XAttributeSpinEntry<unsigned int> timeout;
 #ifdef WITH_BURACO
    XGP::XAttributeSpinEntry<unsigned int> maxBuracoPoints;
+#endif
+#ifdef WITH_ROVHULT
+   XGP::EnumEntry cardNuke;
+   XGP::EnumEntry cardReverse;
+   XGP::EnumEntry cardSkip;
+
+   void chgValueRovhult (unsigned int which);
 #endif
 
    static XGP::XAttributeSpinEntry<unsigned int> Settings::* intFields[];

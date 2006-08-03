@@ -32,11 +32,19 @@
 #include <gtkmm/table.h>
 #include <gtkmm/notebook.h>
 
+#include <YGP/Check.h>
+#include <YGP/Trace.h>
+
 #include <ComputerPlayer.h>
 
 #ifdef WITH_BURACO
 #  include "Buraco.h"
 #endif
+#ifdef WITH_ROVHULT
+#  include "Rovhult.h"
+#  include "CardValue.h"
+#endif
+
 #include "Options.h"
 
 #include "Settings.h"
@@ -60,10 +68,15 @@ Settings::Settings (Options& options)
    : XGP::XDialog (OKCANCEL),
      adjPoints (0, 0, 100000.0, 1, 100),
      adjTimeout (0, 100.0, 10000.0, 1, 100),
-     gameType (types),
+     gameType (GameTypes::get ()),
      timeout (ComputerPlayer::TIMEOUT, adjTimeout),
 #ifdef WITH_BURACO
      maxBuracoPoints (Buraco::ENDPOINTS, adjPoints),
+#endif
+#ifdef WITH_ROVHULT
+     cardNuke (CardValue::get ()),
+     cardReverse (CardValue::get ()),
+     cardSkip (CardValue::get ()),
 #endif
      startGame (options.type) {
    Check3 (instance == NULL);
@@ -84,7 +97,7 @@ Settings::Settings (Options& options)
    pagGeneral.attach (*lbl,     0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5);
    pagGeneral.attach (gameType, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
 
-   gameType.set_active_text (types[options.type]);
+   gameType.set_active_text (GameTypes::get ()[options.type]);
    nb.append_page (pagGeneral, _("_General"), true);
 
 #ifdef WITH_BURACO
@@ -95,7 +108,35 @@ Settings::Settings (Options& options)
    pagBuraco.pack_start (maxBuracoPoints, Gtk::PACK_EXPAND_WIDGET, 5);
 
    nb.append_page (pagBuraco, _("_Buraco"), true);
-#else
+#endif
+
+#ifdef WITH_ROVHULT
+   Gtk::Table& pagRovhult (*manage (new Gtk::Table (3, 2)));
+   lbl = manage (new Gtk::Label (_("_Nuke card (default 10):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl->set_mnemonic_widget (cardNuke);
+   pagRovhult.attach (*lbl,        0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5);
+   pagRovhult.attach (cardNuke,    1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
+   cardNuke.set_active_text (CardValue::get ()[Rovhult::cardNuke]);
+   cardNuke.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 0));
+
+   lbl = manage (new Gtk::Label (_("Re_verse card (default 7):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl->set_mnemonic_widget (cardReverse);
+   pagRovhult.attach (*lbl,        0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5);
+   pagRovhult.attach (cardReverse, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
+   cardReverse.set_active_text (CardValue::get ()[Rovhult::cardReverse]);
+   cardReverse.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 1));
+
+   lbl = manage (new Gtk::Label (_("_Skip card (default 8):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl->set_mnemonic_widget (cardSkip);
+   pagRovhult.attach (*lbl,        0, 1, 2, 3, Gtk::FILL, Gtk::FILL, 5);
+   pagRovhult.attach (cardSkip,    1, 2, 2, 3, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
+   cardSkip.set_active_text (CardValue::get ()[Rovhult::cardSkip]);
+   cardSkip.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 2));
+
+   nb.append_page (pagRovhult, _("_Rovhult"), true);
+#endif
+
+#if !defined (WITH_BURACO) && !defined (WITH_ROVHULT)
    nb.set_show_tabs (0);
 #endif
 
@@ -116,10 +157,17 @@ Settings::~Settings () {
 //-----------------------------------------------------------------------------
 void Settings::okEvent () {
    ok->grab_focus ();
+
    for (unsigned int i (0); i < (sizeof (intFields) / sizeof (*intFields)); ++i)
       (this->*intFields[i]).commit ();
 
-    startGame = types[gameType.get_active_text ()];
+    startGame = GameTypes::get ()[gameType.get_active_text ()];
+
+#ifdef WITH_ROVHULT
+    Rovhult::cardNuke = static_cast<CardWidget::NUMBERS> (CardValue::get ()[cardNuke.get_active_text ()]);
+    Rovhult::cardReverse = static_cast<CardWidget::NUMBERS> (CardValue::get ()[cardReverse.get_active_text ()]);
+    Rovhult::cardSkip = static_cast<CardWidget::NUMBERS> (CardValue::get ()[cardSkip.get_active_text ()]);
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -139,3 +187,28 @@ Settings* Settings::create (const Glib::RefPtr<Gdk::Window>& parent,
       instance->present ();
    return instance;
 }
+
+#ifdef WITH_ROVHULT
+//-----------------------------------------------------------------------------
+/// Callback when a value of the Røvhult-settings have been changed
+/// \param which: ID of changed control
+//-----------------------------------------------------------------------------
+void Settings::chgValueRovhult (unsigned int which) {
+   TRACE8 ("Settings::chgValueRovhult (unsigned int) - " << which);
+   Check1 (which < 3);
+
+   XGP::EnumEntry* fields[] = { &cardNuke, &cardReverse, &cardSkip };
+   bool valuesOK (true);
+   for (unsigned int i (0); i < (sizeof (fields) / sizeof (*fields)); ++i) {
+      Check3 (fields[i]);
+      if ((i != which)
+	  && (fields[i]->get_active_text () == fields[which]->get_active_text ())) {
+	 valuesOK = false;
+	 break;
+      }
+   }
+
+   ok->set_sensitive (valuesOK);
+}
+
+#endif
