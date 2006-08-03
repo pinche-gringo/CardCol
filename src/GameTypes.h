@@ -50,13 +50,23 @@ class GameTypes : public YGP::MetaEnum {
 	  LAST,
 	  NONE = -1 };
 
-   GameTypes ();
+   /// Creates a meta-enum of type GameTypes
+   /// \returns GamesTypes&: Instance of GameTypes
+   static const GameTypes& get () {
+      if (!instance)
+	 instance = new GameTypes;
+      return *instance;
+   }
+
    ~GameTypes ();
 
  private:
+   GameTypes ();
    GameTypes (const GameTypes& other);
 
    const GameTypes& operator= (const GameTypes& other);
+
+   static GameTypes* instance;
 };
 
 #endif
