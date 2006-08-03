@@ -64,6 +64,10 @@ class Settings : public XGP::XDialog {
    XGP::XAttributeSpinEntry<unsigned int> timeout;
 #ifdef WITH_BURACO
    XGP::XAttributeSpinEntry<unsigned int> maxBuracoPoints;
+   XGP::EnumEntry numBuracoCards;
+#endif
+#ifdef WITH_HEARTS
+   XGP::XAttributeSpinEntry<unsigned int> maxHeartsPoints;
 #endif
 #ifdef WITH_ROVHULT
    XGP::EnumEntry cardNuke;

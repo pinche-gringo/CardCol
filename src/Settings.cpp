@@ -39,6 +39,10 @@
 
 #ifdef WITH_BURACO
 #  include "Buraco.h"
+#  include "BuracoCards.h"
+#endif
+#ifdef WITH_HEARTS
+#  include "Hearts.h"
 #endif
 #ifdef WITH_ROVHULT
 #  include "Rovhult.h"
@@ -51,10 +55,14 @@
 
 
 XGP::XAttributeSpinEntry<unsigned int> Settings::* Settings::intFields[] =
-   { &Settings::timeout,
+   {
 #ifdef WITH_BURACO
-     &Settings::maxBuracoPoints
+     &Settings::maxBuracoPoints,
 #endif
+#ifdef WITH_BURACO
+     &Settings::maxHeartsPoints,
+#endif
+     &Settings::timeout
    };
 
 Settings* Settings::instance (NULL);
@@ -72,6 +80,10 @@ Settings::Settings (Options& options)
      timeout (ComputerPlayer::TIMEOUT, adjTimeout),
 #ifdef WITH_BURACO
      maxBuracoPoints (Buraco::ENDPOINTS, adjPoints),
+     numBuracoCards (BuracoCards::get ()),
+#endif
+#ifdef WITH_HEARTS
+     maxHeartsPoints (Hearts::ENDPOINTS, adjPoints),
 #endif
 #ifdef WITH_ROVHULT
      cardNuke (CardValue::get ()),
@@ -89,47 +101,63 @@ Settings::Settings (Options& options)
 
    Gtk::Label* lbl (manage (new Gtk::Label (_("_Delay of computer player (ms):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true)));
    lbl->set_mnemonic_widget (timeout);
-   pagGeneral.attach (*lbl,    0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5);
-   pagGeneral.attach (timeout, 1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
+   pagGeneral.attach (*lbl,    0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5, 3);
+   pagGeneral.attach (timeout, 1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
 
    lbl = manage (new Gtk::Label (_("D_efault game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
    lbl->set_mnemonic_widget (gameType);
-   pagGeneral.attach (*lbl,     0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5);
-   pagGeneral.attach (gameType, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
+   pagGeneral.attach (*lbl,     0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5, 3);
+   pagGeneral.attach (gameType, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
 
    gameType.set_active_text (GameTypes::get ()[options.type]);
    nb.append_page (pagGeneral, _("_General"), true);
 
 #ifdef WITH_BURACO
-   Gtk::Box& pagBuraco (*manage (new Gtk::HBox));
+   Gtk::Table& pagBuraco (*manage (new Gtk::Table (2, 2)));
    lbl = manage (new Gtk::Label (_("_Points to end game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
    lbl->set_mnemonic_widget (maxBuracoPoints);
-   pagBuraco.pack_start (*lbl, Gtk::PACK_SHRINK, 5);
-   pagBuraco.pack_start (maxBuracoPoints, Gtk::PACK_EXPAND_WIDGET, 5);
+   pagBuraco.attach (*lbl,            0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5, 3);
+   pagBuraco.attach (maxBuracoPoints, 1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
+
+   lbl = manage (new Gtk::Label (_("_Number of cards:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl->set_mnemonic_widget (cardNuke);
+   pagBuraco.attach (*lbl,           0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5, 3);
+   pagBuraco.attach (numBuracoCards, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
+   numBuracoCards.set_active_text (BuracoCards::get ()[Buraco::CARDS2DEAL]);
 
    nb.append_page (pagBuraco, _("_Buraco"), true);
+#endif
+
+#ifdef WITH_HEARTS
+   Gtk::Box& pagHearts (*manage (new Gtk::HBox));
+   lbl = manage (new Gtk::Label (_("_Points to end game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl->set_mnemonic_widget (maxHeartsPoints);
+   pagHearts.pack_start (*lbl, Gtk::PACK_SHRINK, 5);
+   pagHearts.pack_start (maxHeartsPoints, Gtk::PACK_EXPAND_WIDGET, 5);
+
+   nb.append_page (pagHearts, _("_Hearts"), true);
 #endif
 
 #ifdef WITH_ROVHULT
    Gtk::Table& pagRovhult (*manage (new Gtk::Table (3, 2)));
    lbl = manage (new Gtk::Label (_("_Nuke card (default 10):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
    lbl->set_mnemonic_widget (cardNuke);
-   pagRovhult.attach (*lbl,        0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5);
-   pagRovhult.attach (cardNuke,    1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
+   pagRovhult.attach (*lbl,        0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5, 3);
+   pagRovhult.attach (cardNuke,    1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
    cardNuke.set_active_text (CardValue::get ()[Rovhult::cardNuke]);
    cardNuke.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 0));
 
    lbl = manage (new Gtk::Label (_("Re_verse card (default 7):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
    lbl->set_mnemonic_widget (cardReverse);
-   pagRovhult.attach (*lbl,        0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5);
-   pagRovhult.attach (cardReverse, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
+   pagRovhult.attach (*lbl,        0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5, 3);
+   pagRovhult.attach (cardReverse, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
    cardReverse.set_active_text (CardValue::get ()[Rovhult::cardReverse]);
    cardReverse.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 1));
 
    lbl = manage (new Gtk::Label (_("_Skip card (default 8):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
    lbl->set_mnemonic_widget (cardSkip);
-   pagRovhult.attach (*lbl,        0, 1, 2, 3, Gtk::FILL, Gtk::FILL, 5);
-   pagRovhult.attach (cardSkip,    1, 2, 2, 3, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5);
+   pagRovhult.attach (*lbl,        0, 1, 2, 3, Gtk::FILL, Gtk::FILL, 5, 3);
+   pagRovhult.attach (cardSkip,    1, 2, 2, 3, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
    cardSkip.set_active_text (CardValue::get ()[Rovhult::cardSkip]);
    cardSkip.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 2));
 
@@ -167,6 +195,10 @@ void Settings::okEvent () {
     Rovhult::cardNuke = static_cast<CardWidget::NUMBERS> (CardValue::get ()[cardNuke.get_active_text ()]);
     Rovhult::cardReverse = static_cast<CardWidget::NUMBERS> (CardValue::get ()[cardReverse.get_active_text ()]);
     Rovhult::cardSkip = static_cast<CardWidget::NUMBERS> (CardValue::get ()[cardSkip.get_active_text ()]);
+#endif
+
+#ifdef WITH_BURACO
+    Buraco::CARDS2DEAL = BuracoCards::get ()[numBuracoCards.get_active_text ()];
 #endif
 }
 
