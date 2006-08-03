@@ -40,12 +40,16 @@
 
 #ifdef WITH_BURACO
 #  include "Buraco.h"
+#  include "BuracoCards.h"
+#endif
+#ifdef WITH_HEARTS
+#  include "Hearts.h"
 #endif
 #ifdef WITH_ROVHULT
 #  include "Rovhult.h"
+#  include "CardValue.h"
 #endif
 #include "GameTypes.h"
-#include "CardValue.h"
 
 #include "CardColAppl.h"
 
@@ -287,6 +291,12 @@ void CardgameAppl::readINIFile (const char* pFile) {
 #ifdef WITH_BURACO
       INISECTION (Buraco);
       INIATTR2 (Buraco, unsigned int, Buraco::ENDPOINTS, EndPoints);
+      INIATTR4 (Buraco, BuracoCards::get (), Buraco::CARDS2DEAL, Cards);
+#endif
+
+#ifdef WITH_HEARTS
+      INISECTION (Hearts);
+      INIATTR2 (Hearts, unsigned int, Hearts::ENDPOINTS, EndPoints);
 #endif
 
 #ifdef WITH_ROVHULT
