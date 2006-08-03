@@ -221,6 +221,7 @@ class Buraco : public Game {
    Glib::RefPtr<Gtk::Action> menuSort2;
 
    static unsigned int ENDPOINTS;
+   static unsigned int CARDS2DEAL;
 };
 
 #endif

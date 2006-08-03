@@ -56,6 +56,7 @@ std::vector<Gtk::TargetEntry> Buraco::dndType;
 
 
 unsigned int Buraco::ENDPOINTS (2000);
+unsigned int Buraco::CARDS2DEAL (11);
 
 
 //-----------------------------------------------------------------------------
@@ -548,7 +549,7 @@ void Buraco::start () {
    target = -1U;
 
    if (randomizeCardsToPile (staple)) {
-      for (unsigned int j (0); j < 11; ++j) {
+      for (unsigned int j (0); j < CARDS2DEAL; ++j) {
          for (unsigned int i (0); i < NUM_PLAYERS; ++i)
             hands[(i - posServer) & 0x3].setTopCard (staple.removeTopCard ());
 
