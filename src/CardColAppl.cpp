@@ -30,6 +30,8 @@
 #include <cstdio>
 
 #include <YGP/File.h>
+#include <YGP/Check.h>
+#include <YGP/Trace.h>
 #include <YGP/INIFile.h>
 
 #include <XGP/XAttribute.h>
@@ -288,13 +290,17 @@ void CardgameAppl::readINIFile (const char* pFile) {
 #endif
 
 #ifdef WITH_ROVHULT
+      TRACE9 ("Nuke: " << Rovhult::cardNuke << "; Reverse: " << Rovhult::cardReverse
+	      << "; Skip: " << Rovhult::cardSkip);
       INISECTION (Rovhult);
-      INIATTR4 (Rovhult, CardValue::get (), Rovhult::cardNuke, CardNuke);
-      INIATTR4 (Rovhult, CardValue::get (), Rovhult::cardReverse, CardReverse);
-      INIATTR4 (Rovhult, CardValue::get (), Rovhult::cardSkip, CardSkip);
+      INIATTR4 (Rovhult, CardValue::get (), (unsigned int&)Rovhult::cardNuke, CardNuke);
+      INIATTR4 (Rovhult, CardValue::get (), (unsigned int&)Rovhult::cardReverse, CardReverse);
+      INIATTR4 (Rovhult, CardValue::get (), (unsigned int&)Rovhult::cardSkip, CardSkip);
 #endif
 
       INIFILE_READ ();
+      TRACE9 ("Nuke: " << Rovhult::cardNuke << "; Reverse: " << Rovhult::cardReverse
+	      << "; Skip: " << Rovhult::cardSkip);
    }
    catch (YGP::FileError&) { }
    catch (std::exception& error) {
@@ -313,6 +319,10 @@ void CardgameAppl::readINIFile (const char* pFile) {
       err.replace (err.find ("%2"), 2, options.strType);
       std::cerr << PACKAGE << err << '\n';
    }
+
+#ifdef WITH_ROVHULT
+   CardgameCollection::checkRovhultSpecialCards ();
+#endif
 
    if (options.decks[options.decks.size () - 1] != YGP::File::DIRSEPARATOR)
       options.decks += YGP::File::DIRSEPARATOR;
