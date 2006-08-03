@@ -52,6 +52,7 @@
 #include <XGP/XAbout.h>
 
 #include <Human.h>
+#include <CardValue.h>
 #include <PlayerDlg.h>
 #include <DeckSelect.h>
 #include <ComputerPlayer.h>
@@ -1046,7 +1047,6 @@ void CardgameCollection::savePreferences () {
       YGP::INIList<Glib::ustring>::write (inifile, "Player", options.names);
 
 #ifdef WITH_BURACO
-      inifile << '\n';
       YGP::INIFile::writeSectionHeader (inifile, "Buraco");
       inifile << "EndPoints=" << Buraco::ENDPOINTS << '\n';
 #endif
@@ -1054,9 +1054,9 @@ void CardgameCollection::savePreferences () {
 #ifdef WITH_ROVHULT
       inifile << '\n';
       YGP::INIFile::writeSectionHeader (inifile, "Rovhult");
-      inifile << "CardNuke=" << Rovhult::cardNuke
-	      << "\nCardReverse=" << Rovhult::cardReverse
-	      << "\nCardSkip=" << Rovhult::cardSkip << '\n';
+      inifile << "CardNuke=" << CardValue::get ()[Rovhult::cardNuke]
+	      << "\nCardReverse=" << CardValue::get ()[Rovhult::cardReverse]
+	      << "\nCardSkip=" << CardValue::get ()[Rovhult::cardSkip] << '\n';
 #endif
    }
    else {
@@ -1385,3 +1385,28 @@ void CardgameCollection::doStartGame () {
    mxThreadCmd.unlock ();
 #endif
 }
+
+#ifdef WITH_ROVHULT
+//-----------------------------------------------------------------------------
+/// Checks if Røvhult's special cards are valid; reset them if not
+//-----------------------------------------------------------------------------
+void CardgameCollection::checkRovhultSpecialCards () {
+   CardWidget::NUMBERS* cards[] = { &Rovhult::cardNuke, &Rovhult::cardReverse, &Rovhult::cardSkip };
+
+   for (unsigned int i (0); i < (sizeof (cards) / sizeof (*cards) - 1); ++i)
+      for (unsigned int j (i + 1); j < (sizeof (cards) / sizeof (*cards)); ++j)
+	 if (*cards[i] == *cards[j]) {
+	    Rovhult::cardNuke = CardWidget::TEN;
+	    Rovhult::cardReverse = CardWidget::SEVEN;
+	    Rovhult::cardSkip = CardWidget::EIGHT;
+
+	    Gtk::MessageDialog* dlg (new Gtk::MessageDialog (_("Invalid values for Rovhults special cards!\n"
+							       "Resetting them to default values."), false, Gtk::MESSAGE_ERROR));
+	    dlg->set_title (PACKAGE);
+	    dlg->signal_response ().connect
+	       (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
+	    dlg->show ();
+	    return;
+	 }
+}
+#endif
