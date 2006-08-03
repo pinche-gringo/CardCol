@@ -32,6 +32,10 @@
 /**Class to handle the Rovhult-cardgame
  */
 class Rovhult : public Game {
+   friend class Settings;
+   friend class CardgameAppl;
+   friend class CardgameCollection;
+
  public:
    // Manager functions
    Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
@@ -115,6 +119,7 @@ class Rovhult : public Game {
                                unsigned int end) const;
    bool isSpecialCard (CardWidget::NUMBERS nr) const {
       return (nr == CardWidget::TEN) || (nr == CardWidget::TWO); }
+   static unsigned int getCardValue (const CardWidget& card);
 
    int skip (CardWidget::NUMBERS nr, const ICardPile& pile, unsigned int pos) const {
       if (pile[pos]->number () == nr) {
@@ -155,6 +160,10 @@ class Rovhult : public Game {
    std::map <const CardWidget*, SigC::Connection> aHandDND;
    std::map <const CardWidget*, SigC::Connection> aHandData;
    std::map <const CardWidget*, SigC::Connection> aTableData;
+
+   static CardWidget::NUMBERS cardNuke;
+   static CardWidget::NUMBERS cardSkip;
+   static CardWidget::NUMBERS cardReverse;
 };
 
 #endif
