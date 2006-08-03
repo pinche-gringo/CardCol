@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SRC_BURACO=Buraco.cpp Buraco.h BuracoPile.cpp BuracoPile.h
+SRC_BURACO=Buraco.cpp Buraco.h BuracoPile.cpp BuracoPile.h BuracoCards.cpp BuracoCards.h
 if SUPPORT_BURACO
    USE_BURACO=$(SRC_BURACO)
 endif
@@ -15,7 +15,7 @@ if SUPPORT_MACHIAVELLI
    USE_MACHIAVELLI=$(SRC_MACHIAVELLI)
 endif
 
-SRC_ROVHULT=Rovhult.cpp Rovhult.h
+SRC_ROVHULT=Rovhult.cpp Rovhult.h CardValue.cpp CardValue.h
 if SUPPORT_ROVHULT
    USE_ROVHULT=$(SRC_ROVHULT)
 endif
