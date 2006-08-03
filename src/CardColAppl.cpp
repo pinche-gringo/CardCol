@@ -39,7 +39,11 @@
 #ifdef WITH_BURACO
 #  include "Buraco.h"
 #endif
+#ifdef WITH_ROVHULT
+#  include "Rovhult.h"
+#endif
 #include "GameTypes.h"
+#include "CardValue.h"
 
 #include "CardColAppl.h"
 
@@ -241,20 +245,19 @@ int CardgameAppl::convertToGameType (const char* pText) {
    if (!strcmp (pText, "Rovhult"))
       return GameTypes::ROVHULT;
 
-   GameTypes types;
-   try {
-      return types[_(pText)];
-   }
-   catch (std::out_of_range&) {
-      try {
-	 YGP::ANumeric value (pText);
-	 int iVal (value);
-	 if (types.exists (iVal))
-	    return iVal;
-      }
-      catch (std::invalid_argument&) { }
-   }
-   return GameTypes::NONE;
+    try {
+       return GameTypes::get ()[_(pText)];
+    }
+    catch (std::out_of_range&) {
+       try {
+	  YGP::ANumeric value (pText);
+	  int iVal (value);
+	  if (GameTypes::get ().exists (iVal))
+	     return iVal;
+       }
+       catch (std::invalid_argument&) { }
+    }
+    return GameTypes::NONE;
 }
 
 //-----------------------------------------------------------------------------
@@ -282,6 +285,13 @@ void CardgameAppl::readINIFile (const char* pFile) {
 #ifdef WITH_BURACO
       INISECTION (Buraco);
       INIATTR2 (Buraco, unsigned int, Buraco::ENDPOINTS, EndPoints);
+#endif
+
+#ifdef WITH_ROVHULT
+      INISECTION (Rovhult);
+      INIATTR4 (Rovhult, CardValue::get (), Rovhult::cardNuke, CardNuke);
+      INIATTR4 (Rovhult, CardValue::get (), Rovhult::cardReverse, CardReverse);
+      INIATTR4 (Rovhult, CardValue::get (), Rovhult::cardSkip, CardSkip);
 #endif
 
       INIFILE_READ ();
@@ -341,7 +351,7 @@ const char* CardgameAppl::description () const {
 /// Shows the available games
 //-----------------------------------------------------------------------------
 void CardgameAppl::showGames () const {
-   GameTypes types;
+   const GameTypes& types (GameTypes::get ());
    std::cout << _("Available games:\n\n");
    for (GameTypes::const_iterator i (types.begin ()); i != types.end (); ++i)
       std::cout << "  " << i->first << ": " << i->second << '\n';
