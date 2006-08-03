@@ -49,6 +49,9 @@ const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = { 5, 3, 5, 9 };
 const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = { 3, 7, 10, 7 };
 
 
+unsigned int Hearts::ENDPOINTS (100);
+
+
 //-----------------------------------------------------------------------------
 /// Constructor
 /// \param parent: Parent widget to display the game in
@@ -195,7 +198,7 @@ void Hearts::start () {
          unsigned int player;
          int points;
          pScoreDlg->getMaxPoints (points, player);
-         if (points >= 100) {
+         if (points >= ENDPOINTS) {
              delete pScoreDlg;
              pScoreDlg = NULL;
          }
@@ -454,7 +457,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       unsigned int player;
       int points;
       pScoreDlg->getMaxPoints (points, player);
-      if (points >= 100) {
+      if (points >= ENDPOINTS) {
          stat = _("Game ended; %1 won");
          pScoreDlg->getMinPoints (points, player);
 

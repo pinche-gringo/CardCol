@@ -32,6 +32,10 @@ class ScoreDlg;
 
 // Class to handle the Hearts cardgame
 class Hearts : public Game {
+   friend class Settings;
+   friend class CardgameAppl;
+   friend class CardgameCollection;
+
  public:
    Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
            const std::vector<Player*>& player, unsigned int posPlayer,
@@ -106,6 +110,8 @@ class Hearts : public Game {
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
+
+   static unsigned int ENDPOINTS;
 };
 
 #endif
