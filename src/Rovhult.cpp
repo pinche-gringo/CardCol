@@ -41,6 +41,7 @@
 #include <YGP/ConnMgr.h>
 #include <YGP/Tokenize.h>
 
+#include <CardValue.h>
 #include <CardWidget.h>
 #include <ComputerPlayer.h>
 
@@ -473,8 +474,11 @@ int Rovhult::doPileSelected (unsigned int player, unsigned int pile) {
 
 //-----------------------------------------------------------------------------
 /// Check if played card is valid (equal or bigger) The following cards have
-/// special meaning: - 2: Can be played always - 7: The next card must be
-/// equal or *smaller* - 8: Skips the next player -10: Clears the staple; the
+/// special meaning:
+///   - 2: Can be played always
+///   - cardReverse (7): The next card must be equal or *smaller*
+///   - cardSkip (8): Skips the next player
+///   - cardNuke (10): Clears the staple; the
 /// same player can continue with cards in hand
 /// \param nr: Card to check
 /// \param silent: Flag, if error should be displayed
@@ -490,8 +494,10 @@ bool Rovhult::cardValid (CardWidget::NUMBERS nr, bool silent) const {
 
          CardWidget& lastPlayed (played.getTopCard ());
          if (lastPlayed.number () == cardReverse) {
-            if (nr > cardReverse)
-               error = _("After a 7, the played card must be equal or smaller!");
+            if (nr > cardReverse) {
+               error = _("After a %1, the played card must be equal or smaller!");
+	       error.replace (error.find ("%1"), 2, CardValue::get ()[cardReverse]);
+	    }
          }
          else
             if (nr < lastPlayed.number ())
@@ -1242,9 +1248,9 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
    TRACE2 ("Rovhult::findCard2Play (unsigned int) - Player " << player);
    Check3 (player < NUM_PLAYERS);
 
-   // Search for minimal card to play; this is either a card equal or bigger
-   // or - if no previous card is played or the last card played was a 7 -
-   // the smallest available
+   // Search for minimal card to play; this is either a card equal or
+   // bigger or - if no previous card is played or the last card
+   // played was a cardReverse (7) - the smallest available
    CardWidget::NUMBERS cardMin (CardWidget::THREE);
    if (played.size ()
        && (played.getTopCard ().number () != cardReverse)
@@ -1277,10 +1283,10 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
       TRACE6 ("Rovhult::findCard2Play (unsigned int) - First matching card"
               " at pos " << start);
 
-      // Check if no matching normal card is found or found card is bigger than
-      // the played 7. If so, use special card instead
-      // We know one card must match as "playerCanContinue" reported this player
-      // as valid
+      // Check if no matching normal card is found or found card is
+      // bigger than the played cardReverse (7). If so, use special
+      // card instead We know one card must match as
+      // playerCanContinue() reported this player as valid
       if ((start == -1U)
           || (played.size ()
               && ((played.getTopCard ().number () == cardReverse)
@@ -1303,8 +1309,9 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
                  ? (players[player].hand[start]->number () <= cardReverse)
                  : (players[player].hand[start]->number () >= cardMin));
 
-         // If player would continue with a 6, but has also a 7, play that
-         // card instead
+         // If player would continue with a card coming directly
+         // before cardReverse (6), but has also a cardReverse (7),
+         // play that card instead
          if (players[player].hand[start]->number () == (cardReverse - 1)) {
             if ((end = players[player].hand.find (cardReverse, start)) != -1U) {
                TRACE8 ("Rovhult::findCard2Play (unsigned int) - Exchanging "
