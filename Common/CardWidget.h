@@ -52,8 +52,8 @@ class CardWidget : public Gtk::EventBox {
    COLOURS colour () const { return transColour[nrCard & 0x3]; }
    NUMBERS number () const {
       return static_cast <NUMBERS> ((nrCard > 51) ? UNREACHABLE : (51 - nrCard) >> 2); }
-   char numberStr () const;
-   char colourStr () const;
+   char numberStr () const { return strNumber (number ()); }
+   char colourStr () const { return strColour (colour ()); }
 
    const Glib::RefPtr<Gdk::Pixbuf> getShownImage () const {
       return isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (); }
@@ -70,6 +70,9 @@ class CardWidget : public Gtk::EventBox {
 
    void mark ();
    void unmark ();
+
+   static char strNumber (CardWidget::NUMBERS nr);
+   static char strColour (CardWidget::COLOURS col);
 
  protected:
   virtual void on_clicked ();

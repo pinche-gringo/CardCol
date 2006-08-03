@@ -97,21 +97,19 @@ void CardWidget::showFace (bool visible) {
 /// Returns the number of the card as character
 /// \returns \c char: Character describing number of card
 //-----------------------------------------------------------------------------
-char CardWidget::numberStr () const {
+char CardWidget::strNumber (CardWidget::NUMBERS nr) {
    static Glib::ustring specialCards (_("TJQKA"));
-   return ((number () >= CardWidget::TEN)
-           ? specialCards[number ()  - CardWidget::TEN]
-           : number () + '2');
+   return ((nr >= CardWidget::TEN) ? specialCards[nr  - CardWidget::TEN] : nr + '2');
 }
 
 //-----------------------------------------------------------------------------
 /// Returns the colour of the card as character
 /// \returns \c char: Character describing colour of card
 //-----------------------------------------------------------------------------
-char CardWidget::colourStr () const {
+char CardWidget::strColour (CardWidget::COLOURS col) {
    // Letters describing the colours (clubs, spades, hearts, diamonds)
-   static Glib::ustring colours (_("CSHD"));
-   return colours[nrCard & 0x3];
+   static Glib::ustring colours (_("CDSH"));
+   return colours[col];
 }
 
 //-----------------------------------------------------------------------------
