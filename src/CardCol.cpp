@@ -52,7 +52,6 @@
 #include <XGP/XAbout.h>
 
 #include <Human.h>
-#include <CardValue.h>
 #include <PlayerDlg.h>
 #include <DeckSelect.h>
 #include <ComputerPlayer.h>
@@ -64,9 +63,11 @@
 #endif
 #ifdef WITH_BURACO
 #  include "Buraco.h"
+#  include "BuracoCards.h"
 #endif
 #ifdef WITH_ROVHULT
 #  include "Rovhult.h"
+#  include "CardValue.h"
 #endif
 #ifdef WITH_TWOPART
 #  include "Twopart.h"
@@ -1048,7 +1049,14 @@ void CardgameCollection::savePreferences () {
 
 #ifdef WITH_BURACO
       YGP::INIFile::writeSectionHeader (inifile, "Buraco");
-      inifile << "EndPoints=" << Buraco::ENDPOINTS << '\n';
+      inifile << "Cards=" << BuracoCards::get ()[Buraco::CARDS2DEAL]
+	      << "\nEndPoints=" << Buraco::ENDPOINTS << '\n';
+#endif
+
+#ifdef WITH_HEARTS
+      inifile << '\n';
+      YGP::INIFile::writeSectionHeader (inifile, "Hearts");
+      inifile << "EndPoints=" << Hearts::ENDPOINTS << '\n';
 #endif
 
 #ifdef WITH_ROVHULT
