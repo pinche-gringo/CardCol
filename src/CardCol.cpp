@@ -929,8 +929,7 @@ void CardgameCollection::startGame () {
    }
 
    Check3 (game);
-   GameTypes types;
-   Glib::ustring name (types[actGame]);
+   Glib::ustring name (GameTypes::get ()[actGame]);
    name += " - " PACKAGE " V" PRG_RELEASE;
    set_title (name);
 
@@ -1040,16 +1039,24 @@ void CardgameCollection::savePreferences () {
    TRACE2 ("CardgameCollection::savePreferences () - Save file " << options.pNameINIFile);
    std::ofstream inifile (options.pNameINIFile);
    if (inifile) {
-      GameTypes types;
-      options.strType = types[options.type];
+      options.strType = GameTypes::get ()[options.type];
       YGP::INIFile::write (inifile, "Game", options);
       for (unsigned int i (0); i < aPlayer.size (); ++i)
 	 options.names[i] = aPlayer[i]->getName ();
       YGP::INIList<Glib::ustring>::write (inifile, "Player", options.names);
 
 #ifdef WITH_BURACO
+      inifile << '\n';
       YGP::INIFile::writeSectionHeader (inifile, "Buraco");
       inifile << "EndPoints=" << Buraco::ENDPOINTS << '\n';
+#endif
+
+#ifdef WITH_ROVHULT
+      inifile << '\n';
+      YGP::INIFile::writeSectionHeader (inifile, "Rovhult");
+      inifile << "CardNuke=" << Rovhult::cardNuke
+	      << "\nCardReverse=" << Rovhult::cardReverse
+	      << "\nCardSkip=" << Rovhult::cardSkip << '\n';
 #endif
    }
    else {
