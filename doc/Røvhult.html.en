@@ -24,9 +24,9 @@
 
 <html>
   <head>
-    <title>R&oslash;vhult - An internationally know cardgame (aka Arsehole, ...)</title>
+    <title>R&oslash;vhult - An internationally know cardgame (aka Shithead, Asshole)</title>
     <meta name="description" content="Documentation of the R&oslash;vhult cardgame">
-    <meta name="keywords" content="Documentation, Docu, Rovhult, R&oslash;vhult; game, card, cardgame">
+    <meta name="keywords" content="Documentation, Docu, Rovhult, R&oslash;vhult; Shithead, game, card, cardgame">
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2002-07-20">
@@ -37,75 +37,83 @@
     <h1 align="center">R&oslash;vhult</h1>
     <hr size=2>
 
-    <p>R&oslash;vhult is a cardgame I learned from three danes I was travelling
-      with; hence the danish name and this lovely, unpronounceable letter
-      (sounds a bit like the first letters in &laquo;earth&raquo;, while you
-      are vomitting.) Other names for the games are Shithead (UK) or Asshole
-      (Australia, USA).</p>
+    <p>R&oslash;vhult is a cardgame I learned from three danes I was
+      travelling with; hence the danish name and this lovely,
+      unpronounceable letter (resembling the first sound in
+      &laquo;earth&raquo;, while you are vomitting.) Other names for
+      the games are Shithead (UK) or Asshole (Australia, USA).</p>
 
-    <p>The goal of the game is to get rid of all your cards, according to the
-      following - quite simple as also Yankees are playing it ;) - rules:</p>
+    <p>The goal of the game is to <b>not</b> be the last one to get
+      rid of all your cards, according to the following - quite simple
+      as also Yankees are playing it ;) - rules:</p>
 
-    <p>Every player starts with three cards in his hand, and two times three
-      cards on the table (where the lower three are face down (hidden) and
-      the upper ones are visible).</p>
+    <h2>Dealing/Setup</h2>
+    <p>Every player starts with three cards in his hand, and a set of three
+      face down cards on the table and another set of three cards face
+      up on top of them. The remaining cards are put in the deck.</p>
 
-    <p>The visible cards on the table can be exchanged with the cards in the
-      hand (with drag and drop <a
+    <p>The face up cards on the table can be exchanged with the cards in the
+      hand (with drag and drop<a
       href="#Note1"><sup>1</sup></a>). Generally people try to
       put &quot;good&quot; cards (according to the rules below) on the table,
       but your milage might vary.</p>
 
-    <p>To actually start the game, click on the card you want to play. The cards
-      are sorted and the clicked card is played.</p>
+    <p>To actually start the game, click on a card in your hand. The cards
+      are sorted and the game starts with a random player.</p>
 
-    <p>In counter-clockwise turns the players put down their cards, which
-      must be equal or bigger than the last played one. Note that you
-      can put down any amount of cards with equal numbers (e.g. the
-      &spades; 5 and the &clubs; 5). After playing the player must pick
-      up cards from the staple until he has again three cards in the
-      hand (or the staple is empty).</p>
+    <h2>Playing</h2>
+    <p>In counter-clockwise turns the players put down their cards,
+      which must be equal to or higher than the last played one (with
+      aces being the highest cards). Note that you can put down any
+      amount of cards with equal numbers (e.g. the &spades; 5 and the
+      &clubs; 5). After playing the player must pick up cards from the
+      deck until he has again three cards in the hand (or the deck is
+      empty).</p>
 
     <p>There are a few special cards and exceptions:</p>
     <dl>
       <dt><b>2's</b></dt>
       <dd><p>Can be played always; the next player can continue with every
           card</p></dd>
-      <dt><b>7 is the last card played</b></dt>
+      <dt><b>The last card played is the reverse card (7)<a href="#Note2"><sup>2</sup></a></b></dt>
       <dd><p>The next card must be equal or smaller</p></dd>
-      <dt><b>8's</b></dt>
+      <dt><b>Skip card (8)<a href="#Note2"><sup>2</sup></a></b></dt>
       <dd><p>The next player is skipped</p></dd>
-      <dt><b>10's</b></dt>
-      <dd><p>Can be played always (as 2's), but additionally the staple of
-          played cards is removed and the player can continue (though he may
-          not pick up cards from the staple (except he has no more cards to
+      <dt><b>Nuke card (10)<a href="#Note2"><sup>2</sup></a></b></dt>
+      <dd><p>Can be played always (as 2's), but additionally the played
+          pile is removed and the player can continue (though he may
+          not pick up cards from the deck (except he has no more cards to
           play).</p></dd>
-      <dt><b>Four cards with the same number on the staple</b></dt>
-      <dd><p>If the last four played cards are equal the whole played staple is
-          removed and the same player can continue (having an effect similar to
-          playing a 10, except that you can pick up cards). Note that also the
-          effect of "special cards" are removed (e.g. the next player is not
-          skipped, if there have been played four 8's).</p></dd>
+      <dt><b>Four cards with the same number on the played pile</b></dt>
+      <dd><p>If the last four played cards are equal the whole played
+          pile is removed and the same player can continue (having
+          an effect similar to playing a nuke card (10), except that you
+          can pick up cards). Note that also the effect of "special
+          cards" are removed (e.g. the next player is not skipped, if
+          there have been played four 8's).</p></dd>
     </dl>
 
-    <p>If a player can't continue according to those rules he must pick up
-      all of the played cards. Of course the played pile can be picked up
-      always willingly; making the next player continue.</p>
+    <p>If a player can't continue according to those rules, he must
+      pick up all of the played cards. Of course the played pile can
+      always be picked up willingly; making the next player
+      continue.</p>
 
-    <p>If a player has no card left in his hand (and there are no cards left
-      on the staple), he can continue with the cards on the table. They
-      are played according to the same rules as from the hand; starting
-      first with the visible ones and then - if they are also sucessfully
-      removed - with the invisible ones.</p>
+    <h3>Playing from the table</h3>
+    <p>When a player has no more cards left in his hand (and there are
+      no cards left on the deck), he can continue with the cards on
+      the table. They are played according to the same rules as from
+      the hand; starting first with the face up ones and then - if
+      they are also sucessfully removed - with the face down ones.</p>
 
-    <p>Note that if you have to pick up the played pile while playing from
-      hand you can't move none of your visible cards from the table into
-      those in your hand and that you have to play first the (new) cards
-      in your hand before you can (again) play the card from the table.</p>
+    <p>Note that if you have to pick up the played pile while playing
+      from the face up cards you can't move any of them from the table
+      into those in your hand and that you have to play first the
+      (new) cards in your hand before you can (again) play the card
+      from the table.</p>
 
-    <p>The invisible cards have to be played randomly. If the selected card
-      can't be played according to the rules, it and all the cards from the
-      pile must be picked up.</p>
+    <p>The face down cards have to be played randomly. If the selected
+      card can't be played according to the rules, it and all the
+      cards from the played pile must be picked up.</p>
 
     <p>The status line gives some information about what's going on!</p>
 
@@ -114,14 +122,17 @@
       bottom):</p>
 
     <ul>
-      <li>The staple: A heap of cards (with face down), from where you put
+      <li>The deck: A heap of cards (with face down), from where you take
         up new cards (if you put the mouse over it you are informed about
         the remaining cards).</li>
+
      <li>The cards of the human player; above the cards in the hand, below
         the cards on the table.</li>
-      <li>In the next line it's the same with computer players 1 and 3. In
-        between them there's the played pile (which also shows the number of
-        the cards inside, is the mouse rests over it).</li>
+
+      <li>In the next line it's the same with players 1 and 3. In
+        between them there's the played pile (which also shows the
+        number of the cards it contains, if the mouse rests over it).</li>
+
       <li>In the last line there's computer player 2</li>
     </ul>
 
@@ -130,6 +141,9 @@
       Drag and drop means clicking with the a mouse button on the card,
       holding the button and then dragging the card to its destination.
       The end of this activity is signaled by releasing the button.</p>
+
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note2"></a>2)
+      This card can be changed in the settings dialog.</p>
 
     <hr size=3 noshade>
     <table width="100%">
