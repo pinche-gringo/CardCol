@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2002-08-18">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2006, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -39,59 +39,69 @@
 
     <p>Twopart is a cardgame I learned from four norwegians I was travelling
       with. I can't even remember if they told me the original name, but if
-      they should have done, I forgot it faster as George W. Bush needs to
+      they should have done, I forgot it faster than George W. Bush needs to
       say his next bullshit (or start a war).</p>
 
     <p>The game is splitted in two parts (hence the name; I'm obviously
       not very imaginative).</p>
 
+    <h2>Dealing</h2>
     <p>In the first part every player starts with tree cards in his
-      hand which they play counter-clockwise.</p>
+      hand which they play counter-clockwise. The remaining cards are
+      put in the deck.</p>
 
-    <p>After every player (with cards left) has put one down, the one who
-      played the highest card (regardless of the colour) gets all of them. If
-      there is more than one card with the same number (not neccessaily the
-      highest one), the played pile is not picked up, but the people who
-      played the equal cards continue playing (according to the rules
-      above) for the whole pile as long as there are equal cards. Should
-      there be equal cards, but one of the players runs out of cards, he
-      is out and only the others can continue. Should all of the people
-      with equal cars run out of cards, the one who played the first
-      (equal) cards, gets the pile.</p>
+    <p>A randomly selected player starts the game.</p>
 
-    <p>The person picking up the pile starts the next round; except if
+    <h2>Playing</h2>
+    <h3>First part</h3>
+    <p>In every turn each player puts down one card (of whatever
+      number and colour) and takes another one from the deck. The one
+      who played the highest card (regardless of the colour) wins them
+      all. If there is more than one card with the same number (not
+      neccessaily the highest one), the people who played the equal
+      cards continue playing (according to the rules above) for the
+      whole pile as long as there are equal cards.</p>
+
+    <p>Should there be equal cards, but one of the players runs out of
+      cards, he is out and only the others can continue. Should all of
+      the peple with equal cars run out of cards, the one who played
+      the first (equal) card, wins the pile.</p>
+
+    <p>The person who wins the pile starts the next round; except if
       he has no card left, in which case the next player having cards
       continues.</p>
 
-    <p>After playing a card the players get a new one from the reserve
-      staple.  The colour of the last card of the staple defines the
-      trump for part two; this card is demonstrated after the end of the
+    <p>The colour of the last card of the staple defines the trump for
+      part two; this card is demonstrated <b>after</b> the end of the
       round.</p>
 
-    <p>The first part ends, if no player has cards left anymore. If a
-      player didn't collect any cards in the first turn, he gets all
-      the low cards to (including) 5 from the others; if there are two or
-      more of such unlucky creatures, they share the stuff (more or less
+    <p>The first part ends, if no player has any cards left. If a
+      player didn't collect any cards, he gets all the low cards up to
+      (including) 5 from the others; if there are two or more of such
+      unlucky creatures, they share the stuff (more or less
       randomly).</p>
 
+    <h3>Second part</h3>
     <p>In part two the players try to get rid of the previously
       collected cards.</p>
 
-    <p>A card (or a sequence of cards with the same colour if you
-      select the right-most card of the sequence to play) can be played,
-      as long as it is bigger and has the same colour as the last card
-      on the played pile. Alternatively any trump card can be played (of
-      course a bigger one, if the last played card is also a trump).</p>
+    <p>The player having won the first part starts by putting a card
+      (or a sequence of cards with the same colour if you select the
+      right-most card of the sequence to play).</p>
 
-    <p>After completing a round (meaning: As many cards (or series of
-      cards) have been played as there have been players with cards left
-      when the first one puts down the first card(s)) according to that
-      rule, the played pile is cleared and the same (the last) player
-      can start a new round (if he has cards left; else the next one
-      with cards).</p>
+    <p>The others continue by playing higher cards of the same colour
+      as the last card on the played pile. Alternatively any trump
+      card can be played (of course a bigger one, if the last played
+      card is also a trump).</p>
 
     <p>If a player can (or will) not continue, he must pick up all the cards
       the last player had played.</p>
+
+    <p>A turn ends if as many (series of) cards have been played as
+      there have been players with cards left at the beginning of the
+      turn. The played pile is cleared and the same (the last) player
+      can start a new round (if he has cards left; else the next one
+      with cards).</p>
 
     <p>The last player having cards left has lost.</p>
 
@@ -102,16 +112,19 @@
       bottom):</p>
 
     <ul>
-      <li>The staple: A heap of cards (with face down), from where you put
+      <li>The deck: A heap of cards (with face down), from where you put
         up new cards (if you put the mouse over it you are informed about
         the number of remaining cards). In part two the colour of the trump
-        is shown here.</li>
-      <li>The cards of the human player. The won cards (above) become visible,
-        if they are clicked into; right-clicking allows to sort them.</li>
-      <li>In the next line it's the same with computer players 1 and 3. In
-        between them there's the played pile (which also shows the number of
-        the cards inside, is the mouse rests over it).</li>
-      <li>In the last line there's computer player 2</li>
+        is shown there.</li>
+
+      <li>The cards of the human player. The won cards (above) can be
+        revised by clicking into them; right-clicking allows to sort them.</li>
+
+      <li>In the next line there's the same with players 1 and 3. In
+        between them there's the played pile (which also shows the
+        number of the cards inside, is the mouse rests over it).</li>
+
+      <li>In the last line there're the cards of player 2</li>
     </ul>
 
     <hr size=2 noshade>

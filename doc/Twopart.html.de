@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,73 +30,84 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-10">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2006, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
     <h1 align="center">Twopart</h1>
     <hr size=2>
 
-    <p>Twopart ist a Kartenspiel, das ich von vier Norwegern gelernt habe.
-      Ich kann mich nicht einmal erinnern, ob sie mir den norwegischen Namen
-      genannt haben; wenn dem so w&auml;re, habe ich ihn schneller vergessen,
-      als George W. Bush ben&ouml;tigt, seinen n&auml;chsten Bl&ouml;dsinn
-      zu sagen (oder einen Krieg anzufangen).</p>
+    <p>Twopart ist ein Kartenspiel, das ich von vier Norwegern gelernt
+      habe.  Ich kann mich nicht erinnern, ob sie mir den norwegischen
+      Namen genannt haben; falls ja, habe ich ihn schneller vergessen,
+      als George W. Bush ben&ouml;tigt, seinen n&auml;chsten
+      Bl&ouml;dsinn zu sagen (oder einen Krieg anzufangen).</p>
 
     <p>Das Spiel ist in zwei Teile unterteilt (daher auch der - nicht sehr
       einfallsreiche - Name).</p>
 
+    <h3>Karten austeilen</h3>
     <p>Den ersten Teil startet jeder Spieler mit drei Karten in der Hand,
-      die sie gegen den Uhrzeigersinn spielen.</p>
+      die sie gegen den Uhrzeigersinn spielen. Die restlichen Karten
+      kommen auf den Reservestapel.</p>
 
-    <p>Nachdem jeder Spieler (mit &uuml;brigen Karten) seine Zug
-      gemacht hat, bekommt derjenige der die h&ouml;chste Karte
-      (unabh&auml;ngig von der Farbe) gespielt hat, den ganzen
-      gespielten Stapel. Wurden mehrere Karten mit der gleichen Nummer
-      (nicht unbedingt die h&ouml;chste) gespielt, spielen die Spieler
-      dieser Karten in einer weiteren Runde (nach den gleichen Regeln)
-      um den ganzen Stapel, bis ein eindeutiger Gewinner
-      feststeht. Sollten gleiche Karten vorhanden sein und einer deren
-      Spieler keine Karten mehr haben, ist er nicht in der n&auml;chsten
-      Runde dabei und lediglich die anderen setzen fort (beziehungsweise
-      der einzig &uuml;brige bekommt den Stapel). Sollten alle Spieler
-      mit gleichen Karten keine weiteren mehr haben, bekommt derjenige,
-      der die erste (gleiche) Karte gespielt hat, den ganzen Stapel.</p>
+    <p>Das Spiel startet ein zufällig ausgewählter Spieler.</p>
 
-    <p>Der Gewinner des Stapels startet die n&auml;chste Runde; au&szlig;er,
+    <h3>Das Spiel</h3>
+    <h3>Erster Teil</h3>
+    <p>In jedem Durchgang legt jeder Spieler eine (beliebige) Karte ab
+      und nimmt daf&uuml;r eine vom Reservestapel auf. Die gespielten
+      Karten gewinnt derjeninge, der die h&ouml;chste Karte
+      (unabh&auml;ngig von der Farbe) gespielt hat. Gibt es mehrere
+      Karten mit der gleichen Nummer (nicht unbedingt die
+      h&ouml;chste), spielen die Spieler dieser Karten in einer
+      weiteren Runde (nach den gleichen Regeln) um die ganzen
+      gespielten Karten, bis ein eindeutiger Gewinner feststeht.</p>
+
+    <p> Sollten gleiche Karten vorhanden sein und einer deren Spieler
+      keine Karten mehr besitzen, ist er nicht in der n&auml;chsten Runde
+      dabei und lediglich die anderen setzen fort (beziehungsweise der
+      einzig &uuml;brige bekommt den Stapel). Sollten alle Spieler mit
+      gleichen Karten keine weiteren mehr haben, bekommt derjenige,
+      der die erste (gleiche) Karte gespielt hat, alle gespielten Karten.</p>
+
+    <p>Der Gewinner der Runde startet die n&auml;chste; au&szlig;er,
       wenn er keine Karten mehr &uuml;brig hat, dann startet der n&auml;chste
       Spieler (nach ihm), der noch Karten hat.</p>
 
-    <p>Nach jedem Zug mu&szlig; der Spieler eine Karte vom Reservestapel
-      aufnehmen. Die Farbe der letzten Karte dieses Stapels bestimmt die
-      Trumpfarbe f&uuml;r den zweiten Teil; diese Karte wird allerdings
-      erst am Ende der Runde angezeigt.</p>
+    <p>Die Farbe der letzten Karte des Reservestapels bestimmt die
+      Trumpfarbe f&uuml;r den zweiten Teil; diese Karte wird
+      allerdings erst am <b>Ende</b> der Runde angezeigt.</p>
 
     <p>Der erste Teil endet, wenn keiner der Spieler Karten
-      &uuml;brighat.  Wenn ein Spieler dabei keine Karten gesammelt hat,
+      &uuml;brighat.  Wenn ein Spieler keine Karten gewonnen hat,
       bekommt er alle niedrigen Karten bis (inklusive) der 5 von den
-      anderen; gibt es zwei oder mehr Ungl&uuml;ckliche, teilen sie sich
-      diese (mehr oder weniger zuf&auml;llig).</p>
+      anderen; gibt es zwei oder mehr Ungl&uuml;ckliche, teilen sie
+      sich diese (mehr oder weniger zuf&auml;llig).</p>
 
+    <h3>Zweiter Teil</h3>
     <p>Im zweiten Teil versuchen die Spieler, die gesammelten Karten wieder
       loszuwerden.</p>
 
-    <p>Eine Karte (oder eine Serie von Karten mit der gleichen Nummer,
-      wenn die &auml;&szlig;erst rechte ausgew&auml;hlt wird) kann gespielt
-      werden, wenn sie gr&ouml;&szlig;er als die zuletzt gespielte ist und
-      die gleiche Farbe hat. Weiters kann jederzeit eine Karte der
-      Trumpffarbe gespielt werden (nat&uuml;rlich eine h&ouml;here, wenn
-      die letzte gespielte Karte ebenfalls ein Trump ist).</p>
+    <p>Der Gewinner des ersten Duchgangs beginnt und legt eine Karte
+      (oder eine Serie von Karten mit der gleichen Farbe, wenn die
+      &auml;u&szlig;erst rechte ausgew&auml;hlt wird) ab.</p>
 
-    <p>Wird so eine Runde vollendet wurde (es gibt soviele Karten am
-      Tisch wie es Spieler mit Karten gab, als die erste Karte abgelegt
-      wurde), werden die gespielten Karten entfernt und der letzte
-      Spieler startet eine neue Runde (wenn er noch Karten hat, sonst
-      der N&auml;chste mit Karten).</p>
+    <p>Die anderen Spieler setzen mit einer oder mehreren h&ouml;heren
+      als der zuletzt gespielten Karte (der gleichen Farbe)
+      fort. Weiters kann jederzeit eine Karte der Trumpffarbe gespielt
+      werden (nat&uuml;rlich eine h&ouml;here, wenn die letzte
+      gespielte Karte ebenfalls ein Trumpf ist).</p>
 
     <p>Wenn ein Spieler nicht fortsetzen kann (oder will), mu&szlig;
       er alle Karten, die der letzte Spieler abgelegt hat,
       aufnehmen.</p>
+
+    <p>Eine Runde endet, wenn es soviele Karten(serien) am Tisch gibt,
+      wie es Spieler mit Karten am Beginn der Runde gab. Die
+      gespielten Karten werden entfernt und der letzte Spieler startet
+      eine neue Runde (wenn er noch Karten hat, sonst der N&auml;chste
+      mit Karten).</p>
 
     <p>Die letzte Person, die noch Karten &uuml;brig hat, hat verloren.</p>
 
@@ -107,19 +118,24 @@
       unten):</p>
 
     <ul>
-      <li>Den Reservestapel: Ein Haufen von (verdeckten) Karten, von dem
-        neue Karten aufgenommen werden. Wird die Mauszeiger darauf
-        positioniert, erscheint ein kleines Fenster, das &uuml;ber die
-        Anzahl der &uuml;brigen Karten informiert. Im zweiten Teil wird hier
-        &uuml;ber die Trumpf-Farbe informiert.</li>
-      <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb, darunter die in
-        seiner Hand. Die gewonnenen Karten k&ouml;nnen durch Anklicken betrachtet
-        werden; ein Rechts-Klick erm&ouml;glicht zu&auml;tzlich sortieren.</li>
-      <li>In der n&auml;chsten Reihe befinden sich die Karten der Computer-Spieler
+      <li>Den Reservestapel: Ein Haufen von Karten (R&uuml;ckseite
+        nach oben), von dem neue Karten aufgenommen werden. Wird die
+        Mauszeiger darauf positioniert, erscheint ein kleines Fenster,
+        das &uuml;ber die Anzahl der &uuml;brigen Karten
+        informiert. Im zweiten Teil wird hier &uuml;ber die
+        Trumpf-Farbe informiert.</li>
+
+      <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb,
+        darunter die in seiner Hand. Die gewonnenen Karten k&ouml;nnen
+        durch Anklicken betrachtet werden; ein Rechts-Klick
+        erm&ouml;glicht zu&auml;tzlich sortieren.</li>
+
+      <li>In der n&auml;chsten Reihe befinden sich die Karten der Spieler
         1 und 3. Zwischen ihnen ist der Stapel der gespielten Karten (der
         ebenfalls die Anzahl der gespielten Karten anzeigt, wenn der Mauszeiger
         dar&uuml;ber positioniert wird).</li>
-      <li>In der letzten Reihe sind die Karten von Computer-Spieler 2.</li>
+
+      <li>In der letzten Reihe sind die Karten von Spieler 2.</li>
     </ul>
 
     <hr size=2 noshade>
