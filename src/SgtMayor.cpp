@@ -41,6 +41,7 @@
 #include <YGP/ANumeric.h>
 #include <YGP/Tokenize.h>
 
+#include <ScoreDlg.h>
 #include <RemotePlayer.h>
 #include <ComputerPlayer.h>
 
@@ -49,6 +50,8 @@
 
 const unsigned int SgtMayor::COLS_PLAYER[NUM_PLAYERS] = { 1, 0, 4 };
 const unsigned int SgtMayor::ROWS_PLAYER[NUM_PLAYERS] = { 1, 6, 6 };
+
+unsigned int SgtMayor::ENDTRICKS (10);
 
 
 //-----------------------------------------------------------------------------
@@ -63,9 +66,10 @@ const unsigned int SgtMayor::ROWS_PLAYER[NUM_PLAYERS] = { 1, 6, 6 };
 SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
                     const std::vector<Player*>& player, unsigned int posPlayer,
                     YGP::Mutex& mxSerialize)
-   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 10, 8)
-     , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE), pExchange (NULL)
-     , pTrump (NULL), startPlayer (rand () % NUM_PLAYERS)
+   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 10, 8),
+     played (ICardPile::COMPRESSED, ICardPile::SHOWFACE),
+     pTrump (NULL), startPlayer (rand () % NUM_PLAYERS),
+     pScoreDlg (NULL)
  {
    TRACE9 ("SgtMayor::SgtMayor (Box&, Statusbar&, CardSet&, ...)");
 
@@ -111,7 +115,7 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardse
    attach (played, 2, 5, 4, 5, Gtk::SHRINK, Gtk::SHRINK, 5);
    played.set_size_request (width + 150, height);
 
-   diffTicks[0] = 0x7f;
+   memset (diffTicks, '\0', sizeof (diffTicks));
 }
 
 //-----------------------------------------------------------------------------
@@ -119,8 +123,8 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardse
 //-----------------------------------------------------------------------------
 SgtMayor::~SgtMayor () {
    TRACE9 ("SgtMayor::~SgtMayor ()");
+   delete pScoreDlg;
    clean ();
-   TRACE9 ("SgtMayor::~SgtMayor () - Done");
 }
 
 
@@ -160,6 +164,19 @@ void SgtMayor::start () {
    Check2 (!played.size ());
    ICardPile pile;
    if (randomizeCardsToPile (pile)) {
+      // Delete the score-dialog if the game has ended
+      if (pScoreDlg) {
+         unsigned int player;
+         int points;
+         pScoreDlg->getMaxPoints (points, player); Check3 (points >= 0);
+         if ((unsigned int)points >= ENDTRICKS) {
+             delete pScoreDlg;
+             pScoreDlg = NULL;
+
+	     memset (diffTicks, '\0', sizeof (diffTicks));
+         }
+      }
+
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
 	 setNextPlayer (startPlayer = calcNextPlayer (startPlayer));
 	 broadcastStartPlayer (startPlayer);
@@ -167,15 +184,15 @@ void SgtMayor::start () {
 
       Check3 (cards.size () == 52);
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-         for (unsigned int j (0); j < (cards.size () / NUM_PLAYERS); ++j)
-            players[(NUM_PLAYERS + i - posServer) % NUM_PLAYERS].hand.insertColourSorted (pile.removeTopCard ());
-
-      Check3 (!pExchange); Check3 (pile.size ());
-      pExchange = &pile.removeTopCard ();
+         for (unsigned int j (0); j < (cards.size () / NUM_PLAYERS);)
+	    if ((pile.getTopCard ().number () != CardWidget::TWO)
+		|| (pile.getTopCard ().colour () != CardWidget::SPADES)) {
+	       players[(NUM_PLAYERS + i - posServer) % NUM_PLAYERS].hand.insertColourSorted (pile.removeTopCard ());
+	       ++j;
+	    }
+	    else
+	       pile.removeTopCard ();
       Check3 (pile.empty ());
-
-      if ((diffTicks[0] > 5) || (diffTicks[1] > 5) || (diffTicks[2] > 5))
-         memset (diffTicks, '\0', sizeof (diffTicks));
 
       for (unsigned int i (0); i < (sizeof (playedCards) / sizeof (playedCards[0])); ++i)
 	 playedCards[i].reset ();
@@ -196,7 +213,7 @@ void SgtMayor::showNeededTicks () {
    // Separate this from dealing the cards, to give the client a chance to
    // receive and perform the ActPlayer-message (to set the start-player)
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      char neededTicks[NUM_PLAYERS] = { '9', '3', '5' };
+      char neededTicks[NUM_PLAYERS] = { '6', '3', '8' };
       Glib::ustring needed (_("(needs %1 ticks)"));
       needed.replace (needed.find ("%1"), 2, 1, neededTicks[i]);
       players[(i + startPlayer) % NUM_PLAYERS].neededTicks.set_text (needed);
@@ -216,8 +233,6 @@ void SgtMayor::clean () {
          (*c)->show ();
       players[i].won.clear ();
    }
-
-   pExchange = NULL;
 
    if (pTrump) {
       remove (*pTrump);
@@ -351,66 +366,49 @@ void SgtMayor::cardExchange (unsigned int iCard) {
 }
 
 //-----------------------------------------------------------------------------
-/// Exchanges the two of spades
+/// Selects the trump
 /// \returns bool: False, if a human must exchange the two of spades
 //-----------------------------------------------------------------------------
-bool SgtMayor::exchangeSpade2 () {
-   TRACE9 ("SgtMayor::exchangeSpade2 ()");
+bool SgtMayor::selectTrump () {
+   TRACE9 ("SgtMayor::selectTrump ()");
 
-   unsigned int exchgPlayer (-1U);
-   unsigned int exchgCard (0);
-
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      if (exchgPlayer == -1U)
-         for (exchgCard = 0; exchgCard < players[i].hand.size (); ++exchgCard) {
-            if ((players[i].hand[exchgCard]->number () == CardWidget::TWO)
-                && (players[i].hand[exchgCard]->colour () == CardWidget::SPADES)) {
-               exchgPlayer = i;
-               TRACE7 ("SgtMayor::exchangeSpade2 () - Player " << i << " exchanges "
-                       << *players[exchgPlayer].hand[exchgCard] << " with " << *pExchange);
-	       playedCards[CardWidget::SPADES].set (CardWidget::TWO);
-               break;
-            }
-         }
-
-   // Is a card to exchange?
    Glib::ustring stat;
-   if (exchgPlayer != -1U) {
-      Check3 (pExchange);
-      CardWidget& exchg (players[exchgPlayer].hand.remove (exchgCard));
-      unsigned int target (players[exchgPlayer].hand.insertColourSorted (*pExchange));
-      pExchange = &exchg;
-      pExchange->showBack ();
-
-      // Mark the exchanged card, if the human received it
-      if (!exchgPlayer) {
-         players[0].hand[target]->mark ();
-         Glib::signal_timeout ().connect
-             (bind (mem_fun (*this, &SgtMayor::unmark), target), 1000);
-      }
-
-      stat = _("%1 exchanged the 2 of spades; ");
-      stat.replace (stat.find ("%1"), 2, actPlayers[convertPlayer (exchgPlayer)]->getName ());
-   }
-   else
-      stat = _("Nobodoy can exchange the 2 of spades; ");
-
-   if (startPlayer) {
+   unsigned int trumpPlayer ((startPlayer + 2) % 3);
+   if (trumpPlayer) {
       unsigned int displayPlayer (convertPlayer (startPlayer));
-      TRACE9 ("SgtMayor::exchangeSpade2 () - Startplayer: " << startPlayer);
-      if (typeid (*actPlayers[displayPlayer]) == typeid (RemotePlayer)) {
+      TRACE9 ("SgtMayor::selectTrump () - Trumpplayer: " << trumpPlayer);
+      if (typeid (*actPlayers[trumpPlayer]) == typeid (RemotePlayer)) {
 	 status.pop ();
-	 stat += _("Waiting for %1 to select the special colour ...");
+	 stat = _("Waiting for %1 to select the special colour ...");
 	 stat.replace (stat.find ("%1"), 2,
 		       actPlayers[displayPlayer]->getName ());
 	 status.push (stat);
       }
-      else
+      else {
+	 Check3 (typeid (*actPlayers[trumpPlayer]) == typeid (ComputerPlayer));
+	 // Find special colour
+	 ICardPile& pile (players[trumpPlayer].hand);
+	 int number[] = { 0, 0, 0, 0 };
+	 int points[] = { 0, 0, 0, 0 };
+
+	 for (unsigned int i (0); i < (pile.size () - 1); ++i) {
+	    ++number[pile[i]->colour ()];
+	    points[pile[i]->colour ()] += pile[i]->number () + 1;
+	 }
+
+	 unsigned int trumpColour (0);
+	 for (unsigned int i (1); i < 4; ++i) {
+	    if ((number[i] > number[i - 1])
+		|| ((number[i] == number[i - 1]) && (points[i] > points[i - 1])))
+	       trumpColour = i;
+	 }
+	 showTrump ((CardWidget::COLOURS)trumpColour);
 	 displayTurn (displayPlayer, stat);
+      }
    }
    else {
       status.pop ();
-      stat += _("Select the special colour");
+      stat = _("Select the special colour");
       status.push (stat);
 
       for (int i (players[0].hand.size () - 1); i >= 0; --i)
@@ -429,28 +427,10 @@ void SgtMayor::startPlaying () {
    TRACE7 ("SgtMayor::startPlaying ()");
    Check3 (!diffTicks[0]); Check3 (!diffTicks[1]); Check3 (!diffTicks[2]);
 
+   playedCards[CardWidget::SPADES].set (CardWidget::TWO);
    setNextPlayer (convertPlayer (startPlayer));
-   if (exchangeSpade2 ()
-       && (typeid (*actPlayers[currentPlayer ()]) == typeid (ComputerPlayer))) {
-      // Find special colour
-      ICardPile& pile (players[startPlayer].hand);
-      int number[] = { 0, 0, 0, 0 };
-      int points[] = { 0, 0, 0, 0 };
-
-      for (unsigned int i (0); i < (pile.size () - 1); ++i) {
-	 ++number[pile[i]->colour ()];
-	 points[pile[i]->colour ()] += pile[i]->number () + 1;
-      }
-
-      unsigned int trumpColour (0);
-      for (unsigned int i (1); i < 4; ++i) {
-	 if ((number[i] > number[i - 1])
-	     || ((number[i] == number[i - 1]) && (points[i] > points[i - 1])))
-	    trumpColour = i;
-      }
-      showTrump ((CardWidget::COLOURS)trumpColour);
+   if (selectTrump ())
       makeNextMoves ();
-   }
 }
 
 //-----------------------------------------------------------------------------
@@ -625,8 +605,14 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
 void SgtMayor::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
 
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      players[i].name.set_text (actPlayers[convertPlayer (i)]->getName ());
+   std::vector<Player*> player;
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+      player.push_back (actPlayers[(i + posServer) & 0x3]);
+      players[i].name.set_text (actPlayers[i]->getName ());
+   }
+
+   if (pScoreDlg)
+      pScoreDlg->update (player);
 }
 
 //----------------------------------------------------------------------------
@@ -832,7 +818,7 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
    }
 
    Glib::ustring stat (_("Game ended; %1 has %2 %7, %3 %4 and %5 %6 %8"));
-   unsigned int neededTicks[NUM_PLAYERS] = { 9, 3, 5 };
+   unsigned int neededTicks[NUM_PLAYERS] = { 6, 3, 8 };
    player = startPlayer;
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       int madeTicks (players[player].won.size () / 3);
@@ -840,12 +826,29 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
       TRACE9 ("SgtMayor::playCard (unsigned int, unsigned int) - Player "
               << player << " made " << madeTicks << " = " << (int)diffTicks[player]);
 
-      if (diffTicks[player] > 5) {
-	 Glib::ustring won (_("; %1 won"));
-	 won.replace (won.find ("%1"), 2, actPlayers[convertPlayer (player)]->getName ());
-	 stat += won;
-      }
       player = calcNextPlayer (player);
+   }
+
+   // Create score-dialog
+   if (!pScoreDlg) {
+      // Resort player for score dialogue
+      std::vector<Player*> player;
+      for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+	 player.push_back (actPlayers[i]);
+
+      pScoreDlg = ScoreDlg::create (player);
+      pScoreDlg->get_window ()->set_transient_for (get_window ());
+   }
+
+   pScoreDlg->addPoints (diffTicks);
+   pScoreDlg->show ();
+
+   int points;
+   pScoreDlg->getMaxPoints (points, player); Check3 (points >= 0);
+   if ((unsigned int)points >= ENDTRICKS) {
+      Glib::ustring won (_("; %1 won"));
+      won.replace (won.find ("%1"), 2, actPlayers[convertPlayer (player)]->getName ());
+      stat += won;
    }
 
    stat.replace (stat.find ("%1"), 2, actPlayers[0]->getName ());

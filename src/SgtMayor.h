@@ -34,8 +34,15 @@ namespace YGP {
 }
 
 
+class ScoreDlg;
+
+
 // Class to handle the Hearts cardgame
 class SgtMayor : public Game {
+   friend class Settings;
+   friend class CardgameAppl;
+   friend class CardgameCollection;
+
  public:
    SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
              const std::vector<Player*>& player, unsigned int posPlayer,
@@ -70,7 +77,7 @@ class SgtMayor : public Game {
    virtual bool enableHuman ();
 
    //@Section Helper methods
-   bool exchangeSpade2 ();
+   bool selectTrump ();
    void exchangeCards (unsigned int playerBad, unsigned int posBad, unsigned int playerGood);
    void exchangeCards (unsigned int playerBad, unsigned int posBad,
 		       unsigned int playerGood, unsigned int posGood);
@@ -115,19 +122,22 @@ class SgtMayor : public Game {
       Gtk::Label neededTicks;
    } players[NUM_PLAYERS];
    CardHPile played;
-   CardWidget* pExchange;
    CardWidget* pTrump;
 
    unsigned int bfColours;
 
    unsigned int startPlayer;
    std::bitset<13>playedCards[4];
-   signed char diffTicks[NUM_PLAYERS];
+   int diffTicks[NUM_PLAYERS];
 
    Gtk::UIManager::ui_merge_id idMrg;
 
+   ScoreDlg* pScoreDlg;
+
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
+
+   static unsigned int ENDTRICKS;
 };
 
 #endif
