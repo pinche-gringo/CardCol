@@ -49,6 +49,9 @@
 #  include "Rovhult.h"
 #  include "CardValue.h"
 #endif
+#ifdef WITH_SGTMAYOR
+#  include "SgtMayor.h"
+#endif
 #include "GameTypes.h"
 
 #include "CardColAppl.h"
@@ -308,6 +311,10 @@ void CardgameAppl::readINIFile (const char* pFile) {
       INIATTR4 (Rovhult, CardValue::get (), (unsigned int&)Rovhult::cardSkip, CardSkip);
 #endif
 
+#ifdef WITH_SGTMAYOR
+      INISECTION (SgtMayor);
+      INIATTR2 (SgtMayor, unsigned int, SgtMayor::ENDTRICKS, Tricks);
+#endif
       INIFILE_READ ();
       TRACE9 ("Nuke: " << Rovhult::cardNuke << "; Reverse: " << Rovhult::cardReverse
 	      << "; Skip: " << Rovhult::cardSkip);

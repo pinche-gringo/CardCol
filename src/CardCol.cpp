@@ -41,6 +41,7 @@
 #include <gtkmm/radioaction.h>
 #include <gtkmm/messagedialog.h>
 
+#define TRACELEVEL 1
 #include <YGP/File.h>
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -1066,6 +1067,13 @@ void CardgameCollection::savePreferences () {
 	      << "\nCardReverse=" << CardValue::get ()[Rovhult::cardReverse]
 	      << "\nCardSkip=" << CardValue::get ()[Rovhult::cardSkip] << '\n';
 #endif
+#ifdef WITH_SGTMAYOR
+      inifile << '\n';
+      YGP::INIFile::writeSectionHeader (inifile, "SgtMayor");
+      inifile << "Tricks=" << SgtMayor::ENDTRICKS << '\n';
+#endif
+      inifile << '\n';
+
    }
    else {
       Glib::ustring msg (_("Couldn't save options (to file %1)!\n\nReason: %2."));

@@ -48,6 +48,9 @@
 #  include "Rovhult.h"
 #  include "CardValue.h"
 #endif
+#ifdef WITH_SGTMAYOR
+#  include "SgtMayor.h"
+#endif
 
 #include "Options.h"
 
@@ -59,8 +62,11 @@ XGP::XAttributeSpinEntry<unsigned int> Settings::* Settings::intFields[] =
 #ifdef WITH_BURACO
      &Settings::maxBuracoPoints,
 #endif
-#ifdef WITH_BURACO
+#ifdef WITH_HEARTS
      &Settings::maxHeartsPoints,
+#endif
+#ifdef WITH_SGTMAYOR
+     &Settings::tricksSgtMayor,
 #endif
      &Settings::timeout
    };
@@ -74,21 +80,26 @@ Settings* Settings::instance (NULL);
 //-----------------------------------------------------------------------------
 Settings::Settings (Options& options)
    : XGP::XDialog (OKCANCEL),
-     adjPoints (0, 0, 100000.0, 1, 100),
      adjTimeout (0, 100.0, 10000.0, 1, 100),
      gameType (GameTypes::get ()),
      timeout (ComputerPlayer::TIMEOUT, adjTimeout),
 #ifdef WITH_BURACO
-     maxBuracoPoints (Buraco::ENDPOINTS, adjPoints),
+     adjBPoints (0, 0, 100000.0, 1, 100),
+     maxBuracoPoints (Buraco::ENDPOINTS, adjBPoints),
      numBuracoCards (BuracoCards::get ()),
 #endif
 #ifdef WITH_HEARTS
-     maxHeartsPoints (Hearts::ENDPOINTS, adjPoints),
+     adjHPoints (0, 0, 100000.0, 1, 100),
+     maxHeartsPoints (Hearts::ENDPOINTS, adjHPoints),
 #endif
 #ifdef WITH_ROVHULT
      cardNuke (CardValue::get ()),
      cardReverse (CardValue::get ()),
      cardSkip (CardValue::get ()),
+#endif
+#ifdef WITH_SGTMAYOR
+     adjTricks (0, 3, 100000.0, 1, 3),
+     tricksSgtMayor (SgtMayor::ENDTRICKS, adjTricks),
 #endif
      startGame (options.type) {
    Check3 (instance == NULL);
@@ -164,7 +175,17 @@ Settings::Settings (Options& options)
    nb.append_page (pagRovhult, _("_Rovhult"), true);
 #endif
 
-#if !defined (WITH_BURACO) && !defined (WITH_ROVHULT)
+#ifdef WITH_SGTMAYOR
+   Gtk::Box& pagSgtMayor (*manage (new Gtk::HBox));
+   lbl = manage (new Gtk::Label (_("_Tricks to win game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl->set_mnemonic_widget (tricksSgtMayor);
+   pagSgtMayor.pack_start (*lbl, Gtk::PACK_SHRINK, 5);
+   pagSgtMayor.pack_start (tricksSgtMayor, Gtk::PACK_EXPAND_WIDGET, 5);
+
+   nb.append_page (pagSgtMayor, _("Sgt. _Mayor"), true);
+#endif
+
+#if !defined (WITH_BURACO) && !defined (WITH_HEARTS) && !defined (WITH_ROVHULT) && !defined (WITH_SGTMAYOR)
    nb.set_show_tabs (0);
 #endif
 
