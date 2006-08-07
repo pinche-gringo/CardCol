@@ -50,7 +50,7 @@
     <h2>Reparto inicial</h2>
     <p>Todos los jugadores empiezan con tres cartas en su mano y tres
       cartas con boca abaja con una carta con boca arriba por encima
-      en la mesa. Las demaacute;s cartas se pone en el mont&oacute;n
+      en la mesa. Las dem&aacute;s cartas se pone en el mont&oacute;n
       de reserva.</p>
 
     <p>Las cartas con boca arriba de la mesa se puede cambiar con las
@@ -119,7 +119,7 @@
     <p>&iexcl;La barra de estado muestra que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
-    <p>Despu&eacute;s de iniciar se encuentra desplazadas las cartas (de
+    <p>Despu&eacute;s de iniciar se encuentran desplazadas las cartas (de
       izquierda a derecha y de arriba a abajo):</p>
 
     <ul>
