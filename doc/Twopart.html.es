@@ -113,8 +113,8 @@
     <p>&iexcl;La barra de estado muestra que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
-    <p>Despu&eacute;s de iniciar se encuentra (de izquierda a derecha
-      y de arriba a abajo):</p>
+    <p>Despu&eacute;s de iniciar se encuentran desplazadas las cartas (de
+      izquierda a derecha y de arriba a abajo):</p>
 
     <ul>
       <li><p>El mont&oacute;n de reserva: Una colecci&oacute;n de
