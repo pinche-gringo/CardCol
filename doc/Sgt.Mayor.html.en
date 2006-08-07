@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2004, 2006 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2004 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2004-04-18">
-    <meta name="DC.Rights" content="Copyright (C) 2004, 2006; distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2004 - 2006; distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -39,38 +39,57 @@
 
     <p>Sgt. Mayor is an english cardgame - or at least I learned it from two
       english people (or actually from Ver&oacute;nica (who is not exactly
-      english, but learned it herselve from those two english. But who cares
-      ...)).</p>
+      english, but learned it herself from those two english. But who cares
+      ...)). It is also known as 3-5-8 (though the version here is
+      rather its 6-5-8 variant).</p>
 
-    <p>The game is played by only 3 persons, who each get 17 carts. The
-      missing 52th can be exchanged from the person owing the 2 of spades.</p>
+    <p>This is a trick-taking card game, in which each player has to
+      win at least a certain number of tricks. The player winning at
+      first 10<a href="#Note1"><sup>1</sup></a> tricks more than
+      needed (cummulated) wins the game.</>
 
-    <p>The players have to get 9, 5 and 3 tricks respectively. It starts the
-      player needing to get 9 tricks by selecting the colour of the trumps
-      (should this be spades, can the player which previously exchanged the
-      two of spades change this card again against any other). Then the
-      actual game starts according to the following rules:</p>
+    <h2>Dealing</h2>
+    <p>The game is played by 3 persons with a standard 52-cards deck
+      having the 2 of spades (&spades;-2) removed. Each player gets 17
+      cards.</p>
 
-    <p>The player needing 9 tricks starts the game.</p>
+    <p>The first game is started by a randomly selected player
+      (needing 6 tricks). The next ones are started by the others in
+      turn.</p>
 
-    <p>Each turn can be started by any colour. Then you must strick with this
-      colour; or, if a player doesn't have any card of this colour, play any
-      colour (be it a trump or not).</p>
+    <h2>Playing</h2>
+    <p>The players have to get 6, 3 and 8 tricks respectively. The
+      player needing 8 tricks starts by selecting the colour of the
+      trumps (by clicking a card with that suit). Then the actual game
+      starts according to the following rules:</p>
 
-    <p>The played stapel wins the player having played the highest card (of
-      the colour of the first played card or with the highest trump). The
-      winner starts the next round.</p>
+    <p>Each turn can be started by any colour. The other players
+      continue counter-clockwise following suit, or playing any card
+      (be it a trump or not) if unable to do so.</p>
 
-    <p>The difference between the made and the proposed tricks is important in
-      the next round. The or those player having too much tricks can give this
-      difference of any (usually bad) cards to those having too less tricks.
-      Those people must return their heighest cards of these colours (or - if
-      they shouldn't have cards with that colour - any (even bad) card).</p>
+    <p>Each trick is won by the highest trump, or by the highest card
+      of the suit led if no trump card was played to the trick. The
+      winner of each trick leads to the next.</p>
 
-    <p>The next round starts the player which before needed to get 5 tricks.
-      Now he must get 9 tricks.</p>
+    <p>The difference between the made and the proposed tricks is
+      added to the score. The player reaching first 10<a
+      href="#Note1"><sup>1</sup></a> wins the game.</p>
 
-    <p>The game ends, if one persons gets more than 5 tricks too much.</p>
+    <p>The next game starts the player which before needed 6 tricks.
+      Now he must get 8 tricks.</p>
+
+    <h2>Exchange</h2>
+    <p>Before starting the next game (actually naming the next
+      trump), there's an exchange of cards.</p>
+
+    <p>Each player who made more than needed tricks, can give one
+      unwanted card per overtrick to a player who didn't fullfill his
+      needed tricks and gets in return those player highest card of
+      the same suit (or any card, if they don't any of those).</p>
+
+    <p>If two players won overticks, the player with the higher amount
+      of needed cards for the hand about to be played trades
+      first.</p>
 
     <p>The status line gives some information about what's going on!</p>
 
@@ -80,13 +99,20 @@
 
     <ul>
       <li>A card (an ace) indicating the special colour.</li>
+
       <li>The cards of the human player. The won cards (above) become visible,
         if they are clicked into; right-clicking allows to sort them.</li>
+
       <li>The played pile.</li>
-      <li>In the last line there are computer player 1 and 2</li>
+
+      <li>In the last line there are players 1 and 2</li>
     </ul>
 
-    <hr size=2 noshade>
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      This number can be changed in the settings dialog.</p>
+
+    <hr size=3 noshade>
     <table width="100%">
       <tr>
         <td width="*">

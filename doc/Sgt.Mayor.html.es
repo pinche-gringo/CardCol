@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2004, 2006 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2004 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-11">
-    <meta name="DC.Rights" content="Copyright (C) 2004, 2006; distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2004 - 2006; distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -38,58 +38,87 @@
     <hr size=2>
 
     <p>Sgt. Mayor es un juego de cartas inglesa - por lo menos le
-      aprend&iacute; de dos ingleses (o de hecho de Ver&oacute;nica (cual no
-      es inglesa, pero le aprendi&oacute; de los dos ingleses. Pero
-      qui&eacute;n le pare bola ...)).</p>
+      aprend&iacute; de dos ingleses (o de hecho de Ver&oacute;nica
+      (que no es inglesa, pero le aprendi&oacute; de los dos
+      ingleses. Pero qui&eacute;n le pare bola ...)). Tambi&eacute;n
+      se concoce como 3-5-8 (aunque esa versi&oacute;n es m&aacute;s
+      bien su variante 6-5-8).</p>
 
-    <p>El juego es jugado por s&oacute;lo 3 personas, cuales todos consieguen
-      17 cartas. La 52a que falta la puede ser cambiada por la persona que
-      tiene la dos de pica.</p>
+    <p>Se trata de consiguir por lo menos un cierto n&uacute;mero de
+      bazas. El jugador que gane por lo menos 10<a
+      href="#Note1"><sup>1</sup></a> bazas m&aacute;s (acumuladas) que
+      le necesita, gana el juego.</p>
 
-    <p>Los jugadores necesitan 9, 5 y 3 bazas. El jugador necesitando 9 bazas
-      empieza con elegir la pinta especial (si elige pica, el jugador que
-      antes cambiaba el dos de pica le puede volver a cambiar esa carta con
-      una otra). Entonces el juego empieza de acuerdo a las siguentes
-      reglas:</p>
+    <h2>Reparto inicial</h2>
+    <p>Sgt. Mayor se juega por 3 personas con un juego de 52 cartas de
+       cuales se ha quitado la dos de pica (&spades;-2). Todos los
+       jugadores consiguen 17 cartas.</p>
 
-    <p>Empizea &eacute;l que necesita 9 bazas.</p>
+    <p>El primer juego empiezea un jugador casual (necesitando 6
+      bazas). Despu&eacute;s lo cambia en turno.</p>
 
-    <p>Cada turno puede ser empezada por cualquier color. Los demas tienen que
-      jugar el mismo color; o - si no lo tienen - juegan una carta de
-      cualquier color (sea de pinta especial o no).</p>
+    <h2>El juego</h2>
+    <p>Los jugadores necesitan ganar 6, 3 y 8 bazas
+      respectivamente. &Eacute;l que necesita las 8 bazas, primero
+      elige el color especial (haciendo clic en una carta de esa
+      pinta). Despu&eacute;s empieza el juego de acuerdo con las reglas
+      siguentes:</p>
 
-    <p>&Eacute;l con la carta mas alta (o del color de la primera carta o de
-      la carta de la pinta especial) gana el mot&oacute;n jugado. El ganador
-      empieza el pr&oacute;ximo turno.</p>
+    <p>Se puede empezar cada turno con cualquier color. Los
+      dem&aacute;s siguen contra la direcci&oacute;n del las
+      aguajas de reloj y tienen que jugar el mismo color o - si no lo tienen
+      - una carta de cualquier color (sea de pinta especial o no).</p>
 
-    <p>La diferencia entre las bazas hecho y las de hacer importa en la
-      pr&oacute;xima vuelta. El o los jugadores con demasiados brazas pueden
-      dar esa diferencia de cartas (malas, generalmente) a los que no tienen
-      suficiente bazas. Aquellos tienen que devolver sus cartas mas altas de
-      esa pinta (o - si no tienen - cualquier carta.</p>
+    <p>Gana la baza &eacute;l que jug&oacute; la carta mas alta la
+      pinta especial o - si se trata de una baza que no lleva pinta
+      especial - del color de la primera carta. El ganador empieza el
+      pr&oacute;ximo turno.</p>
 
-    <p>El pr&oacute;ximo turno empieza &eacute;l que antes necesitaba 5 bazas.
-      Ahora &eacute;l necesita 9 bazas.</p>
+    <p>La diferencia entre las bazas hechas y las necesitadas se
+      a&ntilde;ade a los puntos. El jugador que gane primero 10<a
+      href="#Note1"><sup>1</sup></a> puntos gana el juego.</p>
 
-    <p>El juego termina, si alguien tiene mas que 5 bazas demasiadas.</p>
+    <p>El pr&oacute;ximo juego empieza &eacute;l que antes necesitaba
+      6 bazas (ahora necesitando 8).</p>
+
+    <h2>Cambio</h2>
+    <p>Antes de empezar el pr&oacute;ximo juego (o sea antes de eligir
+      la pinta especial) hay un cambio de cartas.</p>
+
+    <p>Cada jugador que gan&oacute; m&aacute;s bazas que lo necesitaba
+      puede dar esa n&uacute;mero de cartas indeseadas a los que no
+      ten&iacute;an suficiente bazas. Ellos tienen que devolver sus
+      cartas mas altas de esa pintas (o - si no lo tienen - cualquier
+      carta).</p>
+
+    <p>Si hay dos jugadores que sobrepasaron su tarea, empieza el que
+      tiene que ganar m&aacute;s bazas en el turno actual.</p>
 
     <p>&iexcl;La barra de estado muestra que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
-    <p>Despu&eacute;s iniciar se encuentra (de izquierda a derecha y de arriba a
-      abajo):</p>
+    <p>Despu&eacute;s de iniciar se encuentran desplazadas las cartas (de
+      izquierda a derecha y de arriba a abajo):</p>
 
     <ul>
       <li><p>Una carta (un as) que muestra la pinta especial.</p></li>
-      <li><p>Las cartas del jugador humano. Por arriba sus cartas ganadas
-          encima de sus cartas en su mano. Se puede inspectarlas con hacer
-          clic en las; hacer clic con la tecla derecha permite
-          sortearlas.</p></li>
+
+      <li><p>Las cartas del jugador humano. Sus cartas ganadas encima
+          de las cartas en su mano. Se puede inspectarlas con hacer
+          clic en ellas; hacer clic con la tecla derecha permite
+          ordenarlas.</p></li>
+
       <li><p>El mont&oacute;n de las cartas jugados.</p></li>
-      <li><p>En la linea &uacute;ltima son las cartas del jugador 1 y2.</p></li>
+
+      <li><p>En la &uacute;ltima l&iacute;nea son las cartas del
+        jugador 1 y 2.</p></li>
     </ul>
 
-    <hr size=2 noshade>
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      Se puede cambiar ese n&uacute;mero en los propiedades.</p>
+
+    <hr size=3 noshade>
     <table width="100%">
       <tr>
         <td width="*">

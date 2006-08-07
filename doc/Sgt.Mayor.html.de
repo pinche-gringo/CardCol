@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2004, 2006 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2004 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,7 +30,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2004-04-18">
-    <meta name="DC.Rights" content="Copyright (C) 2004, 2006; distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2004 - 2006; distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -40,42 +40,60 @@
     <p>Sgt. Mayor ist ein englisches Kartenspiel - oder zumindest lernte ich
       es von zwei Engl&auml;ndern kennen (bzw. eigentlich von Ver&oacute;nica
       (die zwar keine Engl&auml;nderin ist, aber es von diesen beiden
-      lernte. Aber wem interessierts ...)).</p>
+      lernte. Aber wem interessiert's ...)). Es ist auch unter dem
+      Namen 3-5-8 bekannt (obwohl dies eher dessen 6-3-8 Variante ist).</p>
 
-    <p>Gespielt wird Sgt. Mayor von lediglich 3 Personen, die jeder 17 Karten
-      bekommen. Die fehlende 52 Karte ist der Talon, der von der Person mit
-      der Pik 2 getauscht werden kann.</p>
+    <p>Ziel des Spieles ist es, zumindest eine bestimmte Anzahl von
+      Stichen zu machen. Der Spieler, der zuerst (aufsummiert) 10<a
+      href="#Note1"><sup>1</sup></a> Stiche &uuml;ber der
+      ben&ouml;tigten Stichanzahl liegt, gewinnt.
 
-    <p>Die Spieler m&uuml;ssen jeweils 9, 5 und 3 Stiche machen. Es startet
-      der Spieler, der die 9 Stiche machen mu&szlig; mit dem Festlegen der
-      Trumpf-Farbe (sollte Pik Trumpf sein, kann der Spieler, der zuvor die
-      Pik 2 tauschte, diese wiederum gegen eine beliebige andere
-      tauschen). Danach startet er das Spiel nach den folgenden Regeln:</p>
+    <h2>Karten austeilen</h2>
+    <p>Gespielt wird Sgt. Mayor von 3 Personen mit einem normalen
+      52-Karten-Set, aus dem die Pick-2 (&spades;-2) entfernt
+      wurde. Jeder Spieler erh&auml;lt 17 Karten.</p>
 
-    <p>Es beginnt der Spieler, der 9 Stiche machen mu&szlig;.</p>
+    <p>Das erste Spiel beginnt ein zuf&auml;llig ausgew&auml;hlter
+      Spieler (der 6 Stiche machen mu&szlig;). Die weiteren Spiele
+      werden der Reihe nach von den anderen Spielen gestartet.</p>
 
-    <p>Es kann mit jeder Farbe begonnen werden. Danach herrscht Farbzwang;
-      wenn ein Spieler diese Farbe nicht besitzt kann er eine beliebige andere
-      spielen (Trumpf oder nicht).</p>
+    <h2>Das Spiel</h2>
+    <p>Die Spieler m&uuml;ssen jeweils 6, 3 und 8 Stiche
+      machen. Zun&auml;chst w&auml;hlt der Spieler, der die 8 Stiche
+      machen mu&szlig;, die Trumpf-Farbe aus (durch Anklicken einer
+      Karte dieser Farbe). Danach startet er das Spiel nach den
+      folgenden Regeln:</p>
 
-    <p>Nachdem alle Spieler (im Uhrzeigersinn) ihre Karte abgelegt haben, gewinnt den gespielten
-      Stapel der Spieler mit der h&ouml;chsten Karte (der Farbe der zuerst
-      gespielten Karte oder dem h&ouml;chsten Trumpf). Der Gewinner startet
-      dann die n&auml;chste Runde.</p>
+    <p>Es kann mit jeder Farbe begonnen werden. Danach wird gegen den
+      Uhrzeigersinn fortgesetzt. Es herrscht Farbzwang; wenn ein
+      Spieler diese Farbe nicht besitzt, kann er eine beliebige andere
+      spielen (egal ob Trumpf oder nicht).</p>
 
-    <p>Die Differenz der gemachten mit der zu machenden Stiche spielt eine
-      Rolle in der n&auml;chsten Runde. Der- oder diejenigen mit einem
-      &Uuml;berschu&szlig; an Stichen geben diese Differenz an beliebigen (im
-      allgemeinen die schlechten) Karten an diejenigen mit zuwenigen. Diese
-      m&uuml;ssen ihre h&ouml;chste Karte dieser Farbe zur&uuml;ckgeben
-      (bzw. eine beliebige (auch schlechte), wenn sie diese Farbe nicht
-      besitzen).</p>
+    <p>Den Stich gewinnt der Spieler mit der h&ouml;chsten Karte (der
+      Farbe der zuerst gespielten Karte oder - wenn vorhanden - dem
+      h&ouml;chsten Trumpf). Der Gewinner startet dann die
+      n&auml;chste Runde.</p>
 
-    <p>Die n&auml;chste Runde startet der Spieler, der zuvor 5 Stiche machen
-      mu&szlig;te (wobei jetzt er 9 Stiche machen mu&szlig;).</p>
+    <p>Die Differenz der gemachten mit der zu machenden Stiche wird zu
+      den Punkten addiert. Der Spieler, der zuerst 10<a
+      href="#Note1"><sup>1</sup></a> Punkte erreicht, gewinnt.</p>
 
-    <p>Das Spiel endet, wenn eine Person mehr als 5 Stiche zuviel gemacht
-      hat.</p>
+    <p>Das n&auml;chste Spiel startet der Spieler, der zuvor 6 Stiche machen
+      mu&szlig;te (wobei jetzt er 9 Stiche erzielen mu&szlig;).</p>
+
+    <h2>Kartentausch</h2>
+    <p>Bevor das n&auml;chste Spiel (durch Ausw&auml;hlen der
+      Trumpf-Farbe) gestartet wird, werden noch Karten ausgetauscht.</p>
+
+    <p>Der- oder diejenige(n) mit einem &Uuml;berschu&szlig; an
+      Stichen geben diese Differenz an unerw&uuml;nschten Karten an
+      den- oder diejenige(n) mit zuwenigen. Diese m&uuml;ssen die
+      h&ouml;chste Karte dieser Farbe zur&uuml;ckgeben (bzw. eine
+      beliebige, wenn sie diese Farbe nicht besitzen).</p>
+
+    <p>Sollte zwei Personen zuviele Stiche gemacht haben, beginnt
+      derjenige den Tausch, der im neuen Spiel mehr Stiche machen
+      mu&szlig;.</p>
 
     <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
 
@@ -85,16 +103,23 @@
 
     <ul>
       <li>Die Trumpf-Farbe (als As).</li>
-      <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb, darunter
+
+     <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb, darunter
         die in seiner Hand. Die gewonnenen Karten k&ouml;nnen durch Anklicken
         betrachtet werden; ein Rechts-Klick erm&ouml;glicht zu&auml;tzlich
         sortieren.</li>
+
       <li>In der n&auml;chsten Reihe befindet sich der Stapel der gespielten
         Karten.</li>
-      <li>In der letzten Reihe sind die Karten von Computer-Spieler 1 und 2.</li>
+
+      <li>In der letzten Reihe sind die Karten von Spieler 1 und 2.</li>
     </ul>
 
-    <hr size=2 noshade>
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      Diese Anzahl kann im Eigenschaften-Dialog ge&auml;ndert werden.</p>
+
+    <hr size=3 noshade>
     <table width="100%">
       <tr>
         <td width="*">
