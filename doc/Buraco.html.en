@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,94 +30,134 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-06-22">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2006, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
     <h1 align="center">Buraco</h1>
     <hr size=2>
 
-    <p>Buraco is a quite popular game in Venezuela. It is similar to Canasta
-      or Romme in Europe; though it tends to end faster, thanks to the
-      "Buracos" (a set of extra cards, which one picks up, if one of the team
+    <p>Buraco is a matching card game and quite popular game in
+      Venezuela (and as it seems also in Brazil). It is similar to
+      Canasta; though it tends to end faster, thanks to the "Buracos"
+      (a set of extra cards, which one picks up, if one of the team
       does not have any cards left).</p>
 
-    <p>In a nutshell it is about putting down a staple of "matching" cards
-      (with the help of its partner) and that way getting rid of all of the
-      cards. Matching means that either the numbers must be equal
-      (independend of the colour) or the colour and the numbers are in a
-      sequence (Ace (as one), three, four, ..., ten, jack, queen, king, ace -
-      as the two is a joker, it does not belong to the serie).</p>
+    <p>It's object is (with the help of ones partner) to create melds
+      of cards of the same rank (or series of cards of the same suit)
+      called "cerrados" and then go out by playing or discarding all
+      the cards in your hand and thus get as many points as possible.</p>
 
-    <p>To actually put down the cards, the player must have at least three of
-      them; or two which are extended with a joker or a 2 (of whatever
-      colour).</p>
+    <p>Buraco is played by 4 sets of 52 cards and 12 jokers.</p>
 
-    <p>Every player starts with 11 cards in his hand. At the beginning of his
-      turn he has either to pick up a card from the staple or he can pick up
-      the whole dumped pile, if he has a pair matching the uppermost card
-      (without joker). As an exception the player starting the game can pick
-      up the card on that pile in the first round, even if he has no matching
-      pair.</p>
+    <h2>Dealing</h2>
+    <p>Every player is dealt 11<a href="#Note1"><sup>1</sup></a> cards
+      into his hand. There are also two more piles with the same number
+      of cards (called "buracos"), one for each team.</p>
 
-    <p>Afterwards he can play his cards (with drag and drop<a
-      href="Buraco.html.en#Note1"><sup>1</sup></a>) - if he wants: A possible
-      way of playing is to keep his cards in the hand to maybe pick up the
-      pile of the dumped cards. To start a new pile, he needs - as mentioned
-      before - a serie of at least 3 matching cards. Furthermore he can add
-      "matching" cards (according to the rules above) to yet existing
-      piles.</p>
+    <p>The remaining cards are put into the deck (face down).</p>
 
-    <p>If the player can't or want play anymore cards, he must dump one (by
-      clicking on it) and the next player (counter-clockwise) continues.</p>
+    <p>The initial player is chosen at random, and the deal then
+      rotates clockwise after every hand.</p>
+
+    <p>The player starting the game is also shown the first card of
+      the deck (face up) in the pile of unused cards.</p>
+
+    <h2>Playing</h2>
+    <h3>Drawing cards</h3>
+    <p>A turn begins either by drawing the first card from the stock
+      into the player's hand or by picking up the entire discard
+      pile. However, for the latter one needs to have a pair of cards
+      "matching" the top card of the discard pile &mdash; this three
+      cards he has to meld immediately.</p>
+
+    <p>Matching means that either the numbers must be equal
+      (independend of the colour) or the colour and the numbers of the
+      cards in question are in a sequence (Ace (as one), three, four,
+      ..., ten, jack, queen, king, ace - as the two is a joker, it
+      does not belong to the serie).</p>
+
+    <p>As an exception the player starting the game can pick up the
+      card on the discard pile in the first round, even if he has no
+      matching pair.</p>
+
+    <h3>Melding</h3>
+    <p>Afterwards he can play his cards, either by starting a new pile
+      of "matching" cards (see above) or by adding cards to existing
+      piles - if he wants: A possible way of playing is to keep his
+      cards in the hand to maybe pick up the pile of the dumped cards.</p>
+
+    <p>Every pile must have at least 3 cards, one of which can either be
+      a joker or a two (of any colour). These cards can substitute any
+      other card.</p>
+
+    <p>Putting down happens with drag and drop<a
+      href="Buraco.html.en#Note2"><sup>2</sup></a>.</p>
 
     <p>Further rules are:</p>
     <ul>
+      <li><p>Every pile put down kann only contain a single joker or 2 -
+          except if it is a pile of only jokers and/or 2's.</p></li>
 
-      <li>Every pile put down kann only contain a single joker or 2 - except
-        if it is a pile of only jokers and/or 2's).</li>
+      <li><p>If one pile contains seven cards, it will be closed (and
+          removed from the table). Those containimg either a joker or
+          a 2 are called <em>dirty</em> and those without
+          <em>clean</em>. To go out, the team needs at least one of
+          those "cerrados".</p></li>
 
-      <li>If one pile contains seven cards, it will be closed (and removed
-        from the table). Those containimg either a joker or a 2 are called
-        <em>dirty</em> and those without <em>clean</em>. The game can only be
-        ended, if the team has at least one of those "cerrados".</li>
+      <li><p>If a player has no more cards except jokers and/or 2's,
+          he picks up the "buraco" - a previously reserved pile (one
+          for every team). Afterwards he continues normally (e.g. it
+          is still his turn, if he did not dump a card
+          before).</p></li>
 
-      <li>If a player has no cards except of jokers and/or 2's, he picks up
-        the "buraco" - further 11 cards of a previously reserved pile (which
-        exists one for every team). Afterwards he continues normally (e.g. it
-        is still his turn, if he did not dump a card before).</li>
+      <li><p>If there is neither a "buraco" nor has the team a
+          "cerrado" a player can not dump his last card.</p></li>
 
-      <li>If there is neither a "buraco" nor has the team a "cerrado" a player
-        can not dump his last card.</li>
+      <li><p>Joker or 2's inside a pile can be moved (inside the
+          pile), but not picked up again. That means: If there is for
+          example a serie of &hearts; 5, 6 and joker, one can move the
+          joker down (to the position of the &hearts;4) and therefore
+          add a &hearts;3<a
+          href="Buraco.html.en#Note3"><sup>3</sup></a>; but one can
+          not put down a &hearts;7 and take the joker in ones hand
+          (though one can put down the 7 and the joker becomes the 8
+          or the 4).</p></li>
 
-      <li>Joker or 2's inside a pile can be moved (inside the pile), but not
-        picked up again. That means: If there is for example a serie of
-        &hearts; 5, 6 and joker, one can move the joker down (to the position
-        of the &hearts;4) and therefore add a &hearts;3<a
-        href="Buraco.html.en#Note2"><sup>2</sup></a>; but one can not put down
-        a &hearts;7 and take the joker in ones hand (though one can put down
-        the 7 and the joker becomes the 8 or the 4).</li>
-
-      <li>A joker or 2 on top of the dumped cards can never be picked up; even
-        if the player has two equal cards.</li>
+      <li><p>A joker or 2 on top of the discard pile can never be
+          picked up; even if the player has two equal cards.</p></li>
     </ul>
 
-    <p>At the end of the game (after a player played his last card or put it
-      down), the points are counted. Every "cerrado" without joker or 2 counts
-      400 Punkte (otherwise 200); except one with aces - those have 500 or 300
-      points respectively. A "cerrado" with joker and 2 counts  1.000 points,
-      one with only 2's 2.000.  But <b>attention</b>: If one starts suche a
-      pile without finishing it, it also has 1.000 points - but negative!</p>
+    <h3>End of a turn</h3>
+    <p>If the player can't or want play anymore cards, he must discard
+      one (by clicking on it) and the next player (counter-clockwise)
+      continues.</p>
 
-    <p>Furhter 100 points one get for taking up the buraco and for ending the
-      game; 100 points are substracted, if the buraco was not taken.</p>
+    <h3>To go out (End of a hand)</h3>
+    <p>The game ends, if a team has at least one "cerrado", has picked
+      up its "buraco" and then one of the team's player gets rid of
+      his last card (either by playing it to the discard pile or to
+      one of the piles on the table.</p>
+
+    <h2>The scoring</h2>
+    <p>At the end of the game the points are counted. Every "cerrado"
+      without joker or 2 counts 400 points (otherwise 200); except one
+      with aces - those have 500 or 300 points respectively. A
+      "cerrado" with only joker and 2 counts 1.000 points, one with
+      only 2's 2.000.  But <b>attention</b>: If one starts such a
+      pile without finishing it, it counts as -1.000 points!</p>
+
+    <p>One gets further 100 points for taking up the buraco and for
+      ending the game; 100 points are substracted, if the buraco was
+      not taken.</p>
 
     <p>Finally one adds the points of the cards itself: Those on the table are
       added and those in the hand are substracted. A joker counts 50 points, a
       2 25, the ace counts as 20, king to 8 (inclusively) have 10 and the
       others below only 5 points.</p>
 
-    <p>The game ends, if one of the teams has 2.000 points or more.</p>
+    <p>The game ends, if one of the teams has 2.000<a
+      href="#Note1"><sup>1</sup></a> points or more.</p>
 
     <p>The status line gives some information about what's going on!</p>
 
@@ -126,33 +166,37 @@
       bottom):</p>
 
     <ul>
-      <li>The staple: A heap of cards (with face down), from where you put
-        up new cards (if you put the mouse over it you are informed about
+      <li>The deck: A heap of cards (face down), from where you draw
+        new cards (if you put the mouse over it you are informed about
         the remaining cards).</li>
 
-      <li>The pile with the dumped cards (with face up). Those pile also shows
-        the number of its cards, if the mouse is put over.</li>
+      <li>The pile with the discarded cards (with face up). Those pile
+        also shows the number of its cards, if the mouse is put
+        over.</li>
 
       <li>The cards of the player. Presorted by numbers, but re-sortable with
-        drag and drop<a href="Buraco.html.en#Note1"><sup>1</sup></a> or
+        drag and drop<a href="Buraco.html.en#Note2"><sup>2</sup></a> or
         the entries in the <tt>Buraco</tt> menu.</li>
 
       <li>The piles on the table of team 1. Cards can be added to that piles
-        with drag und drop<a href="Buraco.html.en#Note1"><sup>1</sup></a> (if
+        with drag und drop<a href="Buraco.html.en#Note2"><sup>2</sup></a> (if
         it is the turn of the player).</li>
 
        <li>The piles on the table of team 2.</li>
 
-      <li>In the last row are the cards of the other (computer) player.</li>
+      <li>In the last row are the cards of the other players.</li>
      </ul>
 
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      This can be changed in the settings dialog.</p>
+
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note2"></a>2)
       Drag and drop means clicking with the a mouse button on the card,
       holding the button and then dragging the card to its destination.
       The end of this activity is signaled by releasing the button.</p>
 
-    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note2"></a>2)
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note3"></a>3)
       You don't have to move the joker manually. Just drop the card you want
       to play and the joker moves itself automatically.</p>
 

@@ -52,10 +52,9 @@
     <h2>Karten austeilen</h2>
     <p>Jeder der 4 Spieler startet mit 11<a href="#Note1"><sup>1</sup></a>
       Karten in der Hand. Zus&auml;tzlich gibt es zwei weitere Kartenstapel
-      mit jeweils 11<a href="#Note1"><sup>1</sup></a> Karten (die sogenannten
-      "Buracos"), je einen pro Team.</p>
+      mit genausovielen Karten (die sogenannten "Buracos"), je einen pro Team.</p>
 
-    <p>Die restlichen Karten kommen auf den Reservestapel.</p>
+    <p>Die restlichen Karten kommen (verdeckt) auf den Reservestapel.</p>
 
     <p>Das erste Spiel wird von einem zuf&auml;llig ausgew&auml;hlten
       Spieler gestart; die anderen beginnen abwechselnd die
@@ -70,76 +69,75 @@
     <p>Am Beginn jedes Zugs nimmt der Spieler eine Karte vom
       Reservestapel oder - falls er ein zur obersten Karte des
       gespielten Stosses "passendes" Paar aufweist - den gesamten
-      unben&ouml;tigten Sto&szlig;, wobei er die 3 passenden Karten
-      sofort ablegen mu&szlig; (als Ausnahme dazu kann der startende
-      Spieler zwischen der (sichtbaren) Karte im unben&ouml;tigten
-      Sto&szlig; oder der (verdeckten) Karte des Reservestapels
-      ausw&auml;hlen - auch ohne ein passendes Paar zu haben oder die
-      3 Karten spielen zu m&uuml;ssen).</p>
-
-    <h3>Ablegen</h3>
-    <p>Danach kann er neue Stapel von "zusammenpassenden" Karten
-      ablegen oder an bestehende Stapel anlegen (wenn er will - eine
-      m&ouml;gliche Taktik ist auch, die Karten in der hand zu halten,
-      um so eventuell den Stapel der abgeworfenen Karten aufnehmen zu
-      k&ouml;nnen). Zusammenpassend bedeutet, da&szlig; entweder die
+      unben&ouml;tigten Sto&szlig;, wobei er diese 3 Karten sofort
+      ablegen mu&szlig;. Passend bedeutet, da&szlig; entweder die
       Nummer (unabh&auml;ngig von der Farbe) oder die Farbe gleich
       ist, und die Nummern in einer fortlaufenden Serie sind (As als
       Eins, Drei, Vier, ..., Zehn, Bube, Dame, K&ouml;nig, As - Der
       Zweier ist ein Joker und kommt daher nicht in der Reihe
       vor).</p>
 
+    <p>Als Ausnahme dazu kann der startende Spieler zwischen der
+      (sichtbaren) Karte im unben&ouml;tigten Sto&szlig; oder der
+      (verdeckten) Karte des Reservestapels ausw&auml;hlen - auch ohne
+      ein passendes Paar zu haben oder die 3 Karten spielen zu
+      m&uuml;ssen).</p>
+
+    <h3>Ablegen</h3>
+    <p>Danach kann er neue Stapel von "zusammenpassenden" Karten
+      (siehe oben) ablegen oder an bestehende Stapel anlegen (wenn man
+      will - eine m&ouml;gliche Taktik ist auch, die Karten in der
+      hand zu halten, um so eventuell den Stapel der abgeworfenen
+      Karten aufnehmen zu k&ouml;nnen).</p>
+
     <p>Jeder Stapel mu&szlig; mindestens 3 Karten enthalten; wovon
       eine entweder ein Joker oder eine (beliebigfarbige) 2 sein kann
       (die dabei eine Karte ersetzen).</p>
 
     <p>Das Ablegen der Karten erfolgt mit Ziehen und Ablegen - drag
-      and drop<a href="#Note2"><sup>2</sup></a> . Um einen neuen
-      Stapel ablegen zu k&ouml;nnen, mu&szlig; er - wie bereits
-      erw&auml;hnt - mindestens eine Serie von 3 gleichen Karten
-      haben. Oder er kann (auch einzelne) "zusammenpassende" Karten
-      (nach den obigen Regeln) zu bereits bestehenden Stapeln
-      hinzuf&uuml;gen.</p>
+      and drop<a href="#Note2"><sup>2</sup></a>.</p>
 
     <h3>Weitere Regeln</h3>
     <ul>
-      <li>Jeder abgelegte Stapel darf nur einen Joker (oder 2'er) enthalten -
-        au&szlig;er, wenn es ein Stapel von Jokern (und/oder 2'ern ist).</li>
+      <li><p>Jeder abgelegte Stapel darf nur einen Joker oder 2'er
+          enthalten - au&szlig;er, wenn es ein Stapel von
+          ausschlie&szlig;lich Jokern und/oder 2'ern ist.</p></li>
 
-      <li>Enth&auml;t ein Stapel sieben Karten, wird er geschlossen (und vom
-        Tisch genommen). Dabei nennt man "Cerrados" (= geschlossener Stapel)
-        ohne Joker oder 2'er <em>sauber</em> und solche mit
-        <em>schmutzig</em>. Das Spiel kann nur beendet werden, wenn das Team
-        mindestens einen dieser "Cerrados" besitzt.</li>
+      <li><p>Enth&auml;lt ein Stapel sieben Karten, wird er
+          geschlossen (und vom Tisch genommen). Dabei nennt man
+          "Cerrados" (= geschlossener Stapel) ohne Joker oder 2'er
+          <em>sauber</em> und solche mit <em>schmutzig</em>. Das Spiel
+          kann nur beendet werden, wenn das Team mindestens einen
+          dieser "Cerrados" besitzt.</p></li>
 
-      <li>Hat ein Spieler keine Karten (au&szlig;er Joker oder 2'er) mehr,
-        nimmt er den "Buraco" auf (weitere 11 Karten eines voher zur Seite
-        gelegten Reservestapels (ein Stapel pro Team)). Danach kann er normal
-        fortsetzen (d.h., er ist noch immer am Zug, wenn er noch keine Karte
-        abgeworfen hat).</li>
+      <li><p>Hat ein Spieler keine Karten (au&szlig;er Joker oder
+          2'er) mehr, nimmt er den "Buraco" auf (einen voher zur Seite
+          gelegten Reservestapels (einer pro Team)). Danach kann er
+          normal fortsetzen (d.h., er ist noch immer am Zug, wenn er
+          noch keine Karte abgeworfen hat).</p></li>
 
-      <li>Gibt es keinen "Buraco" mehr und hat das Team noch keinen
+      <li><p>Gibt es keinen "Buraco" mehr und hat das Team noch keinen
         <em>Cerrado</em>, kann ein Spieler nicht seine letzte Karte
-        abwerfen.</li>
+        abwerfen.</p></li>
 
-      <li>In einem Stapel befindliche Joker oder 2'er k&ouml;nnen
-        (innerhalb des Stapels) verschoben, aber nicht wieder
-        aufgenommen werden. Das bedeutet: Hat man beispielsweise eine
-        Reihe von &hearts; 5, 6 und Joker, kann man den Joker nach
-        unten verschieben (wird zu &hearts;4 und dannach einen
-        &hearts;3 anlegen<a href="#Note3"><sup>3</sup></a> aber man
-        kann nicht ein &hearts;7 ablegen und daf&uuml;r den Joker in
-        seine Hand aufnehmen (allerdings kann man den 7'er ablegen und
-        der Joker wird zum 8'er oder 4'er).</li>
+      <li><p>In einem Stapel befindliche Joker oder 2'er k&ouml;nnen
+          (innerhalb des Stapels) verschoben, aber nicht wieder
+          aufgenommen werden. Das bedeutet: Hat man beispielsweise
+          eine Reihe von &hearts; 5, 6 und Joker, kann man den Joker
+          nach unten verschieben (wird zu &hearts;4 und dannach einen
+          &hearts;3 anlegen<a href="#Note3"><sup>3</sup></a> aber man
+          kann nicht ein &hearts;7 ablegen und daf&uuml;r den Joker in
+          seine Hand aufnehmen (allerdings kann man den 7'er ablegen
+          und der Joker wird zum 8'er oder 4'er).</p></li>
 
-      <li>Ein Joker oder 2'er als oberste Karte des abgeworfenen Stapels kann
-        niemals aufgenommen werden; auch nicht, wenn der Spieler zwei gleiche
-        Karten besitzt.</li>
+      <li><p>Ein Joker oder 2'er als oberste Karte des abgeworfenen
+          Stapels kann niemals aufgenommen werden; auch nicht, wenn
+          der Spieler zwei gleiche Karten besitzt.</p></li>
     </ul>
 
     <h3>Ende des Zuges</h3>
     <p>Kann/will der Spieler keine Karten ablegen, mu&szlig; er eine
-      (unben&ouml;tigte Karte auf den daf&uuml;r vorgesehenen
+      (unben&ouml;tigte) Karte auf den daf&uuml;r vorgesehenen
       Sto&szlig; abwerfen (durch anklicken) und der n&auml;chste
       Spieler setzt (gegen den Uhrzeigersinn) fort.</p>
 
@@ -148,7 +146,7 @@
     <p>Das Spiel endet, wenn ein Team mindestens einen "Cerrado" hat,
       bereits den "Buraco" aufgenommen hat und dann einer des Teams
       alle seine Karten loswird (dabei kann noch eine Karte auf den
-      Sto&szlig; abgeworfen werden, mu&slig; aber nicht.</p>
+      Sto&szlig; abgeworfen werden, mu&szlig; aber nicht.</p>
 
     <h2>Abrechnung</h2>
     <p>Ist das Spiel beendet, werden die Punkte gez&auml;hlt. Jeder
