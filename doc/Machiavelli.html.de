@@ -50,7 +50,7 @@
     <p>Jeder Spieler beginnt mit 7 Karten in der Hand, die restlichen
       kommen auf den Reservestapel.</p>
 
-    <p>Das Spiel wird von einem zuf&auml;llig ausgew&auml;hlten
+    <p>Das erste Spiel wird von einem zuf&auml;llig ausgew&auml;hlten
       Spieler gestart; die anderen beginnen abwechselnd die
       n&auml;chsten Spieler.</p>
 
@@ -74,7 +74,7 @@
       entsprechen.</p>
 
     <p>Abgelegt und/oder sortiert werden die Karten mit Ziehen und Ablegen -
-      drag and drop<a href="Machiavelli.html.de#Note1"><sup>1</sup></a>.
+      drag and drop<a href="#Note1"><sup>1</sup></a>.
 
     <p>Kann/will der Spieler keine Karten ablegen, setzt der
       n&auml;chste Spieler (gegen den Uhrzeigersinn) fort, der noch
@@ -97,13 +97,12 @@
 
       <li>Die Karten des Spielers. Anfangs sortiert nach Farber, aber &uuml;ber
         das Me&uuml; oder durch Ziehen und Ablegen (drag und drop)<a
-        href="Machiavelli.html.de#Note1"><sup>1</sup></a> sortierbar.</li>
+        href="#Note1"><sup>1</sup></a> sortierbar.</li>
 
       <li>Die Stapel am Tisch. Zu diesen Karten k&ouml;nnen mit Ziehen
-        und Ablegen (drag und drop)<a
-        href="Machiavelli.html.de#Note1"><sup>1</sup></a> weitere Karten
-        hinzugef&uuml;gt werden, beziehungsweise k&ouml;nnen diese an andere
-        Stapel angef&uuml;gt werden.</li>
+        und Ablegen (drag und drop)<a href="#Note1"><sup>1</sup></a> weitere
+	Karten hinzugef&uuml;gt werden, beziehungsweise k&ouml;nnen diese an
+	andere Stapel angef&uuml;gt werden.</li>
 
       <li>In der letzten Reihe sind die Karten der weiteren Spieler.</li>
     </ul>

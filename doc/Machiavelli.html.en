@@ -70,8 +70,7 @@
       the rules above.</p>
 
     <p>The cards are played and/or sorted with drag and drop<a
-      href="Machiavelli.html.en#Note1"><sup>1</sup></a>.
-
+      href="#Note1"><sup>1</sup></a>.  
     <p>If the player can't or won't continue, follows the next player
       still having cards (counter-clockwise). This end of the turn is
       indicated by clicking in the (accordingly named) button or in
@@ -91,12 +90,11 @@
         informed about the remaining cards).</li>
 
       <li>The cards of the player. Presorted by colour, but
-        re-sortable with drag and drop<a
-        href="Machiavelli.html.en#Note1"><sup>1</sup></a> or the
-        menu.</li>
+        re-sortable with drag and drop<a href="#Note1"><sup>1</sup></a> or
+	the menu.</li>
 
       <li>The piles on the table. Cards can be added to that piles
-        with drag und drop<a href="Buraco.html.en#Note1"><sup>1</sup></a> (if
+        with drag und drop<a href="#Note1"><sup>1</sup></a> (if
         it is the turn of the player). Note that both cards from the hand of
         the player as cards already on the table can be moved.</li>
 

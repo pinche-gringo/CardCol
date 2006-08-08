@@ -71,7 +71,7 @@
       cartas (y cumplir las reglas de arriba).</p>
 
     <p>Las cartas se mueve con tirar y depositar - drag and drop<a
-      href="Machiavelli.html.es#Note1"><sup>1</sup></a>)</p>
+      href="#Note1"><sup>1</sup></a>)</p>
 
     <p>Si el jugador no puede (o quiere) continuar, sigue el
       pr&oacute;ximo que sigue con cartas en su mano (contra la
@@ -94,10 +94,10 @@
 
       <li>Las cartas del jugador. Preordenado por colores, pero ordenable a
         traves del men&uacute; o con tirar y depositar - drag and drop<a
-        href="Machiavelli.html.es#Note1"><sup>1</sup></a>).</li>
+        href="#Note1"><sup>1</sup></a>).</li>
 
       <li>Las pilas por la mesa. Se puede poner cartas con tirar y
-        depositar - drag and drop<a href="Buraco.html.es#Note1"><sup>1</sup></a>
+        depositar - drag and drop<a href="#Note1"><sup>1</sup></a>
         (cuando es el turno del jugador).</li>
 
       <li>En el &uacute;ltima l&iacute;nea hay las cartas de los dem&aacute;s
