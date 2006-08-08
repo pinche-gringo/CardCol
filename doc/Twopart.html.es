@@ -50,7 +50,7 @@
     <p>En la primera parte todos los jugadores comienzan con tres
       cartas en su mano cual juegan contra la direcci&oacute;n del las
       aguajas de reloj. Las dem&aacute;s cartas se pone en el
-      mont&oacute;n de reserva.</p>
+      mont&oacute;n de reserva (con boca abaja).</p>
 
     <p>Un jugador casual empieza el juego.</p>
 
@@ -110,7 +110,7 @@
 
     <p>El &uacute;ltimo jugador que a&uacute;n tiene cartas pierde.</p>
 
-    <p>&iexcl;La barra de estado muestra que est&aacute; pasando!</p>
+    <p>&iexcl;La barra de estado muestra lo que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
     <p>Despu&eacute;s de iniciar se encuentran desplazadas las cartas (de

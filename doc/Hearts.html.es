@@ -73,7 +73,7 @@
     <p>El jugador que tiene el menor puntaje cuando alguno alcanza cien
       puntos gana.</p>
 
-    <p>&iexcl;La barra de estado muestra que est&aacute; pasando!</p>
+    <p>&iexcl;La barra de estado muestra lo que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
     <p>Despu&eacute;s de iniciar se encuentra (de izquierda a derecha y de arriba a

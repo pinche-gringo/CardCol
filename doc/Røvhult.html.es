@@ -116,7 +116,7 @@
       carta elejida no vale de acuerdo con las reglas, se tiene que
       acogerla tal cual como las dem&aacute;s jugadas.</p>
 
-    <p>&iexcl;La barra de estado muestra que est&aacute; pasando!</p>
+    <p>&iexcl;La barra de estado muestra lo que est&aacute; pasando!</p>
 
     <h2>Notas por el layout</h2>
     <p>Despu&eacute;s de iniciar se encuentran desplazadas las cartas (de
