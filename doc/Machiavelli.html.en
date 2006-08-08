@@ -37,37 +37,47 @@
     <h1 align="center">Machiavelli</h1>
     <hr size=2>
 
-    <p>I learned Machiavelli from a swiss guy, who itself learned it from
+    <p>I learned Machiavelli from a swiss bloke, who itself learned it from
       italiens (which in turn might have learned it from someone else). And
       actually I'm not even sure, if the name is right ...</p>
 
-    <p>Anyway - the rules:</p>
+    <p>Anyway, it is a shedding-type card game played by 4 sets of
+      52-card decks.</p>
 
-    <p>It's all about putting down "matching" cards and that way getting rid
-      of its cards. "Matching" means that either the numbers must be equal
-      (independend of the colour, but each colour only once) or the colour and
-      the numbers are in a sequence (Ace (as one), two, three, ..., ten,
-      jack, queen, king, ace).</p>
+    <h2>Dealing</h2>
+    <p>Every player starts with 7 cards in his hand. The remaining
+      ones are put into the deck.</p>
 
-    <p>Every pile on the table must contain at least 3 cards.</p>
+    <p>A randomly selected player starts the game; the others start
+      the next ones in turn.</p>
 
-    <p>Every player starts with 7 cards in his hand and takes another one at
-      the beginning of its turn from the pile of reserve (this happens
-      automatically by the computer). Then he can either put his cards to
-      existing piles, re-sort them however he likes, build new piles (even
-      with cards from existing piles) - in a nutshell doing as he likes, as
-      long as at the end of its turn all piles follow the rules above.</p>
+    <h2>Playing</h2>
+    <p>In the beginning of the turn the player takes a card from the
+      deck (this happens automatically).
+
+    <p>Then he can put down "matching" cards &mdash; either making a
+      new pile on the table or adding cards to existing piles &mdash;
+      and that way get rid of its cards. "Matching" means that either
+      the numbers must be equal (independend of the colour, but each
+      colour only once) or the colour and the numbers are in a
+      sequence (Ace (as one), two, three, ..., ten, jack, queen, king,
+      ace).</p>
+
+    <p>For that he can also use cards from existing piles, re-sort
+      them however he likes, build new piles (even with cards from
+      existing piles) - in a nutshell doing as he likes, as long as at
+      the end of its turn all piles have at least 3 cards and follow
+      the rules above.</p>
 
     <p>The cards are played and/or sorted with drag and drop<a
       href="Machiavelli.html.en#Note1"><sup>1</sup></a>.
 
-    <p>If the player can't or won't continue, continues the next player still
-      having cards (counter-clockwise). This end of the turn is indicated by clicking
-      in the pile of the reserve. If there are piles in an invalid condition
-      appears a window with an error message. This window also allows an undo
-      of the last or all actions in the actual turn.</p>
+    <p>If the player can't or won't continue, follows the next player
+      still having cards (counter-clockwise). This end of the turn is
+      indicated by clicking in the (accordingly named) button or in
+      the pile of the reserve.</p>
 
-    <p>The last player still having cards has lost.</p>
+    <p>The last player still having cards loses.</p>
 
     <p>The status line gives some information about what's going on!</p>
 
@@ -76,19 +86,21 @@
       bottom):</p>
 
     <ul>
-      <li>The pile of reserve: A heap of cards (with face down), from where
-        you put up new cards (if you put the mouse over it you are informed
-        about the remaining cards).</li>
+      <li>The deck: A heap of cards (with face down), from where you
+        take up new cards (if you put the mouse over it you are
+        informed about the remaining cards).</li>
 
-      <li>The cards of the player. Presorted by colour, but re-sortable with
-        drag and drop<a href="Machiavelli.html.en#Note1"><sup>1</sup></a>.</li>
+      <li>The cards of the player. Presorted by colour, but
+        re-sortable with drag and drop<a
+        href="Machiavelli.html.en#Note1"><sup>1</sup></a> or the
+        menu.</li>
 
       <li>The piles on the table. Cards can be added to that piles
         with drag und drop<a href="Buraco.html.en#Note1"><sup>1</sup></a> (if
         it is the turn of the player). Note that both cards from the hand of
         the player as cards already on the table can be moved.</li>
 
-      <li>In the last row are the cards of the other (computer) player.</li>
+      <li>In the last row are the cards of the other players.</li>
      </ul>
 
     <hr size=1 noshade>

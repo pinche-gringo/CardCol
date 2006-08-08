@@ -41,30 +41,43 @@
       italianos (cual de su parte tal vez lo aprendieron de los
       dem&aacute;s). Y ten cierto estoy sobre su nombre ...</p>
 
-    <p>Sea lo que sea - las reglas:</p>
+    <p>Se juega con cuatro juegos de cartas (52 por juego). En pocas
+      palabras se trata de deshacerse de sus cartas poni&eacute;ndolas
+      en pilas en la mesa.</p>
 
-    <p>En pocas palabras se trata de descartar de cartas "apropiadas" (con la
-      ayuda de su parejea) y por eso quitarse de sus cartas. "Apropiado"
-      significa que o los n&uacute;meros est&aacute;n iguales (independente de
-      su color, pero cada color solamente una vez) o los colores est&aacute;n
-      iguales y los n&uacute;meros est&aacute;n en orden (As (como uno), dos,
-      tres, ..., diez, J, Q, K, as).</p>
+    <h2>Reparto inicial</h2>
+    <p>Los jugadores consiguen siete cartas en su mano. Los
+      dem&aacute;s se pone en el mont&oacute;n de reserva.</p>
 
-    <p>Cada mot&oacute;n por la mesa debe que tener por lo menos 3 cartas.</p>
+    <p>Empieza un jugador casual; los dem&aacute;s juegos empiezen los
+      dem&aacute;s en turno.</p>
 
-    <p>Los jugadores empiezan con siete cartas en su mano. Cada turno empieza
-      con cortar una carta de la reserva (pasa automaticamente).
-       Despu&eacute;s puede a&ntilde;adirlas a las pilas por la mesa,
-      resortearlas como quiere, crece pilas nuevas (tambi&eacute;n con cartas
-      ya existentes por la mesa) - en corto, hacer como quiere, si al fin del
-      turno todas las pilas est&aacute;n de acuerdo a las reglas de arriba.</p>
+    <h2>El juego</h2>
+    <p>Al prinicipio de su turno el jugador corta una carta del
+      mont&oacute;n de reserva (pasa automaticamente).</p>
+
+    <p>Despu&eacute;s puede poner cartas "apropiadas" o haciendo una
+      nueva pila en la mesa o a pilas ya existentes y as&iacute;
+      deshacerse de sus cartas. "Apropiado" significa que o los
+      n&uacute;meros est&aacute;n iguales (independente de su color,
+      pero cada color solamente una vez) o los colores est&aacute;n
+      iguales y los n&uacute;meros est&aacute;n en orden (As (como
+      uno), dos, tres, ..., diez, J, Q, K, as).</p>
+
+    <p>Para lograr esa meta tambi&eacute;n puede usar cartas que ya
+      est&aacute;n en la mesa, resortearlas de cualquier modo
+      (inclusivo hacer nuevas pilas o eliminarlas). Solamente al fin
+      de su jugada cada pile en la mesa debe que tener por lo menos 3
+      cartas (y cumplir las reglas de arriba).</p>
 
     <p>Las cartas se mueve con tirar y depositar - drag and drop<a
       href="Machiavelli.html.es#Note1"><sup>1</sup></a>)</p>
 
-    <p>Si el jugador no puede (o quiere) continuar, continua el pr&oacute;ximo
-      jugador que sigue con cartas en su mano (contra del sentido de las aguajas de reloj). El
-      fin del turno se indica con hacer clic en el mot&oacute;n de reserva.</p>
+    <p>Si el jugador no puede (o quiere) continuar, sigue el
+      pr&oacute;ximo que sigue con cartas en su mano (contra la
+      direcci&oacute;n de las aguajas de reloj). El fin del turno se
+      indica con hacer clic en el but&oacute;n "Fin del turno" o en el
+      mot&oacute;n de reserva.</p>
 
     <p>El &uacute;ltimo jugador con cartas pierde.</p>
 
@@ -79,13 +92,13 @@
         cartas nuevas (si se pone la mouse por encima, aparece una ventana
         mostrando su n&uacute;mero de las cartas).</li>
 
-      <li>Las cartas del jugador. Presorteado por colores, pero sorteable con
-        tirar y depositar - drag and drop <a
+      <li>Las cartas del jugador. Preordenado por colores, pero ordenable a
+        traves del men&uacute; o con tirar y depositar - drag and drop<a
         href="Machiavelli.html.es#Note1"><sup>1</sup></a>).</li>
 
-      <li>Las pilas por la mesa. Se puede poner cartas con tirar y depositar -
-        drag and drop <a href="Buraco.html.es#Note1"><sup>1</sup></a> (si es
-        el turno del jugador).</li>
+      <li>Las pilas por la mesa. Se puede poner cartas con tirar y
+        depositar - drag and drop<a href="Buraco.html.es#Note1"><sup>1</sup></a>
+        (cuando es el turno del jugador).</li>
 
       <li>En el &uacute;ltima l&iacute;nea hay las cartas de los dem&aacute;s
         juegadores.</li> </ul>
