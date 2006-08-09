@@ -30,6 +30,7 @@
 #ifdef HAVE_LIBPTHREAD
 
 #include <string>
+#include <sstream>
 
 #include <gtkmm/messagedialog.h>
 
@@ -45,6 +46,22 @@
 
 #include "ChatDlg.h"
 #include "GameTypes.h"
+
+#ifdef WITH_HEARTS
+#  include "Hearts.h"
+#endif
+#ifdef WITH_BURACO
+#  include "Buraco.h"
+#  include "BuracoCards.h"
+#endif
+#ifdef WITH_ROVHULT
+#  include "Rovhult.h"
+#  include "CardValue.h"
+#endif
+#ifdef WITH_SGTMAYOR
+#  include "SgtMayor.h"
+#endif
+
 
 #include "CardCol.h"
 #include "CardColAppl.h"
@@ -233,9 +250,9 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
    if (cmd == "Game") {
       int type (CardgameAppl::convertToGameType (param.c_str ()));
       if (type == GameTypes::NONE) {
-         std::string msg (_("Invalid game type: `%1'"));
-         msg.replace (msg.find ("%1"), 2, param);
-         throw YGP::ParseError (msg);
+         cmd = _("Invalid game type: `%1'");
+         cmd.replace (cmd.find ("%1"), 2, param);
+         throw YGP::ParseError (cmd);
       }
 
       actGame = type;
@@ -289,6 +306,53 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
 	    aPlayer[pos++ % aPlayer.size ()]->setName (split.getActNode ());
 	 }
       }
+   }
+   else if (cmd == "Settings") {
+      YGP::AttributeParse ap;
+#if !defined (WITH_BURACO) || !defined (WITH_HEARTS) || !defined (WITH_ROVHULT) || !defined (WITH_SGTMAYOR)
+      unsigned int temp;
+#endif
+#ifdef WITH_BURACO
+      MEATTRIBUTE (ap, BuracoCards::get (), Buraco::CARDS2DEAL, "BCards");
+      ATTRIBUTE (ap, unsigned int, Buraco::ENDPOINTS, "BPoints");
+#else
+      ATTRIBUTE (ap, unsigned int, temp, "BCards");
+      ATTRIBUTE (ap, unsigned int, temp, "BPoints");
+#endif
+#ifdef WITH_HEARTS
+      ATTRIBUTE (ap, unsigned int, Hearts::ENDPOINTS, "HPoints");
+#else
+      ATTRIBUTE (ap, unsigned int, temp, "HPoints");
+#endif
+#ifdef WITH_ROVHULT
+      MEATTRIBUTE (ap, CardValue::get (), (unsigned int&)Rovhult::cardNuke, "RCardNuke");
+      MEATTRIBUTE (ap, CardValue::get (), (unsigned int&)Rovhult::cardReverse, "RCardReverse");
+      MEATTRIBUTE (ap, CardValue::get (), (unsigned int&)Rovhult::cardSkip, "RCardSkip");
+#else
+      ATTRIBUTE (ap, unsigned int, temp, "RCardNuke");
+      ATTRIBUTE (ap, unsigned int, temp, "RCardReverse");
+      ATTRIBUTE (ap, unsigned int, temp, "RCardSkip");
+#endif
+#ifdef WITH_SGTMAYOR
+      ATTRIBUTE (ap, unsigned int, SgtMayor::ENDTRICKS, "STricks");
+#else
+      ATTRIBUTE (ap, unsigned int, temp, "STricks");
+#endif
+      TRACE1 ("New points: " << Buraco::ENDPOINTS);
+
+      try {
+	 TRACE1 ("Param: " << std::string (msg, msg.find ('=')));
+	 ap.assignValues (std::string (msg, msg.find ('=')));
+      }
+      catch (YGP::ParseError& e) {
+         cmd = _("Invalid settings: `%1'!\n\n%2");
+         cmd.replace (cmd.find ("%1"), 2, param);
+         cmd.replace (cmd.find ("%2"), 2, e.what ());
+         throw YGP::ParseError (cmd);
+      }
+
+      if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
+	 sendSettings ();
    }
    else if (cmd == "Error") {
       if (param != "0") {
@@ -474,6 +538,36 @@ void CardgameCollection::broadcastNames () {
       msg += aPlayer[0]->getName ();
 
    broadcastMsg (msg);
+}
+
+//-----------------------------------------------------------------------------
+/// Sends the changed settings to the clients
+//-----------------------------------------------------------------------------
+void CardgameCollection::sendSettings () {
+   if (cmgr.getMode () != YGP::ConnectionMgr::NONE) {
+      std::ostringstream msg;
+      msg << "Settings=";
+
+#ifdef WITH_BURACO
+      msg << "BCards=" << BuracoCards::get ()[Buraco::CARDS2DEAL]
+	  << ";BPoints=" << Buraco::ENDPOINTS << ';';
+#endif
+
+#ifdef WITH_HEARTS
+      msg << "HPoints=" << Hearts::ENDPOINTS << ';';
+#endif
+
+#ifdef WITH_ROVHULT
+      msg << "RCardNuke=" << CardValue::get ()[Rovhult::cardNuke]
+	  << ";RCardReverse=" << CardValue::get ()[Rovhult::cardReverse]
+	  << ";RCardSkip=" << CardValue::get ()[Rovhult::cardSkip] << ';';
+#endif
+#ifdef WITH_SGTMAYOR
+      msg << "STricks=" << SgtMayor::ENDTRICKS << ';';
+#endif
+
+      broadcastMsg (msg.str ());
+   }
 }
 
 #endif
