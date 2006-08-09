@@ -1025,14 +1025,20 @@ void CardgameCollection::showChangeDeckDlg () {
 /// Opens a dialog allowing to change the names of the players
 //-----------------------------------------------------------------------------
 void CardgameCollection::changeNames () {
-   PlayerDlg<CardgameCollection>::create (*this, &CardgameCollection::changePlayernames, aPlayer);
+   PlayerDlg* dlg (PlayerDlg::create (aPlayer));
+   dlg->sigCommit.connect (mem_fun (*this, &CardgameCollection::changePlayernames));
+   dlg->get_window ()->set_transient_for (get_window ());
 }
 
 //-----------------------------------------------------------------------------
 /// Edits the preferences
 //-----------------------------------------------------------------------------
 void CardgameCollection::editPreferences () {
-   Settings::create (get_window (), options);
+   Settings::create (get_window (), options)
+#ifdef HAVE_LIBPTHREAD
+      ->sigCommit.connect (mem_fun (*this, &CardgameCollection::sendSettings))
+#endif
+      ;
 }
 
 //-----------------------------------------------------------------------------
@@ -1416,7 +1422,7 @@ void CardgameCollection::checkRovhultSpecialCards () {
 	    Rovhult::cardReverse = CardWidget::SEVEN;
 	    Rovhult::cardSkip = CardWidget::EIGHT;
 
-	    Gtk::MessageDialog* dlg (new Gtk::MessageDialog (_("Invalid values for Rovhults special cards!\n"
+	    Gtk::MessageDialog* dlg (new Gtk::MessageDialog (_("Invalid values for Rovhult's special cards!\n"
 							       "Resetting them to default values."), false, Gtk::MESSAGE_ERROR));
 	    dlg->set_title (PACKAGE);
 	    dlg->signal_response ().connect

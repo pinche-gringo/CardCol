@@ -117,6 +117,7 @@ class CardgameCollection : public XGP::XApplication {
    void sendMessage (const Glib::ustring& msg);
    void broadcastMsg (const std::string& msg, unsigned int exclude = -1U);
    void broadcastNames ();
+   void sendSettings ();
 #endif
    void exit ();
    void changeGame (int game);
