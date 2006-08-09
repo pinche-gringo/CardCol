@@ -47,6 +47,9 @@ class Settings : public XGP::XDialog {
 
    static Settings* create (const Glib::RefPtr<Gdk::Window>& parent, Options& options);
 
+   /// Signal emitted, when OK clicked
+   sigc::signal<void> sigCommit;
+
  protected:
    Settings (Options& options);
 

@@ -33,24 +33,27 @@ class Player;
 
 
 // Class to enter the names of the players
-class IPlayerDlg : public XGP::XDialog {
+class PlayerDlg : public XGP::XDialog {
  public:
-   IPlayerDlg (std::vector<Player*>& player);
-   virtual ~IPlayerDlg ();
+   PlayerDlg (std::vector<Player*>& player);
+   virtual ~PlayerDlg ();
 
-   static IPlayerDlg* create (std::vector<Player*>& player) {
-      IPlayerDlg* dlg (new IPlayerDlg (player));
-      dlg->signal_response ().connect (mem_fun (*dlg, &IPlayerDlg::free));
+   static PlayerDlg* create (std::vector<Player*>& player) {
+      PlayerDlg* dlg (new PlayerDlg (player));
+      dlg->signal_response ().connect (mem_fun (*dlg, &PlayerDlg::free));
       return dlg;
    }
+
+   /// Signal emitted, when OK clicked
+   sigc::signal<void> sigCommit;
 
  protected:
    virtual void okEvent ();
 
  private:
    //Prohibited manager functions
-   IPlayerDlg (const IPlayerDlg& other);
-   const IPlayerDlg& operator= (const IPlayerDlg& other);
+   PlayerDlg (const PlayerDlg& other);
+   const PlayerDlg& operator= (const PlayerDlg& other);
 
    Gtk::Table* pClient;
 
@@ -66,40 +69,6 @@ class IPlayerDlg : public XGP::XDialog {
 
    std::vector<line*>    aPlayers;
    std::vector<Player*>& values;
-};
-
-
-// Class to enter the names of the players with a callback to inform about the
-// changes.
-template <class T>
-class PlayerDlg : public IPlayerDlg {
- public:
-   typedef void (T::*PCALLBACK) ();
-
-   PlayerDlg (T& parent, PCALLBACK callback, std::vector<Player*>& player)
-      : IPlayerDlg (player), obj (parent), pCallback (callback) { }
-   virtual ~PlayerDlg () { }
-   
-   static PlayerDlg* create (T& parent, PCALLBACK callback,
-                             std::vector<Player*>& player) {
-      PlayerDlg<T>* dlg (new PlayerDlg (parent, callback, player));
-      dlg->signal_response ().connect (mem_fun (*dlg, &PlayerDlg<T>::free));
-      dlg->get_window ()->set_transient_for (parent.get_window ());
-      return dlg;
-   }
-
- protected:
-   virtual void okEvent () {
-      IPlayerDlg::okEvent ();
-      (obj.*pCallback) (); }
-
- private:
-   PlayerDlg ();
-   PlayerDlg (const PlayerDlg&);
-   PlayerDlg& operator= (const PlayerDlg&);
-
-   T& obj;
-   PCALLBACK pCallback;
 };
 
 #endif

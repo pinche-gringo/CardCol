@@ -221,6 +221,8 @@ void Settings::okEvent () {
 #ifdef WITH_BURACO
     Buraco::CARDS2DEAL = BuracoCards::get ()[numBuracoCards.get_active_text ()];
 #endif
+
+    sigCommit.emit ();
 }
 
 //-----------------------------------------------------------------------------
