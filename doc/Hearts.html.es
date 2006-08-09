@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,48 +30,60 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-10">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2006, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
     <h1 align="center">Corazones</h1>
     <hr size=2>
-    <p>Corazones es un juego inclu&iacute;do con alguna(s) version(es) de un sistema
-      operativo popular.  ...</p>
+    <p>Corazones es un juego inclu&iacute;do en algunas versiones de
+      un sistema operativo popular. Se le juega con 52 cartas.</p>
 
-    <p>Los cuatro jugadores tienen trece cartas. El objetivo es terminar
-      la partida sin conseguir ni un coraz&oacute;n ni siquiera la reina de
-      espadas (o conseguir todas esas cartas).</p>
+    <p>En pocas palabras se trata de evitar de hacer puntos, cuales se
+      consiegue ganando bazas con ciertas cartas.</p>
 
-    <p>El juego empieza con seleccionar tres cartas para pasarlas a
-      otro jugador (excepto en la cuarta mano, cuando no se cambia cartas).
-      Despu&eacute;s del intercambio, comienza el jugador que tenga el dos
-      de tr&eacute;boles (con esa carta misma).</p>
+    <h2>Reparto inicial/Intercambio de cartas</h2>
+    <p>Los cuatro jugadores consieguen trece cartas en su mano.</p>
 
-    <p>Los jugadores siguen contra la direcci&oacute;n de las agujas del reloj. &Eacute;l
-      que jug&oacute; la carta m&aacute;s alta (con el palo de la primera carta)
-      consigue las cartas jugadas y comenzar&aacute; el pr&oacute;ximo turno.</p>
+    <p>En la mayor&iacute;a de los turnos se cambia 3 cartas. En el
+      primer turno con el jugador a la izquierda, en es segundo hacia
+      la dereche y el tercer al frente. No hay ning&uacute;n cambio en
+      el cuatro turno, despu&eacute;s se lo repite.</p>
 
-    <p>Si no hay m&aacute;s cartas, se cuenta el n&uacute;mero de los puntos (malos).
-      Cada coraz&oacute;n recibido cuenta un punto y trece puntos para la reina
-      de espadas. Si un jugador recibi&oacute; todas esas cartas (tendr&iacute;a
-      26 puntos), los puntos se invierten y no conseguir&aacute;
-      ni un punto y los dem&aacute;s 26.</p>
+    <h2>El juego</h2>
+    <p>Despu&eacute;s del intercambio, comienza el jugador que tenga el dos
+      de tr&eacute;boles (con esa carta misma). Cualquier carta sirve
+      para empezar los dem&aacute;s turnos.</p>
 
-    <p>El juego termina (o recomienza) si uno de los jugadores alcanza cien puntos.</p>
+    <p>Los jugadores contin&uacute;an contra la direcci&oacute;n de
+      las agujas del reloj, siguiendo la pinta. Si no tienen cartas
+      con esa pinta pueden echar cualquier carta.  &Eacute;l que
+      jug&oacute; la carta m&aacute;s alta (con el palo de la primera
+      carta) consigue las cartas jugadas y comenzar&aacute; el
+      pr&oacute;ximo turno.</p>
 
     <p>Hay otras reglas en el juego:</p>
 
     <ul>
-      <li>La carta jugada tiene que tener el mismo palo como la primera (si hay).</li>
-      <li>Una mano no se puede comenzer con un coraz&oacute;n, si no han jugado
-        en turnos anteriores.</li>
+      <li>Una mano no se puede comenzer con un coraz&oacute;n, si no
+        han jugado en turnos anteriores.</li>
+
       <li>En la primera mano no se puede jugar ni un coraz&oacute;n ni la reina
         de espadas.</li>
     </ul>
 
-    <p>El jugador que tiene el menor puntaje cuando alguno alcanza cien
-      puntos gana.</p>
+    <h2>Puntaci&oacute;n</h2>
+    <p>Si no hay m&aacute;s cartas, se cuenta el n&uacute;mero de los
+      puntos (malos).  Cada coraz&oacute;n recibido vale un punto y
+      trece puntos la reina de espadas. Si un jugador
+      recibi&oacute; todas esas cartas (tendr&iacute;a 26 puntos), los
+      puntos se invierten y no conseguir&aacute; ni un punto y los
+      dem&aacute;s 26 (eso se llama "disparando la luna".</p>
+
+    <p>El juego termina si uno de los jugadores alcanza a los cien<a
+      href="#Note1"><sup>1</sup></a> puntos.</p>
+
+    <p>El jugador que tiene el menor puntaje gana.</p>
 
     <p>&iexcl;La barra de estado muestra lo que est&aacute; pasando!</p>
 
@@ -83,12 +95,18 @@
       <li>Las cartas del jugador humano. Por arriba sus cartas ganadas encima de
         sus cartas en su mano. Se puede chequearlas con hacer clic en ellas; hacer
         clic con la tecla derecha permite sortearlas.</li>
+
       <li>En la l&iacute;nea pr&oacute;xima es lo mismo con los jugadores 1 y 3. Entre ellos se
         encuentran las cartas jugadas.</li>
+
       <li>En la l&iacute;nea &uacute;ltima est&aacute;n las cartas del jugador 2.</li>
     </ul>
 
-    <hr size=2 noshade>
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      Ese valor se puede cambiar en los propiedades.</p>
+
+    <hr size=3 noshade>
     <table width="100%">
       <tr>
         <td width="*">

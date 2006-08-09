@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,49 +30,59 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-10">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2006, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
     <h1 align="center">Hearts</h1>
     <hr size=2>
-    <p>Hearts ist ein in mehreren (?) Versionen eines popul&auml;ren Betriebssystems
-      vorhandenes Spiel. Aber genug, woher ich die Idee dazu hatte ...</p>
+    <p>Hearts ist ein in mehreren Versionen eines popul&auml;ren
+      Betriebssystems vorhandenes Spiel. Es wird mit einem 52-Karten
+      umfassenden Deck gespielt.</p>
 
-    <p>Jeder der vier Spieler beginnt mit dreizehn Karten. Das Ziel ist entweder
-      alle loszuwerden, ohne dabei ein Herz oder die Pik-Dame zu bekommen - oder
-      alle dieser Karten zu erobern.</p>
+    <p>Kurz zusammengefa&szlig;t geht es darum, Punkte zu vermeiden,
+      die man bekommt, wenn man Stiche mit bestimmten Karten gewinnt.</p>
 
-    <p>Das Spiel start mit dem Tasuch von drei Karten mit einem anderen Spieler
-      (au&szlig;er im vierten Umlauf - da werden keine Karten getauscht). Der
-      Spieler der anschlie&szlig;end die Kreuz-2 hat, beginnt das Spiel (mit
-      eben jener Karte).</p>
+    <h2>Karten austeilen/tauschen</h2>
+    <p>Jeder der vier Spieler beginnt mit dreizehn Karten in der Hand.</p>
 
-    <p>Die Spieler setzen gegen Uhrzeigersinn fort. Der Spieler mit der h&ouml;chsten
-      Karte (der zuerst gespielten Farbe) bekommt den gespielten Stapel und
-      startet die n&auml;chste Runde.</p>
+    <p>In den meisten Runden werden anfangs jeweils 3 Karten
+      getauscht. In der ersten Runde nach links, in der zweiten Runde
+      nach links und in der dritten mit dem Gegen&uuml;ber. In der
+      vierten Runde wird nicht getauscht, dananch beginnt es von vorne.</p>
 
-    <p>Wenn keine Karten mehr &uuml;brig sind, werden die (Fehler-)Punkte
-      gez&auml;hlt. Jedes Herz z&auml;hlt einen Punkt und die Pik-Dame 13.
-      Wenn ein Spieler alle dieser Karten hat (und daher 26 Punkte bek&auml;me),
-      werden die Punkte umgedreht: Keinen f&uuml;r ihn und jeweils 26 f&uuml;r
-      alle anderen.</p>
+    <h2>Das Spiel</h2>
+    <p>Der Spieler der anschlie&szlig;end die Kreuz-2 hat, beginnt das
+      Spiel (mit eben jener Karte). Die anderen Runden k&ouml;nnen mit
+      jeder beliebigen Karte er&ouml;ffnet werden.</p>
 
-    <p>Das Spiel endet, wenn einer der Spieler 100 Punkte erreicht hat.</p>
+    <p>Die Spieler setzen gegen Uhrzeigersinn fort. Dabei besteht
+      Farbzwang, sonst kann man eine beliebige Karte abwerfen. Der
+      Spieler mit der h&ouml;chsten Karte der zuerst gespielten Farbe
+      gewinnt den Stich und startet die n&auml;chste Runde.</p>
 
     <p>W&auml;hrend des Spieles gibt es einige Regeln:</p>
 
     <ul>
-      <li>Die gespielten Karten m&uuml;ssen die gleiche Farbe wie die zuerst gespielte
-        aufweisen (wenn vorhanden).</li>
-      <li>Eine Runde kann nicht mit einem Herz begonnen werden, wenn diese noch
-        nicht gespielt wurden.</li>
+      <li>Eine Runde kann nicht mit einem Herz begonnen werden, wenn
+        diese noch nicht gespielt wurden.</li>
+
       <li>In der ersten Runde kann weder die Pik-Dame noch ein Herz gespielt
         werden.</li>
     </ul>
 
-    <p>Der Spieler mit den wenigsten Punkten (wenn jemand 100 Punkte erreicht hat),
-      hat gewonnen.</p>
+    <h2>Abrechnung</h2>
+    <p>Wenn keine Karten mehr &uuml;brig sind, werden die
+      (Fehler-)Punkte gez&auml;hlt. Jedes Herz z&auml;hlt einen Punkt
+      und die Pik-Dame 13.  Wenn ein Spieler alle dieser Karten
+      gewonnen hat (und daher 26 Punkte bek&auml;me), werden die
+      Punkte umgedreht: Keinen f&uuml;r ihn und jeweils 26 f&uuml;r
+      alle anderen. Dies wird "den Mond abschie&szlig;en" genannt.</p>
+
+    <p>Das Spiel endet, wenn einer der Spieler 100 Punkte<a
+      href="#Note1"><sup>1</sup></a> erreicht hat.</p>
+
+    <p>Der Spieler mit den wenigsten Punkten, hat gewonnen.</p>
 
     <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
 
@@ -81,15 +91,22 @@
       unten):</p>
 
     <ul>
-      <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb, darunter die in
-        seiner Hand. Die gewonnenen Karten k&ouml;nnen durch Anklicken betrachtet
-        werden; ein Rechts-Klick erm&ouml;glicht zu&auml;tzlich sortieren.</li>
-      <li>In der n&auml;chsten Reihe befinden sich die Karten der Computer-Spieler
+      <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb,
+        darunter die in seiner Hand. Die gewonnenen Karten k&ouml;nnen
+        durch Anklicken betrachtet werden; ein Rechts-Klick
+        erm&ouml;glicht zu&auml;tzlich sortieren.</li>
+
+      <li>In der n&auml;chsten Reihe befinden sich die Karten der Spieler
         1 und 3. Zwischen ihnen ist der Stapel der gespielten Karten.</li>
-      <li>In der letzten Reihe sind die Karten von Computer-Spieler 2.</li>
+
+      <li>In der letzten Reihe sind die Karten von Spieler 2.</li>
     </ul>
 
-    <hr size=2 noshade>
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      Dies kann im Eigenschaften-Fenster ge&auml;ndert werden.</p>
+
+    <hr size=3 noshade>
     <table width="100%">
       <tr>
         <td width="*">

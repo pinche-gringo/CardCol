@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 
 <!--
-  Copyright (C) 2003 - 2005 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2006 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -30,48 +30,61 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2002-12-31">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2005, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2006, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
     <h1 align="center">Hearts</h1>
     <hr size=2>
-    <p>Hearts is a game included with some version(s) of a quite popular
-      operating system. Enough said about where I got the idea for it ...</p>
+    <p>Hearts is a trick-taking card game, played with a standard deck
+      of 52 playing cards. The game is also known by other names,
+      including Black Lady, Black Widow, Chase the Lady, Slippery
+      Anne, Ricketty Kate and Slippery Bitch.</p>
 
-    <p>Every one of the four players start with thirteen cards. The goal is either to
-      get rid of them without getting any of the hearts or the queen of spades
-      or to collect all of them.</p>
+    <p>The object of Hearts is to avoid scoring points which one
+      gets by taking certain cards in tricks. When one person scores a
+      pre-specified amount (usually 100) the game is over, and the
+      winner is the person with the lowest score.</p>
 
-    <p>The game is started by selecting three cards which should be given to some
-      other player (except every fourth turn, where one don't exchange cards).
-      After that exchange it starts the player having the two of clubs (with
-      exactly that card).</p>
+    <h2>Dealing/Exchange</h2>
+    <p>Every one of the four players start with thirteen cards.</p>
 
-    <p>The player continue counter-clockwise. At the end of the turn
-      the player who played the highest card (with the colour of the
-      first one) gets the played pile starts the next turn.</p>
+    <p>In most rounds, each player passes three cards to another
+      player; to the left (1st round), to the right (2nd rount) and
+      across (3rd round). In the 4th round there's no passing, then
+      the cycle is repeated.</p>
 
-    <p>If there are no cards left the number of (bad) points are counted. Each
-      heart counts as one point and the queen of spade counts thirteen points. If a
-      player happens to have got all of them (and therefore would have 26
-      points), the score is reversed, meaning he got 0 points and all of the
-      others 26.</p>
+    <h2>Playing</h2>
+    <p>It starts the player having the two of clubs (with playing
+      exactly that card). The other hands can be lead by any card.</p>
 
-    <p>The game ends (or restarts), if one of the player reaches 100 points.</p>
+    <p>The player continue counter-clockwise, following suit, if able
+      or else any other card.</p>
+
+    <p>The player who played the highest card (of the leading colour)
+      gets the played pile and starts the next hand.</p>
 
     <p>There are a few rules during the game:</p>
 
     <ul>
-      <li>The played card must have the same colour as the first played one (if
-        available).</li>
       <li>A turn can not be started with a heart, if they haven't been played
         before.</li>
       <li>In the first turn neither the queen of spades nor a heart can be
         played.</li>
     </ul>
 
-    <p>The player having the least points when one reaches 100 points has won.</p>
+    <h2>Scoring</h2>
+    <p>If there are no more cards left the number of (bad) points are
+      counted. Each heart counts as one point and the queen of spade
+      counts thirteen points. If a player happens to have got all of
+      them (and therefore would have 26 points, aka "shooting the
+      moon"), the score is reversed, meaning he got 0 points and all
+      of the others 26.</p>
+
+    <p>The game ends, if one of the player reaches 100<a
+      href="#Note1"><sup>1</sup></a> points.</p>
+
+    <p>The player with the lowest score has won.</p>
 
     <p>The status line gives some information about what's going on!</p>
 
@@ -83,12 +96,18 @@
       <li>The cards of the human player. On top his won cards, below the cards in
         his hand. The won cards can be inspected by clicking on them;
         right-clicking allows to sort them.</li>
-      <li>In the next line it's the same with computer players 1 and 3. In
+
+      <li>In the next line it's the same with players 1 and 3. In
         between them there's the played pile.</li>
-      <li>In the last line there are the cards of computer player 2</li>
+
+      <li>In the last line there are the cards of player 2</li>
     </ul>
 
-    <hr size=2 noshade>
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      This can be changed in the settings dialog.</p>
+
+    <hr size=3 noshade>
     <table width="100%">
       <tr>
         <td width="*">
