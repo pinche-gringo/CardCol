@@ -198,7 +198,7 @@ void Hearts::start () {
          unsigned int player;
          int points;
          pScoreDlg->getMaxPoints (points, player);
-         if (points >= ENDPOINTS) {
+         if ((unsigned int)points >= ENDPOINTS) {
              delete pScoreDlg;
              pScoreDlg = NULL;
          }
@@ -457,7 +457,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       unsigned int player;
       int points;
       pScoreDlg->getMaxPoints (points, player);
-      if (points >= ENDPOINTS) {
+      if ((unsigned int)points >= ENDPOINTS) {
          stat = _("Game ended; %1 won");
          pScoreDlg->getMinPoints (points, player);
 
