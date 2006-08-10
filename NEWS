@@ -1,3 +1,13 @@
+Overview of changes in version 0.7.60:
+
+  - Røvhult got changeable settings
+  - Buraco got a setting for the number of cards at start
+  - Hearts got a setting for the endpoints
+  - Playing Sgt. Mayor in a 6-3-8 style (as described in Wikipedia)
+  - PlayerDlg uses signals to inform about user-interaction
+  - Improved documentation
+
+
 Overview of changes in version 0.7.54:
 
   - Fixed message in Buraco when player tries to end with unfished mono-piles
