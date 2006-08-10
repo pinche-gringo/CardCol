@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.7 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2006-08-08 22:35-0400\n"
+"POT-Creation-Date: 2006-08-09 21:05-0400\n"
 "PO-Revision-Date: 2005-05-13 12:09-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -364,7 +364,7 @@ msgstr ""
 msgid "Do you really want to end the game?"
 msgstr "Soll das Spiel wirklich beendet werden?"
 
-#: src/CardCol.cpp:1079
+#: src/CardCol.cpp:1085
 msgid ""
 "Couldn't save options (to file %1)!\n"
 "\n"
@@ -374,11 +374,11 @@ msgstr ""
 "\n"
 "Ursache: %1"
 
-#: src/CardCol.cpp:1092
+#: src/CardCol.cpp:1098
 msgid "A game is running. Do you really want to quit?"
 msgstr "Ein Spiel läuft bereits. Soll wirklich abgebrochen werden?"
 
-#: src/CardCol.cpp:1172
+#: src/CardCol.cpp:1178
 msgid ""
 "Copyright (C) 2002 - 2006 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
@@ -390,19 +390,19 @@ msgstr ""
 "\n"
 "Übersetzt am %1 um %2"
 
-#: src/CardCol.cpp:1300
+#: src/CardCol.cpp:1306
 msgid "User canceled"
 msgstr "Benutzer hat abgebrochen"
 
-#: src/CardCol.cpp:1328
+#: src/CardCol.cpp:1334
 msgid "Loading cardimages ..."
 msgstr "Lade Kartenbilder ..."
 
-#: src/CardCol.cpp:1347
+#: src/CardCol.cpp:1353
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Starte ein neues Spiel mit Strg+N (oder Spiel -> Neu)"
 
-#: src/CardCol.cpp:1419
+#: src/CardCol.cpp:1425
 msgid ""
 "Invalid values for Rovhult's special cards!\n"
 "Resetting them to default values."
@@ -410,21 +410,21 @@ msgstr ""
 "Ungültige Werte für Røvhult's Spezialkarten!\n"
 "Verwende Defaultwerte."
 
-#: src/CardColNet.cpp:60
+#: src/CardColNet.cpp:77
 msgid "Stop waiting for the server to start the game and start a local one?"
 msgstr ""
 "Soll nicht mehr auf den Server gewartet und ein lokales Spiel anfangen "
 "werden?"
 
-#: src/CardColNet.cpp:100
+#: src/CardColNet.cpp:117
 msgid "Waiting for the server to start the game ..."
 msgstr "Warte, daß der Server das Spiel startet ..."
 
-#: src/CardColNet.cpp:142 src/CardColNet.cpp:174
+#: src/CardColNet.cpp:159 src/CardColNet.cpp:191
 msgid "Lost connection to %1!"
 msgstr "Verbindung zu %1 verloren!"
 
-#: src/CardColNet.cpp:167
+#: src/CardColNet.cpp:184
 msgid ""
 "Error receiving data!\n"
 "\n"
@@ -434,19 +434,26 @@ msgstr ""
 "\n"
 "Ursache: %1"
 
-#: src/CardColNet.cpp:236
+#: src/CardColNet.cpp:253
 msgid "Invalid game type: `%1'"
 msgstr "Ungültiger Spieltyp: '%1'"
 
-#: src/CardColNet.cpp:266 src/CardColNet.cpp:305
+#: src/CardColNet.cpp:283 src/CardColNet.cpp:369
 msgid "Invalid message received!"
 msgstr "Ungültigen Nachricht empfangen!"
 
-#: src/CardColNet.cpp:302
+#: src/CardColNet.cpp:348
+msgid ""
+"Invalid settings: `%1'!\n"
+"\n"
+"%2"
+msgstr "Ungültige Einstellungen: '%1'"
+
+#: src/CardColNet.cpp:366
 msgid "Unspecified error"
 msgstr "Unbekannter Error"
 
-#: src/CardColNet.cpp:308
+#: src/CardColNet.cpp:372
 msgid ""
 "%1 send error %2\n"
 "\n"
@@ -456,11 +463,11 @@ msgstr ""
 "\n"
 "%3"
 
-#: src/CardColNet.cpp:311
+#: src/CardColNet.cpp:375
 msgid "The server"
 msgstr "Server"
 
-#: src/CardColNet.cpp:351
+#: src/CardColNet.cpp:415
 msgid ""
 "Error processing command `%1'!\n"
 "\n"
