@@ -10,6 +10,11 @@ if SUPPORT_HEARTS
    USE_HEARTS=$(SRC_HEARTS)
 endif
 
+SRC_JABBERWOCKY=Jabberwocky.cpp Jabberwocky.h
+if SUPPORT_JABBERWOCKY
+   USE_JABBERWOCKY=$(SRC_JABBERWOCKY)
+endif
+
 SRC_MACHIAVELLI=Machiavelli.cpp Machiavelli.h MachiPile.cpp MachiPile.h
 if SUPPORT_MACHIAVELLI
    USE_MACHIAVELLI=$(SRC_MACHIAVELLI)
@@ -32,18 +37,19 @@ endif
 
 bin_PROGRAMS=CardCol
 
-CardCol_SOURCES=$(USE_BURACO) $(USE_HEARTS) $(USE_MACHIAVELLI)		\
-$(USE_ROVHULT) $(USE_SGTMAYOR) $(USE_TWOPART) Options.h CardCol.h	\
-GameTypes.cpp GameTypes.h Settings.cpp Settings.h ChatDlg.cpp		\
-ChatDlg.h CardColNet.cpp CardColAppl.cpp CardCol.cpp CardColAppl.h
+CardCol_SOURCES=$(USE_BURACO) $(USE_HEARTS) $(USE_JABBERWOCKY)		\
+$(USE_MACHIAVELLI) $(USE_ROVHULT) $(USE_SGTMAYOR) $(USE_TWOPART)	\
+Options.h CardCol.h GameTypes.cpp GameTypes.h Settings.cpp Settings.h	\
+ChatDlg.cpp ChatDlg.h CardColNet.cpp CardColAppl.cpp CardCol.cpp	\
+CardColAppl.h
 
 INCLUDES = @INCLUDES@ -I../Common @DEPENDENCIES_CFLAGS@
 
 CardCol_LDFLAGS=-L../Common -lCard @DEPENDENCIES_LIBS@ @LTLIBINTL@
 DEFS = @DEFS@ -Wall
 
-EXTRA_DIST=Options.meta $(SRC_BURACO) $(SRC_HEARTS) $(SRC_MACHIAVELLI)	\
-$(SRC_ROVHULT) $(SRC_SGTMAYOR) $(SRC_TWOPART)
+EXTRA_DIST=Options.meta $(SRC_BURACO) $(SRC_HEARTS) $(SRC_JABBERWOCKY)	\
+$(SRC_MACHIAVELLI) $(SRC_ROVHULT) $(SRC_SGTMAYOR) $(SRC_TWOPART)
 
 Options.meta: Options.h
 	mgeni.pl Options.h>Options.meta

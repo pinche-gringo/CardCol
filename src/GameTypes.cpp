@@ -57,6 +57,9 @@ GameTypes::GameTypes () {
 #ifdef WITH_HEARTS
    insert (std::make_pair ((int)HEARTS, _("Hearts")));
 #endif
+#ifdef WITH_JABBERWOCKY
+   insert (std::make_pair ((int)JABBERWOCKY, _("Jabberwocky")));
+#endif
 #ifdef WITH_BURACO
    insert (std::make_pair ((int)BURACO, _("Buraco")));
 #endif
