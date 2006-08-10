@@ -81,6 +81,9 @@ class CardgameCollection : public XGP::XApplication {
 #ifdef WITH_HEARTS
 	  HEARTS,
 #endif
+#ifdef WITH_JABBERWOCKY
+	  JABBERWOCKY,
+#endif
 #ifdef WITH_MACHIAVELLI
 	  MACHIAVELLI,
 #endif
