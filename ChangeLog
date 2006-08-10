@@ -1,6 +1,138 @@
+2006-08-09  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.7.60 documented
+
+	* po/de.po, po/en.po, po/es.po:
+	  Added error-msg when receiving wrong setting-command from clients
+
+	* configure.in: Version to 0.7.60; Needing libYGP 0.8.10
+
+	* src/CardCol.cpp, src/CardCol.h:
+	  Sending settings to clients; Adapted to new PlayerDlg interface (with signals)
+
+	* src/CardColNet.cpp: Handling Settings-message to change settings
+
+	* src/Hearts.cpp: Removed compiler-warnings
+
+	* src/Settings.cpp, src/Settings.h, Common/PlayerDlg.cpp, Common/PlayerDlg.h:
+	  Using signal to inform about commiting changes
+
+2006-08-08  Markus Schwab  <g17m0@lycos.com>
+
+	* AUTHORS: Added Wikipedia (which influenced the docu)
+
+	* po/de.po, po/en.po, po/es.po:
+	  Added messages for enhanced configurability
+
+	* doc/Buraco.html.en: Renamed 'The scoring' heading to 'Scoring'
+
+	* doc/Hearts.html.de, doc/Hearts.html.en, doc/Hearts.html.es: Revised
+
+	* doc/Hearts.html.es, doc/Machiavelli.html.es, doc/RÃ¸vhult.html.es, doc/Sgt.Mayor.html.es, doc/Twopart.html.es:
+	  Minor grammatical fix
+
+	* doc/Buraco.html.en, doc/Buraco.html.es, doc/Buraco.html.de: Revised
+
+	* doc/CardCol.html.de: Fixed some HTML named chars
+
+2006-08-07  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Røvhult.html.de: Removed trailing blanks
+
+	* doc/Buraco.html.de: Revised
+
+	* doc/Machiavelli.html.de, doc/Machiavelli.html.en, doc/Machiavelli.html.es:
+	  Local links only have anchors, not also the filename
+
+	* doc/Machiavelli.html.de, doc/Machiavelli.html.en, doc/Machiavelli.html.es:
+	  Revised
+
+	* doc/Twopart.html.de: Fixed header-level
+
+	* doc/RÃ¸vhult.html.de, doc/RÃ¸vhult.html.en, doc/Twopart.html.es:
+	  Minor fixes
+
+	* doc/Sgt.Mayor.html.de, doc/Sgt.Mayor.html.en, doc/Sgt.Mayor.html.es:
+	  Revised
+
+2006-08-06  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Røvhult.html.es: Minor fixes
+
+	* src/CardCol.cpp, src/CardColAppl.cpp, src/Settings.cpp, src/Settings.h:
+	  Handling Sgt. Mayor's number of tricks setting
+
+	* src/SgtMayor.cpp, src/SgtMayor.h:
+	  Reworked to play a 6-3-8 Sgt. Mayor variant
+
+2006-08-05  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Twopart.html.de, doc/Twopart.html.en, doc/Twopart.html.es:
+	  Revised
+
+2006-08-04  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/CardCol.html.de, doc/CardCol.html.en, doc/CardCol.html.es:
+	  Changed text for Røvhult
+
+	* doc/Røvhult.html.de, doc/Røvhult.html.en, doc/Røvhult.html.es:
+	  Documented that the special cards can be configured; Revised
+
+2006-08-03  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardColAppl.cpp:
+	  Reading Hearts' endpoints and Buraco's number of cards from the INI-file
+
+	* src/CardCol.cpp:
+	  Saving Hearts' endpoints and Buraco's number of cards to the INI-file
+
+	* src/Settings.cpp, src/Settings.h:
+	  Hearts' endpoints and Buraco's number of cards to deal can be changed
+
+	* src/Makefile.am: Added CardValue and BuroacoCards
+
+	* src/Hearts.cpp, src/Hearts.h:
+	  The number of points to end the game are configureable
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  The number of cards to deal are flexible
+
+	* src/BuracoCards.cpp, src/BuracoCards.h, src/CardValue.cpp, src/CardValue.h:
+	  New file.
+
+	* Common/Makefile.am: Removed CardValue.cpp
+
+	* src/CardCol.cpp, src/CardCol.h:
+	  Writing Rovhult section to INI-file; Checking Røvhult's special cards
+
+	* src/CardColAppl.cpp: Reading Rovhult-section
+
+	* src/Rovhult.cpp:
+	  Info-message about effects of cardReverse takes actual value into account
+
 2006-08-02  Markus Schwab  <g17m0@lycos.com>
 
-	* NEWS, ChangeLog: Changes of V0.7.54 docomented
+	* src/CardColAppl.cpp: Reading Røvhults settings from INI-file
+
+	* src/CardCol.cpp: Adding section for Røvhult to INI-file
+
+	* src/Settings.cpp, src/Settings.h:
+	  Added page to change Røvhult's special cards (7, 8 & 10)
+
+	* src/Rovhult.cpp, src/Rovhult.h:
+	  The special cards to skip, nuke and reverse (8, 10 & 7) can be changed
+
+	* src/GameTypes.cpp, src/GameTypes.h:
+	  Only one instance of GameTypes is allowed
+
+	* Common/CardWidget.cpp, Common/CardWidget.h:
+	  Added methods to get number/colour of a card from a value (not a card)
+
+	* Common/Makefile.am: Added CardValue
+
+2006-08-02  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.7.54 documented
 
 	* src/CardCol.cpp, src/CardCol.h: Fixed compiliation without libpthread
 
@@ -99,7 +231,7 @@
 
 2006-04-20  Markus Schwab  <g17m0@lycos.com>
 
-	* ChangeLog, NEWS: Changes of V0.7.50 docommented
+	* ChangeLog, NEWS: Changes of V0.7.50 documented
 
 	* src/CardColAppl.cpp, src/CardColAppl.h:
 	  Added option -G to list available games
@@ -107,8 +239,6 @@
 	* po/de.po, po/en.po, po/es.po: Separated messages for available games
 
 2006-04-19  Markus Schwab  <g17m0@lycos.com>
-
-	* ChangeLog, NEWS: Changes of V0.7.50 docommented
 
 	* configure.in: Gams can be disabled; Version to 0.7.50
 
@@ -137,7 +267,7 @@
 	  Deleted
 
 	* doc/Machiavelli.html.de, doc/Machiavelli.html.en, doc/Machiavelli.html.es, doc/Sgt.Mayor.html.de, doc/Sgt.Mayor.html.en, doc/Sgt.Mayor.html.es:
-	  Fixed linking to RÃ¸vhult (with UTF-8 name)
+	  Fixed linking to Røvhult (with UTF-8 name)
 
 	* doc/RÃ¸vhult.html.de, doc/RÃ¸vhult.html.en, doc/RÃ¸vhult.html.es:
 	  Fixed link to previous game
@@ -145,7 +275,7 @@
 	* doc/CardCol.shtml.de, doc/CardCol.shtml.en, doc/CardCol.shtml.es:
 	  Changed copyright; regenerating *html-files
 
-	* doc/Makefile.am: Using UTF-8 name for RÃ¸vhult
+	* doc/Makefile.am: Using UTF-8 name for Røvhult
 
 	* doc/RÃ¸vhult.html.de, doc/RÃ¸vhult.html.en, doc/RÃ¸vhult.html.es:
 	  Anchoring to self without using the file-name
@@ -160,7 +290,7 @@
 
 2006-04-03  Markus Schwab  <g17m0@lycos.com>
 
-	* ChangeLog, NEWS: Changes of V0.7.41 docommented
+	* ChangeLog, NEWS: Changes of V0.7.41 documented
 
 	* configure.in: Version to 0.7.41
 
@@ -175,7 +305,7 @@
 
 2006-01-04  Markus Schwab  <g17m0@lycos.com>
 
-	* ChangeLog, NEWS: Changes of V0.7.40 docommented
+	* ChangeLog, NEWS: Changes of V0.7.40 documented
 
 	* configure.in: Only defining carddirs, if cards are found
 
@@ -243,7 +373,7 @@
 
 2005-11-19  Markus Schwab  <g17m0@lycos.com>
 
-	* ChangeLog, NEWS: Changes of V0.7.33 docommented
+	* ChangeLog, NEWS: Changes of V0.7.33 documented
 
 	* configure.in: Version to 0.7.33
 
@@ -259,7 +389,7 @@
 
 2005-11-16  Markus Schwab  <g17m0@lycos.com>
 
-	* ChangeLog, NEWS: Changes of V0.7.32 docommented
+	* ChangeLog, NEWS: Changes of V0.7.32 documented
 
 	* Makefile.am: Removed m4-directory from SUBDIRS
 
@@ -280,7 +410,7 @@
 
 2005-09-29  Markus Schwab  <g17m0@lycos.com>
 
-	* ChangeLog, NEWS: Changes of V0.7.31 docommented
+	* ChangeLog, NEWS: Changes of V0.7.31 documented
 
 	* configure.in: Version to 0.7.31
 
@@ -310,7 +440,7 @@
 
 2005-07-14  Markus Schwab  <g17m0@lycos.com>
 
-	* ChangeLog, NEWS: Changes of V0.7.30 docommented
+	* ChangeLog, NEWS: Changes of V0.7.30 documented
 
 	* po/de.po, po/en.po, po/es.po: Added messages from ChatDlg
 
@@ -378,7 +508,7 @@
 
 2005-05-19  Markus Schwab  <g17m0@lycos.com>
 
-	* ChangeLog, NEWS: Changes of V0.7.20 docommented
+	* ChangeLog, NEWS: Changes of V0.7.20 documented
 
 	* po/de.po, po/en.po, po/es.po: Added messages of settings-dialogue
 
