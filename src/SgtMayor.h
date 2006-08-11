@@ -119,7 +119,7 @@ class SgtMayor : public Game {
       CardHPile  hand;                        // For players: Cards in the hand
       CardHPile  won;                                              // Won ticks
       Gtk::Label name;
-      Gtk::Label neededTicks;
+      Gtk::Label neededTricks;
    } players[NUM_PLAYERS];
    CardHPile played;
    CardWidget* pTrump;
@@ -127,7 +127,7 @@ class SgtMayor : public Game {
    unsigned int bfColours;
 
    unsigned int startPlayer;
-   std::bitset<13>playedCards[4];
+   std::bitset<13> playedCards[4];
    int diffTicks[NUM_PLAYERS];
 
    Gtk::UIManager::ui_merge_id idMrg;

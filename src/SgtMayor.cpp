@@ -84,17 +84,14 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardse
               ROWS_PLAYER[i] + 1, ROWS_PLAYER[i] + 2, Gtk::EXPAND,
               Gtk::SHRINK, 1, 2);
 
-      players[i].neededTicks.show ();
-      attach (players[i].neededTicks, COLS_PLAYER[i],
+      attach (players[i].neededTricks, COLS_PLAYER[i],
               COLS_PLAYER[i] + (i ? 3 : 5), ROWS_PLAYER[i] + 2,
               ROWS_PLAYER[i] + 3, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
 
-      players[i].won.show ();
       attach (players[i].won, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 3 : 5),
               ROWS_PLAYER[i] - 1, ROWS_PLAYER[i], Gtk::EXPAND,
               Gtk::SHRINK, 1, 5);
 
-      players[i].hand.show ();
       attach (players[i].hand, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 3 : 5),
               ROWS_PLAYER[i], ROWS_PLAYER[i] + 1, Gtk::EXPAND, Gtk::EXPAND, 5);
       TRACE9 ("SgtMayor::SgtMayor () - Attach at: " << COLS_PLAYER[i] << '/'
@@ -111,9 +108,9 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardse
 
    // Show played area
    played.setStyle (ICardPile::COMPRESSED);
-   played.show ();
    attach (played, 2, 5, 4, 5, Gtk::SHRINK, Gtk::SHRINK, 5);
    played.set_size_request (width + 150, height);
+   show_all_children ();
 
    memset (diffTicks, '\0', sizeof (diffTicks));
 }
@@ -213,10 +210,10 @@ void SgtMayor::showNeededTicks () {
    // Separate this from dealing the cards, to give the client a chance to
    // receive and perform the ActPlayer-message (to set the start-player)
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      char neededTicks[NUM_PLAYERS] = { '6', '3', '8' };
+      char neededTricks[NUM_PLAYERS] = { '6', '3', '8' };
       Glib::ustring needed (_("(needs %1 ticks)"));
-      needed.replace (needed.find ("%1"), 2, 1, neededTicks[i]);
-      players[(i + startPlayer) % NUM_PLAYERS].neededTicks.set_text (needed);
+      needed.replace (needed.find ("%1"), 2, 1, neededTricks[i]);
+      players[(i + startPlayer) % NUM_PLAYERS].neededTricks.set_text (needed);
    }
 }
 
@@ -818,11 +815,11 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
    }
 
    Glib::ustring stat (_("Game ended; %1 has %2 %7, %3 %4 and %5 %6 %8"));
-   unsigned int neededTicks[NUM_PLAYERS] = { 6, 3, 8 };
+   unsigned int neededTricks[NUM_PLAYERS] = { 6, 3, 8 };
    player = startPlayer;
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       int madeTicks (players[player].won.size () / 3);
-      diffTicks[player] = madeTicks - neededTicks[i];
+      diffTicks[player] = madeTicks - neededTricks[i];
       TRACE9 ("SgtMayor::playCard (unsigned int, unsigned int) - Player "
               << player << " made " << madeTicks << " = " << (int)diffTicks[player]);
 
@@ -1243,9 +1240,8 @@ void SgtMayor::showWonCards (bool show, unsigned int style) {
 	 if (((c - players[0].won.begin ()) % 3) != 2)
 	    (*c)->hide ();
 
-   if (show) {
+   if (show)
       Game::showWonCards (true);
-   }
    else
       Game::showWonCards (false, ICardPile::QUITE_COMPRESSED);
 }
