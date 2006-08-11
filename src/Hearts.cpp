@@ -500,61 +500,47 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          cardsPlayed += players[i].won->size ();
 
-      if (played.size ()) {
-         // The same colour must be played again (if available)
-         CardWidget::COLOURS colour (played[0]->colour ());
-         if ((playColour != colour) && players[player].hand->exists (colour)) {
-            Gtk::MessageDialog dlg (_("Play first cards with an equal colour as "
-                                      "the first played one!"), Gtk::MESSAGE_ERROR);
-            dlg.set_title (PACKAGE " - Hearts");
-            dlg.run ();
-            return false;
-         }
+      try {
+	 if (played.size ()) {
+	    // The same colour must be played again (if available)
+	    CardWidget::COLOURS colour (played[0]->colour ());
+	    if ((playColour != colour) && players[player].hand->exists (colour))
+	       throw _("Play first cards with an equal colour as the first played one!");
+	 }
+	 else {
+	    // The game must be started with the two of clubs
+	    if (!cardsPlayed) {
+	       if ((actCard.colour () != CardWidget::CLUBS)
+		   || (actCard.number () != CardWidget::TWO)) {
+		  Gtk::MessageDialog dlg (_("The game must be started with the two of clubs!"),
+					  Gtk::MESSAGE_ERROR);
+		  dlg.set_title (PACKAGE " - Hearts");
+		  dlg.run ();
+		  return false;
+	       }
+	    }
+
+	    // One can start with a heart only if there has been one played before
+	    if (((playColour == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
+		&& ((*players[player].hand)[0]->colour () != CardWidget::HEARTS))
+	       throw _("You can't start with a heart, if they have not been played before!");
+	 }
+
+	 // The queen of spades can't be played in the first round
+	 if (!cardsPlayed) {
+	    if ((actCard.colour () == CardWidget::SPADES) && (actCard.number () == CardWidget::QUEEN))
+	       throw _("The queen of spades can't be played in the first round!");
+
+	    if (((playColour == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
+		&& ((*players[player].hand)[0]->colour () != CardWidget::HEARTS))
+	       throw _("Hearts can't be played in the first round!");
+	 }
       }
-      else {
-         // The game must be started with the two of clubs
-         if (!cardsPlayed) {
-            if ((actCard.colour () != CardWidget::CLUBS)
-                || (actCard.number () != CardWidget::TWO)) {
-               Gtk::MessageDialog dlg (_("The game must be started with the two of clubs!"),
-                                         Gtk::MESSAGE_ERROR);
-               dlg.set_title (PACKAGE " - Hearts");
-               dlg.run ();
-               return false;
-            }
-         }
-
-         // One can start with a heart only if there has been one played before
-         if (((playColour == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
-             && ((*players[player].hand)[0]->colour () != CardWidget::HEARTS)) {
-            Gtk::MessageDialog dlg (_("You can't start with a heart, if they have"
-                                      " not been played before!"),
-                                    Gtk::MESSAGE_ERROR);
-            dlg.set_title (PACKAGE " - Hearts");
-            dlg.run ();
-            return false;
-         }
-      }
-
-      // The queen of spades can't be played in the first round
-      if (!cardsPlayed) {
-         if ((actCard.colour () == CardWidget::SPADES)
-             && (actCard.number () == CardWidget::QUEEN)) {
-            Gtk::MessageDialog dlg (_("The queen of spades can't be played in the first"
-                                      " round!"), Gtk::MESSAGE_ERROR);
-            dlg.set_title (PACKAGE " - Hearts");
-            dlg.run ();
-            return false;
-         }
-
-         if (((playColour == CardWidget::HEARTS) && !aPlayed[CardWidget::HEARTS])
-              && ((*players[player].hand)[0]->colour () != CardWidget::HEARTS)) {
-               Gtk::MessageDialog dlg (_("Hearts can't be played in the first round!"),
-                                       Gtk::MESSAGE_ERROR);
-               dlg.set_title (PACKAGE " - Hearts");
-               dlg.run ();
-            return false;
-         }
+      catch (Glib::ustring& error) {
+	 Gtk::MessageDialog dlg (error, Gtk::MESSAGE_ERROR);
+	 dlg.set_title (_("Hearts"));
+	 dlg.run ();
+	 return false;
       }
 
       Check3 ((unsigned int)playColour < (sizeof (aPlayed) / sizeof (aPlayed[0])));
