@@ -73,16 +73,16 @@ class Hearts : public Game {
    //@Section Helper methods
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int card);
    unsigned int  calcNextPlayer (unsigned int player);
-   unsigned int  check4Winner ();
+   unsigned int  check4Winner () const;
    void exchangeCards ();
    bool cardsExchanged (unsigned int cards);
    static unsigned int numberOfCards (const int aPositions[4], CardWidget::COLOURS colour);
-   static unsigned int pointsOfPile (ICardPile& pile);
+   static unsigned int pointsOfPile (const ICardPile& pile);
 
    //@Section Computer player
    unsigned int findPos2Play (unsigned int player);
-   unsigned int findWorstCard (const ICardPile& pile, const int aPositions[4]);
-   unsigned int findLowerCard (const ICardPile& pile, const int aPositions[4]);
+   unsigned int findWorstCard (const ICardPile& pile, const int aPositions[4]) const;
+   unsigned int findLowerCard (const ICardPile& pile, const int aPositions[4]) const;
 
    void startPlaying ();
 

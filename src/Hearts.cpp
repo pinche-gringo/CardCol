@@ -396,11 +396,11 @@ void Hearts::startPlaying () {
 /// pile
 /// \returns \c ID of player with the highest card
 //-----------------------------------------------------------------------------
-unsigned int  Hearts::check4Winner () {
+unsigned int Hearts::check4Winner () const {
    CardWidget::COLOURS colour (played[0]->colour ());
-   CardWidget::NUMBERS highest (CardWidget::TWO);
+   CardWidget::NUMBERS highest (played[0]->number ());
    unsigned int pos (0);
-   for (unsigned int i (0); i < played.size (); ++i)
+   for (unsigned int i (1); i < played.size (); ++i)
       if ((played[i]->colour () == colour)
           && (played[i]->number () > highest)) {
          pos = i;
@@ -431,12 +431,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       player = -1U;
       setGameStatus (STOPPED);
       if (!pScoreDlg) {
-         // Resort player for score dialogue
-         std::vector<Player*> player;
-         for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-            player.push_back (actPlayers[i]);
-
-         pScoreDlg = ScoreDlg::create (player);
+         pScoreDlg = ScoreDlg::create (actPlayers);
          pScoreDlg->get_window ()->set_transient_for (get_window ());
       }
 
@@ -511,13 +506,8 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
 	    // The game must be started with the two of clubs
 	    if (!cardsPlayed) {
 	       if ((actCard.colour () != CardWidget::CLUBS)
-		   || (actCard.number () != CardWidget::TWO)) {
-		  Gtk::MessageDialog dlg (_("The game must be started with the two of clubs!"),
-					  Gtk::MESSAGE_ERROR);
-		  dlg.set_title (PACKAGE " - Hearts");
-		  dlg.run ();
-		  return false;
-	       }
+		   || (actCard.number () != CardWidget::TWO))
+		  throw _("The game must be started with the two of clubs!");
 	    }
 
 	    // One can start with a heart only if there has been one played before
@@ -664,7 +654,7 @@ void Hearts::exchangeCards () {
 }
 
 //-----------------------------------------------------------------------------
-/// Retrieve the last position of each colour in the pile
+/// Stores the last position of each colour in the pile
 /// \param pile: Pile to inspect
 /// \param result: Array of position of last cards of earch colour
 //-----------------------------------------------------------------------------
@@ -778,7 +768,7 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
 /// \param aPositions: Array with positions of cards
 /// \returns \c Position of card to play
 //-----------------------------------------------------------------------------
-unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[4]) {
+unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[4]) const {
    TRACE9 ("Hearts::findLowerCard (const ICardPile&, const int[4]");
    CardWidget::COLOURS colour (played[0]->colour ());
    unsigned int posWinner (check4Winner ());
@@ -854,7 +844,7 @@ unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[
 /// \param aPositions: Array with positions of cards
 /// \returns \c Position of card to play or -1
 //-----------------------------------------------------------------------------
-unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[4]) {
+unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[4]) const {
    TRACE9 ("Hearts::findWorstCard (const ICardPile&, const int[4]");
 
    // Search for queen of spades or any heart or a high card
@@ -862,6 +852,7 @@ unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       cardsPlayed += players[i].won->size ();
 
+   // If there are already some tricks won
    if (cardsPlayed) {
       TRACE5 ("Hearts::findWorstCard (const ICardPile&, const int[4]) - Searching"
               " for SQ");
@@ -877,7 +868,7 @@ unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[
                return static_cast<unsigned int> (pos);
          }
 
-      // No high spade found: Try to play a heart (after the first round)
+      // No high spade found: Try to play a heart
       TRACE5 ("Hearts::findWorstCard (const ICardPile&, unsigned int[4]) - "
               "Searching for hearts");
       if (aPositions[CardWidget::HEARTS] != -1)
@@ -915,7 +906,7 @@ unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[
 /// \param pile: Pile to inspect
 /// \returns \c unsigned int: Number of points
 //-----------------------------------------------------------------------------
-unsigned int Hearts::pointsOfPile (ICardPile& pile) {
+unsigned int Hearts::pointsOfPile (const ICardPile& pile) {
    unsigned int points (0);
    for (unsigned int i (0); i < pile.size (); ++i) {
       CardWidget::COLOURS colour (pile[i]->colour ());
