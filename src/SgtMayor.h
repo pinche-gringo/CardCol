@@ -88,7 +88,7 @@ class SgtMayor : public Game {
 			 unsigned int playerGood, unsigned int posGood);
    void doExchangeCards (unsigned int playerBad, unsigned int posBad,
 			 unsigned int playerGood, unsigned int posGood);
-   void showNeededTicks ();
+   void showNeededTricks ();
    void showTrump (CardWidget::COLOURS);
    void doShowTrump (CardWidget::COLOURS);
    void makeExchange ();
@@ -107,7 +107,7 @@ class SgtMayor : public Game {
    //@Section Computer player
    unsigned int findPos2Play (unsigned int player);
    bool isHighest (const CardWidget& card) const;
-   unsigned int tryToGetTickWithTrump (const ICardPile& pile) const;
+   unsigned int tryToGetTrickWithTrump (const ICardPile& pile) const;
 
    virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
    virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
@@ -117,7 +117,7 @@ class SgtMayor : public Game {
 
    struct {
       CardHPile  hand;                        // For players: Cards in the hand
-      CardHPile  won;                                              // Won ticks
+      CardHPile  won;                                             // Won tricks
       Gtk::Label name;
       Gtk::Label neededTricks;
    } players[NUM_PLAYERS];
@@ -128,7 +128,7 @@ class SgtMayor : public Game {
 
    unsigned int startPlayer;
    std::bitset<13> playedCards[4];
-   int diffTicks[NUM_PLAYERS];
+   int diffTricks[NUM_PLAYERS];
 
    Gtk::UIManager::ui_merge_id idMrg;
 
