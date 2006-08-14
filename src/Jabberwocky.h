@@ -18,6 +18,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <bitset>
 #include <vector>
 
 #include <gtkmm/label.h>
@@ -65,12 +66,26 @@ class Jabberwocky : public Game {
    virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
 
    //@Section helper methods
+   static unsigned int getTricks (unsigned int round) { return (round < 7) ? (round + 3) : (15 - round); }
    void cardSelected (unsigned int pos);
    void makeBets (unsigned int start = 0, unsigned int end = NUM_PLAYERS - 1);
    void startGame ();
    void placedBet (Gtk::SpinButton* value, Gtk::Button* commit,
 		   unsigned int start, unsigned int end);
    void showBet (unsigned int player);
+   unsigned int calcTricks (unsigned int player) const;
+
+   void showCards2Play (unsigned int player);
+   int playCard (unsigned int player, unsigned int card);
+   void getPositionOfColours (const ICardPile& pile, int result[4]);
+   bool isHighest (const CardWidget& card) const;
+   bool isHighEnough (const CardWidget& card) const;
+   unsigned int findLowerCard (const CardWidget& cardCmp, const ICardPile& pile, const int aPositions[4]) const;
+   unsigned int findWorstCard (const ICardPile& card, const int aPositions[4]) const;
+   unsigned int check4Winner () const;
+
+   static char sortOrder[4];
+   static bool compByColourAccTrumps (const CardWidget* a, const CardWidget* b);
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
@@ -86,10 +101,14 @@ class Jabberwocky : public Game {
    CardWidget* pTrump;
 
    unsigned int startPlayer;
-   unsigned int actTricks;
+   unsigned int turn;
    Gtk::UIManager::ui_merge_id idMrg;
 
-   ScoreDlg* pScoreDlg;
+   // Variables needed by computer player
+   std::bitset<13> playedCards[4];
+   bool outOfColour[NUM_PLAYERS][4];
+
+   ScoreDlg*   pScoreDlg;
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
