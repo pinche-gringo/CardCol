@@ -23,6 +23,8 @@
 
 #include <gtkmm/label.h>
 
+#include <YGP/ANumeric.h>
+
 #include <CardSet.h>
 #include <CardPile.h>
 
@@ -93,9 +95,8 @@ class Jabberwocky : public Game {
       CardHPile  hand;                        // For players: Cards in the hand
       CardHPile  won;                                              // Won ticks
       Gtk::Label name;
-      Gtk::Label neededTricks;
 
-      unsigned int bet;
+      YGP::ANumeric bet;
    } players[NUM_PLAYERS];
    CardHPile played;
    CardWidget* pTrump;

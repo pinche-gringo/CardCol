@@ -79,21 +79,15 @@ Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& 
    // Show and attach card-piles
    changeNames (player);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 1,
+      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 3,
               ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
               ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
               Gtk::EXPAND, Gtk::EXPAND, 1);
 
-      attach (players[i].neededTricks, COLS_PLAYER[i] + 1, COLS_PLAYER[i] + 3,
-              ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
-              ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
- 	      Gtk::EXPAND, Gtk::SHRINK, 1, 5);
-
       TRACE9 ("Jabberwocky::Jabberwocky () - Name at: " << COLS_PLAYER[i] << '/'
               << ROWS_PLAYER[i] + ((i == 2) ? 3 : 1));
 
-      attach (players[i].won, COLS_PLAYER[i] + 1,
-              COLS_PLAYER[i] + 2,
+      attach (players[i].won, COLS_PLAYER[i], COLS_PLAYER[i] + 2,
               ROWS_PLAYER[i] + ((i == 2) ? 2 : -2),
               ROWS_PLAYER[i] + ((i == 2) ? 3 : -1),
               Gtk::SHRINK, Gtk::SHRINK, 1);
@@ -139,6 +133,8 @@ Jabberwocky::~Jabberwocky () {
 void Jabberwocky::start () {
    TRACE8 ("Jabberwocky5::start ()");
    Game::start ();
+   startPlayer = (startPlayer + 1) % NUM_PLAYERS;
+
    ICardPile pile;
    if (randomizeCardsToPile (pile)) {
       // Show cards on the table: For all players put 3 cards in hand
@@ -151,6 +147,7 @@ void Jabberwocky::start () {
       pTrump = &pile.removeTopCard ();
       attach (*pTrump, 1, 2, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
       pTrump->show ();
+      TRACE8 ("Jabberwocky5::start () - Trump: " << *pTrump);
 
       // Set how to sort the colours
       for (unsigned int i (0); i < 4; ++i)
@@ -177,8 +174,6 @@ void Jabberwocky::clean () {
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {   // Clear cards of players
       players[i].hand.clear ();
       players[i].won.clear ();
-
-      players[i].neededTricks.set_text ("");
    }
    played.clear ();
 
@@ -327,18 +322,22 @@ void Jabberwocky::cardSelected (unsigned int pos) {
 
    try {
       CardWidget& card (*players[0].hand[pos]);
+      TRACE4 ("Twopart::cardSelected (unsigned int) - Playing " << card);
       if (played.size ()) {
 	 if ((card.colour () != played[0]->colour ()) && players[0].hand.exists (played[0]->colour ()))
 	    throw _("Play first cards with an equal colour as the first played one!");
       }
       else
-	 // One can start with a trump only if there has been one played before
-	 if (((card.colour () == pTrump->colour ()) && !playedCards[card.colour ()].count ())
-	     && ((players[0].hand)[0]->colour () != pTrump->colour ()))
+	 // One can start with a trump only if there hasn't been one played before
+	 // Note that also the cards shown as trump is counted as played, so
+	 // test accordingly
+	 if (((card.colour () == pTrump->colour ())
+	      && (playedCards[card.colour ()].count () == 1)
+	      && ((players[0].hand)[0]->colour () != pTrump->colour ())))
 	    throw _("You can't start with a trump, if they have not been played before!");
 
-      if (playCard (0, pos) != -1) {
-	 setNextPlayer (1);
+      if ((pos = playCard (0, pos)) != -1U) {
+	 setNextPlayer (pos);
 	 makeNextMoves ();
       }
    }
@@ -367,7 +366,7 @@ void Jabberwocky::makeBets (unsigned int start, unsigned int end) {
       }
       else {
 	 status.pop ();
-	 status.push (_("Make your bet for the number of ticks you are going to make!"));
+	 status.push (_("Make your bet for the number of tricks you are going to make!"));
 
 	 Gtk::Button* bet (new Gtk::Button (_("_Bet"), true));
 	 Gtk::Adjustment* adj (new Gtk::Adjustment (0, 0.0, getTricks (turn), 1, 2));
@@ -375,12 +374,8 @@ void Jabberwocky::makeBets (unsigned int start, unsigned int end) {
 	 bet->show ();
 	 value->show ();
 
-	 attach (*value, COLS_PLAYER[0] + 1, COLS_PLAYER[0] + 2,
-		 ROWS_PLAYER[0] + 1, ROWS_PLAYER[0] + 2,
-		 Gtk::EXPAND, Gtk::SHRINK, 0, 5);
-	 attach (*bet,   COLS_PLAYER[0] + 2, COLS_PLAYER[0] + 3,
-		 ROWS_PLAYER[0] + 1, ROWS_PLAYER[0] + 2,
-		 Gtk::SHRINK, Gtk::SHRINK, 0, 5);
+	 attach (*value, 5, 7, 6, 9, Gtk::EXPAND, Gtk::SHRINK, 0, 5);
+	 attach (*bet,   7, 8, 6, 9, Gtk::SHRINK, Gtk::SHRINK, 0, 5);
 
 	 bet->signal_clicked ().connect (bind (mem_fun (*this, &Jabberwocky::placedBet), value, bet,  start, end));
 	 return;
@@ -396,7 +391,7 @@ void Jabberwocky::makeBets (unsigned int start, unsigned int end) {
 void Jabberwocky::startGame () {
    TRACE2 ("Jabberwocky::startGame () - " << startPlayer);
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
-      setNextPlayer (startPlayer = (startPlayer + 1) % NUM_PLAYERS);
+      setNextPlayer (startPlayer);
       broadcastStartPlayer (startPlayer);
    }
 
@@ -432,9 +427,11 @@ void Jabberwocky::placedBet (Gtk::SpinButton* value, Gtk::Button* commit,
 /// \param player: Player whose bet shall be shown
 //-----------------------------------------------------------------------------
 void Jabberwocky::showBet (unsigned int player) {
-   Glib::ustring tricks (_("Bets %1 tricks"));
-   tricks.replace (tricks.find ("%1"), 2, YGP::ANumeric::toString (players[player].bet));
-   players[player].neededTricks.set_text (tricks);
+   if (players[player].bet.isDefined ()) {
+      Glib::ustring tricks (_("; bets %1 tricks"));
+      tricks.replace (tricks.find ("%1"), 2, players[player].bet.toString ());
+      players[player].name.set_text (actPlayers[player]->getName () + tricks);
+   }
 }
 
 
@@ -497,9 +494,9 @@ void Jabberwocky::showCards2Play (unsigned int player) {
    if (played.size ()) {
       unsigned int posWinner (check4Winner ());
 
-      TRACE3 ("Jabberwocky::showCards2Play (unsigned int) - Missing tricks: " << (players[player].bet - (players[player].won.size () / NUM_PLAYERS)));
+      TRACE3 ("Jabberwocky::showCards2Play (unsigned int) - Missing tricks: " << ((unsigned int)players[player].bet - (players[player].won.size () / NUM_PLAYERS)));
       // If the player still has bets to fullfill
-      if (players[player].bet > (players[player].won.size () / NUM_PLAYERS)) {
+      if ((unsigned int)players[player].bet > (players[player].won.size () / NUM_PLAYERS)) {
 	 // Can follow suit?
 	 if (aPosColours[played[0]->colour ()] == -1) {
 	    TRACE7 ("Jabberwocky::showCards2Play (unsigned int) - Can't follow suit");
@@ -575,7 +572,7 @@ void Jabberwocky::showCards2Play (unsigned int player) {
    // First card to play
    else {
       // If the player still has bets to fullfill
-      if (players[player].bet < (players[player].won.size () / NUM_PLAYERS)) {
+      if ((unsigned int)players[player].bet < (players[player].won.size () / NUM_PLAYERS)) {
 	 for (unsigned int i (0); i < 4; ++i)
 	    if (CardWidget::COLOURS (i) != pTrump->colour ())
 		if (isHighest (*hand[aPosColours[CardWidget::COLOURS (i)]])
@@ -782,7 +779,7 @@ int Jabberwocky::playCard (unsigned int player, unsigned int card) {
    // Add points, if bet has been met
    int points[NUM_PLAYERS];
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      points[i] = players[i].bet == (players[i].won.size () / NUM_PLAYERS);
+      points[i] = (unsigned int)players[i].bet == (players[i].won.size () / NUM_PLAYERS);
    pScoreDlg->addPoints (points);
    pScoreDlg->show ();
 
