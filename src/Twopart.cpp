@@ -110,7 +110,7 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
 
       players[i].won.set_size_request (width + 20, height + 5);
-      players[i].hand.set_size_request (width * 3, height + 5);
+      players[i].hand.set_size_request (i ? (width + (2 * 7)) : (width * 3), height + 5);
    }
 
    played.show ();
@@ -138,7 +138,7 @@ void Twopart::start () {
       // Show cards on the table: For all players put 3 cards in hand
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          for (unsigned int j (0); j < 3; ++j)
-            players[(i - posServer) & 0x3].hand.insertSorted (staple.removeTopCard ());
+            players[(i - posServer) % NUM_PLAYERS].hand.insertSorted (staple.removeTopCard ());
 
       for (unsigned int i (0); i < (NUM_PLAYERS - 1); ++i)
          startPos[i] = 0;
@@ -156,7 +156,7 @@ void Twopart::start () {
       pos1Play = pos2Play = -1U;
 
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
-         setNextPlayer (startPlayer = rand () & 0x3);
+         setNextPlayer (startPlayer = rand () % NUM_PLAYERS);
 	 broadcastStartPlayer (startPlayer);
          displayTurn (currentPlayer ());
          makeNextMoves ();
@@ -224,7 +224,7 @@ unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
    unsigned int next;
    for (unsigned int i (0); num; ++i) {
       Check3 (i < NUM_PLAYERS);
-      if ((!(bfPlayers & (1 << (next = (player + i + 1) & 0x3))))
+      if ((!(bfPlayers & (1 << (next = (player + i + 1) % NUM_PLAYERS))))
           && players[next].hand.size ()) {
          TRACE5 ("Twopart::pickUpPlayedPile (unsigned int) - Re-adding player "
                  << next);
@@ -322,14 +322,14 @@ void Twopart::cardSelected (unsigned int pos) {
    Check3 (pos < players[0].hand.size ());
    Check3 (gameStatus () >= PLAYING);
 
-   CardWidget& card (*players[0].hand[pos]);
-   CardWidget::NUMBERS nr (card.number ());
-   CardWidget::COLOURS colour (card.colour ());
-
    // Perform validity-check in part 2: Card must have the same colour and be
    // bigger than the last played card or be a (bigger) trump
    unsigned int start (pos);
    if (gameStatus () == PLAYING2) {
+      CardWidget& card (*players[0].hand[pos]);
+      CardWidget::NUMBERS nr (card.number ());
+      CardWidget::COLOURS colour (card.colour ());
+
       start = findStartOfSerie (0, pos);
       Check3 (pTrump);
       if (played.size ()) {
@@ -571,7 +571,7 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
           && (posMaxEqual == -1)
           && (((!(bfPlayers & ~(1 << player)))
                || (!(bfPlayers & ~((1 << player)
-                                   | (1 << findNextPlayer ((player + 1) & 0x3))))
+                                   | (1 << findNextPlayer ((player + 1) % NUM_PLAYERS))))
                    && (points < CardWidget::SIX)))
               && (maxNr < players[player].hand[players[player].hand.size ()-1]->number ())))
          return end = start = 2;
@@ -904,7 +904,7 @@ void Twopart::analyzeLastPlayed (unsigned int startPos, unsigned int cards,
 int Twopart::findNextPlayerWithCards (unsigned int player) const {
    unsigned int i (player);
    do {
-      i = (i + 1) & 0x3;
+      i = (i + 1) % NUM_PLAYERS;
       if (players[i].hand.size ())
          return i;
    } while (i != player);
@@ -924,7 +924,7 @@ int Twopart::findNextPlayer (unsigned int player) const {
 
    // Find first player (starting with the passed one) being still in game
    do {
-      player = (player + 1) & 0x3;
+      player = (player + 1) % NUM_PLAYERS;
    } while (!(bfPlayers & (1 << player)));
 
    return player;
@@ -1024,7 +1024,7 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
    // Prepare array for sorting according to trumps
    Check3 (pTrump);
    for (unsigned int i (0); i < 4; ++i)
-      sortOrder[i] = (i - pTrump->colour () + 3) & 0x3;
+      sortOrder[i] = (i - pTrump->colour () + 3) % NUM_PLAYERS;
    Check3 (sortOrder[pTrump->colour ()] == 3);
 
    startPlayer = -1U;
