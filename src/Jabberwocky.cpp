@@ -138,9 +138,12 @@ void Jabberwocky::start () {
    ICardPile pile;
    if (randomizeCardsToPile (pile)) {
       // Show cards on the table: For all players put 3 cards in hand
-      for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+      for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+	 players[i].bet.undefine ();
+	 players[i].name.set_text (actPlayers[i]->getName ());
          for (unsigned int j (0); j < getTricks (turn); ++j)
-            players[(i - posServer) & 0x3].hand.setTopCard (pile.removeTopCard ());
+            players[(i - posServer) % NUM_PLAYERS].hand.setTopCard (pile.removeTopCard ());
+      }
 
       pos1Play = pos2Play = -1U;
 
@@ -151,11 +154,11 @@ void Jabberwocky::start () {
 
       // Set how to sort the colours
       for (unsigned int i (0); i < 4; ++i)
-	 sortOrder[i] = (i - pTrump->colour () + 3) & 0x3;
+	 sortOrder[i] = (i - pTrump->colour () + 3) % NUM_PLAYERS;
 
       // Sort cards according to trump
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-	 players[(i - posServer) & 0x3].hand.sort (compByColourAccTrumps);
+	 players[(i - posServer) % NUM_PLAYERS].hand.sort (compByColourAccTrumps);
 
       // Resetting all status-information
       for (unsigned int i (0); i < (sizeof (playedCards) / sizeof (playedCards[0])); ++i)
@@ -250,7 +253,7 @@ void Jabberwocky::changeNames (const std::vector<Player*>& newPlayer) {
 
    std::vector<Player*> player;
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      player.push_back (actPlayers[(i + posServer) & 0x3]);
+      player.push_back (actPlayers[(i + posServer) % NUM_PLAYERS]);
       players[i].name.set_text (actPlayers[i]->getName ());
    }
 
@@ -500,22 +503,30 @@ void Jabberwocky::showCards2Play (unsigned int player) {
 	 // Can follow suit?
 	 if (aPosColours[played[0]->colour ()] == -1) {
 	    TRACE7 ("Jabberwocky::showCards2Play (unsigned int) - Can't follow suit");
-	    unsigned int p (played.size () + 1);
-	    for (; p < NUM_PLAYERS; ++p) {
-	       if (outOfColour[p][played[0]->colour ()]) {
+	    outOfColour[player][played[0]->colour ()] = true;
+
+	    unsigned int p (NUM_PLAYERS - played.size ()); Check3 (p);
+	    while (--p) {
+	       if (outOfColour[(player + p) % NUM_PLAYERS][played[0]->colour ()]) {
+		  TRACE9 ("Jabberwocky::showCards2Play (unsigned int) - Out of suit: " << p);
 		  // Check if player can get the pile
 		  pos2Play = (((aPosColours[pTrump->colour ()] != -1)
-			       && isHighest (*hand[aPosColours[pTrump->colour ()]]))
+			       && (isHighest (*hand[aPosColours[pTrump->colour ()]])
+				   || (isHighEnough (*hand[aPosColours[pTrump->colour ()]]))))
 			      ? aPosColours[pTrump->colour ()]
-			      : findWorstCard (hand, aPosColours));
+			      : findWorstCard (hand, aPosColours)); Check3 (pos2Play != -1U);
 		  break;
 	       }
 	    }
 	    // Other players still seem to have the colour
-	    if (p == NUM_PLAYERS) {
+	    if (!p) {
 	       // Try to get the card with a trump; else put worst card
-	       if ((pos2Play = hand.find (*played[0], compByColourAccTrumps)) == -1U)
+	       if ((aPosColours[pTrump->colour ()] == -1)
+		   || ((played[posWinner]->colour () == pTrump->colour ())
+		       ? ((pos2Play = findHigherCard (*played[posWinner], hand, aPosColours[played[posWinner]->colour ()])) == -1U)
+		       : ((pos2Play = hand.findFirstEqualColour (aPosColours[pTrump->colour ()])) == -1U)))
 		  pos2Play = findWorstCard (hand, aPosColours);
+	       Check3 (pos2Play != -1U);
 	    }
 	    TRACE5 ("Jabberwocky::showCards2Play (unsigned int) - Can't follow suit: " << pos2Play);
 	 }
@@ -523,9 +534,9 @@ void Jabberwocky::showCards2Play (unsigned int player) {
 	 else {
 	    TRACE5 ("Jabberwocky::showCards2Play (unsigned int) - Can follow suit: " << aPosColours[played[0]->colour ()]);
 
-	    // If a trump has been played, play something low
-	    if (played[posWinner]->colour () == pTrump->colour ())
-	       pos2Play = findWorstCard (hand, aPosColours);
+	    // If a trump has been played after non-trump, play something low
+	    if (played[posWinner]->colour () != played[0]->colour ())
+	       pos2Play = hand.findFirstEqualColour (aPosColours[played[0]->colour ()]);
 	    else {
 	       // Last in turn
 	       if (played.size () == (NUM_PLAYERS - 1)) {
@@ -552,7 +563,7 @@ void Jabberwocky::showCards2Play (unsigned int player) {
       // Doesn't need any more tricks
       else
 	 if (aPosColours[played[posWinner]->colour ()] != -1)
-	    pos2Play = findLowerCard (*played[posWinner], hand, aPosColours);
+	    pos2Play = findLowerCard (*played[posWinner], hand, aPosColours[played[posWinner]->colour ()]);
 	 else {
 	    unsigned int offset (0);
 	    for (unsigned int i (0); i < 4; ++i) {
@@ -585,7 +596,7 @@ void Jabberwocky::showCards2Play (unsigned int player) {
 	 pos2Play = findWorstCard (hand, aPosColours);
    }
 
-   TRACE1 ("Jabberwocky::showCards2Play (unsigned int) - Playing: " << pos2Play);
+   TRACE1 ("Jabberwocky::showCards2Play (unsigned int) - Playing: " << pos2Play << " (" << *hand[pos2Play] << ')');
    Check3 (pos2Play < hand.size ());
    flipCards2Play (hand, pos2Play, pos1Play = pos2Play);
 }
@@ -594,31 +605,51 @@ void Jabberwocky::showCards2Play (unsigned int player) {
 /// Find the highest card lower than the passed one
 /// \param cardCmp: Card which should not be passed
 /// \param pile: Pile from which to play
-/// \param aPositions: Array with positions of cards
+/// \param aPosColour: Position of last card in the pile with that colour
 /// \returns \c Position of card to play
 //-----------------------------------------------------------------------------
-unsigned int Jabberwocky::findLowerCard (const CardWidget& cardCmp, const ICardPile& pile, const int aPositions[4]) const {
-   TRACE9 ("Jabberwocky::findLowerCard (const ICardPile&, const int[4]");
-
-   // Play highest card lower than the previously played ones
-   int card (0);
+unsigned int Jabberwocky::findLowerCard (const CardWidget& cardCmp, const ICardPile& pile, unsigned int aPosColour) const {
+   TRACE9 ("Jabberwocky::findLowerCard (const CardWidget&, const ICardPile&, unsigned int");
+   Check1 (aPosColour < pile.size ());
+   Check2 (pile[aPosColour]->colour () == cardCmp.colour ());
    Check3 (played.size ());
-   CardWidget::NUMBERS highest (cardCmp.number ());
 
    // Search for a lower card
-   card = aPositions[cardCmp.colour ()]; Check3 (card != -1);
-   while (card >= 0 && (pile[card]->colour () == cardCmp.colour ())) {
-      Check3 (pile[card]->colour () == cardCmp.colour ());
-      if (pile[card]->number () < highest) {
-	 TRACE5 ("Jabberwocky::findLowerCard (const ICardPile&, unsigned int[4]) - "
-		 "Playing card at " << card  << ": " << *pile[card]);
-	 return card;
+   while (aPosColour >= 0 && (pile[aPosColour]->colour () == cardCmp.colour ())) {
+      if (pile[aPosColour]->number () < cardCmp.number ()) {
+	 TRACE5 ("Jabberwocky::findLowerCard (const CardWidget&, const ICardPile&, unsigned int) - "
+		 "Playing card at " << aPosColour  << ": " << *pile[aPosColour]);
+	 return aPosColour;
       }
    }
 
-   TRACE5 ("Jabberwocky::findLowerCard (const ICardPile&, unsigned int[4]) - "
-	   "Forced to play card at " << card << ": " << *pile[card]);
-   return card;
+   TRACE5 ("Jabberwocky::findLowerCard (const CardWidget&, const ICardPile&, unsigned int) - "
+	   "Forced to play card at " << aPosColour << ": " << *pile[aPosColour]);
+   return aPosColour;
+}
+
+//-----------------------------------------------------------------------------
+/// Find the lowest card higher than the passed one
+/// \param cardCmp: Card which should not be passed
+/// \param pile: Pile from which to play
+/// \param aPositions: Array with positions of cards
+/// \returns \c Position of card to play
+//-----------------------------------------------------------------------------
+unsigned int Jabberwocky::findHigherCard (const CardWidget& cardCmp, const ICardPile& pile, unsigned int aPosColour) const {
+   TRACE9 ("Jabberwocky::findHigherCard (const CardWidget&, const ICardPile&, unsigned int");
+   Check1 (aPosColour < pile.size ());
+   Check2 (pile[aPosColour]->colour () == cardCmp.colour ());
+   Check3 (played.size ());
+
+   unsigned int pos (-1U);
+   while (pile[aPosColour]->number () > cardCmp.number ()) {
+      pos = aPosColour;
+      if (!aPosColour-- || (pile[aPosColour]->colour () != cardCmp.colour ()))
+	 return -1U;
+   } // end-while
+
+   TRACE5 ("Jabberwocky::findHigherCard (const CardWidget&, const ICardPile&, unsigned int) - Playing card at " << pos);
+   return pos;
 }
 
 //-----------------------------------------------------------------------------
@@ -752,7 +783,7 @@ int Jabberwocky::playCard (unsigned int player, unsigned int card) {
             bestPlayer = i - played.begin ();
          }
       }
-      player = (player - NUM_PLAYERS + bestPlayer + 1) & 0x3;
+      player = (player - NUM_PLAYERS + bestPlayer + 1) % NUM_PLAYERS;
 
       // Move the cards to his won pile
       movePile (players[player].won, played, 0, played.size () - 1);
