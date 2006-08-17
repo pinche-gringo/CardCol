@@ -83,7 +83,7 @@ class Jabberwocky : public Game {
    bool isHighest (const CardWidget& card) const;
    bool isHighEnough (const CardWidget& card) const;
    unsigned int findHigherCard (const CardWidget& cardCmp, const ICardPile& pile, unsigned int aPosColour) const;
-   unsigned int findLowerCard (const CardWidget& cardCmp, const ICardPile& pile, unsigned int aPosColour) const;
+   unsigned int findLowerCard (const CardWidget& cardCmp, const ICardPile& pile, int aPosColour) const;
    unsigned int findWorstCard (const ICardPile& card, const int aPositions[4]) const;
    unsigned int check4Winner () const;
 
