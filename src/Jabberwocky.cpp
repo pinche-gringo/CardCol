@@ -331,7 +331,8 @@ void Jabberwocky::cardSelected (unsigned int pos) {
       CardWidget& card (*players[0].hand[pos]);
       TRACE4 ("Jabberwocky::cardSelected (unsigned int) - Playing " << card);
       if (played.size ()) {
-	 if ((card.colour () != played[0]->colour ()) && players[0].hand.exists (played[0]->colour ()))
+	 if ((card.colour () != played[0]->colour ())
+	     && (players[0].hand.exists (played[0]->colour ()) != -1))
 	    throw _("Play first cards with an equal colour as the first played one!");
       }
       else
@@ -496,7 +497,7 @@ void Jabberwocky::showCards2Play (unsigned int player) {
    ICardPile& hand (players[player].hand);
    int aPosColours[4];
    getPositionOfColours (hand, aPosColours);
-   TRACE3 ("Jabberwocky::showCards2Play (unsigned int) - Missing tricks: " << ((unsigned int)players[player].bet - (players[player].won.size () / NUM_PLAYERS)));
+   TRACE3 ("Jabberwocky::showCards2Play (unsigned int) - Missing tricks: " << ((int)players[player].bet - (players[player].won.size () / NUM_PLAYERS)));
 
    // Already cards played?
    if (played.size ()) {
@@ -562,11 +563,12 @@ void Jabberwocky::showCards2Play (unsigned int player) {
       }
       // Doesn't need any more tricks
       else
-	 if (aPosColours[played[posWinner]->colour ()] != -1)
+	 if ((aPosColours[played[0]->colour ()] != -1)
+	     && (played[0]->colour () == played[posWinner]->colour ()))
 	    pos2Play = findLowerCard (*played[posWinner], hand, aPosColours[played[posWinner]->colour ()]);
 	 else {
 	    unsigned int offset (0);
-	    for (unsigned int i (0); i < 4; ++i) {
+	    for (unsigned int i (1); i < (sizeof (aPosColours) / sizeof (aPosColours[0])); ++i) {
 	       TRACE5 ("Jabberwocky::showCards2Play (unsigned int) - No more tricks; Colour: " << i);
 	       if ((CardWidget::COLOURS (i) != pTrump->colour ())
 		   && (aPosColours[i] != -1)
@@ -577,7 +579,7 @@ void Jabberwocky::showCards2Play (unsigned int player) {
 				   < playedCards[hand[aPosColours[offset]]->colour ()].count ())))))
 		  offset = i;
 	    }
-	    pos2Play = aPosColours[offset];
+	    pos2Play = (aPosColours[offset] == -1) ? aPosColours[pTrump->colour ()] : aPosColours[offset];
 	 }
    }
    // First card to play
@@ -596,8 +598,8 @@ void Jabberwocky::showCards2Play (unsigned int player) {
    }
 
 
-   TRACE1 ("Jabberwocky::showCards2Play (unsigned int) - Playing: " << pos2Play << " (" << *hand[pos2Play] << ')');
    Check3 (pos2Play < hand.size ());
+   TRACE1 ("Jabberwocky::showCards2Play (unsigned int) - Playing: " << pos2Play << " (" << *hand[pos2Play] << ')');
    flipCards2Play (hand, pos2Play, pos1Play = pos2Play);
 }
 
@@ -818,8 +820,6 @@ int Jabberwocky::playCard (unsigned int player, unsigned int card) {
    }
 
    Glib::ustring stat (_("Game ended"));
-   startPlayer = (startPlayer + 1) % NUM_PLAYERS;
-
    // Create score-dialog
    if (!pScoreDlg) {
       pScoreDlg = ScoreDlg::create (actPlayers);
