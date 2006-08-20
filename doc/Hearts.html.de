@@ -37,8 +37,8 @@
     <h1 align="center">Hearts</h1>
     <hr size=2>
     <p>Hearts ist ein in mehreren Versionen eines popul&auml;ren
-      Betriebssystems vorhandenes Spiel. Es wird mit einem 52-Karten
-      umfassenden Deck gespielt.</p>
+      Betriebssystems vorhandenes Kartenspiel. Es wird mit einem
+      52&nbsp;Karten umfassenden Deck gespielt.</p>
 
     <p>Kurz zusammengefa&szlig;t geht es darum, Punkte zu vermeiden,
       die man bekommt, wenn man Stiche mit bestimmten Karten gewinnt.</p>
@@ -116,7 +116,7 @@
         </td>
         <td><a href="Buraco.html.de">Vorherige</a><br>(Buraco)</td>
         <td><a href="CardCol.html.de">&Uuml;berblick</a></td>
-        <td><a href="Machiavelli.html.de">N&auml;chste</a><br>(Machiavelli)</td>
+        <td><a href="Jabberwocky.html.de">N&auml;chste</a><br>(Jabberwocky)</td>
       </tr>
     </table>
   </body>
