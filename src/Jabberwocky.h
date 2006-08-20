@@ -86,6 +86,7 @@ class Jabberwocky : public Game {
    unsigned int findLowerCard (const CardWidget& cardCmp, const ICardPile& pile, int aPosColour) const;
    unsigned int findWorstCard (const ICardPile& card, const int aPositions[4]) const;
    unsigned int check4Winner () const;
+   unsigned int sumBets () const;
 
    static char sortOrder[4];
    static bool compByColourAccTrumps (const CardWidget* a, const CardWidget* b);

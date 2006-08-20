@@ -146,7 +146,7 @@ void Jabberwocky::start () {
 
       pos1Play = pos2Play = -1U;
 
-      pTrump = &pile.removeTopCard ();
+      pTrump = &pile.removeShownTopCard ();
       attach (*pTrump, 1, 2, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
       pTrump->show ();
       TRACE8 ("Jabberwocky::start () - Trump: " << *pTrump);
@@ -171,6 +171,7 @@ void Jabberwocky::start () {
       }
 
       makeBets ();
+      pile.clear ();
    }
 }
 
@@ -178,11 +179,15 @@ void Jabberwocky::start () {
 /// Remove cards from everything which can hold them
 //-----------------------------------------------------------------------------
 void Jabberwocky::clean () {
+   TRACE9 ("Jabberwocky::clean ()");
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {   // Clear cards of players
       players[i].hand.clear ();
       players[i].won.clear ();
    }
    played.clear ();
+
+   while (status.children ().size () > 1)
+      status.children ().remove (status.children ()[1]);
 
    disableHuman ();
    if (pTrump) {
@@ -200,11 +205,10 @@ void Jabberwocky::clean () {
 ///     of the played pile is enabled
 //-----------------------------------------------------------------------------
 bool Jabberwocky::enableHuman () {
-   Check3 (activeCards.empty ());
-   Check3 (gameStatus () == PLAYING);
-
    TRACE2 ("Jabberwocky::enableHuman () - Has " << players[0].hand.size ()
            << " cards");
+   Check3 (activeCards.empty ());
+   Check3 (gameStatus () == PLAYING);
 
    for (int i (players[0].hand.size () - 1); i >= 0; --i)
       activeCards.push_back
@@ -331,8 +335,7 @@ void Jabberwocky::cardSelected (unsigned int pos) {
       CardWidget& card (*players[0].hand[pos]);
       TRACE4 ("Jabberwocky::cardSelected (unsigned int) - Playing " << card);
       if (played.size ()) {
-	 if ((card.colour () != played[0]->colour ())
-	     && (players[0].hand.exists (played[0]->colour ()) != -1))
+	 if ((card.colour () != played[0]->colour ()) && players[0].hand.exists (played[0]->colour ()))
 	    throw _("Play first cards with an equal colour as the first played one!");
       }
       else
@@ -369,12 +372,16 @@ void Jabberwocky::makeBets (unsigned int start, unsigned int end) {
    while (start <= end) {
       unsigned int actPlayer ((startPlayer + start++) % NUM_PLAYERS);
       if (actPlayer) {
+	 // Estimate the tricks for the player; take care the last player
+	 // does not place a bet which sums all bets up to the number of players
 	 players[actPlayer].bet = calcTricks (actPlayer);
+	 if ((start == end) && (sumBets () == getTricks (turn)))
+	    players[actPlayer].bet += (rand () & 1) ? 1 : -1;
 	 showBet (actPlayer);
       }
       else {
 	 status.pop ();
-	 status.push (_("Make your bet for the number of tricks you are going to make!"));
+	 status.push (_("Make your bid for the number of tricks you are going to make!"));
 
 	 Gtk::Button* bet (new Gtk::Button (_("_Bet"), true));
 	 Gtk::Adjustment* adj (new Gtk::Adjustment (0, 0.0, getTricks (turn), 1, 2));
@@ -382,8 +389,8 @@ void Jabberwocky::makeBets (unsigned int start, unsigned int end) {
 	 bet->show ();
 	 value->show ();
 
-	 attach (*value, 6, 7, 6, 7, Gtk::SHRINK, Gtk::SHRINK, 0, 5);
-	 attach (*bet,   7, 8, 6, 7, Gtk::SHRINK, Gtk::SHRINK, 0, 5);
+	 status.pack_start (*value, Gtk::PACK_SHRINK, 5);
+	 status.pack_start (*bet, Gtk::PACK_SHRINK, 5);
 
 	 bet->signal_clicked ().connect (bind (mem_fun (*this, &Jabberwocky::placedBet), value, bet,  start, end));
 	 return;
@@ -391,6 +398,17 @@ void Jabberwocky::makeBets (unsigned int start, unsigned int end) {
    }
 
    startGame ();
+}
+
+//-----------------------------------------------------------------------------
+/// Returns the sum of all bets
+/// \returns unsinged int: Sum o fall bets
+//-----------------------------------------------------------------------------
+unsigned int Jabberwocky::sumBets () const {
+   unsigned int sum (0);
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+      sum += (unsigned int)players[i].bet;
+   return sum;
 }
 
 //-----------------------------------------------------------------------------
@@ -416,18 +434,29 @@ void Jabberwocky::startGame () {
 //-----------------------------------------------------------------------------
 void Jabberwocky::placedBet (Gtk::SpinButton* value, Gtk::Button* commit,
 			     unsigned int start, unsigned int end) {
-   status.pop ();
+   TRACE4 ("Jabberwocky::placedBet (Gtk::SpinButton*, Gtk::Button*, 2x unsigned int) - [" << start << '-' << end << ']');
+   Check1 (end < NUM_PLAYERS);
+   Check1 (commit); Check1 (value);
 
+   commit->grab_focus ();
    players[0].bet = YGP::ANumeric (value->get_text ());
+   if ((start == end) && (sumBets () == getTricks (turn))) {
+      Gtk::MessageDialog dlg (_("The sum of all bids must be different\nthan the number of players!"), Gtk::MESSAGE_ERROR);
+      dlg.set_title (_("Jabberwocky"));
+      dlg.run ();
+   }
+   else {
+      status.pop ();
 
-   remove (*value);
-   remove (*commit);
+      status.remove (*value);
+      status.remove (*commit);
 
-   delete value;
-   delete commit;
+      delete value;
+      delete commit;
 
-   showBet (0);
-   makeBets (start, end);
+      showBet (0);
+      makeBets (start, end);
+   }
 }
 
 //-----------------------------------------------------------------------------
