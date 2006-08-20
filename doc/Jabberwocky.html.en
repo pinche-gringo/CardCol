@@ -1,0 +1,129 @@
+<!-- -*-HTML-*- -->
+<!-- $Id$ -->
+<!--
+  Copyright (C) 2006 Markus Schwab (g17m0@lycos.com)
+
+  This is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <title>Jabberwocky - Make the tricks your promised to</title>
+    <meta name="description" content="Documentation of the Jabberwocky card game">
+    <meta name="keywords" content="Documentation, Docu, Jabberwocky; game, card, cardgame">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2006-08-19">
+    <meta name="DC.Rights" content="Copyright (C) 2006, distributed under the GNU Free Documentation License">
+  </head>
+
+  <body>
+    <h1 align="center">Jabberwocky</h1>
+    <hr size=2>
+
+    <p>Jabberwocky is a trick-taking card game, played by 4 players
+      with a standard deck of cards.</p>
+
+    <p>Its object is to bet the number of tricks one is estimating to
+      make and to fullfull this bet (which scores a point). The
+      player(s) who fullfilled the most bets after 13 turns wins the
+      game.</p>
+
+    <h2>Dealing</h2>
+    <p>At the start of the first round, each of the four players gets
+      three cards. The number of cards increases by one each round
+      until nine cards are dealt. After that, the number of cards
+      dealt decreases by one each round. After the end of the 13<sup>th</sup>
+      round, when three cards are again dealt to each player, the game
+      ends.</p>
+
+    <p>Once the cards have been dealt to the players, the top card of
+      the remainder of the deck is turned over. The suit of that card
+      indicates the trump suit.</p>
+
+    <p>Deal passes counter-clockwise after each round.</p>
+
+    <h2>Bidding</h2>
+    <p>A randomly starts the game by making a bid for the number of
+      tricks (any number from 0 to the number of possible tricks -
+      invalid values are corrected).</p>
+
+    <p>The other players follow in turn. The last player making a bid,
+      must use a number which does not sum up all bids to the number
+      of possible tricks (so to make it impossible for each player to
+      score in one round).</p>
+
+    <h2>Playing</h2>
+    <p>The player who made the first bid leads also the first trick by
+      playing any card. The other players must follow suit. If a
+      player does not have any cards of the lead suit, any other suit
+      may be played instead.</p>
+
+    <p>A trump card can not be played first in a trick unless the
+      trump suit has already been played or the player has only trump
+      cards available. (Trump is said to be <i>broken</i> the first
+      time a trump card is played.)</li>
+
+    <p>The person who played the highest card in the leading suit wins
+      that trick unless a trump card was played, in which case the
+      person who played the highest trump card takes the trick. The
+      winner of a trick leads the next trick.</p>
+
+    <p>The round ends when all available tricks have been taken.</p>
+
+    <h2>Scoring</h2>
+    <p>Once a round has finished, players are given one point for
+      acquiring the exact number of tricks that they bid (otherwise
+      they get no point).</p>
+
+    <p>The players(s) with the most points at the end of all 13 rounds
+      wins. Tie wins are possible.</p>
+
+    <p>The status line gives some information about what's going on!</p>
+
+    <h2>Note to the layout</h2>
+    <p>After starting a game you have (from left to right and from top to
+      bottom):</p>
+
+    <ul>
+      <li>The cards of the human player. On top his won cards, below
+        the cards in his hand. The won cards can be inspected by
+        clicking on them; right-clicking allows to sort them.</li>
+
+      <li>In the next line it's the same with players 1 and 3. In
+        between them there's the played pile.</li>
+
+      <li>In the last line there are the cards of player 2.</li>
+    </ul>
+
+    <hr size=3 noshade>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td><a href="Hearts.html.en">Previous</a><br>(Hearts)</td>
+        <td><a href="CardCol.html.en">Cardgames</a></td>
+        <td><a href="Machiavelli.html.en">Next</a><br>(Machiavelli)</td>
+      </tr>
+    </table>
+  </body>
+</html>
+
