@@ -56,17 +56,17 @@
       the remainder of the deck is turned over. The suit of that card
       indicates the trump suit.</p>
 
-    <p>Deal passes counter-clockwise after each round.</p>
-
     <h2>Bidding</h2>
-    <p>A randomly starts the game by making a bid for the number of
-      tricks (any number from 0 to the number of possible tricks -
-      invalid values are corrected).</p>
+    <p>A randomly selected player starts the first game by making a
+      bid for the number of tricks &mdash; any number from 0 to the number of
+      possible tricks (invalid values are corrected)</p>
 
     <p>The other players follow in turn. The last player making a bid,
       must use a number which does not sum up all bids to the number
       of possible tricks (so to make it impossible for each player to
       score in one round).</p>
+
+    <p>Bidding (and dealing) passes counter-clockwise after each round.</p>
 
     <h2>Playing</h2>
     <p>The player who made the first bid leads also the first trick by
