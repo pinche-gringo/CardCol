@@ -73,12 +73,13 @@
     <p>Actualmente la colecci&oacute;n consiste de los siguentes juegos:</p>
 
     <table>
-      <tbody><tr><td>&nbsp;&nbsp;<a href="Buraco.html.es">Buraco </a></td><td> -   Canasta en Am&eacute;rica Latina</td></tr>
-        <tr><td>&nbsp;&nbsp;<a href="Hearts.html.es">Corazones </a></td><td> -   Un juego donde mejor no se conseguirlas</td></tr>
-        <tr><td>&nbsp;&nbsp;<a href="Machiavelli.html.es">Machiavelli </a></td><td> -   Sortear cartas hasta que ya no las tengas</td></tr>
-        <tr><td>&nbsp;&nbsp;<a href="Røvhult.html.es">R&oslash;vhult </a></td><td> -   Un juego de cartas conozido en todo el mundo (como Shithead, Asshole, ...)</td></tr>
-        <tr><td>&nbsp;&nbsp;<a href="Sgt.Mayor.html.es">Sgt. Mayor </a></td><td> -   Haz tus bazas o lo te vas a arrepentir</td></tr>
-        <tr><td>&nbsp;&nbsp;<a href="Twopart.html.es">Twopart </a></td><td> -   Un juego de cartas de noruega (en dos partes)</td></tr>
+      <tbody><tr><td>&nbsp;&nbsp;<a href="Buraco.html.es">Buraco </a></td><td> - Canasta en Am&eacute;rica Latina</td></tr>
+        <tr><td>&nbsp;&nbsp;<a href="Hearts.html.es">Corazones </a></td><td> - Un juego donde mejor no se conseguirlas</td></tr>
+        <tr><td>&nbsp;&nbsp;<a href="Jabberwocky.html.es">Jabberwocky </a></td><td> - Prediga y acerte tus bazas</td></tr>
+        <tr><td>&nbsp;&nbsp;<a href="Machiavelli.html.es">Machiavelli </a></td><td> - Sortear cartas hasta que ya no las tengas</td></tr>
+        <tr><td>&nbsp;&nbsp;<a href="Røvhult.html.es">R&oslash;vhult </a></td><td> - Un juego de cartas conozido en todo el mundo (como Shithead, Asshole, ...)</td></tr>
+        <tr><td>&nbsp;&nbsp;<a href="Sgt.Mayor.html.es">Sgt. Mayor </a></td><td> - Haz tus bazas o lo te vas a arrepentir</td></tr>
+        <tr><td>&nbsp;&nbsp;<a href="Twopart.html.es">Twopart </a></td><td> - Un juego de cartas de noruega (en dos partes)</td></tr>
     </tbody></table>
 
     <h2>Modo de empleo</h2>
@@ -107,6 +108,10 @@
 
     <p>Gracias a Ann-Karin, Arne, B�rn y Solveing por introducirme a
       <tt>Twopart</tt>.</p>
+
+    <p>La idea para <tt>Jabberwocky</tt> viene de la <a
+      href="http://es.wikipedia.org/wiki/Jabberwocky_(juego_de_cartas)">entrada del mismo
+      nombre en Wikipedia</a>.</p>
 
     <p>Corazones es distribuido con Windows 98 (y tal vez otras versiones).</p>
 
