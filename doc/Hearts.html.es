@@ -42,7 +42,7 @@
     <p>En pocas palabras se trata de evitar de hacer puntos, cuales se
       consiegue ganando bazas con ciertas cartas.</p>
 
-    <h2>Reparto inicial/Intercambio de cartas</h2>
+    <h2>Reparto/Intercambio de cartas</h2>
     <p>Los cuatro jugadores consieguen trece cartas en su mano.</p>
 
     <p>En la mayor&iacute;a de los turnos se cambia 3 cartas. En el
@@ -65,8 +65,8 @@
     <p>Hay otras reglas en el juego:</p>
 
     <ul>
-      <li>Una mano no se puede comenzer con un coraz&oacute;n, si no
-        han jugado en turnos anteriores.</li>
+      <li>Una mano no se puede comenzar con un coraz&oacute;n, si no
+        han estado jugado en manos anteriores.</li>
 
       <li>En la primera mano no se puede jugar ni un coraz&oacute;n ni la reina
         de espadas.</li>
@@ -94,7 +94,7 @@
     <ul>
       <li>Las cartas del jugador humano. Por arriba sus cartas ganadas encima de
         sus cartas en su mano. Se puede chequearlas con hacer clic en ellas; hacer
-        clic con la tecla derecha permite sortearlas.</li>
+        clic con la tecla derecha permite ordenarlas.</li>
 
       <li>En la l&iacute;nea pr&oacute;xima es lo mismo con los jugadores 1 y 3. Entre ellos se
         encuentran las cartas jugadas.</li>
@@ -116,7 +116,7 @@
         </td>
         <td><a href="Buraco.html.es">Anterior</a><br>(Buraco)</td>
         <td><a href="CardCol.html.es">Contenido</a></td>
-        <td><a href="Machiavelli.html.es">Pr&oacute;ximo</a><br>(Machiavelli)</td>
+        <td><a href="Hearts.html.es">Pr&oacute;ximo</a><br>(Hearts)</td>
       </tr>
     </table>
   </body>
