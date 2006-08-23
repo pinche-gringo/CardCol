@@ -6,7 +6,8 @@ INSTALL_DOCU=CardCol.html.en CardCol.html.de CardCol.html.es \
 	     Hearts.html.en Hearts.html.es Hearts.html.de Buraco.html.de \
 	     Buraco.html.en Buraco.html.es Machiavelli.html.de \
 	     Machiavelli.html.en Machiavelli.html.es Sgt.Mayor.html.en \
-	     Sgt.Mayor.html.de Sgt.Mayor.html.es
+	     Sgt.Mayor.html.de Sgt.Mayor.html.es Jabberwocky.html.de \
+	     Jabberwocky.html.en Jabberwocky.html.es
 EXTRA_DIST=$(INSTALL_DOCU)
 
 docudir=$(datadir)/doc/@PACKAGE@
