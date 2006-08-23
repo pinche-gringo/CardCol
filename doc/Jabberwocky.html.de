@@ -45,14 +45,14 @@
 
     <h2>Karten austeilen</h2>
     <p>Am Beginn der ersten Runde erhält jeder der 4 Spieler jeweils 3
-      Karten. Die Anzahl der Karten erhöht sich in jeder Runde um
+      Karten. Danach wird die oberste Karte der restlichen Karten
+      aufgedeckt. Die Farbe dieser Karte bestimmt die Trumpf-Farbe.</p>
+
+    <p>Die Anzahl der Karten erhöht sich in jeder Runde um
       eins, bis zur maximalen Anzahl von 9 Karten pro Spieler. Danach
       wird die Anzahl der Karten in jeder Runde um eine verringert.
       Nach 13 Runden, wenn die Spieler wieder 3 Karten bekommen haben,
       endet das Spiel.</p>
-
-    <p>Abschließend wird die oberste Karte der restlichen Karten
-      aufgedeckt. Die Farbe dieser Karte bestimmt die Trump-Farbe.</p>
 
     <h2>Anzahl der Stiche schätzen</h2>
     <p>Ein zufällig ausgewählter Spieler startet das erste Spiel,
@@ -72,7 +72,7 @@
       können sie jede beliebige Karte spielen.</p>
 
     <p>Ein Stich kann nicht mit einer Trumpfkarte angefangen werden,
-      außer wenn in vorhergegangenen Stichen bereits Trump gespielt
+      außer wenn in vorhergegangenen Stichen bereits Trumpf gespielt
       wurde (bzw. &ldquo;Trumpf bereits <i>angebrochen</i>&rdquo; wurde).</p>
 
     <p>Der Spieler, der die höchste Karte mit der Farbe der zuerst
@@ -84,8 +84,8 @@
     <p>Die Runde endet, wenn alle Karten gespielt wurden.</p>
 
     <h2>Abrechnung</h2>
-    <p>Am Ende des Durchgangs erhält jeder Spieler, der seine Stiche
-      exakt vorrausgesagt hat, einen Punkt (sonst keinen).</p>
+    <p>Am Ende der Runde erhält jeder Spieler, der seine Stiche exakt
+      vorrausgesagt hat, einen Punkt (sonst keinen).</p>
 
     <p>Der oder die Spieler mit den meisten Punkten nach 13 Runden
     gewinnt/gewinnen.</p>
