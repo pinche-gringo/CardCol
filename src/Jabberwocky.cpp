@@ -27,6 +27,8 @@
 
 #include <cardgames-cfg.h>
 
+#include <sstream>
+
 #include <gtkmm/box.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/button.h>
@@ -40,9 +42,12 @@
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
+#include <YGP/Tokenize.h>
 #include <YGP/ANumeric.h>
 
 #include <Player.h>
+#include <RemotePlayer.h>
+#include <ComputerPlayer.h>
 #include <ScoreDlg.h>
 
 #include "Jabberwocky.h"
@@ -138,7 +143,7 @@ void Jabberwocky::start () {
    if (randomizeCardsToPile (pile)) {
       // Show cards on the table: For all players put 3 cards in hand
       for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-	 players[i].bet.undefine ();
+	 players[i].bid.undefine ();
 	 players[i].name.set_text (actPlayers[i]->getName ());
          for (unsigned int j (0); j < getTricks (turn); ++j)
             players[(i - posServer) % NUM_PLAYERS].hand.setTopCard (pile.removeTopCard ());
@@ -170,7 +175,11 @@ void Jabberwocky::start () {
 	 pScoreDlg = NULL;
       }
 
-      makeBets ();
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
+	 setNextPlayer (startPlayer);
+	 broadcastStartPlayer (startPlayer);
+	 makeBids ();
+      }
       pile.clear ();
    }
 }
@@ -347,6 +356,15 @@ void Jabberwocky::cardSelected (unsigned int pos) {
 	      && ((players[0].hand)[0]->colour () != pTrump->colour ())))
 	    throw _("You can't start with a trump, if they have not been played before!");
 
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+	 // Send played card to all clients (if any)
+	 std::ostringstream msg;
+	 msg << "Play=" << played[played.size () - 1]->id () << ";Target=0";
+	 if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+	    ignoreNextMsg = true;
+	 broadcastMessage (msg.str ());
+      }
+
       if ((pos = playCard (0, pos)) != -1U) {
 	 setNextPlayer (pos);
 	 makeNextMoves ();
@@ -360,39 +378,56 @@ void Jabberwocky::cardSelected (unsigned int pos) {
 }
 
 //-----------------------------------------------------------------------------
-/// Makes (or waits) for the bets of the users
-/// \param start: Number of first player to make its bet
-/// \param end: Number of last player to make its bet
+/// Makes (or waits) for the bids of the users
+/// \param start: Number of first player to make its bid
+/// \param end: Number of last player to make its bid
 //-----------------------------------------------------------------------------
-void Jabberwocky::makeBets (unsigned int start, unsigned int end) {
-   TRACE8 ("Jabberwocky::makeBets () - [" << start << '-' << end << ']');
+void Jabberwocky::makeBids (unsigned int start, unsigned int end) {
+   TRACE8 ("Jabberwocky::makeBids () - [" << start << '-' << end << ']');
    Check1 (end < NUM_PLAYERS);
 
-   // Make the remaining bets
+   // Make the remaining bids
    while (start <= end) {
       unsigned int actPlayer ((startPlayer + start++) % NUM_PLAYERS);
+      TRACE8 ("Jabberwocky::makeBids () - " << actPlayer);
+
       if (actPlayer) {
-	 // Estimate the tricks for the player; take care the last player
-	 // does not place a bet which sums all bets up to the number of players
-	 players[actPlayer].bet = calcTricks (actPlayer);
-	 if ((start == end) && (sumBets () == getTricks (turn)))
-	    players[actPlayer].bet += (rand () & 1) ? 1 : -1;
-	 showBet (actPlayer);
+	 if (typeid (*actPlayers[actPlayer]) == typeid (ComputerPlayer)) {
+	    // Estimate the tricks for the player; take care the last player
+	    // does not place a bid which sums all bids up to the number of players
+	    players[actPlayer].bid = calcTricks (actPlayer);
+	    if ((start == end) && (sumBids () == getTricks (turn)))
+	       players[actPlayer].bid += (rand () & 1) ? 1 : -1;
+	    showBid (actPlayer);
+
+	    if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
+	       std::ostringstream msg;
+	       msg << "Bid=" << players[actPlayer].bid << ";Player=" << actPlayer << ';';
+	       broadcastMessage (msg.str ());
+	    }
+	 }
+	 else {
+	    Check3 (typeid (*actPlayers[actPlayer]) == typeid (RemotePlayer));
+	    Glib::ustring msg (_("Waiting for %1 to bid"));
+	    msg.replace (msg.find ("%1"), 2, actPlayers[actPlayer]->getName ());
+	    status.push (msg);
+	    return;
+	 }
       }
       else {
 	 status.pop ();
 	 status.push (_("Make your bid for the number of tricks you are going to make!"));
 
-	 Gtk::Button* bet (new Gtk::Button (_("_Bet"), true));
+	 Gtk::Button* bid (new Gtk::Button (_("_Bid"), true));
 	 Gtk::Adjustment* adj (new Gtk::Adjustment (0, 0.0, getTricks (turn), 1, 2));
 	 Gtk::SpinButton* value (new Gtk::SpinButton (*manage (adj), 1, 0));
-	 bet->show ();
+	 bid->show ();
 	 value->show ();
 
 	 status.pack_start (*value, Gtk::PACK_SHRINK, 5);
-	 status.pack_start (*bet, Gtk::PACK_SHRINK, 5);
+	 status.pack_start (*bid, Gtk::PACK_SHRINK, 5);
 
-	 bet->signal_clicked ().connect (bind (mem_fun (*this, &Jabberwocky::placedBet), value, bet,  start, end));
+	 bid->signal_clicked ().connect (bind (mem_fun (*this, &Jabberwocky::placedBid), value, bid,  start, end));
 	 return;
       }
    }
@@ -401,51 +436,52 @@ void Jabberwocky::makeBets (unsigned int start, unsigned int end) {
 }
 
 //-----------------------------------------------------------------------------
-/// Returns the sum of all bets
-/// \returns unsinged int: Sum o fall bets
+/// Returns the sum of all bids
+/// \returns unsinged int: Sum o fall bids
 //-----------------------------------------------------------------------------
-unsigned int Jabberwocky::sumBets () const {
+unsigned int Jabberwocky::sumBids () const {
    unsigned int sum (0);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      sum += (unsigned int)players[i].bet;
+      sum += (unsigned int)players[i].bid;
    return sum;
 }
 
 //-----------------------------------------------------------------------------
-/// After the initial betting phase: Start the actual game
+/// After the initial bidding phase: Start the actual game
 //-----------------------------------------------------------------------------
 void Jabberwocky::startGame () {
    TRACE2 ("Jabberwocky::startGame () - " << startPlayer);
-   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
-      setNextPlayer (startPlayer);
-      broadcastStartPlayer (startPlayer);
-   }
-
    displayTurn (currentPlayer ());
    makeNextMoves ();
 }
 
 //-----------------------------------------------------------------------------
-/// Commits the bet of the user and continues betting
-/// \param value: Entryfield where user entered his bet
-/// \param commit: Button commiting the bet
-/// \param start: Number of first player to make its bet
-/// \param end: Number of last player to make its bet
+/// Commits the bid of the user and continues bidding
+/// \param value: Entryfield where user entered his bid
+/// \param commit: Button commiting the bid
+/// \param start: Number of first player to make its bid
+/// \param end: Number of last player to make its bid
 //-----------------------------------------------------------------------------
-void Jabberwocky::placedBet (Gtk::SpinButton* value, Gtk::Button* commit,
+void Jabberwocky::placedBid (Gtk::SpinButton* value, Gtk::Button* commit,
 			     unsigned int start, unsigned int end) {
-   TRACE4 ("Jabberwocky::placedBet (Gtk::SpinButton*, Gtk::Button*, 2x unsigned int) - [" << start << '-' << end << ']');
+   TRACE4 ("Jabberwocky::placedBid (Gtk::SpinButton*, Gtk::Button*, 2x unsigned int) - [" << start << '-' << end << ']');
    Check1 (end < NUM_PLAYERS);
    Check1 (commit); Check1 (value);
 
    commit->grab_focus ();
-   players[0].bet = YGP::ANumeric (value->get_text ());
-   if ((start == end) && (sumBets () == getTricks (turn))) {
+   players[0].bid = YGP::ANumeric (value->get_text ());
+   if ((start == end) && (sumBids () == getTricks (turn))) {
       Gtk::MessageDialog dlg (_("The sum of all bids must be different\nthan the number of players!"), Gtk::MESSAGE_ERROR);
       dlg.set_title (_("Jabberwocky"));
       dlg.run ();
    }
    else {
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+	 std::ostringstream msg;
+	 msg << "Bid=" << players[0].bid << ";Player=0;";
+	 broadcastMessage (msg.str ());
+      }
+
       status.pop ();
 
       status.remove (*value);
@@ -454,26 +490,26 @@ void Jabberwocky::placedBet (Gtk::SpinButton* value, Gtk::Button* commit,
       delete value;
       delete commit;
 
-      showBet (0);
-      makeBets (start, end);
+      showBid (0);
+      makeBids (start, end);
    }
 }
 
 //-----------------------------------------------------------------------------
-/// Shows the bet the passed player has set
-/// \param player: Player whose bet shall be shown
+/// Shows the bid the passed player has set
+/// \param player: Player whose bid shall be shown
 //-----------------------------------------------------------------------------
-void Jabberwocky::showBet (unsigned int player) {
-   if (players[player].bet.isDefined ()) {
-      Glib::ustring tricks (_("; bets %1 tricks"));
-      tricks.replace (tricks.find ("%1"), 2, players[player].bet.toString ());
+void Jabberwocky::showBid (unsigned int player) {
+   if (players[player].bid.isDefined ()) {
+      Glib::ustring tricks (_("; bids %1 tricks"));
+      tricks.replace (tricks.find ("%1"), 2, players[player].bid.toString ());
       players[player].name.set_text (actPlayers[player]->getName () + tricks);
    }
 }
 
 
 //-----------------------------------------------------------------------------
-/// Calculates the bets for the passed player
+/// Calculates the bids for the passed player
 /// \param player: Number of player to calculate tricks to make for
 /// \returns unsigned int: Number of tricks player will win
 //-----------------------------------------------------------------------------
@@ -526,15 +562,15 @@ void Jabberwocky::showCards2Play (unsigned int player) {
    ICardPile& hand (players[player].hand);
    int aPosColours[4];
    getPositionOfColours (hand, aPosColours);
-   TRACE3 ("Jabberwocky::showCards2Play (unsigned int) - Missing tricks: " << ((int)players[player].bet - (players[player].won.size () / NUM_PLAYERS)));
+   TRACE3 ("Jabberwocky::showCards2Play (unsigned int) - Missing tricks: " << ((int)players[player].bid - (players[player].won.size () / NUM_PLAYERS)));
 
    // Already cards played?
    if (played.size ()) {
       unsigned int posWinner (check4Winner ());
       TRACE4 ("Jabberwocky::showCards2Play (unsigned int) - Winning card: " << posWinner << " (" << *played[posWinner] << ')');
 
-      // If the player still has bets to fullfill
-      if ((unsigned int)players[player].bet > (players[player].won.size () / NUM_PLAYERS)) {
+      // If the player still has bids to fullfill
+      if ((unsigned int)players[player].bid > (players[player].won.size () / NUM_PLAYERS)) {
 	 // Can follow suit?
 	 if (aPosColours[played[0]->colour ()] == -1) {
 	    TRACE7 ("Jabberwocky::showCards2Play (unsigned int) - Can't follow suit");
@@ -613,8 +649,8 @@ void Jabberwocky::showCards2Play (unsigned int player) {
    }
    // First card to play
    else {
-      // If the player still has bets to fullfill
-      if ((unsigned int)players[player].bet < (players[player].won.size () / NUM_PLAYERS))
+      // If the player still has bids to fullfill
+      if ((unsigned int)players[player].bid < (players[player].won.size () / NUM_PLAYERS))
 	 for (unsigned int i (0); i < 4; ++i)
 	    if (CardWidget::COLOURS (i) != pTrump->colour ())
 	       if ((aPosColours[CardWidget::COLOURS (i)] != -1)
@@ -854,10 +890,10 @@ int Jabberwocky::playCard (unsigned int player, unsigned int card) {
       pScoreDlg = ScoreDlg::create (actPlayers);
       pScoreDlg->get_window ()->set_transient_for (get_window ());
    }
-   // Add points, if bet has been met
+   // Add points, if bid has been met
    int points[NUM_PLAYERS];
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      points[i] = (unsigned int)players[i].bet == (players[i].won.size () / NUM_PLAYERS);
+      points[i] = (unsigned int)players[i].bid == (players[i].won.size () / NUM_PLAYERS);
    pScoreDlg->addPoints (points);
    pScoreDlg->show ();
 
@@ -876,4 +912,44 @@ int Jabberwocky::playCard (unsigned int player, unsigned int card) {
    status.push (stat);
    setGameStatus (STOPPED);
    return -1;
+}
+
+//----------------------------------------------------------------------------
+/// Handles the messages the server might send for the Jabberwocky cardgame
+/// \param player: ID of player sending the message
+/// \param message: Message received from the server
+/// \returns bool: True, if message has been completey processed
+/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
+//----------------------------------------------------------------------------
+bool Jabberwocky::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
+   YGP::Tokenize command (message);
+   std::string cmd (command.getNextNode ('='));
+
+   if (cmd == "Bid") {
+      TRACE5 ("Jabberwocky::handleMessage (unsigned int, const std::string&) - " << message);
+
+      std::string value (command.getNextNode (';'));
+      cmd = command.getNextNode ('=');
+      unsigned long lPlayer (player);
+      if ((cmd == "Player")
+	  && !stringToNumber (lPlayer, command.getNextNode (';').c_str ())
+	  && (lPlayer < NUM_PLAYERS)) {
+	 lPlayer = (lPlayer - posServer) & 0x3;
+	 unsigned long bid;
+	 if (!stringToNumber (bid, value.c_str ())) {
+	    players[lPlayer].bid = bid;
+	    showBid (lPlayer);
+	    status.pop ();
+
+	    makeBids (lPlayer);
+	    return true;
+	 }
+      }
+   }
+   bool rc (Game::handleMessage (player, message));
+   if ((cmd == "ActPlayer")
+       && (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT))
+      makeBids ();
+
+   return rc;
 }

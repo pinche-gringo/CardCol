@@ -49,8 +49,10 @@ class Jabberwocky : public Game {
    virtual void start ();
    virtual void clean ();
    virtual void playOpen (bool open);
-   virtual const char* name () { return "Sgt. Mayor"; }
+   virtual const char* name () { return "Jabberwocky"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
+
+   virtual bool handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError);
 
  protected:
    virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
@@ -70,11 +72,11 @@ class Jabberwocky : public Game {
    //@Section helper methods
    static unsigned int getTricks (unsigned int round) { return (round < 7) ? (round + 3) : (15 - round); }
    void cardSelected (unsigned int pos);
-   void makeBets (unsigned int start = 0, unsigned int end = NUM_PLAYERS - 1);
+   void makeBids (unsigned int start = 0, unsigned int end = NUM_PLAYERS - 1);
    void startGame ();
-   void placedBet (Gtk::SpinButton* value, Gtk::Button* commit,
+   void placedBid (Gtk::SpinButton* value, Gtk::Button* commit,
 		   unsigned int start, unsigned int end);
-   void showBet (unsigned int player);
+   void showBid (unsigned int player);
    unsigned int calcTricks (unsigned int player) const;
 
    void showCards2Play (unsigned int player);
@@ -86,7 +88,7 @@ class Jabberwocky : public Game {
    unsigned int findLowerCard (const CardWidget& cardCmp, const ICardPile& pile, int aPosColour) const;
    unsigned int findWorstCard (const ICardPile& card, const int aPositions[4]) const;
    unsigned int check4Winner () const;
-   unsigned int sumBets () const;
+   unsigned int sumBids () const;
 
    static char sortOrder[4];
    static bool compByColourAccTrumps (const CardWidget* a, const CardWidget* b);
@@ -98,7 +100,7 @@ class Jabberwocky : public Game {
       CardHPile  won;                                              // Won ticks
       Gtk::Label name;
 
-      YGP::ANumeric bet;
+      YGP::ANumeric bid;
    } players[NUM_PLAYERS];
    CardHPile played;
    CardWidget* pTrump;
