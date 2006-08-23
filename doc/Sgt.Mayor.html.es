@@ -49,7 +49,7 @@
       href="#Note1"><sup>1</sup></a> bazas m&aacute;s (acumuladas) que
       le necesita, gana el juego.</p>
 
-    <h2>Reparto inicial</h2>
+    <h2>Reparto</h2>
     <p>Sgt. Mayor se juega por 3 personas con un juego de 52 cartas de
        cuales se ha quitado la dos de pica (&spades;-2). Todos los
        jugadores consiguen 17 cartas.</p>

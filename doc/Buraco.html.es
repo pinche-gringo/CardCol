@@ -50,7 +50,7 @@
     <p>Buraco se juega con 4 juegos de cartas (52 por juego)
       m&aacute;s 12 comodines.</p>
 
-    <h2>Repartir las cartas</h2>
+    <h2>Reparto</h2>
     <p>Los jugadores empiezan con once<a
       href="#Note1"><sup>1</sup></a> cartas en su mano. Adem&aacute;s
       hay 2 pilas del mismo n&uacute;mero de cartas (los "buracos"),

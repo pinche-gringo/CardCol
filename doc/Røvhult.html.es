@@ -47,7 +47,7 @@
       reglas - por supuesto son f&aacute;ciles como tambi&eacute;n los
       yankis lo juegan:</p>
 
-    <h2>Reparto inicial</h2>
+    <h2>Reparto</h2>
     <p>Todos los jugadores empiezan con tres cartas en su mano y tres
       cartas con boca abaja con una carta con boca arriba por encima
       en la mesa. Las dem&aacute;s cartas se pone en el mont&oacute;n

@@ -45,7 +45,7 @@
       palabras se trata de deshacerse de sus cartas poni&eacute;ndolas
       en pilas en la mesa.</p>
 
-    <h2>Reparto inicial</h2>
+    <h2>Reparto</h2>
     <p>Los jugadores consiguen siete cartas en su mano. Los
       dem&aacute;s se pone en el mont&oacute;n de reserva.</p>
 

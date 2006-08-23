@@ -46,7 +46,7 @@
     <p>El juego es separado en dos partes (por eso su nombre; obviamente no soy
       muy imaginativo).</p>
 
-    <h2>Reparto inicial</h2>
+    <h2>Reparto</h2>
     <p>En la primera parte todos los jugadores comienzan con tres
       cartas en su mano cual juegan contra la direcci&oacute;n del las
       aguajas de reloj. Las dem&aacute;s cartas se pone en el
