@@ -287,10 +287,10 @@ void Jabberwocky::changeNames (const std::vector<Player*>& newPlayer) {
 ICardPile* Jabberwocky::getPileOfPlayer (unsigned int player, unsigned int pile) {
    TRACE8 ("Jabberwocky::getPileOfPlayer (unsigned int, unsigned int) - Player "
            << player << "; Pile " << pile);
-   if ((player >= NUM_PLAYERS) || (pile > 1))
+   if ((player >= NUM_PLAYERS) || pile)
       return NULL;
 
-   return &(pile ? played : players[player].hand);
+   return &players[player].hand;
 }
 
 //-----------------------------------------------------------------------------
@@ -359,7 +359,7 @@ void Jabberwocky::cardSelected (unsigned int pos) {
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
 	 // Send played card to all clients (if any)
 	 std::ostringstream msg;
-	 msg << "Play=" << played[played.size () - 1]->id () << ";Target=0";
+	 msg << "Play=" << card.id () << ";Target=0";
 	 if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
 	    ignoreNextMsg = true;
 	 broadcastMessage (msg.str ());
@@ -380,35 +380,35 @@ void Jabberwocky::cardSelected (unsigned int pos) {
 //-----------------------------------------------------------------------------
 /// Makes (or waits) for the bids of the users
 /// \param start: Number of first player to make its bid
-/// \param end: Number of last player to make its bid
 //-----------------------------------------------------------------------------
-void Jabberwocky::makeBids (unsigned int start, unsigned int end) {
-   TRACE8 ("Jabberwocky::makeBids () - [" << start << '-' << end << ']');
-   Check1 (end < NUM_PLAYERS);
+void Jabberwocky::makeBids (unsigned int start) {
+   TRACE8 ("Jabberwocky::makeBids (unsigned int) - Start: " << start);
 
    // Make the remaining bids
-   while (start <= end) {
-      unsigned int actPlayer ((startPlayer + start++) % NUM_PLAYERS);
-      TRACE8 ("Jabberwocky::makeBids () - " << actPlayer);
+   while (start < NUM_PLAYERS) {
+      unsigned int actPlayer ((startPlayer + start) % NUM_PLAYERS);
+      TRACE8 ("Jabberwocky::makeBids (unsigned int) - PlayerID: " << actPlayer);
 
       if (actPlayer) {
 	 if (typeid (*actPlayers[actPlayer]) == typeid (ComputerPlayer)) {
 	    // Estimate the tricks for the player; take care the last player
 	    // does not place a bid which sums all bids up to the number of players
 	    players[actPlayer].bid = calcTricks (actPlayer);
-	    if ((start == end) && (sumBids () == getTricks (turn)))
+	    if ((start == NUM_PLAYERS) && (sumBids () == getTricks (turn)))
 	       players[actPlayer].bid += (rand () & 1) ? 1 : -1;
 	    showBid (actPlayer);
 
 	    if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
 	       std::ostringstream msg;
 	       msg << "Bid=" << players[actPlayer].bid << ";Player=" << actPlayer << ';';
+	       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+		  ignoreNextMsg = true;
 	       broadcastMessage (msg.str ());
 	    }
 	 }
 	 else {
 	    Check3 (typeid (*actPlayers[actPlayer]) == typeid (RemotePlayer));
-	    Glib::ustring msg (_("Waiting for %1 to bid"));
+	    Glib::ustring msg (_("Waiting for %1 to bid ..."));
 	    msg.replace (msg.find ("%1"), 2, actPlayers[actPlayer]->getName ());
 	    status.push (msg);
 	    return;
@@ -427,9 +427,10 @@ void Jabberwocky::makeBids (unsigned int start, unsigned int end) {
 	 status.pack_start (*value, Gtk::PACK_SHRINK, 5);
 	 status.pack_start (*bid, Gtk::PACK_SHRINK, 5);
 
-	 bid->signal_clicked ().connect (bind (mem_fun (*this, &Jabberwocky::placedBid), value, bid,  start, end));
+	 bid->signal_clicked ().connect (bind (mem_fun (*this, &Jabberwocky::placedBid), value, bid,  start + 1));
 	 return;
       }
+      ++start;
    }
 
    startGame ();
@@ -460,17 +461,14 @@ void Jabberwocky::startGame () {
 /// \param value: Entryfield where user entered his bid
 /// \param commit: Button commiting the bid
 /// \param start: Number of first player to make its bid
-/// \param end: Number of last player to make its bid
 //-----------------------------------------------------------------------------
-void Jabberwocky::placedBid (Gtk::SpinButton* value, Gtk::Button* commit,
-			     unsigned int start, unsigned int end) {
-   TRACE4 ("Jabberwocky::placedBid (Gtk::SpinButton*, Gtk::Button*, 2x unsigned int) - [" << start << '-' << end << ']');
-   Check1 (end < NUM_PLAYERS);
+void Jabberwocky::placedBid (Gtk::SpinButton* value, Gtk::Button* commit, unsigned int start) {
+   TRACE4 ("Jabberwocky::placedBid (Gtk::SpinButton*, Gtk::Button*, unsigned int) - " << start);
    Check1 (commit); Check1 (value);
 
    commit->grab_focus ();
    players[0].bid = YGP::ANumeric (value->get_text ());
-   if ((start == end) && (sumBids () == getTricks (turn))) {
+   if ((start >= NUM_PLAYERS) && (sumBids () == getTricks (turn))) {
       Gtk::MessageDialog dlg (_("The sum of all bids must be different\nthan the number of players!"), Gtk::MESSAGE_ERROR);
       dlg.set_title (_("Jabberwocky"));
       dlg.run ();
@@ -478,20 +476,18 @@ void Jabberwocky::placedBid (Gtk::SpinButton* value, Gtk::Button* commit,
    else {
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
 	 std::ostringstream msg;
-	 msg << "Bid=" << players[0].bid << ";Player=0;";
+	 msg << "Bid=" << players[0].bid << ";Player=" << posServer << ';';
 	 broadcastMessage (msg.str ());
       }
 
-      status.pop ();
-
       status.remove (*value);
       status.remove (*commit);
-
       delete value;
       delete commit;
 
+      status.pop ();
       showBid (0);
-      makeBids (start, end);
+      makeBids (start);
    }
 }
 
@@ -936,20 +932,24 @@ bool Jabberwocky::handleMessage (unsigned int player, const std::string& message
 	  && (lPlayer < NUM_PLAYERS)) {
 	 lPlayer = (lPlayer - posServer) & 0x3;
 	 unsigned long bid;
-	 if (!stringToNumber (bid, value.c_str ())) {
+	 if ((!stringToNumber (bid, value.c_str ()))
+	     || (bid > getTricks (turn)) || players[lPlayer].bid.isDefined ()) {
 	    players[lPlayer].bid = bid;
 	    showBid (lPlayer);
 	    status.pop ();
 
-	    makeBids (lPlayer);
+	    // Continue with bidding; but first correct the player with whom to start
+	    makeBids (lPlayer + 1 - startPlayer);
 	    return true;
 	 }
       }
    }
    bool rc (Game::handleMessage (player, message));
    if ((cmd == "ActPlayer")
-       && (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT))
+       && (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)) {
+      startPlayer = currentPlayer ();
       makeBids ();
+   }
 
    return rc;
 }

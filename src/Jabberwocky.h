@@ -72,10 +72,9 @@ class Jabberwocky : public Game {
    //@Section helper methods
    static unsigned int getTricks (unsigned int round) { return (round < 7) ? (round + 3) : (15 - round); }
    void cardSelected (unsigned int pos);
-   void makeBids (unsigned int start = 0, unsigned int end = NUM_PLAYERS - 1);
+   void makeBids (unsigned int start = 0);
    void startGame ();
-   void placedBid (Gtk::SpinButton* value, Gtk::Button* commit,
-		   unsigned int start, unsigned int end);
+   void placedBid (Gtk::SpinButton* value, Gtk::Button* commit, unsigned int start);
    void showBid (unsigned int player);
    unsigned int calcTricks (unsigned int player) const;
 
