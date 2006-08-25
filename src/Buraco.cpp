@@ -1395,7 +1395,7 @@ void Buraco::addBuraco (unsigned int player) {
    // If the computer-player had jokers left, show them
    if (player && cJokers) {
       TRACE3 ("Buraco::addBuraco (unsigned int) - Jokers: " << cJokers);
-      for (ICardPile::iterator i (hands[player].begin () + 11);
+      for (ICardPile::iterator i (hands[player].begin () + CARDS2DEAL);
 	   i != hands[player].end (); ++i) {
 	 (*i)->showFace ();
 	 hands[player].resize (**i, ICardPile::COMPRESSED);
@@ -1424,9 +1424,9 @@ bool Buraco::hideJoker (ICardPile* pile, unsigned int cJokers) {
    TRACE9 ("Buraco::hideJoker (ICardPile&, unsigned int) - " << cJokers);
    Check1 (pile);
    Check1 (cJokers);
-   Check1 (cJokers < pile->size ());
+   Check1 ((cJokers + CARDS2DEAL) < pile->size ());
 
-   for (ICardPile::iterator i (pile->begin () + 11); i != pile->end (); ++i) {
+   for (ICardPile::iterator i (pile->begin () + CARDS2DEAL); i != pile->end (); ++i) {
       (*i)->showBack ();
       pile->resize (**i, ICardPile::VERY_COMPRESSED);
    }
