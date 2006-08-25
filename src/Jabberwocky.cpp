@@ -352,7 +352,7 @@ void Jabberwocky::cardSelected (unsigned int pos) {
 	 if (((card.colour () == pTrump->colour ())
 	      && (playedCards[card.colour ()].count () == 1)
 	      && ((players[0].hand)[0]->colour () != pTrump->colour ())))
-	    throw _("You can't start with a trump, if they have not been played before!");
+	    throw _("You can't start with a trump,\nif they have not been played before!");
 
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
 	 // Send played card to all clients (if any)
@@ -414,7 +414,7 @@ void Jabberwocky::makeBids (unsigned int start) {
       }
       else {
 	 status.pop ();
-	 status.push (_("Make your bid for the number of tricks you are going to make!"));
+	 status.push (_("Make your bid for the number of tricks\nyou are going to make!"));
 
 	 Gtk::Button* bid (new Gtk::Button (_("_Bid"), true));
 	 Gtk::Adjustment* adj (new Gtk::Adjustment (0, 0.0, getTricks (turn), 1, 2));
@@ -469,7 +469,7 @@ void Jabberwocky::placedBid (Gtk::SpinButton* value, Gtk::Button* commit, unsign
    commit->grab_focus ();
    players[0].bid = YGP::ANumeric (value->get_text ());
    if ((start >= NUM_PLAYERS) && (sumBids () == getTricks (turn))) {
-      Gtk::MessageDialog dlg (_("The sum of all bids must be different\nthan the number of players!"), Gtk::MESSAGE_ERROR);
+      Gtk::MessageDialog dlg (_("The sum of all bids must be different\nthan the number of possible tricks!"), Gtk::MESSAGE_ERROR);
       dlg.set_title (_("Jabberwocky"));
       dlg.run ();
    }
