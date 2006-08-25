@@ -38,7 +38,7 @@
     <hr size=2>
 
     <p>Jabberwocky es un juego de cartas en el cual pueden participar
-      de 3 a 5 personas. El objetivo es predecir y acertar un número
+      de 4 personas. El objetivo es predecir y acertar un número
       de bazas a lo largo de 13 rondas. El ganador es quien logra
       advinar el mayor número de predicciones.</p>
 
@@ -53,9 +53,9 @@
       vez 3 cartas, concluye el juego.</p>
 
     <h2>Predecir el número de bazas</h2>
-    <p>El jugador a la izquierda del repartidor inicia el juego
-      prediciendo un número específico de bazas a alcanzar (entre 0 y
-      el número de las cartas en la mano).</p>
+    <p>Un jugador casual inicia el juego prediciendo un número
+      específico de bazas a alcanzar (entre 0 y el número de las
+      cartas en la mano; valores inválidas están corrigidas).</p>
 
     <p>Los siguentes jugadores hacen sus respectivas predicciones. La
       del último jugador deberá ser tal que la suma de las
