@@ -37,8 +37,6 @@
 #include <gtkmm/spinbutton.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -433,6 +431,8 @@ void Jabberwocky::makeBids (unsigned int start) {
       ++start;
    }
 
+   Check2 (players[0].bid.isDefined ()); Check2 (players[1].bid.isDefined ());
+   Check2 (players[2].bid.isDefined ()); Check2 (players[3].bid.isDefined ());
    startGame ();
 }
 
@@ -522,13 +522,14 @@ unsigned int Jabberwocky::calcTricks (unsigned int player) const {
       if ((*i)->colour () == pTrump->colour ()) {
 	 if (((*i)->number () > CardWidget::EIGHT) || (left > 19))
 	    ++tricks;
+	 ++tricks;
       }
       else
 	 if (isHighEnough (**i))
-	    ++tricks;
+	    tricks += 2;
    }
 
-   return tricks;
+   return tricks >> 1;
 }
 
 //-----------------------------------------------------------------------------
@@ -605,7 +606,6 @@ void Jabberwocky::showCards2Play (unsigned int player) {
 	    if (played[posWinner]->colour () != played[0]->colour ())
 	       pos2Play = hand.findFirstEqualColour (aPosColours[played[0]->colour ()]);
 	    else {
-	       // TODO: Check if following people can't possibly take trick
 	       // Last in turn
 	       if (played.size () == (NUM_PLAYERS - 1))
 		  pos2Play = ((hand[aPosColours[played[0]->colour ()]]->number () > played[posWinner]->number ())
@@ -646,13 +646,21 @@ void Jabberwocky::showCards2Play (unsigned int player) {
    // First card to play
    else {
       // If the player still has bids to fullfill
-      if ((unsigned int)players[player].bid < (players[player].won.size () / NUM_PLAYERS))
-	 for (unsigned int i (0); i < 4; ++i)
-	    if (CardWidget::COLOURS (i) != pTrump->colour ())
-	       if ((aPosColours[CardWidget::COLOURS (i)] != -1)
-		   && (isHighest (*hand[aPosColours[CardWidget::COLOURS (i)]])
-		       || isHighEnough (*hand[aPosColours[CardWidget::COLOURS (i)]])))
-		    pos2Play = aPosColours[CardWidget::COLOURS (i)];
+      if ((unsigned int)players[player].bid < (players[player].won.size () / NUM_PLAYERS)) {
+	 // Try to eliminate trumps
+	 if (playedCards[pTrump->colour ()].count ()
+	     && (aPosColours[pTrump->colour ()] != -1)
+	     && (isHighest (*hand[aPosColours[pTrump->colour ()]])
+		 || isHighEnough (*hand[aPosColours[pTrump->colour ()]])))
+	    pos2Play = aPosColours[pTrump->colour ()];
+	 else
+	    for (unsigned int i (0); i < 4; ++i)
+	       if (CardWidget::COLOURS (i) != pTrump->colour ())
+		  if ((aPosColours[CardWidget::COLOURS (i)] != -1)
+		      && (isHighest (*hand[aPosColours[CardWidget::COLOURS (i)]])
+			  || isHighEnough (*hand[aPosColours[CardWidget::COLOURS (i)]])))
+		     pos2Play = aPosColours[CardWidget::COLOURS (i)];
+      }
 
       if (pos2Play == -1U)
 	 pos2Play = findWorstCard (hand, aPosColours);
@@ -939,7 +947,8 @@ bool Jabberwocky::handleMessage (unsigned int player, const std::string& message
 	    status.pop ();
 
 	    // Continue with bidding; but first correct the player with whom to start
-	    makeBids (lPlayer + 1 - startPlayer);
+	    makeBids (((++lPlayer % NUM_PLAYERS) == startPlayer)
+		      ? NUM_PLAYERS : ((lPlayer + NUM_PLAYERS - startPlayer) % NUM_PLAYERS));
 	    return true;
 	 }
       }
