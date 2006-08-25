@@ -72,7 +72,7 @@
         de espadas.</li>
     </ul>
 
-    <h2>Puntaci&oacute;n</h2>
+    <h2>Puntuaci&oacute;n</h2>
     <p>Si no hay m&aacute;s cartas, se cuenta el n&uacute;mero de los
       puntos (malos).  Cada coraz&oacute;n recibido vale un punto y
       trece puntos la reina de espadas. Si un jugador
