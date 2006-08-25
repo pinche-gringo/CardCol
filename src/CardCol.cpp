@@ -27,7 +27,7 @@
 
 #include <cardgames-cfg.h>
 
-#if !(defined (WITH_HEARTS) || defined (WITH_BURACO) || defined (WITH_TWOPART) || defined (WITH_ROVHULT) || defined (WITH_SGTMAYOR) || defined (WITH_MACHIAVELLI))
+#if !(defined (WITH_HEARTS) || defined (WITH_BURACO) || defined (WITH_TWOPART) || defined (WITH_ROVHULT) || defined (WITH_SGTMAYOR) || defined (WITH_JABBERWOCKY) || defined (WITH_MACHIAVELLI))
 #  error All games are disabled!
 #endif
 
@@ -41,7 +41,6 @@
 #include <gtkmm/radioaction.h>
 #include <gtkmm/messagedialog.h>
 
-#define TRACELEVEL 1
 #include <YGP/File.h>
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -59,25 +58,28 @@
 
 #include "GameTypes.h"
 
-#ifdef WITH_HEARTS
-#  include "Hearts.h"
-#endif
 #ifdef WITH_BURACO
 #  include "Buraco.h"
 #  include "BuracoCards.h"
+#endif
+#ifdef WITH_HEARTS
+#  include "Hearts.h"
+#endif
+#ifdef WITH_JABBERWOCKY
+#  include "Jabberwocky.h"
+#endif
+#ifdef WITH_MACHIAVELLI
+#  include "Machiavelli.h"
 #endif
 #ifdef WITH_ROVHULT
 #  include "Rovhult.h"
 #  include "CardValue.h"
 #endif
-#ifdef WITH_TWOPART
-#  include "Twopart.h"
-#endif
 #ifdef WITH_SGTMAYOR
 #  include "SgtMayor.h"
 #endif
-#ifdef WITH_MACHIAVELLI
-#  include "Machiavelli.h"
+#ifdef WITH_TWOPART
+#  include "Twopart.h"
 #endif
 
 #include "Settings.h"
@@ -674,6 +676,9 @@ CardgameCollection::CardgameCollection (Options& opts)
 #ifdef WITH_HEARTS
 		     "      <menuitem action='Hearts'/>"
 #endif
+#ifdef WITH_JABBERWOCKY
+		     "      <menuitem action='Jabberwocky'/>"
+#endif
 #ifdef WITH_MACHIAVELLI
 		     "      <menuitem action='Machiavelli'/>"
 #endif
@@ -730,6 +735,11 @@ CardgameCollection::CardgameCollection (Options& opts)
    grpAction->add (apMenus[HEARTS] = Gtk::RadioAction::create (grpGames, "Hearts", _("_Hearts")),
 		   Gtk::AccelKey (_("<ctl>H")),
 		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::HEARTS));
+#endif
+#ifdef WITH_HEARTS
+   grpAction->add (apMenus[JABBERWOCKY] = Gtk::RadioAction::create (grpGames, "Jabberwocky", _("_Jabberwocky")),
+		   Gtk::AccelKey (_("<ctl>J")),
+		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::JABBERWOCKY));
 #endif
 #ifdef WITH_MACHIAVELLI
    grpAction->add (apMenus[MACHIAVELLI] = Gtk::RadioAction::create (grpGames, "Machiavelli", _("_Machiavelli")),
@@ -899,6 +909,13 @@ void CardgameCollection::startGame () {
 #ifdef WITH_SGTMAYOR
       case GameTypes::SGTMAYOR:
          game = new TGame<SgtMayor, CardgameCollection>
+            (*this, &CardgameCollection::gameEvents);
+         break;
+#endif
+
+#ifdef WITH_JABBERWOCKY
+      case GameTypes::JABBERWOCKY:
+         game = new TGame<Jabberwocky, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 #endif
