@@ -1,3 +1,10 @@
+Overview of changes in version 0.8.00:
+
+  - Implemented Jabberwocky
+  - Minor optimisations
+  - Burco: Fixed showing/hiding jokers with number of cards other than 11
+
+
 Overview of changes in version 0.7.60:
 
   - Røvhult got changeable settings
