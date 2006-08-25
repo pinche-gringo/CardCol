@@ -971,8 +971,6 @@ bool Hearts::handleMessage (unsigned int player, const std::string& message) thr
              && !stringToNumber (lPlayer, command.getNextNode (';').c_str ())
              && (lPlayer < NUM_PLAYERS)) {
             Check3 (player ? (lPlayer == player) : true);
-            if (!player)
-               lPlayer = static_cast<unsigned long> (lPlayer);
 
             register unsigned int save (lPlayer);
             lPlayer = (lPlayer - posServer) & 0x3;
