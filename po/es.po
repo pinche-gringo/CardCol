@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Cardgames V0.7 ($Revision$)\n"
+"Project-Id-Version: Cardgames V0.8 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2006-08-09 21:05-0400\n"
+"POT-Creation-Date: 2006-08-26 13:43-0400\n"
 "PO-Revision-Date: 2005-05-19 16:24-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #: src/Rovhult.cpp:201 src/Hearts.cpp:347
 msgid "Waiting for other player to exchange their cards ..."
-msgstr "Estoy esperando que los demás jugadores intercambian sus cartas ..."
+msgstr "Estoy esperando que los demás jugadores intercambien sus cartas ..."
 
 #: src/Rovhult.cpp:372
 msgid "You must first play the visible cards!"
@@ -91,15 +91,17 @@ msgstr[1] ""
 msgid "First part ended; Part 2 starts %1"
 msgstr "La primera parte terminó; %1 comienza el parte 2"
 
-#: src/Twopart.cpp:1233 src/CardCol.cpp:751
+#: src/Twopart.cpp:1233 src/CardCol.cpp:761
 msgid "_Twopart"
 msgstr ""
 
-#: src/Twopart.cpp:1235 src/Hearts.cpp:1075 src/SgtMayor.cpp:1210
+#: src/Twopart.cpp:1235 src/Hearts.cpp:1050 src/SgtMayor.cpp:1209
+#: src/Jabberwocky.cpp:305
 msgid "_Sort won cards (by number)"
 msgstr "_Ordena cartas obtenidas por números"
 
-#: src/Twopart.cpp:1239 src/Hearts.cpp:1079 src/SgtMayor.cpp:1214
+#: src/Twopart.cpp:1239 src/Hearts.cpp:1054 src/SgtMayor.cpp:1213
+#: src/Jabberwocky.cpp:309
 msgid "Sort won cards (by _colour)"
 msgstr "Ordena cartas obtenidos por _pinta"
 
@@ -253,117 +255,125 @@ msgstr ""
 "\n"
 "Causa: %1"
 
-#: src/CardCol.cpp:702
+#: src/CardCol.cpp:707
 msgid "_Game"
 msgstr "_Juego"
 
-#: src/CardCol.cpp:705
+#: src/CardCol.cpp:710
 msgid "_End"
 msgstr "_Terminar"
 
-#: src/CardCol.cpp:708
+#: src/CardCol.cpp:713
 msgid "_Connect ..."
 msgstr "_Conectar ..."
 
-#: src/CardCol.cpp:709
+#: src/CardCol.cpp:714
 msgid "<shft><ctl>C"
 msgstr "<ctl>C"
 
-#: src/CardCol.cpp:712
+#: src/CardCol.cpp:717
 msgid "_Chat ..."
 msgstr ""
 
-#: src/CardCol.cpp:713
+#: src/CardCol.cpp:718
 msgid "<alt><ctl>C"
 msgstr ""
 
-#: src/CardCol.cpp:720
+#: src/CardCol.cpp:725
 msgid "_Options"
 msgstr "_Opciones"
 
-#: src/CardCol.cpp:721
+#: src/CardCol.cpp:726
 msgid "_Change game"
 msgstr "Cambiar el _juego"
 
-#: src/CardCol.cpp:725 src/Buraco.cpp:2230 src/Settings.cpp:139
+#: src/CardCol.cpp:730 src/Buraco.cpp:2230 src/Settings.cpp:139
 msgid "_Buraco"
 msgstr ""
 
-#: src/CardCol.cpp:726
+#: src/CardCol.cpp:731
 msgid "<ctl>B"
 msgstr ""
 
-#: src/CardCol.cpp:730 src/Settings.cpp:149
+#: src/CardCol.cpp:735 src/Settings.cpp:149
 msgid "_Hearts"
 msgstr "_Corazones"
 
-#: src/CardCol.cpp:731
+#: src/CardCol.cpp:736
 msgid "<ctl>H"
 msgstr "<ctl>O"
 
-#: src/CardCol.cpp:735 src/Machiavelli.cpp:1696
+#: src/CardCol.cpp:740 src/Jabberwocky.cpp:303
+msgid "_Jabberwocky"
+msgstr ""
+
+#: src/CardCol.cpp:741
+msgid "<ctl>J"
+msgstr "<ctl>J"
+
+#: src/CardCol.cpp:745 src/Machiavelli.cpp:1696
 msgid "_Machiavelli"
 msgstr ""
 
-#: src/CardCol.cpp:736
+#: src/CardCol.cpp:746
 msgid "<ctl>M"
 msgstr ""
 
-#: src/CardCol.cpp:741 src/Settings.cpp:175
+#: src/CardCol.cpp:751 src/Settings.cpp:175
 msgid "_Rovhult"
 msgstr "_Røvhult"
 
-#: src/CardCol.cpp:742
+#: src/CardCol.cpp:752
 msgid "<ctl>R"
 msgstr ""
 
-#: src/CardCol.cpp:746 src/SgtMayor.cpp:1208
+#: src/CardCol.cpp:756 src/SgtMayor.cpp:1207
 msgid "_Sgt. Mayor"
 msgstr ""
 
-#: src/CardCol.cpp:747
+#: src/CardCol.cpp:757
 msgid "<ctl>Y"
 msgstr ""
 
-#: src/CardCol.cpp:752
+#: src/CardCol.cpp:762
 msgid "<ctl>T"
 msgstr "<ctl>P"
 
-#: src/CardCol.cpp:756
+#: src/CardCol.cpp:766
 msgid "Change _decks ..."
 msgstr "Cambiar _imágenes de las cartas ..."
 
-#: src/CardCol.cpp:757
+#: src/CardCol.cpp:767
 msgid "<ctl>D"
 msgstr "<ctl>I"
 
-#: src/CardCol.cpp:759
+#: src/CardCol.cpp:769
 msgid "Change _names ..."
 msgstr "Cambiar los nombres del los _jugadores ..."
 
-#: src/CardCol.cpp:760
+#: src/CardCol.cpp:770
 msgid "<ctl>C"
 msgstr "<ctl>J"
 
-#: src/CardCol.cpp:763
+#: src/CardCol.cpp:773
 msgid "F9"
 msgstr ""
 
-#: src/CardCol.cpp:766
+#: src/CardCol.cpp:776
 msgid "_Save preferences"
 msgstr "_Guardar opciónes"
 
-#: src/CardCol.cpp:972
+#: src/CardCol.cpp:989
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 "Un juego ya está activo. ¿Seguro que quieres terminarlo y comencar de nuevo?"
 
-#: src/CardCol.cpp:995
+#: src/CardCol.cpp:1012
 msgid "Do you really want to end the game?"
 msgstr "¿Seguro que quieres terminar el juego activo?"
 
-#: src/CardCol.cpp:1085
+#: src/CardCol.cpp:1102
 msgid ""
 "Couldn't save options (to file %1)!\n"
 "\n"
@@ -373,11 +383,11 @@ msgstr ""
 "\n"
 "Causa: %2"
 
-#: src/CardCol.cpp:1098
+#: src/CardCol.cpp:1115
 msgid "A game is running. Do you really want to quit?"
 msgstr "Un juego está activo. ¿Seguro que quieres terminar?"
 
-#: src/CardCol.cpp:1178
+#: src/CardCol.cpp:1195
 msgid ""
 "Copyright (C) 2002 - 2006 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
@@ -389,19 +399,19 @@ msgstr ""
 "\n"
 "Compilado el %1 a las %2"
 
-#: src/CardCol.cpp:1306
+#: src/CardCol.cpp:1323
 msgid "User canceled"
 msgstr "Usario terminó"
 
-#: src/CardCol.cpp:1334
+#: src/CardCol.cpp:1351
 msgid "Loading cardimages ..."
 msgstr "Abriendo las imágenes de las cartas ..."
 
-#: src/CardCol.cpp:1353
+#: src/CardCol.cpp:1370
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Comienca un juego nuevo con Ctrl+N (o Juego -> Nuevo)"
 
-#: src/CardCol.cpp:1425
+#: src/CardCol.cpp:1442
 msgid ""
 "Invalid values for Rovhult's special cards!\n"
 "Resetting them to default values."
@@ -652,35 +662,39 @@ msgstr ""
 msgid "Select 3 cards to exchange with %1"
 msgstr "Selecte 3 cartas para cambiar con %1"
 
-#: src/Hearts.cpp:456 src/Buraco.cpp:1753
+#: src/Hearts.cpp:451 src/Buraco.cpp:1753
 msgid "Round ended"
 msgstr "Turno terminó"
 
-#: src/Hearts.cpp:461
+#: src/Hearts.cpp:456
 msgid "Game ended; %1 won"
 msgstr "Juego terminó; %1 ganó"
 
-#: src/Hearts.cpp:507
+#: src/Hearts.cpp:503 src/Jabberwocky.cpp:341
 msgid "Play first cards with an equal colour as the first played one!"
 msgstr "¡Use una carta con el mismo palo como la primera!"
 
-#: src/Hearts.cpp:519
+#: src/Hearts.cpp:510
 msgid "The game must be started with the two of clubs!"
 msgstr "¡Hay que empezar el juego con el dos del naipe de trébol!"
 
-#: src/Hearts.cpp:530
+#: src/Hearts.cpp:516
 msgid "You can't start with a heart, if they have not been played before!"
 msgstr "¡No se puede usar los corazones si los no han estado usados antes!"
 
-#: src/Hearts.cpp:543
+#: src/Hearts.cpp:522
 msgid "The queen of spades can't be played in the first round!"
 msgstr "¡No se puede jugar La reina (Q) de pica en el primer turno!"
 
-#: src/Hearts.cpp:552
+#: src/Hearts.cpp:526
 msgid "Hearts can't be played in the first round!"
 msgstr "¡No se puede jugar Las corazones en el primer turno!"
 
-#: src/Hearts.cpp:1073
+#: src/Hearts.cpp:531 src/GameTypes.cpp:58
+msgid "Hearts"
+msgstr "Corazones"
+
+#: src/Hearts.cpp:1048
 msgid "H_earts"
 msgstr "_Corazones"
 
@@ -881,53 +895,53 @@ msgstr "¡Tipo invalido!"
 msgid "Card %1 does not fit!"
 msgstr "¡Carta %1 no vale!"
 
-#: src/SgtMayor.cpp:217
-msgid "(needs %1 ticks)"
+#: src/SgtMayor.cpp:214
+msgid "(needs %1 tricks)"
 msgstr "(necesita %1 bazas)"
 
-#: src/SgtMayor.cpp:306
+#: src/SgtMayor.cpp:303
 msgid "Play a card with an equal colour as the first played one!"
 msgstr "¡Usa una carta con el mismo palo como la primera!"
 
-#: src/SgtMayor.cpp:382
+#: src/SgtMayor.cpp:379
 msgid "Waiting for %1 to select the special colour ..."
 msgstr "Espero que %1 elige la pinta especial ..."
 
-#: src/SgtMayor.cpp:411
+#: src/SgtMayor.cpp:408
 msgid "Select the special colour"
 msgstr "Elige la pinta especial"
 
-#: src/SgtMayor.cpp:678
+#: src/SgtMayor.cpp:676
 msgid "Card not found!"
 msgstr "¡No encontré carta!!"
 
-#: src/SgtMayor.cpp:820
+#: src/SgtMayor.cpp:818
 msgid "Game ended; %1 has %2 %7, %3 %4 and %5 %6 %8"
 msgstr "Juego terminó; %1 tiene %2 %7; %3 %4 y %5 %6 %8"
 
-#: src/SgtMayor.cpp:849
+#: src/SgtMayor.cpp:848 src/Jabberwocky.cpp:905
 msgid "; %1 won"
 msgstr "; %1 ganó"
 
-#: src/SgtMayor.cpp:863 src/SgtMayor.cpp:865
-msgid "tick"
-msgid_plural "ticks"
+#: src/SgtMayor.cpp:862 src/SgtMayor.cpp:864
+msgid "trick"
+msgid_plural "tricks"
 msgstr[0] "baza"
 msgstr[1] "bazas"
 
-#: src/SgtMayor.cpp:941
+#: src/SgtMayor.cpp:940
 msgid "Waiting for %1 to exchange cards ..."
-msgstr "Esperando que %1 intercambia sus cartas ..."
+msgstr "Esperando que %1 intercambie sus cartas ..."
 
-#: src/SgtMayor.cpp:976
+#: src/SgtMayor.cpp:975
 msgid "You can exchange %1 %2; %4 with %3 (and than %5 with %6)!"
 msgstr "¡Puedes cambiar %1 %2; %4 con %3 (y después %5 con %6)!"
 
-#: src/SgtMayor.cpp:983
+#: src/SgtMayor.cpp:982
 msgid "You can exchange %1 %2 with %3!"
 msgstr "¡Puedes cambiar %1 %2 con %3!"
 
-#: src/SgtMayor.cpp:988
+#: src/SgtMayor.cpp:987
 msgid "bad card"
 msgid_plural "bad cards"
 msgstr[0] "carta mala"
@@ -985,19 +999,19 @@ msgstr "Røvhult"
 msgid "Twopart"
 msgstr ""
 
-#: src/GameTypes.cpp:58
-msgid "Hearts"
-msgstr "Corazones"
-
-#: src/GameTypes.cpp:61
-msgid "Buraco"
+#: src/GameTypes.cpp:61 src/Jabberwocky.cpp:368 src/Jabberwocky.cpp:468
+msgid "Jabberwocky"
 msgstr ""
 
 #: src/GameTypes.cpp:64
-msgid "Machiavelli"
+msgid "Buraco"
 msgstr ""
 
 #: src/GameTypes.cpp:67
+msgid "Machiavelli"
+msgstr ""
+
+#: src/GameTypes.cpp:70
 msgid "SgtMayor"
 msgstr "Sgt. Mayor"
 
@@ -1012,3 +1026,39 @@ msgstr "_Enviar"
 #: src/ChatDlg.cpp:114
 msgid ": "
 msgstr ""
+
+#: src/Jabberwocky.cpp:350
+msgid ""
+"You can't start with a trump,\n"
+"if they have not been played before!"
+msgstr ""
+"¡No se puede iniciar con la pinta especial\n"
+"si aún no le ha estado jugada!"
+
+#: src/Jabberwocky.cpp:404
+msgid "Waiting for %1 to bid ..."
+msgstr "Esperando que %1 prediga sus bazas ..."
+
+#: src/Jabberwocky.cpp:412
+msgid "Make your bid for the number of tricks you are going to make!"
+msgstr "¡Preidga el número de bazas que vas a ganar!"
+
+#: src/Jabberwocky.cpp:414
+msgid "_Bid"
+msgstr "_Predecir"
+
+#: src/Jabberwocky.cpp:467
+msgid ""
+"The sum of all bids must be different\n"
+"than the number of possible tricks!"
+msgstr ""
+"¡La suma de los predicciones tiene que diferir\n"
+"de la suma da bazas posibles!"
+
+#: src/Jabberwocky.cpp:495
+msgid "; bids %1 tricks"
+msgstr "; predice %1 bazas"
+
+#: src/Jabberwocky.cpp:886
+msgid "Game ended"
+msgstr "Juego terminó"
