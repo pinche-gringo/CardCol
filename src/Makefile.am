@@ -1,5 +1,10 @@
 ## Process this file with automake to produce Makefile.in
 
+SRC_NETWORK=ChatDlg.cpp ChatDlg.h CardColNet.cpp
+if HAVE_NETWORK
+   USE_NETWORK=$(SRC_NETWORK)
+endif
+
 SRC_BURACO=Buraco.cpp Buraco.h BuracoPile.cpp BuracoPile.h BuracoCards.cpp BuracoCards.h
 if SUPPORT_BURACO
    USE_BURACO=$(SRC_BURACO)
@@ -40,8 +45,7 @@ bin_PROGRAMS=CardCol
 CardCol_SOURCES=$(USE_BURACO) $(USE_HEARTS) $(USE_JABBERWOCKY)		\
 $(USE_MACHIAVELLI) $(USE_ROVHULT) $(USE_SGTMAYOR) $(USE_TWOPART)	\
 Options.h CardCol.h GameTypes.cpp GameTypes.h Settings.cpp Settings.h	\
-ChatDlg.cpp ChatDlg.h CardColNet.cpp CardColAppl.cpp CardCol.cpp	\
-CardColAppl.h
+CardColAppl.cpp CardCol.cpp CardColAppl.h $(USE_NETWORK)
 
 INCLUDES = @INCLUDES@ -I../Common @DEPENDENCIES_CFLAGS@
 
@@ -49,7 +53,7 @@ CardCol_LDFLAGS=-L../Common -lCard @DEPENDENCIES_LIBS@ @LTLIBINTL@
 DEFS = @DEFS@ -Wall
 
 EXTRA_DIST=Options.meta $(SRC_BURACO) $(SRC_HEARTS) $(SRC_JABBERWOCKY)	\
-$(SRC_MACHIAVELLI) $(SRC_ROVHULT) $(SRC_SGTMAYOR) $(SRC_TWOPART)
+$(SRC_MACHIAVELLI) $(SRC_ROVHULT) $(SRC_SGTMAYOR) $(SRC_TWOPART) $(SRC_NETWORK)
 
 Options.meta: Options.h
 	mgeni.pl Options.h>Options.meta

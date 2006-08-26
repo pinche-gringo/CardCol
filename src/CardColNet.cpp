@@ -27,7 +27,7 @@
 
 #include <cardgames-cfg.h>
 
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
 
 #include <string>
 #include <sstream>

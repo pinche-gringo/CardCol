@@ -64,7 +64,7 @@ const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {
    { "dir-help", 'd' },
    { "file", 'f' },
    { "list-games", 'G' },
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    { "listen-at", 'l' },
    { "connect-to", 'c' },
 #endif
@@ -76,7 +76,7 @@ const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {
    { NULL, '\0' } };
 
 
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
 const unsigned int CardgameAppl::PORT (DEFPORT);
 #endif
 
@@ -94,7 +94,7 @@ void CardgameAppl::showHelp () const {
              << "  -f, --file ......... " << _("[FILE] Use file as INI file\n")
              << "  -b, --browser ...... " << _("[NAME] Browser to use to display the help\n")
              << "  -d, --dir-help ..... " << _("[DIR] Directory to search for help\n")
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
              << "  -l, --listen-at .... " << _("[PORT] Awaits connections on port PORT\n")
              << "  -c, --connect-to ... " << _("[SERVER[:PORT]] Connects to SERVER:PORT\n")
 #endif
@@ -181,7 +181,7 @@ bool CardgameAppl::handleOption (const char option) {
       exit (0);
       break;
 
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    case 'l': {
       const char* port (getOptionValue ());
       if (port)
@@ -393,7 +393,7 @@ void CardgameAppl::showGames () const {
 //-----------------------------------------------------------------------------
 int main (int argc, const char* argv[]) {
    YGP::IVIOApplication::initI18n (PACKAGE, LOCALEDIR);
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    Glib::thread_init ();
 #endif
 

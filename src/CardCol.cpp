@@ -642,7 +642,7 @@ static char * xpmJoker[] = {
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE),
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
      dlgChat (NULL),
 #endif
      playerPos (0) , options (opts),
@@ -660,7 +660,7 @@ CardgameCollection::CardgameCollection (Options& opts)
 		     "  <menu action='Game'>"
 		     "    <menuitem action='New'/>"
 		     "    <menuitem action='End'/>"
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
 		     "    <separator/>"
 		     "    <menuitem action='Connect'/>"
 		     "    <menuitem action='Chat'/>"
@@ -709,7 +709,7 @@ CardgameCollection::CardgameCollection (Options& opts)
 		   mem_fun (*this, &CardgameCollection::newGame));
    grpAction->add (apMenus[END] = Gtk::Action::create ("End", Gtk::Stock::CLOSE, _("_End")),
 		   mem_fun (*this, &CardgameCollection::endGame));
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    grpAction->add (apMenus[CONNECT] = Gtk::Action::create ("Connect", _("_Connect ...")),
 		   Gtk::AccelKey (_("<shft><ctl>C")),
 		   mem_fun (*this, &CardgameCollection::connect));
@@ -799,7 +799,7 @@ CardgameCollection::CardgameCollection (Options& opts)
    getClient ().pack_end (status, Gtk::PACK_SHRINK);
 
    show ();
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    mxGuiCmd.lock ();
 #endif
 
@@ -807,7 +807,7 @@ CardgameCollection::CardgameCollection (Options& opts)
        (bind_return (mem_fun (*this, &CardgameCollection::loadCards), false));
    makePlayer ();
 
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    autoConnect (options);
 #endif
 }
@@ -838,7 +838,7 @@ CardgameCollection::~CardgameCollection () {
         i != aPlayer.end (); ++i)
       delete *i;
 
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    removeCommThreads ();
 #endif
 }
@@ -997,7 +997,7 @@ void CardgameCollection::newGame () {
       }
    }
    else {
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
       if (stopClientWaiting ())
 #endif
 	 startGame ();
@@ -1052,7 +1052,7 @@ void CardgameCollection::changeNames () {
 //-----------------------------------------------------------------------------
 void CardgameCollection::editPreferences () {
    Settings::create (get_window (), options)
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
       ->sigCommit.connect (mem_fun (*this, &CardgameCollection::sendSettings))
 #endif
       ;
@@ -1208,7 +1208,7 @@ void CardgameCollection::showAboutbox () {
 //-----------------------------------------------------------------------------
 void CardgameCollection::changePlayernames () {
    TRACE2 ("CardgameCollection::changePlayernames");
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
       broadcastNames ();
 #endif
@@ -1277,7 +1277,7 @@ void* CardgameCollection::changeCards (void* opt) {
    Check3 (apMenus[NEW]);
    apMenus[NEW]->set_sensitive (enable);
 
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    Check3 (apMenus[CONNECT]);
    apMenus[CONNECT]->set_sensitive (enable);
 #endif
@@ -1360,7 +1360,7 @@ void CardgameCollection::loadCards () {
       Check3 (apMenus[NEW]);
       apMenus[NEW]->set_sensitive (true);
 
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
       Check3 (apMenus[CONNECT]);
       apMenus[CONNECT]->set_sensitive (true);
 #endif
@@ -1386,7 +1386,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
    case Game::PLAYING:
       Check3 (apMenus[END]);
       apMenus[END]->set_sensitive (true);
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
       Check3 (apMenus[CONNECT]);
       apMenus[CONNECT]->set_sensitive (false);
 #endif
@@ -1395,7 +1395,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
    case Game::STOPPED:
       Check3 (apMenus[END]);
       apMenus[END]->set_sensitive (false);
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
       Check3 (apMenus[CONNECT]);
       apMenus[CONNECT]->set_sensitive (true);
 #endif
@@ -1420,7 +1420,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
 //----------------------------------------------------------------------------
 void CardgameCollection::doStartGame () {
    startGame ();
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    mxThreadCmd.unlock ();
 #endif
 }

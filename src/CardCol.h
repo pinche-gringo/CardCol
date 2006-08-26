@@ -71,7 +71,7 @@ class CardgameCollection : public XGP::XApplication {
  private:
    // IDs for menus
    enum { NEW = 0,
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
 	  CONNECT, CHAT,
 #endif
 	  END, STARTGAMES_MENU = END,
@@ -106,7 +106,7 @@ class CardgameCollection : public XGP::XApplication {
    // Event-handling
    void newGame ();
    void endGame ();
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    void autoConnect (const Options& options);
    void connect ();
    void showChatDlg ();
@@ -159,7 +159,7 @@ class CardgameCollection : public XGP::XApplication {
    CardImages cardFaces;
    CardSet cards;
 
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    typedef YGP::OThread<CardgameCollection> THRDAPPL;
    std::vector<THRDAPPL*> aCommThreads;
    YGP::Mutex mxGuiCmd;

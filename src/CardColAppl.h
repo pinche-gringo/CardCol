@@ -25,7 +25,7 @@
 #include <YGP/IVIOAppl.h>
 
 
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
 #  define DEFPORT                31338
 #  define STRING(nr)             #nr
 #endif
@@ -42,7 +42,7 @@ class CardgameAppl : public YGP::IVIOApplication {
 
    static int convertToGameType (const char* pText);
 
-#ifdef HAVE_LIBPTHREAD
+#ifdef WITH_NETWORK
    static const unsigned int PORT;
 #endif
 
