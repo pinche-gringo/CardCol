@@ -1,3 +1,127 @@
+2006-08-26  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.8.00 documented
+
+	* po/de.po, po/en.po, po/es.po: Added Jabberwocky's messages
+
+	* src/Jabberwocky.cpp: Improved appearance; Fixes
+
+2006-08-25  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SgtMayor.cpp: Fixed calculating points
+
+	* src/Jabberwocky.cpp: Improved some messages
+
+	* po/POTFILES.in: Added Jabberwocky.cpp
+
+	* doc/Jabberwocky.html.es: Linking to Corazones (not Hearts)
+
+	* doc/Hearts.html.es: Minor fix
+
+	* src/CardCol.cpp: Handling Jabberwocky
+
+	* src/Hearts.cpp: Removed code having no effect
+
+	* src/Jabberwocky.cpp: Fixes; Improved computer player
+
+	* doc/Jabberwocky.html.es: Adapted for computer version
+
+2006-08-24  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp: Fixed forgotten hardcoded size of cards
+
+	* src/Jabberwocky.cpp, src/Jabberwocky.h: Played a game via the network
+
+	* README: Added Jabberwocky
+
+	* AUTHORS: Added Jonathan as author of Jabberwocky-docu
+
+2006-08-23  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Jabberwocky.cpp, src/Jabberwocky.h:
+	  First draft of network-ability; Renamed al bet to bid
+
+	* doc/Makefile.am: Added Jabberwocky
+
+	* doc/Buraco.html.es, doc/Machiavelli.html.es, doc/Røvhult.html.es, doc/Sgt.Mayor.html.es, doc/Twopart.html.es:
+	  Unified the name of dealing-section (to Repartir)
+
+	* doc/Jabberwocky.html.de: Improved explainations
+
+	* doc/CardCol.html.es: Added Jabberwocky
+
+	* doc/Hearts.html.es: Linking to Jabberwocky; Fixes
+
+	* doc/Jabberwocky.html.es: New file.
+
+2006-08-22  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.in: Added Jabberwocky; Version to 0.8.00
+
+2006-08-20  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Jabberwocky.cpp, src/Jabberwocky.h:
+	  Human makes bid in statusbar; Disabling making bits equal to tricks; Fixes
+
+2006-08-19  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Hearts.html.de, doc/Machiavelli.html.de: Linking to Jabberwocky
+
+	* doc/CardCol.html.de: Added Jabberwocky
+
+	* doc/Jabberwocky.html.en: Minor fixes
+
+	* doc/Jabberwocky.html.de: New file.
+
+	* doc/CardCol.html.en: Added Jabberwocky
+
+	* doc/Jabberwocky.html.en: New file.
+
+	* doc/Hearts.html.en, doc/Machiavelli.html.en: Linking to Jabberwocky
+
+2006-08-17  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Jabberwocky.cpp: Further fixes
+
+	* src/Jabberwocky.cpp, src/Jabberwocky.h: Finished a game
+
+	* src/Jabberwocky.cpp: Fixed computer-player
+
+2006-08-16  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Twopart.cpp: Optimised
+
+	* src/Jabberwocky.cpp, src/Jabberwocky.h: Further fixes
+
+2006-08-15  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Jabberwocky.cpp, src/Jabberwocky.h:
+	  Showing bets with names; fixes
+
+2006-08-14  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SgtMayor.cpp, src/SgtMayor.h:
+	  Replaced all occurences of ticks with tricks
+
+	* src/Hearts.cpp, src/Hearts.h: Const-corrected; Optimised
+
+	* src/Jabberwocky.cpp, src/Jabberwocky.h: Implemented computer player
+
+2006-08-11  Markus Schwab  <g17m0@lycos.com>
+
+	* src/SgtMayor.cpp, src/SgtMayor.h: Renamed neededTicks to neededTricks
+
+	* src/Hearts.cpp: Optimised check if human plays a valid card
+
+2006-08-10  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp, src/CardCol.h: Handling Jabberwocky
+
+	* src/GameTypes.cpp, src/GameTypes.h, src/Makefile.am:
+	  Added Jabberwocky
+
+	* src/Jabberwocky.cpp, src/Jabberwocky.h: New file.
+
 2006-08-09  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Changes of V0.7.60 documented
