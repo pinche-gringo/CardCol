@@ -56,12 +56,14 @@ Common options for configure
   --help=short                  # Reduces the output of configure --help
   --prefix=<path>		# default: /usr/local
   --disable-nls                 # Disable national language support
+  --disable-network		# Disable network capabilities
   --enable-checks[=level]	# Adds asserts and Checks
   --enable-debug[=level]	# Sets tracelevel & generation of debuginfo
   --enable-saving               # Games can be saved and loaded (for testing)
   --with-kde-carddir=[DIR]  	# Path to the KDE carddecks
   --with-gnome-carddir=[DIR]    # Path to the GNOME carddecks
   --with-carddpics-dir=[DIR]    # Path to the "cardpics" carddecks
+  --disable-[GAME]		# To disable certain games
 
 If you're using `csh' on an old version of System V, you might need to type
 `sh ./configure' instead to prevent `csh' from trying to execute `configure'
