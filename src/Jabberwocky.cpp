@@ -104,18 +104,12 @@ Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& 
 
       players[i].won.setShowOption (ICardPile::SHOWBACK);
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
+      players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::COMPRESSED);
+      players[i].won.setStyle (ICardPile::QUITE_COMPRESSED);
 
       players[i].won.set_size_request (width + 20, height + 5);
       players[i].hand.set_size_request ((i & 1) ? width + 8 * 5: width * 3, height + 5);
    }
-
-   for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      players[i].hand.setStyle (ICardPile::QUITE_COMPRESSED);
-      players[i].won.setStyle (ICardPile::VERY_COMPRESSED);
-   }
-   players[0].hand.setStyle (ICardPile::COMPRESSED);
-   players[0].won.setStyle (ICardPile::QUITE_COMPRESSED);
-
    attach (played, 3, 11, 6, 9, Gtk::SHRINK, Gtk::SHRINK, 0, 5);
    played.set_size_request (width + 150, height);
 
@@ -126,6 +120,7 @@ Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& 
 /// Destructor
 //-----------------------------------------------------------------------------
 Jabberwocky::~Jabberwocky () {
+   delete pScoreDlg;
 }
 
 
@@ -414,7 +409,7 @@ void Jabberwocky::makeBids (unsigned int start) {
       }
       else {
 	 status.pop ();
-	 status.push (_("Make your bid for the number of tricks\nyou are going to make!"));
+	 status.push (_("Make your bid for the number of tricks you are going to make!"));
 
 	 Gtk::Button* bid (new Gtk::Button (_("_Bid"), true));
 	 Gtk::Adjustment* adj (new Gtk::Adjustment (0, 0.0, getTricks (turn), 1, 2));
