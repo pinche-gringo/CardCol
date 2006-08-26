@@ -819,13 +819,14 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
    unsigned int neededTricks[NUM_PLAYERS] = { 6, 3, 8 };
    player = startPlayer;
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      int madeTricks (players[player].won.size () & NUM_PLAYERS);
+      int madeTricks (players[player].won.size () / NUM_PLAYERS);
       diffTricks[player] = madeTricks - neededTricks[i];
       TRACE9 ("SgtMayor::playCard (unsigned int, unsigned int) - Player "
               << player << " made " << madeTricks << " = " << (int)diffTricks[player]);
 
       player = calcNextPlayer (player);
    }
+   Check (!(diffTricks[0] + diffTricks[1] + diffTricks[2]));
 
    // Create score-dialog
    if (!pScoreDlg) {
@@ -843,7 +844,7 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
 
    int points;
    pScoreDlg->getMaxPoints (points, player); Check3 (points >= 0);
-   if ((unsigned int)points >= ENDTRICKS) {
+   if (points >= (int)ENDTRICKS) {
       Glib::ustring won (_("; %1 won"));
       won.replace (won.find ("%1"), 2, actPlayers[convertPlayer (player)]->getName ());
       stat += won;
