@@ -183,7 +183,7 @@ void SgtMayor::start () {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          for (unsigned int j (0); j < (cards.size () / NUM_PLAYERS);)
 	    if ((pile.getTopCard ().number () != CardWidget::TWO)
-		|| (pile.getTopCard ().colour () != CardWidget::SPADES)) {
+		|| (pile.getTopCard ().colour () != CardWidget::CLUBS)) {
 	       players[(NUM_PLAYERS + i - posServer) % NUM_PLAYERS].hand.insertColourSorted (pile.removeTopCard ());
 	       ++j;
 	    }
@@ -364,7 +364,7 @@ void SgtMayor::cardExchange (unsigned int iCard) {
 
 //-----------------------------------------------------------------------------
 /// Selects the trump
-/// \returns bool: False, if a human must exchange the two of spades
+/// \returns bool: False, if a human must select the trump colour
 //-----------------------------------------------------------------------------
 bool SgtMayor::selectTrump () {
    TRACE9 ("SgtMayor::selectTrump ()");
@@ -424,7 +424,7 @@ void SgtMayor::startPlaying () {
    TRACE7 ("SgtMayor::startPlaying ()");
    Check3 (!diffTricks[0]); Check3 (!diffTricks[1]); Check3 (!diffTricks[2]);
 
-   playedCards[CardWidget::SPADES].set (CardWidget::TWO);
+   playedCards[CardWidget::CLUBS].set (CardWidget::TWO);
    setNextPlayer (convertPlayer (startPlayer));
    if (selectTrump ())
       makeNextMoves ();

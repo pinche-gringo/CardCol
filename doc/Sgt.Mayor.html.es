@@ -24,7 +24,7 @@
 
 <html>
   <head>
-    <title>Sgt. Mayor - Haz tus bazas o lo te vas a arrepentir</title>
+    <title>Sgt. Mayor - Haz tus bazas o lo vas a arrepentir</title>
     <meta name="description" content="Documentaci&oacute;n del juego de cartas Twopart">
     <meta name="keywords" content="documentacion, documentaci&oacute;n, docu, Sgt. Mayor; game, juego, card, cardgame, carta, juego de cartas">
 
@@ -51,7 +51,7 @@
 
     <h2>Reparto</h2>
     <p>Sgt. Mayor se juega por 3 personas con un juego de 52 cartas de
-       cuales se ha quitado la dos de pica (&spades;-2). Todos los
+       cuales se ha quitado la dos de tr&eacute;bol (&clubss;-2). Todos los
        jugadores consiguen 17 cartas.</p>
 
     <p>El primer juego empiezea un jugador casual (necesitando 6
