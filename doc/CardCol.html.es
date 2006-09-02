@@ -78,7 +78,7 @@
         <tr><td>&nbsp;&nbsp;<a href="Jabberwocky.html.es">Jabberwocky </a></td><td> - Prediga y acerte tus bazas</td></tr>
         <tr><td>&nbsp;&nbsp;<a href="Machiavelli.html.es">Machiavelli </a></td><td> - Sortear cartas hasta que ya no las tengas</td></tr>
         <tr><td>&nbsp;&nbsp;<a href="Røvhult.html.es">R&oslash;vhult </a></td><td> - Un juego de cartas conozido en todo el mundo (como Shithead, Asshole, ...)</td></tr>
-        <tr><td>&nbsp;&nbsp;<a href="Sgt.Mayor.html.es">Sgt. Mayor </a></td><td> - Haz tus bazas o lo te vas a arrepentir</td></tr>
+        <tr><td>&nbsp;&nbsp;<a href="Sgt.Mayor.html.es">Sgt. Mayor </a></td><td> - Haz tus bazas o lo vas a arrepentir</td></tr>
         <tr><td>&nbsp;&nbsp;<a href="Twopart.html.es">Twopart </a></td><td> - Un juego de cartas de noruega (en dos partes)</td></tr>
     </tbody></table>
 
