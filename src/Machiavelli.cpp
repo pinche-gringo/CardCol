@@ -151,7 +151,7 @@ Machiavelli::~Machiavelli () {
 /// Starts the game by dealing the cards
 //-----------------------------------------------------------------------------
 void Machiavelli::start () {
-   TRACE9 ("Machiavelli::start ()");
+   TRACE6 ("Machiavelli::start ()");
    Game::start ();
 
    pos1Play = pos2Play = 0;
@@ -159,7 +159,8 @@ void Machiavelli::start () {
 
    if (randomizeCardsToPile (staple)) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-          for (unsigned int j (0); j < 7; ++j)
+	 // TODO: Undo          for (unsigned int j (0); j < 7; ++j)
+          for (unsigned int j (0); j < 17; ++j)
              hands[(i - posServer) & 0x3].append (staple.removeTopCard ());
 
       hands[0].sortByColour ();
@@ -186,7 +187,7 @@ void Machiavelli::start () {
 /// Remove cards from everything which can hold them
 //-----------------------------------------------------------------------------
 void Machiavelli::clean () {
-   TRACE9 ("Machiavelli::clean ()");
+   TRACE6 ("Machiavelli::clean ()");
    disableHuman ();
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       hands[i].clear ();
@@ -348,7 +349,6 @@ bool Machiavelli::enableHuman () {
    if (staple.size ())
        activeCards.push_back (staple.getTopCard ().signal_clicked ().connect
                               (mem_fun (*this, (&Machiavelli::endTurn))));
-   nextTurn.set_sensitive (true);
 
    for (unsigned int i (0); i < hands[0].size (); ++i)
       registerHandDND (i);
@@ -364,6 +364,9 @@ bool Machiavelli::enableHuman () {
       for (unsigned int j (0); j < pile.size (); ++j)
          registerTableDND (*pile[j], value++);
    }
+
+   nxtTurn->set_sensitive ();
+   nextTurn.set_sensitive ();
 
    return Game::enableHuman ();
 }
@@ -385,6 +388,9 @@ void Machiavelli::disableHuman () {
 
    unregisterTableDND ();
    nextTurn.set_sensitive (false);
+   nxtTurn->set_sensitive (false);
+   undo1->set_sensitive (false);
+   undoAll->set_sensitive (false);
 }
 
 //----------------------------------------------------------------------------
@@ -479,7 +485,7 @@ void Machiavelli::endTurn () {
 /// \pre \c start < \c end; \c end <= Nr. ofcards
 //-----------------------------------------------------------------------------
 void Machiavelli::registerHandDND (unsigned int start, unsigned int end) {
-   TRACE5 ("Machiavelli::registerHandDND (unsigned int, unsigned int) - [" << start
+   TRACE9 ("Machiavelli::registerHandDND (unsigned int, unsigned int) - [" << start
            << '-' << end << ']');
    Check1 (start <= end);
    Check1 (end < hands[0].size ());
@@ -689,7 +695,7 @@ void Machiavelli::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
 /// \param pContext: Context of the drag (contains things like source,
 /// \param target, action, ...)
 /// \param data: Describes the thing which was dropped
-/// \param info: Describes the type of data (should be 0)
+/// \param info: Describes the type of data (should be HAND or TABLE)
 /// \param time: Timestamp of the drag
 /// \param iCard: Combination of card and pile on which card was dropped
 /// \pre \c pContext not NULL;
@@ -755,6 +761,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       }
 
       if (info == TABLE) {
+	 TRACE8 ("Machiavelli::cardDroppedOnTable (...) - Position: " << iCard);
          // Move only one card from/to a numbered pile
          if ((pile->getType () == MachiPile::NUMBER)
              || ((pile->getType () == MachiPile::UNDEFINED)
@@ -763,7 +770,14 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
                  : !iCard)
              || (tablePiles[nrpile]->getType () == MachiPile::NUMBER))
             nr = 1;
+	 else
+	    // Move left part of pile, if inserted to the left of the target
+	    if (!iCard) {
+	       nr = off + 1;
+	       moved = src[off = 0];
+	    }
 
+#if 0
          // Check if only cards from an edge are moved to the beginning of
          // a coloured pile or a numbered pile
          if ((tablePiles[nrpile]->getType () == MachiPile::COLOUR)
@@ -777,6 +791,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
             dlg.run ();
             return;
          }
+#endif
       }
    }
    Check3 (pile);
@@ -805,8 +820,9 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       broadcastMessage (msg.str ());
    }
 
+   TRACE8 ("Machiavelli::cardDroppedOnTable (...) - Moving " << nr << " cards from " << off);
    while (nr--) {
-      TRACE9 ("Machiavelli::cardDroppedOnTable (...) - Insert to: " << iPile
+      TRACE8 ("Machiavelli::cardDroppedOnTable (...) - Insert to: " << iPile
               << "; Pos: " << iCard);
       Check3 (iCard != -1U);
 
@@ -903,7 +919,7 @@ MachiPile& Machiavelli::makeNewPile () {
    pile->show ();
    piles.add (*pile);
    tablePiles.push_back (pile);
-   TRACE9 ("Machiavelli::makeNewPile () - Pile " << tablePiles.size ());
+   TRACE8 ("Machiavelli::makeNewPile () - Pile " << tablePiles.size ());
    return *pile;
 }
 
@@ -1700,8 +1716,6 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    grpAction->add (undoAll = Gtk::Action::create ("MachiUndoAll", _("Undo _all")),
 		   Gtk::AccelKey ("<ctl><alt>Z"),
 		   bind (mem_fun (*this, &Machiavelli::undoMove), -1U));
-   grpAction->add (Gtk::Action::create ("MachiEndTurn", _("_End turn")),
-		   mem_fun (*this, (&Machiavelli::endTurn)));
    grpAction->add (Gtk::Action::create ("MachiSort", Gtk::Stock::SORT_ASCENDING,
 					_("_Sort cards (by number)")),
 		   Gtk::AccelKey ("<shft>S"),
@@ -1710,6 +1724,8 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 					_("Sort cards (by _colour)")),
 		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Machiavelli::sortHandByColour));
+   grpAction->add (nxtTurn = Gtk::Action::create ("MachiEndTurn", _("_End turn")),
+		   mem_fun (*this, (&Machiavelli::endTurn)));
 
 
    mgrUI->insert_action_group (grpAction);
