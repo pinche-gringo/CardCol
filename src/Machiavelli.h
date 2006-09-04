@@ -184,6 +184,7 @@ class Machiavelli : public Game {
 
    Glib::RefPtr<Gtk::Action> undo1;
    Glib::RefPtr<Gtk::Action> undoAll;
+   Glib::RefPtr<Gtk::Action> nxtTurn;
    Gtk::UIManager::ui_merge_id idMrg;
 };
 
