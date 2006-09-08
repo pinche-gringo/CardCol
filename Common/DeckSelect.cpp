@@ -183,9 +183,12 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
       file += gfile->name ();
       actImg = getImage (file, false);
       if (actImg) {
+	 unsigned int widthImg (actImg->get_width () / 13);
+	 unsigned int heightImg (actImg->get_height () / 5);
+
 	 row[cols.path] = file;
 	 row[cols.name] = file.substr (strlen (GNOMECARDS_DIR), strlen (gfile->name ()) - 4);
-	 Glib::RefPtr<Gdk::Pixbuf> dest (Gdk::Pixbuf::create_subpixbuf (actImg, 790, 369, 79, 123));
+	 Glib::RefPtr<Gdk::Pixbuf> dest (Gdk::Pixbuf::create_subpixbuf (actImg, widthImg * 10, heightImg * 3, widthImg, heightImg));
 	 row[cols.icon] = dest->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
 
 	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
@@ -195,7 +198,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
 
 	 row = (*mBacks->append ());
 	 row[cols.path] = file;
-	 dest = Gdk::Pixbuf::create_subpixbuf (actImg, 79 * 2, 123 << 2, 79, 123);
+	 dest = Gdk::Pixbuf::create_subpixbuf (actImg, widthImg << 1, heightImg << 2, widthImg, heightImg);
 	 row[cols.icon] = dest->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
 
 	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "

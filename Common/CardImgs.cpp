@@ -206,6 +206,8 @@ void GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
 			      const std::string& path) throw (YGP::FileError) {
    TRACE1 ("GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\t" << path);
    Glib::RefPtr<Gdk::Pixbuf> img (loadImage (path));
+   unsigned int widthImg (img->get_width () / 13);
+   unsigned int heightImg (img->get_height () / 5);
 
    for (unsigned int i (0); i < 52; ++i) {
       unsigned int x (((i < 4) ? i : (55 - i)) >> 2);
@@ -215,7 +217,7 @@ void GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
       TRACE8 ("GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tPosition "
 	      << x << '/' << y);
 
-      cards[i] = Gdk::Pixbuf::create_subpixbuf (img, 79 * x, 123 * y, 79, 123);
+      cards[i] = Gdk::Pixbuf::create_subpixbuf (img, widthImg * x, heightImg * y, widthImg, heightImg);
       if ((cards[i]->get_height () != 72) || (cards[i]->get_width () != 96))
 	 cards[i] = cards[i]->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
       Check3 (cards[i]);
@@ -229,7 +231,10 @@ void GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
 //-----------------------------------------------------------------------------
 void GnomeLoader::loadBack (Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& file) throw (YGP::FileError) {
    Glib::RefPtr<Gdk::Pixbuf> img (loadImage (file));
-   back = Gdk::Pixbuf::create_subpixbuf (img, 79 * 2, 123 << 2, 79, 123);
+   unsigned int widthImg (img->get_width () / 13);
+   unsigned int heightImg (img->get_height () / 5);
+
+   back = Gdk::Pixbuf::create_subpixbuf (img, widthImg * 2, heightImg << 2, widthImg, heightImg);
    back = back->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
 }
 #endif
