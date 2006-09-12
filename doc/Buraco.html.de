@@ -70,7 +70,7 @@
       Reservestapel oder - falls er ein zur obersten Karte des
       gespielten Stosses "passendes" Paar aufweist - den gesamten
       unben&ouml;tigten Sto&szlig;, wobei er diese 3 Karten sofort
-      ablegen mu&szlig;. Passend bedeutet, da&szlig; entweder die
+      ablegen muss. Passend bedeutet, dass entweder die
       Nummer (unabh&auml;ngig von der Farbe) oder die Farbe gleich
       ist, und die Nummern in einer fortlaufenden Serie sind (As als
       Eins, Drei, Vier, ..., Zehn, Bube, Dame, K&ouml;nig, As - Der
@@ -90,7 +90,7 @@
       hand zu halten, um so eventuell den Stapel der abgeworfenen
       Karten aufnehmen zu k&ouml;nnen).</p>
 
-    <p>Jeder Stapel mu&szlig; mindestens 3 Karten enthalten; wovon
+    <p>Jeder Stapel muss mindestens 3 Karten enthalten; wovon
       eine entweder ein Joker oder eine (beliebigfarbige) 2 sein kann
       (die dabei eine Karte ersetzen).</p>
 
@@ -136,7 +136,7 @@
     </ul>
 
     <h3>Ende des Zuges</h3>
-    <p>Kann/will der Spieler keine Karten ablegen, mu&szlig; er eine
+    <p>Kann/will der Spieler keine Karten ablegen, muss er eine
       (unben&ouml;tigte) Karte auf den daf&uuml;r vorgesehenen
       Sto&szlig; abwerfen (durch anklicken) und der n&auml;chste
       Spieler setzt (gegen den Uhrzeigersinn) fort.</p>
@@ -146,7 +146,7 @@
     <p>Das Spiel endet, wenn ein Team mindestens einen "Cerrado" hat,
       bereits den "Buraco" aufgenommen hat und dann einer des Teams
       alle seine Karten loswird (dabei kann noch eine Karte auf den
-      Sto&szlig; abgeworfen werden, mu&szlig; aber nicht.</p>
+      Sto&szlig; abgeworfen werden, muss aber nicht.</p>
 
     <h2>Abrechnung</h2>
     <p>Ist das Spiel beendet, werden die Punkte gez&auml;hlt. Jeder
@@ -212,7 +212,7 @@
       Loslassen der Maustaste signalisiert.</p>
 
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note3"></a>3)
-      Der Joker mu&szlig; nicht manuell im Staple verschoben werden. Wird eine
+      Der Joker muss nicht manuell im Staple verschoben werden. Wird eine
       entsprechende Karte auf den Stapel verschoben, wird der Joker notfalls
       automatisch an die richtige Stelle platziert.</p>
 

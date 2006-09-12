@@ -69,7 +69,7 @@
       eine gleichwertige oder h&ouml;here als die zuletzt gespielte
       Karte ab (Asse gelten as h&ouml;her als alle anderen Karten). Man kann
       eine beliebige Anzahl von Karten mit der gleichen Nummer spielen
-      (z.B.: die &spades;-5 und die &clubs;-5). Nach dem Zug mu&szlig;
+      (z.B.: die &spades;-5 und die &clubs;-5). Nach dem Zug muss
       der Spieler Karten vom Reservestapel aufnehmen, bis er wieder
       drei Karten in der Hand hat oder der Reservestapel leer ist.</p>
 
@@ -79,7 +79,7 @@
       <dd><p>K&ouml;nnen immer gespielt werden; der n&auml;chste Spieler kann
           mit einer beliebigen Karte fortsetzen.</p></dd>
       <dt><b>Die letzte gespielte Karte ist die Umkehr-Karte (7)<a href="#Note2"><sup>2</sup></a></b></dt>
-      <dd><p>Die n&auml;chste Karte mu&szlig; kleiner oder gleich sein.</p></dd>
+      <dd><p>Die n&auml;chste Karte muss kleiner oder gleich sein.</p></dd>
       <dt><b>&Uuml;berspringen-Karte (8)<a href="#Note2"><sup>2</sup></a></b></dt>
       <dd><p>Der n&auml;chste Spieler wird &uuml;bersprungen.</p></dd>
       <dt><b>Entfernen-Karte (10)<a href="#Note2"><sup>2</sup></a></b></dt>
@@ -91,14 +91,14 @@
       <dd><p>Haben die letzten vier Karten am Stapel die gleiche
           Nummer, wird dieser entfernt und der gleiche Spieler kann
           fortsetzen (&auml;hnlich wie das Spielen einer Entfernen-Karte
-          (10), nur da&szlig man Karten aufnehmen kann).  Beachte
-          auch, da&szlig; der Effekt von "Spezialkarten" aufgehoben
+          (10), nur dass man Karten aufnehmen kann).  Beachte
+          auch, dass der Effekt von "Spezialkarten" aufgehoben
           wird (d.h. bei vier 8'ern wird der n&auml;chste Spieler
           nicht &uuml;bersprungen).
         </p></dd>
     </dl>
 
-    <p>Wenn ein Spieler nicht nach diesen Regeln fortsetzen kann, mu&szlig; er
+    <p>Wenn ein Spieler nicht nach diesen Regeln fortsetzen kann, muss er
       alle gespielten Karten aufnehemn. Nat&uuml;rlich kann dies auch freiwillig
       gemacht werden, wonach der n&auml;chste Spieler fortsetzt.</p>
 
@@ -110,16 +110,16 @@
       diese auch erfolgreich gespielt wurden - mit der sichtbaren
       Rückseite.</p>
 
-    <p>Beachte, da&szlig;, wenn der gespielte Stapel aufgenommen
-      werden mu&szlig;, die Karten mit sichtbarer Vorderseite nicht
-      vom Tisch in die Hand genommen werden d&uuml;rfen und da&szlig;
+    <p>Beachte, dass, wenn der gespielte Stapel aufgenommen
+      werden muss, die Karten mit sichtbarer Vorderseite nicht
+      vom Tisch in die Hand genommen werden d&uuml;rfen und dass
       danach die (neu aufgenommenen) Karten in der Hand gespielt
       werden m&uuml;ssen, ehe wieder mit denen auf dem Tisch
       fortgesetzt werden kann.</p>
 
-    <p>Mit den Karten mit sichtbarer R&uuml;ckseite mu&szlig; auf gut
+    <p>Mit den Karten mit sichtbarer R&uuml;ckseite muss auf gut
       Gl&uuml;ck gespielt werden.  Wenn die Karte nicht
-      gem&auml;&szlig; den Regeln, mu&szlig; sie und der ganze Stapel
+      gem&auml;&szlig; den Regeln, muss sie und der ganze Stapel
       aufgenommen werden.</p>
 
     <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
