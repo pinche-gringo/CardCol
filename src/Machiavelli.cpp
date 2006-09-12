@@ -981,8 +981,8 @@ bool Machiavelli::hasSerie (ICardPile& playerPile) {
 /// \remarks: - Sets pos1Play and pos2Play approbiatly
 ///    - Creates a new pile if needed
 //-----------------------------------------------------------------------------
-unsigned int Machiavelli::cardFitsToPile (const CardWidget& card, unsigned int offset) {
-   TRACE8 ("Machiavelli::cardFitsToPile (const CardWidget&, unsigned int) - Adding card "
+unsigned int Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int offset) {
+   TRACE8 ("Machiavelli::cardFitsOnPile (const CardWidget&, unsigned int) - Adding card "
            << card << '?');
 
    unsigned int dest (-1U);
@@ -1005,7 +1005,7 @@ unsigned int Machiavelli::cardFitsToPile (const CardWidget& card, unsigned int o
          continue;
 
       int pos ((*m)->size () - static_cast<unsigned int> (diff));
-      TRACE8 ("Machiavelli::cardFitsToPile (const CardWidget&unsigned int) - Splitting "
+      TRACE8 ("Machiavelli::cardFitsOnPile (const CardWidget&unsigned int) - Splitting "
               << (m - tablePiles.begin ()) << " at " << diff << " (" << pos << ")?");
 
       // A new pile can be made directly (enough cards on both sides)
@@ -1016,7 +1016,7 @@ unsigned int Machiavelli::cardFitsToPile (const CardWidget& card, unsigned int o
          pos1Play = pos2Play = offset;
          posPiles.push_back ((((*m)->size () - diff) << 16)
                              + ((m - tablePiles.begin ()) << 8) + diff);
-         TRACE9 ("Machiavelli::cardFitsToPile (const CardWidget&unsigned int) - Marked pile: "
+         TRACE9 ("Machiavelli::cardFitsOnPile (const CardWidget&unsigned int) - Marked pile: "
                  << std::hex << pos2Play << std::dec);
 
          do {
@@ -1051,31 +1051,34 @@ unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
       // Check if any cards fits somewhere/somehow on an existing pile
       for (ICardPile::const_iterator p (playerPile.begin ());
            p != playerPile.end (); ++p) {
-         dest = cardFitsToPile (**p, p - playerPile.begin ());
+         dest = cardFitsOnPile (**p, p - playerPile.begin ());
          if (dest != -1U)
             break;
       }
 
-      if (dest == -1U)
+      if (dest == -1U) {
          dest = reorderTableToFit (playerPile);
-      if ((dest != -1U) && posPiles.size ()) {
-         if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-            std::ostringstream msg;
-            msg << "Reorder=";
-
-            for (std::deque<unsigned int>::const_iterator i (posPiles.begin ());
-                 i != posPiles.end (); ++i)
-               msg << *i << ' ';
-            msg << ";Target=" << dest;
-            if (pos2Play == hands[player].size ())
-               msg << ";Now=1";
-
-            if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-               ++ignoreNextMsg;
-
-            broadcastMessage (msg.str ());
-         }
+	 missing.clear ();
       }
+      else
+	 if (posPiles.size ()) {
+	    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+	       std::ostringstream msg;
+	       msg << "Reorder=";
+
+	       for (std::deque<unsigned int>::const_iterator i (posPiles.begin ());
+		    i != posPiles.end (); ++i)
+		  msg << *i << ' ';
+	       msg << ";Target=" << dest;
+	       if (pos2Play == hands[player].size ())
+		  msg << ";Now=1";
+
+	       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+		  ++ignoreNextMsg;
+
+	       broadcastMessage (msg.str ());
+	    }
+	 }
    }
    return dest;
 }
@@ -1096,28 +1099,35 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
       while ((h = playerPile.getFittingCard (**p, h + 1, &MachiPile::cardDistance))
              != playerPile.end ()) {
          int diff (MachiPile::cardDistance (**h, **p));
+	 TRACE5 ("Machiavelli::reorderTableToFit (ICardPile&) - " << **h << "<->" << **p << ": " << diff);
          if ((diff == 0) && ((*p)->id () == (*h)->id ()))
             continue;
 
          work.append (**p);
          work.append (**h);
-         TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Pair: "
+         TRACE8 ("Machiavelli::reorderTableToFit (ICardPile&) - Pair: "
                  << **p << " - " << **h);
 
          // Try to add from the table
          for (std::vector<MachiPile*>::const_iterator t (tablePiles.begin ());
               t != tablePiles.end (); ++t) {
-            if ((*t)->size () == 3)
-               continue;
+	    Check3 ((*t)->size () > 2);
             Check2 ((*t)->getType () != MachiPile::UNDEFINED);
 
             MachiPile::const_iterator c;
             unsigned int nr;
             if ((*t)->hasMatching3rd (work, c, nr)) {
-               Check3 (c != (*t)->end ());
+	       Check3 (c != (*t)->end ());
+	       if ((*t)->size () < 4) {
+		  // Don't memorise card as missing, if the hand holds two equal
+		  // numbers and the pile is also a numbered one
+		  if (diff || ((*t)->getType () == MachiPile::COLOUR))
+		     addBorderCards2Missing (t - tablePiles.begin (), 1 << (c == (*t)->begin ()));
+		  continue;
+	       }
 
                if (work.size ()) {
-                  TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Hand "
+                  TRACE6 ("Machiavelli::reorderTableToFit (ICardPile&) - Hand "
                           << (p - playerPile.begin ()) << "; " << h - playerPile.begin ());
                   if (diff < 0) {
                      pos1Play = h - playerPile.begin ();
@@ -1134,7 +1144,7 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
                else
                   pos1Play = pos2Play = playerPile.size ();
 
-               TRACE9 ("Machiavelli::reorderTableToFit (ICardPile&) - Pile "
+               TRACE3 ("Machiavelli::reorderTableToFit (ICardPile&) - Pile "
                        << (t - tablePiles.begin ()) << "; Cards "
                        << (c - (*t)->begin ()) << '-' << (c - (*t)->begin () + nr - 1));
                posPiles.push_back (((t - tablePiles.begin ()) << 8)
@@ -1154,7 +1164,7 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
 }
 
 //-----------------------------------------------------------------------------
-/// Tries to play a card by moving one card from on pile on the table to
+/// Tries to play a card by moving one card from one pile on the table to
 /// another one, so that a card from the hand also fits.
 /// \param playerPile: Pile to inspect
 /// \returns \c ID of the target (32 Bit: Pile << 16 + Position) or -1U
@@ -1180,7 +1190,7 @@ unsigned int Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
             for (std::vector<MachiPile*>::const_iterator o (tablePiles.begin ());
                  o != tablePiles.end (); ++o) {
                Check2 ((*o)->getType () != MachiPile::UNDEFINED);
-               if (((o == t) || ((*o)->size () < 4))
+               if ((o == t)
                    || (((*o)->getType () == MachiPile::COLOUR)
                        && ((**o)[0]->colour () != (*p)->colour ())))
                   continue;
@@ -1208,19 +1218,23 @@ unsigned int Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
 
                // Move card, if one has been found
                if (c != (*o)->end ()) {
-                  pos1Play = pos2Play = p - playerPile.begin ();
-                  TRACE9 ("Machiavelli::reorderTableToFit2 (ICardPile&) - Hand: "
-                          << **p << " (" << pos1Play << ')');
-                  TRACE9 ("Machiavelli::reorderTableToFit2 (ICardPile&) - Pile: "
-                          << (o - tablePiles.begin ()) << "; Card " << **c
-                          << " (" << (c - (*o)->begin ()) << ')');
+		  if ((*o)->size () < 4)
+		     addBorderCards2Missing (o - tablePiles.begin (),
+					     1 << (c == (*o)->begin ()));
+		  else {
+		     pos1Play = pos2Play = p - playerPile.begin ();
+		     TRACE9 ("Machiavelli::reorderTableToFit2 (ICardPile&) - Hand: "
+			     << **p << " (" << pos1Play << ')');
+		     TRACE9 ("Machiavelli::reorderTableToFit2 (ICardPile&) - Pile: "
+			     << (o - tablePiles.begin ()) << "; Card " << **c
+			     << " (" << (c - (*o)->begin ()) << ')');
 
-                  posPiles.push_back (((o - tablePiles.begin ()) << 8)
-                                      + (1 << 16) + c - (*o)->begin ());
-                  (*c)->mark ();
-                  return (((t - tablePiles.begin ()) << 16)
-                          + ((diff == -2) ? 0 : (*t)->size ()));
-
+		     posPiles.push_back (((o - tablePiles.begin ()) << 8)
+					 + (1 << 16) + c - (*o)->begin ());
+		     (*c)->mark ();
+		     return (((t - tablePiles.begin ()) << 16)
+			     + ((diff == -2) ? 0 : (*t)->size ()));
+		  }
                }
             }
          }
@@ -1253,7 +1267,7 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
               (i = (*t)->getFittingCard (**p, i, &MachiPile::cardDistance))
                  != (*t)->end (); ++i) {
             if (((*p)->number () == (*i)->number ())
-                &&((*p)->colour () == (*i)->colour ()))
+                && ((*p)->colour () == (*i)->colour ()))
                continue;
 
             int diff (i - (*t)->begin ());
@@ -1269,13 +1283,14 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
 
             for (std::vector<MachiPile*>::const_iterator o (t + 1);
                  o != tablePiles.end (); ++o) {
-               if ((*o)->size () < 4)
-                  continue;
-
                MachiPile::const_iterator c;
                unsigned int nr;
                if ((*o)->hasMatching3rd (work, c, nr)) {
                   Check3 (c != (*o)->end ());
+		  if ((*o)->size () < 4) {
+		     addBorderCards2Missing (o - tablePiles.begin (), 1 << (c == (*o)->begin ()));
+		     continue;
+		  }
 
                   // Does the first pile need to be split up?
                   if ((i != (*t)->begin ()) && (i != ((*t)->end () - 1))) {
@@ -1331,27 +1346,66 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
       } // end-for all table piles
    } // end-for all cards
 
-   return (playerPile.size () < 4) ? reorderTableToFit4 (playerPile) : -1U;
+   pos1Play = pos2Play = playerPile.size ();
+   return reorderTableToFit4 ();
 }
 
 //-----------------------------------------------------------------------------
-/// Tries to play a card by recursively reordering the whole table
-/// \param playerPile: Pile to inspect
+/// Tries to play a card inderectly by filling up a pile missing one card,
+/// so that in the next turn the card can be played
 /// \returns \c ID of the target (32 Bit: Pile << 16 + Position) or -1U
 /// \remarks: Sets pos1Play and pos2Play approbiatly
 //-----------------------------------------------------------------------------
-unsigned int Machiavelli::reorderTableToFit4 (ICardPile& playerPile) {
-   // Inspect every card
-   for (ICardPile::const_iterator c (playerPile.begin ());
-        c != playerPile.end (); ++c) {
+unsigned int Machiavelli::reorderTableToFit4 () {
+   TRACE8 ("Machiavelli::reorderTableToFit4 ()");
 
-      for (std::vector<MachiPile*>::const_iterator t (tablePiles.begin ());
+   // Try to find any of the missing cards
+   for (std::vector<missingCards>::iterator i (missing.begin ()); i != missing.end (); ++i) {
+      TRACE3 ("Machiavelli::reorderTableToFit4 () - " << CardWidget::strColour (i->colour) << CardWidget::strNumber (i->nr));
+
+      for (std::vector<MachiPile*>::iterator t (tablePiles.begin ());
            t != tablePiles.end (); ++t) {
-         Check2 ((*t)->getType () != MachiPile::UNDEFINED);
+	 if (i->pile == (unsigned int)(t - tablePiles.begin ()))
+	    continue;
 
-         // TODO
+	 Check3 ((*t)->getType () != MachiPile::UNDEFINED);
+	 if ((*t)->getType () == MachiPile::COLOUR) {
+	    if ((**t)[0]->colour () == i->colour) {
+	       TRACE6 ("Machiavelli::reorderTableToFit4 () - Inspecting coloured pile " << t - tablePiles.begin ());
+
+	       unsigned int pos ((*t)->findFirstEqualOrBigger (i->nr));
+	       TRACE8 ("Machiavelli::reorderTableToFit4 () - Pos: " << pos);
+	       Check3 ((pos == -1U) || (pos < (*t)->size ()));
+	       if ((pos != -1U) && ((**t)[pos]->number () == i->nr))
+		  if (!pos || (pos == ((*t)->size () - 1))) {
+		     posPiles.push_back (((t - tablePiles.begin ()) << 8) + (1 << 16) + pos);
+		     Check3 (tablePiles[i->pile]->getPosition4Card (*(**t)[pos]) != -1U);
+		     return (i->pile << 16) + tablePiles[i->pile]->getPosition4Card (*(**t)[pos]);
+		  }
+		  else
+		     if ((pos > 3) && (pos < ((*t)->size () - 2))) {
+			makeNewPile ();
+			posPiles.push_back (((t - tablePiles.begin ()) << 8)
+					    + (((*t)->size () - pos) << 16) + pos);
+			Check3 (tablePiles[i->pile]->getPosition4Card (*(**t)[pos]) != -1U);
+			return ((tablePiles.size () - 1) << 16) + tablePiles[i->pile]->getPosition4Card (*(**t)[pos]);
+		     }
+	    } // endif pile has the right colour
+	 } // endif numbered pile
+	 else
+	    if (((*t)->size () == 4) && ((**t)[0]->number () == i->nr)) {
+	       TRACE6 ("Machiavelli::reorderTableToFit4 () - Inspecting numbered pile " << t - tablePiles.begin ());
+
+	       for (ICardPile::const_iterator p ((*t)->begin ()); p != (*t)->end (); ++p)
+		  if ((*p)->colour () == i->colour) {
+		     posPiles.push_back (((t - tablePiles.begin ()) << 8) + (1 << 16) + (p - (*t)->begin ()));
+		     Check3 (tablePiles[i->pile]->getPosition4Card (*(**t)[p - (*t)->begin ()]) != -1U);
+		     return (i->pile << 16) +  + tablePiles[i->pile]->getPosition4Card (*(**t)[p - (*t)->begin ()]);
+		  }
+	    }
       }
    }
+   pos1Play = pos2Play = -1U;
    return -1U;
 }
 
@@ -1766,4 +1820,50 @@ void Machiavelli::sortHandByColour () {
    hands[0].sort (ICardPile::compCards);
    if (enabled)
       enableHuman ();
+}
+
+//-----------------------------------------------------------------------------
+/// Adds "bordering" cards to the missing cards vector.
+///
+/// "Bordering cards" are defined as either the cards which would fit
+/// on the edge for numbered piles or the missing colour in a coloured
+/// pile.
+/// \param iPile: Offset of pile to get the "bordering" cards from
+/// \param which: Defines for numbered pile at which end of the pile a card
+///               should  be added (0x1: left; 0x2: right; can be or-ed together)
+//-----------------------------------------------------------------------------
+void Machiavelli::addBorderCards2Missing (unsigned int iPile, unsigned int which) {
+   TRACE8 ("Machiavelli::addBorderCards2Missing (MachiPile&) - Pile: " << iPile << "; Which: " << which);
+   Check1 (iPile < tablePiles.size ());
+
+   MachiPile& pile (*tablePiles[iPile]);
+   Check3 (pile.size () > 2);
+   Check3 (pile.getType () != MachiPile::UNDEFINED);
+
+   missingCards card (iPile);
+   if (pile.getType () == MachiPile::COLOUR) {
+      card.colour = pile[0]->colour ();
+      if ((which & 0x1) && (pile[0]->number () != CardWidget::ACE)) {
+	 card.nr = CardWidget::NUMBERS (pile[0]->number () - 1);
+	 missing.push_back (card);
+      }
+      if ((which & 0x2) && (pile[pile.size () - 1]->number () != CardWidget::ACE)) {
+	 card.nr = CardWidget::NUMBERS (pile[pile.size () - 1]->number () + 1);
+	 missing.push_back (card);
+      }
+   }
+   else {
+      unsigned int fUsed (0);
+      for (ICardPile::const_iterator p (pile.begin ()); p != pile.end (); ++p) {
+	 Check2 ((*p)->number () == (*pile.begin ())->number ());
+	 fUsed |= 1 << (*p)->colour ();
+      }
+
+      card.nr = pile[0]->number ();
+      for (unsigned int i (0); i < 4; ++i)
+	 if (!(fUsed & (1 << i))) {
+	    card.colour = CardWidget::COLOURS (i);
+	    missing.push_back (card);
+	 }
+   }
 }

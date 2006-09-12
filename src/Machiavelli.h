@@ -100,11 +100,12 @@ class Machiavelli : public Game {
    void checkPiles (YGP::StatusObject& obj) const;
    void endGame (unsigned int looser);
    bool hasSerie (ICardPile& playerPile);
-   unsigned int cardFitsToPile (const CardWidget& card, unsigned int offset);
+   unsigned int cardFitsOnPile (const CardWidget& card, unsigned int offset);
    unsigned int reorderTableToFit (ICardPile& playerPile);
    unsigned int reorderTableToFit2 (ICardPile& playerPile);
    unsigned int reorderTableToFit3 (ICardPile& playerPile);
-   unsigned int reorderTableToFit4 (ICardPile& playerPile);
+   unsigned int reorderTableToFit4 ();
+   void addBorderCards2Missing (unsigned int iPile, unsigned int which = -1U);
    //@}
 
    /// \name Drag-and-drop methods
@@ -158,6 +159,7 @@ class Machiavelli : public Game {
 
    unsigned int target;       // Target of the last move of the computer player
 
+   // Structure holding undo-information
    typedef struct undoValue {
       unsigned int destPos : 4;
       unsigned int srcPos : 4;
@@ -179,6 +181,18 @@ class Machiavelli : public Game {
 
    std::stack<undoValue> undo;
    std::deque<unsigned int> posPiles;
+
+   // Structure to store which cards are missing on a pile, to be able to add from hand
+   typedef struct missingCards {
+      unsigned int        pile;
+      CardWidget::NUMBERS nr;
+      CardWidget::COLOURS colour;
+
+      missingCards (unsigned int pile, CardWidget::NUMBERS nr, CardWidget::COLOURS colour)
+	 : pile (pile), nr (nr), colour (colour) { }
+      missingCards (unsigned int pile) : pile (pile) { }
+   } missingCards;
+   std::vector<missingCards> missing;
 
    XGP::MessageDlg* undoDlg;
 
