@@ -389,8 +389,11 @@ void Machiavelli::disableHuman () {
    unregisterTableDND ();
    nextTurn.set_sensitive (false);
    nxtTurn->set_sensitive (false);
-   undo1->set_sensitive (false);
-   undoAll->set_sensitive (false);
+
+   if (undo.empty ()) {
+      undo1->set_sensitive (false);
+      undoAll->set_sensitive (false);
+   }
 }
 
 //----------------------------------------------------------------------------
@@ -768,7 +771,9 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
                  ? ((pile->size () == 1)
                     && ((*pile)[0]->number () == moved->number ()))
                  : !iCard)
-             || (tablePiles[nrpile]->getType () == MachiPile::NUMBER))
+             || (tablePiles[nrpile]->getType () == MachiPile::NUMBER)
+	     || ((tablePiles[nrpile]->getType () == MachiPile::COLOUR)
+		 && (iCard && moved->number () == CardWidget::ACE)))
             nr = 1;
 	 else
 	    // Move left part of pile, if inserted to the left of the target
@@ -776,22 +781,6 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
 	       nr = off + 1;
 	       moved = src[off = 0];
 	    }
-
-#if 0
-         // Check if only cards from an edge are moved to the beginning of
-         // a coloured pile or a numbered pile
-         if ((tablePiles[nrpile]->getType () == MachiPile::COLOUR)
-             && (((off + 1) != src.size ()) && off)
-             && ((iCard != pile->size ())
-                 || (pile->getType () == MachiPile::NUMBER))) {
-            context->drag_finish (true, false, time);
-            Gtk::MessageDialog dlg (_("Card is not on the edge of the origen - try splitting the origin first!"),
-                                    Gtk::MESSAGE_ERROR);
-            dlg.set_title (_("Invalid move"));
-            dlg.run ();
-            return;
-         }
-#endif
       }
    }
    Check3 (pile);
@@ -1183,7 +1172,7 @@ unsigned int Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
             continue;
 
          int diff (MachiPile::cardDistance (**p, *((**t)[0]), MachiPile::ONE));
-         if ((diff == -2) || (diff - (*t)->size () == 1)) {
+         if ((diff == -2) || ((diff - (*t)->size ()) == 1)) {
             TRACE8 ("Machiavelli::reorderTableToFit2 (ICardPile&) - With move: "
                     << **p << "; Diff: " << diff);
 
@@ -1289,6 +1278,9 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                   Check3 (c != (*o)->end ());
 		  if ((*o)->size () < 4) {
 		     addBorderCards2Missing (o - tablePiles.begin (), 1 << (c == (*o)->begin ()));
+		     if ((missing.back ().nr == (*i)->number ())
+			 && (missing.back ().colour == (*i)->colour ()))
+			missing.pop_back ();
 		     continue;
 		  }
 
@@ -1374,22 +1366,26 @@ unsigned int Machiavelli::reorderTableToFit4 () {
 	       TRACE6 ("Machiavelli::reorderTableToFit4 () - Inspecting coloured pile " << t - tablePiles.begin ());
 
 	       unsigned int pos ((*t)->findFirstEqualOrBigger (i->nr));
-	       TRACE8 ("Machiavelli::reorderTableToFit4 () - Pos: " << pos);
 	       Check3 ((pos == -1U) || (pos < (*t)->size ()));
-	       if ((pos != -1U) && ((**t)[pos]->number () == i->nr))
+	       if (((*t)->size () > 3) && (pos != -1U) && ((**t)[pos]->number () == i->nr)) {
+		  TRACE8 ("Machiavelli::reorderTableToFit4 () - Card found: " << pos);
+
 		  if (!pos || (pos == ((*t)->size () - 1))) {
 		     posPiles.push_back (((t - tablePiles.begin ()) << 8) + (1 << 16) + pos);
-		     Check3 (tablePiles[i->pile]->getPosition4Card (*(**t)[pos]) != -1U);
-		     return (i->pile << 16) + tablePiles[i->pile]->getPosition4Card (*(**t)[pos]);
+		     (**t)[pos]->mark ();
+		     pos = tablePiles[i->pile]->getPosition4Card (*(**t)[pos]); Check3 (pos != -1U);
+		     return (i->pile << 16) + pos;
 		  }
 		  else
 		     if ((pos > 3) && (pos < ((*t)->size () - 2))) {
 			makeNewPile ();
 			posPiles.push_back (((t - tablePiles.begin ()) << 8)
 					    + (((*t)->size () - pos) << 16) + pos);
-			Check3 (tablePiles[i->pile]->getPosition4Card (*(**t)[pos]) != -1U);
-			return ((tablePiles.size () - 1) << 16) + tablePiles[i->pile]->getPosition4Card (*(**t)[pos]);
+			(**t)[pos]->mark ();
+			pos = tablePiles[i->pile]->getPosition4Card (*(**t)[pos]); Check3 (pos != -1U);
+			return ((tablePiles.size () - 1) << 16) + pos;
 		     }
+	       }
 	    } // endif pile has the right colour
 	 } // endif numbered pile
 	 else
@@ -1398,9 +1394,11 @@ unsigned int Machiavelli::reorderTableToFit4 () {
 
 	       for (ICardPile::const_iterator p ((*t)->begin ()); p != (*t)->end (); ++p)
 		  if ((*p)->colour () == i->colour) {
-		     posPiles.push_back (((t - tablePiles.begin ()) << 8) + (1 << 16) + (p - (*t)->begin ()));
-		     Check3 (tablePiles[i->pile]->getPosition4Card (*(**t)[p - (*t)->begin ()]) != -1U);
-		     return (i->pile << 16) +  + tablePiles[i->pile]->getPosition4Card (*(**t)[p - (*t)->begin ()]);
+		     unsigned int pos (p - (*t)->begin ());
+		     posPiles.push_back (((t - tablePiles.begin ()) << 8) + (1 << 16) + pos);
+		     (**t)[pos]->mark ();
+		     pos = tablePiles[i->pile]->getPosition4Card (*(**t)[p - (*t)->begin ()]); Check3 (pos != -1U);
+		     return (i->pile << 16) + pos;
 		  }
 	    }
       }
@@ -1462,6 +1460,7 @@ void Machiavelli::undoMove (unsigned int number) {
 
    if (number > undo.size ())
       number = undo.size ();
+   TRACE8 ("Machiavelli::undoMove (unsigned int) - Undo (avail): " << number);
 
    disableHuman ();
 
@@ -1472,7 +1471,7 @@ void Machiavelli::undoMove (unsigned int number) {
       if (move.create)
          makeNewPile (move.srcPile);
 
-      TRACE9 ("Machiavelli::undoMove (unsigned int) - Undo " << move.number
+      TRACE8 ("Machiavelli::undoMove (unsigned int) - Undo " << move.number
               << "; " << move.destPile << '/' << move.destPos << "-> "
               << move.srcPile << '/' << move.srcPos);
       ICardPile& dest ((move.srcPile == 0xff)
