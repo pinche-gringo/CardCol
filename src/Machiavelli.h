@@ -133,6 +133,7 @@ class Machiavelli : public Game {
    /// \name Callback from events
    //@{
    void endTurn ();
+   void doEndTurn ();
    void undoMove (unsigned int number);
    void sortHand ();
    void sortHandByColour ();

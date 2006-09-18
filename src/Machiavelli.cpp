@@ -159,8 +159,7 @@ void Machiavelli::start () {
 
    if (randomizeCardsToPile (staple)) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-	 // TODO: Undo          for (unsigned int j (0); j < 7; ++j)
-          for (unsigned int j (0); j < 17; ++j)
+          for (unsigned int j (0); j < 7; ++j)
              hands[(i - posServer) & 0x3].append (staple.removeTopCard ());
 
       hands[0].sortByColour ();
@@ -261,7 +260,7 @@ int Machiavelli::makeMove (unsigned int player) {
       TRACE4 ("Machiavelli::makeMove (unsigned int) - Moving cards to pile " << target);
       unsigned int pos (target & 0xffff);
       target >>= 16;
-      TRACE8 ("Machiavelli::makeMove (unsigned int) - Pile " << target
+      TRACE6 ("Machiavelli::makeMove (unsigned int) - Pile " << target
               << "; Size: " << tablePiles.size ());
       Check3 (target < tablePiles.size ());
 
@@ -271,7 +270,7 @@ int Machiavelli::makeMove (unsigned int player) {
          unsigned int pile ((posPile >> 8) & 0xff);
          unsigned int nr (posPile >> 16);
          unsigned int posSrc (posPile & 0xff);
-         TRACE9 ("Machiavelli::makeMove (unsigned int) - Add from " << pile
+         TRACE8 ("Machiavelli::makeMove (unsigned int) - Add from " << pile
                  << " cards " << posSrc << '-' << (posSrc + nr - 1));
 
          Check3 (pile < tablePiles.size ());
@@ -426,7 +425,7 @@ void Machiavelli::setStartPlayer () {
 }
 
 //-----------------------------------------------------------------------------
-/// Callback to end a turn
+/// Callback to end a turn. Checks if the piles are OK
 //-----------------------------------------------------------------------------
 void Machiavelli::endTurn () {
    TRACE5 ("Machiavelli::endTurn ()");
@@ -452,12 +451,21 @@ void Machiavelli::endTurn () {
       undoDlg->get_action_area ()->pack_end (*undoLast, Gtk::PACK_SHRINK, 5);
 
       undoAll->signal_clicked ().connect
-          (bind (mem_fun (*this, &Machiavelli::undoMove), -1U));
+	 (bind (mem_fun (*this, &Machiavelli::undoMove), -1U));
       undoLast->signal_clicked ().connect
-          (bind (mem_fun (*this, &Machiavelli::undoMove), 1));
-      return;
+	 (bind (mem_fun (*this, &Machiavelli::undoMove), 1));
    }
+   else
+      doEndTurn ();
+}
 
+//-----------------------------------------------------------------------------
+/// Ends a turn without checking if the piles are OK
+//-----------------------------------------------------------------------------
+void Machiavelli::doEndTurn () {
+   TRACE5 ("Machiavelli::doEndTurn ()");
+   Check1 (gameStatus () == PLAYING);
+   Check3 (staple.size ()); Check3 (activeCards.size ());
    while (undo.size ())
       undo.pop ();
 
@@ -830,16 +838,13 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       iCard++;
    }
 
+   // Check if human got rid of all cards
    if (hands[0].empty ()) {
       YGP::StatusObject obj;
       checkPiles (obj);
       if (obj.getType () == YGP::StatusObject::UNDEFINED) {
-         unsigned int nextPlayer (findNextPlayer (0));
-         if (nextPlayer == findNextPlayer (nextPlayer)) {
-            endGame (nextPlayer);
-            disableHuman ();
-            return;
-         }
+	 doEndTurn ();
+	 return;
       }
    }
 
@@ -1278,7 +1283,8 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                   Check3 (c != (*o)->end ());
 		  if ((*o)->size () < 4) {
 		     addBorderCards2Missing (o - tablePiles.begin (), 1 << (c == (*o)->begin ()));
-		     if ((missing.back ().nr == (*i)->number ())
+		     if (missing.size ()
+			 && (missing.back ().nr == (*i)->number ())
 			 && (missing.back ().colour == (*i)->colour ()))
 			missing.pop_back ();
 		     continue;
@@ -1299,7 +1305,10 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                              << (p - playerPile.begin ()));
                      pos2Play = pos1Play = p - playerPile.begin ();
 
-                     if ((*i)->number () < (*c)->number ()) {
+		     // Swap cards, if needed, to get the right sorting (but
+		     // take care of the case of the ace as 1)
+                     if (((*i)->number () < (*c)->number ())
+			 && (((*c)->number () - (*i)->number ()) < 5)) {
                         TRACE9 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Swapping "
                                 << **i << " with " << **c);
                         std::swap (i, c);
@@ -1379,11 +1388,12 @@ unsigned int Machiavelli::reorderTableToFit4 () {
 		  else
 		     if ((pos > 3) && (pos < ((*t)->size () - 2))) {
 			makeNewPile ();
+			unsigned int nr ((*t)->size () - pos);
 			posPiles.push_back (((t - tablePiles.begin ()) << 8)
-					    + (((*t)->size () - pos) << 16) + pos);
-			(**t)[pos]->mark ();
-			pos = tablePiles[i->pile]->getPosition4Card (*(**t)[pos]); Check3 (pos != -1U);
-			return ((tablePiles.size () - 1) << 16) + pos;
+					    + (nr << 16) + pos);
+			while (--nr)
+			   (**t)[pos + nr]->mark ();
+			return ((tablePiles.size () - 1) << 16);
 		     }
 	       }
 	    } // endif pile has the right colour
