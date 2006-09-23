@@ -68,14 +68,15 @@
     <h3>Aufnehmen</h3>
     <p>Am Beginn jedes Zugs nimmt der Spieler eine Karte vom
       Reservestapel oder - falls er ein zur obersten Karte des
-      gespielten Stosses "passendes" Paar aufweist - den gesamten
+      Ablegestapels "passendes" Paar aufweist - den gesamten
       unben&ouml;tigten Sto&szlig;, wobei er diese 3 Karten sofort
-      ablegen muss. Passend bedeutet, dass entweder die
-      Nummer (unabh&auml;ngig von der Farbe) oder die Farbe gleich
-      ist, und die Nummern in einer fortlaufenden Serie sind (As als
-      Eins, Drei, Vier, ..., Zehn, Bube, Dame, K&ouml;nig, As - Der
-      Zweier ist ein Joker und kommt daher nicht in der Reihe
-      vor).</p>
+      ablegen muss.</p>
+
+    <p><a name="Passend"></a>Passend bedeutet, dass entweder die
+      Nummer gleich ist (unabh&auml;ngig von der Farbe) oder die Farbe
+      und die Nummern in einer fortlaufenden Serie sind (As als Eins,
+      Drei, Vier, ..., Zehn, Bube, Dame, K&ouml;nig, As - Der Zweier
+      ist ein Joker und kommt daher nicht in der Reihe vor).</p>
 
     <p>Als Ausnahme dazu kann der startende Spieler zwischen der
       (sichtbaren) Karte im unben&ouml;tigten Sto&szlig; oder der
@@ -85,10 +86,10 @@
 
     <h3>Ablegen</h3>
     <p>Danach kann er neue Stapel von "zusammenpassenden" Karten
-      (siehe oben) ablegen oder an bestehende Stapel anlegen (wenn man
-      will - eine m&ouml;gliche Taktik ist auch, die Karten in der
-      hand zu halten, um so eventuell den Stapel der abgeworfenen
-      Karten aufnehmen zu k&ouml;nnen).</p>
+      (siehe <a href="#Passend">oben</a>) ablegen oder an bestehende
+      Stapel anlegen (wenn man will - eine m&ouml;gliche Taktik ist
+      auch, die Karten in der Hand zu halten, um so eventuell den
+      Ablegestapel aufnehmen zu k&ouml;nnen).</p>
 
     <p>Jeder Stapel muss mindestens 3 Karten enthalten; wovon
       eine entweder ein Joker oder eine (beliebigfarbige) 2 sein kann
@@ -112,9 +113,9 @@
 
       <li><p>Hat ein Spieler keine Karten (au&szlig;er Joker oder
           2'er) mehr, nimmt er den "Buraco" auf (einen voher zur Seite
-          gelegten Reservestapels (einer pro Team)). Danach kann er
-          normal fortsetzen (d.h., er ist noch immer am Zug, wenn er
-          noch keine Karte abgeworfen hat).</p></li>
+          gelegten Reservestapels). Danach kann er normal fortsetzen
+          (d.h., er ist noch immer am Zug, wenn er noch keine Karte
+          abgeworfen hat).</p></li>
 
       <li><p>Gibt es keinen "Buraco" mehr und hat das Team noch keinen
         <em>Cerrado</em>, kann ein Spieler nicht seine letzte Karte
@@ -124,7 +125,7 @@
           (innerhalb des Stapels) verschoben, aber nicht wieder
           aufgenommen werden. Das bedeutet: Hat man beispielsweise
           eine Reihe von &hearts; 5, 6 und Joker, kann man den Joker
-          nach unten verschieben (wird zu &hearts;4 und dannach einen
+          nach unten verschieben (wird zu &hearts;4 und danach einen
           &hearts;3 anlegen<a href="#Note3"><sup>3</sup></a> aber man
           kann nicht ein &hearts;7 ablegen und daf&uuml;r den Joker in
           seine Hand aufnehmen (allerdings kann man den 7'er ablegen
@@ -146,7 +147,7 @@
     <p>Das Spiel endet, wenn ein Team mindestens einen "Cerrado" hat,
       bereits den "Buraco" aufgenommen hat und dann einer des Teams
       alle seine Karten loswird (dabei kann noch eine Karte auf den
-      Sto&szlig; abgeworfen werden, muss aber nicht.</p>
+      Sto&szlig; abgeworfen werden, muss aber nicht).</p>
 
     <h2>Abrechnung</h2>
     <p>Ist das Spiel beendet, werden die Punkte gez&auml;hlt. Jeder
@@ -182,9 +183,8 @@
         positioniert, erscheint ein kleines Fenster, das &uuml;ber die
         Anzahl der &uuml;brigen Karten informiert.</li>
 
-      <li>Die von den Spieler abgeworfenen Karten. Auch dieser Staple zeigt
-        die Anzahl der Karten, wenn der Mauszeiger darauf positioniert
-        wird.</li>
+      <li>Der Ablegestapel. Auch dieser zeigt die Anzahl der Karten,
+        wenn der Mauszeiger darauf positioniert wird.</li>
 
       <li>Die Karten des Spielers. Anfangs sortiert nach Nummern, aber
         mit Ziehen und Ablegen (drag und drop)<a
