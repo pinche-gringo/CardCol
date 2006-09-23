@@ -239,6 +239,25 @@ void MachiPile::checkIntegrity () throw (PileError) {
       }
 }
 
+//-----------------------------------------------------------------------------
+/// Returns the position of the first card having the passed colour
+/// \param colour: Colour to find
+/// \returns int: Position of card or -1
+//-----------------------------------------------------------------------------
+int MachiPile::getPosOfColour (CardWidget::COLOURS colour) const {
+   TRACE9 ("MachiPile::getPosOfColour (CardWidget::COLOURS) - " << colour);
+   Check3 (size ());
+
+   if (type == NUMBER) {
+      for (const_iterator i (begin ()); i != end (); ++i)
+	 if ((*i)->colour () == colour)
+	    return i - begin ();
+      return -1;
+   }
+   else
+      return (operator[] (0)->colour () == colour) ? 0 : -1;
+}
+
 //----------------------------------------------------------------------------
 /// Checks if this has a card matching to the ones passed in pair
 /// \param pair: Pile holding the pair to match
@@ -258,6 +277,14 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
 				unsigned int& nr) const {
    Check1 (pair.size () == 2);
    CardWidget *card (operator[] (0));
+
+   // For numbered pile find right colour (if pair has the same colour)
+   if ((type == NUMBER) && (pair[0]->colour () == pair[1]->colour ())) {
+      int pos (getPosOfColour (pair[1]->colour ()));
+      if (pos >= 0)
+	 card = operator[] (pos);
+   }
+
    int diff (cardDistance (*pair[1], *pair[0]));
    int diffTable (cardDistance (*pair[0], *card,
                                 (diff < 0) ? ONE
@@ -277,13 +304,14 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
    case 0:                                                     // Equal numbers
       if (diffTable) {
          if ((diffTable > 2)
-             && (getType () == COLOUR)
+             && (type == COLOUR)
              && (((int)(size () - 4) > diffTable)
                  || ((int)(size () - 1) == diffTable))
              && (pair.find (operator[] (diffTable)->id ()) == -1)) {
             match = begin () + diffTable;
             nr = end () - match;
-            if ((int)(size () - 4) > diffTable)
+            if (((int)(size () - 4) > diffTable)
+		&& ((int)(size () - 1) != diffTable))
                pair.clear ();
          }
       }

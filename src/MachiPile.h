@@ -57,6 +57,8 @@ class MachiPile : public CardHPile {
 
    TYPE getType () const { return type; }
 
+   int getPosOfColour (CardWidget::COLOURS colour) const;
+
    typedef enum { ACE, BOTH, ONE } ACEFLAG;
    static int cardDistance (const CardWidget& a, const CardWidget& b) {
        return cardDistance (a, b, BOTH); }
