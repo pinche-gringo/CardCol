@@ -135,6 +135,7 @@ class Machiavelli : public Game {
    void endTurn ();
    void doEndTurn ();
    void undoMove (unsigned int number);
+   void removeUndoDlg (int);
    void sortHand ();
    void sortHandByColour ();
    //@}
