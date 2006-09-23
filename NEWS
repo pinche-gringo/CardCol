@@ -1,3 +1,15 @@
+ Overview of changes in version 0.8.10:
+
+  - Configure can disable network-ability
+  - Machiavelli: Improved computer player
+  - Machiavelli: Human playing last card (to valid piles) ends his turn
+  - Machiavelli: Various fixes
+  - Machiavelli: Disabling some Machiavelli-menuentries after turn
+  - Sgt. Mayor: Playing without the 2 of clubs (not the 2 of spades)
+  - GNOME's images can be of arbitrary size (needed for GNOME 2.16)
+  - Fixed german documentation (new grammar style)
+
+
 Overview of changes in version 0.8.00:
 
   - Implemented Jabberwocky
@@ -18,7 +30,7 @@ Overview of changes in version 0.7.60:
 Overview of changes in version 0.7.54:
 
   - Fixed message in Buraco when player tries to end with unfished mono-piles
-  - Fixed english help text (it's "tricks", not "ticks" , how embarassing)
+  - Fixed english help text (it's "tricks", not "ticks", how embarassing)
   - Fixed compiling without libpthreads
 
 
@@ -81,7 +93,7 @@ Overview of changes in version 0.7.32:
 
   - config: Checking for carddecks in more directories
   - Buraco: Test first if card fits on pile, before warning about missing cards
-  - Buraco: Undoing undoes moving of jokers caused by last move
+  - Buraco: Undo undoes moving of jokers caused by last move
   - Buraco: Sorting cards after taking buraco disables undo
   - Buraco: The dumped cards and those of the reserve  can be shown after game
   - Røvhult: Fixed setting title when not using an ISO-8895-1 encoding
@@ -177,7 +189,8 @@ Overview of changes in version 0.6.20:
 
   - Added (finally) network ability to Machiavelli
   - Installing documentation automatically (hence removed make doc-(un)install)
-  - Fixed bug in Buraco: Human could make a pile with 2 jokers, but no pair
+  - Fixed bug in Buraco: Human could create a pile when having a hand with
+    2 jokers, but no pair
 
 
 Overview of changes in version 0.6.10:

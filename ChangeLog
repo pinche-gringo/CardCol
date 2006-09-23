@@ -1,3 +1,71 @@
+2006-09-23  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.8.10 documented
+
+	* doc/Buraco.html.de: Fixes; Improvements
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  Fixed undo after closing info-dialog
+
+	* src/MachiPile.cpp, src/MachiPile.h:
+	  Fixed hasMatching3rd() for numbered piles
+
+2006-09-18  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  Fixes; Human playing last card (to valid piles) ends his turn automatically
+
+2006-09-17  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Buraco.html.en: Fixes
+
+2006-09-14  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp: Fixes (Undo, within computer player)
+
+2006-09-11  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  First draft of computer player searching for missing cards (1-level recursion)
+
+	* doc/Machiavelli.html.de, doc/Røvhult.html.de, doc/Twopart.html.de, doc/Buraco.html.de, doc/CardCol.html.de:
+	  Adapted to new german grammar style
+
+2006-09-10  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Jabberwocky.html.de, doc/Jabberwocky.html.en: Fixes
+
+2006-09-08  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardImgs.cpp, Common/DeckSelect.cpp:
+	  Don't expect GNOME-pics to be of size 1027*615; Fixes loading pics from 2.16
+
+2006-09-04  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  Fixed adding part of a pile to the left of other pile; Fixed menu-handling
+
+2006-09-02  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Sgt.Mayor.html.de, doc/Sgt.Mayor.html.en, doc/Sgt.Mayor.html.es:
+	  Playing without the two of clubs (not the two of spades)
+
+	* doc/CardCol.html.es: Fixed title of Sgt. Mayor
+
+	* src/SgtMayor.cpp:
+	  Playing without the two of clubs (not the two of spades)
+
+2006-08-26  Markus Schwab  <g17m0@lycos.com>
+
+	* INSTALL:
+	  Documented configure-options --disable-network and --disable-[GAME]
+
+	* configure.in:
+	  Version to 0.8.10; Added option to disable network capabilities
+
+	* src/CardCol.cpp, src/CardCol.h, src/CardColAppl.cpp, src/CardColAppl.h, src/CardColNet.cpp, src/Makefile.am:
+	  Using new define WITH_NETWORK deciding if to compile with network capability
+
 2006-08-26  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Changes of V0.8.00 documented
