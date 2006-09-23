@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.8 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2006-08-26 13:43-0400\n"
+"POT-Creation-Date: 2006-09-23 19:05-0400\n"
 "PO-Revision-Date: 2005-05-13 12:08-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -25,7 +25,7 @@ msgstr ""
 
 #: src/Rovhult.cpp:374 src/Rovhult.cpp:509 src/Buraco.cpp:729
 #: src/Buraco.cpp:845 src/Buraco.cpp:1055 src/Buraco.cpp:1272
-#: src/Machiavelli.cpp:752 src/Machiavelli.cpp:776
+#: src/Machiavelli.cpp:770 src/Machiavelli.cpp:783
 msgid "Invalid move"
 msgstr ""
 
@@ -37,7 +37,7 @@ msgstr ""
 msgid "The played card must be equal or bigger!"
 msgstr ""
 
-#: src/Rovhult.cpp:610 src/Twopart.cpp:417 src/Machiavelli.cpp:1488
+#: src/Rovhult.cpp:610 src/Twopart.cpp:417 src/Machiavelli.cpp:1587
 msgid "%1 lost"
 msgstr ""
 
@@ -59,7 +59,7 @@ msgid ""
 "drop) - click on one card to start playing"
 msgstr ""
 
-#: Common/CardImgs.cpp:120 Common/DeckSelect.cpp:294
+#: Common/CardImgs.cpp:120 Common/DeckSelect.cpp:297
 msgid "Unknown error"
 msgstr ""
 
@@ -111,7 +111,7 @@ msgstr ""
 msgid "Available backgrounds"
 msgstr ""
 
-#: Common/DeckSelect.cpp:297
+#: Common/DeckSelect.cpp:300
 msgid ""
 "Error loading image from file `%1'!\n"
 "\n"
@@ -280,7 +280,7 @@ msgstr ""
 msgid "<ctl>J"
 msgstr ""
 
-#: src/CardCol.cpp:745 src/Machiavelli.cpp:1696
+#: src/CardCol.cpp:745 src/Machiavelli.cpp:1795
 msgid "_Machiavelli"
 msgstr ""
 
@@ -694,7 +694,7 @@ msgstr ""
 msgid "Not enough cards to make new pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1180 src/Machiavelli.cpp:750
+#: src/Buraco.cpp:1180 src/Machiavelli.cpp:768
 msgid "This card does not fit on that pile!"
 msgstr ""
 
@@ -740,15 +740,15 @@ msgstr ""
 msgid "<ctl>Z"
 msgstr ""
 
-#: src/Buraco.cpp:2235 src/Machiavelli.cpp:1706
+#: src/Buraco.cpp:2235 src/Machiavelli.cpp:1803
 msgid "_Sort cards (by number)"
 msgstr ""
 
-#: src/Buraco.cpp:2239 src/Machiavelli.cpp:1710
+#: src/Buraco.cpp:2239 src/Machiavelli.cpp:1807
 msgid "Sort cards (by _colour)"
 msgstr ""
 
-#: src/Machiavelli.cpp:83 src/Machiavelli.cpp:1703
+#: src/Machiavelli.cpp:83 src/Machiavelli.cpp:1810
 msgid "_End turn"
 msgstr ""
 
@@ -758,55 +758,55 @@ msgid ""
 "table - click the staple to end turn"
 msgstr ""
 
-#: src/Machiavelli.cpp:431 src/Machiavelli.cpp:1456
+#: src/Machiavelli.cpp:439 src/Machiavelli.cpp:1555
 msgid "Can't end turn: The piles are not valid!"
 msgstr ""
 
-#: src/Machiavelli.cpp:437
+#: src/Machiavelli.cpp:446
 msgid "_Undo all"
 msgstr ""
 
-#: src/Machiavelli.cpp:438
+#: src/Machiavelli.cpp:447
 msgid "Undo _last"
 msgstr ""
 
-#: src/Machiavelli.cpp:774
-msgid "Card is not on the edge of the origen - try splitting the origin first!"
+#: src/Machiavelli.cpp:781
+msgid "Can't move this card - try splitting the origin first!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1348
+#: src/Machiavelli.cpp:1446
 msgid "Taking last card! Solve the game (somehow) ..."
 msgstr ""
 
-#: src/Machiavelli.cpp:1350
+#: src/Machiavelli.cpp:1448
 msgid "Game over"
 msgstr ""
 
-#: src/Machiavelli.cpp:1375
+#: src/Machiavelli.cpp:1473
 msgid "Pile %1: %2\n"
 msgstr ""
 
-#: src/Machiavelli.cpp:1458
+#: src/Machiavelli.cpp:1557
 msgid "Could end turn: The piles are OK!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1571 src/Machiavelli.cpp:1633
+#: src/Machiavelli.cpp:1670 src/Machiavelli.cpp:1732
 msgid "Invalid source pile!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1574 src/Machiavelli.cpp:1636
+#: src/Machiavelli.cpp:1673 src/Machiavelli.cpp:1735
 msgid "Invalid cards!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1592 src/Machiavelli.cpp:1621
+#: src/Machiavelli.cpp:1691 src/Machiavelli.cpp:1720
 msgid "Invalid destination pile!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1630
+#: src/Machiavelli.cpp:1729
 msgid "Invalid position in destination pile!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1700
+#: src/Machiavelli.cpp:1799
 msgid "Undo _all"
 msgstr ""
 
