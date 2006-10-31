@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.8.10, [g17m0@lycos.com], CardCol)
+AC_INIT(Cardgames, 0.8.11, [g17m0@lycos.com], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -30,7 +30,7 @@ AC_LANG_CPLUSPLUS
 
 AC_C_BIGENDIAN
 
-ALL_LINGUAS="de en es"
+ALL_LINGUAS="de en es tr"
 
 AM_INIT_AUTOMAKE(dist-bzip2)
 AM_CONFIG_HEADER(cardgames-cfg.h)
@@ -42,6 +42,7 @@ AM_PROG_LIBTOOL
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
+AC_GNU_SOURCE
 AM_GNU_GETTEXT
 
 dnl Checks for libraries.
@@ -234,7 +235,7 @@ if test "$GNOMECARDS_DIR" != "no"; then
 
    AC_MSG_RESULT($GNOMECARDS_DIR)
    if test -d "$GNOMECARDS_DIR"; then
-      if test -f "$GNOMECARDS_DIR/bonded.png"; then
+      if test -f "$GNOMECARDS_DIR/bonded.png" -o -f "$GNOMECARDS_DIR/bonded.svg"; then
 	 HAVE_CARDS=1
 	 AC_DEFINE_UNQUOTED(GNOMECARDS_DIR, "$GNOMECARDS_DIR",
                             [Directory holding the GNOME carddecks])
