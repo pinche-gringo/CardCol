@@ -74,15 +74,17 @@
       player does not have any cards of the lead suit, any other suit
       may be played instead.</p>
 
-    <p>A trump card can not be played first in a trick unless the
+    <p>A trump card may not be played first in a trick unless the
       trump suit has already been played or the player has only trump
       cards available. (Trump is said to be <i>broken</i> the first
       time a trump card is played.)</li>
 
     <p>The person who played the highest card in the leading suit wins
       that trick unless a trump card was played, in which case the
-      person who played the highest trump card takes the trick. The
-      winner of a trick leads the next trick.</p>
+      person who played the highest trump card takes the trick. Cards within
+      a suit are ranked from Ace (highest value) down to 2 (lowest value).</p>
+
+    <p>The winner of a trick leads the next trick.</p>
 
     <p>The round ends when all available tricks have been taken.</p>
 
