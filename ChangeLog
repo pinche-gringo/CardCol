@@ -1,3 +1,22 @@
+2006-10-31  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.8.11 documented
+
+	* configure.in:
+	  Version to 0.8.11; Added turkish language; Test for GNOME pics works with 2.16
+
+	* doc/Sgt.Mayor.html.de: Minor changes
+
+	* doc/Jabberwocky.html.de, doc/Jabberwocky.html.en: Minor improvements
+
+	* po/tr.po: New file.
+
+	* AUTHORS: Added author of turkish translation
+
+2006-09-24   Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Buraco.html.de: Formattierung verbessert
+
 2006-09-23  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Changes of V0.8.10 documented
