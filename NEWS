@@ -1,3 +1,10 @@
+ Overview of changes in version 0.8.11:
+
+  - Adapted testing for GNOME cardgames to work with GNOME 2.16
+  - Improved english documentation of Jabberwocky
+  - Added turkish translation (thanks to Adeviye Yilmaz)
+
+
  Overview of changes in version 0.8.10:
 
   - Configure can disable network-ability
