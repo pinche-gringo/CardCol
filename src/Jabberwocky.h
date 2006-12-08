@@ -114,6 +114,9 @@ class Jabberwocky : public Game {
 
    ScoreDlg*   pScoreDlg;
 
+   Glib::RefPtr<Gtk::Action> menuSort;
+   Glib::RefPtr<Gtk::Action> menuSort2;
+
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
 };

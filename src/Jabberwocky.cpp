@@ -174,6 +174,9 @@ void Jabberwocky::start () {
 	 makeBids ();
       }
       pile.clear ();
+
+      menuSort->set_sensitive (false);
+      menuSort2->set_sensitive (false);
    }
 }
 
@@ -196,6 +199,9 @@ void Jabberwocky::clean () {
       remove (*pTrump);
       pTrump = NULL;
    }
+
+   menuSort->set_sensitive (false);
+   menuSort2->set_sensitive (false);
 
    Game::clean ();
 }
@@ -301,12 +307,12 @@ void Jabberwocky::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 
    Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
    grpAction->add (Gtk::Action::create ("MB", _("_Jabberwocky")));
-   grpAction->add (Gtk::Action::create ("JabberwockySort", Gtk::Stock::SORT_ASCENDING,
-					_("_Sort won cards (by number)")),
+   grpAction->add (menuSort = Gtk::Action::create ("JabberwockySort", Gtk::Stock::SORT_ASCENDING,
+						   _("_Sort won cards (by number)")),
 		   Gtk::AccelKey ("<shft>S"),
 		   mem_fun (*this, &Jabberwocky::sortWonByNumber));
-   grpAction->add (Gtk::Action::create ("JabberwockySortCol", Gtk::Stock::SORT_ASCENDING,
-					_("Sort won cards (by _colour)")),
+   grpAction->add (menuSort2 = Gtk::Action::create ("JabberwockySortCol", Gtk::Stock::SORT_ASCENDING,
+						    _("Sort won cards (by _colour)")),
 		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Jabberwocky::sortWonByColour));
 
@@ -871,8 +877,11 @@ int Jabberwocky::playCard (unsigned int player, unsigned int card) {
 
       // Move the cards to his won pile
       movePile (players[player].won, played, 0, played.size () - 1);
-      if (!player)
+      if (!player) {
 	 enableWonCards (players[0].won);
+	 menuSort->set_sensitive ();
+	 menuSort2->set_sensitive ();
+      }
    }
    else
       player = (player + 1) % NUM_PLAYERS;
