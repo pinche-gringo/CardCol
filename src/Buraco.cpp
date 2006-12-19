@@ -1490,8 +1490,9 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
           ? (((((*p)->size () == 6) && ((*p)->getPosJoker () > 6))
 	      && ((hands[player].size () - iCard) < 7)
               && (((reserve[player & 1].empty ()
-                    && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco
-                         == 0x3)))
+                    && ((((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco
+                         == 0x3))
+			|| (hands[player].size () < 3)))
                    || (points[player & 1] > 100))
                   || reserve[!(player & 1)].empty ()
                   || (points[!(player & 1)] > 100)))
