@@ -376,14 +376,14 @@ int Buraco::executeMove (unsigned int player) {
            p != playerPile.end (); ++p) {
          TRACE8 ("Buraco::executeMove (unsigned int) - Adding card " << **p << '?');
          unsigned int target (cardFitsOnPlayedPile (player, p - playerPile.begin ()));
-         if ((target != -1U) && canDumpCards (player, 1, ((int)target) >> 16))
+         if ((target != -1U) && canPlayCards (player, 1, ((int)target) >> 16))
             return target;
       }
 
    // Check for 3 cards belonging to a serie
    unsigned int i (0);
    for (; i < playerPile.size (); ++i) {
-      TRACE8 ("Buraco::executeMove (unsigned int) - Analyzing card " << *playerPile[i]);
+      TRACE8 ("Buraco::executeMove (unsigned int) - Analysing card " << *playerPile[i]);
 
       std::map<unsigned int, unsigned int> aPos;                   // diff, pos
       std::vector<unsigned int> aOrder;
@@ -410,20 +410,20 @@ int Buraco::executeMove (unsigned int player) {
          if (nrs > 7)
             nrs = 7;
 
-	 bool canDump (canDumpCards (player, nrs));
-         if (canDump || (nrs > 5)) {
-	    if (!canDump)
+	 bool canPlay (canPlayCards (player, nrs));
+	 if (canPlay || (nrs > 5)) {
+	    if (!canPlay)
 	       nrs = 3;
 
 	    if (isJoker (*playerPile[firstPos]))
 	       ++unfinishedMonoPiles[player & 1];
 
-            // Create new pile with the found cards
-            makeNewPile (player & 1);
-            pos1Play = firstPos;
-            pos2Play = firstPos + nrs - 1;
-            return (tablePiles[player & 1].size () - 1) << 16;
-         }
+	    // Create new pile with the found cards
+	    makeNewPile (player & 1);
+	    pos1Play = firstPos;
+	    pos2Play = firstPos + nrs - 1;
+	    return (tablePiles[player & 1].size () - 1) << 16;
+	 }
 	 else
 	    hands[player].sort (compByNumberWithJokers);
       }
@@ -437,9 +437,9 @@ int Buraco::executeMove (unsigned int player) {
       ICardPile::const_iterator ci (playerPile.begin ());
       // If pile still has normal cards (no joker)
       while (!((ci == playerPile.end ()) || isJoker (**ci))) {
-         ICardPile::const_iterator next (playerPile.getFittingCard (**ci, ci + 1,
+	 ICardPile::const_iterator next (playerPile.getFittingCard (**ci, ci + 1,
                                                                     &cardDistance));
-         if ((next != playerPile.end ())
+	 if ((next != playerPile.end ())
              && isJoker (*playerPile[playerPile.size () - 1])) {
             TRACE1 ("Buraco::executeMove (unsigned int) - Have two with joker: "
                     << **ci << " and " << **next);
@@ -768,9 +768,7 @@ void Buraco::cardSelected (unsigned int iCard) {
 //-----------------------------------------------------------------------------
 void Buraco::stapleSelected () {
    TRACE5 ("Buraco::stapleSelected ()");
-   Check3 (staple.size ());
-   Check2 (dumped.size ());
-   Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
+   Check3 (staple.size ()); Check3 (stapleTop.connected ());
 
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
       // Send played card to all clients (if any)
@@ -797,7 +795,6 @@ void Buraco::stapleSelected () {
 void Buraco::doStapleSelected () {
    TRACE5 ("Buraco::doStapleSelected ()");
    Check2 (staple.size ());
-   Check2 (dumped.size ());
 
    if (gameStatus () == STOPPED) {
       dumped.append (staple.removeTopCard ());
@@ -1160,7 +1157,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 
 	 // Only allow dropping on new pile while having < 5 cards, if the game
 	 // can be ended, or there is still the reserve
-	 if (!canDumpCards (0, 3))
+	 if (!canPlayCards (0, 3))
 	    throw Glib::ustring (_(*unfinishedMonoPiles
 				   ? N_("You can't end the game (a pile of monos is not finished)!")
 				   : ((hands[0].size () <= 5)
@@ -1181,7 +1178,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 
 	 // Only allow dropping of last card, if the game can be ended, or there
 	 // is still the reserve
-	 if (!canDumpCards (0, 1, iPile))
+	 if (!canPlayCards (0, 1, iPile))
 	    throw Glib::ustring (_("You can't end the game (there's no \"cerrado\")!"));
 
 	 if ((pile->size () == 1)
@@ -1523,7 +1520,7 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
 
       pile.getPosition4Card (card, pos, move);
       Check3 (pos <= pile.size ());
-      if ((move != -1U) && canDumpCards (player, 1, ((int)target) >> 16)) {
+      if ((move != -1U) && canPlayCards (player, 1, bestPile)) {
          Check3 (move <= pile.size ());
          Check3 (move != pile.getPosJoker ());
 	 Check3 (pile.getPosJoker () != 7);
@@ -1830,19 +1827,20 @@ bool Buraco::canGetRidOfCards (unsigned int player) const {
 }
 
 //-----------------------------------------------------------------------------
-/// Checks if the player can dump the specified number of cards; a player can
-/// only dump all of his cards, if:
+/// Checks if the player can play the specified number of cards; a player can
+/// only play all of his cards, if:
 ///   - The team has a cerrado
 ///   - The team still has the reserve
 ///   - The player can close a pile, with the cards to play
-/// \param player: Player to analyze
+///   - After the turn there are no unfinished mono-piles
+/// \param player: Player to analyse
 /// \param cards: Number of cards player wants to play
 /// \param pile: Pile player is going to play its card to (or -1 for a new one)
 /// \returns \c True, if card can be played
 //-----------------------------------------------------------------------------
-bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
+bool Buraco::canPlayCards (unsigned int player, unsigned int cards,
                            unsigned int pile) const {
-   TRACE7 ("Buraco::canDumpCards (3x unsigned int) - Player "
+   TRACE7 ("Buraco::canPlayCards (3x unsigned int) - Player "
            << player << " playing " << cards << " cards to " << pile);
    Check1 ((pile == -1U) || (tablePiles[player & 1].size () > pile));
    Check1 ((pile == -1U)
@@ -1851,7 +1849,7 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
    Check1 (cards <= 7);
 
    bool enoughCards ((hands[player].size () > (cards + 1)) || reserve[player & 1].size ());
-   bool canDump (enoughCards
+   bool canPlay (enoughCards
 		 || (points[player & 1] > 100)
 		 || ((pile != -1U)
 		     && (((tablePiles[player & 1][pile]->size () + cards) >= 7)
@@ -1859,19 +1857,19 @@ bool Buraco::canDumpCards (unsigned int player, unsigned int cards,
 			     && ((hands[player].size () - cards) == 1)
 			     && canClosePile (player, pile))))
 		 || (cards >= 7));
-   TRACE7 ("Buraco::canDumpCards (3x unsigned int) - Can dump: " << (canDump ? "Yes" : "No"));
+   TRACE1 ("Buraco::canPlayCards (3x unsigned int) - Can play: " << (canPlay ? "Yes" : "No"));
    return ((unfinishedMonoPiles[player & 1] && !enoughCards)
 	   ? (((unfinishedMonoPiles[player & 1] == 1)
 	       && ((pile != -1U)
 		   ? (tablePiles[player & 1][pile]->getPoints () < 0) : false))
-	      ? canDump : false)
-	   : canDump);
+	      ? canPlay : false)
+	   : canPlay);
 }
 
 //----------------------------------------------------------------------------
 /// Checks if the player can with his two cards left close the passed pile
 /// \param player: Player to inspect
-/// \param pile: Pile to analyze
+/// \param pile: Pile to analyse
 /// \return bool: True, if the remaining cards of the player can make a
 ///        cerrado for this pile
 /// \remarks: - The player must have only two cards; the pile 5
@@ -1927,7 +1925,7 @@ bool Buraco::canClosePile (unsigned int player, unsigned int pile) const {
 //-----------------------------------------------------------------------------
 bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
                                  bool withJokers) {
-   TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&, const CardWidget*,"
+   TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&, const CardWidget&,"
            " bool) - " << card);
 
    if (withJokers) {
