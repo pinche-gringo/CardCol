@@ -174,16 +174,13 @@ bool Twopart::enableHuman () {
    Check3 (activeCards.empty ());
    Check3 (gameStatus () >= PLAYING);
 
-   TRACE2 ("Twopart::enableHuman () - Has " << players[0].hand.size ()
-           << " cards");
-
+   TRACE2 ("Twopart::enableHuman () - Has " << players[0].hand.size () << " cards");
    for (int i (players[0].hand.size () - 1); i >= 0; --i)
       activeCards.push_back
          (players[0].hand[i]->signal_clicked ().connect
            (bind (mem_fun (*this, (&Twopart::cardSelected)), i)));
 
-   if ((gameStatus () == PLAYING2)
-       && (played.size ()))
+   if ((gameStatus () == PLAYING2) && (played.size ()))
       activeCards.push_back
          (played.getTopCard ().signal_clicked ().connect
           (mem_fun (*this, (&Twopart::playedSelected))));
