@@ -591,14 +591,14 @@ bool ICardPile::hasFittingPair (const CardWidget& card, CMPFUNC2 cmp,
          Check3 (diff < 4);
          TRACE1 ("ICardPile::pileHasFittingPair (const " "CardWidget*, "
                  "CMPFUNC2, bool) - " << **p << " diff: " << diff);
-         if ((((unsigned int)diff) < 4) && !(bCols & (1 << diff))) {
+         if (!(bCols & (1 << diff))) {
             // The card is valid, if either a card bordering the one the
             // inspect and this one has been found. Note that for aces the
             // bordering card must be in the same direction as the card to
-            // to inspect (e.g. K-A-2 is not valid; only Q-K-A!)
+            // inspect (e.g. K-A-2 is not valid; only Q-K-A!)
             if ((card.number () == CardWidget::ACE)
                 ? (bCols & (0x1 << (diff ^ 0x1)))
-                : (bCols & (diff ? (0x5 << (diff - 1)) : 0x1)))
+                : (bCols & (diff ? (0x5 << (diff - 1)) : 0x2)))
                return true;
             bCols |= (1 << diff);
          }
