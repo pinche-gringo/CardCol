@@ -114,7 +114,7 @@ class Buraco : public Game {
    void endGame ();
    bool canClosePile (unsigned int player, unsigned int pile) const;
    bool canGetRidOfCards (unsigned int player) const;
-   bool canDumpCards (unsigned int player, unsigned int cards,
+   bool canPlayCards (unsigned int player, unsigned int cards,
                       unsigned int pile = -1U) const;
 
    void sendMoveCard (unsigned int pile, unsigned int from, unsigned int to) const;
