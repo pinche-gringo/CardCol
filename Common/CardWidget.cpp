@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 27.03.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2005
+//COPYRIGHT   : Copyright (C) 2002 - 2006
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -139,7 +139,8 @@ bool CardWidget::on_button_release_event (GdkEventButton* ev) {
            << "; W: " << get_width () << "; H: " << get_height ());
 
    // It button 1 is released within the image: Generate a clicked signal
-   if ((ev->button == 1) && ((ev->x != 0) && (ev->y != 0))) {
+   if ((ev->button == 1) && (ev->x || ev->y)
+       && (ev->x < get_width ()) && (ev->y < get_height ())) {
       clicked_.emit ();
       on_clicked ();
    }
