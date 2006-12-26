@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.8 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2006-09-23 19:05-0400\n"
+"POT-Creation-Date: 2006-12-19 22:28+0100\n"
 "PO-Revision-Date: 2005-05-19 16:24-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -24,7 +24,7 @@ msgid "You must first play the visible cards!"
 msgstr "¡Primero se tiene que usar las cartas visibles!"
 
 #: src/Rovhult.cpp:374 src/Rovhult.cpp:509 src/Buraco.cpp:729
-#: src/Buraco.cpp:845 src/Buraco.cpp:1055 src/Buraco.cpp:1272
+#: src/Buraco.cpp:842 src/Buraco.cpp:1052 src/Buraco.cpp:1269
 #: src/Machiavelli.cpp:770 src/Machiavelli.cpp:783
 msgid "Invalid move"
 msgstr "¡El turno realizado es inválido!"
@@ -37,7 +37,7 @@ msgstr "¡Despues de un %1, la próxima carta tiene que ser igual o menor!"
 msgid "The played card must be equal or bigger!"
 msgstr "¡La carta que juega tiene que ser mayor o igual!"
 
-#: src/Rovhult.cpp:610 src/Twopart.cpp:417 src/Machiavelli.cpp:1587
+#: src/Rovhult.cpp:610 src/Twopart.cpp:414 src/Machiavelli.cpp:1587
 msgid "%1 lost"
 msgstr "%1 perdió"
 
@@ -71,11 +71,11 @@ msgid_plural "%1 cards"
 msgstr[0] "%1 carta"
 msgstr[1] "%1 cartas"
 
-#: src/Twopart.cpp:236
+#: src/Twopart.cpp:233
 msgid "%1 can't continue -> Picking up last cards; "
 msgstr "%1 no puede continuar -> Consigue toda la pila. %2 sigue"
 
-#: src/Twopart.cpp:344
+#: src/Twopart.cpp:341
 msgid ""
 "The played card must have the same colour and must be bigger (or be a trump)!"
 msgid_plural ""
@@ -87,21 +87,21 @@ msgstr[1] ""
 "¡Cartas jugadas tienen que tener el mismo palo y estar mayor (o estar de la "
 "pinta especial)!"
 
-#: src/Twopart.cpp:416
+#: src/Twopart.cpp:413
 msgid "First part ended; Part 2 starts %1"
 msgstr "La primera parte terminó; %1 comienza el parte 2"
 
-#: src/Twopart.cpp:1233 src/CardCol.cpp:761
+#: src/Twopart.cpp:1230 src/CardCol.cpp:761
 msgid "_Twopart"
 msgstr ""
 
-#: src/Twopart.cpp:1235 src/Hearts.cpp:1050 src/SgtMayor.cpp:1209
-#: src/Jabberwocky.cpp:305
+#: src/Twopart.cpp:1232 src/Hearts.cpp:1050 src/SgtMayor.cpp:1209
+#: src/Jabberwocky.cpp:311
 msgid "_Sort won cards (by number)"
 msgstr "_Ordena cartas obtenidas por números"
 
-#: src/Twopart.cpp:1239 src/Hearts.cpp:1054 src/SgtMayor.cpp:1213
-#: src/Jabberwocky.cpp:309
+#: src/Twopart.cpp:1236 src/Hearts.cpp:1054 src/SgtMayor.cpp:1213
+#: src/Jabberwocky.cpp:315
 msgid "Sort won cards (by _colour)"
 msgstr "Ordena cartas obtenidos por _pinta"
 
@@ -287,7 +287,7 @@ msgstr "_Opciones"
 msgid "_Change game"
 msgstr "Cambiar el _juego"
 
-#: src/CardCol.cpp:730 src/Buraco.cpp:2230 src/Settings.cpp:139
+#: src/CardCol.cpp:730 src/Buraco.cpp:2229 src/Settings.cpp:139
 msgid "_Buraco"
 msgstr ""
 
@@ -303,7 +303,7 @@ msgstr "_Corazones"
 msgid "<ctl>H"
 msgstr "<ctl>O"
 
-#: src/CardCol.cpp:740 src/Jabberwocky.cpp:303
+#: src/CardCol.cpp:740 src/Jabberwocky.cpp:309
 msgid "_Jabberwocky"
 msgstr ""
 
@@ -662,7 +662,7 @@ msgstr ""
 msgid "Select 3 cards to exchange with %1"
 msgstr "Selecte 3 cartas para cambiar con %1"
 
-#: src/Hearts.cpp:451 src/Buraco.cpp:1753
+#: src/Hearts.cpp:451 src/Buraco.cpp:1751
 msgid "Round ended"
 msgstr "Turno terminó"
 
@@ -670,7 +670,7 @@ msgstr "Turno terminó"
 msgid "Game ended; %1 won"
 msgstr "Juego terminó; %1 ganó"
 
-#: src/Hearts.cpp:503 src/Jabberwocky.cpp:341
+#: src/Hearts.cpp:503 src/Jabberwocky.cpp:347
 msgid "Play first cards with an equal colour as the first played one!"
 msgstr "¡Use una carta con el mismo palo como la primera!"
 
@@ -710,16 +710,16 @@ msgstr "Pila nueva"
 msgid "Every pile on the table must have at least 3 cards!"
 msgstr "¡Todas las pilas de la mesa necesitan por lo menos 3 cartas!"
 
-#: src/Buraco.cpp:831
+#: src/Buraco.cpp:828
 msgid "You can't pick up monos!"
 msgstr "¡No se puede acoger los monos!"
 
-#: src/Buraco.cpp:834
+#: src/Buraco.cpp:831
 msgid "You need a fitting pair to pick up the pile of dumped cards!"
 msgstr ""
 "¡Se necesita una pareja semejante para acoger la pila de las cartas echadas!"
 
-#: src/Buraco.cpp:840
+#: src/Buraco.cpp:837
 msgid ""
 "Picking up the staple would leave you without cards\n"
 "and you can't end the game now!"
@@ -727,60 +727,60 @@ msgstr ""
 "¡Robando el burro te dejaría sin cartas, pero\n"
 "aún no puedes terminar el juego!"
 
-#: src/Buraco.cpp:1053
+#: src/Buraco.cpp:1050
 msgid "Can't move cards before completing the pile!"
 msgstr ""
 "¡No se puede ordenar las cartas hasta el nueve montón tiene por lo menos 3 "
 "cartas!"
 
-#: src/Buraco.cpp:1142
+#: src/Buraco.cpp:1139
 msgid "You need to fill up other piles first!"
 msgstr "¡Necesitas llenar las otras pilas primero!"
 
-#: src/Buraco.cpp:1149
+#: src/Buraco.cpp:1146
 msgid ""
 "You must play your cards (without \"monos\"), when you picked up the pile!"
 msgstr ""
 "¡Después de coger la pila de las cartas echadas se tiene que jugar sus "
 "cartas antiguas!"
 
-#: src/Buraco.cpp:1159
+#: src/Buraco.cpp:1156
 msgid "There are no cards to make a valid new pile!"
 msgstr "¡No tienes cartas para crear una pila con tres semejantes!"
 
-#: src/Buraco.cpp:1165
+#: src/Buraco.cpp:1162
 msgid "You can't end the game (a pile of monos is not finished)!"
 msgstr "¡No puedes terminar el juego (no tienes cerrado un motón de monos)!"
 
-#: src/Buraco.cpp:1167 src/Buraco.cpp:1185
+#: src/Buraco.cpp:1164 src/Buraco.cpp:1182
 msgid "You can't end the game (there's no \"cerrado\")!"
 msgstr "¡No puedes terminar el juego (no tienes ningún cerrado)!"
 
-#: src/Buraco.cpp:1168
+#: src/Buraco.cpp:1165
 msgid "Not enough cards to make new pile!"
 msgstr "¡No tienes las suficientes cartas para hacer una nueva pila!"
 
-#: src/Buraco.cpp:1180 src/Machiavelli.cpp:768
+#: src/Buraco.cpp:1177 src/Machiavelli.cpp:768
 msgid "This card does not fit on that pile!"
 msgstr "¡Esta carta no sirve para esta pila!"
 
-#: src/Buraco.cpp:1411
+#: src/Buraco.cpp:1408
 msgid "%1 picked up the burraco"
 msgstr "%1 tomó el burraco"
 
-#: src/Buraco.cpp:1579
+#: src/Buraco.cpp:1577
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr "Puntos [Buraco]: %1 [%2] / %3 [%4]"
 
-#: src/Buraco.cpp:1581 src/Buraco.cpp:1583
+#: src/Buraco.cpp:1579 src/Buraco.cpp:1581
 msgid "N"
 msgstr ""
 
-#: src/Buraco.cpp:1581 src/Buraco.cpp:1583
+#: src/Buraco.cpp:1579 src/Buraco.cpp:1581
 msgid "Y"
 msgstr "S"
 
-#: src/Buraco.cpp:1696
+#: src/Buraco.cpp:1694
 msgid ""
 "Team %1\n"
 "%2/%3"
@@ -788,31 +788,31 @@ msgstr ""
 "Equipo %1\n"
 "%2/%3"
 
-#: src/Buraco.cpp:1759
+#: src/Buraco.cpp:1757
 msgid "Game ended; Team %1 won"
 msgstr "Juego terminó; Equipo %1 ganó"
 
-#: src/Buraco.cpp:2128
+#: src/Buraco.cpp:2127
 msgid "Invalid pile!"
 msgstr "¡Pila inválido!"
 
-#: src/Buraco.cpp:2131
+#: src/Buraco.cpp:2130
 msgid "Invalid card!"
 msgstr "¡Carta inválida!"
 
-#: src/Buraco.cpp:2193
+#: src/Buraco.cpp:2192
 msgid "Invalid target specification!"
 msgstr "¡Pila final inválida!"
 
-#: src/Buraco.cpp:2232
+#: src/Buraco.cpp:2231
 msgid "<ctl>Z"
 msgstr ""
 
-#: src/Buraco.cpp:2235 src/Machiavelli.cpp:1803
+#: src/Buraco.cpp:2234 src/Machiavelli.cpp:1803
 msgid "_Sort cards (by number)"
 msgstr "Ordena cartas (por _números)"
 
-#: src/Buraco.cpp:2239 src/Machiavelli.cpp:1807
+#: src/Buraco.cpp:2238 src/Machiavelli.cpp:1807
 msgid "Sort cards (by _colour)"
 msgstr "Ordena cartas (por _pinta)"
 
@@ -830,7 +830,8 @@ msgstr ""
 
 #: src/Machiavelli.cpp:439 src/Machiavelli.cpp:1555
 msgid "Can't end turn: The piles are not valid!"
-msgstr "No se puede terminar el turno: ¡Los montones por la mesa no son validadas!"
+msgstr ""
+"No se puede terminar el turno: ¡Los montones por la mesa no son validadas!"
 
 #: src/Machiavelli.cpp:446
 msgid "_Undo all"
@@ -916,7 +917,7 @@ msgstr "¡No encontré carta!!"
 msgid "Game ended; %1 has %2 %7, %3 %4 and %5 %6 %8"
 msgstr "Juego terminó; %1 tiene %2 %7; %3 %4 y %5 %6 %8"
 
-#: src/SgtMayor.cpp:848 src/Jabberwocky.cpp:905
+#: src/SgtMayor.cpp:848 src/Jabberwocky.cpp:914
 msgid "; %1 won"
 msgstr "; %1 ganó"
 
@@ -996,7 +997,7 @@ msgstr "Røvhult"
 msgid "Twopart"
 msgstr ""
 
-#: src/GameTypes.cpp:61 src/Jabberwocky.cpp:368 src/Jabberwocky.cpp:468
+#: src/GameTypes.cpp:61 src/Jabberwocky.cpp:374 src/Jabberwocky.cpp:474
 msgid "Jabberwocky"
 msgstr ""
 
@@ -1024,7 +1025,7 @@ msgstr "_Enviar"
 msgid ": "
 msgstr ""
 
-#: src/Jabberwocky.cpp:350
+#: src/Jabberwocky.cpp:356
 msgid ""
 "You can't start with a trump,\n"
 "if they have not been played before!"
@@ -1032,19 +1033,19 @@ msgstr ""
 "¡No se puede iniciar con la pinta especial\n"
 "si aún no le ha estado jugada!"
 
-#: src/Jabberwocky.cpp:404
+#: src/Jabberwocky.cpp:410
 msgid "Waiting for %1 to bid ..."
 msgstr "Esperando que %1 prediga sus bazas ..."
 
-#: src/Jabberwocky.cpp:412
+#: src/Jabberwocky.cpp:418
 msgid "Make your bid for the number of tricks you are going to make!"
 msgstr "¡Preidga el número de bazas que vas a ganar!"
 
-#: src/Jabberwocky.cpp:414
+#: src/Jabberwocky.cpp:420
 msgid "_Bid"
 msgstr "_Predecir"
 
-#: src/Jabberwocky.cpp:467
+#: src/Jabberwocky.cpp:473
 msgid ""
 "The sum of all bids must be different\n"
 "than the number of possible tricks!"
@@ -1052,10 +1053,10 @@ msgstr ""
 "¡La suma de los predicciones tiene que diferir\n"
 "de la suma da bazas posibles!"
 
-#: src/Jabberwocky.cpp:495
+#: src/Jabberwocky.cpp:501
 msgid "; bids %1 tricks"
 msgstr "; predice %1 bazas"
 
-#: src/Jabberwocky.cpp:886
+#: src/Jabberwocky.cpp:895
 msgid "Game ended"
 msgstr "Juego terminó"
