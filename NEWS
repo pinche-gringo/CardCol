@@ -1,3 +1,12 @@
+ Overview of changes in version 0.8.12:
+
+  - Jabberwocky: Disabling Jabberwocky-menu when there are no cards
+  - Buraco: Fixed picking up dumped pile having a 4 on top with 3 & Ace
+  - Buraco: Fixed computer ending game by dumping a mono which could close a pile
+  - Cards ignore clicks on them, if it they are released outside of their image
+  - Buraco: Fixed documentation
+
+
  Overview of changes in version 0.8.11:
 
   - Adapted testing for GNOME cardgames to work with GNOME 2.16
@@ -60,7 +69,7 @@ Overview of changes in version 0.7.51:
   - Fixed re-enabling menus after loading valid card-images
   - Fixed german translation
   - Fixed spanish help-text of application
-  - Test for KDE carddecks checks first for new versions
+  - Test for KDE carddecks checks first for newer versions
 
 
 Overview of changes in version 0.7.50:
@@ -98,7 +107,7 @@ Overview of changes in version 0.7.33:
 
 Overview of changes in version 0.7.32:
 
-  - config: Checking for carddecks in more directories
+  - config: Searching for carddecks in more directories
   - Buraco: Test first if card fits on pile, before warning about missing cards
   - Buraco: Undo undoes moving of jokers caused by last move
   - Buraco: Sorting cards after taking buraco disables undo
@@ -129,7 +138,7 @@ Overview of changes in version 0.7.20:
   - Machiavelli can sort the cards in the hand
   - Buraco shows now the jokers, when taking the Buraco
   - Fixed Buraco's computer-player
-  - Improved Buraco's spanish help-text (Thanks to Sonia Cárdenas)
+  - Improved Buraco's spanish help-text (Thanks to Sonia Raquel Cárdenas)
   - Now all games are played in counter-clockwise direction
   - Removed warnings when compiling with GCC-4
 
@@ -286,7 +295,7 @@ Overview of changes in version 0.4.00:
 
   - New game: Buraco
   - Switched to GCC 3
-  - Using GTKMM2/GTK+ 2
+  - Using GTKMM2/GTK+-2
   - Needs library YGP 0.6.20
   - Cards aint influenced by GTK-styles (as they are only images, not buttons)
   - Providing an icon for the window managers
@@ -314,7 +323,7 @@ Overview of changes in version 0.3.00:
   - Hearts implemented
   - Security check if user closes the application while a game is running
   - Application shows the actual game type in the title bar
-  - Posibility to inspect the won cards
+  - Posibility to inspect the won cards (Twopart)
   - Games show the names of the players (which can be changed)
   - Program understands options from the command line
   - Spanish messages improved
@@ -348,7 +357,7 @@ Overview of changes in version 0.1.02:
 
 Overview of changes in version 0.1.01:
 
-  - Interationalization
+  - Interationalisation
   - Røvhult got computer-player
   - Cardpiles display number of cards if mouse stops over (like tooltips)
 

@@ -1,3 +1,37 @@
+2006-12-26  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.8.12 documented
+
+	* po/de.po, po/en.po, po/es.po, po/tr.po: Actualised
+
+	* configure.in: Version to 0.8.12
+
+2006-12-21  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Buraco.html.de: Removed double word
+
+2006-12-20  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardWidget.cpp:
+	  Emitting on_clicked-signal only if button is released within the widget
+
+2006-12-19  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.cpp:
+	  Fixed hasFittingPair() for check for serie with 2 cards lower than compared card
+
+	* src/Twopart.cpp: Formatting changed
+
+	* src/Buraco.cpp:
+	  Fixing computer ending by dumping mono instead of closing pile with it
+
+	* src/Buraco.h, src/Buraco.cpp: Formatting; Naming of variables changed
+
+2006-12-08  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Jabberwocky.h, src/Jabberwocky.cpp:
+	  En/Disabling entries in Jabberwocky-menu
+
 2006-10-31  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Changes of V0.8.11 documented
@@ -15,7 +49,7 @@
 
 2006-09-24   Markus Schwab  <g17m0@lycos.com>
 
-	* doc/Buraco.html.de: Formattierung verbessert
+	* doc/Buraco.html.de: Formatting improved
 
 2006-09-23  Markus Schwab  <g17m0@lycos.com>
 
