@@ -1267,10 +1267,10 @@ void* CardgameCollection::changeCards (void* opt) {
       enable = true;
       rc = this;
    }
-   catch (Glib::ustring& e) {
+   catch (std::exception& e) {
       Glib::ustring msg ("Couldn't load the card images!\n\n"
                          "Reason: %1");
-      msg.replace (msg.find ("%1"), 2, e);
+      msg.replace (msg.find ("%1"), 2, e.what ());
       showMessage (msg);
    }
 
