@@ -340,9 +340,6 @@ void CardgameAppl::readINIFile (const char* pFile) {
 #ifdef WITH_ROVHULT
    CardgameCollection::checkRovhultSpecialCards ();
 #endif
-
-   if (options.decks[options.decks.size () - 1] != YGP::File::DIRSEPARATOR)
-      options.decks += YGP::File::DIRSEPARATOR;
 }
 
 //-----------------------------------------------------------------------------
