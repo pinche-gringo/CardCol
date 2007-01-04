@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 27.09.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2005
+//COPYRIGHT   : Copyright (C) 2003 - 2005, 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -148,6 +148,13 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
    Check2 ((status.posJoker < size () || (status.posJoker > 6)));
    move = -1U;
 
+   // Card played on an empty pile or a pile with only one joker -> Valid
+   if ((status.posFirst > 6) && ((status.posJoker < 1) || (status.posJoker > 6))) {
+      Check3 (status.type == UNDEFINED);
+      pos = 0;
+      return true;
+   }
+
    // Joker played on a pile without joker: Valid
    if (Buraco::isJoker (card) && ((status.posFirst > 6) || (status.posJoker > 6))) {
       pos = ((status.type == NUMBER)
@@ -157,13 +164,6 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
 		? (status.posLast + 1) : 0));
       return true;
    }
-
-   // Card played on an empty pile or a pile with only one joker -> Valid
-   if ((status.posFirst > 6) && ((status.posJoker < 1) || (status.posJoker > 6))) {
-      pos = 0;
-      return true;
-   }
-
    Check2 (status.posFirst <= status.posLast);
    Check2 (status.posLast < size ());
 
@@ -172,7 +172,7 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
            "- Cards: " << *at (status.posFirst) << " and " << *at (status.posLast));
    if (operator[] (status.posFirst)->number () == card.number ()) {
        if (status.type != COLOUR) {
-          pos = size ();
+          pos = status.posJoker ? size () : 0;
           return true;
        }
    }
