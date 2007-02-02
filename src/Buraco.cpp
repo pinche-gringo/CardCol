@@ -193,6 +193,19 @@ int Buraco::makeMove (unsigned int player) {
    cleanCerrado (player);
 
    if (target == -1U) {
+      // Turn back jokers
+      if (undo.pickUp) {
+	 unsigned int oldPlayer (gStatus.startTurn ? ((player - 1) & 0x3) : player);
+	 CardHPile* pile (&hands[oldPlayer]);
+	 
+	 TRACE5 ("Buraco::makeMove (unsigned int) - Player with monos: " << oldPlayer);
+	 if ((oldPlayer) && (pile->size () > CARDS2DEAL)) {
+	    Check3 (pile->size () > CARDS2DEAL);
+	    hideJoker (pile, pile->size () - CARDS2DEAL);
+	 }
+	 undo.pickUp = 0;
+      }
+
       target = showCardsToPlay (player);
       TRACE8 ("Buraco::makeMove (unsigned int) - Going to play cards to "
               << std::hex << (int)target << std::dec);
@@ -251,8 +264,15 @@ int Buraco::makeMove (unsigned int player) {
       }
 
       if (containsOnlyJoker (source)) {
-         if (reserve[oldPlayer & 1].size ())
+         if (reserve[oldPlayer & 1].size ()) {
+	    unsigned int cJokers (hands[oldPlayer].size ());
             addBuraco (oldPlayer);
+
+	    if (!player && cJokers)
+	       Glib::signal_timeout ().connect
+		  (bind (sigc::ptr_fun (&Buraco::hideJoker), &hands[player], cJokers),
+		   ComputerPlayer::TIMEOUT);
+	 }
          else
             if (source.empty ()) {
                cleanCerrado (oldPlayer);
@@ -1393,10 +1413,6 @@ void Buraco::addBuraco (unsigned int player) {
 	 hands[player].resize (**i, ICardPile::COMPRESSED);
       }
       hands[player].resize (10 + cJokers, ICardPile::NORMAL);
-
-      Glib::signal_timeout ().connect
-	 (bind (sigc::ptr_fun (&Buraco::hideJoker), &hands[player], cJokers),
-	  ComputerPlayer::TIMEOUT - 30);
    }
 
    status.pop ();
@@ -1413,10 +1429,9 @@ void Buraco::addBuraco (unsigned int player) {
 /// \returns bool: false
 //-----------------------------------------------------------------------------
 bool Buraco::hideJoker (ICardPile* pile, unsigned int cJokers) {
-   TRACE9 ("Buraco::hideJoker (ICardPile&, unsigned int) - " << cJokers);
-   Check1 (pile);
+   TRACE9 ("Buraco::hideJoker (ICardPile*, unsigned int) - " << cJokers);
    Check1 (cJokers);
-   Check1 ((cJokers + CARDS2DEAL) < pile->size ());
+   Check1 ((cJokers + CARDS2DEAL) <= pile->size ());
 
    for (ICardPile::iterator i (pile->begin () + CARDS2DEAL); i != pile->end (); ++i) {
       (*i)->showBack ();
