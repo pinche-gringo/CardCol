@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 29.03.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2006
+//COPYRIGHT   : Copyright (C) 2002 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -40,6 +40,10 @@
 #include <gtkmm/widget.h>
 
 #include "CardImgs.h"
+
+
+unsigned int CardImages::HEIGHT (96);
+unsigned int CardImages::WIDTH (72);
 
 
 /**Helper-class to actually load cardimages
@@ -85,8 +89,8 @@ void ImageLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
       TRACE8 ("CardImages::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tFile: " << actFile);
 
       cards[i] = loadImage (actFile);
-      if ((cards[i]->get_height () != 72) || (cards[i]->get_width () != 96))
-	 cards[i] = cards[i]->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+      if ((cards[i]->get_height () != (int)CardImages::HEIGHT) || (cards[i]->get_width () != (int)CardImages::WIDTH))
+	 cards[i] = cards[i]->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
       Check3 (cards[i]);
    } // end-for
 }
@@ -98,8 +102,8 @@ void ImageLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
 //-----------------------------------------------------------------------------
 void ImageLoader::loadBack (Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& file) throw (YGP::FileError) {
    back = loadImage (file);
-   if ((back->get_height () != 72) || (back->get_width () != 96))
-      back = back->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+   if ((back->get_height () != (int)CardImages::HEIGHT) || (back->get_width () != (int)CardImages::WIDTH))
+      back = back->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
 }
 
 //-----------------------------------------------------------------------------
@@ -218,8 +222,8 @@ void GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
 	      << x << '/' << y);
 
       cards[i] = Gdk::Pixbuf::create_subpixbuf (img, widthImg * x, heightImg * y, widthImg, heightImg);
-      if ((cards[i]->get_height () != 72) || (cards[i]->get_width () != 96))
-	 cards[i] = cards[i]->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+      if ((cards[i]->get_height () != (int)CardImages::HEIGHT) || (cards[i]->get_width () != (int)CardImages::WIDTH))
+	 cards[i] = cards[i]->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
       Check3 (cards[i]);
    } // end-for
 }
@@ -235,7 +239,7 @@ void GnomeLoader::loadBack (Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& 
    unsigned int heightImg (img->get_height () / 5);
 
    back = Gdk::Pixbuf::create_subpixbuf (img, widthImg * 2, heightImg << 2, widthImg, heightImg);
-   back = back->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+   back = back->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
 }
 #endif
 
@@ -297,4 +301,14 @@ void CardImages::loadBack (const std::string& back) throw (YGP::FileError) {
    ldr = new ImageLoader;
 
    ldr->loadBack (back_, back);
+}
+
+//-----------------------------------------------------------------------------
+/// Resizes all previous loaded cards
+//-----------------------------------------------------------------------------
+void CardImages::resizeAll () {
+   back_ = back_->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
+   for (std::vector<Glib::RefPtr<Gdk::Pixbuf> >::iterator i (cards_.begin ());
+	i != cards_.end (); ++i)
+      *i = (*i)->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
 }

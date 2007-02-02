@@ -46,7 +46,6 @@ class CardImages {
    void loadDecks (const std::string& path) throw (YGP::FileError);
    void loadBack (const std::string& file) throw (YGP::FileError);
 
-
    /// Loads the cards (faces and background)
    /// \param path: Path to files
    /// \param back: File containing background picture
@@ -66,6 +65,11 @@ class CardImages {
 
    unsigned int size () const { return cards_.size (); }
    bool hasBack () const { return back_; }
+
+   void resizeAll ();
+
+   static unsigned int HEIGHT;
+   static unsigned int WIDTH;
 
  private:
    std::vector<Glib::RefPtr<Gdk::Pixbuf> > cards_;
