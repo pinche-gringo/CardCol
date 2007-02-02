@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 7.7.2005
-//COPYRIGHT   : Copyright (C) 2005, 2006
+//COPYRIGHT   : Copyright (C) 2005 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -290,6 +290,12 @@ void CardgameAppl::readINIFile (const char* pFile) {
       INIFILE (pFile);
       INIOBJ (options, Game);
       INILIST2 (Player, Glib::ustring, options.names);
+
+      INISECTION (Cards);
+      INIATTR2 (Cards, unsigned int, CardImages::HEIGHT, Height);
+      INIATTR2 (Cards, unsigned int, CardImages::WIDTH, Width);
+      INIATTR2 (Cards, std::string, options.decks, Front);
+      INIATTR2 (Cards, std::string, options.back, Back);
 
 #ifdef WITH_BURACO
       INISECTION (Buraco);
