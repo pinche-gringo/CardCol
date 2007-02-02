@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 29.8.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2006
+//COPYRIGHT   : Copyright (C) 2002 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/DirSrch.h>
+
+#include <CardImgs.h>
 
 #include "DeckSelect.h"
 
@@ -189,7 +191,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
 	 row[cols.path] = file;
 	 row[cols.name] = file.substr (strlen (GNOMECARDS_DIR), strlen (gfile->name ()) - 4);
 	 Glib::RefPtr<Gdk::Pixbuf> dest (Gdk::Pixbuf::create_subpixbuf (actImg, widthImg * 10, heightImg * 3, widthImg, heightImg));
-	 row[cols.icon] = dest->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+	 row[cols.icon] = dest->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
 
 	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
 		 << (std::string (GNOMECARDS_DIR) + gfile->name ()) << " with " << deck);
@@ -199,7 +201,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
 	 row = (*mBacks->append ());
 	 row[cols.path] = file;
 	 dest = Gdk::Pixbuf::create_subpixbuf (actImg, widthImg << 1, heightImg << 2, widthImg, heightImg);
-	 row[cols.icon] = dest->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+	 row[cols.icon] = dest->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
 
 	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
 		 << (std::string (GNOMECARDS_DIR) + gfile->name ()) << " with " << back);
@@ -284,8 +286,8 @@ Glib::RefPtr<Gdk::Pixbuf> DeckSelectDlg::getImage (const std::string& file, bool
 
    try {
       imgBuf = Gdk::Pixbuf::create_from_file (file.c_str ());
-      if (scale && ((imgBuf->get_height () != 72) || (imgBuf->get_width () != 96)))
-	 imgBuf = imgBuf->scale_simple (72, 96, Gdk::INTERP_BILINEAR);
+      if (scale && ((imgBuf->get_height () != (int)CardImages::WIDTH) || (imgBuf->get_width () != (int)CardImages::HEIGHT)))
+	 imgBuf = imgBuf->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
    }
    catch (Gdk::PixbufError& e) {
       err = e.what ();
