@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 9.9.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2006
+//COPYRIGHT   : Copyright (C) 2002 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -117,7 +117,7 @@ void INIList<Glib::ustring>::write (std::ostream& stream, const char* section, c
    for (unsigned int i (0); i < values.size (); ++i)
      stream << i << '=' << values[i].c_str () << '\n';
    stream << '\n';
- }
+}
 
 }
 
@@ -1051,11 +1051,11 @@ void CardgameCollection::changeNames () {
 /// Edits the preferences
 //-----------------------------------------------------------------------------
 void CardgameCollection::editPreferences () {
-   Settings::create (get_window (), options)
+   Settings* settings (Settings::create (get_window (), options));
+   settings->sigCardResize.connect (mem_fun (*this, &CardgameCollection::resizeCards));
 #ifdef WITH_NETWORK
-      ->sigCommit.connect (mem_fun (*this, &CardgameCollection::sendSettings))
+   settings->sigCommit.connect (mem_fun (*this, &CardgameCollection::sendSettings));
 #endif
-      ;
 }
 
 //-----------------------------------------------------------------------------
@@ -1239,7 +1239,16 @@ void CardgameCollection::changeDecks (const std::string& deck, const std::string
 }
 
 //-----------------------------------------------------------------------------
-/// Loads the cards (from xpm-files)
+/// Resizes the cards
+/// \pre CardImages::HEIGHT/WIDTH must already contain the new sizes
+//-----------------------------------------------------------------------------
+void CardgameCollection::resizeCards () {
+   cardFaces.resizeAll ();
+   cards.update ();
+}
+
+//-----------------------------------------------------------------------------
+/// Loads the cards
 /// \param opt: Actually a bit field! Option indicationg what to load
 /// \returns \c void*: Status; Not NULL when loading was OK, NULL otherwise
 //-----------------------------------------------------------------------------

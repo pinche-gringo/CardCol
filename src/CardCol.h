@@ -140,6 +140,7 @@ class CardgameCollection : public XGP::XApplication {
 
    void* changeCards (void* opt);
    void loadCards ();
+   void resizeCards ();
    bool restartGame ();
    void startGame ();
    void doStartGame ();
