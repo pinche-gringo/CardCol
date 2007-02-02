@@ -49,6 +49,7 @@ class Settings : public XGP::XDialog {
 
    /// Signal emitted, when OK clicked
    sigc::signal<void> sigCommit;
+   sigc::signal<void> sigCardResize;
 
  protected:
    Settings (Options& options);
@@ -64,6 +65,7 @@ class Settings : public XGP::XDialog {
 
    XGP::EnumEntry gameType;
    XGP::XAttributeSpinEntry<unsigned int> timeout;
+   XGP::EnumEntry cardSize;
 #ifdef WITH_BURACO
    Gtk::Adjustment adjBPoints;
    XGP::XAttributeSpinEntry<unsigned int> maxBuracoPoints;

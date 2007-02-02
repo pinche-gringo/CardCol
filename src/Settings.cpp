@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 28.4.2005
-//COPYRIGHT   : Copyright (C) 2005, 2006
+//COPYRIGHT   : Copyright (C) 2005 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,7 +34,9 @@
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
+#include <YGP/MetaEnum.h>
 
+#include <CardImgs.h>
 #include <ComputerPlayer.h>
 
 #ifdef WITH_BURACO
@@ -53,6 +55,7 @@
 #endif
 
 #include "Options.h"
+#include "CardSizes.h"
 
 #include "Settings.h"
 
@@ -83,6 +86,7 @@ Settings::Settings (Options& options)
      adjTimeout (0, 100.0, 10000.0, 1, 100),
      gameType (GameTypes::get ()),
      timeout (ComputerPlayer::TIMEOUT, adjTimeout),
+     cardSize (CardSizes::get ()),
 #ifdef WITH_BURACO
      adjBPoints (0, 0, 100000.0, 1, 100),
      maxBuracoPoints (Buraco::ENDPOINTS, adjBPoints),
@@ -108,7 +112,7 @@ Settings::Settings (Options& options)
    set_title (_("Preferences"));
 
    Gtk::Notebook& nb (*manage (new Gtk::Notebook));
-   Gtk::Table& pagGeneral (*manage (new Gtk::Table (2, 2)));
+   Gtk::Table& pagGeneral (*manage (new Gtk::Table (3, 2)));
 
    Gtk::Label* lbl (manage (new Gtk::Label (_("_Delay of computer player (ms):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true)));
    lbl->set_mnemonic_widget (timeout);
@@ -122,6 +126,13 @@ Settings::Settings (Options& options)
 
    gameType.set_active_text (GameTypes::get ()[options.type]);
    nb.append_page (pagGeneral, _("_General"), true);
+
+   lbl = manage (new Gtk::Label (_("C_ard size:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl->set_mnemonic_widget (cardSize);
+   pagGeneral.attach (*lbl,     0, 1, 2, 3, Gtk::FILL, Gtk::FILL, 5, 3);
+   pagGeneral.attach (cardSize, 1, 2, 2, 3, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
+
+   cardSize.set_active_text (CardSizes::get ()[CardSizes::getSize (CardImages::WIDTH, CardImages::HEIGHT)]);
 
 #ifdef WITH_BURACO
    Gtk::Table& pagBuraco (*manage (new Gtk::Table (2, 2)));
@@ -211,6 +222,14 @@ void Settings::okEvent () {
       (this->*intFields[i]).commit ();
 
     startGame = GameTypes::get ()[gameType.get_active_text ()];
+
+    unsigned int width (CardSizes::getWidth ((CardSizes::SIZES)CardSizes::get ()[cardSize.get_active_text ()]));
+    unsigned int height (CardSizes::getHeight ((CardSizes::SIZES)CardSizes::get ()[cardSize.get_active_text ()]));
+    if ((width != CardImages::WIDTH) || (height != CardImages::HEIGHT)) {
+       CardImages::WIDTH = width;
+       CardImages::HEIGHT = height;
+       sigCardResize.emit ();
+    }
 
 #ifdef WITH_ROVHULT
     Rovhult::cardNuke = static_cast<CardWidget::NUMBERS> (CardValue::get ()[cardNuke.get_active_text ()]);
