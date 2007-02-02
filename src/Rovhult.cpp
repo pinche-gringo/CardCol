@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 28.3.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2006
+//COPYRIGHT   : Copyright (C) 2002 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -73,19 +73,16 @@ CardWidget::NUMBERS Rovhult::cardReverse (CardWidget::SEVEN);
 Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                   CardSet& cardset, const std::vector<Player*>& player,
                   unsigned int posPlayer, YGP::Mutex& mxSerialize)
-   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 16, 20)
-     , played (ICardPile::VERY_COMPRESSED, ICardPile::SHOWFACE)
-     , staple (ICardPile::VERY_COMPRESSED)
-     , aExchanged (0) {
+   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 16, 20),
+     played (ICardPile::VERY_COMPRESSED, ICardPile::SHOWFACE),
+     staple (ICardPile::VERY_COMPRESSED),
+     aExchanged (0) {
     TRACE9 ("Rovhult::Rovhult (Gtk::Box& Gtk::Statusbar&, CardSet&,"
             " const std::vector<Glib::ustring>&)");
 
    staple.show ();
    attach (staple, 3, 4, 2, 7);
-
    Check3 (cards.size ());
-   int width (cards.getCard (0).getImageWidth ());
-   int height (cards.getCard (0).getImageHeight ());
 
    // Show and attach card-piles
    changeNames (player);
@@ -99,8 +96,6 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
          TRACE9 ("Rovhult::Rovhult () - Set at: "
                  << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
-
-         players[i].reserve[j].set_size_request (width, height + 7);
       }
 
       players[i].name.show ();
@@ -108,8 +103,6 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
               ROWS_PLAYER[i] + (i ? 5 : 2),
               ROWS_PLAYER[i] + (i ? 6 : 3),
               Gtk::EXPAND, Gtk::EXPAND, 1);
-
-      players[i].hand.set_size_request (width * 3, height);
 
       players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::NORMAL);
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
@@ -124,9 +117,8 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
               << ROWS_PLAYER[i] + (i ? 3 : -3));
    }
 
+   resizeCards ();
    played.show ();
-   played.set_size_request (width, height);
-   staple.set_size_request (width, height + 50);
    staple.setShowOption (ICardPile::SHOWBACK);
 
    attach (played, 7, 11, 5, 14, Gtk::SHRINK, Gtk::SHRINK, 1);
@@ -1256,7 +1248,6 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
        && (played.getTopCard ().number () != cardReverse)
        && (played.getTopCard ().number () != CardWidget::TWO))
       cardMin = played.getTopCard ().number ();
-
    TRACE5 ("Rovhult::findCard2Play (unsigned int) - Card to beat " << cardMin);
 
    // Check if to play from hand or to play from reserve
@@ -1659,4 +1650,19 @@ bool Rovhult::executeRemoteMove (ICardPile& pile, unsigned int target) throw (YG
    }
    else
       return Game::executeRemoteMove (pile, target);
+}
+
+//-----------------------------------------------------------------------------
+/// Actions to take when the cards are resized
+/// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
+//-----------------------------------------------------------------------------
+void Rovhult::resizeCards () {
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+      for (int j (0); j < 3; ++j)
+         players[i].reserve[j].set_size_request (CardImages::WIDTH, CardImages::HEIGHT + 7);
+      players[i].hand.set_size_request (CardImages::WIDTH * 3, CardImages::HEIGHT);
+   }
+
+   played.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
+   staple.set_size_request (CardImages::WIDTH, CardImages::HEIGHT + 50);
 }

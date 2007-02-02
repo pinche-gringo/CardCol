@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 20.7.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2006
+//COPYRIGHT   : Copyright (C) 2002 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@
 
 #include <Player.h>
 #include <CardSet.h>
+#include <CardImgs.h>
 #include <CardWidget.h>
 
 #include "Twopart.h"
@@ -76,9 +77,6 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    staple.show ();
    attach (staple, 2, 3, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
 
-   int width (cards.getCard (0).getImageWidth ());
-   int height (cards.getCard (0).getImageHeight ());
-
    // Show and attach card-piles
    changeNames (player);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
@@ -108,16 +106,11 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
       players[i].won.setShowOption (ICardPile::SHOWBACK);
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
-
-      players[i].won.set_size_request (width + 20, height + 5);
-      players[i].hand.set_size_request (i ? (width + (2 * 7)) : (width * 3), height + 5);
    }
 
    played.show ();
    attach (played, 3, 11, 6, 9, Gtk::SHRINK, Gtk::SHRINK, 0, 5);
-
-   played.set_size_request (width + 150, height);
-   staple.set_size_request (width, height);
+   resizeCards ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1248,4 +1241,17 @@ void Twopart::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 void Twopart::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
    mgrUI->remove_ui (idMrg);
+}
+
+//-----------------------------------------------------------------------------
+/// Actions to take when the cards are resized
+/// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
+//-----------------------------------------------------------------------------
+void Twopart::resizeCards () {
+   played.set_size_request (CardImages::WIDTH + 150, CardImages::HEIGHT);
+   staple.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+      players[i].won.set_size_request (CardImages::WIDTH + 20, CardImages::HEIGHT + 5);
+      players[i].hand.set_size_request (i ? (CardImages::WIDTH + (2 * 7)) : (CardImages::WIDTH * 3), CardImages::HEIGHT + 5);
+   }
 }

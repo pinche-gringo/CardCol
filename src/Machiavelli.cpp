@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2006
+//COPYRIGHT   : Copyright (C) 2003 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@
 
 #include <Player.h>
 #include <CardSet.h>
+#include <CardImgs.h>
 #include <CardWidget.h>
 #include <ComputerPlayer.h>
 
@@ -85,13 +86,8 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&)");
 
-   int width (cards.getCard (0).getImageWidth ());
-   int height (cards.getCard (0).getImageHeight ());
-
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Init common staples");
-   staple.set_size_request (width, height);
-
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       attach (hands[i], (i << 2) - 4, (i << 2), 4, 5,
               Gtk::EXPAND, Gtk::SHRINK, 5, 5);
@@ -135,6 +131,7 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    nextTurn.set_sensitive (false);
    nextTurn.signal_clicked ().connect (mem_fun (*this, (&Machiavelli::endTurn)));
 
+   resizeCards ();
    show_all_children ();
 }
 
@@ -1905,4 +1902,15 @@ void Machiavelli::removeUndoDlg (int) {
    TRACE1 ("Machiavelli::removeUndoDlg (int)");
    delete undoDlg;
    undoDlg = NULL;
+}
+
+//-----------------------------------------------------------------------------
+/// Actions to take when the cards are resized
+/// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
+//-----------------------------------------------------------------------------
+void Machiavelli::resizeCards () {
+   staple.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+      hands[i].set_size_request (-1, CardImages::HEIGHT);
+
 }

@@ -54,6 +54,7 @@ class SgtMayor : public Game {
    virtual void playOpen (bool open);
    virtual const char* name () { return "Sgt. Mayor"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
+   virtual void resizeCards ();
 
    virtual bool handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError);
 

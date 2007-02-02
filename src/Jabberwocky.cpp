@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 09.08.2006
-//COPYRIGHT   : Copyright (C) 2006
+//COPYRIGHT   : Copyright (C) 2006, 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -44,9 +44,10 @@
 #include <YGP/ANumeric.h>
 
 #include <Player.h>
+#include <ScoreDlg.h>
+#include <CardImgs.h>
 #include <RemotePlayer.h>
 #include <ComputerPlayer.h>
-#include <ScoreDlg.h>
 
 #include "Jabberwocky.h"
 
@@ -76,9 +77,6 @@ Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& 
  {
    TRACE9 ("Jabberwocky::Jabberwocky (Box&, Statusbar&, CardSet&, ...)");
 
-   int width (cards.getCard (0).getImageWidth ());
-   int height (cards.getCard (0).getImageHeight ());
-
    // Show and attach card-piles
    changeNames (player);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
@@ -106,13 +104,10 @@ Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& 
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
       players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::COMPRESSED);
       players[i].won.setStyle (ICardPile::QUITE_COMPRESSED);
-
-      players[i].won.set_size_request (width + 20, height + 5);
-      players[i].hand.set_size_request ((i & 1) ? width + 8 * 5: width * 3, height + 5);
    }
    attach (played, 3, 11, 6, 9, Gtk::SHRINK, Gtk::SHRINK, 0, 5);
-   played.set_size_request (width + 150, height);
 
+   resizeCards ();
    show_all_children ();
 }
 
@@ -965,4 +960,16 @@ bool Jabberwocky::handleMessage (unsigned int player, const std::string& message
    }
 
    return rc;
+}
+
+//-----------------------------------------------------------------------------
+/// Actions to take when the cards are resized
+/// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
+//-----------------------------------------------------------------------------
+void Jabberwocky::resizeCards () {
+   played.set_size_request (CardImages::WIDTH + 150, CardImages::HEIGHT);
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+      players[i].won.set_size_request (CardImages::WIDTH + 20, CardImages::HEIGHT + 5);
+      players[i].hand.set_size_request ((i & 1) ? CardImages::WIDTH + 8 * 5: CardImages::WIDTH * 3, CardImages::HEIGHT + 5);
+   }
 }

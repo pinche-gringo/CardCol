@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 11.4.2004
-//COPYRIGHT   : Copyright (C) 2004 - 2006
+//COPYRIGHT   : Copyright (C) 2004 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@
 #include <YGP/ANumeric.h>
 #include <YGP/Tokenize.h>
 
+#include <CardImgs.h>
 #include <ScoreDlg.h>
 #include <RemotePlayer.h>
 #include <ComputerPlayer.h>
@@ -73,9 +74,6 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardse
  {
    TRACE9 ("SgtMayor::SgtMayor (Box&, Statusbar&, CardSet&, ...)");
 
-   int width (cards.getCard (0).getImageWidth ());
-   int height (cards.getCard (0).getImageHeight ());
-
    // Show and attach card-piles
    changeNames (player);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
@@ -100,8 +98,6 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardse
 
       players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::COMPRESSED);
       players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
-      players[i].hand.set_size_request (width + 17 * (i ? 7 : 18), height + 5);
-      players[i].won.set_size_request (width + 17 * 7, height + 5);
       players[i].won.setStyle (ICardPile::QUITE_COMPRESSED);
       players[i].won.setShowOption (ICardPile::SHOWBACK);
    }
@@ -109,7 +105,8 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardse
    // Show played area
    played.setStyle (ICardPile::COMPRESSED);
    attach (played, 2, 5, 4, 5, Gtk::SHRINK, Gtk::SHRINK, 5);
-   played.set_size_request (width + 150, height);
+
+   resizeCards ();
    show_all_children ();
 
    memset (diffTricks, '\0', sizeof (diffTricks));
@@ -1246,4 +1243,16 @@ void SgtMayor::showWonCards (bool show, unsigned int style) {
       Game::showWonCards (true);
    else
       Game::showWonCards (false, ICardPile::QUITE_COMPRESSED);
+}
+
+//-----------------------------------------------------------------------------
+/// Actions to take when the cards are resized
+/// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
+//-----------------------------------------------------------------------------
+void SgtMayor::resizeCards () {
+   played.set_size_request (CardImages::WIDTH + 150, CardImages::HEIGHT);
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+      players[i].hand.set_size_request (CardImages::WIDTH + 17 * (i ? 7 : 18), CardImages::HEIGHT + 5);
+      players[i].won.set_size_request (CardImages::WIDTH + 17 * 7, CardImages::HEIGHT + 5);
+   }
 }

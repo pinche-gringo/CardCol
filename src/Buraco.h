@@ -62,6 +62,7 @@ class Buraco : public Game {
    virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
 
    virtual void changeNames (const std::vector<Player*>& newPlayer);
+   virtual void resizeCards ();
 
    virtual unsigned int numberOfDecks () const { return 4; }
    virtual unsigned int numberOfJokers () const { return 3; }

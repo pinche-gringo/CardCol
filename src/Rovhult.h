@@ -49,6 +49,7 @@ class Rovhult : public Game {
    virtual void clean ();
    virtual const char* name () { return "R\xC3\xB8vhult"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
+   virtual void resizeCards ();
 
    virtual bool handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
 

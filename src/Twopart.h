@@ -43,6 +43,7 @@ class Twopart : public Game {
    virtual void playOpen (bool open);
    virtual const char* name () { return "Twopart"; }
    virtual void changeNames (const std::vector<Player*>& newPlayer);
+   virtual void resizeCards ();
 
    virtual bool handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
 

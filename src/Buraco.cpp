@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.02.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2006
+//COPYRIGHT   : Copyright (C) 2003 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@
 
 #include <Human.h>
 #include <ScoreDlg.h>
+#include <CardImgs.h>
 #include <ComputerPlayer.h>
 
 #include "Buraco.h"
@@ -86,17 +87,10 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
        scrlTable[i]->show ();
    }
 
-   int width (cards.getCard (0).getImageWidth ());
-   int height (cards.getCard (0).getImageHeight ());
-
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Init common staples");
-   staple.set_size_request (width, height);
-   dumped.set_size_request (width, height);
 
    boxTeam[0].pack_end (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
-   boxTeam[0].set_size_request (-1, height + 5 * 15);
-   boxTeam[1].set_size_request (-1, height + 5 * 15);
 
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       attach (hands[i], (i << 2) - 4, (i << 2) - 2, 4, 5,
@@ -141,6 +135,7 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    frameInfo.add (info);
 
    changeNames (player);
+   resizeCards ();
 }
 
 //-----------------------------------------------------------------------------
@@ -2342,4 +2337,16 @@ void Buraco::sortHandByColour () {
    if (undo.pickUp)
       menuUndo->set_sensitive (false);
    enableHumanHand ();
+}
+
+//-----------------------------------------------------------------------------
+/// Actions to take when the cards are resized
+/// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
+//-----------------------------------------------------------------------------
+void Buraco::resizeCards () {
+   staple.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
+   dumped.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
+
+   boxTeam[0].set_size_request (-1, CardImages::HEIGHT + 5 * 15);
+   boxTeam[1].set_size_request (-1, CardImages::HEIGHT + 5 * 15);
 }

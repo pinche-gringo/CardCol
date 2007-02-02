@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.12.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2006
+//COPYRIGHT   : Copyright (C) 2002 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
+#define CHECK 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -41,6 +42,7 @@
 
 #include <Player.h>
 #include <ScoreDlg.h>
+#include <CardImgs.h>
 
 #include "Hearts.h"
 
@@ -80,36 +82,25 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
    CardVPile* hand3 (new CardVPile); players[3].hand = hand3;
    CardVPile* won3 (new CardVPile); players[3].won = won3;
 
-   int width (cards.getCard (0).getImageWidth ());
-   int height (cards.getCard (0).getImageHeight ());
-
    attach (*won0, COLS_PLAYER[0], COLS_PLAYER[0] + 3,
 	   ROWS_PLAYER[0] - 2, ROWS_PLAYER[0] - 1, Gtk::EXPAND);
    attach (*hand0, COLS_PLAYER[0], COLS_PLAYER[0] + 3,
 	   ROWS_PLAYER[0], ROWS_PLAYER[0] + 1, Gtk::EXPAND);
-   won0->set_size_request (width + 12 * 7, height + 5);
-   hand0->set_size_request (width + 12 * 18, height + 5);
 
    attach (*won1, COLS_PLAYER[1] - 2, COLS_PLAYER[1] - 1,
 	   ROWS_PLAYER[1], ROWS_PLAYER[1] + 1, Gtk::EXPAND);
    attach (*hand1, COLS_PLAYER[1], COLS_PLAYER[1] + 1,
 	   ROWS_PLAYER[1], ROWS_PLAYER[1] + 1, Gtk::EXPAND);
-   won1->set_size_request (width + 5, height + 12 * 7);
-   hand1->set_size_request (width + 5, height + 12 * 7);
 
    attach (*won2, COLS_PLAYER[2], COLS_PLAYER[2] + 3,
 	   ROWS_PLAYER[2] + 4, ROWS_PLAYER[2] + 5, Gtk::EXPAND);
    attach (*hand2, COLS_PLAYER[2], COLS_PLAYER[2] + 3,
 	   ROWS_PLAYER[2], ROWS_PLAYER[2] + 1, Gtk::EXPAND);
-   won2->set_size_request (width + 12 * 7, height + 5);
-   hand2->set_size_request (width + 12 * 18, height + 5);
 
    attach (*won3, COLS_PLAYER[3] + 2, COLS_PLAYER[3] + 3,
 	   ROWS_PLAYER[3], ROWS_PLAYER[3] + 1, Gtk::EXPAND);
    attach (*hand3, COLS_PLAYER[3], COLS_PLAYER[3] + 1,
 	   ROWS_PLAYER[3], ROWS_PLAYER[3] + 1, Gtk::EXPAND);
-   won3->set_size_request (width + 5, height + 12 * 7);
-   hand3->set_size_request (width + 5, height + 12 * 7);
 
    // Show and attach card-piles
    changeNames (player);
@@ -128,8 +119,8 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
    // Show played area
    played.setStyle (ICardPile::COMPRESSED);
    attach (played, 6, 7, 7, 8, Gtk::SHRINK, Gtk::SHRINK, 5);
-   played.set_size_request (width + 150, height);
 
+   resizeCards ();
    show_all ();
 }
 
@@ -1066,4 +1057,18 @@ void Hearts::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 void Hearts::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
    mgrUI->remove_ui (idMrg);
+}
+
+//-----------------------------------------------------------------------------
+/// Actions to take when the cards are resized
+/// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
+//-----------------------------------------------------------------------------
+void Hearts::resizeCards () {
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+      Gtk::Box* won (dynamic_cast<Gtk::Box*> (players[0].won)); Check3 (won);
+      Gtk::Box* hand (dynamic_cast<Gtk::Box*> (players[0].hand)); Check3 (hand);
+      won->set_size_request (CardImages::WIDTH + 12 * 7, CardImages::HEIGHT + 5);
+      hand->set_size_request (CardImages::WIDTH + 12 * 18, CardImages::HEIGHT + 5);
+   }
+   played.set_size_request (CardImages::WIDTH + 150, CardImages::HEIGHT);
 }

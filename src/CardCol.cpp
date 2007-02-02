@@ -1245,6 +1245,9 @@ void CardgameCollection::changeDecks (const std::string& deck, const std::string
 void CardgameCollection::resizeCards () {
    cardFaces.resizeAll ();
    cards.update ();
+
+   if (game)
+      game->resizeCards ();
 }
 
 //-----------------------------------------------------------------------------
