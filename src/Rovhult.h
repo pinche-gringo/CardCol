@@ -112,6 +112,7 @@ class Rovhult : public Game {
    int makeTurn (unsigned int player);
    void findCard2Play (unsigned int player, unsigned int& start, unsigned int& end) const;
    void showCards2Play (unsigned int player);
+   bool selectRandomCard (unsigned int player);
 
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
    bool getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
@@ -143,12 +144,16 @@ class Rovhult : public Game {
    CardHInfoPile played;
    CardVInfoPile staple;                                     // Cards on staple
    struct {
-      CardHPile hand;                     // For players: Cards in the hand
+      CardHPile hand;                         // For players: Cards in the hand
       CardVPile reserve[3];                     // Reserve-cards (for end-game)
       Gtk::Label name;
    } players[NUM_PLAYERS];
 
    unsigned int aExchanged;
+
+   // Preventing endless-loops
+   unsigned int cEndgame;
+   bool noMoreHumans () const;
 
    static std::vector<Gtk::TargetEntry> dndTypeHand;
    static std::vector<Gtk::TargetEntry> dndTypeTable;

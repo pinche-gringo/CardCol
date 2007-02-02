@@ -36,6 +36,8 @@
 #include <gtkmm/accelgroup.h>
 #include <gtkmm/messagedialog.h>
 
+#define CHECK 1
+#define TRACELEVEL 0
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -158,6 +160,8 @@ void Rovhult::start () {
          setNextPlayer (rand () & 0x3);
 	 broadcastStartPlayer (currentPlayer ());
       }
+
+      cEndgame = 0;
    }
 }
 
@@ -369,7 +373,6 @@ void Rovhult::pileSelected (unsigned int pile) {
           }
       card.showFace ();
    }
-
    TRACE1 ("Rovhult::pileSelected (unsinged int) - Card " << card);
 
    if (!cardValid (card.number ())) {  // If selected card is not valid: Return
@@ -422,6 +425,9 @@ bool Rovhult::playFromPile (unsigned int pile) {
 
    setNextPlayer (doPileSelected (0, pile));
    makeNextMoves ();
+
+   if (nextAvailablePlayer (NUM_PLAYERS - 1) && noMoreHumans ())
+      cEndgame = 1;
    return false;
 }
 
@@ -540,6 +546,9 @@ void Rovhult::handSelected (unsigned int pos) {
    playCardsFromHand (0, start, pos);
 
    setNextPlayer (executeMove (0, card.number ()));
+   if (nextAvailablePlayer (NUM_PLAYERS - 1) && noMoreHumans ())
+      cEndgame = 1;
+
    makeNextMoves ();
 }
 
@@ -1149,9 +1158,13 @@ int Rovhult::makeMove (unsigned int player) {
    TRACE2 ("Rovhult::makeMove (unsigned int) - Player " << player);
 
    if (pos2Play == -1U) {
-      if (playerCanContinue (player,
-                             (played.size ()
-                              ? played.getTopCard ().number () : CardWidget::TWO)))
+      if (cEndgame)
+	 ++cEndgame;
+      if (((cEndgame > 30) && !(cEndgame & 0x7) && players[player].hand.size ())
+	  ? selectRandomCard (player)
+	  : playerCanContinue (player,
+			       (played.size ()
+				? played.getTopCard ().number () : CardWidget::TWO)))
          showCards2Play (player);
       else {
          if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
@@ -1646,6 +1659,8 @@ bool Rovhult::executeRemoteMove (ICardPile& pile, unsigned int target) throw (YG
          }
       }
 
+      if ((nextAvailablePlayer ((player - 1) & 0x3) != (int)player) && noMoreHumans ())
+	 cEndgame = 1;
       return true;
    }
    else
@@ -1665,4 +1680,29 @@ void Rovhult::resizeCards () {
 
    played.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
    staple.set_size_request (CardImages::WIDTH, CardImages::HEIGHT + 50);
+}
+
+//-----------------------------------------------------------------------------
+/// Checks if there are only computer-player with cards left
+/// \returns bool: True, if only computer-players are left
+//-----------------------------------------------------------------------------
+bool Rovhult::noMoreHumans () const {
+   int first (nextAvailablePlayer (1));
+   int i (first);
+   do {
+      if (typeid (*actPlayers[i]) != typeid (ComputerPlayer))
+	 return false;
+      i = nextAvailablePlayer (i);
+   } while (first < i);
+   return true;
+}
+
+//-----------------------------------------------------------------------------
+/// Selects a random card for the passed player
+/// \param player: Player to analyse
+/// \returns bool: True, if the selected card is valid
+//-----------------------------------------------------------------------------
+bool Rovhult::selectRandomCard (unsigned int player) {
+   Check3 (players[player].hand.size ());
+   return cardValid (players[player].hand[rand () % players[player].hand.size ()]->number (), true);
 }
