@@ -2347,6 +2347,6 @@ void Buraco::resizeCards () {
    staple.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
    dumped.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
 
-   boxTeam[0].set_size_request (-1, CardImages::HEIGHT + 5 * 15);
-   boxTeam[1].set_size_request (-1, CardImages::HEIGHT + 5 * 15);
+   scrlTable[0]->set_size_request (-1, CardImages::HEIGHT + 5 * 15);
+   scrlTable[1]->set_size_request (-1, CardImages::HEIGHT + 5 * 15);
 }
