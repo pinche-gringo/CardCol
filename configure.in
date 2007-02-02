@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.8.12, [g17m0@lycos.com], CardCol)
+AC_INIT(Cardgames, 0.8.20, [g17m0@lycos.com], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -312,6 +312,7 @@ AH_TOP([#ifndef CARDGAMES_CFG_H
 ])
 AH_BOTTOM([#if defined (HAVE_GETTEXT) && defined (ENABLE_NLS)
 #  include <libintl.h>
+#  include <glibmm/convert.h>
 #  define _(String)                           Glib::locale_to_utf8 (gettext (String))
 #  define N_(String)                          gettext_noop (String)
 #  define gettext_noop(String)                (String)
