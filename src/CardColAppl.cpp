@@ -288,14 +288,17 @@ void CardgameAppl::readINIFile (const char* pFile) {
 
    try {
       INIFILE (pFile);
-      INIOBJ (options, Game);
+      INISECTION (Game);
+      _inifile_.addEntity (options, Game);
+      INIATTR2 (Game, std::string, options.co.decks, CardFront);
+      INIATTR2 (Game, std::string, options.co.back, CardBack);
+
       INILIST2 (Player, Glib::ustring, options.names);
 
       INISECTION (Cards);
+      _inifile_.addEntity (options.co, Cards);
       INIATTR2 (Cards, unsigned int, CardImages::HEIGHT, Height);
       INIATTR2 (Cards, unsigned int, CardImages::WIDTH, Width);
-      INIATTR2 (Cards, std::string, options.decks, Front);
-      INIATTR2 (Cards, std::string, options.back, Back);
 
 #ifdef WITH_BURACO
       INISECTION (Buraco);

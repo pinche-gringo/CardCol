@@ -21,13 +21,13 @@
 #include <string>
 #include <vector>
 
-#include <cardgames-cfg.h>
-
-#include "CardCol.h"
+#include "CardOptions.h"
 
 #include <YGP/Entity.h>
 
 
+/**General options of the CardCol application
+ */
 class Options : public YGP::Entity {
    friend class Settings;
    friend class CardgameAppl;
@@ -45,10 +45,10 @@ class Options : public YGP::Entity {
    unsigned int type;
    std::string  browser;       // %attrib%; Helpbrowser; "galeon"
    std::string  helpPath;      // %attrib%; Helpdir;     DOCUDIR
-   std::string  decks;         // %attrib%; CardFront;   CARDDECKS_DIR "cards-default/"
-   std::string  back;          // %attrib%; CardBack;    CARDDECKS_DIR "decks/deck1.png"
    std::string  target;
    std::string  port;
+
+   CardOptions  co;
 
 #ifdef SAVE_GAME
    bool load;

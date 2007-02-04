@@ -94,6 +94,8 @@
 
 #include "Options.h"
 #include "Options.meta"
+#include "CardOptions.h"
+#include "CardOptions.meta"
 
 #include "CardColAppl.h"
 
@@ -1033,7 +1035,7 @@ void CardgameCollection::changeGame (int game) {
 /// Opens a dialog allowing to change the card decks
 //-----------------------------------------------------------------------------
 void CardgameCollection::showChangeDeckDlg () {
-   DeckSelectDlg& dlg (*DeckSelectDlg::create (options.decks, options.back));
+   DeckSelectDlg& dlg (*DeckSelectDlg::create (options.co.decks, options.co.back));
    dlg.get_window ()->set_transient_for (get_window ());
    dlg.setDecks.connect (mem_fun (this, &CardgameCollection::changeDecks));
 }
@@ -1226,13 +1228,13 @@ void CardgameCollection::changeDecks (const std::string& deck, const std::string
    TRACE2 ("CardgameCollection::changeDecks (2x const std::string&)");
 
    unsigned int option (0);
-   if ((deck.size () && (deck != options.decks)) || !cardFaces.size ()) {
+   if ((deck.size () && (deck != options.co.decks)) || !cardFaces.size ()) {
       option = 1;
-      options.decks = deck;
+      options.co.decks = deck;
    }
-   if ((back.size () && (back != options.back)) || !cardFaces.hasBack ()) {
+   if ((back.size () && (back != options.co.back)) || !cardFaces.hasBack ()) {
       option |= 2;
-      options.back = back;
+      options.co.back = back;
    }
 
    changeCards ((void*)option);
@@ -1263,18 +1265,18 @@ void* CardgameCollection::changeCards (void* opt) {
    // Cards need an realized (!) parent, so ensure that the window is already
    // shown
    Check3 (this->is_realized ());
-   TRACE3 ("CardgameCollection::changeCards (void*) - Use " << options.decks
-           << " and " << options.back);
+   TRACE3 ("CardgameCollection::changeCards (void*) - Use " << options.co.decks
+           << " and " << options.co.back);
 
    void* rc (NULL);
    bool enable (false);
    try {
       if ((unsigned int)opt & 1) {
-         cardFaces.loadDecks (options.decks);
+         cardFaces.loadDecks (options.co.decks);
 	 cards.getCards ().size () ? cards.update () : cards.addPacket (cardFaces);
       }
       if ((unsigned int)opt & 2)
-         cardFaces.loadBack (options.back);
+         cardFaces.loadBack (options.co.back);
 
       enable = true;
       rc = this;
