@@ -44,17 +44,21 @@ bin_PROGRAMS=CardCol
 
 CardCol_SOURCES=$(USE_BURACO) $(USE_HEARTS) $(USE_JABBERWOCKY)		\
 $(USE_MACHIAVELLI) $(USE_ROVHULT) $(USE_SGTMAYOR) $(USE_TWOPART)	\
-Options.h CardCol.h GameTypes.cpp GameTypes.h Settings.cpp Settings.h	\
-CardSizes.cpp CardSizes.h CardColAppl.cpp CardCol.cpp CardColAppl.h	\
-$(USE_NETWORK)
+Options.h CardOptions.h CardCol.h GameTypes.cpp GameTypes.h		\
+Settings.cpp Settings.h CardSizes.cpp CardSizes.h CardColAppl.cpp	\
+CardCol.cpp CardColAppl.h $(USE_NETWORK)
 
 INCLUDES = @INCLUDES@ -I../Common @DEPENDENCIES_CFLAGS@
 
 CardCol_LDFLAGS=-L../Common -lCard @DEPENDENCIES_LIBS@ @LTLIBINTL@
 DEFS = @DEFS@ -Wall
 
-EXTRA_DIST=Options.meta $(SRC_BURACO) $(SRC_HEARTS) $(SRC_JABBERWOCKY)	\
-$(SRC_MACHIAVELLI) $(SRC_ROVHULT) $(SRC_SGTMAYOR) $(SRC_TWOPART) $(SRC_NETWORK)
+EXTRA_DIST=Options.meta CardOptions.meta $(SRC_BURACO) $(SRC_HEARTS)	\
+$(SRC_JABBERWOCKY) $(SRC_MACHIAVELLI) $(SRC_ROVHULT) $(SRC_SGTMAYOR)	\
+$(SRC_TWOPART) $(SRC_NETWORK)
 
 Options.meta: Options.h
 	mgeni.pl Options.h>Options.meta
+
+CardOptions.meta: CardOptions.h
+	mgeni.pl CardOptions.h>CardOptions.meta
