@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.8 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2006-12-19 22:28+0100\n"
+"POT-Creation-Date: 2007-02-06 13:03+0100\n"
 "PO-Revision-Date: 2005-05-13 12:08-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -15,51 +15,51 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: src/Rovhult.cpp:201 src/Hearts.cpp:347
+#: src/Rovhult.cpp:197 src/Hearts.cpp:338
 msgid "Waiting for other player to exchange their cards ..."
 msgstr ""
 
-#: src/Rovhult.cpp:372
+#: src/Rovhult.cpp:368
 msgid "You must first play the visible cards!"
 msgstr ""
 
-#: src/Rovhult.cpp:374 src/Rovhult.cpp:509 src/Buraco.cpp:729
-#: src/Buraco.cpp:842 src/Buraco.cpp:1052 src/Buraco.cpp:1269
-#: src/Machiavelli.cpp:770 src/Machiavelli.cpp:783
+#: src/Rovhult.cpp:370 src/Rovhult.cpp:507 src/Buraco.cpp:744
+#: src/Buraco.cpp:857 src/Buraco.cpp:1067 src/Buraco.cpp:1284
+#: src/Machiavelli.cpp:767 src/Machiavelli.cpp:780
 msgid "Invalid move"
 msgstr ""
 
-#: src/Rovhult.cpp:498
+#: src/Rovhult.cpp:496
 msgid "After a %1, the played card must be equal or smaller!"
 msgstr ""
 
-#: src/Rovhult.cpp:504
+#: src/Rovhult.cpp:502
 msgid "The played card must be equal or bigger!"
 msgstr ""
 
-#: src/Rovhult.cpp:610 src/Twopart.cpp:414 src/Machiavelli.cpp:1587
+#: src/Rovhult.cpp:611 src/Twopart.cpp:407 src/Machiavelli.cpp:1584
 msgid "%1 lost"
 msgstr ""
 
-#: src/Rovhult.cpp:618
+#: src/Rovhult.cpp:619
 msgid "Skipping %1; "
 msgstr ""
 
-#: src/Rovhult.cpp:624
+#: src/Rovhult.cpp:625
 msgid "Pile cleared; "
 msgstr ""
 
-#: src/Rovhult.cpp:790
+#: src/Rovhult.cpp:791
 msgid "%1 can't continue -> Taking the whole pile. "
 msgstr ""
 
-#: src/Rovhult.cpp:997
+#: src/Rovhult.cpp:998
 msgid ""
 "Exchange the cards in your hand with the one on the table (with drag and "
 "drop) - click on one card to start playing"
 msgstr ""
 
-#: Common/CardImgs.cpp:120 Common/DeckSelect.cpp:297
+#: Common/CardImgs.cpp:124 Common/DeckSelect.cpp:299
 msgid "Unknown error"
 msgstr ""
 
@@ -69,11 +69,11 @@ msgid_plural "%1 cards"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Twopart.cpp:233
+#: src/Twopart.cpp:226
 msgid "%1 can't continue -> Picking up last cards; "
 msgstr ""
 
-#: src/Twopart.cpp:341
+#: src/Twopart.cpp:334
 msgid ""
 "The played card must have the same colour and must be bigger (or be a trump)!"
 msgid_plural ""
@@ -81,82 +81,82 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Twopart.cpp:413
+#: src/Twopart.cpp:406
 msgid "First part ended; Part 2 starts %1"
 msgstr ""
 
-#: src/Twopart.cpp:1230 src/CardCol.cpp:761
+#: src/Twopart.cpp:1223 src/CardCol.cpp:768
 msgid "_Twopart"
 msgstr ""
 
-#: src/Twopart.cpp:1232 src/Hearts.cpp:1050 src/SgtMayor.cpp:1209
-#: src/Jabberwocky.cpp:311
+#: src/Twopart.cpp:1225 src/Hearts.cpp:1041 src/SgtMayor.cpp:1206
+#: src/Jabberwocky.cpp:306
 msgid "_Sort won cards (by number)"
 msgstr ""
 
-#: src/Twopart.cpp:1236 src/Hearts.cpp:1054 src/SgtMayor.cpp:1213
-#: src/Jabberwocky.cpp:315
+#: src/Twopart.cpp:1229 src/Hearts.cpp:1045 src/SgtMayor.cpp:1210
+#: src/Jabberwocky.cpp:310
 msgid "Sort won cards (by _colour)"
 msgstr ""
 
-#: Common/DeckSelect.cpp:51
+#: Common/DeckSelect.cpp:53
 msgid "Select carddeck"
 msgstr ""
 
-#: Common/DeckSelect.cpp:52
+#: Common/DeckSelect.cpp:54
 msgid "Available decks"
 msgstr ""
 
-#: Common/DeckSelect.cpp:53
+#: Common/DeckSelect.cpp:55
 msgid "Available backgrounds"
 msgstr ""
 
-#: Common/DeckSelect.cpp:300
+#: Common/DeckSelect.cpp:302
 msgid ""
 "Error loading image from file `%1'!\n"
 "\n"
 "Reason: %2"
 msgstr ""
 
-#: Common/Game.cpp:184 Common/Game.cpp:369
+#: Common/Game.cpp:185 Common/Game.cpp:370
 msgid "Invalid card specification!"
 msgstr ""
 
-#: Common/Game.cpp:196
+#: Common/Game.cpp:197
 msgid ""
 "Received invalid input from the server!\n"
 "\n"
 "Reason: %1"
 msgstr ""
 
-#: Common/Game.cpp:328 Common/Game.cpp:339
+#: Common/Game.cpp:329 Common/Game.cpp:340
 msgid "Turn of %1"
 msgstr ""
 
-#: Common/Game.cpp:497
+#: Common/Game.cpp:498
 msgid "Sort by _number"
 msgstr ""
 
-#: Common/Game.cpp:500
+#: Common/Game.cpp:501
 msgid "Sort by _colour"
 msgstr ""
 
-#: Common/Game.cpp:629
+#: Common/Game.cpp:630
 msgid ""
 "Can't write message!\n"
 "\n"
 "Reason: %1"
 msgstr ""
 
-#: Common/Game.cpp:715 Common/Game.cpp:720
+#: Common/Game.cpp:716 Common/Game.cpp:721
 msgid "Invalid target!"
 msgstr ""
 
-#: Common/Game.cpp:743
+#: Common/Game.cpp:744
 msgid "Invalid number"
 msgstr ""
 
-#: Common/Game.cpp:755
+#: Common/Game.cpp:756
 msgid "Unknown command!"
 msgstr ""
 
@@ -224,159 +224,159 @@ msgid ""
 "Reason: %1"
 msgstr ""
 
-#: src/CardCol.cpp:707
+#: src/CardCol.cpp:714
 msgid "_Game"
 msgstr ""
 
-#: src/CardCol.cpp:710
+#: src/CardCol.cpp:717
 msgid "_End"
 msgstr ""
 
-#: src/CardCol.cpp:713
+#: src/CardCol.cpp:720
 msgid "_Connect ..."
 msgstr ""
 
-#: src/CardCol.cpp:714
+#: src/CardCol.cpp:721
 msgid "<shft><ctl>C"
 msgstr ""
 
-#: src/CardCol.cpp:717
+#: src/CardCol.cpp:724
 msgid "_Chat ..."
 msgstr ""
 
-#: src/CardCol.cpp:718
+#: src/CardCol.cpp:725
 msgid "<alt><ctl>C"
 msgstr ""
 
-#: src/CardCol.cpp:725
+#: src/CardCol.cpp:732
 msgid "_Options"
 msgstr ""
 
-#: src/CardCol.cpp:726
+#: src/CardCol.cpp:733
 msgid "_Change game"
 msgstr ""
 
-#: src/CardCol.cpp:730 src/Buraco.cpp:2229 src/Settings.cpp:139
+#: src/CardCol.cpp:737 src/Buraco.cpp:2239 src/Settings.cpp:150
 msgid "_Buraco"
 msgstr ""
 
-#: src/CardCol.cpp:731
+#: src/CardCol.cpp:738
 msgid "<ctl>B"
 msgstr ""
 
-#: src/CardCol.cpp:735 src/Settings.cpp:149
+#: src/CardCol.cpp:742 src/Settings.cpp:160
 msgid "_Hearts"
 msgstr ""
 
-#: src/CardCol.cpp:736
+#: src/CardCol.cpp:743
 msgid "<ctl>H"
 msgstr ""
 
-#: src/CardCol.cpp:740 src/Jabberwocky.cpp:309
+#: src/CardCol.cpp:747 src/Jabberwocky.cpp:304
 msgid "_Jabberwocky"
 msgstr ""
 
-#: src/CardCol.cpp:741
+#: src/CardCol.cpp:748
 msgid "<ctl>J"
 msgstr ""
 
-#: src/CardCol.cpp:745 src/Machiavelli.cpp:1795
+#: src/CardCol.cpp:752 src/Machiavelli.cpp:1792
 msgid "_Machiavelli"
 msgstr ""
 
-#: src/CardCol.cpp:746
+#: src/CardCol.cpp:753
 msgid "<ctl>M"
 msgstr ""
 
-#: src/CardCol.cpp:751 src/Settings.cpp:175
+#: src/CardCol.cpp:758 src/Settings.cpp:186
 msgid "_Rovhult"
 msgstr "_Røvhult"
 
-#: src/CardCol.cpp:752
+#: src/CardCol.cpp:759
 msgid "<ctl>R"
 msgstr ""
 
-#: src/CardCol.cpp:756 src/SgtMayor.cpp:1207
+#: src/CardCol.cpp:763 src/SgtMayor.cpp:1204
 msgid "_Sgt. Mayor"
 msgstr ""
 
-#: src/CardCol.cpp:757
+#: src/CardCol.cpp:764
 msgid "<ctl>Y"
 msgstr ""
 
-#: src/CardCol.cpp:762
+#: src/CardCol.cpp:769
 msgid "<ctl>T"
 msgstr ""
 
-#: src/CardCol.cpp:766
+#: src/CardCol.cpp:773
 msgid "Change _decks ..."
 msgstr ""
 
-#: src/CardCol.cpp:767
+#: src/CardCol.cpp:774
 msgid "<ctl>D"
 msgstr ""
 
-#: src/CardCol.cpp:769
+#: src/CardCol.cpp:776
 msgid "Change _names ..."
 msgstr ""
 
-#: src/CardCol.cpp:770
+#: src/CardCol.cpp:777
 msgid "<ctl>C"
 msgstr ""
 
-#: src/CardCol.cpp:773
+#: src/CardCol.cpp:780
 msgid "F9"
 msgstr ""
 
-#: src/CardCol.cpp:776
+#: src/CardCol.cpp:783
 msgid "_Save preferences"
 msgstr ""
 
-#: src/CardCol.cpp:989
+#: src/CardCol.cpp:998
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 
-#: src/CardCol.cpp:1012
+#: src/CardCol.cpp:1021
 msgid "Do you really want to end the game?"
 msgstr ""
 
-#: src/CardCol.cpp:1102
+#: src/CardCol.cpp:1122
 msgid ""
 "Couldn't save options (to file %1)!\n"
 "\n"
 "Reason: %2."
 msgstr ""
 
-#: src/CardCol.cpp:1115
+#: src/CardCol.cpp:1135
 msgid "A game is running. Do you really want to quit?"
 msgstr ""
 
-#: src/CardCol.cpp:1195
+#: src/CardCol.cpp:1215
 msgid ""
-"Copyright (C) 2002 - 2006 Markus Schwab\n"
+"Copyright (C) 2002 - 2007 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
 "\n"
 "Compiled on %1 at %2"
 msgstr ""
-"Copyright © 2002 - 2006 Markus Schwab\n"
+"Copyright © 2002 - 2007 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
 "\n"
 "Compiled on %1 at %2"
 
-#: src/CardCol.cpp:1323
+#: src/CardCol.cpp:1355
 msgid "User canceled"
 msgstr ""
 
-#: src/CardCol.cpp:1351
+#: src/CardCol.cpp:1383
 msgid "Loading cardimages ..."
 msgstr ""
 
-#: src/CardCol.cpp:1370
+#: src/CardCol.cpp:1402
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr ""
 
-#: src/CardCol.cpp:1442
+#: src/CardCol.cpp:1474
 msgid ""
 "Invalid values for Rovhult's special cards!\n"
 "Resetting them to default values."
@@ -440,66 +440,66 @@ msgid ""
 "%2"
 msgstr ""
 
-#: src/CardColAppl.cpp:89
+#: src/CardColAppl.cpp:91
 msgid ""
 "Collection of cardgames\n"
 "\n"
 "Usage: "
 msgstr ""
 
-#: src/CardColAppl.cpp:90
+#: src/CardColAppl.cpp:92
 msgid ""
 " [OPTIONS]\n"
 "\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:92
+#: src/CardColAppl.cpp:94
 msgid "[GAME] Select game to start (default: Rovhult)\n"
 msgstr "[GAME] Select game to start (default: Røvhult)\n"
 
-#: src/CardColAppl.cpp:93
+#: src/CardColAppl.cpp:95
 msgid "List available games\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:94
+#: src/CardColAppl.cpp:96
 msgid "[FILE] Use file as INI file\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:95
+#: src/CardColAppl.cpp:97
 msgid "[NAME] Browser to use to display the help\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:96
+#: src/CardColAppl.cpp:98
 msgid "[DIR] Directory to search for help\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:98
+#: src/CardColAppl.cpp:100
 msgid "[PORT] Awaits connections on port PORT\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:99
+#: src/CardColAppl.cpp:101
 msgid "[SERVER[:PORT]] Connects to SERVER:PORT\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:102
+#: src/CardColAppl.cpp:104
 msgid "[FILE] Saves game into FILE\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:103
+#: src/CardColAppl.cpp:105
 msgid "[FILE] Load game from FILE\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:105
+#: src/CardColAppl.cpp:107
 msgid "Output version information and exit\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:106
+#: src/CardColAppl.cpp:108
 msgid ""
 "Displays this help and exit\n"
 "\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:109
+#: src/CardColAppl.cpp:111
 msgid ""
 "Valid values for GAME are - unless disabled while configuring - Buraco, "
 "Hearts,\n"
@@ -516,126 +516,126 @@ msgstr ""
 "(corresponding to the games in the above order).\n"
 "\n"
 
-#: src/CardColAppl.cpp:115
+#: src/CardColAppl.cpp:117
 msgid ""
 "\n"
 "The INI file can have the following entries:\n"
 "\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:146
+#: src/CardColAppl.cpp:148
 msgid "-warning: Invalid game type `%1'"
 msgstr ""
 
-#: src/CardColAppl.cpp:152
+#: src/CardColAppl.cpp:154
 msgid "-warning: No game specified! Ignoring option `g'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:160
+#: src/CardColAppl.cpp:162
 msgid "-warning: No directory specified! Ignoring option `d'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:168
+#: src/CardColAppl.cpp:170
 msgid "-warning: No browser specified! Ignoring option `b'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:176
+#: src/CardColAppl.cpp:178
 msgid "-warning: No file specified! Ignoring option `f'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:190
+#: src/CardColAppl.cpp:192
 msgid "-warning: No port specified! Ignoring option `l'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:207
+#: src/CardColAppl.cpp:209
 msgid "-warning: No target specified! Ignoring option `c'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:222
+#: src/CardColAppl.cpp:224
 msgid ""
 "-warning: Option `%1' has already been specified!\n"
 "Overwriting old setting\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:232
+#: src/CardColAppl.cpp:234
 msgid "-warning: No file specified! Ignoring option `%1'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:282
+#: src/CardColAppl.cpp:284
 msgid "Human"
 msgstr ""
 
-#: src/CardColAppl.cpp:283
+#: src/CardColAppl.cpp:285
 msgid "Player 1"
 msgstr ""
 
-#: src/CardColAppl.cpp:284
+#: src/CardColAppl.cpp:286
 msgid "Player 2"
 msgstr ""
 
-#: src/CardColAppl.cpp:285
+#: src/CardColAppl.cpp:287
 msgid "Player 3"
 msgstr ""
 
-#: src/CardColAppl.cpp:324
+#: src/CardColAppl.cpp:341
 msgid "-warning: Error reading INI-file `%1'! %2\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:369
+#: src/CardColAppl.cpp:383
 msgid "Compiled on"
 msgstr ""
 
-#: src/CardColAppl.cpp:371
+#: src/CardColAppl.cpp:385
 msgid ""
-"Copyright (C) 2002 - 2006 Markus Schwab; e-mail: g17m0@lycos.com\n"
+"Copyright (C) 2002 - 2007 Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
 msgstr ""
-"Copyright © 2002 - 2006 Markus Schwab; e-mail: g17m0@lycos.com\n"
+"Copyright © 2002 - 2007 Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
 
-#: src/CardColAppl.cpp:382
+#: src/CardColAppl.cpp:396
 msgid ""
 "Available games:\n"
 "\n"
 msgstr ""
 
-#: src/Hearts.cpp:208
+#: src/Hearts.cpp:199
 msgid "Select 3 cards to exchange with %1"
 msgstr ""
 
-#: src/Hearts.cpp:451 src/Buraco.cpp:1751
+#: src/Hearts.cpp:442 src/Buraco.cpp:1761
 msgid "Round ended"
 msgstr ""
 
-#: src/Hearts.cpp:456
+#: src/Hearts.cpp:447
 msgid "Game ended; %1 won"
 msgstr ""
 
-#: src/Hearts.cpp:503 src/Jabberwocky.cpp:347
+#: src/Hearts.cpp:494 src/Jabberwocky.cpp:342
 msgid "Play first cards with an equal colour as the first played one!"
 msgstr ""
 
-#: src/Hearts.cpp:510
+#: src/Hearts.cpp:501
 msgid "The game must be started with the two of clubs!"
 msgstr ""
 
-#: src/Hearts.cpp:516
+#: src/Hearts.cpp:507
 msgid "You can't start with a heart, if they have not been played before!"
 msgstr ""
 
-#: src/Hearts.cpp:522
+#: src/Hearts.cpp:513
 msgid "The queen of spades can't be played in the first round!"
 msgstr ""
 
-#: src/Hearts.cpp:526
+#: src/Hearts.cpp:517
 msgid "Hearts can't be played in the first round!"
 msgstr ""
 
-#: src/Hearts.cpp:531 src/GameTypes.cpp:58
+#: src/Hearts.cpp:522 src/GameTypes.cpp:58
 msgid "Hearts"
 msgstr ""
 
-#: src/Hearts.cpp:1048
+#: src/Hearts.cpp:1039
 msgid "H_earts"
 msgstr ""
 
@@ -643,170 +643,170 @@ msgstr ""
 msgid "Score"
 msgstr ""
 
-#: src/Buraco.cpp:75 src/Machiavelli.cpp:81
+#: src/Buraco.cpp:76 src/Machiavelli.cpp:82
 msgid "New pile"
 msgstr ""
 
-#: src/Buraco.cpp:727
+#: src/Buraco.cpp:742
 msgid "Every pile on the table must have at least 3 cards!"
 msgstr ""
 
-#: src/Buraco.cpp:828
+#: src/Buraco.cpp:843
 msgid "You can't pick up monos!"
 msgstr ""
 
-#: src/Buraco.cpp:831
+#: src/Buraco.cpp:846
 msgid "You need a fitting pair to pick up the pile of dumped cards!"
 msgstr ""
 
-#: src/Buraco.cpp:837
+#: src/Buraco.cpp:852
 msgid ""
 "Picking up the staple would leave you without cards\n"
 "and you can't end the game now!"
 msgstr ""
 
-#: src/Buraco.cpp:1050
+#: src/Buraco.cpp:1065
 msgid "Can't move cards before completing the pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1139
+#: src/Buraco.cpp:1154
 msgid "You need to fill up other piles first!"
 msgstr ""
 
-#: src/Buraco.cpp:1146
+#: src/Buraco.cpp:1161
 msgid ""
 "You must play your cards (without \"monos\"), when you picked up the pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1156
+#: src/Buraco.cpp:1171
 msgid "There are no cards to make a valid new pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1162
+#: src/Buraco.cpp:1177
 msgid "You can't end the game (a pile of monos is not finished)!"
 msgstr ""
 
-#: src/Buraco.cpp:1164 src/Buraco.cpp:1182
+#: src/Buraco.cpp:1179 src/Buraco.cpp:1197
 msgid "You can't end the game (there's no \"cerrado\")!"
 msgstr ""
 
-#: src/Buraco.cpp:1165
+#: src/Buraco.cpp:1180
 msgid "Not enough cards to make new pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1177 src/Machiavelli.cpp:768
+#: src/Buraco.cpp:1192 src/Machiavelli.cpp:765
 msgid "This card does not fit on that pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1408
+#: src/Buraco.cpp:1419
 msgid "%1 picked up the burraco"
 msgstr ""
 
-#: src/Buraco.cpp:1577
+#: src/Buraco.cpp:1587
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr ""
 
-#: src/Buraco.cpp:1579 src/Buraco.cpp:1581
+#: src/Buraco.cpp:1589 src/Buraco.cpp:1591
 msgid "N"
 msgstr ""
 
-#: src/Buraco.cpp:1579 src/Buraco.cpp:1581
+#: src/Buraco.cpp:1589 src/Buraco.cpp:1591
 msgid "Y"
 msgstr ""
 
-#: src/Buraco.cpp:1694
+#: src/Buraco.cpp:1704
 msgid ""
 "Team %1\n"
 "%2/%3"
 msgstr ""
 
-#: src/Buraco.cpp:1757
+#: src/Buraco.cpp:1767
 msgid "Game ended; Team %1 won"
 msgstr ""
 
-#: src/Buraco.cpp:2127
+#: src/Buraco.cpp:2137
 msgid "Invalid pile!"
 msgstr ""
 
-#: src/Buraco.cpp:2130
+#: src/Buraco.cpp:2140
 msgid "Invalid card!"
 msgstr ""
 
-#: src/Buraco.cpp:2192
+#: src/Buraco.cpp:2202
 msgid "Invalid target specification!"
 msgstr ""
 
-#: src/Buraco.cpp:2231
+#: src/Buraco.cpp:2241
 msgid "<ctl>Z"
 msgstr ""
 
-#: src/Buraco.cpp:2234 src/Machiavelli.cpp:1803
+#: src/Buraco.cpp:2244 src/Machiavelli.cpp:1800
 msgid "_Sort cards (by number)"
 msgstr ""
 
-#: src/Buraco.cpp:2238 src/Machiavelli.cpp:1807
+#: src/Buraco.cpp:2248 src/Machiavelli.cpp:1804
 msgid "Sort cards (by _colour)"
 msgstr ""
 
-#: src/Machiavelli.cpp:83 src/Machiavelli.cpp:1810
+#: src/Machiavelli.cpp:84 src/Machiavelli.cpp:1807
 msgid "_End turn"
 msgstr ""
 
-#: src/Machiavelli.cpp:173
+#: src/Machiavelli.cpp:170
 msgid ""
 "You can sort the cards in your hand with drag and drop or put them on the "
 "table - click the staple to end turn"
 msgstr ""
 
-#: src/Machiavelli.cpp:439 src/Machiavelli.cpp:1555
+#: src/Machiavelli.cpp:436 src/Machiavelli.cpp:1552
 msgid "Can't end turn: The piles are not valid!"
 msgstr ""
 
-#: src/Machiavelli.cpp:446
+#: src/Machiavelli.cpp:443
 msgid "_Undo all"
 msgstr ""
 
-#: src/Machiavelli.cpp:447
+#: src/Machiavelli.cpp:444
 msgid "Undo _last"
 msgstr ""
 
-#: src/Machiavelli.cpp:781
+#: src/Machiavelli.cpp:778
 msgid "Can't move this card - try splitting the origin first!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1446
+#: src/Machiavelli.cpp:1443
 msgid "Taking last card! Solve the game (somehow) ..."
 msgstr ""
 
-#: src/Machiavelli.cpp:1448
+#: src/Machiavelli.cpp:1445
 msgid "Game over"
 msgstr ""
 
-#: src/Machiavelli.cpp:1473
+#: src/Machiavelli.cpp:1470
 msgid "Pile %1: %2\n"
 msgstr ""
 
-#: src/Machiavelli.cpp:1557
+#: src/Machiavelli.cpp:1554
 msgid "Could end turn: The piles are OK!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1670 src/Machiavelli.cpp:1732
+#: src/Machiavelli.cpp:1667 src/Machiavelli.cpp:1729
 msgid "Invalid source pile!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1673 src/Machiavelli.cpp:1735
+#: src/Machiavelli.cpp:1670 src/Machiavelli.cpp:1732
 msgid "Invalid cards!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1691 src/Machiavelli.cpp:1720
+#: src/Machiavelli.cpp:1688 src/Machiavelli.cpp:1717
 msgid "Invalid destination pile!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1729
+#: src/Machiavelli.cpp:1726
 msgid "Invalid position in destination pile!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1799
+#: src/Machiavelli.cpp:1796
 msgid "Undo _all"
 msgstr ""
 
@@ -822,99 +822,103 @@ msgstr ""
 msgid "Card %1 does not fit!"
 msgstr ""
 
-#: src/SgtMayor.cpp:214
+#: src/SgtMayor.cpp:211
 msgid "(needs %1 tricks)"
 msgstr ""
 
-#: src/SgtMayor.cpp:303
+#: src/SgtMayor.cpp:300
 msgid "Play a card with an equal colour as the first played one!"
 msgstr ""
 
-#: src/SgtMayor.cpp:379
+#: src/SgtMayor.cpp:376
 msgid "Waiting for %1 to select the special colour ..."
 msgstr ""
 
-#: src/SgtMayor.cpp:408
+#: src/SgtMayor.cpp:405
 msgid "Select the special colour"
 msgstr ""
 
-#: src/SgtMayor.cpp:676
+#: src/SgtMayor.cpp:673
 msgid "Card not found!"
 msgstr ""
 
-#: src/SgtMayor.cpp:818
+#: src/SgtMayor.cpp:815
 msgid "Game ended; %1 has %2 %7, %3 %4 and %5 %6 %8"
 msgstr ""
 
-#: src/SgtMayor.cpp:848 src/Jabberwocky.cpp:914
+#: src/SgtMayor.cpp:845 src/Jabberwocky.cpp:909
 msgid "; %1 won"
 msgstr ""
 
-#: src/SgtMayor.cpp:862 src/SgtMayor.cpp:864
+#: src/SgtMayor.cpp:859 src/SgtMayor.cpp:861
 msgid "trick"
 msgid_plural "tricks"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/SgtMayor.cpp:940
+#: src/SgtMayor.cpp:937
 msgid "Waiting for %1 to exchange cards ..."
 msgstr ""
 
-#: src/SgtMayor.cpp:975
+#: src/SgtMayor.cpp:972
 msgid "You can exchange %1 %2; %4 with %3 (and than %5 with %6)!"
 msgstr ""
 
-#: src/SgtMayor.cpp:982
+#: src/SgtMayor.cpp:979
 msgid "You can exchange %1 %2 with %3!"
 msgstr ""
 
-#: src/SgtMayor.cpp:987
+#: src/SgtMayor.cpp:984
 msgid "bad card"
 msgid_plural "bad cards"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Settings.cpp:108
+#: src/Settings.cpp:112
 msgid "Preferences"
 msgstr ""
 
-#: src/Settings.cpp:113
+#: src/Settings.cpp:117
 msgid "_Delay of computer player (ms):"
 msgstr ""
 
-#: src/Settings.cpp:118
+#: src/Settings.cpp:122
 msgid "D_efault game:"
 msgstr ""
 
-#: src/Settings.cpp:124
+#: src/Settings.cpp:128
 msgid "_General"
 msgstr ""
 
-#: src/Settings.cpp:128 src/Settings.cpp:144
+#: src/Settings.cpp:130
+msgid "C_ard size:"
+msgstr ""
+
+#: src/Settings.cpp:139 src/Settings.cpp:155
 msgid "_Points to end game:"
 msgstr ""
 
-#: src/Settings.cpp:133
+#: src/Settings.cpp:144
 msgid "_Number of cards:"
 msgstr ""
 
-#: src/Settings.cpp:154
+#: src/Settings.cpp:165
 msgid "_Nuke card (default 10):"
 msgstr ""
 
-#: src/Settings.cpp:161
+#: src/Settings.cpp:172
 msgid "Re_verse card (default 7):"
 msgstr ""
 
-#: src/Settings.cpp:168
+#: src/Settings.cpp:179
 msgid "_Skip card (default 8):"
 msgstr ""
 
-#: src/Settings.cpp:180
+#: src/Settings.cpp:191
 msgid "_Tricks to win game:"
 msgstr ""
 
-#: src/Settings.cpp:185
+#: src/Settings.cpp:196
 msgid "Sgt. _Mayor"
 msgstr ""
 
@@ -926,7 +930,7 @@ msgstr "Røvhult"
 msgid "Twopart"
 msgstr ""
 
-#: src/GameTypes.cpp:61 src/Jabberwocky.cpp:374 src/Jabberwocky.cpp:474
+#: src/GameTypes.cpp:61 src/Jabberwocky.cpp:369 src/Jabberwocky.cpp:469
 msgid "Jabberwocky"
 msgstr ""
 
@@ -954,34 +958,34 @@ msgstr ""
 msgid ": "
 msgstr ""
 
-#: src/Jabberwocky.cpp:356
+#: src/Jabberwocky.cpp:351
 msgid ""
 "You can't start with a trump,\n"
 "if they have not been played before!"
 msgstr ""
 
-#: src/Jabberwocky.cpp:410
+#: src/Jabberwocky.cpp:405
 msgid "Waiting for %1 to bid ..."
 msgstr ""
 
-#: src/Jabberwocky.cpp:418
+#: src/Jabberwocky.cpp:413
 msgid "Make your bid for the number of tricks you are going to make!"
 msgstr ""
 
-#: src/Jabberwocky.cpp:420
+#: src/Jabberwocky.cpp:415
 msgid "_Bid"
 msgstr ""
 
-#: src/Jabberwocky.cpp:473
+#: src/Jabberwocky.cpp:468
 msgid ""
 "The sum of all bids must be different\n"
 "than the number of possible tricks!"
 msgstr ""
 
-#: src/Jabberwocky.cpp:501
+#: src/Jabberwocky.cpp:496
 msgid "; bids %1 tricks"
 msgstr ""
 
-#: src/Jabberwocky.cpp:895
+#: src/Jabberwocky.cpp:890
 msgid "Game ended"
 msgstr ""
