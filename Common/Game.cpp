@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 10.9.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2006
+//COPYRIGHT   : Copyright (C) 2002 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@
 
 #include "Player.h"
 #include "CardSet.h"
+#include "CardImgs.h"
 #include "CardPile.h"
 #include "ComputerPlayer.h"
 
@@ -817,4 +818,11 @@ void Game::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 /// \param mgrUI: UIManager to add to
 //-----------------------------------------------------------------------------
 void Game::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
+}
+
+//-----------------------------------------------------------------------------
+/// Actions to take when the cards are resized
+/// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
+//-----------------------------------------------------------------------------
+void Game::resizeCards () {
 }

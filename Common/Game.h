@@ -75,6 +75,7 @@ class Game : public Gtk::Table {
    virtual void changeNames (const std::vector<Player*>& newPlayer);
    virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
    virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void resizeCards ();
    //@}
 
    /// \name Carddeck information
