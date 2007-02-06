@@ -37,6 +37,8 @@
 #include <XGP/XAttribute.h>
 
 #include <Player.h>
+#include <ScoreDlg.h>
+#include <CardImgs.h>
 
 #ifdef WITH_BURACO
 #  include "Buraco.h"
@@ -290,6 +292,12 @@ void CardgameAppl::readINIFile (const char* pFile) {
       INIFILE (pFile);
       INISECTION (Game);
       _inifile_.addEntity (options, Game);
+      INIATTR2 (Game, unsigned int, CardgameCollection::WIDTH, WindowWidth);
+      INIATTR2 (Game, unsigned int, CardgameCollection::HEIGHT, WindowHeight);
+      INIATTR2 (Game, int, CardgameCollection::POSX, WindowPosX);
+      INIATTR2 (Game, int, CardgameCollection::POSY, WindowPosY);
+      INIATTR2 (Game, int, ScoreDlg::LASTX, ScoreDlgPosX);
+      INIATTR2 (Game, int, ScoreDlg::LASTY, ScoreDlgPosY);
       INIATTR2 (Game, std::string, options.co.decks, CardFront);
       INIATTR2 (Game, std::string, options.co.back, CardBack);
 
@@ -374,7 +382,7 @@ const char* CardgameAppl::description () const {
       (PACKAGE " V" VERSION " - "
        + std::string (_("Compiled on"))
        + std::string (" " __DATE__ " - " __TIME__ "\n\n")
-       + std::string (_("Copyright (C) 2002 - 2006 Markus Schwab; e-mail: g17m0@lycos.com"
+       + std::string (_("Copyright (C) 2002 - 2007 Markus Schwab; e-mail: g17m0@lycos.com"
 			"\nDistributed under the terms of the GNU General "
 			"Public License")));
    return version.c_str ();
