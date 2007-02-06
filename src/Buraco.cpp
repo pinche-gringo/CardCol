@@ -197,7 +197,7 @@ int Buraco::makeMove (unsigned int player) {
       if (undo.pickUp) {
 	 unsigned int oldPlayer (gStatus.startTurn ? ((player - 1) & 0x3) : player);
 	 CardHPile* pile (&hands[oldPlayer]);
-	 
+
 	 TRACE5 ("Buraco::makeMove (unsigned int) - Player with monos: " << oldPlayer);
 	 if ((oldPlayer) && (pile->size () > CARDS2DEAL)) {
 	    Check3 (pile->size () > CARDS2DEAL);
@@ -270,7 +270,7 @@ int Buraco::makeMove (unsigned int player) {
 
 	    if (!player && cJokers)
 	       Glib::signal_timeout ().connect
-		  (bind (sigc::ptr_fun (&Buraco::hideJoker), &hands[player], cJokers),
+		  (bind (sigc::ptr_fun (&Buraco::hideJoker), &hands[oldPlayer], cJokers),
 		   ComputerPlayer::TIMEOUT);
 	 }
          else
