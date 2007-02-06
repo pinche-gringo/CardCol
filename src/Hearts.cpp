@@ -1065,10 +1065,17 @@ void Hearts::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 //-----------------------------------------------------------------------------
 void Hearts::resizeCards () {
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      Gtk::Box* won (dynamic_cast<Gtk::Box*> (players[0].won)); Check3 (won);
-      Gtk::Box* hand (dynamic_cast<Gtk::Box*> (players[0].hand)); Check3 (hand);
-      won->set_size_request (CardImages::WIDTH + 12 * 7, CardImages::HEIGHT + 5);
-      hand->set_size_request (CardImages::WIDTH + 12 * 18, CardImages::HEIGHT + 5);
+      Gtk::Box* hand (dynamic_cast<Gtk::Box*> (players[i].hand)); Check3 (hand);
+      Gtk::Box* won (dynamic_cast<Gtk::Box*> (players[i].won)); Check3 (won);
+
+      if (i & 1) {
+	 hand->set_size_request (CardImages::WIDTH + 5, CardImages::HEIGHT + 12 * 7);
+	 won->set_size_request (CardImages::WIDTH + 5, CardImages::HEIGHT + 12 * 7);
+      }
+      else {
+	 hand->set_size_request (CardImages::WIDTH + 12 * 18, CardImages::HEIGHT + 5);
+	 won->set_size_request (CardImages::WIDTH + 12 * 7, CardImages::HEIGHT + 5);
+      }
    }
    played.set_size_request (CardImages::WIDTH + 150, CardImages::HEIGHT);
 }
