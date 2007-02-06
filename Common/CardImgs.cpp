@@ -42,8 +42,8 @@
 #include "CardImgs.h"
 
 
-unsigned int CardImages::HEIGHT (96);
-unsigned int CardImages::WIDTH (72);
+unsigned int CardImages::HEIGHT (88);
+unsigned int CardImages::WIDTH (66);
 
 
 /**Helper-class to actually load cardimages
