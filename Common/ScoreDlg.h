@@ -54,6 +54,9 @@ class ScoreDlg : public XGP::XDialog {
    void getMaxPoints (int& points, unsigned int& player);
    void getMinPoints (int& points, unsigned int& player);
 
+   static int LASTX;
+   static int LASTY;
+
  private:
    //Prohibited manager functions
    ScoreDlg (const ScoreDlg& other);

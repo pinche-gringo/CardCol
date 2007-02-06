@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 02.01.2003
-//COPYRIGHT   : Copyright (C) 2002 - 2004
+//COPYRIGHT   : Copyright (C) 2002 - 2004, 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -39,8 +39,8 @@
 #include "ScoreDlg.h"
 
 
-static int lastX (-1);
-static int lastY (-1);
+int ScoreDlg::LASTX (-1);
+int ScoreDlg::LASTY (-1);
 
 //-----------------------------------------------------------------------------
 /// (Default-)Constructor; Shows the dialog
@@ -60,12 +60,12 @@ ScoreDlg::ScoreDlg (const std::vector<Player*>& player)
    client->show ();
    get_vbox ()->pack_start (*client, Gtk::SHRINK, 5);
 
-   if (lastX != -1)
-      move (lastX, lastY);
+   if (LASTX != -1)
+      move (LASTX, LASTY);
 
    show ();
-   if (lastX != -1)
-      move (lastX, lastY);
+   if (LASTX != -1)
+      move (LASTX, LASTY);
 }
 
 //-----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ ScoreDlg::~ScoreDlg () {
         i != aColumns.end (); ++i)
       delete *i;
 
-   get_position (lastX, lastY);
+   get_position (LASTX, LASTY);
 }
 
 
