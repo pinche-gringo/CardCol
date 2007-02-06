@@ -52,6 +52,7 @@
 #include <XGP/XAbout.h>
 
 #include <Human.h>
+#include <ScoreDlg.h>
 #include <PlayerDlg.h>
 #include <DeckSelect.h>
 #include <ComputerPlayer.h>
@@ -102,8 +103,10 @@
 #include "CardCol.h"
 
 
-const unsigned int CardgameCollection::WIDTH (760);
-const unsigned int CardgameCollection::HEIGHT (750);
+int CardgameCollection::POSX (-1);
+int CardgameCollection::POSY (-1);
+unsigned int CardgameCollection::WIDTH (760);
+unsigned int CardgameCollection::HEIGHT (700);
 
 
 namespace YGP {
@@ -653,6 +656,8 @@ CardgameCollection::CardgameCollection (Options& opts)
    TRACE9 ("CardGameCollection::CardGameCollection (Options&) - Game: " << actGame);
 
    setIconProgram (xpmGame);
+   if (POSX != -1)
+      move (POSX, POSY);
    set_default_size (WIDTH, HEIGHT);
 
    helpBrowser = options.browser;
@@ -801,6 +806,8 @@ CardgameCollection::CardgameCollection (Options& opts)
    getClient ().pack_end (status, Gtk::PACK_SHRINK);
 
    show ();
+   if (POSX != -1)
+      move (POSX, POSY);
 #ifdef WITH_NETWORK
    mxGuiCmd.lock ();
 #endif
@@ -1069,6 +1076,17 @@ void CardgameCollection::savePreferences () {
    if (inifile) {
       options.strType = GameTypes::get ()[options.type];
       YGP::INIFile::write (inifile, "Game", options);
+
+      int x, y, width, height;
+      get_size (width, height);
+      get_position (x, y);
+      inifile << "WindowPosX=" << x << "\nWindowPosY=" << y << "\n"
+	      << "WindowWidth=" << width << "\nWindowHeight=" << height << "\n"
+	      << "ScoreDlgPosX=" << ScoreDlg::LASTX << "\nScoreDlgPosY=" << ScoreDlg::LASTY << "\n\n";
+
+      YGP::INIFile::write (inifile, "Cards", options.co);
+      inifile << "Width=" << CardImages::WIDTH << "\nHeight=" << CardImages::HEIGHT << "\n\n";
+
       for (unsigned int i (0); i < aPlayer.size (); ++i)
 	 options.names[i] = aPlayer[i]->getName ();
       YGP::INIList<Glib::ustring>::write (inifile, "Player", options.names);
@@ -1194,7 +1212,7 @@ const char* CardgameCollection::getHelpfile () {
 /// Shows the about box for the program
 //-----------------------------------------------------------------------------
 void CardgameCollection::showAboutbox () {
-   std::string ver (_("Copyright (C) 2002 - 2006 Markus Schwab"
+   std::string ver (_("Copyright (C) 2002 - 2007 Markus Schwab"
                       "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
    ver.replace (ver.find ("%1"), 2, __DATE__);
    ver.replace (ver.find ("%2"), 2, __TIME__);

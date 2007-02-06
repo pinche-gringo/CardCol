@@ -51,6 +51,8 @@ class ICarddeckSelectDlg;
 /**Class to handle the cardgame collection
  */
 class CardgameCollection : public XGP::XApplication {
+   friend class CardgameAppl;
+
  public:
    // Manager functions
    CardgameCollection (Options& opts);
@@ -179,8 +181,10 @@ class CardgameCollection : public XGP::XApplication {
 
    Game* game;
 
-   static const unsigned int WIDTH;
-   static const unsigned int HEIGHT;
+   static int POSX;
+   static int POSY;
+   static unsigned int WIDTH;
+   static unsigned int HEIGHT;
 };
 
 #endif
