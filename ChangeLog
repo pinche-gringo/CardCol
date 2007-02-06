@@ -1,3 +1,82 @@
+2007-02-07  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.8.20 documented
+
+	* po/de.po, po/en.po, po/es.po, po/tr.po:
+	  Added translation of cardsize; Actualised
+
+2007-02-06  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp: Fixed player 3 taking the buraco
+
+	* src/Hearts.cpp: Fixed setting the correct card-size
+
+	* src/CardColAppl.cpp: Reading also window-postions from INI-file
+
+	* src/CardCol.cpp, src/CardCol.h:
+	  Saving also the window positions (main and score-dialog)
+
+	* Common/ScoreDlg.cpp, Common/ScoreDlg.h:
+	  Added public members LASTX/LASTY (storing the last position)
+
+	* Common/Game.cpp, Common/Game.h: Added resizeCards()
+
+	* Common/CardImgs.cpp: Default cardsize is TINY
+
+2007-02-04  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp, src/CardColAppl.cpp, src/Options.h:
+	  Using new entity CardOptions
+
+	* src/Makefile.am: Added CardOptions.{h,meta}
+
+	* src/CardOptions.h: New file.
+
+2007-02-02  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Rovhult.cpp, src/Rovhult.h:
+	  Preventing endless-loop in game between computer players (by playing randomly)
+
+	* src/Buraco.cpp:
+	  After taking buraco, make sure the old monos are hidden, before playing on
+
+	* src/Buraco.cpp: Resizing correct widget for piles of teams
+
+	* src/Buraco.cpp, src/Buraco.h, src/CardCol.cpp, src/Hearts.cpp, src/Hearts.h, src/Jabberwocky.cpp, src/Jabberwocky.h, src/Machiavelli.cpp, src/Machiavelli.h, src/Rovhult.cpp, src/Rovhult.h, src/SgtMayor.cpp, src/SgtMayor.h, src/Twopart.cpp, src/Twopart.h:
+	  Resizing cards also resizes board
+
+	* configure.in:
+	  Version to 0.8.20; configure includes glibmm/convert.h when compiled with NLS
+
+	* src/CardCol.cpp, src/CardCol.h:
+	  Resizing cards, if the size has been changed in the settings
+
+	* src/Settings.cpp, src/Settings.h: Card-sizes can be changed
+
+	* src/Makefile.am: Added CardSizes
+
+	* src/CardColAppl.cpp: Reading card sizes from INI-file
+
+	* src/CardSizes.cpp, src/CardSizes.h: New file.
+
+	* Common/CardImgs.cpp, Common/CardImgs.h:
+	  Using constants for card sizes; added resizeAll()
+
+	* Common/DeckSelect.cpp: Using values from CardImages for card sizes
+
+2007-01-04  Markus Schwab  <g17m0@lycos.com>
+
+	* src/BuracoPile.cpp:
+	  Changed inserting jokers in numbered piles (always on 2nd position)
+
+2006-12-29  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp:
+	  Catching the YGP::FileError thrown when loading card-images fails
+
+	* src/CardColAppl.cpp:
+	  Don't append a slash to the carddir-directory (impeeds loading GNOME-cards)
+
 2006-12-26  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Changes of V0.8.12 documented

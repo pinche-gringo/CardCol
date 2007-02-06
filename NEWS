@@ -1,3 +1,14 @@
+ Overview of changes in version 0.8.20:
+
+  - Size of cards can be changed (in the settings)
+  - Fixed bug reading GNOME-card images
+  - Don't terminate in case of error while loading card images
+  - Buraco: Changed inserting jokers in numbered piles (always on 2nd position)
+  - Buraco: Fixed ugly hiding of jokers after taking buraco (on slow computers)
+  - Røvhult: Prevent loops in endgame between computer-player
+  - "Save Preferences" saves also the window-positions
+
+
  Overview of changes in version 0.8.12:
 
   - Jabberwocky: Disabling Jabberwocky-menu when there are no cards
