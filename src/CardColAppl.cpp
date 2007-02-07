@@ -117,15 +117,44 @@ void CardgameAppl::showHelp () const {
    std::cout << _("\nThe INI file can have the following entries:\n\n")
              <<  "  [Game]\n"
                  "  Type=Twopart\n"
-                 "  Helpbrowser=galeon\n"
+                 "  Helpbrowser=firefox\n"
                  "  Helpdir=/usr/share/doc/Cardgames/\n"
-                 "  CardFront=/usr/share/carddecks/cards-default/\n"
-                 "  CardBack=/usr/share/carddecks/decks/deck1.png\n\n"
+                 "  WindowPosX=0\n"
+                 "  WindowPosY=0\n"
+                 "  WindowWidth=760\n"
+                 "  WindowHeight=754\n"
+                 "  ScoreDlgPosX=772\n"
+                 "  ScoreDlgPosY=1\n\n"
+                 "  [Cards]\n"
+                 "  Width=72\n"
+                 "  Height=96\n"
+                 "  Front=/usr/share/carddecks/cards-default/\n"
+                 "  Back=/usr/share/carddecks/decks/deck1.png\n\n"
                  "  [Player]\n"
                  "  0=Human\n"
                  "  1=Computer 1\n"
                  "  2=Computer 2\n"
-                 "  3=Computer 3\n";
+                 "  3=Computer 3\n"
+#ifdef WITH_BURACO
+                 "\n  [Buraco]\n"
+                 "  Cards=11\n"
+                 "  EndPoints=3000\n"
+#endif
+#ifdef WITH_HEARTS
+                 "\n  [Hearts]\n"
+                 "  EndPoints=100\n"
+#endif
+#ifdef WITH_ROVHULT
+                 "\n  [Rovhult]\n"
+                 "  CardNuke=10\n"
+                 "  CardReverse=7\n"
+                 "  CardSkip=8\n"
+#endif
+#ifdef WITH_SGTMAYOR
+                 "\n  [SgtMayor]\n"
+                 "  Tricks=10\n"
+#endif
+      ;
 }
 
 //-----------------------------------------------------------------------------
