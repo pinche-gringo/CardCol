@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.8 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2007-02-06 13:03+0100\n"
+"POT-Creation-Date: 2007-02-14 21:28+0100\n"
 "PO-Revision-Date: 2005-05-13 12:08-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -523,69 +523,69 @@ msgid ""
 "\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:148
+#: src/CardColAppl.cpp:177
 msgid "-warning: Invalid game type `%1'"
 msgstr ""
 
-#: src/CardColAppl.cpp:154
+#: src/CardColAppl.cpp:183
 msgid "-warning: No game specified! Ignoring option `g'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:162
+#: src/CardColAppl.cpp:191
 msgid "-warning: No directory specified! Ignoring option `d'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:170
+#: src/CardColAppl.cpp:199
 msgid "-warning: No browser specified! Ignoring option `b'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:178
+#: src/CardColAppl.cpp:207
 msgid "-warning: No file specified! Ignoring option `f'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:192
+#: src/CardColAppl.cpp:221
 msgid "-warning: No port specified! Ignoring option `l'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:209
+#: src/CardColAppl.cpp:238
 msgid "-warning: No target specified! Ignoring option `c'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:224
+#: src/CardColAppl.cpp:253
 msgid ""
 "-warning: Option `%1' has already been specified!\n"
 "Overwriting old setting\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:234
+#: src/CardColAppl.cpp:263
 msgid "-warning: No file specified! Ignoring option `%1'\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:284
+#: src/CardColAppl.cpp:313
 msgid "Human"
 msgstr ""
 
-#: src/CardColAppl.cpp:285
+#: src/CardColAppl.cpp:314
 msgid "Player 1"
 msgstr ""
 
-#: src/CardColAppl.cpp:286
+#: src/CardColAppl.cpp:315
 msgid "Player 2"
 msgstr ""
 
-#: src/CardColAppl.cpp:287
+#: src/CardColAppl.cpp:316
 msgid "Player 3"
 msgstr ""
 
-#: src/CardColAppl.cpp:341
+#: src/CardColAppl.cpp:370
 msgid "-warning: Error reading INI-file `%1'! %2\n"
 msgstr ""
 
-#: src/CardColAppl.cpp:383
+#: src/CardColAppl.cpp:412
 msgid "Compiled on"
 msgstr ""
 
-#: src/CardColAppl.cpp:385
+#: src/CardColAppl.cpp:414
 msgid ""
 "Copyright (C) 2002 - 2007 Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
@@ -593,7 +593,7 @@ msgstr ""
 "Copyright © 2002 - 2007 Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
 
-#: src/CardColAppl.cpp:396
+#: src/CardColAppl.cpp:425
 msgid ""
 "Available games:\n"
 "\n"
@@ -988,4 +988,20 @@ msgstr ""
 
 #: src/Jabberwocky.cpp:890
 msgid "Game ended"
+msgstr ""
+
+#: src/CardSizes.cpp:50
+msgid "Tiny"
+msgstr ""
+
+#: src/CardSizes.cpp:51
+msgid "Small"
+msgstr ""
+
+#: src/CardSizes.cpp:52
+msgid "Normal"
+msgstr ""
+
+#: src/CardSizes.cpp:53
+msgid "Big"
 msgstr ""
