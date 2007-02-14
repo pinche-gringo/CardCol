@@ -24,3 +24,4 @@ src/Settings.cpp
 src/GameTypes.cpp
 src/ChatDlg.cpp
 src/Jabberwocky.cpp
+src/CardSizes.cpp
