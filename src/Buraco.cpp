@@ -1194,7 +1194,9 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 	 // Only allow dropping of last card, if the game can be ended, or there
 	 // is still the reserve
 	 if (!canPlayCards (0, 1, iPile))
-	    throw Glib::ustring (_("You can't end the game (there's no \"cerrado\")!"));
+	    throw Glib::ustring (_(*unfinishedMonoPiles
+				   ? N_("You can't end the game (a pile of monos is not finished)!")
+				   : N_("You can't end the game (there's no \"cerrado\")!")));
 
 	 if ((pile->size () == 1)
 	     && isJoker (pile->getTopCard ())
@@ -1859,22 +1861,23 @@ bool Buraco::canPlayCards (unsigned int player, unsigned int cards,
    Check1 (hands[player].size () >= cards);
    Check1 (cards <= 7);
 
-   bool enoughCards ((hands[player].size () > (cards + 1)) || reserve[player & 1].size ());
-   bool canPlay (enoughCards
-		 || (points[player & 1] > 100)
-		 || ((pile != -1U)
-		     && (((tablePiles[player & 1][pile]->size () + cards) >= 7)
-			 || (((tablePiles[player & 1][pile]->size () + cards) == 6)
-			     && ((hands[player].size () - cards) == 1)
-			     && canClosePile (player, pile))))
-		 || (cards >= 7));
-   TRACE1 ("Buraco::canPlayCards (3x unsigned int) - Can play: " << (canPlay ? "Yes" : "No"));
-   return ((unfinishedMonoPiles[player & 1] && !enoughCards)
-	   ? (((unfinishedMonoPiles[player & 1] == 1)
-	       && ((pile != -1U)
-		   ? (tablePiles[player & 1][pile]->getPoints () < 0) : false))
-	      ? canPlay : false)
-	   : canPlay);
+   bool missingCards ((hands[player].size () <= (cards + 1)) && reserve[player & 1].empty ());
+   if (missingCards) {
+      bool canPlay ((points[player & 1] > 100)
+		    || ((pile != -1U)
+			&& (((tablePiles[player & 1][pile]->size () + cards) >= 7)
+			    || (((tablePiles[player & 1][pile]->size () + cards) == 6)
+				&& ((hands[player].size () - cards) == 1)
+				&& canClosePile (player, pile))))
+		    || (cards >= 7));
+      TRACE1 ("Buraco::canPlayCards (3x unsigned int) - Can play: " << (canPlay ? "Yes" : "No"));
+      return ((unfinishedMonoPiles[player & 1] > 1)
+	      || ((unfinishedMonoPiles[player & 1] == 1)
+		  && (pile != -1U)
+		  && (tablePiles[player & 1][pile]->getPoints () > 0))
+	      ? false : canPlay);
+   }
+   return true;
 }
 
 //----------------------------------------------------------------------------
