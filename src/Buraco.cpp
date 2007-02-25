@@ -1874,7 +1874,7 @@ bool Buraco::canPlayCards (unsigned int player, unsigned int cards,
       return ((unfinishedMonoPiles[player & 1] > 1)
 	      || ((unfinishedMonoPiles[player & 1] == 1)
 		  && (pile != -1U)
-		  && (tablePiles[player & 1][pile]->getPoints () > 0))
+		  && (tablePiles[player & 1][pile]->getPoints () >= 0))
 	      ? false : canPlay);
    }
    return true;
