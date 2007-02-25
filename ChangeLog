@@ -1,3 +1,36 @@
+2007-02-25  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.8.21 documented
+
+	* INSTALL: Removed explaination of make doc
+
+	* README: Copyright to 2007
+
+	* po/de.po, po/en.po, po/es.po, po/tr.po: Actualised
+
+	* configure.in: Version to 0.8.21
+
+	* src/Buraco.cpp:
+	  Fixed (last attempt to fix) check for unfinished mono-pile in canPlayCards()
+
+2007-02-20  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp:
+	  Fixed ending game with unfinished mono-pile; Improved info-msg
+
+	* doc/CardCol.html.en: Grammar fix
+
+2007-02-14  Markus Schwab  <g17m0@lycos.com>
+
+	* po/POTFILES.in: Added src/CardSizes.cpp
+
+	* po/de.po, po/en.po, po/es.po, po/tr.po:
+	  Added forgotten translations of the card sizes
+
+2007-02-07  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardColAppl.cpp: Help shows new entries of INI-file
+
 2007-02-07  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Changes of V0.8.20 documented

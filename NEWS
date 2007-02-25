@@ -1,3 +1,13 @@
+ Overview of changes in version 0.8.21:
+
+  - Help shows news INI-file entries
+  - Added forgotten translations of the card sizes
+  - Fixed english documentation
+  - Buraco: Fixed players being able to end game with unfinished mono-pile
+  - Buraco: Improved info-message (about "Can't end game")
+  - Actualised README and INSTALL
+
+
  Overview of changes in version 0.8.20:
 
   - Size of cards can be changed (in the settings)
