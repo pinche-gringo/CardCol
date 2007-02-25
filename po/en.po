@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.8 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2007-02-14 21:28+0100\n"
+"POT-Creation-Date: 2007-02-25 16:20+0100\n"
 "PO-Revision-Date: 2005-05-13 12:08-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -24,7 +24,7 @@ msgid "You must first play the visible cards!"
 msgstr ""
 
 #: src/Rovhult.cpp:370 src/Rovhult.cpp:507 src/Buraco.cpp:744
-#: src/Buraco.cpp:857 src/Buraco.cpp:1067 src/Buraco.cpp:1284
+#: src/Buraco.cpp:857 src/Buraco.cpp:1067 src/Buraco.cpp:1286
 #: src/Machiavelli.cpp:767 src/Machiavelli.cpp:780
 msgid "Invalid move"
 msgstr ""
@@ -256,7 +256,7 @@ msgstr ""
 msgid "_Change game"
 msgstr ""
 
-#: src/CardCol.cpp:737 src/Buraco.cpp:2239 src/Settings.cpp:150
+#: src/CardCol.cpp:737 src/Buraco.cpp:2242 src/Settings.cpp:150
 msgid "_Buraco"
 msgstr ""
 
@@ -603,7 +603,7 @@ msgstr ""
 msgid "Select 3 cards to exchange with %1"
 msgstr ""
 
-#: src/Hearts.cpp:442 src/Buraco.cpp:1761
+#: src/Hearts.cpp:442 src/Buraco.cpp:1763
 msgid "Round ended"
 msgstr ""
 
@@ -682,11 +682,11 @@ msgstr ""
 msgid "There are no cards to make a valid new pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1177
+#: src/Buraco.cpp:1177 src/Buraco.cpp:1198
 msgid "You can't end the game (a pile of monos is not finished)!"
 msgstr ""
 
-#: src/Buraco.cpp:1179 src/Buraco.cpp:1197
+#: src/Buraco.cpp:1179 src/Buraco.cpp:1199
 msgid "You can't end the game (there's no \"cerrado\")!"
 msgstr ""
 
@@ -698,53 +698,53 @@ msgstr ""
 msgid "This card does not fit on that pile!"
 msgstr ""
 
-#: src/Buraco.cpp:1419
+#: src/Buraco.cpp:1421
 msgid "%1 picked up the burraco"
 msgstr ""
 
-#: src/Buraco.cpp:1587
+#: src/Buraco.cpp:1589
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr ""
 
-#: src/Buraco.cpp:1589 src/Buraco.cpp:1591
+#: src/Buraco.cpp:1591 src/Buraco.cpp:1593
 msgid "N"
 msgstr ""
 
-#: src/Buraco.cpp:1589 src/Buraco.cpp:1591
+#: src/Buraco.cpp:1591 src/Buraco.cpp:1593
 msgid "Y"
 msgstr ""
 
-#: src/Buraco.cpp:1704
+#: src/Buraco.cpp:1706
 msgid ""
 "Team %1\n"
 "%2/%3"
 msgstr ""
 
-#: src/Buraco.cpp:1767
+#: src/Buraco.cpp:1769
 msgid "Game ended; Team %1 won"
 msgstr ""
 
-#: src/Buraco.cpp:2137
+#: src/Buraco.cpp:2140
 msgid "Invalid pile!"
 msgstr ""
 
-#: src/Buraco.cpp:2140
+#: src/Buraco.cpp:2143
 msgid "Invalid card!"
 msgstr ""
 
-#: src/Buraco.cpp:2202
+#: src/Buraco.cpp:2205
 msgid "Invalid target specification!"
 msgstr ""
 
-#: src/Buraco.cpp:2241
+#: src/Buraco.cpp:2244
 msgid "<ctl>Z"
 msgstr ""
 
-#: src/Buraco.cpp:2244 src/Machiavelli.cpp:1800
+#: src/Buraco.cpp:2247 src/Machiavelli.cpp:1800
 msgid "_Sort cards (by number)"
 msgstr ""
 
-#: src/Buraco.cpp:2248 src/Machiavelli.cpp:1804
+#: src/Buraco.cpp:2251 src/Machiavelli.cpp:1804
 msgid "Sort cards (by _colour)"
 msgstr ""
 
