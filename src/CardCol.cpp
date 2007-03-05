@@ -1196,7 +1196,7 @@ const char* CardgameCollection::getHelpfile () {
 
    if (game) {
       std::string name (game->name ());
-      unsigned int pos;
+      size_t pos;
       while ((pos = name.find (" ")) != std::string::npos)
          name.replace (pos, 1, 0, '\0');
 
@@ -1289,11 +1289,11 @@ void* CardgameCollection::changeCards (void* opt) {
    void* rc (NULL);
    bool enable (false);
    try {
-      if ((unsigned int)opt & 1) {
+      if ((unsigned long)opt & 1) {
          cardFaces.loadDecks (options.co.decks);
 	 cards.getCards ().size () ? cards.update () : cards.addPacket (cardFaces);
       }
-      if ((unsigned int)opt & 2)
+      if ((unsigned long)opt & 2)
          cardFaces.loadBack (options.co.back);
 
       enable = true;
