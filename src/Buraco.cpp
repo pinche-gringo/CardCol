@@ -1871,11 +1871,11 @@ bool Buraco::canPlayCards (unsigned int player, unsigned int cards,
 				&& canClosePile (player, pile))))
 		    || (cards >= 7));
       TRACE1 ("Buraco::canPlayCards (3x unsigned int) - Can play: " << (canPlay ? "Yes" : "No"));
-      return ((unfinishedMonoPiles[player & 1] > 1)
+      return ((!unfinishedMonoPiles[player & 1])
 	      || ((unfinishedMonoPiles[player & 1] == 1)
 		  && (pile != -1U)
 		  && (tablePiles[player & 1][pile]->getPoints () >= 0))
-	      ? false : canPlay);
+	      ? canPlay : false);
    }
    return true;
 }
@@ -2308,6 +2308,9 @@ void Buraco::undoLast (unsigned int player) {
       Check3 (static_cast<int> (src.getPotentialPoints ()) == src.getPoints ());
       points[player & 1] -= src.getPoints ();
       updateInfo ();
+
+      if (src.getPosFirst () > 6)
+	 ++unfinishedMonoPiles[player & 1];
    }
 
    hands[player].insert (src.remove (undo.destPos), undo.srcPos);
