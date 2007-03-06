@@ -307,8 +307,8 @@ void CardImages::loadBack (const std::string& back) throw (YGP::FileError) {
 /// Resizes all previous loaded cards
 //-----------------------------------------------------------------------------
 void CardImages::resizeAll () {
-   back_ = back_->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
+   back_ = back_->scale_simple (WIDTH, HEIGHT, Gdk::INTERP_BILINEAR);
    for (std::vector<Glib::RefPtr<Gdk::Pixbuf> >::iterator i (cards_.begin ());
 	i != cards_.end (); ++i)
-      *i = (*i)->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
+      *i = (*i)->scale_simple (WIDTH, HEIGHT, Gdk::INTERP_BILINEAR);
 }
