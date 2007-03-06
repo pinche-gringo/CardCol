@@ -33,7 +33,9 @@ class CardImages {
    ~CardImages ();
 
    unsigned int addImage (const char* const* data) {
-      cards_.push_back (Gdk::Pixbuf::create_from_xpm_data (data));
+      Glib::RefPtr<Gdk::Pixbuf> card (Gdk::Pixbuf::create_from_xpm_data (data));
+      card = card->scale_simple (WIDTH, HEIGHT, Gdk::INTERP_BILINEAR);
+      cards_.push_back (card);
       return cards_.size () - 1; }
    void delImage (unsigned int pos) {
       cards_.erase (cards_.begin () + pos); }
