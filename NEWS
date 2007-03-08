@@ -1,3 +1,11 @@
+ Overview of changes in version 0.8.22:
+
+  - Buraco: Fixed keeping state after undoing finishing a pile of monos
+  - Buraco: Fixed being able to end game with unfinished mono-pile (again)
+  - Buraco: Joker has the same size as other cards
+  - Can be compiled under x86_64
+
+
  Overview of changes in version 0.8.21:
 
   - Help shows news INI-file entries

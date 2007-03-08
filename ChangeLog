@@ -1,3 +1,27 @@
+2007-03-08  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.8.22 documented
+
+	* po/de.po, po/en.po, po/es.po, po/tr.po: Actualised
+
+	* src/Hearts.cpp: Compiles under x86_64; Checks disabled
+
+2007-03-06  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardImgs.h: Resizing added images
+
+	* Common/CardImgs.cpp:
+	  Don't use class-spezifier to access constant within the class
+
+2007-03-05  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.in: Version to 0.8.22
+
+	* src/CardCol.cpp, src/CardColNet.cpp: Can be compiled under x86_64
+
+	* src/Buraco.cpp:
+	  Fixed undoing finshing mono-pile; Fixed ending game with unfinished mono-pile
+
 2007-02-25  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Changes of V0.8.21 documented
