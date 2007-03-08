@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.8 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2007-02-25 16:20+0100\n"
+"POT-Creation-Date: 2007-03-08 20:11+0100\n"
 "PO-Revision-Date: 2005-05-13 12:08-0400\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: src/Rovhult.cpp:197 src/Hearts.cpp:338
+#: src/Rovhult.cpp:197 src/Hearts.cpp:337
 msgid "Waiting for other player to exchange their cards ..."
 msgstr ""
 
@@ -89,12 +89,12 @@ msgstr ""
 msgid "_Twopart"
 msgstr ""
 
-#: src/Twopart.cpp:1225 src/Hearts.cpp:1041 src/SgtMayor.cpp:1206
+#: src/Twopart.cpp:1225 src/Hearts.cpp:1040 src/SgtMayor.cpp:1206
 #: src/Jabberwocky.cpp:306
 msgid "_Sort won cards (by number)"
 msgstr ""
 
-#: src/Twopart.cpp:1229 src/Hearts.cpp:1045 src/SgtMayor.cpp:1210
+#: src/Twopart.cpp:1229 src/Hearts.cpp:1044 src/SgtMayor.cpp:1210
 #: src/Jabberwocky.cpp:310
 msgid "Sort won cards (by _colour)"
 msgstr ""
@@ -599,43 +599,43 @@ msgid ""
 "\n"
 msgstr ""
 
-#: src/Hearts.cpp:199
+#: src/Hearts.cpp:198
 msgid "Select 3 cards to exchange with %1"
 msgstr ""
 
-#: src/Hearts.cpp:442 src/Buraco.cpp:1763
+#: src/Hearts.cpp:441 src/Buraco.cpp:1763
 msgid "Round ended"
 msgstr ""
 
-#: src/Hearts.cpp:447
+#: src/Hearts.cpp:446
 msgid "Game ended; %1 won"
 msgstr ""
 
-#: src/Hearts.cpp:494 src/Jabberwocky.cpp:342
+#: src/Hearts.cpp:493 src/Jabberwocky.cpp:342
 msgid "Play first cards with an equal colour as the first played one!"
 msgstr ""
 
-#: src/Hearts.cpp:501
+#: src/Hearts.cpp:500
 msgid "The game must be started with the two of clubs!"
 msgstr ""
 
-#: src/Hearts.cpp:507
+#: src/Hearts.cpp:506
 msgid "You can't start with a heart, if they have not been played before!"
 msgstr ""
 
-#: src/Hearts.cpp:513
+#: src/Hearts.cpp:512
 msgid "The queen of spades can't be played in the first round!"
 msgstr ""
 
-#: src/Hearts.cpp:517
+#: src/Hearts.cpp:516
 msgid "Hearts can't be played in the first round!"
 msgstr ""
 
-#: src/Hearts.cpp:522 src/GameTypes.cpp:58
+#: src/Hearts.cpp:521 src/GameTypes.cpp:58
 msgid "Hearts"
 msgstr ""
 
-#: src/Hearts.cpp:1039
+#: src/Hearts.cpp:1038
 msgid "H_earts"
 msgstr ""
 
