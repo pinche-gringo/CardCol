@@ -34,7 +34,6 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -524,7 +523,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
 	 return false;
       }
 
-      Check3 ((unsigned int)playColour < (sizeof (aPlayed) / sizeof (aPlayed[0])));
+      Check3 ((unsigned)playColour < (unsigned)(sizeof (aPlayed) / sizeof (aPlayed[0])));
       aPlayed[playColour]++;
    }
 
