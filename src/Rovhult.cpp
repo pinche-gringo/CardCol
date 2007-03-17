@@ -36,8 +36,6 @@
 #include <gtkmm/accelgroup.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 1
-#define TRACELEVEL 0
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -425,9 +423,6 @@ bool Rovhult::playFromPile (unsigned int pile) {
 
    setNextPlayer (doPileSelected (0, pile));
    makeNextMoves ();
-
-   if (nextAvailablePlayer (NUM_PLAYERS - 1) && noMoreHumans ())
-      cEndgame = 1;
    return false;
 }
 
@@ -546,8 +541,6 @@ void Rovhult::handSelected (unsigned int pos) {
    playCardsFromHand (0, start, pos);
 
    setNextPlayer (executeMove (0, card.number ()));
-   if (nextAvailablePlayer (NUM_PLAYERS - 1) && noMoreHumans ())
-      cEndgame = 1;
 
    makeNextMoves ();
 }
@@ -599,11 +592,13 @@ int Rovhult::executeMove (unsigned int player, CardWidget::NUMBERS nr) {
    Glib::ustring stat;
 
    // If last 4 cards have the same number or ten was played: Don't increase
-   // player (except of course, if actual player don't have anymore cards)
-   if (!((nr == cardNuke) || clearPlayedIf4Equal ())
-       || (static_cast<int> (player) != nextAvailablePlayer ((player - 1) & 0x3))) {
-      player = nextAvailablePlayer (player);
+   // player (except of course, if actual player doesn't have any cards left)
+   bool finished (static_cast<int> (player) != nextAvailablePlayer ((player - 1) & 0x3));
+   if (!((nr == cardNuke) || clearPlayedIf4Equal ()) || finished) {
+      if (!player && finished && noMoreHumans ())
+	 cEndgame = 1;
 
+      player = nextAvailablePlayer (player);
       Check3 (actPlayers.size () > player);
       Check3 (actPlayers[player]);
       if (nextAvailablePlayer (player) == -1) {
@@ -747,7 +742,7 @@ unsigned int Rovhult::numberOfEqualTopCards () const {
    CardWidget& card (played.getTopCard ());
    while (i <= nrCards) {
       TRACE9 ("Rovhult::numberOfEqualTopCards () const - Checking "
-              << played[nrCards - i] << " with " << card);
+              << *played[nrCards - i] << " with " << card);
 
       if (played[nrCards - i]->number () != card.number ()) {
          TRACE8 ("Rovhult::numberOfEqualTopCards () const - found " << i);
@@ -1687,7 +1682,7 @@ void Rovhult::resizeCards () {
 /// \returns bool: True, if only computer-players are left
 //-----------------------------------------------------------------------------
 bool Rovhult::noMoreHumans () const {
-   int first (nextAvailablePlayer (1));
+   int first (nextAvailablePlayer (0));
    int i (first);
    do {
       if (typeid (*actPlayers[i]) != typeid (ComputerPlayer))
