@@ -253,7 +253,7 @@ void Settings::okEvent () {
 Settings* Settings::create (const Glib::RefPtr<Gdk::Window>& parent,
 			    Options& options) {
    if (instance == NULL) {
-      new Settings (options); Check3 (instance);
+      instance = new Settings (options); Check3 (instance);
       instance->get_window ()->set_transient_for (parent);
       instance->signal_response ().connect (mem_fun (*instance, &Settings::free));
    }
