@@ -1,3 +1,12 @@
+ Overview of changes in version 0.8.23:
+
+  - Røvhult: Fixed check if end-game runs between computer-player only
+  - Røvhult: Fixed trap, when human ends the game as second-to-last player
+  - Røvhult: Optimised code
+  - Fixed potential crash when creating settings-dialog
+  - Trying to use better defaults for available card decks
+
+
  Overview of changes in version 0.8.22:
 
   - Buraco: Fixed keeping state after undoing finishing a pile of monos

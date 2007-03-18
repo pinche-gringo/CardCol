@@ -1,3 +1,24 @@
+2007-03-18  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.8.23 documented
+
+	* po/de.po, po/en.po, po/es.po, po/tr.po: Actualised
+
+	* src/CardCol.cpp, src/CardOptions.h:
+	  Trying to use better defaults for available card decks
+
+	* src/Rovhult.cpp, src/Rovhult.h:
+	  Removed playerCanContinue*(); findCards2Play() handles can't-continue-case
+
+2007-03-17  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.in: Version to 0.8.23
+
+	* src/Settings.cpp: Storing pointer to new dialog in instance
+
+	* src/Rovhult.cpp:
+	  Fixed end-game between computer-players (including a trap)
+
 2007-03-08  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Changes of V0.8.22 documented
