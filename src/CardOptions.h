@@ -42,8 +42,8 @@ class CardOptions : public YGP::Entity {
    CardOptions (const CardOptions& other);
    const CardOptions& operator= (const CardOptions& other);
 
-   std::string  decks;         // %attrib%; Front;   CARDDECKS_DIR "cards-default/"
-   std::string  back;          // %attrib%; Back;    CARDDECKS_DIR "decks/deck1.png"
+   std::string  decks;         // %attrib%; Front;   CARDDECKS_DIR CARDDECKS_FRONT
+   std::string  back;          // %attrib%; Back;    CARDDECKS_DIR 
 };
 
 #endif
