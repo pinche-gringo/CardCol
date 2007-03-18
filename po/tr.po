@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.8 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2007-03-08 20:11+0100\n"
+"POT-Creation-Date: 2007-03-18 18:26+0100\n"
 "PO-Revision-Date: 2005-05-13 12:08-0400\n"
 "Last-Translator: Adeviye Yilmaz <adeviyeyilmaz@hotmail.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -15,45 +15,45 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: src/Rovhult.cpp:197 src/Hearts.cpp:337
+#: src/Rovhult.cpp:195 src/Hearts.cpp:337
 msgid "Waiting for other player to exchange their cards ..."
 msgstr "Diðer oyuncularýn kartlarýný deðiþtirmeleri bekleniyor ..."
 
-#: src/Rovhult.cpp:368
+#: src/Rovhult.cpp:366
 msgid "You must first play the visible cards!"
 msgstr "Ýlk önce uygun kartlarý oynamalýsýnýz!"
 
-#: src/Rovhult.cpp:370 src/Rovhult.cpp:507 src/Buraco.cpp:744
+#: src/Rovhult.cpp:368 src/Rovhult.cpp:502 src/Buraco.cpp:744
 #: src/Buraco.cpp:857 src/Buraco.cpp:1067 src/Buraco.cpp:1286
 #: src/Machiavelli.cpp:767 src/Machiavelli.cpp:780
 msgid "Invalid move"
 msgstr "Geçersiz taþýma"
 
-#: src/Rovhult.cpp:496
+#: src/Rovhult.cpp:491
 msgid "After a %1, the played card must be equal or smaller!"
 msgstr "Bir %1 sonra, oynanan kart eþit veya küçük olmalýdýr"
 
-#: src/Rovhult.cpp:502
+#: src/Rovhult.cpp:497
 msgid "The played card must be equal or bigger!"
 msgstr "Oynanan kart eþit veya büyük olmalýdýr!"
 
-#: src/Rovhult.cpp:611 src/Twopart.cpp:407 src/Machiavelli.cpp:1584
+#: src/Rovhult.cpp:606 src/Twopart.cpp:407 src/Machiavelli.cpp:1584
 msgid "%1 lost"
 msgstr "%1 yenildi"
 
-#: src/Rovhult.cpp:619
+#: src/Rovhult.cpp:614
 msgid "Skipping %1; "
 msgstr "%1 atlýyor; "
 
-#: src/Rovhult.cpp:625
+#: src/Rovhult.cpp:620
 msgid "Pile cleared; "
 msgstr "Yýðýn temizlendi"
 
-#: src/Rovhult.cpp:791
+#: src/Rovhult.cpp:717
 msgid "%1 can't continue -> Taking the whole pile. "
 msgstr "%1 devam edememiyor -> yýðýn bitti"
 
-#: src/Rovhult.cpp:998
+#: src/Rovhult.cpp:924
 msgid ""
 "Exchange the cards in your hand with the one on the table (with drag and "
 "drop) - click on one card to start playing"
@@ -91,7 +91,7 @@ msgstr[1] ""
 msgid "First part ended; Part 2 starts %1"
 msgstr "Birinci bölüm bitti; "
 
-#: src/Twopart.cpp:1223 src/CardCol.cpp:768
+#: src/Twopart.cpp:1223 src/CardCol.cpp:778
 msgid "_Twopart"
 msgstr "_Twopart"
 
@@ -256,126 +256,126 @@ msgstr ""
 "\n"
 "Sebep: %1"
 
-#: src/CardCol.cpp:714
+#: src/CardCol.cpp:724
 msgid "_Game"
 msgstr "_Oyun"
 
-#: src/CardCol.cpp:717
+#: src/CardCol.cpp:727
 msgid "_End"
 msgstr "_Bitir"
 
-#: src/CardCol.cpp:720
+#: src/CardCol.cpp:730
 msgid "_Connect ..."
 msgstr "_Baðlan ..."
 
-#: src/CardCol.cpp:721
+#: src/CardCol.cpp:731
 msgid "<shft><ctl>C"
 msgstr "<shft><ctl>C"
 
-#: src/CardCol.cpp:724
+#: src/CardCol.cpp:734
 msgid "_Chat ..."
 msgstr "_Sohbet ..."
 
-#: src/CardCol.cpp:725
+#: src/CardCol.cpp:735
 msgid "<alt><ctl>C"
 msgstr "<alt><ctl>C"
 
-#: src/CardCol.cpp:732
+#: src/CardCol.cpp:742
 msgid "_Options"
 msgstr "_Seçenekler"
 
-#: src/CardCol.cpp:733
+#: src/CardCol.cpp:743
 msgid "_Change game"
 msgstr "_Oyun deðiþtir"
 
-#: src/CardCol.cpp:737 src/Buraco.cpp:2242 src/Settings.cpp:150
+#: src/CardCol.cpp:747 src/Buraco.cpp:2242 src/Settings.cpp:150
 msgid "_Buraco"
 msgstr "_Buraco"
 
-#: src/CardCol.cpp:738
+#: src/CardCol.cpp:748
 msgid "<ctl>B"
 msgstr "<ctl>B"
 
-#: src/CardCol.cpp:742 src/Settings.cpp:160
+#: src/CardCol.cpp:752 src/Settings.cpp:160
 msgid "_Hearts"
 msgstr "_Hearts"
 
-#: src/CardCol.cpp:743
+#: src/CardCol.cpp:753
 msgid "<ctl>H"
 msgstr "<ctl>H"
 
-#: src/CardCol.cpp:747 src/Jabberwocky.cpp:304
+#: src/CardCol.cpp:757 src/Jabberwocky.cpp:304
 msgid "_Jabberwocky"
 msgstr "_Jabberwocky"
 
-#: src/CardCol.cpp:748
+#: src/CardCol.cpp:758
 msgid "<ctl>J"
 msgstr "<ctl>J"
 
-#: src/CardCol.cpp:752 src/Machiavelli.cpp:1792
+#: src/CardCol.cpp:762 src/Machiavelli.cpp:1792
 msgid "_Machiavelli"
 msgstr "_Machiavelli"
 
-#: src/CardCol.cpp:753
+#: src/CardCol.cpp:763
 msgid "<ctl>M"
 msgstr "<ctl>M"
 
-#: src/CardCol.cpp:758 src/Settings.cpp:186
+#: src/CardCol.cpp:768 src/Settings.cpp:186
 msgid "_Rovhult"
 msgstr "_Røvhult"
 
-#: src/CardCol.cpp:759
+#: src/CardCol.cpp:769
 msgid "<ctl>R"
 msgstr "<ctl>R"
 
-#: src/CardCol.cpp:763 src/SgtMayor.cpp:1204
+#: src/CardCol.cpp:773 src/SgtMayor.cpp:1204
 msgid "_Sgt. Mayor"
 msgstr "_Sgt. Mayor"
 
-#: src/CardCol.cpp:764
+#: src/CardCol.cpp:774
 msgid "<ctl>Y"
 msgstr "<ctl>Y"
 
-#: src/CardCol.cpp:769
+#: src/CardCol.cpp:779
 msgid "<ctl>T"
 msgstr "<ctl>T"
 
-#: src/CardCol.cpp:773
+#: src/CardCol.cpp:783
 msgid "Change _decks ..."
 msgstr "Deðiþtir _desteleri ..."
 
-#: src/CardCol.cpp:774
+#: src/CardCol.cpp:784
 msgid "<ctl>D"
 msgstr "<ctl>D"
 
-#: src/CardCol.cpp:776
+#: src/CardCol.cpp:786
 msgid "Change _names ..."
 msgstr "Deðiþtir _isimleri"
 
-#: src/CardCol.cpp:777
+#: src/CardCol.cpp:787
 msgid "<ctl>C"
 msgstr "<ctl>C"
 
-#: src/CardCol.cpp:780
+#: src/CardCol.cpp:790
 msgid "F9"
 msgstr "F9"
 
-#: src/CardCol.cpp:783
+#: src/CardCol.cpp:793
 msgid "_Save preferences"
 msgstr "_Tercihleri kaydet"
 
-#: src/CardCol.cpp:998
+#: src/CardCol.cpp:1008
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 "Bir oyun zaten çalýþýyor. Onu sonlandýrýp baþka birini baþlatmak "
 "istediðinizden emin misiniz?"
 
-#: src/CardCol.cpp:1021
+#: src/CardCol.cpp:1031
 msgid "Do you really want to end the game?"
 msgstr "Oyunu sonlandýrmak istediðinizden emin misiniz?"
 
-#: src/CardCol.cpp:1122
+#: src/CardCol.cpp:1132
 msgid ""
 "Couldn't save options (to file %1)!\n"
 "\n"
@@ -385,11 +385,11 @@ msgstr ""
 "\n"
 "Sebep: %2."
 
-#: src/CardCol.cpp:1135
+#: src/CardCol.cpp:1145
 msgid "A game is running. Do you really want to quit?"
 msgstr "Bir oyun çalýþýyor. Çýkmak istediðinizden emin misiniz?"
 
-#: src/CardCol.cpp:1215
+#: src/CardCol.cpp:1225
 msgid ""
 "Copyright (C) 2002 - 2007 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
@@ -401,19 +401,19 @@ msgstr ""
 "\n"
 "Compiled on %1 at %2"
 
-#: src/CardCol.cpp:1355
+#: src/CardCol.cpp:1365
 msgid "User canceled"
 msgstr "Kullanýcý iptal etti"
 
-#: src/CardCol.cpp:1383
+#: src/CardCol.cpp:1393
 msgid "Loading cardimages ..."
 msgstr "Kart resimleri yükleniyor ..."
 
-#: src/CardCol.cpp:1402
+#: src/CardCol.cpp:1412
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Ctrl+N (veya Oyun -> Yeni) ile yeni bir oyuna baþla"
 
-#: src/CardCol.cpp:1474
+#: src/CardCol.cpp:1484
 msgid ""
 "Invalid values for Rovhult's special cards!\n"
 "Resetting them to default values."
