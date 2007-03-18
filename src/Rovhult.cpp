@@ -644,75 +644,6 @@ void Rovhult::takeCards () {
 }
 
 //-----------------------------------------------------------------------------
-/// Checks if the passed pile has a card which can be played
-/// \param player: ID of player to analyze
-/// \param card: Last played card
-//-----------------------------------------------------------------------------
-bool Rovhult::playerCanContinue (unsigned int player, CardWidget::NUMBERS card) const {
-   TRACE3 ("Rovhult::playerCanContinue (unsigned int, CardWidget::NUMBERS) const - "
-           << player << "; Card: " << card);
-   Check3 (player < NUM_PLAYERS);
-
-   if (card == CardWidget::UNREACHABLE)
-      return false;
-
-   if (players[player].hand.size ())
-      return playerHandCanContinue (players[player].hand, card);
-
-   // Check pile: Analyze only visible cards; if there are none, return true
-   bool hasNoVisibleCards (true);
-   for (int i (0); i < 3; ++i)
-      if (players[player].reserve[i].size () > 1) {
-         TRACE5 ("Rovhult::playerCanContinue (unsigned int, CardWidget::NUMBERS) const"
-                 " - Checking pile " << i << "; "
-                 << players[player].reserve[i].size () << " cards");
-         hasNoVisibleCards = false;
-
-         CardWidget::NUMBERS nr (players[player].reserve[i].getTopCard ().number ());
-         if ((nr == CardWidget::TWO) || (nr == cardNuke))
-            return true;
-	 else {
-            TRACE7 ("Rovhult::playerCanContinue (unsigned int, CardWidget::NUMBERS) const"
-                    " - Value of card: " << nr);
-            if ((card == cardReverse)
-                ? (nr <= cardReverse) : (nr >= card))
-               return true;
-	 }
-      } // endif pile contains cards
-
-   return hasNoVisibleCards ? (card != CardWidget::UNREACHABLE) : false;
-}
-
-//-----------------------------------------------------------------------------
-/// Checks if the passed pile has a card which can be played
-/// \param player: ID of player to analyze
-/// \param card: Last played card
-//-----------------------------------------------------------------------------
-bool Rovhult::playerHandCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const {
-   TRACE3 ("Rovhult::playerHandCanContinue (const ICardPile&, CardWidget::NUMBERS) const"
-           << " - Card " << card << " in " << pile.size () << " cards");
-   Check3 (pile.size ());
-
-   // Check if first/last is smaller/bigger then passed one
-   if (card == cardReverse) {
-      if (pile[0]->number () <= card)
-         return true;
-   }
-   else {
-      if (pile[pile.size () - 1]->number () >= card)
-         return true;
-   }
-
-   TRACE3 ("Rovhult::playerHandCanContinue (const ICardPile&, CardWidget::NUMBERS"
-           " - Special check");
-   // Simple check failed -> Check for special card (2 or 10)
-   if (pile[0]->number () == CardWidget::TWO)
-      return true;
-
-   return pile.exists (cardNuke);
-}
-
-//-----------------------------------------------------------------------------
 /// Fills up the passed pile til it contains the specified number of cards
 /// \param pile: Pile to fill up
 /// \param minCards: Minimal number of cards pile should hold
@@ -1116,8 +1047,6 @@ void Rovhult::showCards2Play (unsigned int player) {
            "For player " << player);
    Check3 (player < NUM_PLAYERS);
 
-   findCard2Play (player, pos1Play, pos2Play);
-   Check3 (pos1Play <= pos2Play);
    if (players[player].hand.size ())
       flipCards2Play (players[player].hand, pos1Play, pos2Play);
    else {
@@ -1155,12 +1084,16 @@ int Rovhult::makeMove (unsigned int player) {
    if (pos2Play == -1U) {
       if (cEndgame)
 	 ++cEndgame;
-      if (((cEndgame > 30) && !(cEndgame & 0x7) && players[player].hand.size ())
-	  ? selectRandomCard (player)
-	  : playerCanContinue (player,
-			       (played.size ()
-				? played.getTopCard ().number () : CardWidget::TWO)))
-         showCards2Play (player);
+      if ((cEndgame > 30) && !(cEndgame & 0x7) && players[player].hand.size ())
+	 selectRandomCard (player);
+      else
+	 findCard2Play (player, pos1Play, pos2Play);
+      TRACE8 ("Rovhult::makeMove (unsigned int) - Player " << player << "; Card: " << pos2Play);
+
+      if (pos2Play != -1U) {
+	 Check3 (pos1Play <= pos2Play);
+	 showCards2Play (player);
+      }
       else {
          if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER) {
             std::ostringstream msg;
@@ -1284,8 +1217,7 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
 
       // Check if no matching normal card is found or found card is
       // bigger than the played cardReverse (7). If so, use special
-      // card instead We know one card must match as
-      // playerCanContinue() reported this player as valid
+      // card instead.
       if ((start == -1U)
           || (played.size ()
               && ((played.getTopCard ().number () == cardReverse)
@@ -1297,11 +1229,15 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
             start = 0;
          else {
             start = players[player].hand.findFirstEqualOrBigger (cardNuke);
-            Check3 (start != -1U);
-            Check3 (players[player].hand[start]->number () == cardNuke);
+            if ((start == -1U)
+		|| (players[player].hand[start]->number () != cardNuke)) {
+	       end = start = -1U;
+	       TRACE7 ("Rovhult::findCard2Play (unsigned int) - Can't continue!");
+	       return;
+	    }
+	    TRACE7 ("Rovhult::findCard2Play (unsigned int) - Using special card "
+		    << *players[player].hand[start] << " at pos " << start);
          }
-         TRACE7 ("Rovhult::findCard2Play (unsigned int) - Using special card "
-                 << players[player].hand[start] << " at pos " << start);
       }
       else {
          Check3 ((cardMin == cardReverse)
@@ -1320,9 +1256,10 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
             }
          }
          else
-            // The search of CardWidget does not know (and shall not know anything)
-            // about the special meaning of tens, so skip them by yourself,
-            // but use a TWO (if available) in case a TEN is/are the last card(s)
+            // The search of CardWidget does (and shall) not know
+            // about the special meaning of tens, so skip them by
+            // yourself, but use a TWO (if available) in case a TEN
+            // is/are the last card(s)
             if ((end = skip (cardNuke, players[player].hand, start)) == -1U) {
                if (players[player].hand[0]->number () == CardWidget::TWO)
                   start = 0;
@@ -1697,7 +1634,10 @@ bool Rovhult::noMoreHumans () const {
 /// \param player: Player to analyse
 /// \returns bool: True, if the selected card is valid
 //-----------------------------------------------------------------------------
-bool Rovhult::selectRandomCard (unsigned int player) {
+void Rovhult::selectRandomCard (unsigned int player) {
    Check3 (players[player].hand.size ());
-   return cardValid (players[player].hand[rand () % players[player].hand.size ()]->number (), true);
+   pos2Play = rand () % players[player].hand.size ();
+   if (!cardValid (players[player].hand[pos2Play]->number (), true))
+      pos2Play = -1U;
+   pos1Play = pos2Play;
 }

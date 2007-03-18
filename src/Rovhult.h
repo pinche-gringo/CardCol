@@ -106,13 +106,10 @@ class Rovhult : public Game {
    bool clearPlayedIf4Equal ();
    void fillUpPile (ICardPile& pile, unsigned int minCards);
 
-   bool playerCanContinue (unsigned int player, CardWidget::NUMBERS card) const;
-   bool playerHandCanContinue (const ICardPile& pile, CardWidget::NUMBERS card) const;
-
    int makeTurn (unsigned int player);
    void findCard2Play (unsigned int player, unsigned int& start, unsigned int& end) const;
    void showCards2Play (unsigned int player);
-   bool selectRandomCard (unsigned int player);
+   void selectRandomCard (unsigned int player);
 
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
    bool getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
