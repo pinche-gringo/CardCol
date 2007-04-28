@@ -42,6 +42,7 @@ namespace YGP {
 class Player;
 class CardSet;
 class ICardPile;
+class CardWidget;
 
 
 /**Abstract base class providing usefull methods for card games.
@@ -148,7 +149,9 @@ class Game : public Gtk::Table {
 
    bool randomizeCardsToPile (ICardPile& pile) const;
    static void movePile (ICardPile& dest, ICardPile& source,
-                         unsigned int start = 0, int end = -1);
+                         unsigned int start = 0, int end = -1, bool animated = false);
+   static void animate (CardWidget& card);
+   static bool doAnimation (Gtk::Window* win, CardWidget* card, unsigned int steps);
 
    bool performCommand (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
    static bool stringToNumber (unsigned long& number, const char* text);
@@ -199,6 +202,8 @@ class Game : public Gtk::Table {
    Gtk::Menu*                    pMenuPopSort;
 
    std::string cardOrder;
+
+   static unsigned int ANIMATE_STEPS;
 };
 
 
