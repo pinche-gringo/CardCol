@@ -191,14 +191,14 @@ ScoreDlg::column::column ()
 //-----------------------------------------------------------------------------
 ScoreDlg::column::~column () {
 }
-      
+
 
 //-----------------------------------------------------------------------------
 /// Adds a value to the column
 /// \param points: Number to add to column
 //-----------------------------------------------------------------------------
 void ScoreDlg::column::addEntry (int points) {
-   Check3 (pBox); 
+   Check3 (pBox);
    NumLabel* label (Gtk::manage (new NumLabel (points)));
    label->set_alignment (1.0, 0);
    label->show ();
