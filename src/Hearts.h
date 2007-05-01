@@ -66,6 +66,7 @@ class Hearts : public Game {
    //@Section Event handling
    void cardSelected (unsigned int iCard);
    void takeCard (unsigned int iCard);
+   void cardTaken ();
 
    //@Section Virtual methods
    virtual int makeMove (unsigned int player);
@@ -76,6 +77,7 @@ class Hearts : public Game {
    unsigned int  calcNextPlayer (unsigned int player);
    unsigned int  check4Winner () const;
    void exchangeCards ();
+   void finishExchangeCards ();
    bool cardsExchanged (unsigned int cards);
    static unsigned int numberOfCards (const int aPositions[4], CardWidget::COLOURS colour);
    static unsigned int pointsOfPile (const ICardPile& pile);
