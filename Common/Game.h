@@ -149,9 +149,8 @@ class Game : public Gtk::Table {
 
    bool randomizeCardsToPile (ICardPile& pile) const;
    static void movePile (ICardPile& dest, ICardPile& source,
-                         unsigned int start = 0, int end = -1, bool animated = false);
-   static void animate (CardWidget& card);
-   static bool doAnimation (Gtk::Window* win, CardWidget* card, unsigned int steps);
+                         unsigned int start = 0, int end = -1);
+   void animateCard (ICardPile& dest, ICardPile& src, unsigned int pos);
 
    bool performCommand (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
    static bool stringToNumber (unsigned long& number, const char* text);
@@ -170,7 +169,7 @@ class Game : public Gtk::Table {
    Gtk::Statusbar& status;
    CardSet& cards;
 
-   std::vector<SigC::Connection> activeCards;
+   std::vector<sigc::connection> activeCards;
    const std::vector<Player*>&   actPlayers;
 
    YGP::Mutex& mxSerializeMsgs;
@@ -180,12 +179,21 @@ class Game : public Gtk::Table {
    unsigned int pos2Play;                    ///< Upper border of cards to play
    unsigned int pos1Play;                    ///< Lower border of cards to play
 
-   unsigned int ignoreNextMsg;
+   unsigned int ignoreNextMsg;        ///< Number of received message to ignore
+
+   /// Sets the callback to call after animating a card
+   /// \param slot: Callback (sigc-slot)
+   void setCBAnimation (const sigc::slot<void>& slot) {
+      cbAnimation = sigAnimation.connect (slot); }
 
  private:
    bool endGame (bool startNew);
 
    bool enableActWonCards ();
+
+   bool startAnimation (Gtk::Window* win, ICardPile* dest, CardWidget* card);
+   bool doAnimation (Gtk::Window* win, int x, int y, ICardPile* dest,
+			    CardWidget* card, unsigned int steps);
 
    const char* data;                                   // Data send from server
 
@@ -197,11 +205,15 @@ class Game : public Gtk::Table {
       int pendingTurn : 1;
    } stati;
 
-   std::vector<SigC::Connection> wonCards;     // Connections to show won cards
+   std::vector<sigc::connection> wonCards;     // Connections to show won cards
    ICardPile*                    pWonPile;
    Gtk::Menu*                    pMenuPopSort;
 
    std::string cardOrder;
+
+   /// Signal emitted, when the animation is finished
+   sigc::connection cbAnimation;
+   sigc::signal<void> sigAnimation;
 
    static unsigned int ANIMATE_STEPS;
 };

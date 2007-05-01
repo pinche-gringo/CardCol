@@ -38,6 +38,8 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/Socket.h>
@@ -228,10 +230,8 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
 /// \param source: Source pile
 /// \param start: First card to move
 /// \param end: Last card to move; -1: Move til end
-/// \param animated: Flag, if moving should be animated
 //-----------------------------------------------------------------------------
-void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start,
-                     int end, bool animated) {
+void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start, int end) {
    TRACE3 ("Game::movePile (ICardPile&, ICardPile&, unsigned int, int) - "
            "moving from pos " << start << " to " << end);
    Check3 (source.size ());
@@ -242,8 +242,6 @@ void Game::movePile (ICardPile& dest, ICardPile& source, unsigned int start,
    Check1 (end < static_cast<int> (source.size ()));
    Check1 (static_cast<int> (start) <= end);
 
-   if (animated)
-      animate (*source.at (start));
    do {
       dest.append (source.remove (start));
    } while ((unsigned int)end-- > start);
@@ -837,54 +835,108 @@ void Game::resizeCards () {
 
 //-----------------------------------------------------------------------------
 /// Animates the given card to the position in the passed pile
-/// \param card: Card to animate
+/// \param dest: Destination pile
+/// \param source: Source pile
+/// \param pos: Card of source to move
+/// \pre: The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
-void Game::animate (CardWidget& card) {
-   TRACE3 ("Game::animate (CardWidget&) - " << ANIMATE_STEPS);
+void Game::animateCard (ICardPile& dest, ICardPile& src, unsigned int pos) {
+   TRACE3 ("Game::animate (ICardPile&, ICardPile&, unsigned int) - " << ANIMATE_STEPS);
+   Check1 (pos <= src.size ());
 
    if (ANIMATE_STEPS) {
       // Get the position of the source card
+      CardWidget& card (*src.at (pos)); Check2 (card.get_window ());
       int x, y;
       card.get_window ()->get_origin (x, y);
-      TRACE9 ("Game::animate (CardWidget&) - Origen: " << x << '/' << y);
+      TRACE9 ("Game::animate (ICardPile&, ICardPile&, unsigned int) - Origin: " << x << '/' << y);
+      src.remove (pos);
 
+      // Create the animated window
       Gtk::Window* win (new Gtk::Window (Gtk::WINDOW_POPUP));
       win->add (*manage (new CardWidget (card)));
       win->move (x, y);
       win->show_all_children ();
       win->show ();
 
-      Glib::signal_idle ().connect
-	 (bind (ptr_fun (&Game::doAnimation), win, &card, ANIMATE_STEPS));
+      // Start the animation
+      if (dest.size ())
+	 startAnimation (win, &dest, &card);
+      else {
+	 dest.setTopCard (card);
+	 card.set_size_request (1, -1);
+	 Glib::signal_idle ().connect
+	    (bind (mem_fun (*this, &Game::startAnimation), win, &dest, &card));
+      }
+   }
+   else {
+      movePile (dest, src, pos, pos);
+
+      sigAnimation.emit ();
+      cbAnimation.disconnect ();
    }
 }
 
 //-----------------------------------------------------------------------------
+/// Calculates the movements for the animation
+/// \param win: Window to animate (move)
+/// \param dest: Pile where to animate the window to
+/// \param card: Card to insert at target
+/// \returns bool: Always false
+//-----------------------------------------------------------------------------
+bool Game::startAnimation (Gtk::Window* win, ICardPile* dest, CardWidget* card) {
+   TRACE6 ("Game::startAnimation (Gtk::Window*, ICardPile*, CardWidget&)");
+   Check1 (win); Check1 (dest); Check1 (card);
+   Check2 (dest->size ());
+
+   CardWidget& widget (dest->getTopCard ()); Check2 (widget.get_window ());
+   int x, y, x2, y2;
+   win->get_position (x, y);
+   widget.get_window ()->get_origin (x2, y2);
+   TRACE9 ("Game::startAnimation (Gtk::Window*, ICardPile*, CardWidget&) - Dest: " << x2 << '/' << y2);
+
+   x2 -= x;
+   y2 -= y;
+   x2 /= (int)ANIMATE_STEPS;
+   y2 /= (int)ANIMATE_STEPS;
+
+   Glib::signal_idle ().connect
+      (bind (mem_fun (*this, &Game::doAnimation), win, x2, y2, dest, card, ANIMATE_STEPS));
+   return false;
+}
+
+//-----------------------------------------------------------------------------
 /// Moves the animation-window to the next position
-/// \param win: Window to move
-/// \param card: Card to animate
+/// \param win: Window to animate (move)
+/// \param x: Vertical distance to move the animation
+/// \param y: Horizontal distance to move the animation
+/// \param dest: Pile where to animate the window to
+/// \param card: Card to insert at target
 /// \param steps: Remaining steps
 /// \returns false; To stop animation
 //-----------------------------------------------------------------------------
-bool Game::doAnimation (Gtk::Window* win, CardWidget* card, unsigned int steps) {
-   TRACE9 ("Game::doAnimation (Gtk::Window*, CardWidget*, unsigned int) - Steps: " << steps);
-   Check1 (win);
+bool Game::doAnimation (Gtk::Window* win, int x, int y, ICardPile* dest,
+			CardWidget* card, unsigned int steps) {
+   TRACE9 ("Game::doAnimation (...) - Steps: " << steps);
+   Check1 (win); Check1 (dest); Check1 (card);
 
    if (steps) {
-      int x, y, actX, actY;
-      card->get_window ()->get_origin (x, y);
+      int actX, actY;
       win->get_position (actX, actY);
-      x -= actX;
-      y -= actY;
-      x /= (int)steps;
-      y /= (int)steps;
       win->move (actX + x, actY + y);
-      TRACE9 ("Game::doAnimation (Gtk::Window*, CardWidget*, unsigned int) - Move to: " << actX + x << '/' << actY + y);
-
       Glib::signal_idle ().connect
-	 (bind (ptr_fun (&Game::doAnimation), win, card, steps - 1));
+	 (bind (mem_fun (*this, &Game::doAnimation), win, x, y, dest, card, steps - 1));
    }
-   else
+   else {
+      if (&dest->getTopCard () == card)
+	 card->set_size_request (card->getImageWidth (), -1);
+      else
+	 dest->setTopCard (*card);
       delete win;
+
+      // Start the callback
+      sigAnimation.emit ();
+      cbAnimation.disconnect ();
+   }
    return false;
 }
