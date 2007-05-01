@@ -66,7 +66,7 @@ class CardWidget : public Gtk::EventBox {
    friend std::ostream& operator<< (std::ostream& out, const CardWidget& card);
    void update ();
 
-   SigC::Signal0<void> signal_clicked () { return clicked_; }
+   sigc::signal<void> signal_clicked () { return clicked_; }
 
    void mark ();
    void unmark ();
@@ -81,7 +81,7 @@ class CardWidget : public Gtk::EventBox {
  private:
    CardWidget ();
 
-   SigC::Signal0<void> clicked_;
+   sigc::signal<void> clicked_;
    Gtk::Image img;
 
    bool isVisible;

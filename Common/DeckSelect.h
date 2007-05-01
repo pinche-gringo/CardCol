@@ -57,7 +57,7 @@ class DeckSelectDlg : public XGP::XDialog {
       return dlg; }
 
    /// Signal emitted, when changing deck/back is confirmed
-   SigC::Signal2<void, const std::string&, const std::string&> setDecks;
+   sigc::signal<void, const std::string&, const std::string&> setDecks;
 
  protected:
    virtual void okEvent ();

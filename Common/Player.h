@@ -18,7 +18,7 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <sigc++/object.h>
+#include <sigc++/trackable.h>
 #include <glibmm/ustring.h>
 
 
@@ -29,7 +29,7 @@ class Game;
 
    Every player can either be local human, remote human or computer player
 */
-class Player : public SigC::Object {
+class Player : public sigc::trackable {
  public:
    Player (const Glib::ustring& playerName);
    virtual ~Player ();

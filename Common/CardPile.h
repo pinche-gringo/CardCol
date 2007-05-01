@@ -275,7 +275,7 @@ template <> inline void CardHPile::resize (CardWidget& card, PileStyle s) {
    if (s == TOTALLY_COMPRESSED)
       card.hide ();
    else {
-      int width[(int)LAST] = { card.getImageWidth(), 18, 7, 1 };
+      int width[(int)LAST] = { card.getImageWidth (), 18, 7, 1 };
       card.set_size_request (width[s], -1);
       if (style == TOTALLY_COMPRESSED)
          card.show ();
