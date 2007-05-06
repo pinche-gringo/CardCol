@@ -38,8 +38,6 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/Socket.h>
@@ -55,7 +53,7 @@
 #include "Game.h"
 
 
-unsigned int Game::ANIMATE_STEPS (5);
+unsigned int Game::ANIMATE_STEPS (10);
 
 
 //-----------------------------------------------------------------------------
@@ -285,7 +283,7 @@ void Game::makeNextMoves () {
 //-----------------------------------------------------------------------------
 bool Game::endRemoteMove (unsigned int player) {
    TRACE8 ("Game::endRemoteMove () - " << player);
-   actPlayer = makeMove (player);
+   makeMove (player);
    mxSerializeMsgs.unlock ();
    stati.pendingTurn = 0;
    makeNextMoves ();
@@ -302,27 +300,17 @@ bool Game::enableHuman () {
 }
 
 //-----------------------------------------------------------------------------
-/// Makes the move for the next player.
+/// Makes the move for the next computer player.
 /// \returns \c int: Flag for timer, if it should continue (0: no; else: yes)
 //-----------------------------------------------------------------------------
 bool Game::makeComputerMove () {
    TRACE5 ("Game::makeComputerMove () - Turn of player " << actPlayer);
-   if (statGame == TOSTOP) {
+   stati.pendingTurn = 0;
+   if (statGame == TOSTOP)
       stop ();
-      stati.pendingTurn = 0;
-      return false;
-   }
-
-   unsigned int newPlayer (makeMove (actPlayer));
-   TRACE7 ("Game::makeComputerMove () - Next player: " << newPlayer);
-   if (static_cast<int> (newPlayer) == actPlayer)
-      return true;
-   else {
-      actPlayer = newPlayer;
-      stati.pendingTurn = 0;
-      makeNextMoves ();
-      return false;
-   }
+   else
+      makeMove (actPlayer);
+   return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -429,7 +417,6 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
    Check3 (end < pile.size ());
    Check3 (start <= end);
 
-   unsigned int s (start);
    unsigned int e (end);
    bool bFollow (false);
 
@@ -445,16 +432,16 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
    }
 
    do {
-      CardWidget& card (*pile[s]);
-      pile.move (pile.size () - 1, s);
+      CardWidget& card (*pile[start]);
+      pile.move (pile.size () - 1, start);
       card.showFace ();
 
       if ((pile.getStyle () != ICardPile::NORMAL) && bFollow) {
          Check3 (pile.size () > 1);
-         pile.resize (pile.size () - 2, ICardPile::COMPRESSED);
+         pile.resize (pile.size () - 2, pile.getStyle ());
       }
       bFollow = true;
-   } while (e-- && (s <= e));
+   } while (e-- && (start <= e));
 
    start = pile.size () - 1 - (end - start);
    end =  pile.size () - 1;
@@ -864,7 +851,7 @@ void Game::animateCard (ICardPile& dest, ICardPile& src, unsigned int pos) {
 	 startAnimation (win, &dest, &card);
       else {
 	 dest.setTopCard (card);
-	 card.set_size_request (1, -1);
+	 card.set_size_request (1, 1);
 	 Glib::signal_idle ().connect
 	    (bind (mem_fun (*this, &Game::startAnimation), win, &dest, &card));
       }
@@ -929,7 +916,7 @@ bool Game::doAnimation (Gtk::Window* win, int x, int y, ICardPile* dest,
    }
    else {
       if (&dest->getTopCard () == card)
-	 card->set_size_request (card->getImageWidth (), -1);
+	 card->set_size_request (card->getImageWidth (), card->getImageHeight ());
       else
 	 dest->setTopCard (*card);
       delete win;

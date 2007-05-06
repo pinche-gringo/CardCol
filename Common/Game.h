@@ -145,7 +145,7 @@ class Game : public Gtk::Table {
    void displayTurn (unsigned int player, const Glib::ustring& preText);
    void makeNextMoves ();
    bool endRemoteMove (unsigned int player);
-   virtual int makeMove (unsigned int player) = 0;
+   virtual void makeMove (unsigned int player) = 0;
 
    bool randomizeCardsToPile (ICardPile& pile) const;
    static void movePile (ICardPile& dest, ICardPile& source,
