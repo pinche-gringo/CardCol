@@ -166,10 +166,12 @@ void Hearts::finishMove () {
    if (played.size () == NUM_PLAYERS)
       Glib::signal_timeout ().connect
 	 (bind_return (bind (mem_fun (*this, &Hearts::takeWonCards), next), false),
-	  ComputerPlayer::TIMEOUT - 20);
+	  ComputerPlayer::TIMEOUT - 50);
 
-   setNextPlayer (next);
-   makeNextMoves ();
+   if (players[next].hand->size ()) {
+      setNextPlayer (next);
+      makeNextMoves ();
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -179,8 +181,12 @@ void Hearts::finishMove () {
 void Hearts::takeWonCards (unsigned int player) {
    TRACE9 ("Hearts::takeWonCards (unsigned int) - " << player);
    Check1 (player < NUM_PLAYERS);
-   if (played.size () == 4)
-      movePile (*players[player].won, played, 0, -1);
+   if (played.size () == NUM_PLAYERS) {
+      movePile (*players[player].won, played, 0, NUM_PLAYERS - 1);
+
+      if (!player)
+	 enableWonCards (*players[0].won);
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -392,8 +398,11 @@ void Hearts::startPlaying () {
          break;
       }
    Check3 (nextPlayer < NUM_PLAYERS);
+   player2Exchange = (player2Exchange - 1) & 0x3;
 
    setNextPlayer (nextPlayer);
+   displayTurn (nextPlayer);
+
    YGP::ConnectionMgr& cmgr (getConnectionMgr ());
    if (((cmgr.getMode () == YGP::ConnectionMgr::NONE)
         && nextPlayer)
@@ -402,12 +411,10 @@ void Hearts::startPlaying () {
       unsigned int pos2Play (0);
       flipCards2Play (*players[nextPlayer].hand, pos2Play, pos2Play);
       animateCard (played, *players[nextPlayer].hand, pos2Play);
+      setCBAnimation (mem_fun (*this, &Hearts::finishMove));
    }
-
-   player2Exchange = (player2Exchange - 1) & 0x3;
-
-   displayTurn (currentPlayer ());
-   makeNextMoves ();
+   else
+      makeNextMoves ();
 }
 
 //-----------------------------------------------------------------------------
@@ -446,7 +453,6 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       player = ((player + 1) & 0x3);
 
    if (!players[player].hand->size ()) {
-      player = -1U;
       setGameStatus (STOPPED);
       if (!pScoreDlg) {
          pScoreDlg = ScoreDlg::create (actPlayers);
@@ -462,6 +468,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
             break;
          }
       }
+      aScore[player] += pointsOfPile (played);   // Adds points still on table
 
       pScoreDlg->addPoints (aScore);
       pScoreDlg->show ();
@@ -484,9 +491,6 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
    }
    else
       displayTurn (player);
-
-   if (!player)
-      enableWonCards (*players[0].won);
 
    TRACE4 ("Hearts::calcNextPlayer (unsinged int) - Continuing with player "
            << player);
