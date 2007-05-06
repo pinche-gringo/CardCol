@@ -69,7 +69,7 @@ class Hearts : public Game {
    void cardTaken ();
 
    //@Section Virtual methods
-   virtual int makeMove (unsigned int player);
+   virtual void makeMove (unsigned int player);
    virtual bool enableHuman ();
 
    //@Section Helper methods
@@ -78,6 +78,8 @@ class Hearts : public Game {
    unsigned int  check4Winner () const;
    void exchangeCards ();
    void finishExchangeCards ();
+   void finishMove ();
+   void takeWonCards (unsigned int player);
    bool cardsExchanged (unsigned int cards);
    static unsigned int numberOfCards (const int aPositions[4], CardWidget::COLOURS colour);
    static unsigned int pointsOfPile (const ICardPile& pile);

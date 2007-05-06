@@ -34,8 +34,6 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -138,32 +136,51 @@ Hearts::~Hearts () {
 //-----------------------------------------------------------------------------
 /// Makes the move for the next player.
 /// \param player: Actual player
-/// \returns \c int: Next player or -1 if end of game
 //-----------------------------------------------------------------------------
-int Hearts::makeMove (unsigned int player) {
+void Hearts::makeMove (unsigned int player) {
    TRACE5 ("Hearts::makeMove () - Turn of player " << player);
    Check1 (gameStatus () == PLAYING);
-   Check3 (pos2Play == pos1Play);
 
    ICardPile& pile (*players[player].hand);
-   if (pos2Play == -1U) {
-      pos2Play = pos1Play = findPos2Play (player);
-      TRACE8 ("Hearts::makeMove (unsigned int) - Going to play card at pos " << pos2Play);
-      Check3 (pos2Play < pile.size ());
+   unsigned int pos2Play (findPos2Play (player));
+   TRACE8 ("Hearts::makeMove (unsigned int) - Going to play card at pos " << pos2Play);
+   Check3 (pos2Play < pile.size ());
 
-      aPlayed[pile[pos2Play]->colour ()]++;
-      if ((pile[pos2Play]->colour () == CardWidget::SPADES)
-          && (pile[pos2Play]->number () == CardWidget::QUEEN))
-          playedSQ = true;
+   aPlayed[pile[pos2Play]->colour ()]++;
+   if ((pile[pos2Play]->colour () == CardWidget::SPADES)
+       && (pile[pos2Play]->number () == CardWidget::QUEEN))
+      playedSQ = true;
 
-      flipCards2Play (pile, pos1Play, pos2Play);
-      animateCard (played, pile, pos1Play);
-   }
-   else {
-      pos1Play = pos2Play = -1U;
-      player = calcNextPlayer (player);
-   }
-   return player;
+   flipCards2Play (pile, pos2Play, pos2Play);
+   animateCard (played, pile, pos2Play);
+   setCBAnimation (mem_fun (*this, &Hearts::finishMove));
+}
+
+//-----------------------------------------------------------------------------
+/// Finishes the move; calculates the next player and - if necessary -
+/// moves the won cards to the winner.
+//-----------------------------------------------------------------------------
+void Hearts::finishMove () {
+   unsigned int next (calcNextPlayer (currentPlayer ()));
+
+   if (played.size () == NUM_PLAYERS)
+      Glib::signal_timeout ().connect
+	 (bind_return (bind (mem_fun (*this, &Hearts::takeWonCards), next), false),
+	  ComputerPlayer::TIMEOUT - 20);
+
+   setNextPlayer (next);
+   makeNextMoves ();
+}
+
+//-----------------------------------------------------------------------------
+/// Picks up the won cards
+/// \param player: Player taking won cards
+//-----------------------------------------------------------------------------
+void Hearts::takeWonCards (unsigned int player) {
+   TRACE9 ("Hearts::takeWonCards (unsigned int) - " << player);
+   Check1 (player < NUM_PLAYERS);
+   if (played.size () == 4)
+      movePile (*players[player].won, played, 0, -1);
 }
 
 //-----------------------------------------------------------------------------
@@ -298,8 +315,10 @@ void Hearts::cardSelected (unsigned int iCard) {
    TRACE5 ("Hearts::cardSelected (unsigned int) - Position " << iCard);
    Check1 (iCard < players[0].hand->size ());
    Check3 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
-   Check3 (pos1Play == -1U);
-   Check3 (pos2Play == -1U);
+
+   // Pick up won pile
+   if (played.size () == NUM_PLAYERS)
+      takeWonCards (0);
 
    // Hide won pile again (if not in debug-mode)
 #if TRACELEVEL > 0
@@ -317,8 +336,6 @@ void Hearts::cardSelected (unsigned int iCard) {
                ignoreNextMsg = true;
             broadcastMessage (msg.str ());
          }
-
-         setNextPlayer (calcNextPlayer (currentPlayer ()));
       }
       else {
          Check3 (gameStatus () == EXCHANGE);
@@ -382,8 +399,9 @@ void Hearts::startPlaying () {
         && nextPlayer)
        || ((cmgr.getMode () == YGP::ConnectionMgr::SERVER)
            && (nextPlayer > getConnectionMgr ().getClients ().size ()))) {
-      flipCards2Play (*players[nextPlayer].hand, pos1Play = 0, pos2Play = 0);
-      animateCard (played, *players[nextPlayer].hand, pos1Play);
+      unsigned int pos2Play (0);
+      flipCards2Play (*players[nextPlayer].hand, pos2Play, pos2Play);
+      animateCard (played, *players[nextPlayer].hand, pos2Play);
    }
 
    player2Exchange = (player2Exchange - 1) & 0x3;
@@ -420,12 +438,10 @@ unsigned int Hearts::check4Winner () const {
 //-----------------------------------------------------------------------------
 unsigned int Hearts::calcNextPlayer (unsigned int player) {
    TRACE9 ("Hearts::calcNextPlayer (unsigned int) - " << player);
-   Check1 (player < NUM_PLAYERS);
+   Check1 (player < NUM_PLAYERS); Check2 (played.size () <= NUM_PLAYERS);
 
-   if (played.size () >= NUM_PLAYERS) {
+   if (played.size () == NUM_PLAYERS)
       player = (player + check4Winner () - NUM_PLAYERS + 1) & 0x3;
-      movePile (*players[player].won, played);
-   }
    else
       player = ((player + 1) & 0x3);
 
@@ -538,7 +554,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
       Check3 ((unsigned)playColour < (unsigned)(sizeof (aPlayed) / sizeof (aPlayed[0])));
       aPlayed[playColour]++;
 
-      setCBAnimation (mem_fun (*this, &Hearts::makeNextMoves));
+      setCBAnimation (mem_fun (*this, &Hearts::finishMove));
    }
    else
       // If there are already two cards exchanged (and thus the 3rd is going
@@ -651,7 +667,7 @@ void Hearts::exchangeCards () {
    }
 
    Check3 (played.empty ()); Check3 (aExchange[player2Exchange].size () == 3);
-   movePile (played, aExchange[player2Exchange]);
+   movePile (played, aExchange[NUM_PLAYERS - player2Exchange]);
    Glib::signal_timeout ().connect
       (bind_return (mem_fun (*this, &Hearts::finishExchangeCards), false), ComputerPlayer::TIMEOUT);
 }
@@ -661,7 +677,7 @@ void Hearts::exchangeCards () {
 //-----------------------------------------------------------------------------
 void Hearts::finishExchangeCards () {
    TRACE9 ("Hearts::finishExchangeCards ()");
-   movePile (aExchange[player2Exchange], played);
+   movePile (aExchange[NUM_PLAYERS - player2Exchange], played);
 
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       TRACE9 ("Hearts::finishExchangeCards () - " << i << " gives to "
