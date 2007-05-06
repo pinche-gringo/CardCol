@@ -65,7 +65,7 @@ class Jabberwocky : public Game {
    const Jabberwocky& operator= (const Jabberwocky& other);
 
    //@Section Virtual methods
-   virtual int makeMove (unsigned int player);
+   virtual void makeMove (unsigned int player);
    virtual bool enableHuman ();
    virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
    virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
@@ -80,7 +80,8 @@ class Jabberwocky : public Game {
    unsigned int calcTricks (unsigned int player) const;
 
    void showCards2Play (unsigned int player);
-   int playCard (unsigned int player, unsigned int card);
+   int playCard (unsigned int player);
+   void finishMove ();
    void getPositionOfColours (const ICardPile& pile, int result[4]);
    bool isHighest (const CardWidget& card) const;
    bool isHighEnough (const CardWidget& card) const;
@@ -89,6 +90,7 @@ class Jabberwocky : public Game {
    unsigned int findWorstCard (const ICardPile& card, const int aPositions[4]) const;
    unsigned int check4Winner () const;
    unsigned int sumBids () const;
+   void takeWonCards (unsigned int player);
 
    static char sortOrder[4];
    static bool compByColourAccTrumps (const CardWidget* a, const CardWidget* b);

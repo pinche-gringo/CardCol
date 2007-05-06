@@ -52,8 +52,8 @@
 #include "Jabberwocky.h"
 
 
-const unsigned int Jabberwocky::COLS_PLAYER[NUM_PLAYERS] = { 7, 1, 7, 13 };
-const unsigned int Jabberwocky::ROWS_PLAYER[NUM_PLAYERS] = { 4, 8, 10, 8 };
+const unsigned int Jabberwocky::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
+const unsigned int Jabberwocky::ROWS_PLAYER[NUM_PLAYERS] = { 10, 8, 4, 8 };
 
 char Jabberwocky::sortOrder[4];
 
@@ -81,16 +81,16 @@ Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& 
    changeNames (player);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 3,
-              ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
-              ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
+              ROWS_PLAYER[i] + (i ? 1 : 3),
+              ROWS_PLAYER[i] + (i ? 2 : 4),
               Gtk::EXPAND, Gtk::EXPAND, 1);
 
       TRACE9 ("Jabberwocky::Jabberwocky () - Name at: " << COLS_PLAYER[i] << '/'
               << ROWS_PLAYER[i] + ((i == 2) ? 3 : 1));
 
       attach (players[i].won, COLS_PLAYER[i], COLS_PLAYER[i] + 2,
-              ROWS_PLAYER[i] + ((i == 2) ? 2 : -2),
-              ROWS_PLAYER[i] + ((i == 2) ? 3 : -1),
+              ROWS_PLAYER[i] + (i ? -2 : 2),
+              ROWS_PLAYER[i] + (i ? -1 : 3),
               Gtk::SHRINK, Gtk::SHRINK, 1);
       TRACE9 ("Jabberwocky::Jabberwocky () - Won pile at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i] + ((i == 2) ? 2 : -2));
@@ -224,19 +224,49 @@ bool Jabberwocky::enableHuman () {
 //-----------------------------------------------------------------------------
 /// Makes the move for the next player.
 /// \param player: Actual player
-/// \returns int: Next player or -1 if end of game
 //-----------------------------------------------------------------------------
-int Jabberwocky::makeMove (unsigned int player) {
+void Jabberwocky::makeMove (unsigned int player) {
    TRACE5 ("Jabberwocky::makeMove () - Turn of player " << player);
    Check3 (gameStatus () == PLAYING);
 
-   if (pos2Play == -1U)
-      showCards2Play (player);
-   else {
-      player = playCard (player, pos2Play);
-      pos2Play = -1U;
+   showCards2Play (player);
+}
+
+//-----------------------------------------------------------------------------
+/// Finishes the move; calculates the next player and - if necessary -
+/// moves the won cards to the winner.
+//-----------------------------------------------------------------------------
+void Jabberwocky::finishMove () {
+   TRACE9 ("Jabberwocky::finishMove () - ");
+
+   unsigned int next (playCard (currentPlayer ()));
+   if (played.size () == NUM_PLAYERS)
+      Glib::signal_timeout ().connect
+	 (bind_return (bind (mem_fun (*this, &Jabberwocky::takeWonCards), next), false),
+	  ComputerPlayer::TIMEOUT - 50);
+
+   if (players[next].hand.size ()) {
+      setNextPlayer (next);
+      makeNextMoves ();
    }
-   return player;
+}
+
+//-----------------------------------------------------------------------------
+/// Picks up the won cards
+/// \param player: Player taking won cards
+//-----------------------------------------------------------------------------
+void Jabberwocky::takeWonCards (unsigned int player) {
+   TRACE9 ("Jabberwocky::takeWonCards (unsigned int) - " << player);
+   Check1 (player < NUM_PLAYERS);
+   if (played.size () == NUM_PLAYERS) {
+      movePile (players[player].won, played, 0, NUM_PLAYERS - 1);
+
+      if (!player) {
+	 enableWonCards (players[0].won);
+	 menuSort->set_sensitive ();
+	 menuSort2->set_sensitive ();
+      }
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -334,6 +364,10 @@ void Jabberwocky::cardSelected (unsigned int pos) {
    Check3 (gameStatus () == PLAYING);
    Check2 (pTrump);
 
+   // Pick up won pile
+   if (played.size () == NUM_PLAYERS)
+      takeWonCards (0);
+
    try {
       CardWidget& card (*players[0].hand[pos]);
       TRACE4 ("Jabberwocky::cardSelected (unsigned int) - Playing " << card);
@@ -359,10 +393,10 @@ void Jabberwocky::cardSelected (unsigned int pos) {
 	 broadcastMessage (msg.str ());
       }
 
-      if ((pos = playCard (0, pos)) != -1U) {
-	 setNextPlayer (pos);
-	 makeNextMoves ();
-      }
+      playedCards[players[0].hand[pos]->colour ()].set (players[0].hand[pos]->number ());
+
+      animateCard (played, players[0].hand, pos);
+      setCBAnimation (mem_fun (*this, &Jabberwocky::finishMove));
    }
    catch (Glib::ustring& error) {
       Gtk::MessageDialog dlg (error, Gtk::MESSAGE_ERROR);
@@ -537,7 +571,6 @@ unsigned int Jabberwocky::calcTricks (unsigned int player) const {
 //-----------------------------------------------------------------------------
 bool Jabberwocky::compByColourAccTrumps (const CardWidget* a, const CardWidget* b) {
    Check3 (a); Check3 (b);
-
    return ((a->colour () == b->colour ())
            ? a->number () < b->number ()
            : (sortOrder[a->colour ()] < sortOrder[b->colour ()]));
@@ -549,8 +582,9 @@ bool Jabberwocky::compByColourAccTrumps (const CardWidget* a, const CardWidget* 
 //-----------------------------------------------------------------------------
 void Jabberwocky::showCards2Play (unsigned int player) {
    TRACE3 ("Jabberwocky::showCards2Play (unsigned int) - Player: " << player);
-   Check1 (player < NUM_PLAYERS); Check3 (pos2Play == -1U);
+   Check1 (player < NUM_PLAYERS);
    Check2 (played.size () < NUM_PLAYERS);
+   unsigned int pos2Play (-1U);
 
    ICardPile& hand (players[player].hand);
    int aPosColours[4];
@@ -662,10 +696,14 @@ void Jabberwocky::showCards2Play (unsigned int player) {
 	 pos2Play = findWorstCard (hand, aPosColours);
    }
 
-
+   // Finally play the card
    Check3 (pos2Play < hand.size ());
    TRACE1 ("Jabberwocky::showCards2Play (unsigned int) - Playing: " << pos2Play << " (" << *hand[pos2Play] << ')');
-   flipCards2Play (hand, pos2Play, pos1Play = pos2Play);
+   playedCards[players[player].hand[pos2Play]->colour ()].set (players[player].hand[pos2Play]->number ());
+   flipCards2Play (hand, pos2Play, pos2Play);
+
+   animateCard (played, players[player].hand, pos2Play);
+   setCBAnimation (mem_fun (*this, &Jabberwocky::finishMove));
 }
 
 //-----------------------------------------------------------------------------
@@ -828,17 +866,11 @@ void Jabberwocky::getPositionOfColours (const ICardPile& pile, int result[4]) {
 //-----------------------------------------------------------------------------
 /// Plays a card out of a hand
 /// \param player: ID of player
-/// \param card: Offset of card to play
 /// \returns int: Next player or -1 at end
 //-----------------------------------------------------------------------------
-int Jabberwocky::playCard (unsigned int player, unsigned int card) {
-   TRACE5 ("Jabberwocky::playCard (2x unsigned int) - Player: "
-           << player << " at position " << card);
+int Jabberwocky::playCard (unsigned int player) {
+   TRACE5 ("Jabberwocky::playCard (unsigned int) - Player: " << player);
    Check3 (player < NUM_PLAYERS);
-   Check3 (card < players[player].hand.size ());
-
-   playedCards[players[player].hand[card]->colour ()].set (players[player].hand[card]->number ());
-   movePile (played, players[player].hand, card, card);
 
    // All players have placed their cards
    if (played.size () == NUM_PLAYERS) {
@@ -850,11 +882,11 @@ int Jabberwocky::playCard (unsigned int player, unsigned int card) {
 
       Check3 (pTrump);
       while (++i != played.end ()) {
-         TRACE8 ("Jabberwocky::playCard (2x unsigned int) - Comparing " << (*played[player]) << " - " << **i);
+         TRACE8 ("Jabberwocky::playCard (unsigned int) - Comparing " << (*played[player]) << " - " << **i);
 
          if ((col != pTrump->colour ())
              && ((*i)->colour () == pTrump->colour ())) {
-            TRACE9 ("Jabberwocky::playCard (2x unsigned int) - Found trump ");
+            TRACE9 ("Jabberwocky::playCard (unsigned int) - Found trump ");
             col = pTrump->colour ();
             nr = (*i)->number ();
             bestPlayer = i - played.begin ();
@@ -862,59 +894,53 @@ int Jabberwocky::playCard (unsigned int player, unsigned int card) {
          }
 
          if (((*i)->number () > nr) && ((*i)->colour () == col)) {
-            TRACE9 ("Jabberwocky::playCard (2x unsigned int) - New best card " << **i);
+            TRACE9 ("Jabberwocky::playCard (unsigned int) - New best card " << **i);
             nr = (*i)->number ();
             bestPlayer = i - played.begin ();
          }
       }
       player = (player - NUM_PLAYERS + bestPlayer + 1) % NUM_PLAYERS;
-      TRACE6 ("Jabberwocky::playCard (2x unsigned int) - Winner: " << player);
-
-      // Move the cards to his won pile
-      movePile (players[player].won, played, 0, played.size () - 1);
-      if (!player) {
-	 enableWonCards (players[0].won);
-	 menuSort->set_sensitive ();
-	 menuSort2->set_sensitive ();
-      }
+      TRACE6 ("Jabberwocky::playCard (unsigned int) - Winner: " << player);
    }
    else
       player = (player + 1) % NUM_PLAYERS;
 
    // Still cards left: Continue playing
-   if (players[player].hand.size ()) {
+   if (players[player].hand.size ())
       displayTurn (player);
-      return player;
+   else {
+      Glib::ustring stat (_("Game ended"));
+      // Create score-dialog
+      if (!pScoreDlg) {
+	 pScoreDlg = ScoreDlg::create (actPlayers);
+	 pScoreDlg->get_window ()->set_transient_for (get_window ());
+      }
+      // Add points, if bid has been met; take care of the cards won in the
+      // last round
+      int points[NUM_PLAYERS];
+      for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+	 points[i] = ((unsigned int)players[i].bid
+		      == ((players[i].won.size () / NUM_PLAYERS)
+			  + (player == i)));
+      pScoreDlg->addPoints (points);
+      pScoreDlg->show ();
+
+      // Stop after 13 rounds
+      if (++turn == 13) {
+	 turn = 0;
+
+	 int points;
+	 pScoreDlg->getMaxPoints (points, player); Check3 (points >= 0);
+	 Glib::ustring won (_("; %1 won"));
+	 won.replace (won.find ("%1"), 2, actPlayers[player]->getName ());
+	 stat += won;
+      }
+
+      status.pop ();
+      status.push (stat);
+      setGameStatus (STOPPED);
    }
-
-   Glib::ustring stat (_("Game ended"));
-   // Create score-dialog
-   if (!pScoreDlg) {
-      pScoreDlg = ScoreDlg::create (actPlayers);
-      pScoreDlg->get_window ()->set_transient_for (get_window ());
-   }
-   // Add points, if bid has been met
-   int points[NUM_PLAYERS];
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      points[i] = (unsigned int)players[i].bid == (players[i].won.size () / NUM_PLAYERS);
-   pScoreDlg->addPoints (points);
-   pScoreDlg->show ();
-
-   // Stop after 13 rounds
-   if (++turn == 13) {
-      turn = 0;
-
-      int points;
-      pScoreDlg->getMaxPoints (points, player); Check3 (points >= 0);
-      Glib::ustring won (_("; %1 won"));
-      won.replace (won.find ("%1"), 2, actPlayers[player]->getName ());
-      stat += won;
-   }
-
-   status.pop ();
-   status.push (stat);
-   setGameStatus (STOPPED);
-   return -1;
+   return player;
 }
 
 //----------------------------------------------------------------------------
