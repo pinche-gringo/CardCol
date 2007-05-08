@@ -38,6 +38,8 @@
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/scrolledwindow.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -76,7 +78,7 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
      , startPlayer (-1U) , newPile (_("New pile"))
      , staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK)
      , dumped (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWFACE)
-     , acceptCards (-1U), target (-1U) , pScoreDlg (NULL) {
+     , target (-1U) , pScoreDlg (NULL) {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&)");
 
@@ -93,9 +95,9 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    boxTeam[0].pack_end (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
 
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      attach (hands[i], (i << 2) - 4, (i << 2) - 2, 4, 5,
+      attach (hands[i], (3 - i) << 2, ((3 - i) << 2) + 2, 0, 1,
               Gtk::EXPAND, Gtk::SHRINK, 5, 5);
-      attach (names[i], (i << 2) - 4, (i << 2) - 2, 5, 6,
+      attach (names[i], (3 - i) << 2, ((3 - i) << 2) + 2, 1, 2,
               Gtk::EXPAND, Gtk::SHRINK, 0);
       hands[i].show ();
       names[i].show ();
@@ -107,13 +109,13 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Attach widgets");
-   attach (hands[0], 3, 10, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
-   attach (names[0], 3, 10, 1, 2, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
-   attach (staple, 0, 1, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 5);
-   attach (dumped, 1, 2, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 1, 5);
-   attach (*scrlTable[0], 0, 10, 2, 3, Gtk::EXPAND | Gtk::FILL,
+   attach (hands[0], 3, 10, 4, 5, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
+   attach (names[0], 3, 10, 5, 6, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
+   attach (staple, 0, 1, 4, 6, Gtk::SHRINK, Gtk::SHRINK, 5);
+   attach (dumped, 1, 2, 4, 6, Gtk::SHRINK, Gtk::SHRINK, 1, 5);
+   attach (*scrlTable[1], 0, 10, 2, 3, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
-   attach (*scrlTable[1], 0, 10, 3, 4, Gtk::EXPAND | Gtk::FILL,
+   attach (*scrlTable[0], 0, 10, 3, 4, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
 
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
@@ -178,11 +180,10 @@ void Buraco::cleanCerrado (unsigned int player) {
 //-----------------------------------------------------------------------------
 /// Makes the move for the next player.
 /// \param player: Actual player
-/// \returns \c int: Next player or -1 if end of game
 /// \remarks This method expects the target pile to play in the target-member
 ///     and the positions to play in pos1Play and pos2Play
 //-----------------------------------------------------------------------------
-int Buraco::makeMove (unsigned int player) {
+void Buraco::makeMove (unsigned int player) {
    TRACE5 ("Buraco::makeMove (unsigned int) - Turn of player " << player
            << "; Target: " << std::hex << (int)target << std::dec);
    Check1 (player); Check1 (player < NUM_PLAYERS);
@@ -279,11 +280,9 @@ int Buraco::makeMove (unsigned int player) {
                Check3 (points[oldPlayer & 1] > 100);
                points[oldPlayer & 1] += 100;
                endGame ();
-               return -1;
             }
       }
    }
-   return player;
 }
 
 //-----------------------------------------------------------------------------
@@ -688,7 +687,7 @@ void Buraco::enableHumanHand () {
          registerTableDND (*(*tablePiles[0][i])[j], (i << 8) + j);
    }
 
-   if (acceptCards == -1U) {
+   if (takenDumpedCards.empty ()) {
       menuSort->set_sensitive ();
       menuSort2->set_sensitive ();
    }
@@ -757,7 +756,7 @@ void Buraco::cardSelected (unsigned int iCard) {
    }
 
    unregisterHandDND (*hands[0][iCard]);
-   dumped.append (hands[0].remove (iCard));
+   animateCard (dumped, hands[0], iCard);
    menuUndo->set_sensitive (false);
 
    // If the player has no more cards left (except of jokers): Give him the
@@ -770,12 +769,12 @@ void Buraco::cardSelected (unsigned int iCard) {
          endGame ();
          return;
       }
+   setCBAnimation (mem_fun (*this, &Buraco::makeNextMoves));
 
    gStatus.startTurn = 1;
    gStatus.startGame = 0;
    setNextPlayer (1);
    displayTurn (1);
-   makeNextMoves ();
 }
 
 //-----------------------------------------------------------------------------
@@ -811,17 +810,13 @@ void Buraco::doStapleSelected () {
    TRACE5 ("Buraco::doStapleSelected ()");
    Check2 (staple.size ());
 
-   if (gameStatus () == STOPPED) {
-      dumped.append (staple.removeTopCard ());
-      enableHuman ();
+   if (gameStatus () != STOPPED) {
+      animateCard (hands[0], staple, staple.size () - 1);
+      setCBAnimation (mem_fun (*this, &Buraco::enableHumanHand));
    }
    else {
-      dumped.getTopCard ().show ();
-      unsigned int player (currentPlayer ());
-      hands[player].append (staple.removeTopCard ());
-
-      if (!player)
-	 enableHumanHand ();
+      dumped.append (staple.removeTopCard ());
+      enableHuman ();
    }
 }
 
@@ -836,9 +831,10 @@ void Buraco::dumpedSelected () {
    stapleTop.disconnect ();
 
    if (gameStatus () != STOPPED) {
+      ICardPile* target (NULL);
+      CardWidget& card (dumped.getTopCard ());
       if (!gStatus.startGame)
 	 try {
-	    CardWidget& card (dumped.getTopCard ());
 	    if (isJoker (card))
 	       throw _("You can't pick up monos!");
 
@@ -872,11 +868,10 @@ void Buraco::dumpedSelected () {
 
       // Special handling of player starting the game and can choose one of the
       // first two cards
-      CardWidget& card (dumped.removeTopCard ());
       card.show ();
       if (gStatus.startGame) {
-	 Check3 (dumped.size () == 0);
-	 hands[0].append (card);
+	 Check3 (dumped.size () == 1);
+	 target = &hands[0];
       }
       else {
 	 Check3 (pileHasFittingPair (hands[0], card));
@@ -892,18 +887,18 @@ void Buraco::dumpedSelected () {
 	    broadcastMessage (msg.str ());
 	 }
 
-	 BuracoPile& pile (makeNewPile (0 & 1));             // Create new pile
-	 pile.setTopCard (card);                         // with picked up card
+	 // Create new pile with picked up card
+	 BuracoPile& pile (makeNewPile (0 & 1));
+	 target = &pile;
 
-	 acceptCards = hands[0].size ();;
 	 if (dumped.size ())
-	    movePile (hands[0], dumped);
+	    movePile (takenDumpedCards, dumped);
       }
 
-      // Enable the cards in humans hand, when idle (means: *after* this
-      // signalhandler terminates)
-      Glib::signal_idle ().connect
-	 (bind_return (mem_fun (*this, &Buraco::enableHumanHand), false));
+      // Enable the cards in humans hand after card has been animated
+      Check1 (target);
+      animateCard (*target, dumped, dumped.size () - 1);
+      setCBAnimation (mem_fun (*this, &Buraco::enableHumanHand));
    }
    else {
       staple.append (dumped.removeTopCard ());
@@ -1060,15 +1055,6 @@ void Buraco::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
    TRACE1 ("Buraco::cardDropped (...) - Inserting card " << *pValue
            << " at pos " << card);
 
-   if (acceptCards != -1U) {
-      context->drag_finish (false, false, time);
-      Gtk::MessageDialog dlg (_("Can't move cards before completing the pile!"),
-                              Gtk::MESSAGE_ERROR);
-      dlg.set_title (_("Invalid move"));
-      dlg.run ();
-      return;
-   }
-
    context->drag_finish (true, false, time);                     // End old DND
 
    CardWidget& cardMoved (hands[0].remove (*pValue));
@@ -1156,10 +1142,6 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       CardWidget& moved (*hands[0][*pValue]);
       TRACE4 ("Buraco::cardDroppedOnTable (...) - Card dropped: " << moved);
 
-      if ((acceptCards != -1U)
-	  && isJoker (moved) || (*pValue >= acceptCards))
-	 throw Glib::ustring (_("You must play your cards (without \"monos\"), when you picked up the pile!"));
-
       // Move dropped card to a (new) pile on the table
       unsigned int iPile;
       BuracoPile* pile (NULL);
@@ -1167,7 +1149,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 	 // Check validity of drop
 	 if (!(isJoker (moved)
 	       ? pileHasFittingPair (hands[0], &moved)
-	       : pileHasFittingPair (hands[0], moved, acceptCards == -1U)))
+	       : pileHasFittingPair (hands[0], moved, takenDumpedCards.empty ())))
 	    throw Glib::ustring (_("There are no cards to make a valid new pile!"));
 
 	 // Only allow dropping on new pile while having < 5 cards, if the game
@@ -1219,8 +1201,8 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       Check3 (iCard <= pile->size ());
 
       TRACE4 ("Buraco::cardDroppedOnTable (...) - Undo:  " << iPile << "; " << iCard
-	      << "; " << *pValue << ": " << acceptCards << '/' << pile->getPosJoker ());
-      undo.assign (iPile, iCard, *pValue, acceptCards);
+	      << "; " << *pValue << ": " << takenDumpedCards.size () << '/' << pile->getPosJoker ());
+      undo.assign (iPile, iCard, *pValue, takenDumpedCards.size ());
       menuUndo->set_sensitive ();
 
       if (move != -1U) {
@@ -1253,14 +1235,12 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 
       // Accept again the jokers, if the pile has has now three cards (jokers are
       // disabled, if the human picked up the dumped pile.
-      if (pile->size () == 3) {
-	 acceptCards = -1U;
+      if ((pile->size () == 3) && takenDumpedCards.size ()) {
+	 movePile (hands[0], takenDumpedCards);
+
 	 menuSort->set_sensitive ();
 	 menuSort2->set_sensitive ();
       }
-      else
-	 if (acceptCards != -1U)
-	    --acceptCards;
 
       // If the player has no more cards left (except of joker): Give him the reserve
       if (containsOnlyJoker (hands[0]) && humanPilesOK ())
@@ -2186,8 +2166,9 @@ bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) throw (YGP::
 
    case 2:
       Check3 (staple.size ());
-      pos1Play = pos2Play = -1U;
-      doStapleSelected ();
+      animateCard (hands[currentPlayer ()], staple, staple.size () - 1);
+      if (!currentPlayer ())
+	 setCBAnimation (mem_fun (*this, &Buraco::enableHumanHand));
       return false;
 
    case 3:
@@ -2315,8 +2296,8 @@ void Buraco::undoLast (unsigned int player) {
 
    hands[player].insert (src.remove (undo.destPos), undo.srcPos);
 
-   acceptCards = (undo.blocked == 0x7f) ? -1U : undo.blocked;
-   if (acceptCards != -1U) {
+   if (undo.blocked == 0x7f) {
+      movePile (takenDumpedCards, hands[0], hands[0].size () - undo.blocked);
       menuSort->set_sensitive (false);
       menuSort2->set_sensitive (false);
    }
@@ -2367,6 +2348,8 @@ void Buraco::sortHandByColour () {
 void Buraco::resizeCards () {
    staple.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
    dumped.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
+   for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+      hands[i].set_size_request (-1, CardImages::HEIGHT);
 
    scrlTable[0]->set_size_request (-1, CardImages::HEIGHT + 5 * 15);
    scrlTable[1]->set_size_request (-1, CardImages::HEIGHT + 5 * 15);
