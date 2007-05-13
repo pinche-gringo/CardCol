@@ -150,7 +150,8 @@ class Game : public Gtk::Table {
    bool randomizeCardsToPile (ICardPile& pile) const;
    static void movePile (ICardPile& dest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
-   void animateCard (ICardPile& dest, ICardPile& src, unsigned int pos);
+   void animateCard (ICardPile& dest, ICardPile& src, unsigned int pos) { animateCards (dest, src, pos, pos); }
+   void animateCards (ICardPile& dest, ICardPile& src, unsigned int start, unsigned int end);
 
    bool performCommand (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
    static bool stringToNumber (unsigned long& number, const char* text);
@@ -191,9 +192,8 @@ class Game : public Gtk::Table {
 
    bool enableActWonCards ();
 
-   bool startAnimation (Gtk::Window* win, ICardPile* dest, CardWidget* card);
-   bool doAnimation (Gtk::Window* win, int x, int y, ICardPile* dest,
-			    CardWidget* card, unsigned int steps);
+   bool startAnimation (Gtk::Window* win, ICardPile* dest, int x, int y);
+   bool doAnimation (Gtk::Window* win, int x, int y, ICardPile* dest, unsigned int steps);
 
    const char* data;                                   // Data send from server
 
