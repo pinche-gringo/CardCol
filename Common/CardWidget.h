@@ -34,9 +34,13 @@
  */
 class CardWidget : public Gtk::EventBox {
  public:
-   CardWidget (const CardImages& set, unsigned int card, bool showFace = true);
+   CardWidget (unsigned int card, bool showFace = true);
    CardWidget (const CardWidget&);
    ~CardWidget ();
+
+   /// Sets the card deck to use
+   /// \param carddeck: Deck to use
+   static void setDeck (const CardImages& carddeck) { deck = &carddeck; }
 
    // Methods to show card. Note that just the image is changed
    void flip () { showFace (!isVisible); }
@@ -56,10 +60,10 @@ class CardWidget : public Gtk::EventBox {
    char colourStr () const { return strColour (colour ()); }
 
    const Glib::RefPtr<Gdk::Pixbuf> getShownImage () const {
-      return isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground (); }
-   const Glib::RefPtr<Gdk::Pixbuf> getImage () const { return deck.getCardImage (nrCard); }
-   unsigned int getImageWidth () const { return deck.getCardImage (nrCard)->get_width (); }
-   unsigned int getImageHeight () const { return deck.getCardImage (nrCard)->get_height (); }
+      return isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground (); }
+   const Glib::RefPtr<Gdk::Pixbuf> getImage () const { return deck->getCardImage (nrCard); }
+   unsigned int getImageWidth () const { return deck->getCardImage (nrCard)->get_width (); }
+   unsigned int getImageHeight () const { return deck->getCardImage (nrCard)->get_height (); }
 
    int compareNumber (CardWidget& other) const { return number () - other.number (); }
 
@@ -86,8 +90,8 @@ class CardWidget : public Gtk::EventBox {
 
    bool isVisible;
    unsigned int nrCard;
-   const CardImages& deck;
 
+   static const CardImages* deck;
    static COLOURS transColour[4];
 };
 

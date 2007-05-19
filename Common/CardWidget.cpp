@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 27.03.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2006
+//COPYRIGHT   : Copyright (C) 2002 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,21 +35,22 @@
 #include "CardWidget.h"
 
 
+const CardImages* CardWidget::deck (NULL);
 CardWidget::COLOURS CardWidget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
 
 
 //-----------------------------------------------------------------------------
 /// Constructor; creates a cardwidget with the passed index of a pixmap
-/// \param set: Images of cards
 /// \param card: Number of image inside the set to display
 /// \param visible: Flag, if card should be displayed visible
 //-----------------------------------------------------------------------------
-CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible)
-   : isVisible (visible), nrCard (card), deck (set) {
+CardWidget::CardWidget (const unsigned int card, bool visible)
+   : isVisible (visible), nrCard (card) {
    TRACE3 ("CardWidget::CardWidget (const CardImages&, unsinged int, bool) - "
            << card << " (" << visible << ')');
+   Check1 (deck);
 
-   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground ());
+   img.set (isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground ());
    img.set_alignment (0.0, 0.0);
    img.show ();
 
@@ -63,11 +64,11 @@ CardWidget::CardWidget (const CardImages& set, unsigned int card, bool visible)
 /// \param other: Card to copy
 //-----------------------------------------------------------------------------
 CardWidget::CardWidget (const CardWidget& other)
-   : isVisible (other.isVisible), nrCard (other.nrCard), deck (other.deck) {
-   TRACE3 ("CardWidget::CardWidget (const CardWidget&) - "
-           << nrCard << " (" << isVisible << ')');
+   : isVisible (other.isVisible), nrCard (other.nrCard) {
+   TRACE3 ("CardWidget::CardWidget (const CardWidget&) - " << nrCard << " (" << isVisible << ')');
+   Check1 (deck);
 
-   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground ());
+   img.set (isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground ());
    img.set_alignment (0.0, 0.0);
    img.set_padding (0, 0);
    img.show ();
@@ -119,7 +120,7 @@ char CardWidget::strColour (CardWidget::COLOURS col) {
 void CardWidget::update () {
    TRACE3 ("CardWidget::update () - Card " << nrCard);
 
-   img.set (isVisible ? deck.getCardImage (nrCard) : deck.getCardBackground ());
+   img.set (isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground ());
 }
 
 //-----------------------------------------------------------------------------
