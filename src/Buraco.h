@@ -82,7 +82,7 @@ class Buraco : public Game {
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
    //@Section Virtual methods
-   virtual int makeMove (unsigned int player);
+   virtual void makeMove (unsigned int player);
    virtual bool enableHuman ();
    virtual void disableHuman ();
 
@@ -110,8 +110,8 @@ class Buraco : public Game {
    static bool containsNoJoker (const std::vector<CardWidget*>& pile);
    static bool hideJoker (ICardPile* pile, unsigned int cJokers);
    void addBuraco (unsigned int player);
-   unsigned int showCardsToPlay (unsigned int player);
-   int  executeMove (unsigned int player);
+   void playCards (unsigned int player);
+   int  executeMove (unsigned int player, unsigned int& pos1Play, unsigned int& pos2Play);
    void endGame ();
    bool canClosePile (unsigned int player, unsigned int pile) const;
    bool canGetRidOfCards (unsigned int player) const;
@@ -126,6 +126,9 @@ class Buraco : public Game {
    static bool compByColourWithJokers (const CardWidget* a, const CardWidget* b);
    void makeTeamNames (std::vector<Player*>& names) const;
    void setStartPlayer ();
+   void cleanup ();
+   void finishTurn ();
+   void finishMove ();
 
    //@Section to handle piles on table
    BuracoPile& makeNewPile (unsigned int team);
@@ -182,7 +185,7 @@ class Buraco : public Game {
    std::map<CardWidget*, CONNECTIONS> aDNDHand;
    std::map<CardWidget*, SigC::Connection> aDNDTable;
 
-   unsigned int acceptCards;
+   ICardPile takenDumpedCards;
 
    static std::vector<Gtk::TargetEntry> dndType;
 
@@ -193,7 +196,6 @@ class Buraco : public Game {
       unsigned int team2Buraco : 2;
       unsigned int pickUpPlayed : 1;
    } gStatus;
-   unsigned int target;
 
    typedef struct undoValue {
       unsigned int destPile : 8;
