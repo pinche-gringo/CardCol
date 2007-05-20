@@ -75,15 +75,17 @@ class CardWidget : public Gtk::EventBox {
    void mark ();
    void unmark ();
 
+   static CardWidget* getEmpty ();
+
    static char strNumber (CardWidget::NUMBERS nr);
    static char strColour (CardWidget::COLOURS col);
 
  protected:
-  virtual void on_clicked ();
-  virtual bool on_button_release_event (GdkEventButton* ev);
+   virtual void on_clicked ();
+   virtual bool on_button_release_event (GdkEventButton* ev);
 
  private:
-   CardWidget ();
+   CardWidget () : isVisible (false), nrCard (0) { }
 
    sigc::signal<void> clicked_;
    Gtk::Image img;

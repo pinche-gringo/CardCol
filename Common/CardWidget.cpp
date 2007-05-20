@@ -176,3 +176,12 @@ void CardWidget::mark () {
 void CardWidget::unmark () {
    update ();
 }
+
+//-----------------------------------------------------------------------------
+/// Returns an empty card (without any image)
+/// \returns CardWidget*: Empty card
+/// \remarks Don't use; but if you do, you are responsible of deleting the it
+//-----------------------------------------------------------------------------
+CardWidget* CardWidget::getEmpty () {
+   return new CardWidget;
+}
