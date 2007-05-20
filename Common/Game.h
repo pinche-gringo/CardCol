@@ -17,6 +17,8 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+#include <cardgames-cfg.h>
+
 #include <string>
 #include <vector>
 
@@ -25,6 +27,8 @@
 
 #include <YGP/Mutex.h>
 #include <YGP/Exception.h>
+
+#include "CardPile.h"
 
 
 // Forward declarations
@@ -41,7 +45,6 @@ namespace YGP {
 }
 class Player;
 class CardSet;
-class ICardPile;
 class CardWidget;
 
 
@@ -148,10 +151,17 @@ class Game : public Gtk::Table {
    virtual void makeMove (unsigned int player) = 0;
 
    bool randomizeCardsToPile (ICardPile& pile) const;
-   static void movePile (ICardPile& dest, ICardPile& source,
+   static void movePile (ICardPile& dest, ICardPile& source, unsigned int start = 0,
+			 int end = -1) { movePile (dest, dest.size (), source, start, end); }
+   static void movePile (ICardPile& dest, unsigned int posDest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
-   void animateCard (ICardPile& dest, ICardPile& src, unsigned int pos) { animateCards (dest, src, pos, pos); }
-   void animateCards (ICardPile& dest, ICardPile& src, unsigned int start, unsigned int end);
+   void animateCard (ICardPile& dest, ICardPile& src, unsigned int pos) { animateCards (dest, dest.size (), src, pos, pos); }
+   void animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src,
+		     unsigned int pos) { animateCards (dest, posDest, src, pos, pos); }
+   void animateCards (ICardPile& dest, ICardPile& src, unsigned int start,
+		      unsigned int end) { animateCards (dest, dest.size (), src, start, end); }
+   void animateCards (ICardPile& dest, unsigned int posDest, ICardPile& src,
+		      unsigned int start, unsigned int end);
 
    bool performCommand (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
    static bool stringToNumber (unsigned long& number, const char* text);
@@ -185,6 +195,7 @@ class Game : public Gtk::Table {
    /// Sets the callback to call after animating a card
    /// \param slot: Callback (sigc-slot)
    void setCBAnimation (const sigc::slot<void>& slot) {
+      cbAnimation.disconnect ();
       cbAnimation = sigAnimation.connect (slot); }
 
  private:
@@ -192,8 +203,8 @@ class Game : public Gtk::Table {
 
    bool enableActWonCards ();
 
-   bool startAnimation (Gtk::Window* win, ICardPile* dest, int x, int y);
-   bool doAnimation (Gtk::Window* win, int x, int y, ICardPile* dest, unsigned int steps);
+   bool startAnimation (Gtk::Window* win, ICardPile* dest, unsigned int posDest, int x, int y);
+   bool doAnimation (Gtk::Window* win, int x, int y, ICardPile* dest, unsigned int posDest, unsigned int steps);
 
    const char* data;                                   // Data send from server
 
