@@ -4,14 +4,14 @@ lib_LTLIBRARIES=libCard.la
 
 libCard_la_LDFLAGS=@DEPENDENCIES_LIBS@ -release $(LIBRELEASE) -no-undefined @LTLIBINTL@
 
-libCard_la_SOURCES=CardWidget.cpp CardImgs.cpp CardPile.cpp		\
-CardSet.cpp DeckSelect.cpp Game.cpp PlayerDlg.cpp ScoreDlg.cpp		\
-ScoreDlg.h PlayerConnDlg.cpp PlayerConnDlg.h Player.cpp Player.h	\
-Human.cpp Human.h RemotePlayer.cpp RemotePlayer.h ComputerPlayer.cpp	\
-ComputerPlayer.h
+libCard_la_SOURCES=CardWidget.cpp CardImgs.cpp CardPile.cpp	\
+CardSet.cpp DeckSelect.cpp Game.cpp PlayerDlg.cpp ScoreDlg.cpp	\
+PlayerConnDlg.cpp Player.cpp Human.cpp RemotePlayer.cpp		\
+ComputerPlayer.cpp CardWindow.cpp
 
-include_HEADERS=CardWidget.h CardImgs.h CardPile.h CardSet.h	\
-DeckSelect.h Game.h PlayerDlg.h
+include_HEADERS=CardWidget.h CardImgs.h CardPile.h CardSet.h Game.h	\
+DeckSelect.h PlayerDlg.h ScoreDlg.h PlayerConnDlg.h Player.h Human.h	\
+RemotePlayer.h ComputerPlayer.h CardWindow.h
 
 INCLUDES = @INCLUDES@ @DEPENDENCIES_CFLAGS@
 DEFS= @DEFS@ -DPKGDIR=\"$(pkgdatadir)\" -Wall
