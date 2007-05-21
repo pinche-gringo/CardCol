@@ -18,22 +18,59 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-#include <gtkmm/window.h>
+#include "AnimWindow.h"
 
 
 class ICardPile;
 class CardWidget;
 
 
+/**Information about the actual object to be animated
+ */
+class AnimData : public AnimatedObject {
+ public:
+   AnimData (ICardPile& dest, unsigned int posDest);
+
+   virtual void getEndPos (int& x, int& y);
+   virtual void finish ();
+
+ private:
+   ICardPile& dest;
+   unsigned int posDest;
+};
+
+
+
 /**Window holding exactly one card. This window can be used to animate a
  * card or fully show it if its put in a pile.
  */
-class CardWindow : public Gtk::Window {
+class CardWindow : public AnimatedWindow {
  public:
-   CardWindow (CardWidget& card);
    ~CardWindow () { }
 
+   static CardWindow* create (ICardPile& dest, unsigned int posDest, CardWidget& card);
+
    CardWidget& getCard () const { return *(CardWidget*)*get_children ().begin (); }
+
+ protected:
+   /**Information about the actual object to be animated
+    */
+   class AnimCard : public AnimData {
+    public:
+      /// Constructor
+      /// \param dest: Destination pile
+      /// \param posDest: Where to put the card in the destination
+      /// \param card: Card to show
+      AnimCard (ICardPile& dest, unsigned int posDest, CardWidget& card)
+	 : AnimData (dest, posDest), card (card) { }
+
+      CardWidget& getCard () const { return card; }
+
+    private:
+      CardWidget& card;
+   };
+
+   CardWindow (AnimCard* obj);
 
  private:
    CardWindow ();
@@ -44,12 +81,30 @@ class CardWindow : public Gtk::Window {
 
 /**Window holding a pile of cards, which can be used for animation.
  */
-class CardPileWindow : public Gtk::Window {
+class CardPileWindow : public AnimatedWindow {
  public:
-   CardPileWindow (bool horizontal = true);
    ~CardPileWindow ();
 
+   static CardPileWindow* create (ICardPile& dest, unsigned int posDest,
+				  ICardPile& src, unsigned int start, unsigned int end);
+
    ICardPile& getPile () const { return *pile; }
+
+ protected:
+   /**Information about the actual object to be animated
+    */
+   class AnimPile : public AnimData {
+    public:
+      AnimPile (ICardPile& dest, unsigned int posDest, ICardPile& src);
+
+      void start ();
+      void finish ();
+
+    private:
+      ICardPile& src;
+   };
+
+   CardPileWindow (AnimPile* obj);
 
  private:
    CardPileWindow ();
