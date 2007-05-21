@@ -46,6 +46,7 @@ namespace YGP {
 class Player;
 class CardSet;
 class CardWidget;
+class CardPileWindow;
 
 
 /**Abstract base class providing usefull methods for card games.
@@ -156,8 +157,7 @@ class Game : public Gtk::Table {
    static void movePile (ICardPile& dest, unsigned int posDest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
    void animateCard (ICardPile& dest, ICardPile& src, unsigned int pos) { animateCards (dest, dest.size (), src, pos, pos); }
-   void animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src,
-		     unsigned int pos) { animateCards (dest, posDest, src, pos, pos); }
+   void animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int pos);
    void animateCards (ICardPile& dest, ICardPile& src, unsigned int start,
 		      unsigned int end) { animateCards (dest, dest.size (), src, start, end); }
    void animateCards (ICardPile& dest, unsigned int posDest, ICardPile& src,
@@ -192,19 +192,10 @@ class Game : public Gtk::Table {
 
    unsigned int ignoreNextMsg;        ///< Number of received message to ignore
 
-   /// Sets the callback to call after animating a card
-   /// \param slot: Callback (sigc-slot)
-   void setCBAnimation (const sigc::slot<void>& slot) {
-      cbAnimation.disconnect ();
-      cbAnimation = sigAnimation.connect (slot); }
-
  private:
    bool endGame (bool startNew);
 
    bool enableActWonCards ();
-
-   bool startAnimation (Gtk::Window* win, ICardPile* dest, unsigned int posDest, int x, int y);
-   bool doAnimation (Gtk::Window* win, int x, int y, ICardPile* dest, unsigned int posDest, unsigned int steps);
 
    const char* data;                                   // Data send from server
 
