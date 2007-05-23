@@ -46,6 +46,7 @@ namespace YGP {
 class Player;
 class CardSet;
 class CardWidget;
+class CardWindow;
 class CardPileWindow;
 
 
@@ -156,12 +157,13 @@ class Game : public Gtk::Table {
 			 int end = -1) { movePile (dest, dest.size (), source, start, end); }
    static void movePile (ICardPile& dest, unsigned int posDest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
-   void animateCard (ICardPile& dest, ICardPile& src, unsigned int pos) { animateCards (dest, dest.size (), src, pos, pos); }
-   void animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int pos);
-   void animateCards (ICardPile& dest, ICardPile& src, unsigned int start,
-		      unsigned int end) { animateCards (dest, dest.size (), src, start, end); }
-   void animateCards (ICardPile& dest, unsigned int posDest, ICardPile& src,
-		      unsigned int start, unsigned int end);
+   CardWindow& animateCard (ICardPile& dest, ICardPile& src, unsigned int pos) {
+      return animateCard (dest, dest.size (), src, pos); }
+   CardWindow& animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int pos);
+   CardPileWindow& animateCards (ICardPile& dest, ICardPile& src, unsigned int start, unsigned int end) {
+      return animateCards (dest, dest.size (), src, start, end); }
+   CardPileWindow& animateCards (ICardPile& dest, unsigned int posDest, ICardPile& src,
+				 unsigned int start, unsigned int end);
 
    bool performCommand (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
    static bool stringToNumber (unsigned long& number, const char* text);
@@ -212,12 +214,6 @@ class Game : public Gtk::Table {
    Gtk::Menu*                    pMenuPopSort;
 
    std::string cardOrder;
-
-   /// Signal emitted, when the animation is finished
-   sigc::connection cbAnimation;
-   sigc::signal<void> sigAnimation;
-
-   static unsigned int ANIMATE_STEPS;
 };
 
 

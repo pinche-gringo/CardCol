@@ -25,52 +25,49 @@ class ICardPile;
 class CardWidget;
 
 
-/**Information about the actual object to be animated
+/**Baseclass for animated windows in the cardgame collection
  */
-class AnimData : public AnimatedObject {
+class AnimatedCard : public AnimatedWindow {
  public:
-   AnimData (ICardPile& dest, unsigned int posDest);
+   ~AnimatedCard ();
 
-   virtual void getEndPos (int& x, int& y);
-   virtual void finish ();
+   /// Signal emitted, when the animation is finished
+   sigc::signal<void> sigAnimation;
+
+   void getEndPos (int& x, int& y);
+   void start ();
+   void finish ();
+
+ protected:
+   AnimatedCard (ICardPile& dest, unsigned int pos);
+
+   ICardPile& dest;
+   unsigned int pos;
 
  private:
-   ICardPile& dest;
-   unsigned int posDest;
+   AnimatedCard ();
+   AnimatedCard (const AnimatedCard&);
+   AnimatedCard& operator= (const AnimatedCard&);
 };
-
 
 
 /**Window holding exactly one card. This window can be used to animate a
  * card or fully show it if its put in a pile.
  */
-class CardWindow : public AnimatedWindow {
+class CardWindow : public AnimatedCard {
  public:
-   ~CardWindow () { }
+   ~CardWindow ();
 
    static CardWindow* create (ICardPile& dest, unsigned int posDest, CardWidget& card);
 
+   /// Returns the card to be animated
+   /// \returns CardWidget&: Card to be animated
    CardWidget& getCard () const { return *(CardWidget*)*get_children ().begin (); }
 
+   void finish ();
+
  protected:
-   /**Information about the actual object to be animated
-    */
-   class AnimCard : public AnimData {
-    public:
-      /// Constructor
-      /// \param dest: Destination pile
-      /// \param posDest: Where to put the card in the destination
-      /// \param card: Card to show
-      AnimCard (ICardPile& dest, unsigned int posDest, CardWidget& card)
-	 : AnimData (dest, posDest), card (card) { }
-
-      CardWidget& getCard () const { return card; }
-
-    private:
-      CardWidget& card;
-   };
-
-   CardWindow (AnimCard* obj);
+   CardWindow (ICardPile& dest, unsigned int posDest, CardWidget& card);
 
  private:
    CardWindow ();
@@ -81,33 +78,24 @@ class CardWindow : public AnimatedWindow {
 
 /**Window holding a pile of cards, which can be used for animation.
  */
-class CardPileWindow : public AnimatedWindow {
+class CardPileWindow : public AnimatedCard {
  public:
    ~CardPileWindow ();
 
    static CardPileWindow* create (ICardPile& dest, unsigned int posDest,
 				  ICardPile& src, unsigned int start, unsigned int end);
 
+   /// Returns the pile of card to be animated
+   /// \returns ICardPile&: Pile of cards
    ICardPile& getPile () const { return *pile; }
 
+   void finish ();
+
  protected:
-   /**Information about the actual object to be animated
-    */
-   class AnimPile : public AnimData {
-    public:
-      AnimPile (ICardPile& dest, unsigned int posDest, ICardPile& src);
+   CardPileWindow (ICardPile& dest, unsigned int posDest);
 
-      void start ();
-      void finish ();
-
-    private:
-      ICardPile& src;
-   };
-
-   CardPileWindow (AnimPile* obj);
 
  private:
-   CardPileWindow ();
    CardPileWindow (const CardPileWindow&);
    CardPileWindow& operator= (const CardPileWindow&);
 

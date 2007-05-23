@@ -56,9 +56,6 @@
 #include "Game.h"
 
 
-unsigned int Game::ANIMATE_STEPS (10);
-
-
 //-----------------------------------------------------------------------------
 /// Constructor
 /// \param parent: Parent of widget
@@ -834,12 +831,14 @@ void Game::resizeCards () {
 /// \param pos: First card of source to move
 /// \pre: The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
-void Game::animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int pos) {
+CardWindow& Game::animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int pos) {
    TRACE3 ("Game::animateCard (...) - " << pos);
    Check1 (pos < src.size ());
    Check1 (posDest <= dest.size ());
 
-   CardWindow::create (dest, posDest, src.remove (pos))->animate ();
+   CardWindow& win (*CardWindow::create (dest, posDest, src.remove (pos)));
+   win.animate ();
+   return win;
 }
 
 //-----------------------------------------------------------------------------
@@ -851,10 +850,13 @@ void Game::animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src, u
 /// \param end: Last card of source to move
 /// \pre: The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
-void Game::animateCards (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int start, unsigned int end) {
+CardPileWindow& Game::animateCards (ICardPile& dest, unsigned int posDest, ICardPile& src,
+				    unsigned int start, unsigned int end) {
    TRACE3 ("Game::animateCards (...) - " << start << '/' << end);
    Check1 (end < src.size ()); Check1 (start <= end);
    Check1 (posDest <= dest.size ());
 
-   CardPileWindow::create (dest, posDest, src, start, end)->animate ();
+   CardPileWindow& win (*CardPileWindow::create (dest, posDest, src, start, end));
+   win.animate ();
+   return win;
 }
