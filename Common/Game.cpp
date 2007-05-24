@@ -294,6 +294,7 @@ bool Game::endRemoteMove (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Enables the cards of the human player
+/// \returns bool: False
 //-----------------------------------------------------------------------------
 bool Game::enableHuman () {
    Check3 (!actPlayer);
@@ -303,7 +304,7 @@ bool Game::enableHuman () {
 
 //-----------------------------------------------------------------------------
 /// Makes the move for the next computer player.
-/// \returns \c int: Flag for timer, if it should continue (0: no; else: yes)
+/// \returns \c bool: Flag for timer, if it should continue (false: no; else: yes)
 //-----------------------------------------------------------------------------
 bool Game::makeComputerMove () {
    TRACE5 ("Game::makeComputerMove () - Turn of player " << actPlayer);
@@ -836,7 +837,7 @@ CardWindow& Game::animateCard (ICardPile& dest, unsigned int posDest, ICardPile&
    Check1 (pos < src.size ());
    Check1 (posDest <= dest.size ());
 
-   CardWindow& win (*CardWindow::create (dest, posDest, src.remove (pos)));
+   CardWindow& win (*CardWindow::create (dest, posDest, src, pos));
    win.animate ();
    return win;
 }
