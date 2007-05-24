@@ -46,6 +46,7 @@
 #include <Player.h>
 #include <ScoreDlg.h>
 #include <CardImgs.h>
+#include <CardWindow.h>
 #include <RemotePlayer.h>
 #include <ComputerPlayer.h>
 
@@ -395,8 +396,8 @@ void Jabberwocky::cardSelected (unsigned int pos) {
 
       playedCards[players[0].hand[pos]->colour ()].set (players[0].hand[pos]->number ());
 
-      animateCard (played, players[0].hand, pos);
-      setCBAnimation (mem_fun (*this, &Jabberwocky::finishMove));
+      animateCard (played, players[0].hand, pos)
+	 .sigAnimation.connect (mem_fun (*this, &Jabberwocky::finishMove));
    }
    catch (Glib::ustring& error) {
       Gtk::MessageDialog dlg (error, Gtk::MESSAGE_ERROR);
@@ -702,8 +703,8 @@ void Jabberwocky::showCards2Play (unsigned int player) {
    playedCards[players[player].hand[pos2Play]->colour ()].set (players[player].hand[pos2Play]->number ());
    flipCards2Play (hand, pos2Play, pos2Play);
 
-   animateCard (played, players[player].hand, pos2Play);
-   setCBAnimation (mem_fun (*this, &Jabberwocky::finishMove));
+   animateCard (played, players[player].hand, pos2Play)
+      .sigAnimation.connect (mem_fun (*this, &Jabberwocky::finishMove));
 }
 
 //-----------------------------------------------------------------------------

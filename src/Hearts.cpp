@@ -41,6 +41,7 @@
 
 #include <ScoreDlg.h>
 #include <CardImgs.h>
+#include <CardWindow.h>
 #include <ComputerPlayer.h>
 
 #include "Hearts.h"
@@ -152,8 +153,8 @@ void Hearts::makeMove (unsigned int player) {
       playedSQ = true;
 
    flipCards2Play (pile, pos2Play, pos2Play);
-   animateCard (played, pile, pos2Play);
-   setCBAnimation (mem_fun (*this, &Hearts::finishMove));
+   animateCard (played, pile, pos2Play)
+      .sigAnimation.connect (mem_fun (*this, &Hearts::finishMove));
 }
 
 //-----------------------------------------------------------------------------
@@ -300,8 +301,8 @@ void Hearts::takeCard (unsigned int iCard) {
    Check1 (iCard < played.size ());
    Check1 (gameStatus () == EXCHANGE);
 
-   animateCard (*players[0].hand, played, iCard);
-   setCBAnimation (mem_fun (*this, &Hearts::cardTaken));
+   animateCard (*players[0].hand, played, iCard)
+      .sigAnimation.connect (mem_fun (*this, &Hearts::cardTaken));
 }
 
 //-----------------------------------------------------------------------------
@@ -410,8 +411,8 @@ void Hearts::startPlaying () {
            && (nextPlayer > getConnectionMgr ().getClients ().size ()))) {
       unsigned int pos2Play (0);
       flipCards2Play (*players[nextPlayer].hand, pos2Play, pos2Play);
-      animateCard (played, *players[nextPlayer].hand, pos2Play);
-      setCBAnimation (mem_fun (*this, &Hearts::finishMove));
+      animateCard (played, *players[nextPlayer].hand, pos2Play)
+	 .sigAnimation.connect (mem_fun (*this, &Hearts::finishMove));
    }
    else
       makeNextMoves ();
@@ -510,6 +511,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
    Check1 (card < players[player].hand->size ());
    Check1 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
 
+   CardWindow& win (animateCard (played, *players[player].hand, card));
    if (gameStatus () == PLAYING) {
       CardWidget& actCard (*(*players[player].hand)[card]);
       CardWidget::COLOURS playColour (actCard.colour ());
@@ -558,16 +560,14 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
       Check3 ((unsigned)playColour < (unsigned)(sizeof (aPlayed) / sizeof (aPlayed[0])));
       aPlayed[playColour]++;
 
-      setCBAnimation (mem_fun (*this, &Hearts::finishMove));
+      win.sigAnimation.connect (mem_fun (*this, &Hearts::finishMove));
    }
    else
       // If there are already two cards exchanged (and thus the 3rd is going
       // to be exchanged) start exchanging of cards for the computer players
-      setCBAnimation ((played.size () != 2)
-		      ? mem_fun (*this, &Hearts::makeNextMoves)
-		      : mem_fun (*this, &Hearts::exchangeCards));
-
-   animateCard (played, *players[player].hand, card);
+      win.sigAnimation.connect ((played.size () != 2)
+				? mem_fun (*this, &Hearts::makeNextMoves)
+				: mem_fun (*this, &Hearts::exchangeCards));
    return true;
 }
 
