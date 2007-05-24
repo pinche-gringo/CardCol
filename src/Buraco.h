@@ -127,8 +127,6 @@ class Buraco : public Game {
    void makeTeamNames (std::vector<Player*>& names) const;
    void setStartPlayer ();
    void cleanup ();
-   void finishTurn ();
-   void finishMove ();
 
    //@Section to handle piles on table
    BuracoPile& makeNewPile (unsigned int team);

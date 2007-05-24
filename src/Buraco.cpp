@@ -50,6 +50,7 @@
 #include <Human.h>
 #include <ScoreDlg.h>
 #include <CardImgs.h>
+#include <CardWindow.h>
 #include <ComputerPlayer.h>
 
 #include "Buraco.h"
@@ -184,6 +185,12 @@ void Buraco::cleanCerrado (unsigned int player) {
 void Buraco::makeMove (unsigned int player) {
    TRACE5 ("Buraco::makeMove (unsigned int) - Turn of player " << player);
    Check1 (player); Check1 (player < NUM_PLAYERS);
+
+   cleanup ();
+   if (gStatus.startTurn) {
+      if (gameStatus () == STOPPED)
+	 return;
+   }
    Check1 (gameStatus () == PLAYING);
    Check1 (!hands[player].empty ());
 
@@ -208,6 +215,8 @@ void Buraco::makeMove (unsigned int player) {
 //-----------------------------------------------------------------------------
 void Buraco::cleanup () {
    unsigned int player (currentPlayer ());
+   if (gStatus.startTurn)
+      player = (player + NUM_PLAYERS - 1) & 0x3;
    TRACE5 ("Buraco::cleanup () - " << player);
 
    // First cleanup cerrado made in the last turn
@@ -242,32 +251,6 @@ void Buraco::cleanup () {
 }
 
 //-----------------------------------------------------------------------------
-/// Ends the move for the actual player.
-//-----------------------------------------------------------------------------
-void Buraco::finishMove () {
-   TRACE5 ("Buraco::finishMove () - " << currentPlayer ());
-   cleanup ();
-   makeNextMoves ();
-}
-
-
-//-----------------------------------------------------------------------------
-/// Ends the whole turn for the actual player.
-//-----------------------------------------------------------------------------
-void Buraco::finishTurn () {
-   TRACE5 ("Buraco::finishTurn () - " << currentPlayer ());
-   cleanup ();
-
-   unsigned int player (currentPlayer ());
-   gStatus.startTurn = 1;
-   ++player &= 0x3;
-   displayTurn (player);
-   setNextPlayer (player);
-
-   makeNextMoves ();
-}
-
-//-----------------------------------------------------------------------------
 /// Searches for cards to play and shows them in the hand of the
 /// actual player. They are moved to the end and then animated to its target
 /// \param player: Player to inspect
@@ -276,7 +259,6 @@ void Buraco::playCards (unsigned int player) {
    TRACE2 ("Buraco::showCardsToPlay (unsigned int, 2x unsigned int&) - " << player << " ("
            << gStatus.startGame << '/' << gStatus.startTurn << ')');
 
-   setCBAnimation (mem_fun (*this, &Buraco::finishMove));
    if (gStatus.startTurn
        && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco)
 	   == (player >> 1)))
@@ -332,7 +314,8 @@ void Buraco::playCards (unsigned int player) {
 
             ICardPile& newPile (makeNewPile (player & 1));
 	    flipCards2Play (playerPile, pos1Play, pos2Play);
-	    animateCards (newPile, playerPile, pos1Play, pos2Play);
+	    animateCards (newPile, playerPile, pos1Play, pos2Play)
+	       .sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
 	    return;
          }
       }
@@ -362,11 +345,18 @@ void Buraco::playCards (unsigned int player) {
    Check3 (pos1Play <= pos2Play); Check3 (pos2Play < hands[player].size ());
    if (target != -1U)
       animateCards (*tablePiles[player & 1][target >> 16], target & 0xff,
-		    playerPile, pos1Play, pos2Play);
+		    playerPile, pos1Play, pos2Play)
+	 .sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
    else {
       Check3 (pos1Play == pos2Play);
-      animateCard (dumped, playerPile, pos1Play);
-      setCBAnimation (mem_fun (*this, &Buraco::finishTurn));
+      gStatus.startTurn = 1;
+
+      ++player &= 0x3;
+      displayTurn (player);
+      setNextPlayer (player);
+
+      animateCard (dumped, playerPile, pos1Play)
+	 .sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
    }
 }
 
@@ -638,10 +628,12 @@ void Buraco::clean () {
 
 //-----------------------------------------------------------------------------
 /// Enables the cards the human can pick up.
-/// \returns \c 0
+/// \returns bool: False
 //-----------------------------------------------------------------------------
 bool Buraco::enableHuman () {
    Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
+
+   cleanup ();
 
    if (staple.size ())
       stapleTop = staple.getTopCard ().signal_clicked ().connect
@@ -749,7 +741,8 @@ void Buraco::cardSelected (unsigned int iCard) {
    }
 
    unregisterHandDND (*hands[0][iCard]);
-   animateCard (dumped, hands[0], iCard);
+   animateCard (dumped, hands[0], iCard)
+      .sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
    menuUndo->set_sensitive (false);
 
    // If the player has no more cards left (except of jokers): Give him the
@@ -762,7 +755,6 @@ void Buraco::cardSelected (unsigned int iCard) {
          endGame ();
          return;
       }
-   setCBAnimation (mem_fun (*this, &Buraco::makeNextMoves));
 
    gStatus.startTurn = 1;
    gStatus.startGame = 0;
@@ -776,16 +768,6 @@ void Buraco::cardSelected (unsigned int iCard) {
 void Buraco::stapleSelected () {
    TRACE5 ("Buraco::stapleSelected ()");
    Check3 (staple.size ()); Check3 (stapleTop.connected ());
-
-   if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-      // Send played card to all clients (if any)
-      std::ostringstream msg;
-      msg << "Play=" << staple.getTopCard ().id () << ";Target=2";
-
-      if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-         ignoreNextMsg = true;
-      broadcastMessage (msg.str ());
-   }
 
    dumpedTop.disconnect ();
    stapleTop.disconnect ();
@@ -804,8 +786,18 @@ void Buraco::doStapleSelected () {
    Check2 (staple.size ());
 
    if (gameStatus () != STOPPED) {
-      animateCard (hands[0], staple, staple.size () - 1);
-      setCBAnimation (mem_fun (*this, &Buraco::enableHumanHand));
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+	 // Send played card to all clients (if any)
+	 std::ostringstream msg;
+	 msg << "Play=" << staple.getTopCard ().id () << ";Target=2";
+
+	 if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+	    ignoreNextMsg = true;
+	 broadcastMessage (msg.str ());
+      }
+
+      animateCard (hands[0], staple, staple.size () - 1)
+	 .sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
    }
    else {
       dumped.append (staple.removeTopCard ());
@@ -823,8 +815,8 @@ void Buraco::dumpedSelected () {
    dumpedTop.disconnect ();
    stapleTop.disconnect ();
 
-   ICardPile* target (NULL);
    if (gameStatus () != STOPPED) {
+      ICardPile* target (NULL);
       CardWidget& card (dumped.getTopCard ());
       if (!gStatus.startGame)
 	 try {
@@ -883,20 +875,17 @@ void Buraco::dumpedSelected () {
 	 // Create new pile with picked up card
 	 target = &makeNewPile (0);
 
-	 if (dumped.size ())
-	    movePile (takenDumpedCards, dumped);
+	 if (dumped.size () > 1)
+	    movePile (takenDumpedCards, dumped, 0, dumped.size () - 2);
       }
-
-      setCBAnimation (mem_fun (*this, &Buraco::enableHumanHand));
+      Check2 (target);
+      // TODO: Animate both taken card and remaining pile
+      animateCard (*target, dumped, dumped.size () - 1)
+	 .sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
    }
-   else {
-      setCBAnimation (mem_fun (*this, (void (Buraco::*)())&Buraco::enableHuman));
-      target = &staple;
-   }
-
-   // Enable the cards in humans hand after card has been animated
-   Check1 (target);
-   animateCard (*target, dumped, dumped.size () - 1);
+   else
+      animateCard (staple, dumped, dumped.size () - 1)
+	 .sigAnimation.connect (mem_fun (*this, (void (Buraco::*)())&Buraco::enableHuman));
 }
 
 //-----------------------------------------------------------------------------
@@ -2155,13 +2144,13 @@ bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) throw (YGP::
       gStatus.startGame = gStatus.startTurn = 0;
       break;
 
-   case 2:
+   case 2: {
       Check3 (staple.size ());
-      animateCard (hands[currentPlayer ()], staple, staple.size () - 1);
+      CardWindow& win (animateCard (hands[currentPlayer ()], staple, staple.size () - 1));
       if (!currentPlayer ())
-	 setCBAnimation (mem_fun (*this, &Buraco::enableHumanHand));
+	 win.sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
       return false;
-
+   }
    case 3:
       Check3 (dumped.size ());
       pos1Play = pos2Play = -1U;
