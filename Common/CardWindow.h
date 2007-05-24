@@ -58,7 +58,7 @@ class CardWindow : public AnimatedCard {
  public:
    ~CardWindow ();
 
-   static CardWindow* create (ICardPile& dest, unsigned int posDest, CardWidget& card);
+   static CardWindow* create (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc);
 
    /// Returns the card to be animated
    /// \returns CardWidget&: Card to be animated

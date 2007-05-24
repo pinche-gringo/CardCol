@@ -57,6 +57,7 @@ AnimatedCard::~AnimatedCard () {
 void AnimatedCard::start () {
    TRACE5 ("AnimatedCard::start () - " << posDest << '/' << dest.size ());
    if (dest.empty ()) {
+   TRACE5 ("AnimatedCard::start () - " << pos << '/' << dest.size ());
       card->show ();
       dest.setTopCard (*card);
       posDest = -1U;
@@ -69,6 +70,7 @@ void AnimatedCard::start () {
 void AnimatedCard::finish () {
    TRACE5 ("AnimatedCard::finish () - " << posDest << '/' << dest.size ());
    if (posDest == -1U) {
+   TRACE5 ("AnimatedCard::finish () - " << pos << '/' << dest.size ());
    if (pos == -1U) {
    }
       pos = 0;
@@ -113,15 +115,19 @@ CardWindow::~CardWindow () {
 /// \param posDest: Where to put the card in the destination
 /// \param src: Source pile
 /// \param posSrc: Position of the card in the source
-/// \param card: Card to show
+/// \returns CardWindow*: Created window to animate
+/// \pre The card must be shown (to get its position)
 //-----------------------------------------------------------------------------
 CardWindow* CardWindow::create (ICardPile& dest, unsigned int posDest,
 				ICardPile& src, unsigned int posSrc) {
-CardWindow* CardWindow::create (ICardPile& dest, unsigned int posDest, CardWidget& card) {
-   CardWindow* win (new CardWindow (dest, posDest, card));
+   Check1 (posSrc < src.size ());
+   Check1 (posDest <= dest.size ());
+
+   CardWindow* win (new CardWindow (dest, posDest, src, posSrc));
    return win;
    move (x, y);
-   card.get_window ()->get_origin (x, y);
+   add (src.remove (posSrc));
+   CardWindow* win (new CardWindow (dest, posDest, src.remove (posSrc)));
    win->move (x, y);
    win->show ();
 
@@ -149,8 +155,7 @@ void CardWindow::finish () {
 /// \param start: First card to animate from source
 				unsigned int start, unsigned int end)
 CardPileWindow::CardPileWindow (ICardPile& dest, unsigned int posDest)
-   : AnimatedCard (dest, pos), pile (NULL) {
-   show_all_children ();
+   : AnimatedCard (dest, posDest), pile (NULL) {
    show ();
 //-----------------------------------------------------------------------------
 /// Destructor
@@ -173,7 +178,7 @@ CardPileWindow* CardPileWindow::create (ICardPile& dest, unsigned int posDest,
 					ICardPile& src, unsigned int start, unsigned int end) {
    TRACE8 ("CardPileWindow::create (...) - " << start << '/' << end);
    Check3 (src.size ()); Check3 (start <= end); Check3 (end < src.size ());
-   Check3 (src.size ()); Check3 (start < end); Check3 (end < src.size ());
+
 //-----------------------------------------------------------------------------
    ICardPile* pile;
    Gtk::Box*  box;
@@ -187,6 +192,7 @@ CardPileWindow* CardPileWindow::create (ICardPile& dest, unsigned int posDest,
       tmp->set_size_request (CardImages::WIDTH, CardImages::HEIGHT + cards * tmp->getCompressedSize ());
    }
    pile->setStyle (dest.getStyle ());
+   pile->setShowOption (dest.getShowOption ());
    win->add (*box);
    return pile;
 /// Callback when the animated is to be started
