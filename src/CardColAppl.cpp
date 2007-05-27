@@ -36,9 +36,9 @@
 
 #include <XGP/XAttribute.h>
 
-#include <Player.h>
 #include <ScoreDlg.h>
 #include <CardImgs.h>
+#include <ComputerPlayer.h>
 
 #ifdef WITH_BURACO
 #  include "Buraco.h"
@@ -329,6 +329,7 @@ void CardgameAppl::readINIFile (const char* pFile) {
       INIATTR2 (Game, int, ScoreDlg::LASTY, ScoreDlgPosY);
       INIATTR2 (Game, std::string, options.co.decks, CardFront);
       INIATTR2 (Game, std::string, options.co.back, CardBack);
+      INIATTR2 (Game, unsigned int, ComputerPlayer::TIMEOUT, Delay);
 
       INILIST2 (Player, Glib::ustring, options.names);
 
@@ -382,6 +383,10 @@ void CardgameAppl::readINIFile (const char* pFile) {
       err.replace (err.find ("%2"), 2, options.strType);
       std::cerr << PACKAGE << err << '\n';
    }
+
+   // Correct the timeout of the computer player
+   if (ComputerPlayer::TIMEOUT < 100)
+      ComputerPlayer::TIMEOUT = 100;
 
 #ifdef WITH_ROVHULT
    CardgameCollection::checkRovhultSpecialCards ();
