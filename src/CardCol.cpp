@@ -1090,9 +1090,10 @@ void CardgameCollection::savePreferences () {
       int x, y, width, height;
       get_size (width, height);
       get_position (x, y);
-      inifile << "WindowPosX=" << x << "\nWindowPosY=" << y << "\n"
-	      << "WindowWidth=" << width << "\nWindowHeight=" << height << "\n"
-	      << "ScoreDlgPosX=" << ScoreDlg::LASTX << "\nScoreDlgPosY=" << ScoreDlg::LASTY << "\n\n";
+      inifile << "Delay=" << ComputerPlayer::TIMEOUT << "\nWindowPosX=" << x
+	      << "\nWindowPosY=" << y << "\nWindowWidth=" << width
+	      << "\nWindowHeight=" << height << "\nScoreDlgPosX=" << ScoreDlg::LASTX
+	      << "\nScoreDlgPosY=" << ScoreDlg::LASTY << "\n\n";
 
       YGP::INIFile::write (inifile, "Cards", options.co);
       inifile << "Width=" << CardImages::WIDTH << "\nHeight=" << CardImages::HEIGHT << "\n\n";
