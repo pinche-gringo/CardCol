@@ -838,7 +838,13 @@ CardWindow& Game::animateCard (ICardPile& dest, unsigned int posDest, ICardPile&
    Check1 (posDest <= dest.size ());
 
    CardWindow& win (*CardWindow::create (dest, posDest, src, pos));
-   win.animate ();
+   unsigned int timeout (actPlayers[actPlayer]->timeout ());
+   if (timeout)
+      Glib::signal_timeout ().connect
+	 (bind_return (mem_fun (win, &CardWindow::animate), false), timeout);
+   else
+      Glib::signal_idle ().connect
+	 (bind_return (mem_fun (win, &CardWindow::animate), false));
    return win;
 }
 
@@ -858,6 +864,12 @@ CardPileWindow& Game::animateCards (ICardPile& dest, unsigned int posDest, ICard
    Check1 (posDest <= dest.size ());
 
    CardPileWindow& win (*CardPileWindow::create (dest, posDest, src, start, end));
-   win.animate ();
+   unsigned int timeout (actPlayers[actPlayer]->timeout ());
+   if (timeout)
+      Glib::signal_timeout ().connect
+	 (bind_return (mem_fun (win, &CardPileWindow::animate), false), timeout);
+   else
+      Glib::signal_idle ().connect
+	 (bind_return (mem_fun (win, &CardPileWindow::animate), false));
    return win;
 }
