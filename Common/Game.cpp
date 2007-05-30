@@ -873,3 +873,30 @@ CardPileWindow& Game::animateCards (ICardPile& dest, unsigned int posDest, ICard
 	 (bind_return (mem_fun (win, &CardPileWindow::animate), false));
    return win;
 }
+
+//-----------------------------------------------------------------------------
+/// Animates the given cards to the given position of the passed pile. Further
+/// cards to be animated to the same destination can be added.
+/// \param dest: Destination pile
+/// \param posDest: Where to put the card in the destination
+/// \param source: Source pile
+/// \param start: First card of source to move
+/// \param end: Last card of source to move
+/// \pre: The card must be shown somewhere (to get its position)
+//-----------------------------------------------------------------------------
+CardPileWindows& Game::animateCards2 (ICardPile& dest, unsigned int posDest, ICardPile& src,
+				      unsigned int start, unsigned int end) {
+   TRACE3 ("Game::animateCards2 (...) - " << start << '/' << end);
+   Check1 (end < src.size ()); Check1 (start <= end);
+   Check1 (posDest <= dest.size ());
+
+   CardPileWindows& win (*CardPileWindows::create (dest, posDest, src, start, end));
+   unsigned int timeout (actPlayers[actPlayer]->timeout ());
+   if (timeout)
+      Glib::signal_timeout ().connect
+	 (bind_return (mem_fun (win, &CardPileWindow::animate), false), timeout);
+   else
+      Glib::signal_idle ().connect
+	 (bind_return (mem_fun (win, &CardPileWindow::animate), false));
+   return win;
+}

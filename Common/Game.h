@@ -48,6 +48,7 @@ class CardSet;
 class CardWidget;
 class CardWindow;
 class CardPileWindow;
+class CardPileWindows;
 
 
 /**Abstract base class providing usefull methods for card games.
@@ -157,6 +158,9 @@ class Game : public Gtk::Table {
 			 int end = -1) { movePile (dest, dest.size (), source, start, end); }
    static void movePile (ICardPile& dest, unsigned int posDest, ICardPile& source,
                          unsigned int start = 0, int end = -1);
+
+   /// \name Animation
+   //@{
    CardWindow& animateCard (ICardPile& dest, ICardPile& src, unsigned int pos) {
       return animateCard (dest, dest.size (), src, pos); }
    CardWindow& animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int pos);
@@ -164,6 +168,11 @@ class Game : public Gtk::Table {
       return animateCards (dest, dest.size (), src, start, end); }
    CardPileWindow& animateCards (ICardPile& dest, unsigned int posDest, ICardPile& src,
 				 unsigned int start, unsigned int end);
+   CardPileWindows& animateCards2 (ICardPile& dest, ICardPile& src, unsigned int start, unsigned int end) {
+      return animateCards2 (dest, dest.size (), src, start, end); }
+   CardPileWindows& animateCards2 (ICardPile& dest, unsigned int posDest, ICardPile& src,
+				   unsigned int start, unsigned int end);
+   //@}
 
    bool performCommand (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
    static bool stringToNumber (unsigned long& number, const char* text);
