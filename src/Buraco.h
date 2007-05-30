@@ -110,7 +110,7 @@ class Buraco : public Game {
    static bool containsNoJoker (const std::vector<CardWidget*>& pile);
    static bool hideJoker (ICardPile* pile, unsigned int cJokers);
    void addBuraco (unsigned int player);
-   void playCards (unsigned int player);
+   void playCards ();
    int  executeMove (unsigned int player, unsigned int& pos1Play, unsigned int& pos2Play);
    void endGame ();
    bool canClosePile (unsigned int player, unsigned int pile) const;
@@ -199,16 +199,13 @@ class Buraco : public Game {
       unsigned int destPile : 8;
       unsigned int destPos  : 3;
       unsigned int srcPos   : 7;
-      unsigned int blocked  : 7;
       unsigned int pickUp   : 1;
       unsigned int monoPos  : 3;
 
-      void assign (unsigned int targetPile, unsigned int targetPos,
-		   unsigned int pos, unsigned int acceptCard) {
+      void assign (unsigned int targetPile, unsigned int targetPos, unsigned int pos) {
 	 destPile = targetPile;
 	 destPos = targetPos;
 	 srcPos = pos;
-	 blocked = acceptCard;
 	 monoPos = 7;
 	 pickUp = 0; }
    } undoValue;
