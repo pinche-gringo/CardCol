@@ -187,12 +187,6 @@ void Buraco::makeMove (unsigned int player) {
    Check1 (player); Check1 (player < NUM_PLAYERS);
 
    cleanup ();
-   if (gStatus.startTurn) {
-      if (gameStatus () == STOPPED)
-	 return;
-   }
-   Check1 (gameStatus () == PLAYING);
-   Check1 (!hands[player].empty ());
 
    // Turn back jokers
    if (undo.pickUp) {
@@ -207,7 +201,9 @@ void Buraco::makeMove (unsigned int player) {
       undo.pickUp = 0;
    }
 
-   playCards (player);
+   if (gStatus.startTurn && (gameStatus () == STOPPED))
+      return;
+   playCards ();
 }
 
 //-----------------------------------------------------------------------------
@@ -253,11 +249,13 @@ void Buraco::cleanup () {
 //-----------------------------------------------------------------------------
 /// Searches for cards to play and shows them in the hand of the
 /// actual player. They are moved to the end and then animated to its target
-/// \param player: Player to inspect
 //-----------------------------------------------------------------------------
-void Buraco::playCards (unsigned int player) {
-   TRACE2 ("Buraco::showCardsToPlay (unsigned int, 2x unsigned int&) - " << player << " ("
+void Buraco::playCards () {
+   unsigned int player (currentPlayer ());
+   TRACE2 ("Buraco::playCards () - " << player << " ("
            << gStatus.startGame << '/' << gStatus.startTurn << ')');
+   Check1 (gameStatus () == PLAYING);
+   Check1 (!hands[player].empty ());
 
    if (gStatus.startTurn
        && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco)
@@ -297,7 +295,7 @@ void Buraco::playCards (unsigned int player) {
             std::vector<unsigned int> aOrder;
             unsigned int nrs (playerPile.getSeries (dumpedCard, aPos, aOrder,
                                                     &cardDistance));
-            TRACE8 ("Buraco::showCardsToPlay (unsigned int) - Sizes: "
+            TRACE8 ("Buraco::playCards () - Sizes: "
                     << nrs << "<->" << aPos.size ());
             Check3 ((nrs >= 3) || (aPos.size () >= 3));
 
@@ -339,7 +337,7 @@ void Buraco::playCards (unsigned int player) {
 
    unsigned int pos1Play, pos2Play;
    unsigned int target (executeMove (player, pos1Play, pos2Play));
-   TRACE1 ("Buraco::playCards (unsigned int) - " << pos1Play << '/' << pos2Play << "->" << std::hex << target << std::dec);
+   TRACE1 ("Buraco::playCards () - " << pos1Play << '/' << pos2Play << "->" << std::hex << target << std::dec);
 
    flipCards2Play (playerPile, pos1Play, pos2Play);
    Check3 (pos1Play <= pos2Play); Check3 (pos2Play < hands[player].size ());
@@ -633,7 +631,8 @@ void Buraco::clean () {
 bool Buraco::enableHuman () {
    Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
 
-   cleanup ();
+   if (gameStatus () == PLAYING)
+      cleanup ();
 
    if (staple.size ())
       stapleTop = staple.getTopCard ().signal_clicked ().connect
@@ -812,6 +811,7 @@ void Buraco::dumpedSelected () {
    TRACE5 ("Buraco::dumpedSelected ()");
    Check3 (dumped.size ());
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
+   Check2 (takenDumpedCards.empty ());
    dumpedTop.disconnect ();
    stapleTop.disconnect ();
 
@@ -874,14 +874,13 @@ void Buraco::dumpedSelected () {
 
 	 // Create new pile with picked up card
 	 target = &makeNewPile (0);
-
-	 if (dumped.size () > 1)
-	    movePile (takenDumpedCards, dumped, 0, dumped.size () - 2);
+	 movePile (takenDumpedCards, dumped, 0, dumped.size () - 2);
       }
       Check2 (target);
-      // TODO: Animate both taken card and remaining pile
-      animateCard (*target, dumped, dumped.size () - 1)
-	 .sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
+      CardPileWindows& win (animateCards2 (*target, dumped, dumped.size () - 1, dumped.size () - 1));
+      win.sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
+      if (dumped.size () > 1)
+	 win.addWindow (dumped, 0, dumped.size () - 2);
    }
    else
       animateCard (staple, dumped, dumped.size () - 1)
@@ -1184,8 +1183,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 
       TRACE4 ("Buraco::cardDroppedOnTable (...) - Undo:  " << iPile << "; " << iCard
 	      << "; " << *pValue << ": " << takenDumpedCards.size () << '/' << pile->getPosJoker ());
-      undo.assign (iPile, iCard, *pValue, takenDumpedCards.size ());
-      menuUndo->set_sensitive ();
+      undo.assign (iPile, iCard, *pValue);
 
       if (move != -1U) {
 	 Check3 (move <= pile->size ());
@@ -1219,10 +1217,10 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       // disabled, if the human picked up the dumped pile.
       if ((pile->size () == 3) && takenDumpedCards.size ()) {
 	 movePile (hands[0], takenDumpedCards);
-
-	 menuSort->set_sensitive ();
-	 menuSort2->set_sensitive ();
+	 menuUndo->set_sensitive (false);
       }
+      else
+	 menuUndo->set_sensitive ();
 
       // If the player has no more cards left (except of joker): Give him the reserve
       if (containsOnlyJoker (hands[0]) && humanPilesOK ())
@@ -1688,6 +1686,8 @@ void Buraco::endGame () {
       pScoreDlg = ScoreDlg::create (nameTeams);
       pScoreDlg->get_window ()->set_transient_for (get_window ());
    }
+   else
+      Check (0);
    points[0] += reserve[0].empty () ? 100 : -100;
    points[1] += reserve[1].empty () ? 100 : -100;
    pScoreDlg->addPoints (points);
@@ -1742,6 +1742,7 @@ void Buraco::endGame () {
    status.push (stat);
 
    setGameStatus (STOPPED);
+   setNextPlayer (0);
    enableHuman ();
 }
 
@@ -2167,7 +2168,7 @@ bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) throw (YGP::
 
 	 Check3 (pos1Play != -1U); Check3 (pos2Play != -1U);
 	 if (pos1Play == pos2Play)
-	    undo.assign (dest >> 16, dest & 0xffff, pos1Play, -1U);
+	    undo.assign (dest >> 16, dest & 0xffff, pos1Play);
       }
       break;
    }
@@ -2276,12 +2277,6 @@ void Buraco::undoLast (unsigned int player) {
    }
 
    hands[player].insert (src.remove (undo.destPos), undo.srcPos);
-
-   if (undo.blocked == 0x7f) {
-      movePile (takenDumpedCards, hands[0], hands[0].size () - undo.blocked);
-      menuSort->set_sensitive (false);
-      menuSort2->set_sensitive (false);
-   }
 
    if (src.size () == 0) {
       tablePiles[player & 1].erase (tablePiles[player & 1].begin () + undo.destPile);
