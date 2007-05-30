@@ -18,10 +18,13 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
+#include <vector>
+
+#include "CardPile.h"
+
 #include "AnimWindow.h"
 
 
-class ICardPile;
 class CardWidget;
 
 
@@ -39,10 +42,13 @@ class AnimatedCard : public AnimatedWindow {
    void finish ();
 
  protected:
-   AnimatedCard (ICardPile& dest, unsigned int pos);
+   AnimatedCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc);
 
    ICardPile& dest;
-   unsigned int pos;
+   unsigned int posDest;
+
+   ICardPile& src;
+   unsigned int posSrc;
 
  private:
    AnimatedCard ();
@@ -64,10 +70,11 @@ class CardWindow : public AnimatedCard {
    /// \returns CardWidget&: Card to be animated
    CardWidget& getCard () const { return *(CardWidget*)*get_children ().begin (); }
 
-   void finish ();
+   virtual void start ();
+   virtual void finish ();
 
  protected:
-   CardWindow (ICardPile& dest, unsigned int posDest, CardWidget& card);
+   CardWindow (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc);
 
  private:
    CardWindow ();
@@ -89,17 +96,62 @@ class CardPileWindow : public AnimatedCard {
    /// \returns ICardPile&: Pile of cards
    ICardPile& getPile () const { return *pile; }
 
-   void finish ();
+   virtual void start ();
+   virtual void finish ();
 
  protected:
-   CardPileWindow (ICardPile& dest, unsigned int posDest);
+   CardPileWindow (ICardPile& dest, unsigned int posDest, ICardPile& src,
+		   unsigned int start, unsigned int end);
 
-
- private:
-   CardPileWindow (const CardPileWindow&);
-   CardPileWindow& operator= (const CardPileWindow&);
+   static ICardPile* setPile (Gtk::Window* win, ICardPile& dest, unsigned int cards);
 
    ICardPile* pile;
+   unsigned int end;
+
+ private:
+   CardPileWindow ();
+   CardPileWindow (const CardPileWindow&);
+   CardPileWindow& operator= (const CardPileWindow&);
+};
+
+
+/**Window holding a pile of cards, which can be used for animation.
+ */
+class CardPileWindows : public CardPileWindow {
+ public:
+   ~CardPileWindows ();
+
+   static CardPileWindows* create (ICardPile& dest, unsigned int posDest,
+				   ICardPile& src, unsigned int start, unsigned int end);
+
+   void getEndPos (int& x, int& y);
+   virtual void start ();
+   virtual void finish ();
+
+   void addWindow (ICardPile& src, unsigned int start, unsigned int end);
+
+ protected:
+   CardPileWindows (ICardPile& dest, unsigned int posDest,
+		    ICardPile& src, unsigned int start, unsigned int end);
+
+ private:
+   CardPileWindows (const CardPileWindows&);
+   CardPileWindows& operator= (const CardPileWindows&);
+
+   struct AnimatedPile : public AnimatedWindow {
+      AnimatedPile () : AnimatedWindow (), pile (NULL) { }
+      ~AnimatedPile () { delete pile; }
+
+      ICardPile* pile;
+      ICardPile* src;
+      unsigned int start;
+      unsigned int end;
+
+      void animateTo (int x, int y) { AnimatedWindow::animateTo (x, y); }
+      void getEndPos (int& x, int& y);
+   };
+
+   std::vector<AnimatedPile*> wins;
 };
 
 
