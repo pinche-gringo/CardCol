@@ -310,10 +310,16 @@ void Buraco::playCards () {
             pos2Play = pos1Play + nrs - 1;
             Check3 ((pos2Play - pos1Play) >= 2);
 
+	    // Put taken card back for animation
             ICardPile& newPile (makeNewPile (player & 1));
-	    flipCards2Play (playerPile, pos1Play, pos2Play);
-	    animateCards (newPile, playerPile, pos1Play, pos2Play)
-	       .sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
+	    dumped.setTopCard (playerPile.remove (dumpedCard));
+	    flipCards2Play (playerPile, pos1Play, --pos2Play);
+
+	    Check (0);
+	    CardPileWindows& win (animateCards2 (newPile, playerPile, pos1Play, pos2Play));
+	    win.sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
+	    if (dumped.size () > 1)
+	       win.addWindow (dumped, dumped.size () - 1, dumped.size () - 1);
 	    return;
          }
       }
@@ -349,12 +355,12 @@ void Buraco::playCards () {
       Check3 (pos1Play == pos2Play);
       gStatus.startTurn = 1;
 
+      animateCard (dumped, playerPile, pos1Play)
+	 .sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
+
       ++player &= 0x3;
       displayTurn (player);
       setNextPlayer (player);
-
-      animateCard (dumped, playerPile, pos1Play)
-	 .sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
    }
 }
 
@@ -641,7 +647,7 @@ bool Buraco::enableHuman () {
       dumpedTop = dumped.getTopCard ().signal_clicked ().connect
 	 (mem_fun (*this, (&Buraco::dumpedSelected)));
 
-   return Game::enableHuman ();
+   return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -671,7 +677,7 @@ void Buraco::enableHumanHand () {
          registerTableDND (*(*tablePiles[0][i])[j], (i << 8) + j);
    }
 
-   if (takenDumpedCards.empty ()) {
+   if (!gStatus.pickUpPlayed) {
       menuSort->set_sensitive ();
       menuSort2->set_sensitive ();
    }
@@ -719,6 +725,7 @@ void Buraco::cardSelected (unsigned int iCard) {
    TRACE5 ("Buraco::cardSelected (unsigned int) - Position " << iCard);
    Check1 (iCard < hands[0].size ());
    Check1 (gameStatus () == PLAYING);
+   gStatus.startGame = 0;
 
    // Check if all piles are valid
    if (!humanPilesOK ()) {
@@ -747,8 +754,12 @@ void Buraco::cardSelected (unsigned int iCard) {
    // If the player has no more cards left (except of jokers): Give him the
    // reserve
    if (containsOnlyJoker (hands[0]))
-      if (!reserve[0].empty ())
+      if (!reserve[0].empty ()) {
+	 Game::disableHuman ();
+	 for (unsigned int i (0); i < hands[0].size (); ++i)
+	    unregisterHandDND (*hands[0][i]);
          addBuraco (0);
+      }
       else if (hands[0].empty ()) {
          points[0] += 100;
          endGame ();
@@ -756,7 +767,6 @@ void Buraco::cardSelected (unsigned int iCard) {
       }
 
    gStatus.startTurn = 1;
-   gStatus.startGame = 0;
    setNextPlayer (1);
    displayTurn (1);
 }
@@ -811,9 +821,8 @@ void Buraco::dumpedSelected () {
    TRACE5 ("Buraco::dumpedSelected ()");
    Check3 (dumped.size ());
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
-   Check2 (takenDumpedCards.empty ());
-   dumpedTop.disconnect ();
-   stapleTop.disconnect ();
+   Check2 (!gStatus.pickUpPlayed);
+   disableHuman ();
 
    if (gameStatus () != STOPPED) {
       ICardPile* target (NULL);
@@ -874,13 +883,12 @@ void Buraco::dumpedSelected () {
 
 	 // Create new pile with picked up card
 	 target = &makeNewPile (0);
-	 movePile (takenDumpedCards, dumped, 0, dumped.size () - 2);
+	 if (dumped.size () > 1)
+	    gStatus.pickUpPlayed = 1;
       }
       Check2 (target);
-      CardPileWindows& win (animateCards2 (*target, dumped, dumped.size () - 1, dumped.size () - 1));
+      CardWindow& win (animateCard (*target, dumped, dumped.size () - 1));
       win.sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
-      if (dumped.size () > 1)
-	 win.addWindow (dumped, 0, dumped.size () - 2);
    }
    else
       animateCard (staple, dumped, dumped.size () - 1)
@@ -1130,7 +1138,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 	 // Check validity of drop
 	 if (!(isJoker (moved)
 	       ? pileHasFittingPair (hands[0], &moved)
-	       : pileHasFittingPair (hands[0], moved, takenDumpedCards.empty ())))
+	       : pileHasFittingPair (hands[0], moved, !gStatus.pickUpPlayed)))
 	    throw Glib::ustring (_("There are no cards to make a valid new pile!"));
 
 	 // Only allow dropping on new pile while having < 5 cards, if the game
@@ -1182,7 +1190,8 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       Check3 (iCard <= pile->size ());
 
       TRACE4 ("Buraco::cardDroppedOnTable (...) - Undo:  " << iPile << "; " << iCard
-	      << "; " << *pValue << ": " << takenDumpedCards.size () << '/' << pile->getPosJoker ());
+	      << "; " << *pValue << ": " << (gStatus.pickUpPlayed ? dumped.size () : 0)
+	      << '/' << pile->getPosJoker ());
       undo.assign (iPile, iCard, *pValue);
 
       if (move != -1U) {
@@ -1215,8 +1224,8 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 
       // Accept again the jokers, if the pile has has now three cards (jokers are
       // disabled, if the human picked up the dumped pile.
-      if ((pile->size () == 3) && takenDumpedCards.size ()) {
-	 movePile (hands[0], takenDumpedCards);
+      if ((pile->size () == 3) && gStatus.pickUpPlayed) {
+	 movePile (hands[0], dumped);
 	 menuUndo->set_sensitive (false);
       }
       else
@@ -1340,13 +1349,6 @@ void Buraco::addBuraco (unsigned int player) {
 
    // Storing player picking up the buraco
    ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = (player >> 1);
-
-   // Disable the cards in the hand (if the human gets the cards)
-   if (!player) {
-      Game::disableHuman ();
-      for (unsigned int i (0); i < hands[0].size (); ++i)
-         unregisterHandDND (*hands[0][i]);
-   }
 
    // Add reserve
    sort (reserve[player & 1].begin (), reserve[player & 1].end (),
@@ -1742,8 +1744,9 @@ void Buraco::endGame () {
    status.push (stat);
 
    setGameStatus (STOPPED);
-   setNextPlayer (0);
+   setNextPlayer (0);                  // enableHuman() checks for player == 0
    enableHuman ();
+   setNextPlayer (-1);
 }
 
 
