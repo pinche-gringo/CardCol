@@ -103,7 +103,7 @@ class CardPileWindow : public AnimatedCard {
    CardPileWindow (ICardPile& dest, unsigned int posDest, ICardPile& src,
 		   unsigned int start, unsigned int end);
 
-   static ICardPile* setPile (Gtk::Window* win, ICardPile& dest, unsigned int cards);
+   static ICardPile* setPile (Gtk::Window* win, const ICardPile& dest, unsigned int cards);
 
    ICardPile* pile;
    unsigned int end;
