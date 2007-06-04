@@ -200,6 +200,7 @@ CardPileWindow* CardPileWindow::create (ICardPile& dest, unsigned int posDest,
 
    CardPileWindow* win (new CardPileWindow (dest, posDest, src, start, end));
    win->pile = setPile (win, dest, end - start);
+   TRACE1 ("CardPileWindow::create () - " << typeid (dest).name ());
    return win;
 }
 
@@ -213,10 +214,10 @@ CardPileWindow* CardPileWindow::create (ICardPile& dest, unsigned int posDest,
 //-----------------------------------------------------------------------------
 ICardPile* CardPileWindow::setPile (Gtk::Window* win, const ICardPile& dest, unsigned int cards) {
    ICardPile* pile (NULL);
-ICardPile* CardPileWindow::setPile (Gtk::Window* win, ICardPile& dest, unsigned int cards) {
+   Gtk::Box*  box (NULL);
    if (dynamic_cast<const CardHPile*> (&dest)) {
       CardHPile* tmp (new CardHPile);
-   if (dynamic_cast<CardHPile*> (&dest)) {
+      pile = tmp;
       box = tmp;
       tmp->set_size_request (CardImages::WIDTH + cards * tmp->getCompressedSize (), CardImages::HEIGHT);
    }
@@ -325,22 +326,31 @@ void CardPileWindows::getEndPos (int& x, int& y) {
    for (std::vector<AnimatedPile*>::iterator i (wins.begin ());
 	i != wins.end (); ++i) {
       TRACE9 ("CardPileWindows::getEndPos (2x int&) - Subwin: " << (i - wins.begin ()));
-	i != wins.end (); ++i)
+      Check3 (*i);
+      (*i)->animateTo (x, y);
+   }
 }
+
 //-----------------------------------------------------------------------------
 /// Callback when the animated starts
 //-----------------------------------------------------------------------------
 void CardPileWindows::start () {
    TRACE5 ("CardPileWindows::start ()");
    CardPileWindow::start ();
+
    int x, y;
    for (std::vector<AnimatedPile*>::iterator i (wins.begin ());
+	i != wins.end (); ++i) {
       (*i)->src->at ((*i)->start)->get_window ()->get_origin (x, y);
       (*i)->move (x, y);
+
+      move (x, y);
+      pile->getSize (x, y);
 	 pile->setTopCard ((*i)->src->remove ((*i)->start));
+	 TRACE5 ("CardPileWindows::start () - Sizes: " << x << '/' << y);
 	 (*i)->pile->setTopCard ((*i)->src->remove ((*i)->start));
    }
-      delete *i;
+}
 
 //-----------------------------------------------------------------------------
 /// Callback when the animated starts
@@ -348,6 +358,7 @@ void CardPileWindows::start () {
 void CardPileWindows::finish () {
    TRACE5 ("CardPileWindows::finish ()");
    CardPileWindow::finish ();
+
    for (std::vector<AnimatedPile*>::iterator i (wins.begin ());
 	i != wins.end (); ++i) {
       ICardPile* pile ((*i)->pile);
@@ -356,7 +367,6 @@ void CardPileWindows::finish () {
       } while (pile->size ());
 	 dest.insert (pile->remove (0), posDest++);
 }
-      delete *i;
 
 //-----------------------------------------------------------------------------
 /// Adds a window to animate.
@@ -367,6 +377,7 @@ void CardPileWindows::finish () {
 void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned int end) {
    TRACE9 ("CardPileWindows::addWindow (ICardPile& src, 2x unsigned int)");
    Check1 (start <= end);
+   Check1 (end < src.size ());
    win->src = &src;
    win->start = start;
    win->posDest = posDest;
@@ -381,3 +392,5 @@ void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned in
 void CardPileWindows::AnimatedPile::getEndPos (int& x, int& y) {
    TRACE1 ("CardPileWindows::AnimatedPile::getEndPos (2x int& x)");
    Check (0);
+   x = y = 0;
+}
