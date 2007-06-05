@@ -186,7 +186,8 @@ void Buraco::makeMove (unsigned int player) {
    TRACE5 ("Buraco::makeMove (unsigned int) - Turn of player " << player);
    Check1 (player); Check1 (player < NUM_PLAYERS);
 
-   cleanup ();
+   if (cleanup ())                    // Cleanup; end if game has been finished
+      return;
 
    // Turn back jokers
    if (undo.pickUp) {
@@ -194,7 +195,7 @@ void Buraco::makeMove (unsigned int player) {
       CardHPile* pile (&hands[oldPlayer]);
 
       TRACE5 ("Buraco::makeMove (unsigned int) - Player with monos: " << oldPlayer);
-      if ((oldPlayer) && (pile->size () > CARDS2DEAL)) {
+      if (oldPlayer && (pile->size () > CARDS2DEAL)) {
 	 Check3 (pile->size () > CARDS2DEAL);
 	 hideJoker (pile, pile->size () - CARDS2DEAL);
       }
@@ -208,8 +209,9 @@ void Buraco::makeMove (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Cleanup of piles after each turn
+/// \returns bool: True, if game has been ended
 //-----------------------------------------------------------------------------
-void Buraco::cleanup () {
+bool Buraco::cleanup () {
    unsigned int player (currentPlayer ());
    if (gStatus.startTurn)
       player = (player + NUM_PLAYERS - 1) & 0x3;
@@ -227,23 +229,18 @@ void Buraco::cleanup () {
    }
 
    if (containsOnlyJoker (source)) {
-      if (reserve[player & 1].size ()) {
-	 unsigned int cJokers (source.size ());
+      if (reserve[player & 1].size ())
 	 addBuraco (player);
-
-	 if (!player && cJokers)
-	    Glib::signal_timeout ().connect
-	       (bind (sigc::ptr_fun (&Buraco::hideJoker), &source, cJokers),
-		ComputerPlayer::TIMEOUT);
-      }
       else
 	 if (source.empty ()) {
 	    cleanCerrado (player);
 	    Check3 (points[player & 1] > 100);
 	    points[player & 1] += 100;
 	    endGame ();
+	    return true;
 	 }
    }
+   return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -315,11 +312,9 @@ void Buraco::playCards () {
 	    dumped.setTopCard (playerPile.remove (dumpedCard));
 	    flipCards2Play (playerPile, pos1Play, --pos2Play);
 
-	    Check (0);
 	    CardPileWindows& win (animateCards2 (newPile, playerPile, pos1Play, pos2Play));
 	    win.sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
-	    if (dumped.size () > 1)
-	       win.addWindow (dumped, dumped.size () - 1, dumped.size () - 1);
+	    win.addWindow (dumped, dumped.size () - 1, dumped.size () - 1);
 	    return;
          }
       }
@@ -677,10 +672,8 @@ void Buraco::enableHumanHand () {
          registerTableDND (*(*tablePiles[0][i])[j], (i << 8) + j);
    }
 
-   if (!gStatus.pickUpPlayed) {
-      menuSort->set_sensitive ();
-      menuSort2->set_sensitive ();
-   }
+   menuSort->set_sensitive ();
+   menuSort2->set_sensitive ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1224,9 +1217,16 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 
       // Accept again the jokers, if the pile has has now three cards (jokers are
       // disabled, if the human picked up the dumped pile.
+      unsigned int size (hands[0].size ());
       if ((pile->size () == 3) && gStatus.pickUpPlayed) {
 	 movePile (hands[0], dumped);
 	 menuUndo->set_sensitive (false);
+	 gStatus.pickUpPlayed = 0;
+
+	 for (unsigned int i (size); i < hands[0].size (); ++i) {
+	    enableCard (i);
+	    registerHandDND (i);
+	 }
       }
       else
 	 menuUndo->set_sensitive ();
@@ -1246,7 +1246,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 
       // Re-register the cards in the hand of the human for DND
       if (*pValue < hands[0].size ())
-	 registerHandDND (*pValue, hands[0].size () - 1);
+	 registerHandDND (*pValue, size - 1);
       Check3 (aDNDHand.size () == hands[0].size ());
    }
    catch (Glib::ustring& error) {
@@ -1285,7 +1285,7 @@ void Buraco::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
 //-----------------------------------------------------------------------------
 void Buraco::registerHandDND (unsigned int start, unsigned int end) {
    TRACE5 ("Buraco::registerHandDND (unsigned int, unsigned int) - [" << start
-           << '-' << end << ']');
+           << '-' << end << "] of " << activeCards.size ());
    Check1 (start <= end);
    Check1 (end < hands[0].size ());
    Check1 (end < activeCards.size ());
@@ -1360,7 +1360,7 @@ void Buraco::addBuraco (unsigned int player) {
    reserve[player & 1].clear ();
 
    if (!player)
-      for (unsigned int i (0); i < hands[player].size (); ++i) {
+      for (unsigned int i (0); i < hands[0].size (); ++i) {
          enableCard (i);
          registerHandDND (i);
       }
@@ -1375,6 +1375,10 @@ void Buraco::addBuraco (unsigned int player) {
 	   i != hands[player].end (); ++i) {
 	 (*i)->showFace ();
 	 hands[player].resize (**i, ICardPile::COMPRESSED);
+
+	 Glib::signal_timeout ().connect
+	    (bind (sigc::ptr_fun (&Buraco::hideJoker), &hands[player], cJokers),
+	     ComputerPlayer::TIMEOUT);
       }
       hands[player].resize (10 + cJokers, ICardPile::NORMAL);
    }
@@ -1688,8 +1692,7 @@ void Buraco::endGame () {
       pScoreDlg = ScoreDlg::create (nameTeams);
       pScoreDlg->get_window ()->set_transient_for (get_window ());
    }
-   else
-      Check (0);
+
    points[0] += reserve[0].empty () ? 100 : -100;
    points[1] += reserve[1].empty () ? 100 : -100;
    pScoreDlg->addPoints (points);
@@ -1748,7 +1751,6 @@ void Buraco::endGame () {
    enableHuman ();
    setNextPlayer (-1);
 }
-
 
 //-----------------------------------------------------------------------------
 /// Returns the value of the passed card
