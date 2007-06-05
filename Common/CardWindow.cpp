@@ -200,7 +200,6 @@ CardPileWindow* CardPileWindow::create (ICardPile& dest, unsigned int posDest,
 
    CardPileWindow* win (new CardPileWindow (dest, posDest, src, start, end));
    win->pile = setPile (win, dest, end - start);
-   TRACE1 ("CardPileWindow::create () - " << typeid (dest).name ());
    return win;
 }
 
@@ -344,7 +343,7 @@ void CardPileWindows::start () {
       (*i)->src->at ((*i)->start)->get_window ()->get_origin (x, y);
       (*i)->move (x, y);
 
-      move (x, y);
+      ICardPile* pile ((*i)->pile);
       pile->getSize (x, y);
 	 pile->setTopCard ((*i)->src->remove ((*i)->start));
 	 TRACE5 ("CardPileWindows::start () - Sizes: " << x << '/' << y);
