@@ -52,8 +52,8 @@ std::vector<Gtk::TargetEntry> Rovhult::dndTypeHand;
 std::vector<Gtk::TargetEntry> Rovhult::dndTypeTable;
 
 
-const unsigned int Rovhult::COLS_PLAYER[NUM_PLAYERS] = { 7, 1, 7, 13 };
-const unsigned int Rovhult::ROWS_PLAYER[NUM_PLAYERS] = { 4, 7, 13, 7 };
+const unsigned int Rovhult::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
+const unsigned int Rovhult::ROWS_PLAYER[NUM_PLAYERS] = { 13, 7, 4, 7 };
 
 
 CardWidget::NUMBERS Rovhult::cardNuke (CardWidget::TEN);
@@ -93,15 +93,14 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
          attach (players[i].reserve[j], COLS_PLAYER[i] + (j << 1),
                  COLS_PLAYER[i] + 1 + (j << 1), ROWS_PLAYER[i],
                  ROWS_PLAYER[i] + 2, Gtk::SHRINK, Gtk::SHRINK, 0);
-
          TRACE9 ("Rovhult::Rovhult () - Set at: "
                  << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
       }
 
       players[i].name.show ();
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 5,
-              ROWS_PLAYER[i] + (i ? 5 : 2),
-              ROWS_PLAYER[i] + (i ? 6 : 3),
+              ROWS_PLAYER[i] + ((i == 2) ? 2 : 5),
+              ROWS_PLAYER[i] + ((i == 2) ? 3 : 6),
               Gtk::EXPAND, Gtk::EXPAND, 1);
 
       players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::NORMAL);
@@ -109,12 +108,12 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       players[i].hand.show ();
       attach (players[i].hand, COLS_PLAYER[i],
               COLS_PLAYER[i] + 5,
-              ROWS_PLAYER[i] + (i ? 3 : -3),
-              ROWS_PLAYER[i] + (i ? 3 : -3) + 2,
+              ROWS_PLAYER[i] + ((i == 2) ? -3 : 3),
+              ROWS_PLAYER[i] + ((i == 2) ? -3 : 3) + 2,
               Gtk::FILL | Gtk::EXPAND, Gtk::FILL | Gtk::EXPAND, 0);
       TRACE9 ("Rovhult::Rovhult () - 2nd set at: "
               << COLS_PLAYER[i] << '/'
-              << ROWS_PLAYER[i] + (i ? 3 : -3));
+              << ROWS_PLAYER[i] + ((i == 2) ? -3 : 3));
    }
 
    resizeCards ();
@@ -1076,9 +1075,8 @@ void Rovhult::showCards2Play (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Finds an executes the turn of a (computer controled) player
-/// \returns \c int: The next player
 //-----------------------------------------------------------------------------
-int Rovhult::makeMove (unsigned int player) {
+void Rovhult::makeMove (unsigned int player) {
    TRACE2 ("Rovhult::makeMove (unsigned int) - Player " << player);
 
    if (pos2Play == -1U) {
@@ -1146,7 +1144,6 @@ int Rovhult::makeMove (unsigned int player) {
       }
       pos2Play = -1U;
    }
-   return player;
 }
 
 //-----------------------------------------------------------------------------
