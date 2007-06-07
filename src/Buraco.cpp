@@ -38,8 +38,6 @@
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/scrolledwindow.h>
 
-#define CHECK 9
-#define TRACELEVEL 7
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -300,21 +298,33 @@ void Buraco::playCards () {
                nrs = 7;
 
 	    unsigned int pos1Play, pos2Play;
-            pos1Play = ((nrs < aPos.size ())
-                        ? (nrs = aPos.size (),
-                           playerPile.sortColourSerie (aPos, aOrder))
-                        : playerPile.find (dumpedCard, compByNumberWithJokers));
-            pos2Play = pos1Play + nrs - 1;
-            Check3 ((pos2Play - pos1Play) >= 2);
+	    unsigned int posTarget;
+            if (nrs < aPos.size ()) {
+	       nrs = aPos.size ();
+	       pos1Play = playerPile.sortColourSerie (aPos, aOrder);
+	       for (posTarget = pos1Play; posTarget < (pos1Play + nrs); ++posTarget)
+		  if (playerPile[posTarget] == &dumpedCard)
+		     break;
+	       Check2 (posTarget < (pos1Play + nrs));
+	       posTarget -= pos1Play;
+	       TRACE1 ("posTarget: " << posTarget);
+	       Check (0);
+	    }
+	    else {
+	       posTarget = nrs - 1;
+	       pos1Play = playerPile.find (dumpedCard, compByNumberWithJokers);
+	    }
+            pos2Play = pos1Play + nrs - 2;
+            Check3 ((pos2Play - pos1Play) >= 1);
 
 	    // Put taken card back for animation
             ICardPile& newPile (makeNewPile (player & 1));
 	    dumped.setTopCard (playerPile.remove (dumpedCard));
-	    flipCards2Play (playerPile, pos1Play, --pos2Play);
+	    flipCards2Play (playerPile, pos1Play, pos2Play);
 
 	    CardPileWindows& win (animateCards2 (newPile, playerPile, pos1Play, pos2Play));
 	    win.sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
-	    win.addWindow (dumped, dumped.size () - 1, dumped.size () - 1);
+	    win.addWindow (posTarget, dumped, dumped.size () - 1, dumped.size () - 1);
 	    return;
          }
       }
@@ -749,8 +759,6 @@ void Buraco::cardSelected (unsigned int iCard) {
    if (containsOnlyJoker (hands[0]))
       if (!reserve[0].empty ()) {
 	 Game::disableHuman ();
-	 for (unsigned int i (0); i < hands[0].size (); ++i)
-	    unregisterHandDND (*hands[0][i]);
          addBuraco (0);
       }
       else if (hands[0].empty ()) {
