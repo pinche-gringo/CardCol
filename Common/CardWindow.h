@@ -129,6 +129,7 @@ class CardPileWindows : public CardPileWindow {
    virtual void finish ();
 
    void addWindow (ICardPile& src, unsigned int start, unsigned int end);
+   void addWindow (unsigned int posDest, ICardPile& src, unsigned int start, unsigned int end);
 
  protected:
    CardPileWindows (ICardPile& dest, unsigned int posDest,
@@ -139,13 +140,15 @@ class CardPileWindows : public CardPileWindow {
    CardPileWindows& operator= (const CardPileWindows&);
 
    struct AnimatedPile : public AnimatedWindow {
-      AnimatedPile () : AnimatedWindow (), pile (NULL) { }
+      AnimatedPile () : AnimatedWindow (), pile (NULL), src (NULL), start (0),
+	   end (0), posDest (0) { }
       ~AnimatedPile () { delete pile; }
 
       ICardPile* pile;
       ICardPile* src;
       unsigned int start;
       unsigned int end;
+      unsigned int posDest;
 
       void animateTo (int x, int y) { AnimatedWindow::animateTo (x, y); }
       void getEndPos (int& x, int& y);

@@ -363,14 +363,28 @@ void CardPileWindows::finish () {
       ICardPile* pile ((*i)->pile);
       Check3 ((*i)->posDest <= dest.size ());
       do {
+	 dest.insert (pile->remove (0), (*i)->posDest++);
       } while (pile->size ());
-	 dest.insert (pile->remove (0), posDest++);
+   }
 }
 
 //-----------------------------------------------------------------------------
 /// Adds a window to animate.
 /// \param posDest: Position in the destination
 /// \param src: Source pile
+/// \param start: First card of source to move
+/// \param end: Last card of source to move
+//-----------------------------------------------------------------------------
+void CardPileWindows::addWindow (unsigned int posDest, ICardPile& src, unsigned int start, unsigned int end) {
+   TRACE9 ("CardPileWindows::addWindow (unsigned int, ICardPile& src, 2x unsigned int)");
+   Check1 (start <= end);
+   Check1 (end < src.size ());
+}
+
+//-----------------------------------------------------------------------------
+/// Adds a window to animate.
+/// \param src: Source pile
+/// \param start: First card of source to move
 /// \param end: Last card of source to move
 //-----------------------------------------------------------------------------
 void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned int end) {
@@ -381,7 +395,7 @@ void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned in
    win->start = start;
    win->posDest = posDest;
    wins.push_back (win);
-   win->end = end;
+}
 
 //-----------------------------------------------------------------------------
 /// Returns the position where to animate the card to
