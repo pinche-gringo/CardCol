@@ -87,29 +87,28 @@ class Rovhult : public Game {
    void finishedExchange (unsigned int iCard);
    void takeCards ();
 
-   bool playFromPile (unsigned int pile);
-   int  doPileSelected (unsigned int player, unsigned int pile);
+   bool doPileSelected (unsigned int player, unsigned int pile);
    bool doSwapCards (unsigned int pile, unsigned int card);
 
    // Helper functions
-   unsigned int movePlayedCardsToLooser (unsigned int nrLooser);
+   void movePlayedCardsToLooser (unsigned int nrLooser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;
-   int  makeMove (unsigned int player);
+   void makeMove (unsigned int player);
    bool enableHuman ();
    void dealCards ();
-   CardWidget::NUMBERS playCardsFromHand (unsigned int player, unsigned int start,
-                                          unsigned int end);
+   void playCardsFromHand (unsigned int player, unsigned int start, unsigned int end);
    void exchangeAutoplayerCards ();
    void sortReserve (unsigned int player);
 
    unsigned int numberOfEqualTopCards () const;
-   bool clearPlayedIf4Equal ();
+   bool played4Equal ();
    void fillUpPile (ICardPile& pile, unsigned int minCards);
 
    int makeTurn (unsigned int player);
    void findCard2Play (unsigned int player, unsigned int& start, unsigned int& end) const;
-   void showCards2Play (unsigned int player);
-   void selectRandomCard (unsigned int player);
+   void showCards2Play (unsigned int player, unsigned int start, unsigned int end);
+   void showCardOfPile (unsigned int player, unsigned int pile, bool invalid) const;
+   unsigned int selectRandomCard (unsigned int player);
 
    static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
    bool getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
@@ -128,7 +127,7 @@ class Rovhult : public Game {
    }
 
    bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
-   int executeMove (unsigned int player, CardWidget::NUMBERS nr);
+   void executeMove (unsigned int player);
 
    void sendExchangedCards (unsigned int player);
 
