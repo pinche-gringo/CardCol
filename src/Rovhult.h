@@ -86,12 +86,13 @@ class Rovhult : public Game {
    void handSelected (unsigned int pos);
    void finishedExchange (unsigned int iCard);
    void takeCards ();
+   void cardsTaken (unsigned int player);
 
    bool doPileSelected (unsigned int player, unsigned int pile);
    bool doSwapCards (unsigned int pile, unsigned int card);
 
    // Helper functions
-   void movePlayedCardsToLooser (unsigned int nrLooser);
+   void movePlayedCardsToLoser (unsigned int nrLoser);
    int  nextAvailablePlayer (unsigned int actPlayer) const;
    void makeMove (unsigned int player);
    bool enableHuman ();
@@ -128,6 +129,8 @@ class Rovhult : public Game {
 
    bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
    void executeMove (unsigned int player);
+   void unmarkAndExecuteMove (unsigned int player, unsigned int count);
+   bool unmarkAndMoveToLoser (unsigned int player, unsigned int start, unsigned int end);
 
    void sendExchangedCards (unsigned int player);
 
