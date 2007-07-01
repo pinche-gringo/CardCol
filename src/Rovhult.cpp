@@ -387,7 +387,7 @@ void Rovhult::pileSelected (unsigned int pile) {
                 ignoreNextMsg = true;
             broadcastMessage (msg.str ());
          }
-         movePlayedCardsToLooser (0);
+         movePlayedCardsToLoser (0);
          makeNextMoves ();
       }
       return;
@@ -541,6 +541,36 @@ void Rovhult::playCardsFromHand (unsigned int player, unsigned int start,
 }
 
 //-----------------------------------------------------------------------------
+/// Unmarks any played card and moves the played cards to the passed player
+/// \param player: ID of actual player
+/// \param start: First card to play
+/// \param end: Last card to play
+/// \returns bool: False, to stop the time
+//-----------------------------------------------------------------------------
+bool Rovhult::unmarkAndMoveToLoser (unsigned int player, unsigned int start, unsigned int end) {
+   TRACE8 ("Rovhult::unmarkAndMoveToLoser (3x unsigned int) - Player " << player
+	   << "; Cards: " << start << '/' << end);
+   for (unsigned int i (start); i <= end; ++i)
+      players[player].reserve[i].getTopCard ().unmark ();
+   movePlayedCardsToLoser (player);
+   return false;
+}
+
+//-----------------------------------------------------------------------------
+/// Unmarks any played card and executes the move
+/// \param player: ID of actual player
+/// \param count: Number of cards to unmark
+/// \returns bool: False, to stop the time
+//-----------------------------------------------------------------------------
+void Rovhult::unmarkAndExecuteMove (unsigned int player, unsigned int count) {
+   TRACE8 ("Rovhult::unmarkAndExecuteMove (2x unsigned int) - Player " << player << "; Cards: " << count);
+   Check1 (count < played.size ());
+   while (count)
+      played[played.size () - count--]->unmark ();
+   executeMove (player);
+}
+
+//-----------------------------------------------------------------------------
 /// Executes the move -> Check consequences for next in round and calculate
 /// next player
 /// \param player: ID of player who played the last card
@@ -558,11 +588,11 @@ void Rovhult::executeMove (unsigned int player) {
 
    Glib::ustring stat;
 
-   // If last 4 cards have the same number or ten was played: Don't increase
+   // If last 4 cards have the same number or a ten was played: Don't increase
    // player (except of course, if actual player doesn't have any cards left)
-   bool finished (static_cast<int> (player) != nextAvailablePlayer ((player - 1) & 0x3));
-   if (!((nr == cardNuke) || played4Equal ()) || finished) {
-      if (!player && finished && noMoreHumans ())
+   bool unfinished (static_cast<int> (player) != nextAvailablePlayer ((player - 1) & 0x3));
+   if (!((nr == cardNuke) || played4Equal ()) || unfinished) {
+      if (!player && unfinished && noMoreHumans ())
 	 cEndgame = 1;
 
       player = nextAvailablePlayer (player);
@@ -609,8 +639,7 @@ void Rovhult::takeCards () {
       broadcastMessage (msg.str ());
    }
 
-   movePlayedCardsToLooser (0);
-   makeNextMoves ();
+   movePlayedCardsToLoser (0);
 }
 
 //-----------------------------------------------------------------------------
@@ -671,23 +700,33 @@ bool Rovhult::played4Equal () {
 
 //-----------------------------------------------------------------------------
 /// Method to move the cards of the actual round to the winner
-/// \param nrLooser: Nr. of player getting all played cards
+/// \param nrLoser: Nr. of player getting all played cards
 //-----------------------------------------------------------------------------
-void Rovhult::movePlayedCardsToLooser (unsigned int nrLooser) {
-   TRACE8 ("Rovhult::movePlayedCardsToLooser () - Player " << nrLooser << " gets "
+void Rovhult::movePlayedCardsToLoser (unsigned int nrLoser) {
+   TRACE8 ("Rovhult::movePlayedCardsToLoser () - Player " << nrLoser << " gets "
            << played.size () << " cards");
-   Check3 (nrLooser < NUM_PLAYERS);
+   Check3 (nrLoser < NUM_PLAYERS);
    Check3 (played.size ());
-   Check3 (actPlayers[nrLooser]);
+   Check3 (actPlayers[nrLoser]);
 
-   animateCards (players[nrLooser].hand, played, 0, played.size () - 1)
-      .sigAnimation.connect (mem_fun (*this, &Rovhult::makeNextMoves));
-   players[nrLooser].hand.sortByNumber ();
+   animateCards (players[nrLoser].hand, played, 0, played.size () - 1)
+      .sigAnimation.connect (bind (mem_fun (*this, &Rovhult::cardsTaken), nrLoser));
    Glib::ustring stat (_("%1 can't continue -> Taking the whole pile. "));
-   stat.replace (stat.find ("%1"), 2, actPlayers[nrLooser]->getName ());
-   displayTurn (nrLooser = nextAvailablePlayer (nrLooser), stat);
-   setNextPlayer (nrLooser);
+   stat.replace (stat.find ("%1"), 2, actPlayers[nrLoser]->getName ());
+   displayTurn (nrLoser = nextAvailablePlayer (nrLoser), stat);
+   setNextPlayer (nrLoser);
 }
+
+//-----------------------------------------------------------------------------
+/// Callback after cards of played pile have been animated toh the hand of
+/// a player
+/// \param player: Player who took the cards
+//-----------------------------------------------------------------------------
+void Rovhult::cardsTaken (unsigned int player) {
+   players[player].hand.sortByNumber ();
+   makeNextMoves ();
+}
+
 
 //-----------------------------------------------------------------------------
 /// Checks which player has still cards left
@@ -1019,8 +1058,7 @@ void Rovhult::showCardOfPile (unsigned int player, unsigned int pile, bool inval
    Check3 (actPile.size ());
 
    CardWidget& card (actPile.getTopCard ());
-   ((actPile.size () > 1) || invalid || (card.number () != cardNuke))
-      ? card.mark () : card.showFace ();
+   ((actPile.size () > 1) || invalid) ? card.mark () : card.showFace ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1030,8 +1068,7 @@ void Rovhult::showCardOfPile (unsigned int player, unsigned int pile, bool inval
 /// \param end: Last card to play
 //-----------------------------------------------------------------------------
 void Rovhult::showCards2Play (unsigned int player, unsigned int start, unsigned int end) {
-   TRACE2 ("Rovhult::showCards2Play (3x unsigned int) - "
-           "For player " << player);
+   TRACE2 ("Rovhult::showCards2Play (3x unsigned int) - Player " << player << ": " << start << '/' << end);
    Check1 (player < NUM_PLAYERS);
    Check1 (start <= end);
 
@@ -1042,17 +1079,20 @@ void Rovhult::showCards2Play (unsigned int player, unsigned int start, unsigned 
 	 .sigAnimation.connect (bind (mem_fun (*this, &Rovhult::executeMove), player));
    }
    else {
-      Check1 (end < players[player].reserve[end].size ());
-      ICardPile& pile (players[player].reserve[end]);
+      Check1 (end < (sizeof (players[player].reserve) / sizeof (players[player].reserve[0])));
+      ICardPile& pile (players[player].reserve[start]);
       unsigned int target (end + 1);
 
       CardPileWindows* animPiles (NULL);
       if (cardValid (pile.getTopCard ().number (), true)) {
 	 animPiles = &animateCards2 (played, pile, pile.size () - 1, pile.size () - 1);
-	 animPiles->sigAnimation.connect (bind (mem_fun (*this, &Rovhult::executeMove), player));
+	 animPiles->sigAnimation.connect (bind (mem_fun (*this, &Rovhult::unmarkAndExecuteMove), player, end - start + 1));
       }
-      else
+      else {
          target += 4;
+	 Glib::signal_timeout ().connect (bind (mem_fun (*this, &Rovhult::unmarkAndMoveToLoser),
+						player, start, end), ComputerPlayer::TIMEOUT);
+      }
       showCardOfPile (player, start, target > 3);
 
       while (++start <= end) {
@@ -1098,7 +1138,7 @@ void Rovhult::makeMove (unsigned int player) {
 	 msg << "Play=" << played[played.size () - 1]->id () << ";Target=4";
 	 broadcastMessage (msg.str ());
       }
-      movePlayedCardsToLooser (player);
+      movePlayedCardsToLoser (player);
    }
 }
 
@@ -1252,7 +1292,7 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
       return;
    }
    else {
-      TRACE5 ("Rovhult::findCard2Play (unsigned int) - Analyzing reserve");
+      TRACE5 ("Rovhult::findCard2Play (unsigned int) - Analysing reserve");
 
       // Bitfield for lower cards: Bit 0: Cards visible; Bit 1: Normal cards
       int bfLowerCardsInfo (0);
@@ -1284,16 +1324,18 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
                   if (!isSpecialCard (card.number ()))
                      bfLowerCardsInfo |= 0x2;
 
-                  TRACE7 ("Rovhult::findCard2Play (unsigned int) - Playing "
-                          "visible card " << card << " at pos " << end);
+                  TRACE7 ("Rovhult::findCard2Play (unsigned int) - Playing visible card "
+			  << card << " at pos " << end);
                   return;
                }
             }
          }
       }
 
-      // No card visible: Play the first
-      if (!bfLowerCardsInfo) {
+      if (bfLowerCardsInfo)
+	 start = end = -1U;                             // No valid card found
+      else {
+	 // No card visible: Play the first
          start = 0;
          while (!players[player].reserve[start].size ()) {
             ++start;
@@ -1308,7 +1350,7 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
 
 //-----------------------------------------------------------------------------
 /// Retrieves the minimal and maximal card of the player
-/// \param player: Player whose card to analyze
+/// \param player: Player whose card to analyse
 /// \param min: Returns the minimal card
 /// \param max: Returns the maximal card
 /// \returns \c bool: true, if cardinfo is available
@@ -1319,7 +1361,7 @@ bool Rovhult::getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
       return false;
 
    TRACE3 ("Rovhult::getPileInfo (unsigned int, unsigned int&, unsigned int&)"
-           " - Analyzing cards of player " << player);
+           " - Analysing cards of player " << player);
 
    bool cardFound (false);
    for (unsigned int i (0); i < 3; ++i) {
@@ -1509,6 +1551,7 @@ bool Rovhult::handleMessage (unsigned int player, const std::string& message) th
 /// Executes the remote move locally
 /// \param pile: Pile to move to/from
 /// \param target: ID of target as send by the partner
+/// \returns bool: True, if the timer to execute the move should be set
 /// \throw YGP::ParseError: In case of an error
 //----------------------------------------------------------------------------
 bool Rovhult::executeRemoteMove (ICardPile& pile, unsigned int target) throw (YGP::ParseError) {
@@ -1520,7 +1563,7 @@ bool Rovhult::executeRemoteMove (ICardPile& pile, unsigned int target) throw (YG
       unsigned int pos1Play, pos2Play;
       if (target > 3) {
          if (&pile == &played) {
-            movePlayedCardsToLooser (player);
+            movePlayedCardsToLoser (player);
             return false;
          }
          pos2Play = target - 5;
