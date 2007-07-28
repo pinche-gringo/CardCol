@@ -1,7 +1,7 @@
 <!-- -*-HTML-*- -->
 <!-- $Id$ -->
 <!--
-  Copyright (C) 2006 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2006, 2007 Markus Schwab (g17m0@lycos.com)
 
   This is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public
@@ -29,7 +29,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2006-08-19">
-    <meta name="DC.Rights" content="Copyright (C) 2006, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2006, 2007; distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -41,7 +41,7 @@
 
     <p>Das Ziel ist in 13 Runden die jeweiligen Stiche, die man machen
       wird, korrekt vorherzusagen. Das Spiel gewinnt der Spieler, der
-      dies am Öftesten richtig errät.</p>
+      dies am häufigsten errät.</p>
 
     <h2>Karten austeilen</h2>
     <p>Am Beginn der ersten Runde erhält jeder der 4 Spieler jeweils 3
@@ -60,7 +60,7 @@
        Zahl von 0 bis zur Anzahl der möglichen Stiche; Ungültige Werte
        werden korrigiert).</p>
 
-    <p>Die anderen Spieler folgen mit ihrern Schätzungen. Der letzte
+    <p>Die anderen Spieler folgen mit ihren Schätzungen. Der letzte
       Spieler muss seine Zahl derart wählen, dass die Anzahl der Stiche
       nicht gleich der Anzahl der Spieler ist (sodass es nicht möglich
       ist, dass alle Spieler in einer Runde Punkte machen).</p>
@@ -85,7 +85,7 @@
 
     <h2>Abrechnung</h2>
     <p>Am Ende der Runde erhält jeder Spieler, der seine Stiche exakt
-      vorrausgesagt hat, einen Punkt (sonst keinen).</p>
+      vorausgesagt hat, einen Punkt (sonst keinen).</p>
 
     <p>Der oder die Spieler mit den meisten Punkten nach 13 Runden
     gewinnt/gewinnen.</p>
