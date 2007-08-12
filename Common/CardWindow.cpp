@@ -77,6 +77,8 @@ void AnimatedCard::finish () {
    }
    Glib::signal_idle ().connect
       (bind_return (mem_fun (*this, &AnimatedCard::emitSigAnimation), false));
+}
+
 //-----------------------------------------------------------------------------
 /// Returns the position where to animate the card to
 /// \param x: X-coordinate of destination
@@ -94,6 +96,15 @@ void AnimatedCard::getEndPos (int& x, int& y) {
 
 //-----------------------------------------------------------------------------
 /// Emits the signal; only used when emitting the signal is delayed after
+/// update of the GUI
+//-----------------------------------------------------------------------------
+void AnimatedCard::emitSigAnimation () const {
+   TRACE9 ("AnimatedCard::emitSigAnimation ()");
+   sigAnimation.emit ();
+}
+
+
+//-----------------------------------------------------------------------------
 /// Constructor
 /// \param dest: Destination pile
 /// \param posDest: Where to put the card in the destination
@@ -159,7 +170,6 @@ void CardWindow::finish () {
    dest.insert (card, posDest);
 }
 
-   sigAnimation.emit ();
 
 //-----------------------------------------------------------------------------
 /// Constructor
@@ -249,6 +259,10 @@ void CardPileWindow::start () {
    } while (posSrc < end--);
 
    pile->getSize (x, y);
+   set_size_request (x, y);
+   TRACE5 ("CardPileWindow::start () - Sizes: " << x << '/' << y);
+   show ();
+}
 
 //-----------------------------------------------------------------------------
 /// Callback when the animated starts
@@ -263,8 +277,6 @@ void CardPileWindow::finish () {
    } while (pile->size ());
    delete pile;
 }
-
-   sigAnimation.emit ();
 
 
 //-----------------------------------------------------------------------------
@@ -345,9 +357,15 @@ void CardPileWindows::start () {
 
       ICardPile* pile ((*i)->pile);
       pile->getSize (x, y);
+      (*i)->set_size_request (x, y);
+      TRACE5 ("CardPileWindow::start () - Sizes: " << x << '/' << y);
+
+      do {
+	 TRACE9 ("CardPileWindows::start () - Pile: " << (i - wins.begin ()));
 	 pile->setTopCard ((*i)->src->remove ((*i)->start));
 	 TRACE5 ("CardPileWindows::start () - Sizes: " << x << '/' << y);
-	 (*i)->pile->setTopCard ((*i)->src->remove ((*i)->start));
+      } while ((*i)->start < (*i)->end--);
+      (*i)->show ();
    }
 }
 
@@ -379,6 +397,8 @@ void CardPileWindows::addWindow (unsigned int posDest, ICardPile& src, unsigned 
    TRACE9 ("CardPileWindows::addWindow (unsigned int, ICardPile& src, 2x unsigned int)");
    Check1 (start <= end);
    Check1 (end < src.size ());
+   addWindow (src, start, end);
+   wins.back ()->posDest = posDest;
 }
 
 //-----------------------------------------------------------------------------
@@ -391,6 +411,8 @@ void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned in
    TRACE9 ("CardPileWindows::addWindow (ICardPile& src, 2x unsigned int)");
    Check1 (start <= end);
    Check1 (end < src.size ());
+   AnimatedPile* win (new AnimatedPile);
+   win->pile = setPile (win, dest, end - start);
    win->src = &src;
    win->start = start;
    win->posDest = posDest;

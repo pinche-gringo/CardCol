@@ -54,6 +54,10 @@ class AnimatedCard : public AnimatedWindow {
    AnimatedCard ();
    AnimatedCard (const AnimatedCard&);
    AnimatedCard& operator= (const AnimatedCard&);
+
+   /// Emits the signal; only used when emitting the signal is delayed after
+   /// update of the GUI
+   void emitSigAnimation () const;
 };
 
 
