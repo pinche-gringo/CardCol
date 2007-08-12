@@ -869,3 +869,13 @@ int ICardPile::findLastEqualOrBiggerColour (CardWidget::COLOURS col) const {
    return ((pos == -1) ? - 1 : ((operator[] (pos)->colour () == col)
                                 ? findLastEqualColour (pos) : -1));
 }
+
+//-----------------------------------------------------------------------------
+/// Gets the size of all its children
+/// \param width: Width of all its children added up
+/// \param height: Height of all its children added up
+/// \remarks To be implemented by derived classes
+//-----------------------------------------------------------------------------
+void ICardPile::getSize (int& width, int& height) {
+   width = height = -1;
+}

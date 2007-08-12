@@ -140,6 +140,7 @@ class ICardPile : public std::vector<CardWidget*> {
 
    /// \name General management-functions
    //@{
+   virtual void getSize (int& width, int& height);
    virtual void resize (unsigned int pos, PileStyle s) {
       if (pos != -1U)
          resize (*operator[] (pos), s); }
@@ -241,6 +242,7 @@ template <class T> class CardPile : public T, public ICardPile {
          resortGUI (); } }
    static unsigned int getCompressedSize (PileStyle s) { return 0; }
    unsigned int getCompressedSize () { return getCompressedSize (style); }
+   virtual void getSize (int& width, int& height) { ICardPile::getSize (width, height); }
 
  protected:
    virtual void resortGUI () {
@@ -261,6 +263,19 @@ template <> inline unsigned int CardVPile::getCompressedSize (PileStyle s) {
    int height[(int)LAST] = { CardImages::HEIGHT, 15, 7, 1 };
    return height[s];
 }
+
+/// Implementation of the getSize() method for Gtk::VBox
+template <> inline void CardVPile::getSize (int& width, int& height) {
+   if (size ()) {
+      height = CardImages::HEIGHT;
+      width = CardImages::WIDTH;
+      if (size () > 1)
+	 height += getCompressedSize () * (size () - 1);
+   }
+   else
+      ICardPile::getSize (width, height);
+}
+
 /// Implementation of the resize() methods for Gtk::VBox
 template <> inline void CardVPile::resize (unsigned int pos, PileStyle s) {
    ICardPile::resize (pos, s); }
@@ -274,11 +289,24 @@ template <> inline void CardVPile::resize (CardWidget& card, PileStyle s) {
    }
 }
 
-/// Implementation of the getCompressionRate() method for Gtk::VBox
+/// Implementation of the getCompressionRate() method for Gtk::HBox
 template <> inline unsigned int CardHPile::getCompressedSize (PileStyle s) {
    int width[(int)LAST] = { CardImages::WIDTH, 18, 7, 1 };
    return width[s];
 }
+
+/// Implementation of the getSize() method for Gtk::HBox
+template <> inline void CardHPile::getSize (int& width, int& height) {
+   if (size ()) {
+      height = CardImages::HEIGHT;
+      width = CardImages::WIDTH;
+      if (size () > 1)
+	 width += getCompressedSize () * (size () - 1);
+   }
+   else
+      ICardPile::getSize (width, height);
+}
+
 ///Implementation of the resize() methods for Gtk::HBox
 template <> inline void CardHPile::resize (unsigned int pos, PileStyle s) {
    ICardPile::resize (pos, s); }
