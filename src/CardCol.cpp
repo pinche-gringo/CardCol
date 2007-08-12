@@ -486,7 +486,7 @@ const char* CardgameCollection::xpmAuthor[] = {
 
 /* XPM for the Joker; borrowed (and simplified) from the Warwick cardset of the
    KDE cardgames */
-static char * xpmJoker[] = {
+static const char* xpmJoker[] = {
 "72 96 65 1",
 " 	c None",
 ".	c #030303",
@@ -648,7 +648,7 @@ static char * xpmJoker[] = {
 "qfsdsdssssssssdsssdsdssdsssdsdsip$$pdiddssssssdsssssssdsdsssssisisssdsq.",
 ".q&sssdsdsdsdssdsisssdsssdsssssssssdsssssdssdsssdsdsdssssssdsisssdssseq.",
 ".qqccssssssssdssssssssdsssdsdsisiisisdsdssdssdsssssssdsdsssdssdsssdccqq.",
-".q..qnnnnnnnnnnnnn7nn7nnnnnnnn7nnnnn7nnn7nn7nn7nn7nn7nn7nnn7n7nn7nn9..qq"};
+".q..qnnnnnnnnnnnnn7nn7nnnnnnnn7nnnnn7nnn7nn7nn7nn7nn7nn7nnn7n7nn7nn9..qq" };
 
 
 //-----------------------------------------------------------------------------
