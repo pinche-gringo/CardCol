@@ -38,6 +38,8 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -47,6 +49,7 @@
 #include <CardSet.h>
 #include <CardImgs.h>
 #include <CardWidget.h>
+#include <CardWindow.h>
 
 #include "Twopart.h"
 
@@ -340,7 +343,12 @@ void Twopart::cardSelected (unsigned int pos) {
             return;
          }
       }
+      animateCards (played, players[0].hand, start, pos)
+	 .sigAnimation.connect (bind (mem_fun (*this, &Twopart::endTurn), 0));
    }
+   else
+      animateCard (played, players[0].hand, pos)
+	 .sigAnimation.connect (bind (mem_fun (*this, &Twopart::endTurn), 0));
 
    // Inform the others about the move
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
@@ -355,32 +363,33 @@ void Twopart::cardSelected (unsigned int pos) {
          ignoreNextMsg = true;
       broadcastMessage (msg.str ());
    }
-
-   setNextPlayer (executeMove (0, start, pos));
-   makeNextMoves ();
 }
 
 //-----------------------------------------------------------------------------
-/// Executes a move out of a hand
+/// Finish of a turn (in part 2), called after the card has been animated
 /// \param player: ID of player
 /// \param start: Offset of first card to play
 /// \param end: Offset of last card to play
 /// \returns int: Next player or -1 at end
 //-----------------------------------------------------------------------------
-int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int end) {
-   TRACE5 ("Twopart::executeMove (unsigned int, unsigned int) - Player: "
-           << player << " at position " << start << " to " << end);
+void Twopart::endTurn (unsigned int player) {
+   TRACE5 ("Twopart::endTurn (unsigned int) - Player: " << player);
    Check3 (player < NUM_PLAYERS);
-   Check3 (start <= end);
-   Check3 (end < players[player].hand.size ());
 
-   if (!moveSelectedCardToPlayed (player, start, end))
-      return player;
+   if (staple.size ()) {
+      CardWidget& card (staple.removeShownTopCard ());
+      players[player].hand.insertSorted (card);
+
+      if (!staple.size ()) {
+	 Check3 (!pTrump);
+	 pTrump = new CardWidget (card); Check3 (pTrump);
+	 staple.hide ();
+      }
+   }
 
    // Check if every player is still in game or has already played; end round
    // if so or calculate next player if not
-   TRACE7 ("Twopart::executeMove (unsigned int, unsigned int) - Players: "
-           << std::hex << bfPlayers << std::dec);
+   TRACE7 ("Twopart::endTurn (unsigned int) - Players: " << std::hex << bfPlayers << std::dec);
    removePlayer (player);
    int newPlayer (player);
    if (bfPlayers)
@@ -392,7 +401,6 @@ int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int 
          pTrump->show ();
          attach (*pTrump, 2, 3, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
       }
-
       newPlayer = endRound (player);
    }
 
@@ -415,12 +423,14 @@ int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int 
          startPartTwo (player);
       else
          setGameStatus (STOPPED);
-      return -1;
+      return;
    }
    else
       displayTurn (player = newPlayer);
 
-   return player;
+   setNextPlayer (player);
+   makeNextMoves ();
+   return;
 }
 
 //-----------------------------------------------------------------------------
@@ -431,24 +441,22 @@ void Twopart::makeMove (unsigned int player) {
    TRACE5 ("Twopart::makeMove () - Turn of player " << player);
    Check3 (gameStatus () >= PLAYING);
 
-   if (pos2Play == -1U) {
-      if (findPos2Play (player, pos1Play, pos2Play) != -1)
-         // Flip card(s) to play
-         flipCards2Play (players[player].hand, pos1Play, pos2Play);
-      else {
-         if ((gameStatus () == PLAYING2)
-             && (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)) {
-            std::ostringstream msg;
-            Check3 (startPos[offPos - 1] < played.size ());
-            msg << "Play=" << played[startPos[offPos - 1]]->id () << ";Target=1";
-            broadcastMessage (msg.str ());
-         }
-         player = pickUpPlayedPile (player);
-      }
+   unsigned int pos1Play, pos2Play;
+   if (findPos2Play (player, pos1Play, pos2Play) != -1) {
+      // Flip card(s) to play
+      flipCards2Play (players[player].hand, pos1Play, pos2Play);
+      animateCards (played, players[player].hand, pos1Play, pos2Play)
+	 .sigAnimation.connect (bind (mem_fun (*this, &Twopart::endTurn), player));
    }
    else {
-      player = executeMove (player, pos1Play, pos2Play);
-      pos1Play = pos2Play = -1U;
+      if ((gameStatus () == PLAYING2)
+	  && (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)) {
+	 std::ostringstream msg;
+	 Check3 (startPos[offPos - 1] < played.size ());
+	 msg << "Play=" << played[startPos[offPos - 1]]->id () << ";Target=1";
+	 broadcastMessage (msg.str ());
+      }
+      player = pickUpPlayedPile (player);
    }
 }
 

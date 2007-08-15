@@ -64,7 +64,7 @@ class Twopart : public Game {
    void playedSelected ();
 
    // Helper functions
-   int executeMove (unsigned int player, unsigned int start, unsigned int end);
+   void endTurn (unsigned int player);
    void movePlayedCardsToPlayer (unsigned int nrPlayer, unsigned int start = 0);
    bool moveSelectedCardToPlayed (unsigned int player, unsigned int start,
                                   unsigned int end);
@@ -98,7 +98,7 @@ class Twopart : public Game {
    bool startPartTwoTimerFnc (unsigned int player);
    void startPartTwo (unsigned int player);
 
-   int makeMove (unsigned int player);
+   void makeMove (unsigned int player);
    int endRound (unsigned int player);
 
    virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
