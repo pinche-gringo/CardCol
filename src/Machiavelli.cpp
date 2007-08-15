@@ -76,23 +76,23 @@ static std::vector<Gtk::TargetEntry> dndTypeBoth;
 /// \param mxSerialize: Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
-                CardSet& cardset, const std::vector<Player*>& player,
-                unsigned int posPlayer, YGP::Mutex& mxSerialize)
-   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10)
-     , startPlayer (-1U), newPile (_("New pile"))
-     , staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK)
-     , nextTurn (_("_End turn"), true)
-     , target (-1U), undoDlg (NULL) {
+			  CardSet& cardset, const std::vector<Player*>& player,
+			  unsigned int posPlayer, YGP::Mutex& mxSerialize)
+   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10),
+     startPlayer (-1U), newPile (_("New pile")),
+     staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK),
+     nextTurn (_("_End turn"), true),
+     target (-1U), undoDlg (NULL) {
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&)");
 
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Init common staples");
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      attach (hands[i], (i << 2) - 4, (i << 2), 4, 5,
-              Gtk::EXPAND, Gtk::SHRINK, 5, 5);
-      attach (names[i], (i << 2) - 4, (i << 2), 5, 6,
-              Gtk::EXPAND, Gtk::SHRINK, 0);
+      attach (hands[i], ((NUM_PLAYERS - i) << 2) - 4, ((NUM_PLAYERS - i) << 2),
+	      0, 1, Gtk::EXPAND, Gtk::SHRINK, 5, 5);
+      attach (names[i], ((NUM_PLAYERS - i) << 2) - 4, ((NUM_PLAYERS - i) << 2),
+	      1, 2, Gtk::EXPAND, Gtk::SHRINK, 0);
       hands[i].setStyle (ICardPile::QUITE_COMPRESSED);
       hands[i].setShowOption (ICardPile::SHOWBACK);
    }
@@ -101,12 +101,12 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Attach widgets");
-   attach (hands[0], 3, 12, 0, 1, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
-   attach (names[0], 3, 12, 1, 2, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
-   attach (staple, 0, 1, 0, 1, Gtk::SHRINK, Gtk::SHRINK, 5);
-   attach (nextTurn, 0, 1, 1, 2, Gtk::FILL, Gtk::SHRINK, 5);
-   attach (newPile, 0, 12, 2, 3, Gtk::EXPAND | Gtk::FILL, Gtk::FILL, 0, 5);
-   attach (piles, 0, 12, 3, 4, Gtk::EXPAND | Gtk::FILL,
+   attach (hands[0], 3, 12, 4, 5, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
+   attach (names[0], 3, 12, 5, 6, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
+   attach (staple,   0, 1,  4, 5, Gtk::SHRINK, Gtk::SHRINK, 5);
+   attach (nextTurn, 0, 1,  5, 6, Gtk::FILL, Gtk::SHRINK, 5);
+   attach (newPile,  0, 12, 3, 4, Gtk::EXPAND | Gtk::FILL, Gtk::FILL, 0, 5);
+   attach (piles,    0, 12, 2, 3, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
 
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
@@ -156,7 +156,7 @@ void Machiavelli::start () {
 
    if (randomizeCardsToPile (staple)) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-	 for (unsigned int j (0); j < 17; ++j)  // TODO: Undo: 7
+	 for (unsigned int j (0); j < 7; ++j)
              hands[(i - posServer) & 0x3].append (staple.removeTopCard ());
 
       hands[0].sortByColour ();
@@ -214,11 +214,10 @@ void Machiavelli::playOpen (bool open) {
 //-----------------------------------------------------------------------------
 /// Makes the move for the next player.
 /// \param player: Actual player
-/// \returns \c int: Next player or -1 if end of game
 /// \remarks This method expects the target pile to play in the target-member
 ///     and the positions to play in pos1Play and pos2Play
 //-----------------------------------------------------------------------------
-int Machiavelli::makeMove (unsigned int player) {
+void Machiavelli::makeMove (unsigned int player) {
    TRACE5 ("Machiavelli::makeMove (unsigned int) - Turn of player " << player
            << "; Target: " << std::hex << (int)target << std::dec);
    Check1 (player); Check1 (player < NUM_PLAYERS);
@@ -241,7 +240,7 @@ int Machiavelli::makeMove (unsigned int player) {
          unsigned int nextPlayer (findNextPlayer (player));
          if (nextPlayer == findNextPlayer (nextPlayer)) {
             endGame (nextPlayer);
-            return -1;
+            return;
          }
          displayTurn (player = nextPlayer);
          dealCard (player);
@@ -329,8 +328,6 @@ int Machiavelli::makeMove (unsigned int player) {
       }
 #endif
    }
-
-   return player;
 }
 
 //-----------------------------------------------------------------------------
