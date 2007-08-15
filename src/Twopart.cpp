@@ -51,8 +51,8 @@
 #include "Twopart.h"
 
 
-const unsigned int Twopart::COLS_PLAYER[NUM_PLAYERS] = { 7, 1, 7, 13 };
-const unsigned int Twopart::ROWS_PLAYER[NUM_PLAYERS] = { 4,  8, 10, 8 };
+const unsigned int Twopart::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
+const unsigned int Twopart::ROWS_PLAYER[NUM_PLAYERS] = { 10,  8, 4, 8 };
 
 char Twopart::sortOrder[4];
 
@@ -82,20 +82,20 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].name.show ();
       attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 3,
-              ROWS_PLAYER[i] + ((i == 2) ? 3 : 1),
-              ROWS_PLAYER[i] + ((i == 2) ? 4 : 2),
+              ROWS_PLAYER[i] + (i ? 1 : 3),
+              ROWS_PLAYER[i] + (i ? 2 : 4),
               Gtk::EXPAND, Gtk::EXPAND, 1);
       TRACE9 ("Twopart::Twopart () - Name at: " << COLS_PLAYER[i] << '/'
-              << ROWS_PLAYER[i] + ((i == 2) ? 3 : 1));
+              << ROWS_PLAYER[i] + (i ? 1 : 3));
 
       players[i].won.show ();
       attach (players[i].won, COLS_PLAYER[i] + 1,
               COLS_PLAYER[i] + 2,
-              ROWS_PLAYER[i] + ((i == 2) ? 2 : -2),
-              ROWS_PLAYER[i] + ((i == 2) ? 3 : -1),
+              ROWS_PLAYER[i] + (i ? -2 : 2),
+              ROWS_PLAYER[i] + (i ? -1 : 3),
               Gtk::SHRINK, Gtk::SHRINK, 1);
       TRACE9 ("Twopart::Twopart () - Won pile at: "
-              << COLS_PLAYER[i] + 1 << '/' << ROWS_PLAYER[i] + ((i == 2) ? 2 : -2));
+              << COLS_PLAYER[i] + 1 << '/' << ROWS_PLAYER[i] + (i ? -2 : 2));
 
       players[i].hand.show ();
       attach (players[i].hand, COLS_PLAYER[i],
@@ -426,18 +426,15 @@ int Twopart::executeMove (unsigned int player, unsigned int start, unsigned int 
 //-----------------------------------------------------------------------------
 /// Makes the move for the next player.
 /// \param player: Actual player
-/// \returns int: Next player or -1 if end of game
 //-----------------------------------------------------------------------------
-int Twopart::makeMove (unsigned int player) {
+void Twopart::makeMove (unsigned int player) {
    TRACE5 ("Twopart::makeMove () - Turn of player " << player);
    Check3 (gameStatus () >= PLAYING);
 
    if (pos2Play == -1U) {
-      if (findPos2Play (player, pos1Play, pos2Play) != -1) {
+      if (findPos2Play (player, pos1Play, pos2Play) != -1)
          // Flip card(s) to play
          flipCards2Play (players[player].hand, pos1Play, pos2Play);
-         return player;
-      }
       else {
          if ((gameStatus () == PLAYING2)
              && (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)) {
@@ -453,8 +450,6 @@ int Twopart::makeMove (unsigned int player) {
       player = executeMove (player, pos1Play, pos2Play);
       pos1Play = pos2Play = -1U;
    }
-
-   return player;
 }
 
 //-----------------------------------------------------------------------------
