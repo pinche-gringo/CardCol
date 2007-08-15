@@ -36,8 +36,6 @@
 #include <gtkmm/accelgroup.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -388,7 +386,6 @@ void Rovhult::pileSelected (unsigned int pile) {
             broadcastMessage (msg.str ());
          }
          movePlayedCardsToLoser (0);
-         makeNextMoves ();
       }
       return;
    }
@@ -445,7 +442,6 @@ bool Rovhult::doPileSelected (unsigned int player, unsigned int pile) {
 
    return false;
 }
-
 
 //-----------------------------------------------------------------------------
 /// Check if played card is valid (equal or bigger) The following cards have
@@ -550,8 +546,11 @@ void Rovhult::playCardsFromHand (unsigned int player, unsigned int start,
 bool Rovhult::unmarkAndMoveToLoser (unsigned int player, unsigned int start, unsigned int end) {
    TRACE8 ("Rovhult::unmarkAndMoveToLoser (3x unsigned int) - Player " << player
 	   << "; Cards: " << start << '/' << end);
-   for (unsigned int i (start); i <= end; ++i)
-      players[player].reserve[i].getTopCard ().unmark ();
+   for (unsigned int i (start); i <= end; ++i) {
+      CardWidget& card (players[player].reserve[i].removeTopCard ());
+      card.unmark ();
+      players[player].hand.setTopCard (card);
+   }
    movePlayedCardsToLoser (player);
    return false;
 }
@@ -564,7 +563,7 @@ bool Rovhult::unmarkAndMoveToLoser (unsigned int player, unsigned int start, uns
 //-----------------------------------------------------------------------------
 void Rovhult::unmarkAndExecuteMove (unsigned int player, unsigned int count) {
    TRACE8 ("Rovhult::unmarkAndExecuteMove (2x unsigned int) - Player " << player << "; Cards: " << count);
-   Check1 (count < played.size ());
+   Check1 (count <= played.size ());
    while (count)
       played[played.size () - count--]->unmark ();
    executeMove (player);
