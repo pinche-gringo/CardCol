@@ -67,16 +67,22 @@ void AnimatedCard::start () {
 }
 
 //-----------------------------------------------------------------------------
-/// Callback when the animated is finished
+/// Cleanup of the animation; moves the animated card to the distination pile
 //-----------------------------------------------------------------------------
-void AnimatedCard::finish () {
-   TRACE5 ("AnimatedCard::finish () - " << posDest << '/' << dest.size ());
+void AnimatedCard::cleanup () {
+   TRACE5 ("AnimatedCard::cleanup () - " << posDest << '/' << dest.size ());
    if (posDest == -1U) {
       delete &dest.removeTopCard ();
       posDest = 0;
    }
-   Glib::signal_idle ().connect
-      (bind_return (mem_fun (*this, &AnimatedCard::emitSigAnimation), false));
+}
+
+//-----------------------------------------------------------------------------
+/// Callback when the animation starts
+//-----------------------------------------------------------------------------
+void AnimatedCard::finish () {
+   TRACE9 ("AnimatedCard::finish ()");
+   sigAnimation.emit ();
 }
 
 //-----------------------------------------------------------------------------
@@ -92,15 +98,6 @@ void AnimatedCard::getEndPos (int& x, int& y) {
 
    widget->get_window ()->get_origin (x, y);
    TRACE9 ("AnimatedCard::getEndPos (2x int&) - Dest: " << x << '/' << y);
-}
-
-//-----------------------------------------------------------------------------
-/// Emits the signal; only used when emitting the signal is delayed after
-/// update of the GUI
-//-----------------------------------------------------------------------------
-void AnimatedCard::emitSigAnimation () const {
-   TRACE9 ("AnimatedCard::emitSigAnimation ()");
-   sigAnimation.emit ();
 }
 
 
@@ -158,11 +155,11 @@ void CardWindow::start () {
 }
 
 //-----------------------------------------------------------------------------
-/// Callback when the animated is finished
+/// Cleanup of the animation; moves the animated card to the distination pile
 //-----------------------------------------------------------------------------
-void CardWindow::finish () {
-   TRACE8 ("CardWindow::finish ()");
-   AnimatedCard::finish ();
+void CardWindow::cleanup () {
+   TRACE8 ("CardWindow::cleanup ()");
+   AnimatedCard::cleanup ();
 
    CardWidget& card (getCard ());
    Check2 (typeid (card) == typeid (CardWidget));
@@ -265,11 +262,11 @@ void CardPileWindow::start () {
 }
 
 //-----------------------------------------------------------------------------
-/// Callback when the animated starts
+/// Cleanup of the animation; moves the animated cards to the distination pile
 //-----------------------------------------------------------------------------
-void CardPileWindow::finish () {
-   TRACE8 ("CardPileWindow::finish ()");
-   AnimatedCard::finish ();
+void CardPileWindow::cleanup () {
+   TRACE8 ("CardPileWindow::cleanup ()");
+   AnimatedCard::cleanup ();
 
    Check2 (pile->size ());
    do {
@@ -343,7 +340,7 @@ void CardPileWindows::getEndPos (int& x, int& y) {
 }
 
 //-----------------------------------------------------------------------------
-/// Callback when the animated starts
+/// Callback when the animation starts
 //-----------------------------------------------------------------------------
 void CardPileWindows::start () {
    TRACE5 ("CardPileWindows::start ()");
@@ -370,11 +367,11 @@ void CardPileWindows::start () {
 }
 
 //-----------------------------------------------------------------------------
-/// Callback when the animated starts
+/// Cleanup of the animation; moves the animated card to the distination pile
 //-----------------------------------------------------------------------------
-void CardPileWindows::finish () {
-   TRACE5 ("CardPileWindows::finish ()");
-   CardPileWindow::finish ();
+void CardPileWindows::cleanup () {
+   TRACE5 ("CardPileWindows::cleanup ()");
+   CardPileWindow::cleanup ();
 
    for (std::vector<AnimatedPile*>::iterator i (wins.begin ());
 	i != wins.end (); ++i) {

@@ -39,6 +39,7 @@ class AnimatedCard : public AnimatedWindow {
 
    void getEndPos (int& x, int& y);
    void start ();
+   void cleanup ();
    void finish ();
 
  protected:
@@ -54,10 +55,6 @@ class AnimatedCard : public AnimatedWindow {
    AnimatedCard ();
    AnimatedCard (const AnimatedCard&);
    AnimatedCard& operator= (const AnimatedCard&);
-
-   /// Emits the signal; only used when emitting the signal is delayed after
-   /// update of the GUI
-   void emitSigAnimation () const;
 };
 
 
@@ -75,7 +72,7 @@ class CardWindow : public AnimatedCard {
    CardWidget& getCard () const { return *(CardWidget*)*get_children ().begin (); }
 
    virtual void start ();
-   virtual void finish ();
+   virtual void cleanup ();
 
  protected:
    CardWindow (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc);
@@ -101,7 +98,7 @@ class CardPileWindow : public AnimatedCard {
    ICardPile& getPile () const { return *pile; }
 
    virtual void start ();
-   virtual void finish ();
+   virtual void cleanup ();
 
  protected:
    CardPileWindow (ICardPile& dest, unsigned int posDest, ICardPile& src,
@@ -130,7 +127,7 @@ class CardPileWindows : public CardPileWindow {
 
    void getEndPos (int& x, int& y);
    virtual void start ();
-   virtual void finish ();
+   virtual void cleanup ();
 
    void addWindow (ICardPile& src, unsigned int start, unsigned int end);
    void addWindow (unsigned int posDest, ICardPile& src, unsigned int start, unsigned int end);
