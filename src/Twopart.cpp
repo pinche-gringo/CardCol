@@ -54,7 +54,7 @@
 #include "Twopart.h"
 
 
-const unsigned int Twopart::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
+const unsigned int Twopart::COLS_PLAYER[NUM_PLAYERS] = { 1, 13, 7, 1 };
 const unsigned int Twopart::ROWS_PLAYER[NUM_PLAYERS] = { 10,  8, 4, 8 };
 
 char Twopart::sortOrder[4];
@@ -84,7 +84,7 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    changeNames (player);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].name.show ();
-      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 3,
+      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 3 : 15),
               ROWS_PLAYER[i] + (i ? 1 : 3),
               ROWS_PLAYER[i] + (i ? 2 : 4),
               Gtk::EXPAND, Gtk::EXPAND, 1);
@@ -92,8 +92,8 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
               << ROWS_PLAYER[i] + (i ? 1 : 3));
 
       players[i].won.show ();
-      attach (players[i].won, COLS_PLAYER[i] + 1,
-              COLS_PLAYER[i] + 2,
+      attach (players[i].won, COLS_PLAYER[i] + (i ? 1 : 7),
+              COLS_PLAYER[i] + (i ? 2 : 8),
               ROWS_PLAYER[i] + (i ? -2 : 2),
               ROWS_PLAYER[i] + (i ? -1 : 3),
               Gtk::SHRINK, Gtk::SHRINK, 1);
@@ -102,7 +102,7 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
       players[i].hand.show ();
       attach (players[i].hand, COLS_PLAYER[i],
-              COLS_PLAYER[i] + 3, ROWS_PLAYER[i],
+              COLS_PLAYER[i] + (i ? 3 : 15), ROWS_PLAYER[i],
               ROWS_PLAYER[i] + 1, Gtk::SHRINK, Gtk::SHRINK, 1);
       TRACE9 ("Twopart::Twopart () - Hand at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
@@ -193,12 +193,16 @@ bool Twopart::enableHuman () {
 unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
    TRACE3 ("Twopart::pickUpPlayedPile (unsigned int) - Player " << player
            << " picks up played pile");
-   Check3 (gameStatus () == PLAYING2);
    Check3 (bfPlayers);
 
    // Move played cards to player
    Check3 (offPos > 0); Check3 (offPos < NUM_PLAYERS);
-   movePlayedCardsToPlayer (player, startPos[--offPos]);
+   CardPileWindow* anim;
+   if (gameStatus () == PLAYING2)
+      anim = &animateCards (players[player].hand, played, startPos[--offPos], played.size () - 1);
+   else
+      anim = &animateCards (players[player].won, played, 0, played.size () - 1);
+   anim->sigAnimation.connect (bind (mem_fun (*this, &Twopart::endPickup), player));
    removePlayer (player);
 
    // Calculate players to re-enable: They are the number of players still
@@ -255,7 +259,6 @@ void Twopart::playedSelected () {
       broadcastMessage (msg.str ());
    }
    setNextPlayer (pickUpPlayedPile (0));
-   makeNextMoves ();
    disableHuman ();
 }
 
@@ -387,13 +390,14 @@ void Twopart::endTurn (unsigned int player) {
       }
    }
 
+   bool isAnimated (false);
    // Check if every player is still in game or has already played; end round
    // if so or calculate next player if not
    TRACE7 ("Twopart::endTurn (unsigned int) - Players: " << std::hex << bfPlayers << std::dec);
    removePlayer (player);
-   int newPlayer (player);
+   unsigned int newPlayer (player);
    if (bfPlayers)
-      newPlayer = findNextPlayer (player);
+      newPlayer = (unsigned int)findNextPlayer (player);
    else {
       // Show trump if not already visible
       if (pTrump && !pTrump->is_visible ()) {
@@ -401,13 +405,14 @@ void Twopart::endTurn (unsigned int player) {
          pTrump->show ();
          attach (*pTrump, 2, 3, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
       }
-      newPlayer = endRound (player);
+      newPlayer = player;
+      isAnimated = endRound (newPlayer);
    }
 
    // Check if the actual part is terminated
    if ((gameStatus () == PLAYING)
-       ? (newPlayer < 0)
-       : (newPlayer == findNextPlayerWithCards (newPlayer))) {
+       ? ((int)newPlayer < 0)
+       : (newPlayer == (unsigned int)findNextPlayerWithCards (newPlayer))) {
       player = (gameStatus () == PLAYING) ? ~newPlayer : newPlayer;
 
       Glib::ustring str ((gameStatus () == PLAYING)
@@ -423,13 +428,13 @@ void Twopart::endTurn (unsigned int player) {
          startPartTwo (player);
       else
          setGameStatus (STOPPED);
-      return;
    }
-   else
-      displayTurn (player = newPlayer);
-
-   setNextPlayer (player);
-   makeNextMoves ();
+   else {
+      displayTurn (newPlayer);
+      setNextPlayer (newPlayer);
+      if (!isAnimated)
+	 makeNextMoves ();
+   }
    return;
 }
 
@@ -456,7 +461,7 @@ void Twopart::makeMove (unsigned int player) {
 	 msg << "Play=" << played[startPos[offPos - 1]]->id () << ";Target=1";
 	 broadcastMessage (msg.str ());
       }
-      player = pickUpPlayedPile (player);
+      setNextPlayer (pickUpPlayedPile (player));
    }
 }
 
@@ -738,11 +743,12 @@ unsigned int Twopart::findStartOfSerie (unsigned int player, unsigned int start)
 /// Checks if there is a winner for the round and moves played cards to him if
 /// so. Else enable the players which can continue
 /// \param player: Actual player (ending the round)
-/// \returns int: Next player; or -1 if there is no next player
+/// \returns bool: True, if an animation has been started by this method
 //-----------------------------------------------------------------------------
-int Twopart:: endRound (unsigned int player) {
-   TRACE8 ("Twopart::endRound (unsigned int)");
+bool Twopart::endRound (unsigned int& player) {
+   TRACE8 ("Twopart::endRound (unsigned int&)");
    Check3 (!bfPlayers);
+   bool rc (false);
 
    unsigned int nextPlayer (NUM_PLAYERS);
 
@@ -758,7 +764,7 @@ int Twopart:: endRound (unsigned int player) {
       bfPlayers = bfOldPlayers;
       unsigned int cPlayers (playersInBitfield (bfPlayers));
 
-      TRACE8 ("Twopart::endRound (unsigned int) - Round has " << cPlayers
+      TRACE8 ("Twopart::endRound (unsigned int&) - Round has " << cPlayers
               << " players; Start = " << *startPos << " of " << played.size ()
               << " cards");
       Check3 ((*startPos + cPlayers) <= played.size ());
@@ -771,7 +777,7 @@ int Twopart:: endRound (unsigned int player) {
       analyzeLastPlayed (*startPos, cPlayers, maxNr, posMax, maxEqualNr,
                          posMaxEqual, trumps);
 
-      TRACE4 ("Twopart::endRound (unsigned int) - Player starting round: "
+      TRACE4 ("Twopart::endRound (unsigned int&) - Player starting round: "
               << startPlayer << "; players: " << cPlayers);
       Check3 ((*startPos + cPlayers) == played.size ());
 
@@ -785,7 +791,7 @@ int Twopart:: endRound (unsigned int player) {
          for (unsigned int i (*startPos); i < played.size (); ++i) {
             if ((played[i]->number () == maxEqualNr)
                 && players[pos2Player (i - *startPos)].hand.size ()) {
-               TRACE5 ("Twopart::endRound (unsigned int) - Found equal cards; Player "
+               TRACE5 ("Twopart::endRound (unsigned int&) - Found equal cards; Player "
                        << pos2Player (i - *startPos)
                        << (cPlayers ? " still in round" : " is winner"));
                ++cPlayers;
@@ -794,21 +800,23 @@ int Twopart:: endRound (unsigned int player) {
                bfPlayersOut |= (1 << pos2Player (i - *startPos));
          } // endfor check for equal cards
          bfPlayers &= ~bfPlayersOut;
-         TRACE5 ("Twopart::endRound (unsigned int) - Found equal cards; "
+         TRACE5 ("Twopart::endRound (unsigned int&) - Found equal cards; "
                  << cPlayers << " player(s) still in round (" << std::hex
                  << bfPlayers << std::dec << ')');
 
-         TRACE6 ("Twopart::endRound (unsigned int) - Try to continue with player " << nextPlayer);
+         TRACE6 ("Twopart::endRound (unsigned int&) - Try to continue with player " << nextPlayer);
          if (players[nextPlayer].hand.empty () && cPlayers)
             nextPlayer = findNextPlayer (nextPlayer);
-         TRACE8 ("Twopart::endRound (unsigned int) - Remaining (" << cPlayers
+         TRACE8 ("Twopart::endRound (unsigned int&) - Remaining (" << cPlayers
                  << ") " << std::hex << bfPlayers << std::dec << "; Next: " << nextPlayer);
 
          if (cPlayers < 2) {                   // Less than two players found:
             bfPlayers = (1 << NUM_PLAYERS) - 1;
             cPlayers = removePlayersWithoutCards ();
 
-            movePlayedCardsToPlayer (nextPlayer);
+	    animateCards (players[nextPlayer].won, played, 0, played.size () - 1)
+	       .sigAnimation.connect (bind (mem_fun (*this, &Twopart::endPickup), nextPlayer));
+	    rc = true;
             if (!cPlayers)
                nextPlayer = ~nextPlayer;
             else
@@ -819,8 +827,10 @@ int Twopart:: endRound (unsigned int player) {
       // All played cards are differnt: Winner is the one with highest card
       else {
          startPlayer = nextPlayer = pos2Player (posMax - *startPos);
-         movePlayedCardsToPlayer (nextPlayer);
-         TRACE5 ("Twopart::endRound (unsigned int) - Found winner: " << nextPlayer);
+	 animateCards (players[nextPlayer].won, played, 0, played.size () - 1)
+	    .sigAnimation.connect (bind (mem_fun (*this, &Twopart::endPickup), nextPlayer));
+	 rc = true;
+         TRACE5 ("Twopart::endRound (unsigned int&) - Found winner: " << nextPlayer);
 
          bfPlayers = (1 << NUM_PLAYERS) - 1;   // Set all players (having cards)
          removePlayersWithoutCards ();
@@ -835,9 +845,9 @@ int Twopart:: endRound (unsigned int player) {
    }
 
    bfOldPlayers = bfPlayers;
-   TRACE8 ("Twopart::endRound (unsigned int) - Continuing with player " << nextPlayer);
-   Check3 (players[nextPlayer].hand.size ());
-   return startPlayer = nextPlayer;
+   TRACE8 ("Twopart::endRound (unsigned int&) - Continuing with player " << nextPlayer);
+   player = startPlayer = nextPlayer;
+   return rc;
 }
 
 //-----------------------------------------------------------------------------
@@ -960,25 +970,20 @@ unsigned int Twopart::pos2Player (unsigned int pos) const {
 }
 
 //-----------------------------------------------------------------------------
-/// Method to move the cards of the actual round to the winner
+/// Callback after animating the played cards to a player
 /// \param receiver: Nr. of player getting all played cards
-/// \param start: Startposition of cards to move
 //-----------------------------------------------------------------------------
-void Twopart::movePlayedCardsToPlayer (unsigned int receiver, unsigned int start) {
-   TRACE8 ("Twopart::movePlayedCardsToPlayer () - " << (played.size () - start)
-           << " cards for player " << receiver << " til position " << start);
+void Twopart::endPickup (unsigned int receiver) {
+   TRACE8 ("Twopart::endPickup () - " << receiver);
    Check3 (receiver < NUM_PLAYERS);
-   Check3 (start < played.size ());
-
-   movePile (((gameStatus () == PLAYING)
-              ? players[receiver].won : players[receiver].hand),
-             played, start);
-
    if (!receiver && (gameStatus () == PLAYING))
       enableWonCards (players[0].won);
 
    if (gameStatus () == PLAYING2)
       players[receiver].hand.sort (compByColourAccTrumps);
+   else
+      *startPos = 0;
+   makeNextMoves ();
 }
 
 //-----------------------------------------------------------------------------
