@@ -191,7 +191,7 @@ bool Twopart::enableHuman () {
 //-----------------------------------------------------------------------------
 unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
    TRACE3 ("Twopart::pickUpPlayedPile (unsigned int) - Player " << player
-           << " picks up played pile");
+           << " picks up played pile at " << offPos);
    Check3 (bfPlayers);
 
    // Move played cards to player
@@ -361,27 +361,31 @@ void Twopart::endTurn (unsigned int player) {
       isAnimated = endRound (newPlayer);
    }
 
-   // Check if the actual part is terminated
+   // Check if the current part is terminated
    if ((gameStatus () == PLAYING)
        ? ((int)newPlayer < 0)
        : (newPlayer == (unsigned int)findNextPlayerWithCards (newPlayer))) {
-      player = (gameStatus () == PLAYING) ? ~newPlayer : newPlayer;
-
-      Glib::ustring str ((gameStatus () == PLAYING)
-                         ? _("First part ended; Part 2 starts %1")
-                         : _("%1 lost"));
+      Glib::ustring str;
+      if (gameStatus () == PLAYING) {
+	 player = ~newPlayer;
+         startPartTwo (player);
+	 str = _("First part ended; Part 2 starts %1");
+      }
+      else {
+	 player = newPlayer;
+         setGameStatus (STOPPED);
+	 str = _("%1 lost");
+      }
       Check3 (actPlayers.size () > player);
       Check3 (actPlayers[player]);
       str.replace (str.find ("%1"), 2, actPlayers[player]->getName ());
       status.pop ();
       status.push (str);
-
-      if (gameStatus () == PLAYING)
-         startPartTwo (player);
-      else
-         setGameStatus (STOPPED);
    }
    else {
+      if (gameStatus () == PLAYING2)
+	 ++offPos;
+
       displayTurn (newPlayer);
       setNextPlayer (newPlayer);
       if (!isAnimated)
