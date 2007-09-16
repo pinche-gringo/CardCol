@@ -66,8 +66,6 @@ class Twopart : public Game {
    // Helper functions
    void endPickup (unsigned int player);
    void endTurn (unsigned int player);
-   bool moveSelectedCardToPlayed (unsigned int player, unsigned int start,
-                                  unsigned int end);
    bool enableHuman ();
    unsigned int pickUpPlayedPile (unsigned int player);
    int  findNextPlayer (unsigned int player) const;

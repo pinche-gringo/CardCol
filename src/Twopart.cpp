@@ -50,6 +50,7 @@
 #include <CardImgs.h>
 #include <CardWidget.h>
 #include <CardWindow.h>
+#include <ComputerPlayer.h>
 
 #include "Twopart.h"
 
@@ -92,8 +93,8 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
               << ROWS_PLAYER[i] + (i ? 1 : 3));
 
       players[i].won.show ();
-      attach (players[i].won, COLS_PLAYER[i] + (i ? 1 : 7),
-              COLS_PLAYER[i] + (i ? 2 : 8),
+      attach (players[i].won, COLS_PLAYER[i] + (i ? 1 : 3),
+              COLS_PLAYER[i] + (i ? 3 : 15),
               ROWS_PLAYER[i] + (i ? -2 : 2),
               ROWS_PLAYER[i] + (i ? -1 : 3),
               Gtk::SHRINK, Gtk::SHRINK, 1);
@@ -148,8 +149,6 @@ void Twopart::start () {
       }
       players[0].hand.setStyle (ICardPile::NORMAL);
       players[0].won.setStyle (ICardPile::QUITE_COMPRESSED);
-
-      pos1Play = pos2Play = -1U;
 
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
          setNextPlayer (startPlayer = rand () % NUM_PLAYERS);
@@ -260,53 +259,6 @@ void Twopart::playedSelected () {
    }
    setNextPlayer (pickUpPlayedPile (0));
    disableHuman ();
-}
-
-//-----------------------------------------------------------------------------
-/// Callback after clicking on a card in hand
-/// \param player: ID of player
-/// \param start: Offset of first card to play
-/// \param end: Offset of last card to play
-/// \returns bool: Status of moving; true: Card could be moved; false else
-//-----------------------------------------------------------------------------
-bool Twopart::moveSelectedCardToPlayed (unsigned int player,
-                                        unsigned int start, unsigned int end) {
-   TRACE5 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsigned int) - Player: "
-           << player << " at position " << start << " to " << end);
-   Check3 (player < NUM_PLAYERS);
-   Check3 (end < players[player].hand.size ());
-   Check3 (start <= end);
-   Check3 (gameStatus () >= PLAYING);
-
-   if (gameStatus () == PLAYING) {
-      Check3 (start == end);
-      TRACE8 ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int)"
-              " - Player " << player << "; Card at " << end << " = "
-              << *players[player].hand[end]);
-      movePile (played, players[player].hand, start, end);
-
-      if (staple.size ()) {
-         CardWidget& card (staple.removeShownTopCard ());
-         players[player].hand.insertSorted (card);
-
-         if (!staple.size ()) {
-            Check3 (!pTrump);
-            pTrump = new CardWidget (card); Check3 (pTrump);
-            staple.hide ();
-         }
-      }
-   }
-   else {
-      if (offPos < (NUM_PLAYERS - 1))
-         startPos[offPos++] = played.size ();
-#if TRACELEVEL > 8
-      for (unsigned int i (0); i < (NUM_PLAYERS - 1); ++i)
-         TRACE ("Twopart::moveSelectedCardToPlayed (unsigned int, unsinged int) - "
-                << i << ". Position: " << startPos[i]);
-#endif
-      movePile (played, players[player].hand, start, end);
-   }
-   return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -810,10 +762,11 @@ bool Twopart::endRound (unsigned int& player) {
          TRACE8 ("Twopart::endRound (unsigned int&) - Remaining (" << cPlayers
                  << ") " << std::hex << bfPlayers << std::dec << "; Next: " << nextPlayer);
 
-         if (cPlayers < 2) {                   // Less than two players found:
+	 if (cPlayers < 2) {                   // Less than two players found:
             bfPlayers = (1 << NUM_PLAYERS) - 1;
             cPlayers = removePlayersWithoutCards ();
 
+	    setNextPlayer (NUM_PLAYERS - 1);
 	    animateCards (players[nextPlayer].won, played, 0, played.size () - 1)
 	       .sigAnimation.connect (bind (mem_fun (*this, &Twopart::endPickup), nextPlayer));
 	    rc = true;
@@ -826,7 +779,8 @@ bool Twopart::endRound (unsigned int& player) {
       }
       // All played cards are differnt: Winner is the one with highest card
       else {
-         startPlayer = nextPlayer = pos2Player (posMax - *startPos);
+	 setNextPlayer (NUM_PLAYERS - 1);
+	 startPlayer = nextPlayer = pos2Player (posMax - *startPos);
 	 animateCards (players[nextPlayer].won, played, 0, played.size () - 1)
 	    .sigAnimation.connect (bind (mem_fun (*this, &Twopart::endPickup), nextPlayer));
 	 rc = true;
@@ -845,8 +799,8 @@ bool Twopart::endRound (unsigned int& player) {
    }
 
    bfOldPlayers = bfPlayers;
-   TRACE8 ("Twopart::endRound (unsigned int&) - Continuing with player " << nextPlayer);
    player = startPlayer = nextPlayer;
+   TRACE8 ("Twopart::endRound (unsigned int&) - Continuing with player " << nextPlayer);
    return rc;
 }
 
@@ -1061,10 +1015,7 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
    }
 
    bfPlayers = (1 << NUM_PLAYERS) - 1;
-   pos1Play = pos2Play = -1U;
-
    setNextPlayer (player);
-   makeNextMoves ();
    return false;
 }
 
