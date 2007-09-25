@@ -75,7 +75,7 @@
     <p>El jugador que lanza la carta más alta de la pinta elegida al
       iniciar la mano gana, excepto si se han lanzado cartas de la
       pinta especial, en cuyo caso gana quien lanza la carta más alta
-      de la misma. Ese ganadar empieza la siguiente mano.</p>
+      de la misma. Ese ganador empieza la siguiente mano.</p>
 
     <p>La ronda finaliza cuando se han jugado todas las cartas.</p>
 
