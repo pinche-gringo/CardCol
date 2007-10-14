@@ -40,7 +40,7 @@
 BuracoPile::BuracoPile ()
     : CardVPile (COMPRESSED, SHOWFACE) {
    status.type = UNDEFINED;
-   status.posFirst = status.posLast = status.posJoker = -1U;
+   status.posFirst = status.posLast = status.posJoker = 7;
    status.points = 0;
 }
 
@@ -257,7 +257,7 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
 /// Analyzes the pile and stores its characteristics.
 //----------------------------------------------------------------------------
 void BuracoPile::analyzePile () {
-   status.posFirst = status.posLast = status.posJoker = -1U;
+   status.posFirst = status.posLast = status.posJoker = 7;
    if (size ()) {
       for (const_iterator i (begin ()); i != end (); ++i)
          if (Buraco::isJoker (**i)) {
