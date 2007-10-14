@@ -34,6 +34,8 @@
 #include <gtkmm/stock.h>
 #include <gtkmm/statusbar.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -47,6 +49,7 @@
 #include <Player.h>
 #include <CardSet.h>
 #include <CardImgs.h>
+#include <CardWindow.h>
 #include <CardWidget.h>
 #include <ComputerPlayer.h>
 
@@ -223,110 +226,22 @@ void Machiavelli::makeMove (unsigned int player) {
    Check1 (player); Check1 (player < NUM_PLAYERS);
    Check1 (gameStatus () == PLAYING);
 
-   if (target == -1U) {
-      target = showCardsToPlay (player);
-      TRACE8 ("Machiavelli::makeMove (unsigned int) - Going to play cards to "
-              << std::hex << (int)target << std::dec);
-
-      // No more cards found: Continue with next player
-      if (target == -1U) {
-         if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-            // Send played card to all clients (if any)
-            if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-               ++ignoreNextMsg;
-            broadcastMessage ("EndTurn");
-         }
-
-         unsigned int nextPlayer (findNextPlayer (player));
-         if (nextPlayer == findNextPlayer (nextPlayer)) {
-            endGame (nextPlayer);
-            return;
-         }
-         displayTurn (player = nextPlayer);
-         dealCard (player);
-      }
-      else {
-         Check3 (pos1Play <= pos2Play);
-         Check3 (pos2Play <= hands[player].size ());
-         if (pos2Play < hands[player].size ())
-            flipCards2Play (hands[player], pos1Play, pos2Play);
-      }
-   }
-   else {
-      TRACE4 ("Machiavelli::makeMove (unsigned int) - Moving cards to pile " << target);
-      unsigned int pos (target & 0xffff);
-      target >>= 16;
-      TRACE6 ("Machiavelli::makeMove (unsigned int) - Pile " << target
-              << "; Size: " << tablePiles.size ());
-      Check3 (target < tablePiles.size ());
-
-      // Check if cards have to be moved from the table
-      while (posPiles.size ()) {
-         unsigned int posPile (posPiles.back ());
-         unsigned int pile ((posPile >> 8) & 0xff);
-         unsigned int nr (posPile >> 16);
-         unsigned int posSrc (posPile & 0xff);
-         TRACE8 ("Machiavelli::makeMove (unsigned int) - Add from " << pile
-                 << " cards " << posSrc << '-' << (posSrc + nr - 1));
-
-         Check3 (pile < tablePiles.size ());
-         Check3 ((posSrc + nr) <= tablePiles[pile]->size ());
-
-         while (nr--) {
-            CardWidget& card (tablePiles[pile]->remove (posSrc));
-            card.unmark ();
-            tablePiles[target]->insert (card, pos++);
-         }
-         if (tablePiles[pile]->empty ())
-            removePile (pile);
-
-         posPiles.pop_back ();
+   // No more cards found: Continue with next player
+   if (showCardsToPlay (player)) {
+      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
+	 // Send end of turn to all clients (if any)
+	 if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+	    ++ignoreNextMsg;
+	 broadcastMessage ("EndTurn");
       }
 
-      if (pos2Play < hands[player].size ()) {
-         pos = tablePiles[target]->getPosition4Card (*hands[player][pos1Play]);
-
-         // getPosition4Card can't handle a coloured pair with a gap
-         if (pos == -1U) {
-            Check3 (((tablePiles[target]->size () == 2)
-                     && (MachiPile::cardDistance (*(*tablePiles[target])[1],
-                                                 *(*tablePiles[target])[0]) == 2))
-                    || (tablePiles[target]->size () == 1));
-            pos = (tablePiles[target]->size () == 1) ? 0 : 1;
-         }
-         Check3 (pos != -1U);
+      unsigned int nextPlayer (findNextPlayer (player));
+      if (nextPlayer == findNextPlayer (nextPlayer)) {
+	 endGame (nextPlayer);
+	 return;
       }
-
-      Check1 (pos1Play <= pos2Play);
-
-      if (pos2Play < hands[player].size ()) {
-#if CHECK > 2
-         for (unsigned int t (pos1Play); t < pos2Play; ++t) {
-            int diff (MachiPile::cardDistance (*hands[player][t + 1], *hands[player][t],
-                                               (t == pos1Play) ? MachiPile::BOTH : MachiPile::ACE));
-            TRACE1 ("Buraco::makeMove (unsigned int) - Card " << *hands[player][t]);
-            Check3 ((diff == 0) || (diff == 1));
-         }
-#endif
-
-         // Move the played cards to the pile to play
-         Check3 (hands[player].size () > pos2Play);
-         for (; (int)pos1Play <= (int)pos2Play; --pos2Play)
-            tablePiles[target]->insert (hands[player].remove (pos1Play), pos++);
-      }
-      target = -1U;
-
-#if CHECK > 2
-      if (typeid (*actPlayers[player]) == typeid (ComputerPlayer)) {
-         YGP::StatusObject obj;
-         checkPiles (obj);
-         if (obj.getType () != YGP::StatusObject::UNDEFINED) {
-            TRACE1 ("Machiavelli::makeMove (unsigned int) - Invalid piles!\n"
-		    << obj.getMessage ());
-            Check (!"Valid piles");
-         }
-      }
-#endif
+      displayTurn (player = nextPlayer);
+      dealCard (player);
    }
 }
 
@@ -415,7 +330,6 @@ void Machiavelli::setStartPlayer () {
    dealCard (startPlayer);
    displayTurn (startPlayer++);
    startPlayer &= 0x3;
-   makeNextMoves ();
 }
 
 //-----------------------------------------------------------------------------
@@ -480,7 +394,6 @@ void Machiavelli::doEndTurn () {
    else {
       displayTurn (nextPlayer);
       dealCard (nextPlayer);
-      makeNextMoves ();
    }
 }
 
@@ -942,18 +855,18 @@ MachiPile& Machiavelli::makeNewPile (unsigned int pos) {
 }
 
 //-----------------------------------------------------------------------------
-/// Searches the passed pile, if it has a serie of 3 or more. This method also
+/// Searches the passed pile, if it has a serie of 3 or more and animates them
+/// to a new created pile.
 /// \param playerPile: Pile to inspect
 /// \returns \c bool:
 /// \requires The pile must have at least 3 cards
-/// \remarks: Sets pos1Play and pos2Play, if a serie is found
 //-----------------------------------------------------------------------------
-bool Machiavelli::hasSerie (ICardPile& playerPile) {
+bool Machiavelli::playSerie (ICardPile& playerPile) {
    Check3 (playerPile.size () >= 3);
 
    // Check for 3 cards belonging to a serie
    for (unsigned int i (0); i < (playerPile.size () - 2); ++i) {
-      TRACE8 ("Machiavelli::hasSerie (ICardPile&) - Analyzing card "
+      TRACE8 ("Machiavelli::playSerie (ICardPile&) - Analyzing card "
               << *playerPile[i]);
 
       std::map<unsigned int, unsigned int> aPos;                   // diff, pos
@@ -967,9 +880,12 @@ bool Machiavelli::hasSerie (ICardPile& playerPile) {
             i = playerPile.sortColourSerie (aPos, aOrder);
             nrs = aPos.size ();
          }
+	 Check3 (nrs >= 3);
 
-         pos1Play = i;
-         pos2Play = i + nrs - 1;
+	 unsigned int pos1 (i), pos2 (i + nrs - 1);
+	 flipCards2Play (playerPile, pos1, pos2);
+	 CardPileWindow& win (animateCards (makeNewPile (), playerPile, pos1, pos2));
+	 win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
          return true;
       }
    }
@@ -977,15 +893,14 @@ bool Machiavelli::hasSerie (ICardPile& playerPile) {
 }
 
 //-----------------------------------------------------------------------------
-/// Searches for cards to play and shows them in the hand of the actual player
+/// Searches for cards to play and shows them in the hand of the actual player.
+/// Afterwards they are animated to the target pile.
 /// \param player: Player to inspect
-/// \returns \c ID of the target (32 Bit: Pile << 16 + Position) or -1U;
-/// \remarks: - Sets pos1Play and pos2Play approbiatly
-///    - Creates a new pile if needed
+/// \returns bool: True, if the card fits on the pile
+/// \remarks: Creates a new pile if needed
 //-----------------------------------------------------------------------------
-unsigned int Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int offset) {
-   TRACE8 ("Machiavelli::cardFitsOnPile (const CardWidget&, unsigned int) - Adding card "
-           << card << '?');
+bool Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int offset) {
+   TRACE8 ("Machiavelli::cardFitsOnPile (const CardWidget&, unsigned int) - Adding card " << card << '?');
 
    unsigned int dest (-1U);
    for (std::vector<MachiPile*>::const_iterator m (tablePiles.begin ());
@@ -995,8 +910,10 @@ unsigned int Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int o
       // Check if the card can be added to an existing pile
       dest = (*m)->getPosition4Card (card);
       if (dest != -1U) {
-         pos1Play = pos2Play = offset;
-         return ((m - tablePiles.begin ()) << 16) + dest;
+	 flipCards2Play (hands[currentPlayer ()], offset, offset);
+	 CardWindow& win (animateCard (**m, dest, hands[currentPlayer ()], offset));
+	 win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+	 return true;
       }
 
       // Or can the card be added by splitting the pile?
@@ -1007,7 +924,7 @@ unsigned int Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int o
          continue;
 
       int pos ((*m)->size () - static_cast<unsigned int> (diff));
-      TRACE7 ("Machiavelli::cardFitsOnPile (const CardWidget&unsigned int) - Splitting "
+      TRACE7 ("Machiavelli::cardFitsOnPile (const CardWidget&, unsigned int) - Splitting "
               << (m - tablePiles.begin ()) << " at " << diff << " (" << pos << ")?");
 
       // A new pile can be made directly (enough cards on both sides)
@@ -1015,87 +932,82 @@ unsigned int Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int o
          // Move cards to remove to hand (to be shown); The card from the
          // hand will be added in the next move
          ++diff;
-         pos1Play = pos2Play = offset;
-         posPiles.push_back ((((*m)->size () - diff) << 16)
-                             + ((m - tablePiles.begin ()) << 8) + diff);
-         TRACE8 ("Machiavelli::cardFitsOnPile (const CardWidget&unsigned int) - Marked pile: "
-                 << std::hex << pos2Play << std::dec);
+         TRACE8 ("Machiavelli::cardFitsOnPile (const CardWidget&, unsigned int) - Marked pile: "
+                 << std::hex << (m - tablePiles.begin ()) << std::dec);
 
          do {
             Check3 ((unsigned int)diff < (*m)->size ());
             (**m)[diff]->mark ();
          } while (static_cast<unsigned int> (++diff) < (*m)->size ());
-         makeNewPile ();
-         return (tablePiles.size () - 1) << 16;
+	 CardPileWindow& win (animateCards (makeNewPile (), hands[currentPlayer ()],
+					    pos, (*m)->size () - 1));
+	 win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
       }
    }
-   return -1U;
+   return false;
 }
 
 //-----------------------------------------------------------------------------
-/// Searches for cards to play and shows them in the hand of the actual player
+/// Searches for cards to play and shows them in the hand of the actual player.
+/// Then they are animated to the target pile.
 /// \param player: Player to inspect
-/// \returns \c ID of the target (32 Bit: Pile << 16 + Position) or -1U
-/// \remarks: Sets pos1Play and pos2Play approbiatly
+/// \returns bool: True, if no card can be played
 //-----------------------------------------------------------------------------
-unsigned int Machiavelli::showCardsToPlay (unsigned int player) {
+bool Machiavelli::showCardsToPlay (unsigned int player) {
    TRACE2 ("Machiavelli::showCardsToPlay (unsigned int) - Player " << player);
 
    ICardPile& playerPile (hands[player]);
-   if ((playerPile.size () > 2) && hasSerie (playerPile)) {
-      Check3 ((pos2Play - pos1Play) >= 2);
-      makeNewPile ();
-      return (tablePiles.size () - 1) << 16;
-   }
+   if ((playerPile.size () > 2) && playSerie (playerPile))
+      return false;
 
-   unsigned int dest (-1U);
    if (tablePiles.size ()) {
       // Check if any cards fits somewhere/somehow on an existing pile
       for (ICardPile::const_iterator p (playerPile.begin ());
            p != playerPile.end (); ++p) {
-         dest = cardFitsOnPile (**p, p - playerPile.begin ());
-         if (dest != -1U)
-            break;
+         if (cardFitsOnPile (**p, p - playerPile.begin ()))
+	    return false;
       }
 
-      if (dest == -1U) {
-         dest = reorderTableToFit (playerPile);
-	 missing.clear ();
+      // Try to re-order the piles to enable playing of other cards
+      bool rc (reorderTableToFit (playerPile));
+#if 0
+      if (posPiles.size ()
+	  && (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE)) {
+	 std::ostringstream msg;
+	 msg << "Reorder=";
+
+	 for (std::deque<unsigned int>::const_iterator i (posPiles.begin ());
+	      i != posPiles.end (); ++i)
+	    msg << *i << ' ';
+	 msg << ";Target=" << dest;
+	 if (pos2Play == hands[player].size ())
+	    msg << ";Now=1";
+
+	 if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
+	    ++ignoreNextMsg;
+
+	 broadcastMessage (msg.str ());
       }
-      else
-	 if (posPiles.size ()) {
-	    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
-	       std::ostringstream msg;
-	       msg << "Reorder=";
-
-	       for (std::deque<unsigned int>::const_iterator i (posPiles.begin ());
-		    i != posPiles.end (); ++i)
-		  msg << *i << ' ';
-	       msg << ";Target=" << dest;
-	       if (pos2Play == hands[player].size ())
-		  msg << ";Now=1";
-
-	       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-		  ++ignoreNextMsg;
-
-	       broadcastMessage (msg.str ());
-	    }
-	 }
+#endif
+      missing.clear ();
+      return rc;
    }
-   return dest;
+   return true;
 }
 
 //-----------------------------------------------------------------------------
-/// Tries to play a card by rearranging the cards on the table
+/// Tries to play a card by rearranging the cards on the table. First it checks
+/// if two cards in the hand can be extended by a card on the table.
+/// If that fails it calls other methods to perform other checks.
 /// \param playerPile: Pile to inspect
-/// \returns \c ID of the target (32 Bit: Pile << 16 + Position) or -1U
-/// \remarks: Sets pos1Play and pos2Play approbiatly
+/// \returns bool: True, if table can be re-ordered
 //-----------------------------------------------------------------------------
-unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
+bool Machiavelli::reorderTableToFit (ICardPile& playerPile) {
    for (ICardPile::const_iterator p (playerPile.begin ());
         p != playerPile.end (); ++p) {
       ICardPile::const_iterator h (p);
       ICardPile work;
+      unsigned int pos1Play, pos2Play;
 
       // First try to make piles with two cards from the hand
       while ((h = playerPile.getFittingCard (**p, h + 1, &MachiPile::cardDistance))
@@ -1128,34 +1040,33 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
 		  continue;
 	       }
 
-               if (work.size ()) {
-                  TRACE6 ("Machiavelli::reorderTableToFit (ICardPile&) - Hand "
-                          << (p - playerPile.begin ()) << "; " << h - playerPile.begin ());
-                  if (diff < 0) {
-                     pos1Play = h - playerPile.begin ();
-                     playerPile.move (pos1Play - 1,
-                                      p - playerPile.begin ());
-                  }
-                  else {
-                     pos1Play = p - playerPile.begin ();
-                     playerPile.move (pos1Play + 1,
-                                      h - playerPile.begin ());
-                  }
-                  pos2Play = pos1Play + 1;
-               }
-               else
-                  pos1Play = pos2Play = playerPile.size ();
+	       TRACE6 ("Machiavelli::reorderTableToFit (ICardPile&) - Hand "
+		       << (p - playerPile.begin ()) << "; " << h - playerPile.begin ());
+	       if (diff < 0) {
+		  pos1Play = h - playerPile.begin ();
+		  playerPile.move (pos1Play - 1,
+				   p - playerPile.begin ());
+	       }
+	       else {
+		  pos1Play = p - playerPile.begin ();
+		  playerPile.move (pos1Play + 1,
+				   h - playerPile.begin ());
+	       }
+	       pos2Play = pos1Play + 1;
 
                TRACE3 ("Machiavelli::reorderTableToFit (ICardPile&) - Pile "
                        << (t - tablePiles.begin ()) << "; Cards "
                        << (c - (*t)->begin ()) << '-' << (c - (*t)->begin () + nr - 1));
-               posPiles.push_back (((t - tablePiles.begin ()) << 8)
-                                   + (nr << 16) + c - (*t)->begin ());
+	       flipCards2Play (playerPile, pos1Play, pos2Play);
+	       CardPileWindows& win (animateCards2 (makeNewPile (), playerPile,
+						    pos1Play, pos2Play));
+	       win.addWindow (**t, c - (*t)->begin (), c - (*t)->begin ());
+	       win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+
                while (nr--)
                   (*c++)->mark ();
-               makeNewPile ();
 
-               return (tablePiles.size () - 1) << 16;
+               return true;
             } // endif pile has matching card
          } // end-for all table piles
          work.clear ();
@@ -1169,10 +1080,10 @@ unsigned int Machiavelli::reorderTableToFit (ICardPile& playerPile) {
 /// Tries to play a card by moving one card from one pile on the table to
 /// another one, so that a card from the hand also fits.
 /// \param playerPile: Pile to inspect
-/// \returns \c ID of the target (32 Bit: Pile << 16 + Position) or -1U
-/// \remarks: Sets pos1Play and pos2Play approbiatly
+/// \returns bool: True, if cards to play have been found
 //-----------------------------------------------------------------------------
-unsigned int Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
+bool Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
+   unsigned int pos2Play;
    for (ICardPile::const_iterator p (playerPile.begin ());
         p != playerPile.end (); ++p) {
       // Try to find a pile, where the card from the hand differs by 2 from
@@ -1227,18 +1138,22 @@ unsigned int Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
 		     addBorderCards2Missing (o - tablePiles.begin (),
 					     1 << (c == (*o)->begin ()));
 		  else {
-		     pos1Play = pos2Play = p - playerPile.begin ();
+		     pos2Play = p - playerPile.begin ();
+
 		     TRACE8 ("Machiavelli::reorderTableToFit2 (ICardPile&) - Hand: "
 			     << **p << " (" << pos1Play << ')');
 		     TRACE8 ("Machiavelli::reorderTableToFit2 (ICardPile&) - Pile: "
 			     << (o - tablePiles.begin ()) << "; Card " << **c
 			     << " (" << (c - (*o)->begin ()) << ')');
 
-		     posPiles.push_back (((o - tablePiles.begin ()) << 8)
-					 + (1 << 16) + c - (*o)->begin ());
+		     flipCards2Play (playerPile, pos2Play, pos2Play);
+		     CardPileWindows& win (animateCards2 (makeNewPile (), playerPile,
+							  pos2Play, pos2Play));
+		     win.addWindow (**t, c - (*o)->begin (), c - (*o)->begin ());
+		     win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+
 		     (*c)->mark ();
-		     return (((t - tablePiles.begin ()) << 16)
-			     + ((diff == -2) ? 0 : (*t)->size ()));
+		     return true;
 		  }
                }
             }
@@ -1252,10 +1167,11 @@ unsigned int Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
 //-----------------------------------------------------------------------------
 /// Tries to play a card by rearranging two piles on the table
 /// \param playerPile: Pile to inspect
-/// \returns \c ID of the target (32 Bit: Pile << 16 + Position) or -1U
-/// \remarks: Sets pos1Play and pos2Play approbiatly
+/// \returns bool: True, if table can be re-ordered
 //-----------------------------------------------------------------------------
-unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
+bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
+   unsigned int pos2Play;
+
    for (ICardPile::const_iterator p (playerPile.begin ());
         p != playerPile.end (); ++p) {
       ICardPile work;
@@ -1314,7 +1230,7 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                   if (work.size ()) {
                      TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Hand "
                              << (p - playerPile.begin ()));
-                     pos2Play = pos1Play = p - playerPile.begin ();
+                     pos2Play = p - playerPile.begin ();
 
 		     // Swap cards, if needed, to get the right sorting (but
 		     // take care of the case of the ace as 1)
@@ -1325,30 +1241,34 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                         std::swap (i, c);
                         std::swap (t, o);
                      }
+		     Check3 (o >= tablePiles.begin ());
+		     Check3 (c >= (*o)->begin ());
 
                      Check3 (t >= tablePiles.begin ());
                      Check3 (i >= (*t)->begin ());
                      TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Pile "
                              << (t - tablePiles.begin ()) << "; Card "
                              << (i - (*t)->begin ()) << '-' << (i - (*t)->begin () + nr - 1));
-                     posPiles.push_back (((t - tablePiles.begin ()) << 8)
-                                         + (nr << 16) + i - (*t)->begin ());
+
+		     flipCards2Play (playerPile, pos2Play, pos2Play);
+		     CardPileWindows& win (animateCards2 (makeNewPile (), playerPile, pos2Play, pos2Play));
+		     win.addWindow (**t, i - (*t)->begin (), i - (*t)->begin ());
+		     win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
 
                      (*i)->mark ();
                   }
-                  else
-                     pos1Play = pos2Play = playerPile.size ();
-
-                  Check3 (o >= tablePiles.begin ());
-                  Check3 (c >= (*o)->begin ());
+                  else {
+		     Check3 (o >= tablePiles.begin ());
+		     Check3 (c >= (*o)->begin ());
+		     CardPileWindow& win (animateCards (makeNewPile (), **o, (c - (*o)->begin ()),
+						       (c - (*o)->begin () + nr - 1)));
+		     win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+		  }
                   TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Pile "
                           << (o - tablePiles.begin ()) << "; Card "
                           << (c - (*o)->begin ()) << '-' << (c - (*o)->begin () + nr - 1));
-                  posPiles.push_back (((o - tablePiles.begin ()) << 8)
-                                      + (nr << 16) + c - (*o)->begin ());
                   while (nr--)
                      (*c++)->mark ();
-                  makeNewPile ();
                   return (tablePiles.size () - 1) << 16;
                } // endif pile has matching card
             } // endfor all following piles
@@ -1358,17 +1278,15 @@ unsigned int Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
       } // end-for all table piles
    } // end-for all cards
 
-   pos1Play = pos2Play = playerPile.size ();
    return reorderTableToFit4 ();
 }
 
 //-----------------------------------------------------------------------------
-/// Tries to play a card inderectly by filling up a pile missing one card,
+/// Tries to play a card indirectly by filling up a pile missing one card,
 /// so that in the next turn the card can be played
-/// \returns \c ID of the target (32 Bit: Pile << 16 + Position) or -1U
-/// \remarks: Sets pos1Play and pos2Play approbiatly
+/// \returns bool: True, if the table can be re-ordered
 //-----------------------------------------------------------------------------
-unsigned int Machiavelli::reorderTableToFit4 () {
+bool Machiavelli::reorderTableToFit4 () {
    TRACE8 ("Machiavelli::reorderTableToFit4 ()");
 
    // Try to find any of the missing cards
@@ -1391,44 +1309,45 @@ unsigned int Machiavelli::reorderTableToFit4 () {
 		  TRACE8 ("Machiavelli::reorderTableToFit4 () - Card found: " << pos);
 
 		  if (!pos || (pos == ((*t)->size () - 1))) {
-		     Check1 (0);
-		     posPiles.push_back (((t - tablePiles.begin ()) << 8) + (1 << 16) + pos);
 		     (**t)[pos]->mark ();
-		     pos = tablePiles[i->pile]->getPosition4Card (*(**t)[pos]); Check3 (pos != -1U);
-		     return (i->pile << 16) + pos;
+
+		     CardWindow& win (animateCard (*tablePiles[i->pile],
+						   tablePiles[i->pile]->getPosition4Card (*(**t)[pos]),
+						   **t, pos));
+		     win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+		     return true;
 		  }
 		  else
 		     if ((pos > 3) && (pos < ((*t)->size () - 2))) {
-			Check1 (0);
-			makeNewPile ();
 			unsigned int nr ((*t)->size () - pos);
-			posPiles.push_back (((t - tablePiles.begin ()) << 8)
-					    + (nr << 16) + pos);
+			CardPileWindow& win (animateCards (makeNewPile (), **t, pos, pos + nr));
+			win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
 			while (--nr)
 			   (**t)[pos + nr]->mark ();
-			return ((tablePiles.size () - 1) << 16);
+
+			return true;
 		     }
 	       }
 	    } // endif pile has the right colour
-	 } // endif numbered pile
+	 } // endif coloured pile
 	 else
 	    if (((*t)->size () == 4) && ((**t)[0]->number () == i->nr)) {
 	       TRACE6 ("Machiavelli::reorderTableToFit4 () - Inspecting numbered pile " << t - tablePiles.begin ());
 
 	       for (ICardPile::const_iterator p ((*t)->begin ()); p != (*t)->end (); ++p)
 		  if ((*p)->colour () == i->colour) {
-		     Check1 (0);
 		     unsigned int pos (p - (*t)->begin ());
-		     posPiles.push_back (((t - tablePiles.begin ()) << 8) + (1 << 16) + pos);
+		     CardWindow& win (animateCard (*tablePiles[i->pile],
+						   tablePiles[i->pile]->getPosition4Card (*(**t)[pos]),
+						   **t, pos));
+		     win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
 		     (**t)[pos]->mark ();
-		     pos = tablePiles[i->pile]->getPosition4Card (*(**t)[p - (*t)->begin ()]); Check3 (pos != -1U);
-		     return (i->pile << 16) + pos;
+		     return true;
 		  }
 	    }
       }
    }
-   pos1Play = pos2Play = -1U;
-   return -1U;
+   return false;
 }
 
 //----------------------------------------------------------------------------
@@ -1444,11 +1363,11 @@ void Machiavelli::dealCard (unsigned int player) {
    }
 
    if (staple.size ()) {
-      CardWidget& card (staple.removeTopCard ());
-      if (player)
-         hands[player].insertSorted (card);
-      else
-         hands[0].append (card);
+      unsigned int pos (player ? hands[player].findByNr (staple.getTopCard ()) : hands[0].size ());
+      if (pos == -1U)
+	 pos = hands[player].size ();
+      animateCard (hands[player], pos, staple, staple.size () - 1)
+	 .sigAnimation.connect (mem_fun (this, &Machiavelli::makeNextMoves));
    }
 }
 
@@ -1506,7 +1425,7 @@ void Machiavelli::undoMove (unsigned int number) {
       MachiPile& src (*tablePiles[move.destPile]);
       Check3 (move.destPos < src.size ());
       Check3 (move.number);
-      Check3 ((move.number + move.destPos) <= src.size ());
+      Check3 ((unsigned int)(move.number + move.destPos) <= src.size ());
 
       // Inform clients about cards to play
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
@@ -1643,8 +1562,6 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
       }
    }
    else if (cmd == "Reorder") {
-      Check2 (posPiles.empty ());
-
       YGP::Tokenize tokCards (command.getNextNode (';'));
       unsigned long posPile (0);
       while (tokCards.getNextNode (' ').size ()) {
@@ -1666,7 +1583,7 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
          if ((posSrc + nr) > srcPile.size ())
             throw YGP::ParseError (N_("Invalid cards!"));
 
-         posPiles.push_back (posPile);
+         // TODO: posPiles.push_back (posPile);
 
          while (nr--)
             srcPile[posSrc++]->mark ();

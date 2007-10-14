@@ -30,6 +30,7 @@
 #include <XGP/AutoContainer.h>
 
 #include <Game.h>
+#include <CardWindow.h>
 #include <CardWidget.h>
 
 #include "MachiPile.h"
@@ -80,7 +81,7 @@ class Machiavelli : public Game {
 
    /// \name Virtual methods
    //@{
-   virtual int makeMove (unsigned int player);
+   virtual void makeMove (unsigned int player);
    virtual bool enableHuman ();
    virtual void disableHuman ();
    void changeNames (const std::vector<Player*>& newPlayer);
@@ -96,16 +97,16 @@ class Machiavelli : public Game {
    MachiPile& makeNewPile ();
    MachiPile& makeNewPile (unsigned int pos);
    void removePile (unsigned int pile);
-   unsigned int showCardsToPlay (unsigned int player);
+   bool showCardsToPlay (unsigned int player);
    void dealCard (unsigned int player);
    void checkPiles (YGP::StatusObject& obj) const;
    void endGame (unsigned int looser);
-   bool hasSerie (ICardPile& playerPile);
-   unsigned int cardFitsOnPile (const CardWidget& card, unsigned int offset);
-   unsigned int reorderTableToFit (ICardPile& playerPile);
-   unsigned int reorderTableToFit2 (ICardPile& playerPile);
-   unsigned int reorderTableToFit3 (ICardPile& playerPile);
-   unsigned int reorderTableToFit4 ();
+   bool playSerie (ICardPile& playerPile);
+   bool cardFitsOnPile (const CardWidget& card, unsigned int offset);
+   bool reorderTableToFit (ICardPile& playerPile);
+   bool reorderTableToFit2 (ICardPile& playerPile);
+   bool reorderTableToFit3 (ICardPile& playerPile);
+   bool reorderTableToFit4 ();
    void addBorderCards2Missing (unsigned int iPile, unsigned int which = -1U);
    //@}
 
@@ -183,7 +184,6 @@ class Machiavelli : public Game {
    } undoValue;
 
    std::stack<undoValue> undo;
-   std::deque<unsigned int> posPiles;
 
    // Structure to store which cards are missing on a pile, to be able to add from hand
    typedef struct missingCards {
