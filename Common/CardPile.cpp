@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 03.04.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2006
+//COPYRIGHT   : Copyright (C) 2002 - 2007
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -311,7 +311,7 @@ int ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS nr) const {
    TRACE8 ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - Searching for "
            << nr << " in " << size () << " cards");
 
-   while ((last - first) > 0 ) {
+   while (last > first) {
       middle = first + ((last - first) >> 1);
 
       TRACE5 ("ICardPile::findFirstEqualOrBigger (CardWidget::NUMBERS) - Data = ["
