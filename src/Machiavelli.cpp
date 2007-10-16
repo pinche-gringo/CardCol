@@ -242,6 +242,7 @@ void Machiavelli::makeMove (unsigned int player) {
       }
       displayTurn (player = nextPlayer);
       dealCard (player);
+      setNextPlayer (player);
    }
 }
 
@@ -990,7 +991,7 @@ bool Machiavelli::showCardsToPlay (unsigned int player) {
       }
 #endif
       missing.clear ();
-      return rc;
+      return !rc;
    }
    return true;
 }
