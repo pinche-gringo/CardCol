@@ -940,9 +940,12 @@ bool Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int offset) {
             Check3 ((unsigned int)diff < (*m)->size ());
             (**m)[diff]->mark ();
          } while (static_cast<unsigned int> (++diff) < (*m)->size ());
-	 CardPileWindow& win (animateCards (makeNewPile (), hands[currentPlayer ()],
+	 MachiPile& newPile (makeNewPile ());
+	 CardPileWindow& win (animateCards (newPile, hands[currentPlayer ()],
 					    pos, (*m)->size () - 1));
-	 win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+	 win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
+					 &newPile));
+	 return true;
       }
    }
    return false;
@@ -1059,14 +1062,16 @@ bool Machiavelli::reorderTableToFit (ICardPile& playerPile) {
                        << (t - tablePiles.begin ()) << "; Cards "
                        << (c - (*t)->begin ()) << '-' << (c - (*t)->begin () + nr - 1));
 	       flipCards2Play (playerPile, pos1Play, pos2Play);
-	       CardPileWindows& win (animateCards2 (makeNewPile (), playerPile,
+
+               for (unsigned int pos (0); pos < nr; ++pos)
+                  (*(c + pos))->mark ();
+
+	       MachiPile& newPile (makeNewPile ());
+	       CardPileWindows& win (animateCards2 (newPile, playerPile,
 						    pos1Play, pos2Play));
-	       win.addWindow (**t, c - (*t)->begin (), c - (*t)->begin ());
-	       win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
-
-               while (nr--)
-                  (*c++)->mark ();
-
+	       win.addWindow (**t, c - (*t)->begin (), (c - (*t)->begin ()) + nr - 1);
+	       win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
+					       &newPile));
                return true;
             } // endif pile has matching card
          } // end-for all table piles
@@ -1148,10 +1153,12 @@ bool Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
 			     << " (" << (c - (*o)->begin ()) << ')');
 
 		     flipCards2Play (playerPile, pos2Play, pos2Play);
-		     CardPileWindows& win (animateCards2 (makeNewPile (), playerPile,
+		     MachiPile& newPile (makeNewPile ());
+		     CardPileWindows& win (animateCards2 (newPile, playerPile,
 							  pos2Play, pos2Play));
 		     win.addWindow (**t, c - (*o)->begin (), c - (*o)->begin ());
-		     win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+		     win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
+						     &newPile));
 
 		     (*c)->mark ();
 		     return true;
@@ -1252,25 +1259,29 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                              << (i - (*t)->begin ()) << '-' << (i - (*t)->begin () + nr - 1));
 
 		     flipCards2Play (playerPile, pos2Play, pos2Play);
-		     CardPileWindows& win (animateCards2 (makeNewPile (), playerPile, pos2Play, pos2Play));
+		     MachiPile& newPile (makeNewPile ());
+		     CardPileWindows& win (animateCards2 (newPile, playerPile, pos2Play, pos2Play));
 		     win.addWindow (**t, i - (*t)->begin (), i - (*t)->begin ());
-		     win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
-
+		     win.addWindow (**o, c - (*o)->begin (), c - (*o)->begin ());
+		     win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
+						     &newPile));
                      (*i)->mark ();
                   }
                   else {
 		     Check3 (o >= tablePiles.begin ());
 		     Check3 (c >= (*o)->begin ());
-		     CardPileWindow& win (animateCards (makeNewPile (), **o, (c - (*o)->begin ()),
+		     MachiPile& newPile (makeNewPile ());
+		     CardPileWindow& win (animateCards (newPile, **o, (c - (*o)->begin ()),
 						       (c - (*o)->begin () + nr - 1)));
-		     win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+		     win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
+						     &newPile));
 		  }
                   TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Pile "
                           << (o - tablePiles.begin ()) << "; Card "
                           << (c - (*o)->begin ()) << '-' << (c - (*o)->begin () + nr - 1));
                   while (nr--)
                      (*c++)->mark ();
-                  return (tablePiles.size () - 1) << 16;
+                  return true;
                } // endif pile has matching card
             } // endfor all following piles
 
@@ -1315,14 +1326,17 @@ bool Machiavelli::reorderTableToFit4 () {
 		     CardWindow& win (animateCard (*tablePiles[i->pile],
 						   tablePiles[i->pile]->getPosition4Card (*(**t)[pos]),
 						   **t, pos));
-		     win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+		     win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
+						     tablePiles[i->pile]));
 		     return true;
 		  }
 		  else
 		     if ((pos > 3) && (pos < ((*t)->size () - 2))) {
 			unsigned int nr ((*t)->size () - pos);
-			CardPileWindow& win (animateCards (makeNewPile (), **t, pos, pos + nr));
-			win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+			MachiPile& newPile (makeNewPile ());
+			CardPileWindow& win (animateCards (newPile, **t, pos, pos + nr));
+			win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
+							&newPile));
 			while (--nr)
 			   (**t)[pos + nr]->mark ();
 
@@ -1341,7 +1355,8 @@ bool Machiavelli::reorderTableToFit4 () {
 		     CardWindow& win (animateCard (*tablePiles[i->pile],
 						   tablePiles[i->pile]->getPosition4Card (*(**t)[pos]),
 						   **t, pos));
-		     win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+		     win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
+						     tablePiles[i->pile]));
 		     (**t)[pos]->mark ();
 		     return true;
 		  }
@@ -1828,4 +1843,16 @@ void Machiavelli::resizeCards () {
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       hands[i].set_size_request (-1, CardImages::HEIGHT);
 
+}
+
+//-----------------------------------------------------------------------------
+/// Callback after animating marked cards; all cards in the passed pile are
+/// unmarked
+/// \param pile: Pile to unmark
+//-----------------------------------------------------------------------------
+void Machiavelli::unmarkAndEnd (MachiPile* pile) {
+   Check1 (pile);
+   for (MachiPile::iterator i (pile->begin ()); i != pile->end (); ++i)
+      (*i)->unmark ();
+   makeNextMoves ();
 }
