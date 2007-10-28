@@ -134,6 +134,7 @@ class Machiavelli : public Game {
 
    /// \name Callback from events
    //@{
+   void unmarkAndEnd (MachiPile* pile);
    void endTurn ();
    void doEndTurn ();
    void undoMove (unsigned int number);
