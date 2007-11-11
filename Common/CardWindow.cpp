@@ -81,7 +81,7 @@ void AnimatedCard::cleanup () {
 /// Callback when the animation starts
 //-----------------------------------------------------------------------------
 void AnimatedCard::finish () {
-   TRACE9 ("AnimatedCard::finish ()");
+   TRACE8 ("AnimatedCard::finish ()");
    sigAnimation.emit ();
 }
 
@@ -358,7 +358,7 @@ void CardPileWindows::start () {
       TRACE5 ("CardPileWindow::start () - Sizes: " << x << '/' << y);
 
       do {
-	 TRACE9 ("CardPileWindows::start () - Pile: " << (i - wins.begin ()));
+	 TRACE8 ("CardPileWindows::start () - Pile: " << (i - wins.begin ()));
 	 pile->setTopCard ((*i)->src->remove ((*i)->start));
 	 TRACE5 ("CardPileWindows::start () - Sizes: " << x << '/' << y);
       } while ((*i)->start < (*i)->end--);
@@ -385,17 +385,17 @@ void CardPileWindows::cleanup () {
 
 //-----------------------------------------------------------------------------
 /// Adds a window to animate.
-/// \param posDest: Position in the destination
+/// \param dest: Position in the destination
 /// \param src: Source pile
 /// \param start: First card of source to move
 /// \param end: Last card of source to move
 //-----------------------------------------------------------------------------
-void CardPileWindows::addWindow (unsigned int posDest, ICardPile& src, unsigned int start, unsigned int end) {
-   TRACE9 ("CardPileWindows::addWindow (unsigned int, ICardPile& src, 2x unsigned int)");
+void CardPileWindows::addWindow (unsigned int dest, ICardPile& src, unsigned int start, unsigned int end) {
+   TRACE3 ("CardPileWindows::addWindow (unsigned int, ICardPile& src, 2x unsigned int)");
    Check1 (start <= end);
    Check1 (end < src.size ());
    addWindow (src, start, end);
-   wins.back ()->posDest = posDest;
+   wins.back ()->posDest = dest;
 }
 
 //-----------------------------------------------------------------------------
@@ -405,7 +405,7 @@ void CardPileWindows::addWindow (unsigned int posDest, ICardPile& src, unsigned 
 /// \param end: Last card of source to move
 //-----------------------------------------------------------------------------
 void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned int end) {
-   TRACE9 ("CardPileWindows::addWindow (ICardPile& src, 2x unsigned int)");
+   TRACE3 ("CardPileWindows::addWindow (ICardPile& src, 2x unsigned int) - " << start << '-' << end);
    Check1 (start <= end);
    Check1 (end < src.size ());
    AnimatedPile* win (new AnimatedPile);
