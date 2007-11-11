@@ -886,7 +886,7 @@ bool Machiavelli::playSerie (ICardPile& playerPile) {
 	 unsigned int pos1 (i), pos2 (i + nrs - 1);
 	 flipCards2Play (playerPile, pos1, pos2);
 	 CardPileWindow& win (animateCards (makeNewPile (), playerPile, pos1, pos2));
-	 win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+	 win.sigAnimation.connect (mem_fun (*this, &Machiavelli::endComputerMove));
          return true;
       }
    }
@@ -896,7 +896,8 @@ bool Machiavelli::playSerie (ICardPile& playerPile) {
 //-----------------------------------------------------------------------------
 /// Searches for cards to play and shows them in the hand of the actual player.
 /// Afterwards they are animated to the target pile.
-/// \param player: Player to inspect
+/// \param card: Card which might be added to a pile on the table
+/// \param offset: Offset of the card in the hand of the player
 /// \returns bool: True, if the card fits on the pile
 /// \remarks: Creates a new pile if needed
 //-----------------------------------------------------------------------------
@@ -913,7 +914,7 @@ bool Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int offset) {
       if (dest != -1U) {
 	 flipCards2Play (hands[currentPlayer ()], offset, offset);
 	 CardWindow& win (animateCard (**m, dest, hands[currentPlayer ()], offset));
-	 win.sigAnimation.connect (mem_fun (*this, &Machiavelli::makeNextMoves));
+	 win.sigAnimation.connect (mem_fun (*this, &Machiavelli::endComputerMove));
 	 return true;
       }
 
@@ -930,19 +931,21 @@ bool Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int offset) {
 
       // A new pile can be made directly (enough cards on both sides)
       if ((pos > 2) && (diff > 1)) {
-         // Move cards to remove to hand (to be shown); The card from the
-         // hand will be added in the next move
+         // Move cards to remove to hand (to be shown)
          ++diff;
          TRACE8 ("Machiavelli::cardFitsOnPile (const CardWidget&, unsigned int) - Marked pile: "
                  << std::hex << (m - tablePiles.begin ()) << std::dec);
 
+	 ICardPile& source (**m);
+	 dest = (diff > 0) ? 0 : source.size () - pos - 1;
          do {
-            Check3 ((unsigned int)diff < (*m)->size ());
-            (**m)[diff]->mark ();
-         } while (static_cast<unsigned int> (++diff) < (*m)->size ());
+            Check3 ((unsigned int)diff < source.size ());
+            source[diff]->mark ();
+         } while (static_cast<unsigned int> (++diff) < source.size ());
 	 MachiPile& newPile (makeNewPile ());
-	 CardPileWindow& win (animateCards (newPile, hands[currentPlayer ()],
-					    pos, (*m)->size () - 1));
+	 flipCards2Play (hands[currentPlayer ()], offset, offset);
+	 CardPileWindows& win (animateCards2 (**m, dest, hands[currentPlayer ()], offset, offset));
+	 win.addWindow ((diff > 0) ? dest : dest + 1, source, pos, source.size () - 1);
 	 win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
 					 &newPile));
 	 return true;
@@ -1150,18 +1153,18 @@ bool Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
 		     TRACE8 ("Machiavelli::reorderTableToFit2 (ICardPile&) - Hand: "
 			     << **p << " (" << pos1Play << ')');
 
-		     MachiPile& src (**t);
+		     MachiPile& src (**o);
 		     unsigned int posSrc (c - (*o)->begin ());
+		     unsigned int posDest ((diff == -2) ? 0 : (*t)->size ());
 		     TRACE8 ("Machiavelli::reorderTableToFit2 (ICardPile&) - Pile: "
 			     << (o - tablePiles.begin ()) << "; Card " << **c << " (" << posSrc << ')');
 		     (*c)->mark ();
 
-		     MachiPile& newPile (makeNewPile ());
-		     CardPileWindows& win (animateCards2 (newPile, playerPile,
+		     CardPileWindows& win (animateCards2 (**t, posDest, playerPile,
 							  pos2Play, pos2Play));
-		     win.addWindow (src, posSrc, posSrc);
+		     win.addWindow (posDest, src, posSrc, posSrc);
 		     win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
-						     &newPile));
+						     &src));
 		     return true;
 		  }
                }
@@ -1392,7 +1395,7 @@ void Machiavelli::dealCard (unsigned int player) {
       if (pos == -1U)
 	 pos = hands[player].size ();
       animateCard (hands[player], pos, staple, staple.size () - 1)
-	 .sigAnimation.connect (mem_fun (this, &Machiavelli::makeNextMoves));
+	 .sigAnimation.connect (mem_fun (this, &Machiavelli::endComputerMove));
    }
 }
 
@@ -1863,5 +1866,13 @@ void Machiavelli::unmarkAndEnd (MachiPile* pile) {
    Check1 (pile);
    for (MachiPile::iterator i (pile->begin ()); i != pile->end (); ++i)
       (*i)->unmark ();
+   endComputerMove ();
+}
+
+void Machiavelli::endComputerMove () {
+   YGP::StatusObject obj;
+   checkPiles (obj);
+   Check1 (obj.getType () == YGP::StatusObject::UNDEFINED);
+
    makeNextMoves ();
 }
