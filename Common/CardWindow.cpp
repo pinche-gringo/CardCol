@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 20.05.2007
-//COPYRIGHT   : Copyright (C) 2007
+//COPYRIGHT   : Copyright (C) 2007, 2008
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
 /// \param posSrc: Where to put the card in the destination
 //-----------------------------------------------------------------------------
 AnimatedCard::AnimatedCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc)
-   : AnimatedWindow (), dest (dest), posDest (posDest), src (src), posSrc (posSrc) {
+   : XGP::AnimatedWindow (), dest (dest), posDest (posDest), src (src), posSrc (posSrc) {
 }
 
 

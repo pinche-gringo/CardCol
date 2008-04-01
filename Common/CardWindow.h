@@ -22,7 +22,7 @@
 
 #include "CardPile.h"
 
-#include "AnimWindow.h"
+#include <XGP/AnimWindow.h>
 
 
 class CardWidget;
@@ -30,7 +30,7 @@ class CardWidget;
 
 /**Baseclass for animated windows in the cardgame collection
  */
-class AnimatedCard : public AnimatedWindow {
+class AnimatedCard : public XGP::AnimatedWindow {
  public:
    ~AnimatedCard ();
 
@@ -140,8 +140,8 @@ class CardPileWindows : public CardPileWindow {
    CardPileWindows (const CardPileWindows&);
    CardPileWindows& operator= (const CardPileWindows&);
 
-   struct AnimatedPile : public AnimatedWindow {
-      AnimatedPile () : AnimatedWindow (), pile (NULL), src (NULL), start (0),
+   struct AnimatedPile : public XGP::AnimatedWindow {
+      AnimatedPile () : XGP::AnimatedWindow (), pile (NULL), src (NULL), start (0),
 	   end (0), posDest (0) { }
       ~AnimatedPile () { delete pile; }
 
@@ -151,7 +151,7 @@ class CardPileWindows : public CardPileWindow {
       unsigned int end;
       unsigned int posDest;
 
-      void animateTo (int x, int y) { AnimatedWindow::animateTo (x, y); }
+      void animateTo (int x, int y) { XGP::AnimatedWindow::animateTo (x, y); }
       void getEndPos (int& x, int& y);
    };
 
