@@ -37,6 +37,7 @@
 
 
 /**Class to display a pile of cards on the screen
+ * \todo Don't derive from std::vector
  */
 class ICardPile : public std::vector<CardWidget*> {
  public:
@@ -251,6 +252,10 @@ template <class T> class CardPile : public T, public ICardPile {
       if (size ())
          resize (size () - 1, NORMAL);
    }
+
+ private:
+   CardPile (const CardPile<T>& other);
+   CardPile<T>& operator= (const CardPile<T>& other);
 };
 
 
