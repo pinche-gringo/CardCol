@@ -22,6 +22,8 @@
 
 #include "CardPile.h"
 
+#include <YGP/Check.h>
+
 #include <XGP/AnimWindow.h>
 
 
@@ -43,13 +45,10 @@ class AnimatedCard : public XGP::AnimatedWindow {
    void finish ();
 
  protected:
-   AnimatedCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc);
+   AnimatedCard (ICardPile& dest, unsigned int posDest, Gtk::Widget& src);
 
    ICardPile& dest;
    unsigned int posDest;
-
-   ICardPile& src;
-   unsigned int posSrc;
 
  private:
    AnimatedCard ();
@@ -67,11 +66,6 @@ class CardWindow : public AnimatedCard {
 
    static CardWindow* create (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc);
 
-   /// Returns the card to be animated
-   /// \returns CardWidget&: Card to be animated
-   CardWidget& getCard () const { return *(CardWidget*)*get_children ().begin (); }
-
-   virtual void start ();
    virtual void cleanup ();
 
  protected:
@@ -81,6 +75,9 @@ class CardWindow : public AnimatedCard {
    CardWindow ();
    CardWindow (const CardWindow&);
    CardWindow& operator= (const CardWindow&);
+
+   ICardPile& src;
+   unsigned int posSrc;
 };
 
 
@@ -90,24 +87,28 @@ class CardPileWindow : public AnimatedCard {
  public:
    ~CardPileWindow ();
 
+   /// Creates a CardPileWindow object
+   /// \param dest: Destination pile
+   /// \param posDest: Where to put the card in the destination
+   /// \param src: Source pile; should be a CardPile<T>
+   /// \param start: First card of source to move
+   /// \param end: Last card of source to move
+   /// \returns CardPileWindow*: Created window to animate
+   /// \pre: The first card must be shown somewhere (to get its position)
    static CardPileWindow* create (ICardPile& dest, unsigned int posDest,
-				  ICardPile& src, unsigned int start, unsigned int end);
+				  ICardPile& src, unsigned int start, unsigned int end) {
+      return new CardPileWindow (dest, posDest, src, start, end);
+   }
 
-   /// Returns the pile of card to be animated
-   /// \returns ICardPile&: Pile of cards
-   ICardPile& getPile () const { return *pile; }
-
-   virtual void start ();
    virtual void cleanup ();
 
  protected:
    CardPileWindow (ICardPile& dest, unsigned int posDest, ICardPile& src,
 		   unsigned int start, unsigned int end);
 
-   static ICardPile* setPile (Gtk::Window* win, const ICardPile& dest, unsigned int cards);
+   static void moveCards (CardHPile& animPile, ICardPile& src, unsigned int first, unsigned int last);
 
-   ICardPile* pile;
-   unsigned int end;
+   CardHPile animPile;
 
  private:
    CardPileWindow ();
@@ -126,7 +127,6 @@ class CardPileWindows : public CardPileWindow {
 				   ICardPile& src, unsigned int start, unsigned int end);
 
    void getEndPos (int& x, int& y);
-   virtual void start ();
    virtual void cleanup ();
 
    void addWindow (ICardPile& src, unsigned int start, unsigned int end);
@@ -140,18 +140,13 @@ class CardPileWindows : public CardPileWindow {
    CardPileWindows (const CardPileWindows&);
    CardPileWindows& operator= (const CardPileWindows&);
 
-   struct AnimatedPile : public XGP::AnimatedWindow {
-      AnimatedPile () : XGP::AnimatedWindow (), pile (NULL), src (NULL), start (0),
-	   end (0), posDest (0) { }
-      ~AnimatedPile () { delete pile; }
+   struct AnimatedPile : public CardHPile {
+      AnimatedPile () : posDest (0) { }
+      ~AnimatedPile () { }
 
-      ICardPile* pile;
-      ICardPile* src;
-      unsigned int start;
-      unsigned int end;
-      unsigned int posDest;
+      unsigned int posDest;                 ///< Target position in destination
 
-      void animateTo (int x, int y) { XGP::AnimatedWindow::animateTo (x, y); }
+      void animateTo (int x, int y) { get_window ()->move (x, y); }
       void getEndPos (int& x, int& y);
    };
 
