@@ -27,7 +27,6 @@
 
 #define CHECK 9
 #define TRACELEVEL 9
-#include <YGP/Check.h>
 #include <YGP/Trace.h>
 
 #include "CardPile.h"
@@ -135,6 +134,14 @@ CardWindow* CardWindow::create (ICardPile& dest, unsigned int posDest, ICardPile
    return new CardWindow (dest, posDest, src, posSrc);
 }
 
+//-----------------------------------------------------------------------------
+/// Additional actions when starting the animation
+//-----------------------------------------------------------------------------
+void CardWindow::start () {
+   TRACE8 ("CardWindow::start ()");
+   AnimatedCard::start ();
+   src.resize (posSrc, ICardPile::NORMAL);
+}
 
 //-----------------------------------------------------------------------------
 /// Cleanup of the animation; moves the animated card to the distination pile
@@ -158,15 +165,21 @@ void CardWindow::cleanup () {
 //-----------------------------------------------------------------------------
 CardPileWindow::CardPileWindow (ICardPile& dest, unsigned int posDest,
 				ICardPile& src, unsigned int start, unsigned int end)
-   : AnimatedCard (dest, posDest, animPile),
-     animPile (src.getStyle (), src.getShowOption ()) {
+   : AnimatedCard (dest, posDest, *src.getWidget ()), animPile (),
+     src (src), first (start), last (end) {
    TRACE8 ("CardPileWindow::CardPileWindow (...) - " << start << '/' << end);
    Check3 (src.size ()); Check3 (start <= end); Check3 (end < src.size ());
    Check1 (posDest <= dest.size ());
 
-   animPile.set_size_request (CardImages::WIDTH + (end - start) * animPile.getCompressedSize (),
+   animPile.set_size_request (CardImages::WIDTH + (end - start) * 10,
 			      CardImages::HEIGHT);
+
+   Check3 (src.getWidget ());
+   src.getWidget ()->pack_start (animPile);
    animPile.show ();
+   Check3 (animPile.get_window ());
+   Check3 (animPile.get_window () != src.getWidget ()->get_window ());
+   // moveCards (animPile, src, start, end);
 }
 
 //-----------------------------------------------------------------------------
@@ -184,19 +197,53 @@ CardPileWindow::~CardPileWindow () {
 //-----------------------------------------------------------------------------
 void CardPileWindow::moveCards (CardHPile& animPile, ICardPile& src,
 				unsigned int first, unsigned int last) {
-   TRACE8 ("CardPileWindow::moveCards () - " << first << '/' << last);
-   Check2 (first <= last); Check2 (src.size () < last);
+   TRACE8 ("CardPileWindow::moveCards () - " << first << '/' << last << " of " << src.size ());
+   Check2 (first <= last); Check2 (last < src.size ());
    Check2 (src.at (first)->get_window ());
 
    int x, y;
    src.at (first)->get_window ()->get_origin (x, y);
+
    animPile.get_window ()->move (x, y);
 
-   do {
+   do
       animPile.setTopCard (src.remove (first));
-   } while (first < last--);
+   while (first < last--);
 
-   TRACE5 ("CardPileWindow::moveCards () - Sizes: " << x << '/' << y);
+   TRACE5 ("CardPileWindow::moveCards () - Position: " << x << '/' << y);
+}
+
+//-----------------------------------------------------------------------------
+/// Additional actions when starting the animation
+//-----------------------------------------------------------------------------
+void CardPileWindow::start () {
+   TRACE8 ("CardPileWindow::start ()");
+   Check1 (animPile.get_window ());
+   win = animPile.get_window ();           // Set the window to animate (again)
+   AnimatedCard::start ();
+
+   Check3 (animPile.get_window ());
+   Glib::RefPtr<Gdk::Pixmap> pixmap (Gdk::Pixmap::create (animPile.get_window (),
+							  CardImages::WIDTH + (last - first) * 10,
+							  CardImages::HEIGHT));
+
+   Glib::RefPtr<Gdk::GC> gc (Gdk::GC::create (pixmap)); Check3 (gc);
+   Glib::RefPtr<Gdk::Pixbuf> cardImg;
+
+   unsigned int x (0);
+   for (unsigned int i (first); i < last; ++i) {
+      CardWidget& card (*src.at (i));
+      cardImg = card.getImage (); Check3 (cardImg);
+      pixmap->draw_pixbuf (gc, cardImg, 0, 0, x, 0, -1, 10, Gdk::RGB_DITHER_NONE, 0, 0);
+      x += 10;
+      card.hide ();
+   }
+   Check3 (src.at (last)); Check3 (src.at (last)->getImage ());
+   pixmap->draw_pixbuf (gc, src.at (last)->getImage (), 0, 0, x, 0, -1, -1,
+			Gdk::RGB_DITHER_NONE, 0, 0);
+   Gtk::Image img (pixmap, Glib::RefPtr<Gdk::Bitmap> ());
+   img.show ();
+   animPile.add (img);
 }
 
 //-----------------------------------------------------------------------------
@@ -206,10 +253,11 @@ void CardPileWindow::cleanup () {
    TRACE8 ("CardPileWindow::cleanup ()");
    AnimatedCard::cleanup ();
 
-   Check2 (animPile.size ());
    do {
-      dest.insert (animPile.remove (0), posDest++);
-   } while (animPile.size ());
+      CardWidget& card (src.remove (first));
+      card.show ();
+      dest.insert (card, posDest++);
+   } while (first < last--);
 }
 
 
@@ -247,9 +295,7 @@ CardPileWindows* CardPileWindows::create (ICardPile& dest, unsigned int posDest,
 					  ICardPile& src, unsigned int start, unsigned int end) {
    Check3 (src.size ()); Check3 (start <= end); Check3 (end < src.size ());
    Check1 (posDest <= dest.size ());
-
-   CardPileWindows* win (new CardPileWindows (dest, posDest, src, start, end));
-   return win;
+   return new CardPileWindows (dest, posDest, src, start, end);
 }
 
 
@@ -285,9 +331,9 @@ void CardPileWindows::cleanup () {
    for (std::vector<AnimatedPile*>::iterator i (wins.begin ());
 	i != wins.end (); ++i) {
       Check3 ((*i)->posDest <= dest.size ());
-      do {
+      do
 	 dest.insert ((*i)->remove (0), (*i)->posDest++);
-      } while ((*i)->size ());
+      while ((*i)->size ());
    }
 }
 

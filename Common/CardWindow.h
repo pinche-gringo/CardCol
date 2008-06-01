@@ -66,7 +66,8 @@ class CardWindow : public AnimatedCard {
 
    static CardWindow* create (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc);
 
-   virtual void cleanup ();
+   void start ();
+   void cleanup ();
 
  protected:
    CardWindow (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc);
@@ -97,23 +98,29 @@ class CardPileWindow : public AnimatedCard {
    /// \pre: The first card must be shown somewhere (to get its position)
    static CardPileWindow* create (ICardPile& dest, unsigned int posDest,
 				  ICardPile& src, unsigned int start, unsigned int end) {
+      Check1 (src.getWidget ());
+      Check1 (dynamic_cast<Gtk::Box*> (src.getWidget ()));
       return new CardPileWindow (dest, posDest, src, start, end);
    }
 
-   virtual void cleanup ();
+   void start ();
+   void cleanup ();
 
  protected:
    CardPileWindow (ICardPile& dest, unsigned int posDest, ICardPile& src,
 		   unsigned int start, unsigned int end);
 
    static void moveCards (CardHPile& animPile, ICardPile& src, unsigned int first, unsigned int last);
-
-   CardHPile animPile;
+   Gtk::EventBox animPile;
 
  private:
    CardPileWindow ();
    CardPileWindow (const CardPileWindow&);
    CardPileWindow& operator= (const CardPileWindow&);
+
+   ICardPile& src;
+   unsigned int first;
+   unsigned int last;
 };
 
 
