@@ -164,6 +164,8 @@ class ICardPile : public std::vector<CardWidget*> {
    unsigned int getSeries (CardWidget& card, std::map<unsigned int, unsigned int>& aPos,
                            std::vector<unsigned int>& aOrder, CMPFUNC2 cmp,
                            bool doubles = true);
+
+   virtual Gtk::Box* getWidget () const { return NULL; }
    //@}
 
    /// \name Sorting
@@ -244,6 +246,8 @@ template <class T> class CardPile : public T, public ICardPile {
    static unsigned int getCompressedSize (PileStyle s) { return 0; }
    unsigned int getCompressedSize () { return getCompressedSize (style); }
    virtual void getSize (int& width, int& height) { ICardPile::getSize (width, height); }
+
+   virtual Gtk::Box* getWidget () const { return static_cast<T*> (const_cast<CardPile*> (this)); }
 
  protected:
    virtual void resortGUI () {
