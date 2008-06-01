@@ -110,17 +110,14 @@ class CardPileWindow : public AnimatedCard {
    CardPileWindow (ICardPile& dest, unsigned int posDest, ICardPile& src,
 		   unsigned int start, unsigned int end);
 
-   static void moveCards (CardHPile& animPile, ICardPile& src, unsigned int first, unsigned int last);
+   static bool moveCards (CardHPile* animPile, ICardPile* src, unsigned int first, unsigned int last);
    Gtk::EventBox animPile;
+   CardHPile pile;
 
  private:
    CardPileWindow ();
    CardPileWindow (const CardPileWindow&);
    CardPileWindow& operator= (const CardPileWindow&);
-
-   ICardPile& src;
-   unsigned int first;
-   unsigned int last;
 };
 
 

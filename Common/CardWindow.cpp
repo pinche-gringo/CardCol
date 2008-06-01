@@ -166,20 +166,20 @@ void CardWindow::cleanup () {
 CardPileWindow::CardPileWindow (ICardPile& dest, unsigned int posDest,
 				ICardPile& src, unsigned int start, unsigned int end)
    : AnimatedCard (dest, posDest, *src.getWidget ()), animPile (),
-     src (src), first (start), last (end) {
+     pile (src.getStyle (), src.getShowOption ()) {
    TRACE8 ("CardPileWindow::CardPileWindow (...) - " << start << '/' << end);
    Check3 (src.size ()); Check3 (start <= end); Check3 (end < src.size ());
    Check1 (posDest <= dest.size ());
 
-   animPile.set_size_request (CardImages::WIDTH + (end - start) * 10,
-			      CardImages::HEIGHT);
+   pile.show ();
+   animPile.add (pile);
 
    Check3 (src.getWidget ());
    src.getWidget ()->pack_start (animPile);
    animPile.show ();
-   Check3 (animPile.get_window ());
-   Check3 (animPile.get_window () != src.getWidget ()->get_window ());
-   // moveCards (animPile, src, start, end);
+
+   Glib::signal_idle ().connect
+      (bind (ptr_fun (&CardPileWindow::moveCards), &pile, &src, start, end));
 }
 
 //-----------------------------------------------------------------------------
@@ -194,23 +194,24 @@ CardPileWindow::~CardPileWindow () {
 /// \param src: Source pile
 /// \param start: First card to animate from source
 /// \param end: Last card to animate from source
+/// \returns bool: Always false
 //-----------------------------------------------------------------------------
-void CardPileWindow::moveCards (CardHPile& animPile, ICardPile& src,
+bool CardPileWindow::moveCards (CardHPile* animPile, ICardPile* src,
 				unsigned int first, unsigned int last) {
-   TRACE8 ("CardPileWindow::moveCards () - " << first << '/' << last << " of " << src.size ());
-   Check2 (first <= last); Check2 (last < src.size ());
-   Check2 (src.at (first)->get_window ());
+   TRACE8 ("CardPileWindow::moveCards () - " << first << '/' << last << " of " << src->size ());
+   Check2 (first <= last); Check2 (last < src->size ());
+   Check2 (src->at (first)->get_window ());
 
    int x, y;
-   src.at (first)->get_window ()->get_origin (x, y);
-
-   animPile.get_window ()->move (x, y);
+   src->at (first)->get_window ()->get_origin (x, y);
+   animPile->get_window ()->move (x, y);
 
    do
-      animPile.setTopCard (src.remove (first));
+      animPile->setTopCard (src->remove (first));
    while (first < last--);
 
    TRACE5 ("CardPileWindow::moveCards () - Position: " << x << '/' << y);
+   return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -221,29 +222,6 @@ void CardPileWindow::start () {
    Check1 (animPile.get_window ());
    win = animPile.get_window ();           // Set the window to animate (again)
    AnimatedCard::start ();
-
-   Check3 (animPile.get_window ());
-   Glib::RefPtr<Gdk::Pixmap> pixmap (Gdk::Pixmap::create (animPile.get_window (),
-							  CardImages::WIDTH + (last - first) * 10,
-							  CardImages::HEIGHT));
-
-   Glib::RefPtr<Gdk::GC> gc (Gdk::GC::create (pixmap)); Check3 (gc);
-   Glib::RefPtr<Gdk::Pixbuf> cardImg;
-
-   unsigned int x (0);
-   for (unsigned int i (first); i < last; ++i) {
-      CardWidget& card (*src.at (i));
-      cardImg = card.getImage (); Check3 (cardImg);
-      pixmap->draw_pixbuf (gc, cardImg, 0, 0, x, 0, -1, 10, Gdk::RGB_DITHER_NONE, 0, 0);
-      x += 10;
-      card.hide ();
-   }
-   Check3 (src.at (last)); Check3 (src.at (last)->getImage ());
-   pixmap->draw_pixbuf (gc, src.at (last)->getImage (), 0, 0, x, 0, -1, -1,
-			Gdk::RGB_DITHER_NONE, 0, 0);
-   Gtk::Image img (pixmap, Glib::RefPtr<Gdk::Bitmap> ());
-   img.show ();
-   animPile.add (img);
 }
 
 //-----------------------------------------------------------------------------
@@ -253,11 +231,10 @@ void CardPileWindow::cleanup () {
    TRACE8 ("CardPileWindow::cleanup ()");
    AnimatedCard::cleanup ();
 
-   do {
-      CardWidget& card (src.remove (first));
-      card.show ();
-      dest.insert (card, posDest++);
-   } while (first < last--);
+   Check3 (pile.size ());
+   do
+      dest.insert (pile.remove (0), posDest++);
+   while (pile.size ());
 }
 
 
@@ -372,7 +349,7 @@ void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned in
    win->move (x, y);
 
    TRACE8 ("CardPileWindows::addWindow () - Pile: " << wins.size ());
-   moveCards (*win, src, start, end);
+   moveCards (win, &src, start, end);
    win->show ();
 }
 
