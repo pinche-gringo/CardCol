@@ -113,6 +113,7 @@ class CardPileWindow : public AnimatedCard {
    static bool moveCards (CardHPile* animPile, ICardPile* src, unsigned int first, unsigned int last);
    Gtk::EventBox animPile;
    CardHPile pile;
+   ICardPile& source;
 
  private:
    CardPileWindow ();
@@ -144,14 +145,21 @@ class CardPileWindows : public CardPileWindow {
    CardPileWindows (const CardPileWindows&);
    CardPileWindows& operator= (const CardPileWindows&);
 
-   struct AnimatedPile : public CardHPile {
-      AnimatedPile () : posDest (0) { }
+   struct AnimatedPile : public XGP::AnimatedWindow {
+      /// Default-ctr
+      AnimatedPile (ICardPile& src) : XGP::AnimatedWindow (src.getWidget ()->get_window ()),
+	 source (src), posDest (0) {
+	 box.add (pile); pile.show (); box.show (); }
       ~AnimatedPile () { }
 
-      unsigned int posDest;                 ///< Target position in destination
+      Gtk::EventBox box;                               ///< X-window to animate
+      CardHPile     pile;                      ///< Cardpile in animated window
+      ICardPile&    source;
+      unsigned int  posDest;                ///< Target position in destination
 
-      void animateTo (int x, int y) { get_window ()->move (x, y); }
+      void start ();
       void getEndPos (int& x, int& y);
+      void animateTo (int x, int y) { return XGP::AnimatedWindow::animateTo (x, y); }
    };
 
    std::vector<AnimatedPile*> wins;
