@@ -8,21 +8,23 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.02.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2007
+//COPYRIGHT   : Copyright (C) 2003 - 2008
 
-// This program is free software; you can redistribute it and/or modify
+// This file is part of CardCol.
+//
+// CardCol is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 2 of the License, or
+// the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
+//
+// CardCol is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-
+//
 // You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+// along with libYGP.  If not, see <http://www.gnu.org/licenses/>.
+
 
 #include <cardgames-cfg.h>
 
@@ -384,16 +386,15 @@ int Buraco::executeMove (unsigned int player, unsigned int& pos1Play, unsigned i
    unsigned int target;
 
    // Check if any card can be added to an existing pile
-   if (tablePiles[player & 1].size ())
-      for (ICardPile::const_iterator p (playerPile.begin ());
-           p != playerPile.end (); ++p) {
-         TRACE8 ("Buraco::executeMove (unsigned int) - Adding card " << **p << '?');
-         target = cardFitsOnPlayedPile (player, p - playerPile.begin ());
-         if ((target != -1U) && canPlayCards (player, 1, ((int)target) >> 16)) {
-	    pos1Play = pos2Play = p - playerPile.begin ();
-	    return target;
-	 }
+   for (ICardPile::const_iterator p (playerPile.begin ());
+	p != playerPile.end (); ++p) {
+      TRACE8 ("Buraco::executeMove (unsigned int) - Adding card " << **p << '?');
+      target = cardFitsOnPlayedPile (player, p - playerPile.begin ());
+      if ((target != -1U) && canPlayCards (player, 1, ((int)target) >> 16)) {
+	 pos1Play = pos2Play = p - playerPile.begin ();
+	 return target;
       }
+   }
 
    // Check for 3 cards belonging to a serie
    unsigned int i (0);
@@ -730,6 +731,13 @@ void Buraco::cardSelected (unsigned int iCard) {
    Check1 (gameStatus () == PLAYING);
    gStatus.startGame = 0;
 
+   ICardPile& newPile (makeNewPile (0));
+   CardPileWindows& win (animateCards2 (newPile, hands[0], iCard, iCard));
+   win.addWindow (1, staple, staple.size () - 3, staple.size () - 1);
+   win.addWindow (2, hands[2], 0, 0);
+   return;
+
+
    // Check if all piles are valid
    if (!humanPilesOK ()) {
       Gtk::MessageDialog dlg (_("Every pile on the table must have at least 3 cards!"),
@@ -756,7 +764,7 @@ void Buraco::cardSelected (unsigned int iCard) {
 
    // If the player has no more cards left (except of jokers): Give him the
    // reserve
-   if (containsOnlyJoker (hands[0]))
+   if (containsOnlyJoker (hands[0])) {
       if (!reserve[0].empty ()) {
 	 Game::disableHuman ();
          addBuraco (0);
@@ -766,6 +774,7 @@ void Buraco::cardSelected (unsigned int iCard) {
          endGame ();
          return;
       }
+   }
 
    gStatus.startTurn = 1;
    setNextPlayer (1);
@@ -1240,7 +1249,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 	 menuUndo->set_sensitive ();
 
       // If the player has no more cards left (except of joker): Give him the reserve
-      if (containsOnlyJoker (hands[0]) && humanPilesOK ())
+      if (containsOnlyJoker (hands[0]) && humanPilesOK ()) {
 	 if (!reserve[0].empty ()) {
 	    addBuraco (0);
 	    return;
@@ -1251,6 +1260,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 	       endGame ();
 	       return;
 	    }
+      }
 
       // Re-register the cards in the hand of the human for DND
       if (*pValue < hands[0].size ())
@@ -1469,8 +1479,7 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
 
       // Play joker, if you can make a cerrado (7 in a row) - but only if the
       // one having picked up the reserve already played (the missing card
-      // might be in there) and the oponent can't finish. And of course not,
-      // if you have 7 monos in your hand!
+      // might be in there) and the oponent can't finish.
       int posPile ((*p)->size ());
       if (isJoker (card)
           ? (((((*p)->size () == 6) && ((*p)->getPosJoker () > 6))
@@ -1482,7 +1491,7 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
                    || (points[player & 1] > 100))
                   || reserve[!(player & 1)].empty ()
                   || (points[!(player & 1)] > 100)))
-             || (((*p)->size () > 2) && ((*p)->getPosFirst () > 6)))
+             || ((*p)->getPosFirst () > 6))
           : ((posPile = cardFitsOnPile (p - tablePiles[player & 1].begin (), card))
              != -1)) {
 	 // Always play on a joker pile (don't bother checking for a second one)
@@ -1514,8 +1523,6 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
          sendMoveCard (bestPile, pile.getPosJoker (), move);
          pile.move (move, pile.getPosJoker ());
       }
-
-      pos1Play = pos2Play = iCard;
       return (bestPile << 16) + pos;
    }
    return -1U;
@@ -1831,13 +1838,18 @@ bool Buraco::canPlayCards (unsigned int player, unsigned int cards,
                            unsigned int pile) const {
    TRACE7 ("Buraco::canPlayCards (3x unsigned int) - Player "
            << player << " playing " << cards << " cards to " << pile);
+   Check1 (player < NUM_PLAYERS);
    Check1 ((pile == -1U) || (tablePiles[player & 1].size () > pile));
    Check1 ((pile == -1U)
            || ((tablePiles[player & 1][pile]->size () + cards) <= 7));
    Check1 (hands[player].size () >= cards);
    Check1 (cards <= 7);
 
-   if ((hands[player].size () <= (cards + 1)) && reserve[player & 1].empty ()) {
+   unsigned int cCards (hands[player].size ());
+   if (gStatus.pickUpPlayed)
+     cCards += dumped.size ();
+
+   if ((cCards <= (cards + 1)) && reserve[player & 1].empty ()) {
       bool canPlay ((points[player & 1] > 100)
 		    || ((pile != -1U)
 			&& (((tablePiles[player & 1][pile]->size () + cards) >= 7)
@@ -1866,6 +1878,7 @@ bool Buraco::canPlayCards (unsigned int player, unsigned int cards,
 bool Buraco::canClosePile (unsigned int player, unsigned int pile) const {
    TRACE7 ("Buraco::canClosepile (2x unsigned int) - Player "
            << player << " closes pile " << pile);
+   Check1 (player < NUM_PLAYERS);
    Check1 (tablePiles[player & 1].size () > pile);
 
    BuracoPile& orig (*tablePiles[player & 1][pile]);
