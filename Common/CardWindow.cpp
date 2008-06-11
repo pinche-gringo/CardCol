@@ -10,19 +10,20 @@
 //CREATED     : 20.05.2007
 //COPYRIGHT   : Copyright (C) 2007, 2008
 
-// This program is free software; you can redistribute it and/or modify
+// This file is part of CardCol.
+//
+// CardCol is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 2 of the License, or
+// the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
+//
+// CardCol is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-
+//
 // You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+// along with libYGP.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #define CHECK 9
@@ -171,6 +172,8 @@ CardPileWindow::CardPileWindow (ICardPile& dest, unsigned int posDest,
    Check3 (src.size ()); Check3 (start <= end); Check3 (end < src.size ());
    Check1 (posDest <= dest.size ());
 
+   pile.set_size_request (CardImages::WIDTH + (end - start) * pile.getCompressedSize (),
+			  CardImages::HEIGHT);
    pile.show ();
    animPile.add (pile);
 
@@ -209,7 +212,6 @@ bool CardPileWindow::moveCards (CardHPile* animPile, ICardPile* src,
       animPile->setTopCard (src->remove (first));
    while (first < last--);
    animPile->get_window ()->move (x, y);
-
    TRACE5 ("CardPileWindow::moveCards () - Position: " << x << '/' << y);
    return false;
 }
@@ -250,6 +252,7 @@ void CardPileWindow::cleanup () {
 CardPileWindows::CardPileWindows (ICardPile& dest, unsigned int posDest,
 				  ICardPile& src, unsigned int start, unsigned int end)
    : CardPileWindow (dest, posDest, src, start, end) {
+   TRACE8 ("CardPileWindows::CardPileWindows (...) - " << start << '/' << end);
 }
 
 //-----------------------------------------------------------------------------
@@ -308,17 +311,14 @@ void CardPileWindows::getEndPos (int& x, int& y) {
 void CardPileWindows::cleanup () {
    TRACE5 ("CardPileWindows::cleanup ()");
    CardPileWindow::cleanup ();
-
    for (std::vector<AnimatedPile*>::iterator i (wins.begin ());
 	i != wins.end (); ++i) {
       Check3 ((*i)->posDest <= dest.size ());
       do {
 	 dest.insert ((*i)->pile.remove (0), (*i)->posDest++);
-	 (*i)->source.getWidget ()->remove ((*i)->box);
+	 Check3 ((*i)->source.getWidget ());
       } while ((*i)->pile.size ());
-
-      Check3 (source.getWidget ());
-      source.getWidget ()->remove ((*i)->pile);
+      (*i)->source.getWidget ()->remove ((*i)->box);
    }
 }
 
@@ -349,6 +349,8 @@ void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned in
    Check1 (end < src.size ());
 
    AnimatedPile* win (new AnimatedPile (src)); Check3 (win);
+   win->pile.set_size_request (CardImages::WIDTH + (end - start) * win->pile.getCompressedSize (),
+			       CardImages::HEIGHT);
    win->posDest = posDest;
    wins.push_back (win);
 
@@ -359,6 +361,19 @@ void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned in
       (bind_return (mem_fun (*win, &CardPileWindows::AnimatedPile::start), false));
    Glib::signal_idle ().connect
       (bind (ptr_fun (&CardPileWindow::moveCards), &win->pile, &src, start, end));
+}
+
+
+//-----------------------------------------------------------------------------
+/// Default-ctr
+/// \param src: Source pile
+//-----------------------------------------------------------------------------
+CardPileWindows::AnimatedPile::AnimatedPile (ICardPile& src)
+   : XGP::AnimatedWindow (src.getWidget ()->get_window ()),
+     pile (ICardPile::COMPRESSED), source (src), posDest (0) {
+   box.add (pile);
+   pile.show ();
+   box.show ();
 }
 
 //-----------------------------------------------------------------------------
@@ -376,8 +391,7 @@ void CardPileWindows::AnimatedPile::getEndPos (int& x, int& y) {
 /// Additional actions when starting the animation
 //-----------------------------------------------------------------------------
 void CardPileWindows::AnimatedPile::start () {
-   TRACE9 ("CardPileWindows::AnimatedPile::start ()");
-   XGP::AnimatedWindow::start ();
-   box.set_size_request (pile.get_width (), pile.get_height ());
+   TRACE9 ("CardPileWindows::AnimatedPile::start () - Size: " << pile.get_width () << '/' << pile.get_height ());
+   box.set_size_request (pile.get_width (), CardImages::HEIGHT);
    win = box.get_window ();           // Set the window to animate (again)
 }
