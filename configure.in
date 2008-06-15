@@ -49,7 +49,7 @@ dnl Checks for libraries.
 AC_CHECK_LIB(stdc++, main)
 
 PKG_CHECK_MODULES(DEPENDENCIES, gtkmm-2.4 >= 2.6.0 gthread-2.0 > 2.2.0
-                  YGP >= 0.8.00 XGP >= 0.8.10)
+                  YGP >= 0.9.00 XGP >= 0.9.02)
 AC_SUBST(DEPENDENCIES_CFLAGS)
 AC_SUBST(DEPENDENCIES_LIBS)
 
@@ -218,7 +218,8 @@ if test "$GNOMECARDS_DIR" != "no"; then
 	         /usr/share/gnome/pixmaps/gnome-games-common/cards \
 	         /usr/share/gnome/gnome-games-common/cards \
 	         /usr/share/gnome/cards /usr/share/pixmaps/gnome/cards \
-	         /usr/share/gnome/pixmaps/cards; do
+	         /usr/share/gnome/pixmaps/cards \
+		 /usr/share/gnome-games-common/cards/; do
 	 if test -d "$dir/"; then
 	    GNOMECARDS_DIR="$dir/"
 	    break
