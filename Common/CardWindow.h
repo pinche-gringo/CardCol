@@ -111,7 +111,9 @@ class CardPileWindow : public AnimatedCard {
    CardPileWindow (ICardPile& dest, unsigned int posDest, ICardPile& src,
 		   unsigned int start, unsigned int end);
 
-   static bool moveCards (CardHPile* animPile, ICardPile* src, unsigned int first, unsigned int last);
+   static bool moveCards (Gtk::EventBox* animWin, CardHPile* animPile, ICardPile* src,
+			  unsigned int first, unsigned int last);
+   static bool moveWindow (Gtk::EventBox* animWin, int x, int y);
    Gtk::EventBox animPile;
    CardHPile pile;
    ICardPile& source;
