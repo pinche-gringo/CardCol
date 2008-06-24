@@ -73,19 +73,19 @@ class CardWindow : public AnimatedCard {
  protected:
    CardWindow (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc);
 
+   ICardPile& src;
+   unsigned int posSrc;
+
  private:
    CardWindow ();
    CardWindow (const CardWindow&);
    CardWindow& operator= (const CardWindow&);
-
-   ICardPile& src;
-   unsigned int posSrc;
 };
 
 
 /**Window holding a pile of cards, which can be used for animation.
  */
-class CardPileWindow : public AnimatedCard {
+class CardPileWindow : public CardWindow {
  public:
    ~CardPileWindow ();
 
@@ -104,19 +104,14 @@ class CardPileWindow : public AnimatedCard {
       return new CardPileWindow (dest, posDest, src, start, end);
    }
 
-   void start ();
    void cleanup ();
+   void getEndPos (int& x, int& y);
 
  protected:
    CardPileWindow (ICardPile& dest, unsigned int posDest, ICardPile& src,
 		   unsigned int start, unsigned int end);
 
-   static bool moveCards (Gtk::EventBox* animWin, CardHPile* animPile, ICardPile* src,
-			  unsigned int first, unsigned int last);
-   static bool moveWindow (Gtk::EventBox* animWin, int x, int y);
-   Gtk::EventBox animPile;
-   CardHPile pile;
-   ICardPile& source;
+   unsigned int last;
 
  private:
    CardPileWindow ();
@@ -135,7 +130,7 @@ class CardPileWindows : public CardPileWindow {
 				   ICardPile& src, unsigned int start, unsigned int end);
 
    void getEndPos (int& x, int& y);
-   virtual void cleanup ();
+   void cleanup ();
 
    void addWindow (ICardPile& src, unsigned int start, unsigned int end);
    void addWindow (unsigned int posDest, ICardPile& src, unsigned int start, unsigned int end);
@@ -149,15 +144,13 @@ class CardPileWindows : public CardPileWindow {
    CardPileWindows& operator= (const CardPileWindows&);
 
    struct AnimatedPile : public XGP::AnimatedWindow {
-      AnimatedPile (ICardPile& src);
+      AnimatedPile (ICardPile& src, unsigned int start, unsigned int end);
       ~AnimatedPile () { }
 
-      Gtk::EventBox box;                               ///< X-window to animate
-      CardHPile     pile;                      ///< Cardpile in animated window
       ICardPile&    source;
+      unsigned int  start, end;
       unsigned int  posDest;                ///< Target position in destination
 
-      void start ();
       void getEndPos (int& x, int& y);
       void animateTo (int x, int y) { return XGP::AnimatedWindow::animateTo (x, y); }
    };
