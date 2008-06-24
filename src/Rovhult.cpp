@@ -825,7 +825,7 @@ void Rovhult::registerHandDND (CardWidget& card,  unsigned int iCard) {
    TRACE9 ("Rovhult::registerHandDND (CardWidget&, unsigned int) - Activate: "
            << activeCards.size () << '/' << activeCards.capacity ());
    Check3 (activeCards.size () >= iCard);
-   SigC::Connection conn (card.signal_clicked ().connect
+   sigc::connection conn (card.signal_clicked ().connect
                           (bind (mem_fun (*this, &Rovhult::finishedExchange), iCard)));
    if (activeCards.size () > iCard)
       activeCards[iCard] = conn;
@@ -1204,7 +1204,7 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
                       != -1)
                   && ((hpPos = skip (cardNuke, players[player].hand, hpPos))
                       != -1))
-              && (cardValid (players[player].hand[hpPos]->number (), true))))
+              && cardValid (players[player].hand[hpPos]->number (), true)))
          ? hpPos : players[player].hand.findFirstEqualOrBigger (cardMin);
       TRACE6 ("Rovhult::findCard2Play (unsigned int) - First matching card"
               " at pos " << start);

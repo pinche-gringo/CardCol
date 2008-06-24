@@ -162,10 +162,10 @@ class Rovhult : public Game {
    void disconnectCardInHand (const CardWidget& card);
    void disconnectCardOnTable (const CardWidget& card);
 
-   std::map <const CardWidget*, SigC::Connection> aTableDND;
-   std::map <const CardWidget*, SigC::Connection> aHandDND;
-   std::map <const CardWidget*, SigC::Connection> aHandData;
-   std::map <const CardWidget*, SigC::Connection> aTableData;
+   std::map <const CardWidget*, sigc::connection> aTableDND;
+   std::map <const CardWidget*, sigc::connection> aHandDND;
+   std::map <const CardWidget*, sigc::connection> aHandData;
+   std::map <const CardWidget*, sigc::connection> aTableData;
 
    static CardWidget::NUMBERS cardNuke;
    static CardWidget::NUMBERS cardSkip;

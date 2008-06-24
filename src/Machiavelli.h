@@ -159,8 +159,8 @@ class Machiavelli : public Game {
    Gtk::Button      nextTurn;
 
    typedef struct {
-      SigC::Connection connReceive;
-      SigC::Connection connGet;
+      sigc::connection connReceive;
+      sigc::connection connGet;
    } CONNECTIONS;
    std::map<CardWidget*, CONNECTIONS> aDNDHand;
    std::map<CardWidget*, CONNECTIONS> aDNDTable;
