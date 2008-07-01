@@ -152,7 +152,7 @@ class CardPileWindows : public CardPileWindow {
       unsigned int  posDest;                ///< Target position in destination
 
       void getEndPos (int& x, int& y);
-      void animateTo (int x, int y) { return XGP::AnimatedWindow::animateTo (x, y); }
+      void animateTo (int x, int y);
    };
 
    std::vector<AnimatedPile*> wins;

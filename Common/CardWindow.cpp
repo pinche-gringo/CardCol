@@ -26,8 +26,6 @@
 // along with libYGP.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Trace.h>
 
 #include "CardPile.h"
@@ -194,7 +192,7 @@ void CardPileWindow::getEndPos (int& x, int& y) {
    // Also move the remaining cards
    Glib::RefPtr<Gdk::Window> oldWin (win);
    for (unsigned int i (posSrc + 1); i <= last; ++i) {
-      Check (src.at (i)->get_window ());
+      Check3 (src.at (i)->get_window ());
       win = src.at (i)->get_window (); Check3 (win);
       animateTo (x, y);
    }
@@ -325,7 +323,7 @@ void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned in
 /// \param end: Last card of source to animate
 //-----------------------------------------------------------------------------
 CardPileWindows::AnimatedPile::AnimatedPile (ICardPile& src, unsigned int start, unsigned int end)
-   : XGP::AnimatedWindow (src.getWidget ()->get_window ()),
+   : XGP::AnimatedWindow (src.at (start)->get_window ()),
      source (src), start (start), end (end), posDest (0) {
    TRACE9 ("CardPileWindows::AnimatedPile::AnimatedPile (ICardPile&, 2x unsigned int)");
 }
@@ -339,4 +337,26 @@ void CardPileWindows::AnimatedPile::getEndPos (int& x, int& y) {
    TRACE1 ("CardPileWindows::AnimatedPile::getEndPos (2x int& x)");
    Check (0);
    x = y = 0;
+}
+
+//-----------------------------------------------------------------------------
+/// Animates all specified cards in the source-pile to the passed coordinates
+/// \param x: X-coordinate of destination
+/// \param y: Y-coordinate of destination
+//-----------------------------------------------------------------------------
+void CardPileWindows::AnimatedPile::animateTo (int x, int y) {
+   TRACE5 ("CardPileWindows::AnimatedPile::animateTo (2x int) - " << start << '/' << end <<
+	   " to " << x << '/' << y);
+   XGP::AnimatedWindow::animateTo (x, y);
+
+   // Also move the remaining cards
+   Glib::RefPtr<Gdk::Window> oldWin (win);
+   for (unsigned int i (start + 1); i <= end; ++i) {
+      Check3 (source.at (i)->get_window ());
+      win = source.at (i)->get_window (); Check3 (win);
+      TRACE9 ("CardPileWindows::AnimatedPile::animateTo (2x int) - Visible " << win->is_visible ());
+      if (win->is_visible ())
+	 XGP::AnimatedWindow::animateTo (x, y);
+   }
+   win = oldWin;
 }
