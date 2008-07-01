@@ -28,7 +28,17 @@
 #include <gtkmm/box.h>
 #include <gtkmm/image.h>
 #include <gtkmm/button.h>
-#include <gtkmm/tooltips.h>
+#ifdef HAVE_GTKMM2_12
+#  include <gtkmm/tooltips.h>
+
+#  define SET_TIP(widget, text)      (widget).set_tooltip_text (text);
+#  define UNSET_TIP(widget)          (widget).set_tooltip_text (Glib::ustring ());
+#else
+#  include <gtkmm/tooltips.h>
+
+#  define SET_TIP(widget, text)      tt.set_tip ((card), (text));
+#  define UNSET_TIP(widget)          tt.unset_tip (widget);
+#endif
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -349,7 +359,7 @@ template <class T> class CardInfoPile : public CardPile<T> {
 
    virtual CardWidget& removeTopCard () {
       CardWidget& card (CardPile<T>::removeTopCard ());
-      tt.unset_tip (card);
+      UNSET_TIP (card);
       setTooltips ();
       return card; }
 
@@ -360,7 +370,7 @@ template <class T> class CardInfoPile : public CardPile<T> {
 
    virtual CardWidget& remove (CardWidget& card) {
       CardPile<T>::remove (card);
-      tt.unset_tip (card);
+      UNSET_TIP (card);
       setTooltips ();
       return card; }
    CardWidget& remove (CardWidget& card, bool visible) {
@@ -368,7 +378,7 @@ template <class T> class CardInfoPile : public CardPile<T> {
       return card; }
    virtual CardWidget& remove (unsigned int pos) {
       CardWidget& card (CardPile<T>::remove (pos));
-      tt.unset_tip (card);
+      UNSET_TIP (card);
       setTooltips ();
       return card; }
    virtual CardWidget& remove (unsigned int pos, bool visible) {
@@ -377,9 +387,6 @@ template <class T> class CardInfoPile : public CardPile<T> {
    virtual void move (unsigned int dest, unsigned int source) {
       CardPile<T>::move (dest, source);
       setTooltips (); }
-
-
-   void showTips (bool on = true) { on ? tt.enable () : tt.disable (); }
 
  protected:
    virtual void resortGUI () {
@@ -391,11 +398,13 @@ template <class T> class CardInfoPile : public CardPile<T> {
       tip.replace (tip.find ("%1"), 2,
                    YGP::ANumeric::toString (CardPile<T>::size ()));
       for (unsigned int i (0); i < CardPile<T>::size (); ++i)
-         tt.set_tip (*CardPile<T>::operator[] (i), tip);
+         SET_TIP (*(CardPile<T>::operator[] (i)), tip);
    }
 
  private:
+#ifndef HAVE_GTKMM2_12
     Gtk::Tooltips tt;
+#endif
 };
 
 typedef CardInfoPile<Gtk::VBox>  CardVInfoPile;
