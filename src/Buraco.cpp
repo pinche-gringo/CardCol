@@ -731,13 +731,6 @@ void Buraco::cardSelected (unsigned int iCard) {
    Check1 (gameStatus () == PLAYING);
    gStatus.startGame = 0;
 
-   ICardPile& newPile (makeNewPile (0));
-   CardPileWindows& win (animateCards2 (newPile, hands[0], iCard, iCard));
-   win.addWindow (1, staple, staple.size () - 3, staple.size () - 1);
-   win.addWindow (2, hands[2], 0, 0);
-   return;
-
-
    // Check if all piles are valid
    if (!humanPilesOK ()) {
       Gtk::MessageDialog dlg (_("Every pile on the table must have at least 3 cards!"),
@@ -1021,7 +1014,7 @@ void Buraco::unregisterTableDND (CardWidget& card) {
            << " - " << &card );
    Check1 (aDNDTable.size () > 1);
 
-   std::map<CardWidget*, SigC::Connection>::iterator i (aDNDTable.find (&card));
+   std::map<CardWidget*, sigc::connection>::iterator i (aDNDTable.find (&card));
    Check1 (i != aDNDTable.end ());
 
    card.drag_dest_unset ();
@@ -1590,7 +1583,7 @@ int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
    // Card played on a joker: Valid is:
    //   - A joker; if there are at least 3 jokers (on table + in hand)
    //   - Any card, which has a pair (if there's only one joker on the table)
-   if (pile.getPosFirst () > 6)
+   if (pile.getPosFirst () > 6) {
       if (pile.getPosJoker ())
          return isJoker (card) ? 0 : -1;
       else {
@@ -1600,6 +1593,7 @@ int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
              pCard = hands[currentPlayer ()].getFittingCard (card, ++pCard,
                                                              &cardDistance);
          return pCard == hands[currentPlayer ()].end () ? -1 : 0;
+      }
    }
 
    unsigned int pos, move;
