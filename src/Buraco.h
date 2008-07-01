@@ -174,15 +174,15 @@ class Buraco : public Game {
    Gtk::Label       newPile;
    CardVInfoPile    staple;
    CardVInfoPile    dumped;
-   SigC::Connection dumpedTop;
-   SigC::Connection stapleTop;
+   sigc::connection dumpedTop;
+   sigc::connection stapleTop;
 
    typedef struct {
-      SigC::Connection connReceive;
-      SigC::Connection connGet;
+      sigc::connection connReceive;
+      sigc::connection connGet;
    } CONNECTIONS;
    std::map<CardWidget*, CONNECTIONS> aDNDHand;
-   std::map<CardWidget*, SigC::Connection> aDNDTable;
+   std::map<CardWidget*, sigc::connection> aDNDTable;
 
    ICardPile takenDumpedCards;
 
