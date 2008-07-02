@@ -139,6 +139,7 @@ CardWindow* CardWindow::create (ICardPile& dest, unsigned int posDest, ICardPile
 void CardWindow::start () {
    TRACE8 ("CardWindow::start ()");
    AnimatedCard::start ();
+   win->raise ();
    src.resize (posSrc, ICardPile::NORMAL);
 }
 
@@ -200,6 +201,18 @@ void CardPileWindow::getEndPos (int& x, int& y) {
 }
 
 //-----------------------------------------------------------------------------
+/// Additional actions when starting the animation
+//-----------------------------------------------------------------------------
+void CardPileWindow::start () {
+   TRACE8 ("CardPileWindow::start ()");
+   CardWindow::start ();
+   for (unsigned int i (posSrc + 1); i <= last; ++i) {
+      Check3 (src.at (i)->get_window ());
+      src.at (i)->get_window ()->raise ();
+   }
+}
+
+//-----------------------------------------------------------------------------
 /// Cleanup of the animation; moves the animated cards to the distination pile
 //-----------------------------------------------------------------------------
 void CardPileWindow::cleanup () {
@@ -253,6 +266,21 @@ CardPileWindows* CardPileWindows::create (ICardPile& dest, unsigned int posDest,
 
 
 //-----------------------------------------------------------------------------
+/// Additional actions when starting the animation
+//-----------------------------------------------------------------------------
+void CardPileWindows::start () {
+   TRACE8 ("CardPileWindow::start ()");
+   CardPileWindow::start ();
+
+   for (std::vector<AnimatedPile*>::iterator i (wins.begin ());
+	i != wins.end (); ++i) {
+      TRACE9 ("CardPileWindows::start () - Subwin: " << (i - wins.begin ()));
+      Check3 (*i);
+      (*i)->start ();
+   }
+}
+
+//-----------------------------------------------------------------------------
 /// Returns the position where to animate the card to
 /// \param x: X-coordinate of destination
 /// \param y: Y-coordinate of destination
@@ -280,8 +308,8 @@ void CardPileWindows::cleanup () {
 	i != wins.end (); ++i) {
       Check3 ((*i)->posDest <= dest.size ());
       do
-	 dest.insert ((*i)->source.remove ((*i)->start), (*i)->posDest++);
-      while ((*i)->start < --(*i)->end);
+	 dest.insert ((*i)->source.remove ((*i)->first), (*i)->posDest++);
+      while ((*i)->first < --(*i)->last);
    }
 }
 
@@ -324,7 +352,7 @@ void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned in
 //-----------------------------------------------------------------------------
 CardPileWindows::AnimatedPile::AnimatedPile (ICardPile& src, unsigned int start, unsigned int end)
    : XGP::AnimatedWindow (src.at (start)->get_window ()),
-     source (src), start (start), end (end), posDest (0) {
+     source (src), first (start), last (end), posDest (0) {
    TRACE9 ("CardPileWindows::AnimatedPile::AnimatedPile (ICardPile&, 2x unsigned int)");
 }
 
@@ -340,6 +368,17 @@ void CardPileWindows::AnimatedPile::getEndPos (int& x, int& y) {
 }
 
 //-----------------------------------------------------------------------------
+/// Additional actions when starting the animation
+//-----------------------------------------------------------------------------
+void CardPileWindows::AnimatedPile::start () {
+   TRACE1 ("CardPileWindows::AnimatedPile::start ()");
+   for (unsigned int i (first + 1); i <= last; ++i) {
+      Check3 (source.at (i)->get_window ());
+      source.at (i)->get_window ()->raise ();
+   }
+}
+
+//-----------------------------------------------------------------------------
 /// Animates all specified cards in the source-pile to the passed coordinates
 /// \param x: X-coordinate of destination
 /// \param y: Y-coordinate of destination
@@ -351,7 +390,7 @@ void CardPileWindows::AnimatedPile::animateTo (int x, int y) {
 
    // Also move the remaining cards
    Glib::RefPtr<Gdk::Window> oldWin (win);
-   for (unsigned int i (start + 1); i <= end; ++i) {
+   for (unsigned int i (first + 1); i <= last; ++i) {
       Check3 (source.at (i)->get_window ());
       win = source.at (i)->get_window (); Check3 (win);
       TRACE9 ("CardPileWindows::AnimatedPile::animateTo (2x int) - Visible " << win->is_visible ());

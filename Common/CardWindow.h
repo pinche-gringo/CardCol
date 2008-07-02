@@ -104,6 +104,7 @@ class CardPileWindow : public CardWindow {
       return new CardPileWindow (dest, posDest, src, start, end);
    }
 
+   void start ();
    void cleanup ();
    void getEndPos (int& x, int& y);
 
@@ -129,6 +130,7 @@ class CardPileWindows : public CardPileWindow {
    static CardPileWindows* create (ICardPile& dest, unsigned int posDest,
 				   ICardPile& src, unsigned int start, unsigned int end);
 
+   void start ();
    void getEndPos (int& x, int& y);
    void cleanup ();
 
@@ -148,9 +150,10 @@ class CardPileWindows : public CardPileWindow {
       ~AnimatedPile () { }
 
       ICardPile&    source;
-      unsigned int  start, end;
+      unsigned int  first, last;
       unsigned int  posDest;                ///< Target position in destination
 
+      void start ();
       void getEndPos (int& x, int& y);
       void animateTo (int x, int y);
    };
