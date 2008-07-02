@@ -591,8 +591,14 @@ void Rovhult::executeMove (unsigned int player) {
 
    // If last 4 cards have the same number or a ten was played: Don't increase
    // player (except of course, if actual player doesn't have any cards left)
+   bool removePlayed ((nr == cardNuke) || played4Equal ());
+   if (removePlayed) {
+      played.clear ();
+      stat = _("Pile cleared; ");
+   }
+
    bool unfinished (static_cast<int> (player) != nextAvailablePlayer ((player - 1) & 0x3));
-   if (!((nr == cardNuke) || played4Equal ()) || unfinished) {
+   if (!removePlayed || unfinished) {
       if (!player && unfinished && noMoreHumans ())
 	 cEndgame = 1;
 
@@ -613,10 +619,6 @@ void Rovhult::executeMove (unsigned int player) {
          stat.replace (stat.find ("%1"), 2, actPlayers[player]->getName ());
          player = nextAvailablePlayer (player);
       }
-   }
-   else {
-      played.clear ();
-      stat = _("Pile cleared; ");
    }
 
    displayTurn (player, stat);
