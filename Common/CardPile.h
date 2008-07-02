@@ -29,15 +29,15 @@
 #include <gtkmm/image.h>
 #include <gtkmm/button.h>
 #ifdef HAVE_GTKMM2_12
-#  include <gtkmm/tooltips.h>
+#  include <gtk/gtkeventbox.h>
 
-#  define SET_TIP(widget, text)      (widget).set_tooltip_text (text);
-#  define UNSET_TIP(widget)          (widget).set_tooltip_text (Glib::ustring ());
+#  define SET_TIP(widget, text)      (widget).set_tooltip_text (text)
+#  define UNSET_TIP(widget)          gtk_widget_set_tooltip_text ((GtkWidget*)((widget).gobj ()), NULL)
 #else
 #  include <gtkmm/tooltips.h>
 
-#  define SET_TIP(widget, text)      tt.set_tip ((card), (text));
-#  define UNSET_TIP(widget)          tt.unset_tip (widget);
+#  define SET_TIP(widget, text)      tt.set_tip ((card), (text))
+#  define UNSET_TIP(widget)          tt.unset_tip (widget)
 #endif
 
 #include <YGP/Check.h>
