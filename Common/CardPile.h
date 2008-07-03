@@ -32,7 +32,7 @@
 #  include <gtk/gtkeventbox.h>
 
 #  define SET_TIP(widget, text)      (widget).set_tooltip_text (text)
-#  define UNSET_TIP(widget)          gtk_widget_set_tooltip_text ((GtkWidget*)((widget).gobj ()), NULL)
+#  define UNSET_TIP(widget)          (widget).set_has_tooltip (false)
 #else
 #  include <gtkmm/tooltips.h>
 
