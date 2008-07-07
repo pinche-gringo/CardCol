@@ -184,8 +184,6 @@ class Buraco : public Game {
    std::map<CardWidget*, CONNECTIONS> aDNDHand;
    std::map<CardWidget*, sigc::connection> aDNDTable;
 
-   ICardPile takenDumpedCards;
-
    static std::vector<Gtk::TargetEntry> dndType;
 
    struct {
