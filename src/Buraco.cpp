@@ -310,7 +310,6 @@ void Buraco::playCards () {
 	       Check2 (posTarget < (pos1Play + nrs));
 	       posTarget -= pos1Play;
 	       TRACE1 ("posTarget: " << posTarget);
-	       Check (0);
 	    }
 	    else {
 	       posTarget = nrs - 1;
@@ -1158,6 +1157,10 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 	 iCard = 0;
       }
       else {
+	 // Can't use the new pile (with the picked up card) with a joker
+	 if (isJoker (moved) && gStatus.pickUpPlayed)
+	    throw Glib::ustring (N_("You may not start this new pile with a joker!"));
+
 	 // Else check pile to use
 	 Check1 ((iCard >> 8) < tablePiles[0].size ());
 	 pile = tablePiles[0][iPile = (iCard >> 8)];
