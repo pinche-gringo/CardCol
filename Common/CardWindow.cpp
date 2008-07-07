@@ -59,6 +59,7 @@ AnimatedCard::~AnimatedCard () {
 void AnimatedCard::start () {
    TRACE5 ("AnimatedCard::start () - " << posDest << '/' << dest.size ());
    if (dest.empty ()) {
+      TRACE8 ("AnimatedCard::start () - Adding empty card");
       CardWidget* card (CardWidget::getEmpty ());
       card->show ();
       dest.setTopCard (*card);
@@ -72,6 +73,8 @@ void AnimatedCard::start () {
 void AnimatedCard::cleanup () {
    TRACE5 ("AnimatedCard::cleanup () - " << (int)posDest << '/' << dest.size ());
    if (posDest == -1U) {
+      TRACE8 ("AnimatedCard::cleanup () - Removing empty card");
+      Check1 (dest.size () == 1);
       delete &dest.removeTopCard ();
       posDest = 0;
    }
@@ -94,9 +97,9 @@ void AnimatedCard::getEndPos (int& x, int& y) {
    Check2 (dest.size ());
    CardWidget* widget ((posDest == -1U) ? dest.at (0)
 		       : dest.at ((posDest >= dest.size ()) ? posDest - 1 : posDest));
-   Check2 (widget); Check2 (widget->get_window ());
+   Check2 (widget); Check2 (widget->get_window ()); Check2 (win);
 
-   widget->get_window ()->get_origin (x, y);
+   widget->get_window ()->get_position (x, y);
    TRACE9 ("AnimatedCard::getEndPos (2x int&) - " << (int)posDest << " Dest: " << x << '/' << y);
 }
 
@@ -147,7 +150,7 @@ void CardWindow::start () {
 /// Cleanup of the animation; moves the animated card to the distination pile
 //-----------------------------------------------------------------------------
 void CardWindow::cleanup () {
-   TRACE8 ("CardWindow::cleanup ()");
+   TRACE8 ("CardWindow::cleanup () - " << posSrc << "->" << posDest);
    AnimatedCard::cleanup ();
    dest.insert (src.remove (posSrc), posDest);
    TRACE8 ("CardWindow::cleanup () - finish");
@@ -223,6 +226,7 @@ void CardPileWindow::cleanup () {
       TRACE8 ("CardPileWindow::cleanup () - Move " << posSrc << '/' << last << " -> " << (int)posDest);
       dest.insert (src.remove (posSrc), ++posDest);
    }
+   TRACE8 ("CardPileWindow::cleanup () - Finished");
 }
 
 
@@ -384,8 +388,8 @@ void CardPileWindows::AnimatedPile::start () {
 /// \param y: Y-coordinate of destination
 //-----------------------------------------------------------------------------
 void CardPileWindows::AnimatedPile::animateTo (int x, int y) {
-   TRACE5 ("CardPileWindows::AnimatedPile::animateTo (2x int) - " << start << '/' << end <<
-	   " to " << x << '/' << y);
+   TRACE5 ("CardPileWindows::AnimatedPile::animateTo (2x int) - " << first << '/' << last
+	   << " to " << x << '/' << y);
    XGP::AnimatedWindow::animateTo (x, y);
 
    // Also move the remaining cards
