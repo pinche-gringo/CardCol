@@ -40,8 +40,6 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 8
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -192,12 +190,13 @@ bool Twopart::enableHuman () {
 /// \pre Call only in part 2 of the game
 //-----------------------------------------------------------------------------
 unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
+   Check1 (player < NUM_PLAYERS); Check2 (offPos > 0); Check3 (offPos <= NUM_PLAYERS);
    TRACE3 ("Twopart::pickUpPlayedPile (unsigned int) - Player " << player
-           << " picks up played pile at " << offPos);
+           << " picks up played pile at " << offPos << '(' << startPos[offPos - 1] << ')');
    Check3 (bfPlayers);
 
    // Move played cards to player
-   Check3 (offPos > 0); Check3 (offPos < NUM_PLAYERS);
+   Check3 (offPos > 0);
    CardPileWindow* anim;
    if (gameStatus () == PLAYING2)
       anim = &animateCards (players[player].hand, played, startPos[--offPos], played.size () - 1);
@@ -350,8 +349,14 @@ void Twopart::endTurn (unsigned int player) {
    TRACE7 ("Twopart::endTurn (unsigned int) - Players: " << std::hex << bfPlayers << std::dec);
    removePlayer (player);
    unsigned int newPlayer (player);
-   if (bfPlayers)
+   if (bfPlayers) {
       newPlayer = (unsigned int)findNextPlayer (player);
+
+      if (gameStatus () == PLAYING2) {
+	 startPos[++offPos] = played.size ();
+	 TRACE1 ("endTurn " << player << "; Position: " << offPos << " -> " << startPos[offPos]);
+      }
+   }
    else {
       // Show trump if not already visible
       if (pTrump && !pTrump->is_visible ()) {
@@ -384,9 +389,6 @@ void Twopart::endTurn (unsigned int player) {
       status.push (str);
    }
    else {
-      if (gameStatus () == PLAYING2)
-	 ++offPos;
-
       displayTurn (newPlayer);
       setNextPlayer (newPlayer);
       if (!isAnimated)
@@ -593,13 +595,14 @@ int Twopart::findPos2Play (unsigned int player, unsigned int& start,
          else
             return end = -1U;
       }
-      else
+      else {
          // Card was found; now search for last card to play (only if not trump
          // or only trump left)
          end = start;
          if (!start
              || (players[player].hand[start]->colour () != pTrump->colour ()))
             end = findEndOfSerie (player, start);
+      }
       TRACE5 ("Twopart::findPos2Play (unsigned int) - Playing card at pos " << start);
       return start;
    }
@@ -984,7 +987,6 @@ bool Twopart::startPartTwo (unsigned int player) {
    TRACE9 ("Twopart::startPartTwo (unsigned int) - Continuing with " << player);
    Check3 (!bfPlayers);
    setGameStatus (PLAYING2);
-
    disableWonCards ();
 
    // Prepare array for sorting according to trumps
@@ -993,6 +995,7 @@ bool Twopart::startPartTwo (unsigned int player) {
       sortOrder[i] = (i - pTrump->colour () + 3) % NUM_PLAYERS;
    Check3 (sortOrder[pTrump->colour ()] == 3);
 
+   offPos = 0;
    startPlayer = -1U;
 
    unsigned int nrPlayers (0);
