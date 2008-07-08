@@ -41,7 +41,7 @@
 #include <gtkmm/messagedialog.h>
 
 #define CHECK 9
-#define TRACELEVEL 9
+#define TRACELEVEL 8
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -323,7 +323,7 @@ void Twopart::cardSelected (unsigned int pos) {
 }
 
 //-----------------------------------------------------------------------------
-/// Finish of a turn (in part 2), called after the card has been animated
+/// Finish of a turn, called after the card has been animated
 /// \param player: ID of player
 /// \param start: Offset of first card to play
 /// \param end: Offset of last card to play
@@ -370,7 +370,6 @@ void Twopart::endTurn (unsigned int player) {
       Glib::ustring str;
       if (gameStatus () == PLAYING) {
 	 player = ~newPlayer;
-         startPartTwo (player);
 	 str = _("First part ended; Part 2 starts %1");
       }
       else {
@@ -934,15 +933,24 @@ unsigned int Twopart::pos2Player (unsigned int pos) const {
 /// \param receiver: Nr. of player getting all played cards
 //-----------------------------------------------------------------------------
 void Twopart::endPickup (unsigned int receiver) {
-   TRACE8 ("Twopart::endPickup () - " << receiver);
+   TRACE7 ("Twopart::endPickup () - " << receiver);
    Check3 (receiver < NUM_PLAYERS);
    if (!receiver && (gameStatus () == PLAYING))
       enableWonCards (players[0].won);
 
    if (gameStatus () == PLAYING2)
       players[receiver].hand.sort (compByColourAccTrumps);
-   else
+   else {
       *startPos = 0;
+
+      if (findNextPlayer (receiver) < 0) {
+	 TRACE8 ("Twopart::endPickup () - Starting part 2");
+	 Glib::signal_idle ().connect
+	    (bind (mem_fun (*this, &Twopart::startPartTwo), receiver));
+	 disableHuman ();
+	 return;
+      }
+   }
    makeNextMoves ();
 }
 
@@ -972,8 +980,8 @@ void Twopart::clean () {
 /// \param player: Player starting part II
 /// \returns int: Value indicating if timer should continue
 //-----------------------------------------------------------------------------
-bool Twopart::startPartTwoTimerFnc (unsigned int player) {
-   TRACE9 ("Twopart::startPartTwoTimerFnc (unsigned int) - Continuing with " << player);
+bool Twopart::startPartTwo (unsigned int player) {
+   TRACE9 ("Twopart::startPartTwo (unsigned int) - Continuing with " << player);
    Check3 (!bfPlayers);
    setGameStatus (PLAYING2);
 
@@ -991,7 +999,7 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
    // Check if there are players without cards
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       if (!players[i].won.size ()) {
-         TRACE5 ("Twopart::startPartTwoTimerFnc (unsigned int) - Player "
+         TRACE5 ("Twopart::startPartTwo (unsigned int) - Player "
                  << i << " has no cards");
          bfPlayers |= 1 << i;
          ++nrPlayers;
@@ -1003,7 +1011,7 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       for (unsigned int j (players[i].won.size ()); j; --j) {
          CardWidget& card (players[i].won.removeTopCard ());
-         TRACE8 ("Twopart::startPartTwoTimerFnc (unsigned int) - Moving cards "
+         TRACE8 ("Twopart::startPartTwo (unsigned int) - Moving cards "
                  << card << " for player " << i);
          if (bfPlayers && (card.number () <= CardWidget::FIVE)) {
             players[pos2Player (++victim)].hand.append (card);
@@ -1022,6 +1030,7 @@ bool Twopart::startPartTwoTimerFnc (unsigned int player) {
 
    bfPlayers = (1 << NUM_PLAYERS) - 1;
    setNextPlayer (player);
+   makeNextMoves ();
    return false;
 }
 
@@ -1042,19 +1051,6 @@ bool Twopart::compByColourAccTrumps (const CardWidget* a, const CardWidget* b) {
    return ((a->colour () == b->colour ())
            ? a->number () < b->number ()
            : (sortOrder[a->colour ()] < sortOrder[b->colour ()]));
-}
-
-//-----------------------------------------------------------------------------
-/// Starts part two of the game
-/// \param player: Player to start part II
-//-----------------------------------------------------------------------------
-void Twopart::startPartTwo (unsigned int player) {
-   TRACE8 ("Twopart::startPartTwo (unsigned int) - Continuing with " << player);
-
-   Glib::signal_timeout ().connect
-      (bind (mem_fun (*this, &Twopart::startPartTwoTimerFnc),
-             player), 50);
-   disableHuman ();
 }
 
 //-----------------------------------------------------------------------------

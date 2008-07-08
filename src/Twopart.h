@@ -94,8 +94,7 @@ class Twopart : public Game {
    int findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const;
 
 
-   bool startPartTwoTimerFnc (unsigned int player);
-   void startPartTwo (unsigned int player);
+   bool startPartTwo (unsigned int player);
 
    void makeMove (unsigned int player);
    bool endRound (unsigned int& player);
