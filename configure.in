@@ -178,18 +178,25 @@ if test "$KDECARDS_DIR" != "no"; then
    AC_MSG_CHECKING(for KDE carddecks)
    dnl Try to find the KDE carddecks (if not specified)
    if test -z "$KDECARDS_DIR"; then
-      for dir in /opt/kde3/share/apps/carddecks /usr/share/kde3/share/apps/carddecks \
-                 /usr/kde3/share/apps/carddecks /usr/share/kde3/apps/carddecks \
-		 /usr/share/apps/carddecks /usr/local/share/apps/carddecks \
-		 /usr/kde/3.5/share/apps/carddecks /usr/kde/3.4/share/apps/carddecks \
-		 /usr/kde/3.3/share/apps/carddecks /usr/kde/3.2/share/apps/carddecks \
-		 /usr/kde/3.1/share/apps/carddecks /usr/kde/3.0/share/apps/carddecks; do
-	 if test -d "$dir/"; then
-	    KDECARDS_DIR="$dir/"
-	    break
+      for version in 4.1 4.0 4 3.5 3.4 3.3 3.2 3.1 3.0 3; do
+      	 for dir in /opt/kde$version/share/apps/carddecks \
+                    /usr/share/kde$version/share/apps/carddecks \
+                    /usr/share/kde$version/apps/carddecks \
+                    /usr/kde$version/share/apps/carddecks \
+                    /usr/share/apps/carddecks \
+                    /usr/local/share/apps/carddecks \
+                    /usr/kde/$version/share/apps/carddecks; do
+	    if test -d "$dir/"; then
+	       KDECARDS_DIR="$dir/"
+	       break
+	    fi
+      	 done
+	 if test -n "$KDECARDS_DIR"; then
+	    break;
 	 fi
       done
 
+      # If no KDE cards have been found, use a default value
       if test -z "$KDECARDS_DIR"; then
 	 KDECARDS_DIR=/opt/kde3/share/apps/carddecks/
 	 AC_MSG_NOTICE(using default)
