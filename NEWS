@@ -5,7 +5,7 @@ Overview of changes in version 0.9.00:
   - The timeout of the computer player is stored in the INI-file
   - Don't use sigc's deprecated methods
   - Buraco: Fixed computer player
-  - Røvhult: Fixed not removing played pile when computer plays 10 as last card
+  - RÃ¸vhult: Fixed not removing played pile when computer plays 10 as last card
   - Installing all headers of the library
   - Can be compiled with GCC-4.3
   - Optimisations
@@ -14,9 +14,9 @@ Overview of changes in version 0.9.00:
 
 Overview of changes in version 0.8.23:
 
-  - Røvhult: Fixed check if end-game runs between computer-player only
-  - Røvhult: Fixed trap, when human ends the game as second-to-last player
-  - Røvhult: Optimised code
+  - RÃ¸vhult: Fixed check if end-game runs between computer-player only
+  - RÃ¸vhult: Fixed trap, when human ends the game as second-to-last player
+  - RÃ¸vhult: Optimised code
   - Fixed potential crash when creating settings-dialog
   - Trying to use better defaults for available card decks
 
@@ -46,7 +46,7 @@ Overview of changes in version 0.8.20:
   - Don't terminate in case of error while loading card images
   - Buraco: Changed inserting jokers in numbered piles (always on 2nd position)
   - Buraco: Fixed ugly hiding of jokers after taking buraco (on slow computers)
-  - Røvhult: Prevent loops in endgame between computer-player
+  - RÃ¸vhult: Prevent loops in endgame between computer-player
   - "Save Preferences" saves also the window-positions
 
 
@@ -87,7 +87,7 @@ Overview of changes in version 0.8.00:
 
 Overview of changes in version 0.7.60:
 
-  - Røvhult got changeable settings
+  - RÃ¸vhult got changeable settings
   - Buraco got a setting for the number of cards at start
   - Hearts got a setting for the endpoints
   - Playing Sgt. Mayor in a 6-3-8 style (as described in Wikipedia)
@@ -104,7 +104,7 @@ Overview of changes in version 0.7.54:
 
 Overview of changes in version 0.7.53:
 
-  - Røvhult's computer-player shows 10s, when playing covered card from table
+  - RÃ¸vhult's computer-player shows 10s, when playing covered card from table
   - Fixed crash, when dialog to show card images can't load an image
   - Fixed computer finishing piles, even if its partner picked up the Buraco
 
@@ -112,7 +112,7 @@ Overview of changes in version 0.7.53:
 Overview of changes in version 0.7.52:
 
   - Adapted to libYGP 0.8.00
-  - Improved visual feedback of Røvhult playing 10s from table
+  - Improved visual feedback of RÃ¸vhult playing 10s from table
 
 
 Overview of changes in version 0.7.51:
@@ -131,7 +131,7 @@ Overview of changes in version 0.7.50:
   - Buraco: Fixed taking dumped pile when this would end the game
   - Improved responseness to quit-application/end-game messageboxes
   - Games can be disabled during configure
-  - Rename Røvhult*-files (of documentation) to UTF-8
+  - Rename RÃ¸vhult*-files (of documentation) to UTF-8
   - Fixed some errors in english documentation
 
 
@@ -164,7 +164,7 @@ Overview of changes in version 0.7.32:
   - Buraco: Undo undoes moving of jokers caused by last move
   - Buraco: Sorting cards after taking buraco disables undo
   - Buraco: The dumped cards and those of the reserve  can be shown after game
-  - Røvhult: Fixed setting title when not using an ISO-8895-1 encoding
+  - RÃ¸vhult: Fixed setting title when not using an ISO-8895-1 encoding
 
 
 Overview of changes in version 0.7.31:
@@ -190,7 +190,7 @@ Overview of changes in version 0.7.20:
   - Machiavelli can sort the cards in the hand
   - Buraco shows now the jokers, when taking the Buraco
   - Fixed Buraco's computer-player
-  - Improved Buraco's spanish help-text (Thanks to Sonia Raquel Cárdenas)
+  - Improved Buraco's spanish help-text (Thanks to Sonia Raquel CÃ¡rdenas)
   - Now all games are played in counter-clockwise direction
   - Removed warnings when compiling with GCC-4
 
@@ -236,7 +236,7 @@ Overview of changes in version 0.7.00:
 Overview of changes in version 0.6.22:
 
   - Translating error messages received via network
-  - Røvhult marks cards which are played from the staple
+  - RÃ¸vhult marks cards which are played from the staple
   - Fixed spanish translation of Twopart (which caused program to abort)
   - Fixed Buraco's logic to determine if to end the game
   - Fixed Buraco's replacing the Joker in a sequence starting with an ace
@@ -335,8 +335,8 @@ Overview of changes in version 0.5.00:
   - Added network ability
   - Improved Buraco's layout (table shows scrollbars, when needed)
   - Improved Buracos computer player
-  - Twopart, Røvhult and Buraco start with a random player
-  - Fixed Røvhult checking of humans playing from piles on the table
+  - Twopart, RÃ¸vhult and Buraco start with a random player
+  - Fixed RÃ¸vhult checking of humans playing from piles on the table
   - Fixed Twopart's calcuation of next player (equal cards at end of part I)
   - Fixed Buraco's computer player taking dumped pile with series of colour
   - Renamed [Players]-section in INI-file to [Player]
@@ -397,23 +397,23 @@ Overview of changes in version 0.1.03:
 
   - Twopart got computer-player
   - Carddecks separated; can be changed during the game
-  - Improved Røvhult's computer player
+  - Improved RÃ¸vhult's computer player
 
 
 Overview of changes in version 0.1.02:
 
-  - Documentation for Røvhult & Twopart added
-  - Fixes within Røvhult
+  - Documentation for RÃ¸vhult & Twopart added
+  - Fixes within RÃ¸vhult
   - Twopart finished without computer-player
 
 
 Overview of changes in version 0.1.01:
 
   - Interationalisation
-  - Røvhult got computer-player
+  - RÃ¸vhult got computer-player
   - Cardpiles display number of cards if mouse stops over (like tooltips)
 
 
 Overview of changes in version 0.1.00:
 
-  - Røvhult finished without computer-player
+  - RÃ¸vhult finished without computer-player
