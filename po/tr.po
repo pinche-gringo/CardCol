@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.9 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2008-07-08 22:49+0200\n"
+"POT-Creation-Date: 2008-07-12 22:36+0200\n"
 "PO-Revision-Date: 2008-07-08 22:51+0200\n"
 "Last-Translator: Adeviye Yilmaz <adeviyeyilmaz@hotmail.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -23,8 +23,8 @@ msgstr "Diðer oyuncularýn kartlarýný deðiþtirmeleri bekleniyor ..."
 msgid "You must first play the visible cards!"
 msgstr "Ýlk önce uygun kartlarý oynamalýsýnýz!"
 
-#: src/Rovhult.cpp:369 src/Rovhult.cpp:482 src/Buraco.cpp:737
-#: src/Buraco.cpp:849 src/Buraco.cpp:1269 src/Machiavelli.cpp:679
+#: src/Rovhult.cpp:369 src/Rovhult.cpp:482 src/Buraco.cpp:736
+#: src/Buraco.cpp:848 src/Buraco.cpp:1268 src/Machiavelli.cpp:679
 #: src/Machiavelli.cpp:692
 msgid "Invalid move"
 msgstr "Geçersiz taþýma"
@@ -288,7 +288,7 @@ msgstr "_Seçenekler"
 msgid "_Change game"
 msgstr "_Oyun deðiþtir"
 
-#: src/CardCol.cpp:748 src/Buraco.cpp:2228 src/Settings.cpp:151
+#: src/CardCol.cpp:748 src/Buraco.cpp:2227 src/Settings.cpp:151
 msgid "_Buraco"
 msgstr "_Buraco"
 
@@ -678,7 +678,7 @@ msgstr ""
 msgid "Select 3 cards to exchange with %1"
 msgstr "%1 ile deðiþtirmek için 3 kart seç"
 
-#: src/Hearts.cpp:481 src/Buraco.cpp:1742
+#: src/Hearts.cpp:481 src/Buraco.cpp:1741
 msgid "Round ended"
 msgstr "El bitti"
 
@@ -722,19 +722,19 @@ msgstr "Puan"
 msgid "New pile"
 msgstr "Yeni yýðýn"
 
-#: src/Buraco.cpp:735
+#: src/Buraco.cpp:734
 msgid "Every pile on the table must have at least 3 cards!"
 msgstr "Masadaki her yýðýnda en az 3 kart olmalýdýr"
 
-#: src/Buraco.cpp:835
+#: src/Buraco.cpp:834
 msgid "You can't pick up monos!"
 msgstr "Tekleri toplayamazsýnýz!"
 
-#: src/Buraco.cpp:838
+#: src/Buraco.cpp:837
 msgid "You need a fitting pair to pick up the pile of dumped cards!"
 msgstr "Yýðýný toplayýp kartlarý bitirmek için uygun eþe ihtiyacýnýz var!"
 
-#: src/Buraco.cpp:844
+#: src/Buraco.cpp:843
 msgid ""
 "Picking up the staple would leave you without cards\n"
 "and you can't end the game now!"
@@ -742,51 +742,51 @@ msgstr ""
 "uygun bir þekilde toplamayý kartlarýnýz olmadan yapamazsýnýz\n"
 "ve oyunu þimdi bitiremezsiniz!"
 
-#: src/Buraco.cpp:1131
+#: src/Buraco.cpp:1130
 msgid "You need to fill up other piles first!"
 msgstr "Ýlk önce diðer yýðýnlarý tamamlamaya ihtiyacýnýz var!"
 
-#: src/Buraco.cpp:1144
+#: src/Buraco.cpp:1143
 msgid "There are no cards to make a valid new pile!"
 msgstr "Geçerli yeni bir yýðýn için kart mevcut deðil!"
 
-#: src/Buraco.cpp:1150 src/Buraco.cpp:1175
+#: src/Buraco.cpp:1149 src/Buraco.cpp:1174
 msgid "You can't end the game (a pile of monos is not finished)!"
 msgstr "Oyunu bitiremezsiniz (tekli yýðýn henüz bitmedi)!"
 
-#: src/Buraco.cpp:1152 src/Buraco.cpp:1176
+#: src/Buraco.cpp:1151 src/Buraco.cpp:1175
 msgid "You can't end the game (there's no \"cerrado\")!"
 msgstr "Oyunu bitiremezsiniz (yok \"cerrado\")!"
 
-#: src/Buraco.cpp:1153
+#: src/Buraco.cpp:1152
 msgid "Not enough cards to make new pile!"
 msgstr "yeni bir yýðýn için kartlar yeterli deðil!"
 
-#: src/Buraco.cpp:1162
+#: src/Buraco.cpp:1161
 msgid "You may not start this new pile with a joker!"
 msgstr ""
 
-#: src/Buraco.cpp:1169 src/Machiavelli.cpp:677
+#: src/Buraco.cpp:1168 src/Machiavelli.cpp:677
 msgid "This card does not fit on that pile!"
 msgstr "Bu kart yýðýnla baðdaþmýyor!"
 
-#: src/Buraco.cpp:1401
+#: src/Buraco.cpp:1400
 msgid "%1 picked up the burraco"
 msgstr "%1 topladý burraco"
 
-#: src/Buraco.cpp:1566
+#: src/Buraco.cpp:1565
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr "Puanlar [Buraco]: %1 [%2] / %3 [%4]"
 
-#: src/Buraco.cpp:1568 src/Buraco.cpp:1570
+#: src/Buraco.cpp:1567 src/Buraco.cpp:1569
 msgid "N"
 msgstr "N"
 
-#: src/Buraco.cpp:1568 src/Buraco.cpp:1570
+#: src/Buraco.cpp:1567 src/Buraco.cpp:1569
 msgid "Y"
 msgstr "Y"
 
-#: src/Buraco.cpp:1684
+#: src/Buraco.cpp:1683
 msgid ""
 "Team %1\n"
 "%2/%3"
@@ -794,31 +794,31 @@ msgstr ""
 "Takým %1\n"
 "%2/%3"
 
-#: src/Buraco.cpp:1748
+#: src/Buraco.cpp:1747
 msgid "Game ended; Team %1 won"
 msgstr "Oyun bitti; Grup %1 kazandý"
 
-#: src/Buraco.cpp:2125
+#: src/Buraco.cpp:2124
 msgid "Invalid pile!"
 msgstr "Geçersiz yýðýn!"
 
-#: src/Buraco.cpp:2128
+#: src/Buraco.cpp:2127
 msgid "Invalid card!"
 msgstr "Geçersiz kart!"
 
-#: src/Buraco.cpp:2190
+#: src/Buraco.cpp:2189
 msgid "Invalid target specification!"
 msgstr "Geçersiz hedef belirtimi"
 
-#: src/Buraco.cpp:2230
+#: src/Buraco.cpp:2229
 msgid "<ctl>Z"
 msgstr "<ctl>Z"
 
-#: src/Buraco.cpp:2233 src/Machiavelli.cpp:1736
+#: src/Buraco.cpp:2232 src/Machiavelli.cpp:1736
 msgid "_Sort cards (by number)"
 msgstr "_Kartlarý sýrala (numaraya göre)"
 
-#: src/Buraco.cpp:2237 src/Machiavelli.cpp:1740
+#: src/Buraco.cpp:2236 src/Machiavelli.cpp:1740
 msgid "Sort cards (by _colour)"
 msgstr "Kartlarý sýrala (_renge göre)"
 

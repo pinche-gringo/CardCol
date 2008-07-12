@@ -23,8 +23,6 @@ Inside the directory containing the source code type
 How to build (after checking out of CVS for the first time)
 -----------------------------------------------------------
 
-As there is no public CVS server, these are just notes for me.
-
 Additional prerequisite software:
 
   - CVS (obviously, duh)
@@ -36,10 +34,10 @@ Additional prerequisite software:
 
 Inside the directory containing the source code type
 
-  gettextize --intl --no-changelog
+  gettextize --intl --no-changelog    # Newer versions need an -f
   mv Makefile.am~ Makefile.am
   mv configure.in~ configure.in
-  libtoolize
+  libtoolize -f
   aclocal && autoheader && automake -a && autoconf
   ./configure [configure-options]
   make [make-options]
