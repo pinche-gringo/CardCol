@@ -1,3 +1,385 @@
+2008-07-12  Markus Schwab  <g17m0@lycos.com>
+
+	* NEWS, ChangeLog: Changes of V0.9.00 documented
+
+	* configure.in: Fixed disabling network
+
+	* po/de.po, po/en.po, po/es.po, po/tr.po, src/CardCol.cpp, src/CardColAppl.cpp:
+	  Changed copyright to 2008
+
+	* configure.in:
+	  Disabling Sgt. Mayor, Machiavelli and the network-features
+
+	* po/de.po, po/en.po, po/es.po, po/tr.po, INSTALL: Actualised
+
+	* configure.in: Needing libYGP 0.9.03
+
+	* src/Buraco.cpp: Fixed doxygen-comments; Changed traces
+
+	* Common/CardPile.cpp, Common/Game.cpp: Fixed doxygen-comments
+
+	* Common/CardWindow.cpp: Fixed cleanup of CardPileWindows; Improved traces
+
+	* src/Buraco.h:
+	  Don't hard-code number of teams to 2; but use NUM_PLAYERS >> 1
+
+	* Common/CardWindow.cpp:
+	  Using root-coordinates; Improved traces and comments
+
+	* src/BuracoPile.cpp: Fixed comments
+
+2008-07-09  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.in:
+	  Better check for KDE-carddecks; Checking for KDE4 carddecks
+
+2008-07-08  Markus Schwab  <g17m0@lycos.com>
+
+	* po/de.po, po/en.po, po/es.po, po/tr.po: New messages translated
+
+	* src/Twopart.cpp: Fixed calculation of cards to pick up in part II
+
+	* src/Twopart.cpp, src/Twopart.h: Fixed starting the second part
+
+2008-07-07  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardImgs.cpp, Common/CardImgs.h, Common/CardPile.cpp, Common/CardPile.h, Common/CardSet.cpp, Common/CardSet.h, Common/CardWidget.cpp, Common/CardWindow.cpp, Common/CardWindow.h, Common/ComputerPlayer.cpp, Common/ComputerPlayer.h, Common/DeckSelect.cpp, Common/DeckSelect.h, Common/Game.cpp, Common/Game.h, Common/Human.cpp, Common/Human.h, Common/Player.cpp, Common/Player.h, Common/PlayerConnDlg.cpp, Common/PlayerConnDlg.h, Common/PlayerDlg.cpp, Common/PlayerDlg.h, Common/RemotePlayer.cpp, Common/RemotePlayer.h, Common/ScoreDlg.cpp, Common/ScoreDlg.h, src/Buraco.cpp, src/Buraco.h, src/BuracoCards.cpp, src/BuracoCards.h, src/BuracoPile.cpp, src/BuracoPile.h, src/CardCol.cpp, src/CardCol.h, src/CardColAppl.cpp, src/CardColAppl.h, src/CardColNet.cpp, src/CardOptions.h, src/CardSizes.cpp, src/CardSizes.h, src/CardValue.cpp, src/CardValue.h, src/ChatDlg.cpp, src/ChatDlg.h, src/GameTypes.cpp, src/GameTypes.h, src/Hearts.cpp, src/Hearts.h, src/Jabberwocky.cpp, src/Jabberwocky.h, src/MachiPile.cpp, src/MachiPile.h, src/Machiavelli.cpp, src/Machiavelli.h, src/Options.h, src/Rovhult.cpp, src/Rovhult.h, src/Settings.cpp, src/Settings.h, src/SgtMayor.cpp, src/SgtMayor.h, src/Twopart.cpp, src/Twopart.h:
+	  Fixed copyright-info (libYGP->CardCol)
+
+	* src/Buraco.cpp:
+	  Disable use of monos when pickung up played pile; Removed debug-Check
+
+	* src/Buraco.h: Removed unused member-variable
+
+	* Common/CardWindow.cpp:
+	  Get end-position relative to parent (not root-window); Improved traces
+
+2008-07-03  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.h: Using Gtk::Widget::set_has_tooltip() to unset a tool-tip
+
+2008-07-02  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Rovhult.cpp:
+	  Fixed not removing played pile when computer plays 10 as last card
+
+	* Common/Game.cpp: Removed traces
+
+	* Common/CardWindow.cpp, Common/CardWindow.h: Raising animated windows
+
+	* Common/CardPile.h: Workaround for UNSET_TIP failing
+
+2008-07-01  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.in: Testing for GTKMM 2.12
+
+	* Common/CardPile.h: Using new Gtk::Toolkit (if GTKMM >= 2.12)
+
+	* src/Buraco.cpp:
+	  Replaced sigc's deprecated methods; Fixed GCC-warnings; Removed testing-code
+
+	* src/Buraco.h: Replaced sigc's deprecated methods
+
+	* Common/CardWindow.cpp, Common/CardWindow.h:
+	  CardPileWindows::AnimatedPile::animateTo (2x int) animates all cards
+
+2008-06-24  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardWindow.cpp, Common/CardWindow.h:
+	  First version with moving every single card (without helper-pile)
+
+	* src/Machiavelli.h, src/Rovhult.cpp, src/Rovhult.h:
+	  Replaced deprecated types in SigC-namespace
+
+2008-06-15  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.in:
+	  Needing libYGP 0.9.00 & libXGP 0.9.02; Added further path for gnome-cards
+
+	* Common/CardWindow.cpp, Common/CardWindow.h:
+	  Show piles of CardPileWindows; needs to positionate them correctly
+
+2008-06-11  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Buraco.html.de, doc/Buraco.html.en, doc/Buraco.html.es, doc/CardCol.html.de, doc/CardCol.html.en, doc/CardCol.html.es, doc/Hearts.html.de, doc/Hearts.html.en, doc/Hearts.html.es, doc/Jabberwocky.html.de, doc/Jabberwocky.html.en, doc/Jabberwocky.html.es, doc/Machiavelli.html.de, doc/Machiavelli.html.en, doc/Machiavelli.html.es, doc/Røvhult.html.de, doc/Røvhult.html.en, doc/Røvhult.html.es, doc/Sgt.Mayor.html.de, doc/Sgt.Mayor.html.en, doc/Sgt.Mayor.html.es, doc/Twopart.html.de, doc/Twopart.html.en, doc/Twopart.html.es, src/Buraco.cpp, src/Buraco.h, src/BuracoCards.cpp, src/BuracoCards.h, src/BuracoPile.cpp, src/BuracoPile.h, src/CardCol.cpp, src/CardCol.h, src/CardColAppl.cpp, src/CardColAppl.h, src/CardColNet.cpp, src/CardOptions.h, src/CardSizes.cpp, src/CardSizes.h, src/CardValue.cpp, src/CardValue.h, src/ChatDlg.cpp, src/ChatDlg.h, src/GameTypes.cpp, src/GameTypes.h, src/Hearts.cpp, src/Hearts.h, src/Jabberwocky.cpp, src/Jabberwocky.h, src/MachiPile.cpp, src/MachiPile.h, src/Machiavelli.cpp, src/Machiavelli.h, src/Options.h, src/Rovhult.cpp, src/Rovhult.h, src/Settings.cpp, src/Settings.h, src/SgtMayor.cpp, src/SgtMayor.h, src/Twopart.cpp, src/Twopart.h, Common/CardImgs.cpp, Common/CardImgs.h, Common/CardPile.cpp, Common/CardPile.h, Common/CardSet.cpp, Common/CardSet.h, Common/CardWidget.cpp, Common/CardWidget.h, Common/ComputerPlayer.cpp, Common/ComputerPlayer.h, Common/DeckSelect.cpp, Common/DeckSelect.h, Common/Game.cpp, Common/Game.h, Common/Human.cpp, Common/Human.h, Common/Player.cpp, Common/Player.h, Common/PlayerConnDlg.cpp, Common/PlayerConnDlg.h, Common/PlayerDlg.cpp, Common/PlayerDlg.h, Common/RemotePlayer.cpp, Common/RemotePlayer.h, Common/ScoreDlg.cpp, Common/ScoreDlg.h:
+	  Put under GPL V3
+
+	* Common/CardWindow.cpp, Common/CardWindow.h: Size animated piles
+
+2008-06-02  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardWindow.cpp, Common/CardWindow.h:
+	  First draft of animated CardPileWindows
+
+	* AUTHORS: Changed special chars to UTF-8
+
+2008-06-01  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardWindow.cpp, Common/CardWindow.h:
+	  CardPileWindow uses EventBox/Image for animation
+
+	* Common/CardPile.h: Added getWidget()
+
+2008-05-25  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardWindow.cpp, Common/CardWindow.h:
+	  First draft using XGP::AnimatedWindow
+
+	* Common/CardPile.h:
+	  Prohibiting copy-ctr and assignment operator of CardPile<T>; Added todo-list
+
+	* Common/Makefile.am: Removed AnimWindow (is now part of libYGP)
+
+2008-04-01  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardWindow.cpp, Common/CardWindow.h:
+	  Adapted to use XGP::AnimatedWindow
+
+2008-01-31  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Buraco.html.de: Typo fixed
+
+2007-11-11  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp: Fixed cardFitsOnpile() and reorderTableToFit()
+
+	* Common/CardWindow.cpp:
+	  Fixed setting position of further windows for CardPileWindows; Traces++
+
+2007-10-28  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/AnimWindow.cpp:
+	  Improved animation (using signal_timeout instead of signal_idle)
+
+	* src/Machiavelli.h: Added unmarkAndEnd()
+
+	* src/Machiavelli.cpp: Further fixes
+
+	* src/Machiavelli.cpp: Fixes; Unmarking cards after moving
+
+2007-10-16  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp: Fixed some bugs introduced by animation
+
+2007-10-15  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.cpp: Minor optimisation
+
+2007-10-14  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Machiavelli.cpp, src/Machiavelli.h:
+	  First draft with animated cards
+
+	* src/BuracoPile.cpp: Removed compiler-warnings
+
+2007-09-25  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Jabberwocky.html.es: Typo fixed
+
+2007-09-16  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Twopart.cpp: Finished an animated game
+
+	* src/Twopart.cpp, src/Twopart.h: Improved animating first part
+
+2007-08-19  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/AnimWindow.cpp, Common/AnimWindow.h, Common/CardWindow.cpp, Common/CardWindow.h:
+	  End of animation is now separated in a cleanup()- and a finish()-part
+
+	* src/Twopart.cpp, src/Twopart.h:
+	  First part seems to work with animation
+
+2007-08-18  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Buraco.html.en: Removed some parenthesises
+
+2007-08-15  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Twopart.cpp, src/Twopart.h: First draft with animation
+
+	* src/Rovhult.cpp: Fixed playing from pile
+
+	* src/Twopart.cpp: Human player is at bottom of the window
+
+	* src/Machiavelli.cpp: Human player now on bottom of window
+
+2007-08-12  Markus Schwab  <g17m0@lycos.com>
+
+	* src/CardCol.cpp: Const-corrected xpmJoker; Formatting
+
+	* Common/AnimWindow.cpp, Common/AnimWindow.h, Common/CardWindow.cpp, Common/CardWindow.h:
+	  Sizing animated piles; Delaying emitting signal
+
+	* Common/CardPile.cpp, Common/CardPile.h: Added getSize()
+
+2007-07-28  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Jabberwocky.html.de: Fixes
+
+2007-07-03  Markus Schwab  <g17m0@lycos.com>
+
+	* doc/Jabberwocky.html.en: Fixes
+
+2007-07-01  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Rovhult.h: Changes for animation
+
+	* src/Rovhult.cpp: Fixes
+
+	* doc/Jabberwocky.html.de: Minor improvement
+
+2007-06-27  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Rovhult.cpp, src/Rovhult.h: First draft with animation
+
+	* doc/Jabberwocky.html.de: Typo
+
+2007-06-07  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Rovhult.cpp: Human is at bottom of the window
+
+	* src/Buraco.cpp:
+	  Animating computer taking dumped card takes care of position of dumped card
+
+	* Common/CardWindow.cpp, Common/CardWindow.h:
+	  CardPileWindows takes the position in the destinations for its sub-windows
+
+2007-06-05  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardWindow.cpp:
+	  Moving CardPileWindows' sub-windows to their start-positions
+
+	* src/Buraco.cpp, src/Buraco.h:
+	  Further fixes; Playing works now most times/for most cases
+
+2007-06-04  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp: Fixes for animation
+
+	* Common/CardWindow.cpp:
+	  Fixes (double-deletes; Moving of child of CardPileWindows)
+
+	* Common/CardWindow.h: Const-corrected
+
+2007-05-30  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.h: Removed blocked cards from undo-info
+
+	* src/Buraco.cpp: Fixes; Animating human picking up dumped cards
+
+	* Common/CardWindow.cpp, Common/CardWindow.h:
+	  Added CardPileWindows (to animate more piles at once); Delaying creating window
+
+	* Common/AnimWindow.cpp, Common/AnimWindow.h: Added animateTo ()
+
+	* Common/Game.cpp, Common/Game.h: Added animateCards2
+
+2007-05-28  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardPile.h: Added getCompressedSize() to CardPile-template
+
+	* Common/AnimWindow.cpp: Disabled checks/traces
+
+2007-05-27  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/Game.cpp: Delaying animation
+
+	* src/CardColAppl.cpp: Reading timeout of computer-player from INI-file
+
+	* src/CardCol.cpp: Writing timeout of computer-player to INI-file
+
+2007-05-24  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/CardWindow.cpp, Common/CardWindow.h: Fixes
+
+	* Common/Game.cpp: Don't remove card from pile before animation starts
+
+	* Common/Makefile.am: Added AnimWindow.h
+
+	* src/Hearts.cpp, src/Jabberwocky.cpp:
+	  Adapted to new animation interface
+
+	* src/Buraco.cpp, src/Buraco.h: Progress with animation
+
+2007-05-23  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/Game.cpp, Common/Game.h, Common/CardWindow.cpp, Common/CardWindow.h:
+	  Adapted to new AnimatedWindow-interface (without AnimatedObject)
+
+	* Common/AnimWindow.cpp, Common/AnimWindow.h:
+	  Animate directly; don't use AnimatedObject
+
+2007-05-21  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/Game.cpp, Common/Game.h:
+	  First draft using AnimatedWindow for animation
+
+	* Common/CardWindow.cpp, Common/CardWindow.h:
+	  Rewritten to use AnimatedWindow
+
+	* Common/AnimWindow.cpp, Common/AnimWindow.h: New file.
+
+2007-05-20  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/Makefile.am: Added CardWindow
+
+	* Common/CardWindow.cpp, Common/CardWindow.h: New file.
+
+	* src/Buraco.cpp, src/Buraco.h: First draft with animated cards
+
+	* Common/CardWidget.cpp, Common/CardWidget.h: Added getEmpty()
+
+	* Common/Game.cpp, Common/Game.h: Can animate a series of cards
+
+2007-05-19  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/ComputerPlayer.cpp: Set the default timeout to 1000
+
+	* Common/CardSet.cpp: Adapted to new interface of CardWidget
+
+	* Common/CardWidget.cpp, Common/CardWidget.h:
+	  CardImages are a static member (not a object-member)
+
+2007-05-13  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/Game.cpp, Common/Game.h:
+	  Can animate more than 1 card (from same pile)
+
+2007-05-08  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Buraco.cpp:
+	  Human is at bottom of window; animating human taking from dumped/staple
+
+2007-05-06  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp: Fixed handling of won cards; Fixed calculating score
+
+	* src/Jabberwocky.cpp, src/Jabberwocky.h:
+	  Animating cards; Player is on bottom of window
+
+	* src/Hearts.cpp, src/Hearts.h: Perform turns in one step
+
+	* Common/Game.cpp, Common/Game.h: New style: Turn in only one step
+
+2007-05-01  Markus Schwab  <g17m0@lycos.com>
+
+	* src/Hearts.cpp, src/Hearts.h: First draft with animated cards
+
+	* Common/Game.cpp, Common/Game.h: Progress with animation
+
+	* Common/ScoreDlg.cpp: Removed trailing blanks
+
+	* Common/CardPile.h, Common/CardWidget.h, Common/DeckSelect.h, Common/Player.h:
+	  Replace sigc's deprecated methods/objects with their new variants
+
+	* configure.in: Version to 0.9.00
+
+2007-04-28  Markus Schwab  <g17m0@lycos.com>
+
+	* Common/Game.cpp, Common/Game.h:
+	  First draft with animated moving of cards
+
 2007-03-18  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Changes of V0.8.23 documented
@@ -1750,14 +2132,14 @@
 2003-11-03  Markus Schwab  <g17m0@lycos.com>
 
 	* src/CardCol.cpp:
-	Games can read/save their iniatial state (order of the cards)
+	  Games can read/save their iniatial state (order of the cards)
 
 	* Common/Game.cpp: Generalized setting order of cards for "randomize"
 
 	* src/Options.h: Storing filename for saving/loading
 
 	* Common/Game.h:
-	Methods to set/return the order of the cards for/of randomizeCardsToPile
+	  Methods to set/return the order of the cards for/of randomizeCardsToPile
 
 2003-11-03  Markus Schwab  <g17m0@lycos.com>
 
@@ -2136,7 +2518,7 @@
 2003-07-07  Markus Schwab  <g17m0@lycos.com>
 
 	* Buraco.h, Buraco.cpp:
-	  canDumpCards respect if dumped cards would make a cerrado; Fixes
+	  canDumpCards respects if dumped cards would make a cerrado; Fixes
 
 2003-07-06  Markus Schwab  <g17m0@lycos.com>
 
@@ -2146,7 +2528,7 @@
 
 	* doc/Buraco.html.es: Fixed grammar error
 
-	* AUTHORS: Mariuxi added to Translators
+	* AUTHORS: Mariuxi added to translators
 
 	* po/de.po, po/en.po, po/es.po: Actualized
 
@@ -2158,7 +2540,7 @@
 	  Removed last changed line
 
 	* doc/Buraco.html.de, doc/Buraco.html.en, doc/Buraco.html.es:
-	  Actualized counting of cerrados of monos
+	  Actualised counting of cerrados of monos
 
 	* configure.in: Needing YMP 0.7
 
@@ -2187,9 +2569,9 @@
 2003-07-03  Markus Schwab  <g17m0@lycos.com>
 
 	* Buraco.cpp:
-	- Added substraction of started cerrados of monos (without finishing them)
-	- Clean cerrado of monos now counts 2000 points
-	- First draft of computer player playing series of colours
+	  - Added substraction of started cerrados of monos (without finishing them)
+	  - Clean cerrado of monos now counts 2000 points
+	  - First draft of computer player playing series of colours
 
 2003-06-30  Markus Schwab  <g17m0@lycos.com>
 
@@ -2209,19 +2591,19 @@
 2003-06-28  Markus Schwab  <g17m0@lycos.com>
 
 	* Buraco.cpp, Buraco.h:
-	Started with computer player playing series of colours; Fixes
+	  Started with computer player playing series of colours; Fixes
 
 	* HeartsScore.h: getPoints returns now an int
 
 	* HeartsScore.cpp:
-	Traces added; Using INT_MIN/MAX to set the borders of the points
+	  Traces added; Using INT_MIN/MAX to set the borders of the points
 
 2003-06-24  Markus Schwab  <g17m0@lycos.com>
 
 	* Buraco.h: New fields for status-variable added
 
 	* Buraco.cpp: - Ending game with 2000 points
-	- Only close piles with joker after buraco player played its cards
+	  - Only close piles with joker after buraco player played its cards
 
 	* HeartsScore.cpp: Switched off traces and checks
 
@@ -2478,7 +2860,7 @@
 
 	* src/Twopart.cpp: Traces of card-pos to TRACE9
 
-	* po/de.po, po/es.po: 	Actualized for V0.3.00
+	* po/de.po, po/es.po: Actualised for V0.3.00
 
 	* doc/index.shtml: Minor re-wording
 
@@ -2600,7 +2982,7 @@
 	* src/Twopart.cpp:
 	  Checks (for pos in number of cards) corrected; Empty for removed
 
-	* src/Hearts.h: Method check4Winner added
+	* src/Hearts.h: Method check4Winner() added
 
 	* src/Hearts.cpp: Playing quite a bit improved; Fixes
 
@@ -2611,7 +2993,7 @@
 	* Common/CardPile.cpp, Common/CardPile.h: Find-method with color added
 
 	* src/Hearts.cpp:
-	Bugfixes; Compu can play (but not very good)
+	  Bugfixes; Computer can play (but not very good)
 
 2002-12-30  Markus Schwab  <g17m0@lycos.com>
 

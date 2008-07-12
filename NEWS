@@ -1,4 +1,18 @@
- Overview of changes in version 0.8.23:
+Overview of changes in version 0.9.00:
+
+  - Animate cards (A great idea from int (at) arcor (dot) de)
+  - Human player is at bottom of window (not on top) (Again int (at) arcor-de)
+  - The timeout of the computer player is stored in the INI-file
+  - Don't use sigc's deprecated methods
+  - Buraco: Fixed computer player
+  - Røvhult: Fixed not removing played pile when computer plays 10 as last card
+  - Installing all headers of the library
+  - Can be compiled with GCC-4.3
+  - Optimisations
+  - Put under GPL V3
+
+
+Overview of changes in version 0.8.23:
 
   - Røvhult: Fixed check if end-game runs between computer-player only
   - Røvhult: Fixed trap, when human ends the game as second-to-last player
@@ -7,7 +21,7 @@
   - Trying to use better defaults for available card decks
 
 
- Overview of changes in version 0.8.22:
+Overview of changes in version 0.8.22:
 
   - Buraco: Fixed keeping state after undoing finishing a pile of monos
   - Buraco: Fixed being able to end game with unfinished mono-pile (again)
@@ -15,7 +29,7 @@
   - Can be compiled under x86_64
 
 
- Overview of changes in version 0.8.21:
+Overview of changes in version 0.8.21:
 
   - Help shows news INI-file entries
   - Added forgotten translations of the card sizes
@@ -25,10 +39,10 @@
   - Actualised README and INSTALL
 
 
- Overview of changes in version 0.8.20:
+Overview of changes in version 0.8.20:
 
   - Size of cards can be changed (in the settings)
-  - Fixed bug reading GNOME-card images
+  - Fixed bug reading GNOME's card images
   - Don't terminate in case of error while loading card images
   - Buraco: Changed inserting jokers in numbered piles (always on 2nd position)
   - Buraco: Fixed ugly hiding of jokers after taking buraco (on slow computers)
@@ -36,7 +50,7 @@
   - "Save Preferences" saves also the window-positions
 
 
- Overview of changes in version 0.8.12:
+Overview of changes in version 0.8.12:
 
   - Jabberwocky: Disabling Jabberwocky-menu when there are no cards
   - Buraco: Fixed picking up dumped pile having a 4 on top with 3 & Ace
@@ -45,14 +59,14 @@
   - Buraco: Fixed documentation
 
 
- Overview of changes in version 0.8.11:
+Overview of changes in version 0.8.11:
 
   - Adapted testing for GNOME cardgames to work with GNOME 2.16
   - Improved english documentation of Jabberwocky
   - Added turkish translation (thanks to Adeviye Yilmaz)
 
 
- Overview of changes in version 0.8.10:
+Overview of changes in version 0.8.10:
 
   - Configure can disable network-ability
   - Machiavelli: Improved computer player
