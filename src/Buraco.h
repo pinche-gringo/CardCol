@@ -169,7 +169,7 @@ class Buraco : public Game {
 
    Gtk::Frame frameInfo;
    Gtk::Label info;
-   Gtk::HBox  boxTeam[2];
+   Gtk::HBox  boxTeam[NUM_PLAYERS >> 1];
 
    Gtk::Label       newPile;
    CardVInfoPile    staple;
