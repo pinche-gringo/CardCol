@@ -58,13 +58,13 @@
 
 //-----------------------------------------------------------------------------
 /// Constructor
-/// \param parent: Parent of widget
-/// \param statusbar: For messages
-/// \param cardset: Cardset
-/// \param player: Vector of player
-/// \param posPlayer: Position of the player for the server
-/// \param rows: Number of rows needed by game
-/// \param columns: Number of columns needed by game
+/// \param parent Parent of widget
+/// \param statusbar For messages
+/// \param cardset Cardset
+/// \param player Vector of player
+/// \param posPlayer Position of the player for the server
+/// \param rows Number of rows needed by game
+/// \param columns Number of columns needed by game
 //-----------------------------------------------------------------------------
 Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
             const std::vector<Player*>& player, unsigned int posPlayer,
@@ -128,7 +128,7 @@ void Game::stop () {
 
 //-----------------------------------------------------------------------------
 /// End the current game as soon as possible
-/// \param startNew: Flag, if game should be restarted
+/// \param startNew Flag, if game should be restarted
 //-----------------------------------------------------------------------------
 void Game::end (bool startNew) {
    TRACE8 ("Game::end () - Restart: " << (startNew ? "Yes" : "No"));
@@ -156,8 +156,8 @@ void Game::disableHuman () {
 
 //-----------------------------------------------------------------------------
 /// Shuffles (Randomizes) the cards onto the staple
-/// \param pile: Pile to which the cards should be shuffeled to
-/// \returns bool: Flag, if method completed successfully
+/// \param pile Pile to which the cards should be shuffeled to
+/// \returns bool Flag, if method completed successfully
 //-----------------------------------------------------------------------------
 bool Game::randomizeCardsToPile (ICardPile& pile) const {
    // Randomize and put cards onto staple
@@ -224,11 +224,11 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
 
 //-----------------------------------------------------------------------------
 /// Moves cards from one pile to another
-/// \param dest: Destination pile
-/// \param posDest: Position where to move card
-/// \param source: Source pile
-/// \param start: First card to move
-/// \param end: Last card to move; -1: Move til end
+/// \param dest Destination pile
+/// \param posDest Position where to move card
+/// \param source Source pile
+/// \param start First card to move
+/// \param end Last card to move; -1: Move til end
 //-----------------------------------------------------------------------------
 void Game::movePile (ICardPile& dest, unsigned int posDest, ICardPile& source,
 		     unsigned int start, int end) {
@@ -280,8 +280,8 @@ void Game::makeNextMoves () {
 //-----------------------------------------------------------------------------
 /// Ends the move of the passed remote player. This contains of executing the
 /// move and re-enable receiving of messages
-/// \param player: ID of remote player
-/// \returns bool: False
+/// \param player ID of remote player
+/// \returns bool False
 //-----------------------------------------------------------------------------
 bool Game::endRemoteMove (unsigned int player) {
    TRACE8 ("Game::endRemoteMove () - " << player);
@@ -294,7 +294,7 @@ bool Game::endRemoteMove (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Enables the cards of the human player
-/// \returns bool: False
+/// \returns bool False
 //-----------------------------------------------------------------------------
 bool Game::enableHuman () {
    Check3 (!actPlayer);
@@ -304,7 +304,7 @@ bool Game::enableHuman () {
 
 //-----------------------------------------------------------------------------
 /// Makes the move for the next computer player.
-/// \returns \c bool: Flag for timer, if it should continue (false: no; else: yes)
+/// \returns bool Flag for timer, if it should continue (false: no; else: yes)
 //-----------------------------------------------------------------------------
 bool Game::makeComputerMove () {
    TRACE5 ("Game::makeComputerMove () - Turn of player " << actPlayer);
@@ -318,7 +318,7 @@ bool Game::makeComputerMove () {
 
 //-----------------------------------------------------------------------------
 /// Displays information about whose turn it is
-/// \param player: Player in turn
+/// \param player Player in turn
 //-----------------------------------------------------------------------------
 void Game::displayTurn (unsigned int player) {
    Check1 (player < actPlayers.size ());
@@ -330,7 +330,7 @@ void Game::displayTurn (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Displays information about whose turn it is
-/// \param player: Player in turn
+/// \param player Player in turn
 //-----------------------------------------------------------------------------
 void Game::displayTurn (unsigned int player, const Glib::ustring& preText) {
    status.pop ();
@@ -341,7 +341,7 @@ void Game::displayTurn (unsigned int player, const Glib::ustring& preText) {
 
 //-----------------------------------------------------------------------------
 /// Changes the game-status
-/// \param newStatus: Status to set
+/// \param newStatus Status to set
 //-----------------------------------------------------------------------------
 void Game::setGameStatus (unsigned int newStatus) {
    statGame = newStatus;
@@ -350,9 +350,9 @@ void Game::setGameStatus (unsigned int newStatus) {
 
 //-----------------------------------------------------------------------------
 /// Flips the cards the user is about to play
-/// \param pile: Pile to manipulate
-/// \param cards: String containing the (comma-separated) IDs of the cards to flip
-/// \throw YGP::ParseError: If invalid numbers for cards are found
+/// \param pile Pile to manipulate
+/// \param cards String containing the (comma-separated) IDs of the cards to flip
+/// \throw YGP::ParseError If invalid numbers for cards are found
 //-----------------------------------------------------------------------------
 void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (YGP::ParseError) {
    TRACE2 ("Game::flipCards2Play (ICardPile&, const std::string&) - Cards " << cards);
@@ -402,7 +402,7 @@ void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (YGP
 
 //----------------------------------------------------------------------------
 /// Returns the actual target, where flipCard2Play should position the cards to
-/// \returns unsigned int: ID of the target
+/// \returns unsigned int ID of the target
 //----------------------------------------------------------------------------
 unsigned int Game::getActTarget () const {
    return 0;
@@ -410,9 +410,9 @@ unsigned int Game::getActTarget () const {
 
 //-----------------------------------------------------------------------------
 /// Flips the cards the user is about to play
-/// \param pile: Pile to manipulate
-/// \param start: Position of first card to play; update to reflect moving
-/// \param end: Position of last card to play; update to reflect moving
+/// \param pile Pile to manipulate
+/// \param start Position of first card to play; update to reflect moving
+/// \param end Position of last card to play; update to reflect moving
 /// \remarks It is safe to pass the same variable as start and end
 //-----------------------------------------------------------------------------
 void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end) {
@@ -455,8 +455,8 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
 
 //-----------------------------------------------------------------------------
 /// Shows or hides the won cards
-/// \param show: Flag if to show or to hide the cards
-/// \param style: Style how pile should be displayed; must be a value understood
+/// \param show Flag if to show or to hide the cards
+/// \param style Style how pile should be displayed; must be a value understood
 ///     by ICardPile::setStyle
 //-----------------------------------------------------------------------------
 void Game::showWonCards (bool show, unsigned int style) {
@@ -474,7 +474,7 @@ void Game::showWonCards (bool show, unsigned int style) {
 
 //-----------------------------------------------------------------------------
 /// Callback for any event for the top of the won cards
-/// \param event: Caused event
+/// \param event Caused event
 //-----------------------------------------------------------------------------
 bool Game::wonCardsSelected (GdkEvent* event) {
    TRACE9 ("Game::wonCardsSelected (GdkEvent*) - " << event->type);
@@ -562,7 +562,7 @@ void Game::disableWonCards () {
 
 //-----------------------------------------------------------------------------
 /// Changes the names of the playing people
-/// \param newNames: Array holding the new names of the players
+/// \param newNames Array holding the new names of the players
 //-----------------------------------------------------------------------------
 void Game::changeNames (const std::vector<Player*>& newPlayer) {
    const_cast<std::vector<Player*>&> (actPlayers) = newPlayer;
@@ -570,14 +570,14 @@ void Game::changeNames (const std::vector<Player*>& newPlayer) {
 
 //----------------------------------------------------------------------------
 /// Callback to inform a controller about status changes
-/// \param status: New status of the game
+/// \param status New status of the game
 //----------------------------------------------------------------------------
 void Game::control (unsigned int status) const {
 }
 
 //----------------------------------------------------------------------------
 /// Writes a message to all partners
-/// \param msg: Message to write
+/// \param msg Message to write
 //----------------------------------------------------------------------------
 void Game::broadcastMessage (const std::string& msg) const {
    TRACE3 ("Game::broadcastMessage (const std::string&) - " << msg);
@@ -593,7 +593,7 @@ void Game::broadcastMessage (const std::string& msg) const {
 
 //----------------------------------------------------------------------------
 /// Writes a set-startplayer message to all clients
-/// \param startplayer: Startplayer
+/// \param startplayer Startplayer
 //----------------------------------------------------------------------------
 void Game::broadcastStartPlayer (unsigned int startplayer) {
    // Send startplayer to the clients
@@ -615,8 +615,8 @@ void Game::broadcastStartPlayer (unsigned int startplayer) {
 
 //----------------------------------------------------------------------------
 /// Writes a message to the partner
-/// \param socket: Socket to write message to
-/// \param msg: Message to write
+/// \param socket Socket to write message to
+/// \param msg Message to write
 //----------------------------------------------------------------------------
 void Game::writeMessage (YGP::Socket& socket, const std::string& msg) {
    try {
@@ -634,9 +634,9 @@ void Game::writeMessage (YGP::Socket& socket, const std::string& msg) {
 
 //----------------------------------------------------------------------------
 /// Writes a status message to the partner
-/// \param socket: Socket to write message to
-/// \param rc: Error code to send
-/// \param msg: Message to write
+/// \param socket Socket to write message to
+/// \param rc Error code to send
+/// \param msg Message to write
 //----------------------------------------------------------------------------
 void Game::writeError (YGP::Socket& socket, unsigned int rc, const std::string& msg) {
    std::ostringstream error;
@@ -646,11 +646,11 @@ void Game::writeError (YGP::Socket& socket, unsigned int rc, const std::string& 
 
 //----------------------------------------------------------------------------
 /// Handles a message send from the server
-/// \param player: ID of player sending the message
-/// \param msg: Message to handle
-/// \returns bool: True, if the message has been processed completely; else
+/// \param player ID of player sending the message
+/// \param msg Message to handle
+/// \returns bool True, if the message has been processed completely; else
 ///    (if message is still pending) false
-/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing string
+/// \throw YGP::ParseError, YGP::CommError In case of an error an describing string
 //----------------------------------------------------------------------------
 bool Game::handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError) {
    TRACE1 ("Game::handleMessage (unsigned int player, const std::string&) - " << msg
@@ -679,7 +679,7 @@ bool Game::handleMessage (unsigned int player, const std::string& msg) throw (YG
 
 //----------------------------------------------------------------------------
 /// Sets the player performing the next turn
-/// \param player: Number identifying player (starting with 0)
+/// \param player Number identifying player (starting with 0)
 //----------------------------------------------------------------------------
 void Game::setNextPlayer (unsigned int player) {
    TRACE8 ("Game::setNextPlayer (unsigned int) - " << player);
@@ -688,10 +688,10 @@ void Game::setNextPlayer (unsigned int player) {
 
 //----------------------------------------------------------------------------
 /// Handles a command the server sent in playing mode
-/// \param player: ID of player sending the message
-/// \param msg: Command to perform
-/// \returns bool: Flag, if command has been performed completely
-/// \throws YGP::ParseError, YGP::CommError: Describing the error
+/// \param player ID of player sending the message
+/// \param msg Command to perform
+/// \returns bool Flag, if command has been performed completely
+/// \throws YGP::ParseError, YGP::CommError Describing the error
 //----------------------------------------------------------------------------
 bool Game::performCommand (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError) {
    TRACE8 ("Game::performCommand (unsigned int player, const std::string&) - "
@@ -756,9 +756,9 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (Y
 
 //----------------------------------------------------------------------------
 /// Converts a string into a number
-/// \param number: Target of conversion
-/// \param text: String to convert
-/// \returns bool: False, if conversion succeeded (\c text contained a number)
+/// \param number Target of conversion
+/// \param text String to convert
+/// \returns bool False, if conversion succeeded (\c text contained a number)
 //----------------------------------------------------------------------------
 bool Game::stringToNumber (unsigned long& number, const char* text) {
    Check1 (text);
@@ -770,10 +770,10 @@ bool Game::stringToNumber (unsigned long& number, const char* text) {
 
 //----------------------------------------------------------------------------
 /// Executes the remote move locally
-/// \param pile: Pile to move to/from
-/// \param card: ID of target, where to play the card
-/// \returns bool: True, if the timer to execute the move should be set
-/// \throw YGP::ParseError: In case of an invalid value
+/// \param pile Pile to move to/from
+/// \param card ID of target, where to play the card
+/// \returns bool True, if the timer to execute the move should be set
+/// \throw YGP::ParseError In case of an invalid value
 //----------------------------------------------------------------------------
 bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) throw (YGP::ParseError) {
    TRACE8 ("Game::executeRemoteMove (ICardPile&, unsigned int) - " << pos2Play);
@@ -783,7 +783,7 @@ bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) throw (YGP::Pa
 //----------------------------------------------------------------------------
 /// Returns if the game can be stopped imediately. This is true, if there is no
 /// timer activated.
-/// \returns bool: True, if the game can be stopped imediately
+/// \returns bool True, if the game can be stopped imediately
 //----------------------------------------------------------------------------
 bool Game::canBeStopped () const {
    return !(actPlayer && stati.pendingTurn);
@@ -792,7 +792,7 @@ bool Game::canBeStopped () const {
 //----------------------------------------------------------------------------
 /// Checks if the game should ignore a message. If so, the count of messages
 /// to ignore is reduced by 1.
-/// \returns bool: True, if a message should be ignored
+/// \returns bool True, if a message should be ignored
 //----------------------------------------------------------------------------
 bool Game::ignoreMessage () {
    if (ignoreNextMsg) {
@@ -805,14 +805,14 @@ bool Game::ignoreMessage () {
 
 //-----------------------------------------------------------------------------
 /// Adds game-specific menus
-/// \param mgrUI: UIManager to add to
+/// \param mgrUI UIManager to add to
 //-----------------------------------------------------------------------------
 void Game::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 }
 
 //-----------------------------------------------------------------------------
 /// Removes the game-specific menus
-/// \param mgrUI: UIManager to add to
+/// \param mgrUI UIManager to add to
 //-----------------------------------------------------------------------------
 void Game::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 }
@@ -827,11 +827,11 @@ void Game::resizeCards () {
 
 //-----------------------------------------------------------------------------
 /// Animates the given cards to the given position of the passed pile
-/// \param dest: Destination pile
-/// \param posDest: Where to put the card in the destination
-/// \param source: Source pile
-/// \param pos: First card of source to move
-/// \pre: The card must be shown somewhere (to get its position)
+/// \param dest Destination pile
+/// \param posDest Where to put the card in the destination
+/// \param source Source pile
+/// \param pos First card of source to move
+/// \pre The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
 CardWindow& Game::animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int pos) {
    TRACE3 ("Game::animateCard (...) - " << pos);
@@ -851,12 +851,12 @@ CardWindow& Game::animateCard (ICardPile& dest, unsigned int posDest, ICardPile&
 
 //-----------------------------------------------------------------------------
 /// Animates the given cards to the given position of the passed pile
-/// \param dest: Destination pile
-/// \param posDest: Where to put the card in the destination
-/// \param source: Source pile
-/// \param start: First card of source to move
-/// \param end: Last card of source to move
-/// \pre: The card must be shown somewhere (to get its position)
+/// \param dest Destination pile
+/// \param posDest Where to put the card in the destination
+/// \param source Source pile
+/// \param start First card of source to move
+/// \param end Last card of source to move
+/// \pre The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
 CardPileWindow& Game::animateCards (ICardPile& dest, unsigned int posDest, ICardPile& src,
 				    unsigned int start, unsigned int end) {
@@ -878,12 +878,12 @@ CardPileWindow& Game::animateCards (ICardPile& dest, unsigned int posDest, ICard
 //-----------------------------------------------------------------------------
 /// Animates the given cards to the given position of the passed pile. Further
 /// cards to be animated to the same destination can be added.
-/// \param dest: Destination pile
-/// \param posDest: Where to put the card in the destination
-/// \param source: Source pile
-/// \param start: First card of source to move
-/// \param end: Last card of source to move
-/// \pre: The card must be shown somewhere (to get its position)
+/// \param dest Destination pile
+/// \param posDest Where to put the card in the destination
+/// \param source Source pile
+/// \param start First card of source to move
+/// \param end Last card of source to move
+/// \pre The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
 CardPileWindows& Game::animateCards2 (ICardPile& dest, unsigned int posDest, ICardPile& src,
 				      unsigned int start, unsigned int end) {
