@@ -150,7 +150,7 @@ void CardWindow::start () {
 /// Cleanup of the animation; moves the animated card to the distination pile
 //-----------------------------------------------------------------------------
 void CardWindow::cleanup () {
-   TRACE8 ("CardWindow::cleanup () - " << posSrc << " -> " << posDest);
+   TRACE5 ("CardWindow::cleanup () - " << posSrc << " -> " << posDest);
    AnimatedCard::cleanup ();
    dest.insert (src.remove (posSrc), posDest);
    TRACE8 ("CardWindow::cleanup () - finish");
@@ -219,11 +219,11 @@ void CardPileWindow::start () {
 /// Cleanup of the animation; moves the animated cards to the distination pile
 //-----------------------------------------------------------------------------
 void CardPileWindow::cleanup () {
-   TRACE8 ("CardPileWindow::cleanup () - " << posSrc << '/' << last << " -> " << (int)posDest);
+   TRACE5 ("CardPileWindow::cleanup () - " << posSrc << '/' << last << " -> " << (int)posDest);
    CardWindow::cleanup ();
 
    while (last-- > posSrc) {
-      TRACE8 ("CardPileWindow::cleanup () - Move " << posSrc << '/' << last << " -> " << (int)posDest);
+      TRACE5 ("CardPileWindow::cleanup () - Move " << posSrc << '/' << last << " -> " << (int)posDest);
       dest.insert (src.remove (posSrc), ++posDest);
    }
    TRACE8 ("CardPileWindow::cleanup () - Finished");
@@ -301,21 +301,23 @@ void CardPileWindows::getEndPos (int& x, int& y) {
 }
 
 //-----------------------------------------------------------------------------
-/// Cleanup of the animation; moves the animated card to the distination pile
+/// Cleanup of the animation; moves the animated card to the destination pile
 //-----------------------------------------------------------------------------
 void CardPileWindows::cleanup () {
-   TRACE5 ("CardPileWindows::cleanup () - " << wins.size ());
+   TRACE5 ("CardPileWindows::cleanup () - Subwindows: " << wins.size ());
    CardPileWindow::cleanup ();
 
    // Move the animated cards to their target; remove the animated widget
-   for (std::vector<AnimatedPile*>::iterator i (wins.begin ());
+   for (std::vector<AnimatedPile*>::const_iterator i (wins.begin ());
 	i != wins.end (); ++i) {
+      unsigned int first ((*i)->first);
+      unsigned int last ((*i)->last);
       Check3 ((*i)->posDest <= dest.size ());
-      TRACE8 ("CardPileWindows::cleanup () - Moving [" << (*i)->first << '/' << (*i)->last
-	      << "] to " << (*i)->posDest);
+      TRACE8 ("CardPileWindows::cleanup () - Moving [" << first << '/' << last
+	      << "] of " << (*i)->source.size () << " to " << (*i)->posDest << " of " << dest.size ());
       do
-	 dest.insert ((*i)->source.remove ((*i)->first), (*i)->posDest++);
-      while ((*i)->first < --(*i)->last);
+	 dest.insert ((*i)->source.remove (first), ((*i)->posDest)++);
+      while (first < last--);
    }
    TRACE8 ("CardPileWindows::cleanup () - Finished");
 }
