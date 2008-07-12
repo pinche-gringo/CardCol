@@ -54,7 +54,7 @@ BuracoPile::~BuracoPile () {
 
 //----------------------------------------------------------------------------
 /// Sets a new top card of the pile.
-/// \param newCard: Card to set as uppermost card of the pile
+/// \param newCard Card to set as uppermost card of the pile
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
 void BuracoPile::setTopCard (CardWidget& newCard) {
@@ -65,10 +65,10 @@ void BuracoPile::setTopCard (CardWidget& newCard) {
 
 //----------------------------------------------------------------------------
 /// Inserts a card into the pile.
-/// \param card: Card to insert into the pile
-/// \param pos: Zero-based offset of where to insert the card
+/// \param card Card to insert into the pile
+/// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
-/// \returns unsigned int: Position where card was inserted
+/// \returns unsigned int Position where card was inserted
 //----------------------------------------------------------------------------
 unsigned int BuracoPile::insert (CardWidget& card, unsigned int pos) {
    TRACE9 ("BuracoPile::insert (CardWidget&, unsigned int) - " << card
@@ -81,8 +81,7 @@ unsigned int BuracoPile::insert (CardWidget& card, unsigned int pos) {
 
 //----------------------------------------------------------------------------
 /// Removes the passed card from the pile.
-/// \param card: Card to remove from the pile
-/// \param pos: Zero-based offset of where to insert the card
+/// \param card Card to remove from the pile
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
 CardWidget& BuracoPile::remove (CardWidget& card) {
@@ -93,8 +92,8 @@ CardWidget& BuracoPile::remove (CardWidget& card) {
 
 //----------------------------------------------------------------------------
 /// Removes the passed card from the pile.
-/// \param card: Card to remove from the pile
-/// \param pos: Zero-based offset of where to insert the card
+/// \param card Card to remove from the pile
+/// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
 CardWidget& BuracoPile::remove (CardWidget& card, bool visible) {
@@ -105,8 +104,7 @@ CardWidget& BuracoPile::remove (CardWidget& card, bool visible) {
 
 //----------------------------------------------------------------------------
 /// Removes the passed card from the pile.
-/// \param card: Card to remove from the pile
-/// \param pos: Zero-based offset of where to insert the card
+/// \param pos Zero-based offset of card to remove
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
 CardWidget& BuracoPile::remove (unsigned int pos) {
@@ -118,8 +116,8 @@ CardWidget& BuracoPile::remove (unsigned int pos) {
 
 //----------------------------------------------------------------------------
 /// Removes the passed card from the pile.
-/// \param card: Card to remove from the pile
-/// \param pos: Zero-based offset of where to insert the card
+/// \param pos Zero-based offset of card to remove
+/// \param visible Flag if the card face should be shown
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
 CardWidget& BuracoPile::remove (unsigned int pos, bool visible) {
@@ -136,10 +134,10 @@ CardWidget& BuracoPile::remove (unsigned int pos, bool visible) {
 ///    card, if the pile has only one card)
 /// - Ordinary card: Check if the card "fits": Either the same number as the
 ///   other (first and last) card, or the same colour and the number in serie.
-/// \param card: Card to inspect.
-/// \param pos: Position of card to play, or -1U if can't be played
-/// \param move: Position to move joker to or -1U
-/// \returns bool: True, if card fits on pile
+/// \param card Card to inspect.
+/// \param pos Position of card to play, or -1U if can't be played
+/// \param move Position to move joker to or -1U
+/// \returns bool True, if card fits on pile
 /// \pre Coloured piles must be sorted strict ascending
 //----------------------------------------------------------------------------
 bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
@@ -312,7 +310,7 @@ void BuracoPile::analyzePile () {
 
 //----------------------------------------------------------------------------
 /// Returns the sum of the points of the cards of the pile.
-/// \returns unsigned int: Points of the cards
+/// \returns unsigned int Points of the cards
 //----------------------------------------------------------------------------
 unsigned int BuracoPile::getCardPoints () const {
    unsigned int sum (0);
