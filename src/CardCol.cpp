@@ -1224,7 +1224,7 @@ const char* CardgameCollection::getHelpfile () {
 /// Shows the about box for the program
 //-----------------------------------------------------------------------------
 void CardgameCollection::showAboutbox () {
-   std::string ver (_("Copyright (C) 2002 - 2007 Markus Schwab"
+   std::string ver (_("Copyright (C) 2002 - 2008 Markus Schwab"
                       "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
    ver.replace (ver.find ("%1"), 2, __DATE__);
    ver.replace (ver.find ("%2"), 2, __TIME__);
