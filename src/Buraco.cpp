@@ -65,12 +65,12 @@ unsigned int Buraco::CARDS2DEAL (11);
 
 //-----------------------------------------------------------------------------
 /// Constructor
-/// \param parent: Parent widget to display the game in
-/// \param statusbar: Status bar widget to display information about the game
-/// \param cardset: Cardset to use
-/// \param player: Vector of player
-/// \param posPlayer: Position of player for the server
-/// \param mxSerialize: Mutex to serialize messages from the server
+/// \param parent Parent widget to display the game in
+/// \param statusbar Status bar widget to display information about the game
+/// \param cardset Cardset to use
+/// \param player Vector of player
+/// \param posPlayer Position of player for the server
+/// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                 CardSet& cardset, const std::vector<Player*>& player,
@@ -161,7 +161,7 @@ Buraco::~Buraco () {
 
 //-----------------------------------------------------------------------------
 /// Removes a cerrado from the table
-/// \param team: Team to inspect
+/// \param team Team to inspect
 /// \remarks As every move can only make one cerrado; only the first is
 ///     removed.
 //-----------------------------------------------------------------------------
@@ -180,7 +180,7 @@ void Buraco::cleanCerrado (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Makes the move for the next player.
-/// \param player: Actual player
+/// \param player Actual player
 //-----------------------------------------------------------------------------
 void Buraco::makeMove (unsigned int player) {
    TRACE5 ("Buraco::makeMove (unsigned int) - Turn of player " << player);
@@ -209,7 +209,7 @@ void Buraco::makeMove (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Cleanup of piles after each turn
-/// \returns bool: True, if game has been ended
+/// \returns bool True, if game has been ended
 //-----------------------------------------------------------------------------
 bool Buraco::cleanup () {
    unsigned int player (currentPlayer ());
@@ -283,17 +283,16 @@ void Buraco::playCards () {
             broadcastMessage (msg.str ());
          }
 
-         playerPile.insertSorted (dumped.removeTopCard (), compByNumberWithJokers);
-         if (dumped.size ())
-            gStatus.pickUpPlayed = 1;
-
+	 playerPile.insertSorted (dumped.removeTopCard (), compByNumberWithJokers);
          if (!gStatus.startGame) {
+	    if (dumped.size ())
+	       gStatus.pickUpPlayed = 1;
+
             std::map<unsigned int, unsigned int> aPos;
             std::vector<unsigned int> aOrder;
             unsigned int nrs (playerPile.getSeries (dumpedCard, aPos, aOrder,
                                                     &cardDistance));
-            TRACE8 ("Buraco::playCards () - Sizes: "
-                    << nrs << "<->" << aPos.size ());
+            TRACE8 ("Buraco::playCards () - Sizes: " << nrs << "<->" << aPos.size ());
             Check3 ((nrs >= 3) || (aPos.size () >= 3));
 
             if (nrs > 7)
@@ -319,10 +318,10 @@ void Buraco::playCards () {
             Check3 ((pos2Play - pos1Play) >= 1);
 
 	    // Put taken card back for animation
-            ICardPile& newPile (makeNewPile (player & 1));
 	    dumped.setTopCard (playerPile.remove (dumpedCard));
 	    flipCards2Play (playerPile, pos1Play, pos2Play);
 
+            BuracoPile& newPile (makeNewPile (player & 1));
 	    CardPileWindows& win (animateCards2 (newPile, playerPile, pos1Play, pos2Play));
 	    win.sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
 	    win.addWindow (posTarget, dumped, dumped.size () - 1, dumped.size () - 1);
@@ -349,7 +348,7 @@ void Buraco::playCards () {
 
    unsigned int pos1Play, pos2Play;
    unsigned int target (executeMove (player, pos1Play, pos2Play));
-   TRACE1 ("Buraco::playCards () - " << pos1Play << '/' << pos2Play << "->" << std::hex << target << std::dec);
+   TRACE1 ("Buraco::playCards () - " << pos1Play << '/' << pos2Play << " -> " << std::hex << target << std::dec);
 
    flipCards2Play (playerPile, pos1Play, pos2Play);
    Check3 (pos1Play <= pos2Play); Check3 (pos2Play < hands[player].size ());
@@ -373,10 +372,10 @@ void Buraco::playCards () {
 //-----------------------------------------------------------------------------
 /// Executes a move for the passed player; only one move is made at every
 /// timer-iteration
-/// \param player: Actual player
-/// \param pos1Play: First card to play
-/// \param pos2Play: Last card to play
-/// \returns \c ID for target (32 Bit: Pile << 16 + Position)
+/// \param player Actual player
+/// \param pos1Play First card to play
+/// \param pos2Play Last card to play
+/// \returns int ID for target (32 Bit: Pile << 16 + Position)
 //-----------------------------------------------------------------------------
 int Buraco::executeMove (unsigned int player, unsigned int& pos1Play, unsigned int& pos2Play) {
    TRACE6 ("Buraco::executeMove (player) - " << player);
@@ -591,7 +590,7 @@ void Buraco::start () {
 
 //----------------------------------------------------------------------------
 /// Sets the startplayer; including showing it in the status bar
-/// \param player: Player to start the game
+/// \param player Player to start the game
 //----------------------------------------------------------------------------
 void Buraco::setStartPlayer () {
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
@@ -637,7 +636,7 @@ void Buraco::clean () {
 
 //-----------------------------------------------------------------------------
 /// Enables the cards the human can pick up.
-/// \returns bool: False
+/// \returns bool False
 //-----------------------------------------------------------------------------
 bool Buraco::enableHuman () {
    Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
@@ -722,7 +721,7 @@ void Buraco::disableHuman () {
 
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card in the hand
-/// \param iCard: Offset of card in hand
+/// \param iCard Offset of card in hand
 //-----------------------------------------------------------------------------
 void Buraco::cardSelected (unsigned int iCard) {
    TRACE5 ("Buraco::cardSelected (unsigned int) - Position " << iCard);
@@ -924,7 +923,7 @@ void Buraco::enableCard (unsigned int pos) {
 
 //-----------------------------------------------------------------------------
 /// Prepares the card for drag´n´drop
-/// \param iCard: Number of card in hand
+/// \param iCard Number of card in hand
 //-----------------------------------------------------------------------------
 void Buraco::registerHandDND (unsigned int iCard) {
    Check1 (iCard < hands[0].size ());
@@ -949,7 +948,7 @@ void Buraco::registerHandDND (unsigned int iCard) {
 
 //-----------------------------------------------------------------------------
 /// Stops the drag´n´drop abilities of the passed card
-/// \param card: Card to unregister of dnd
+/// \param card Card to unregister of dnd
 //-----------------------------------------------------------------------------
 void Buraco::unregisterHandDND (CardWidget& card) {
    TRACE9 ("Buraco::unregisterHandDND (CardWidget&) - Card: " << card
@@ -968,10 +967,10 @@ void Buraco::unregisterHandDND (CardWidget& card) {
 
 //-----------------------------------------------------------------------------
 /// Prepares the passed region of cards for drag´n´drop
-/// \param pile: Pile whose cards should be registered
-/// \param start: Number of first card to prepare for DND
-/// \param end: Number of last card to prepare for DND
-/// \pre: \c start < \c end; \c end <= Number of cards
+/// \param pile Pile whose cards should be registered
+/// \param start Number of first card to prepare for DND
+/// \param end Number of last card to prepare for DND
+/// \pre \c start < \c end; \c end <= Number of cards
 //-----------------------------------------------------------------------------
 void Buraco::registerTableDND (unsigned int pile, unsigned int start, unsigned int end) {
    TRACE9 ("Buraco::registerTableDND (unsigned int, unsigned int, unsigned int)"
@@ -991,8 +990,8 @@ void Buraco::registerTableDND (unsigned int pile, unsigned int start, unsigned i
 
 //-----------------------------------------------------------------------------
 /// Prepares the card for drag´n´drop
-/// \param card: Card to register
-/// \param nr: Number of card in pile
+/// \param card Card to register
+/// \param nr Number of card in pile
 //-----------------------------------------------------------------------------
 void Buraco::registerTableDND (CardWidget& card, unsigned int nr) {
    TRACE9 ("Buraco::registerTableDND (CardWidget&, unsigned int) - " << card
@@ -1006,7 +1005,7 @@ void Buraco::registerTableDND (CardWidget& card, unsigned int nr) {
 
 //-----------------------------------------------------------------------------
 /// Stops the drag´n´drop abilities of the passed card
-/// \param card: Card to de-register
+/// \param card Card to de-register
 //-----------------------------------------------------------------------------
 void Buraco::unregisterTableDND (CardWidget& card) {
    TRACE9 ("Buraco::unregisterTableDND (unsigned int) - Card: " << card
@@ -1023,12 +1022,12 @@ void Buraco::unregisterTableDND (CardWidget& card) {
 
 //-----------------------------------------------------------------------------
 /// Callback after dropping a card (within the hand)
-/// \param pContext: Context of the drag (contains things like source,
-/// \param target, action, ...)
-/// \param data: Describes the thing which was dropped
-/// \param info: Describes the type of data (should be 0)
-/// \param time: Timestamp of the drag
-/// \param card: Number of card where something was dropped at
+/// \param pContext Context of the drag (contains things like source,
+///    target, action, ...)
+/// \param data Describes the thing which was dropped
+/// \param info Describes the type of data (should be 0)
+/// \param time Timestamp of the drag
+/// \param card Number of card where something was dropped at
 /// \pre \c pContext not NULL; Expects \c info to be 0
 //-----------------------------------------------------------------------------
 void Buraco::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
@@ -1068,8 +1067,8 @@ void Buraco::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
 
 //-----------------------------------------------------------------------------
 /// Checks if the piles on the table are valid (have at least 3 cards)
-/// \param except: Pile which can be invalid
-/// \returns \c True, if the piles are OK
+/// \param except Pile which can be invalid
+/// \returns bool True, if the piles are OK
 //-----------------------------------------------------------------------------
 bool Buraco::doRegisterHand (unsigned int first, unsigned int last) {
    TRACE9 ("Buraco::doRegisterHand (unsigned int, unsigned int) - [" << first << '-' << last);
@@ -1083,8 +1082,8 @@ bool Buraco::doRegisterHand (unsigned int first, unsigned int last) {
 
 //-----------------------------------------------------------------------------
 /// Checks if the piles on the table are valid (have at least 3 cards)
-/// \param except: Pile which can be invalid
-/// \returns \c True, if the piles are OK
+/// \param except Pile which can be invalid
+/// \returns bool True, if the piles are OK
 //-----------------------------------------------------------------------------
 bool Buraco::humanPilesOK (unsigned int except) const {
    for (std::vector<BuracoPile*>::const_iterator p (tablePiles[0].begin ());
@@ -1101,12 +1100,12 @@ bool Buraco::humanPilesOK (unsigned int except) const {
 
 //-----------------------------------------------------------------------------
 /// Callback after dropping a card on the table
-/// \param pContext: Context of the drag (contains things like source,
-/// \param target, action, ...)
-/// \param data: Describes the thing which was dropped
-/// \param info: Describes the type of data (should be 0)
-/// \param time: Timestamp of the drag
-/// \param iCard: Combination of card and pile on which card was dropped
+/// \param pContext Context of the drag (contains things like source,
+///     target, action, ...)
+/// \param data Describes the thing which was dropped
+/// \param info Describes the type of data (should be 0)
+/// \param time Timestamp of the drag
+/// \param iCard Combination of card and pile on which card was dropped
 /// \pre \c pContext not NULL;
 //-----------------------------------------------------------------------------
 void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
@@ -1274,11 +1273,11 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 
 //-----------------------------------------------------------------------------
 /// Callback to query the data to drop
-/// \param pContext: Context of the drag (contains things like source,
-/// \param target, action, ...)
-/// \param data: Describes the thing which was dropped
-/// \param time: Timestamp of the drag
-/// \param cardPos: Position of card (either in hand or pile on table)
+/// \param pContext Context of the drag (contains things like source,
+///      target, action, ...)
+/// \param data Describes the thing which was dropped
+/// \param time Timestamp of the drag
+/// \param cardPos Position of card (either in hand or pile on table)
 /// \pre \c pContext not NULL; Expects \c info to be 0
 //-----------------------------------------------------------------------------
 void Buraco::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
@@ -1293,8 +1292,8 @@ void Buraco::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
 
 //-----------------------------------------------------------------------------
 /// Prepares the passed region of cards for drag´n´drop
-/// \param start: Number of first card to prepare for DND
-/// \param end: Number of last card to prepare for DND
+/// \param start Number of first card to prepare for DND
+/// \param end Number of last card to prepare for DND
 /// \pre \c start < \c end; \c end <= Nr. ofcards
 //-----------------------------------------------------------------------------
 void Buraco::registerHandDND (unsigned int start, unsigned int end) {
@@ -1320,11 +1319,11 @@ void Buraco::registerHandDND (unsigned int start, unsigned int end) {
 //-----------------------------------------------------------------------------
 /// Checks, if the passed pile contains no cards except jokers or 2s. This is
 /// also true for empty piles.
-/// \param pile: Pile to inspect
-/// \returns \c True, if there are only jokers (or pile is empty)
+/// \param pile Pile to inspect
+/// \returns bool True, if there are only jokers (or pile is empty)
 //-----------------------------------------------------------------------------
 bool Buraco::containsOnlyJoker (const std::vector<CardWidget*>& pile) {
-   TRACE8 ("Buraco::containsOnlyJoker (const std::vector<CardWidget*>&");
+   TRACE8 ("Buraco::containsOnlyJoker (const std::vector<CardWidget*>&)");
 
    for (std::vector<CardWidget*>::const_iterator i (pile.begin ());
         i != pile.end (); ++i) {
@@ -1337,8 +1336,8 @@ bool Buraco::containsOnlyJoker (const std::vector<CardWidget*>& pile) {
 
 //-----------------------------------------------------------------------------
 /// Checks, if the passed pile does not contain neither jokers nor 2s.
-/// \param pile: Pile to inspect
-/// \returns \c True, if there are no jokers
+/// \param pile Pile to inspect
+/// \returns bool True, if there are no jokers
 //-----------------------------------------------------------------------------
 bool Buraco::containsNoJoker (const std::vector<CardWidget*>& pile) {
    for (std::vector<CardWidget*>::const_iterator i (pile.begin ());
@@ -1352,7 +1351,7 @@ bool Buraco::containsNoJoker (const std::vector<CardWidget*>& pile) {
 
 //-----------------------------------------------------------------------------
 /// Adds the buraco to the passed player.
-/// \param player: Player getting the reserve
+/// \param player Player getting the reserve
 //-----------------------------------------------------------------------------
 void Buraco::addBuraco (unsigned int player) {
    TRACE3 ("Buraco::addBuraco (unsigned int) - " << player);
@@ -1406,9 +1405,9 @@ void Buraco::addBuraco (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Hides the joker, which are displayed when picking up the buraco
-/// \param pile: Pile holding the jokers shown
-/// \param cJokers: Numer of jokers shown
-/// \returns bool: false
+/// \param pile Pile holding the jokers shown
+/// \param cJokers Numer of jokers shown
+/// \returns bool false
 //-----------------------------------------------------------------------------
 bool Buraco::hideJoker (ICardPile* pile, unsigned int cJokers) {
    TRACE9 ("Buraco::hideJoker (ICardPile*, unsigned int) - " << cJokers);
@@ -1425,11 +1424,11 @@ bool Buraco::hideJoker (ICardPile* pile, unsigned int cJokers) {
 
 //-----------------------------------------------------------------------------
 /// Makes a new pile for the passed team.
-/// \param team: Which team to make the pile for
-/// \returns BuracoPile&: New created pile
+/// \param team Which team to make the pile for
+/// \returns BuracoPile& New created pile
 //-----------------------------------------------------------------------------
 BuracoPile& Buraco::makeNewPile (unsigned int team) {
-   TRACE9 ("Buraco::makeNewPile (unsigned int) - New pile for team " << team + 1);
+   TRACE8 ("Buraco::makeNewPile (unsigned int) - New pile for team " << team + 1);
    Check1 (team < (sizeof (boxTeam) / sizeof (boxTeam[0])));
    Check1 (team < (sizeof (tablePiles) / sizeof (tablePiles[0])));
 
@@ -1443,10 +1442,10 @@ BuracoPile& Buraco::makeNewPile (unsigned int team) {
 
 //-----------------------------------------------------------------------------
 /// Checks if the passed card can be put on one of the existing piles
-/// \param player: Player to inspect
-/// \param iCard: Card to inspect
-/// \returns Value describing the pile (and the offset of the card) to play
-///     to; -1 if none
+/// \param player Player to inspect
+/// \param iCard Card to inspect
+/// \returns unsigned int Value describing the pile (and the offset of the card)
+///     to play to; -1 if none
 /// \remarks This method moves the card
 //-----------------------------------------------------------------------------
 unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCard) {
@@ -1526,8 +1525,8 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
 
 //-----------------------------------------------------------------------------
 /// Checks if the passed card is a joker
-/// \param card: Card to inspect
-/// \returns \c True if card is a joker
+/// \param card Card to inspect
+/// \returns bool True if card is a joker
 //-----------------------------------------------------------------------------
 bool Buraco::isJoker (const CardWidget& card) {
    return ((card.number () == CardWidget::TWO)
@@ -1536,8 +1535,8 @@ bool Buraco::isJoker (const CardWidget& card) {
 
 //-----------------------------------------------------------------------------
 /// Removes a cerrado (a pile with 7 cards) from the table
-/// \param player: Player causing the remove of the pile
-/// \param pile: Pile holding the cerrado
+/// \param player Player causing the remove of the pile
+/// \param pile Pile holding the cerrado
 //-----------------------------------------------------------------------------
 void Buraco::removeCerrado (unsigned int player, BuracoPile& pile) {
    unsigned int team (player & 1);
@@ -1574,8 +1573,8 @@ void Buraco::updateInfo () {
 
 //-----------------------------------------------------------------------------
 /// Checks if the passed card fits on the passed staple
-/// \param iPile: Pile to inspect
-/// \param card: Card to check
+/// \param iPile Pile to inspect
+/// \param card Card to check
 /// \returns Position where card can be played to, or -1 if card does not fit
 //-----------------------------------------------------------------------------
 int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
@@ -1637,9 +1636,9 @@ int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
 
 //----------------------------------------------------------------------------
 /// Sends a move-message to the connected machines
-/// \param pile: Number of pile involved
-/// \param from: Card to move
-/// \param to: Position card to move to
+/// \param pile Number of pile involved
+/// \param from Card to move
+/// \param to Position card to move to
 //----------------------------------------------------------------------------
 void Buraco::sendMoveCard (unsigned int pile, unsigned int from, unsigned int to) const {
    TRACE8 ("Buraco::sendMoveCard (3x unsigned int) - Pile " << pile << ' '
@@ -1658,7 +1657,7 @@ void Buraco::sendMoveCard (unsigned int pile, unsigned int from, unsigned int to
 
 //-----------------------------------------------------------------------------
 /// Shows or hides the cards of the computer player
-/// \param open: Flag if cards should be shown or hidden
+/// \param open Flag if cards should be shown or hidden
 //-----------------------------------------------------------------------------
 void Buraco::playOpen (bool open) {
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
@@ -1669,7 +1668,7 @@ void Buraco::playOpen (bool open) {
 
 //-----------------------------------------------------------------------------
 /// Creates the combined team names from the players
-/// \param names: Array to receive groups
+/// \param names Array to receive groups
 //-----------------------------------------------------------------------------
 void Buraco::makeTeamNames (std::vector<Player*>& names) const {
    Check1 (actPlayers.size () >= NUM_PLAYERS);
@@ -1766,8 +1765,8 @@ void Buraco::endGame () {
 
 //-----------------------------------------------------------------------------
 /// Returns the value of the passed card
-/// \param card: Card to inspect
-/// \returns \c Value of the card
+/// \param card Card to inspect
+/// \returns unsigned int Value of the card
 //-----------------------------------------------------------------------------
 unsigned int Buraco::getPoints (const CardWidget& card) {
    // Card:                 2   3  4  5  6  7  8   9   10  J   Q   K   A   Joker
@@ -1779,8 +1778,8 @@ unsigned int Buraco::getPoints (const CardWidget& card) {
 //-----------------------------------------------------------------------------
 /// Checks if the player can get rid of all cards in his hand except of the
 /// jokers
-/// \param player: Player whose cards should be inspected
-/// \returns \c True: if all cards can be played
+/// \param player Player whose cards should be inspected
+/// \returns bool True: if all cards can be played
 /// \remarks This method does not check for triplets anymore!
 //-----------------------------------------------------------------------------
 bool Buraco::canGetRidOfCards (unsigned int player) const {
@@ -1810,7 +1809,7 @@ bool Buraco::canGetRidOfCards (unsigned int player) const {
       }
    }
 
-   TRACE9 ("Buraco::canGetRidOfCards (unsigned int) -  " << used.count ()
+   TRACE8 ("Buraco::canGetRidOfCards (unsigned int) -  " << used.count ()
            << '/' << hands[player].size () << "; " << cJokers << " Joker for "
            << piles << " piles -> "
            << ((((used.count () + 1) >= hands[player].size ())
@@ -1826,10 +1825,10 @@ bool Buraco::canGetRidOfCards (unsigned int player) const {
 ///   - The team still has the reserve
 ///   - The player can close a pile, with the cards to play
 ///   - After the turn there are no unfinished mono-piles
-/// \param player: Player to analyse
-/// \param cards: Number of cards player wants to play
-/// \param pile: Pile player is going to play its card to (or -1 for a new one)
-/// \returns \c True, if card can be played
+/// \param player Player to analyse
+/// \param cards Number of cards player wants to play
+/// \param pile Pile player is going to play its card to (or -1 for a new one)
+/// \returns bool True, if card can be played
 //-----------------------------------------------------------------------------
 bool Buraco::canPlayCards (unsigned int player, unsigned int cards,
                            unsigned int pile) const {
@@ -1866,11 +1865,11 @@ bool Buraco::canPlayCards (unsigned int player, unsigned int cards,
 
 //----------------------------------------------------------------------------
 /// Checks if the player can with his two cards left close the passed pile
-/// \param player: Player to inspect
-/// \param pile: Pile to analyse
-/// \return bool: True, if the remaining cards of the player can make a
+/// \param player Player to inspect
+/// \param pile Pile to analyse
+/// \return bool True, if the remaining cards of the player can make a
 ///        cerrado for this pile
-/// \remarks: - The player must have only two cards; the pile 5
+/// \remarks - The player must have only two cards; the pile 5
 //----------------------------------------------------------------------------
 bool Buraco::canClosePile (unsigned int player, unsigned int pile) const {
    TRACE7 ("Buraco::canClosepile (2x unsigned int) - Player "
@@ -1917,10 +1916,10 @@ bool Buraco::canClosePile (unsigned int player, unsigned int pile) const {
 
 //-----------------------------------------------------------------------------
 /// Checks if the passed pile contains a pair matching the passed card
-/// \param pile: Pile to inspect
-/// \param card: Card where to find a pair to
-/// \param withJokers: Flag, if jokers should be inspected
-/// \returns \c True, if the pile contains a matching pair
+/// \param pile Pile to inspect
+/// \param card Card where to find a pair to
+/// \param withJokers Flag, if jokers should be inspected
+/// \returns bool True, if the pile contains a matching pair
 //-----------------------------------------------------------------------------
 bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
                                  bool withJokers) {
@@ -1941,9 +1940,9 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
 
 //-----------------------------------------------------------------------------
 /// Checks if the passed pile contains a pair matching the passed card
-/// \param pile: Pile to inspect
-/// \param exclude: Card to not inspect (can be NULL)
-/// \returns \c True, if the pile contains a matching pair
+/// \param pile Pile to inspect
+/// \param exclude Card to not inspect (can be NULL)
+/// \returns bool True, if the pile contains a matching pair
 //-----------------------------------------------------------------------------
 bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget* exclude) {
    TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&, const CardWidget*)");
@@ -1960,9 +1959,9 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget* exclud
 //-----------------------------------------------------------------------------
 /// Compares the cards in the pile with regard of the number and with special
 /// consideration of joker cards
-/// \param a: Card to compare
-/// \param b: Card to compare
-/// \returns \c bool: True, if a < b
+/// \param a Card to compare
+/// \param b Card to compare
+/// \returns bool True, if a < b
 //-----------------------------------------------------------------------------
 bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
    // Card:                 2   3  4  5  6  7  8  9  10 J  Q   K  A   Joker
@@ -1976,9 +1975,9 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
 //-----------------------------------------------------------------------------
 /// Compares the cards in the pile with regard of the colour and with special
 /// consideration of joker cards
-/// \param a: Card to compare
-/// \param b: Card to compare
-/// \returns \c bool: True, if a < b
+/// \param a Card to compare
+/// \param b Card to compare
+/// \returns bool True, if a < b
 //-----------------------------------------------------------------------------
 bool Buraco::compByColourWithJokers (const CardWidget* a, const CardWidget* b) {
    switch (a->number ()) {
@@ -2000,9 +1999,9 @@ bool Buraco::compByColourWithJokers (const CardWidget* a, const CardWidget* b) {
 //----------------------------------------------------------------------------
 /// Returns the distance between two cards. The ace also counts as one (if the
 /// other card is a 3 or a 4) and 2's are equal to jokers.
-/// \param a: Card to compare
-/// \param b: Card to compare
-/// \returns \c int: Distance of the two passed cards (a - b)
+/// \param a Card to compare
+/// \param b Card to compare
+/// \returns int Distance of the two passed cards (a - b)
 //----------------------------------------------------------------------------
 int Buraco::cardDistance (const CardWidget& a, const CardWidget& b) {
    return cardDistance (a, b, true);
@@ -2011,10 +2010,10 @@ int Buraco::cardDistance (const CardWidget& a, const CardWidget& b) {
 //----------------------------------------------------------------------------
 /// Returns the distance between two cards. The ace also counts as one (if the
 /// other card is a 3 or a 4) and 2's are equal to jokers.
-/// \param a: Card to compare
-/// \param b: Card to compare
-/// \param aceIsOne: Flag, if aces should (also) be treated as one
-/// \returns \c int: Distance of the two passed cards (a - b)
+/// \param a Card to compare
+/// \param b Card to compare
+/// \param aceIsOne Flag, if aces should (also) be treated as one
+/// \returns int Distance of the two passed cards (a - b)
 //----------------------------------------------------------------------------
 int Buraco::cardDistance (const CardWidget& a, const CardWidget& b, bool aceIsOne) {
    TRACE9 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
@@ -2038,14 +2037,14 @@ int Buraco::cardDistance (const CardWidget& a, const CardWidget& b, bool aceIsOn
          return static_cast<int> (a.number ());
    }
 
-   TRACE8 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
+   TRACE9 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
            "Distance: " << a.number () - b.number ());
    return a.number () - b.number ();
 }
 
 //----------------------------------------------------------------------------
 /// Changes the names of the playing people
-/// \param newPlayer: Array holding the new player
+/// \param newPlayer Array holding the new player
 //----------------------------------------------------------------------------
 void Buraco::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
@@ -2062,9 +2061,9 @@ void Buraco::changeNames (const std::vector<Player*>& newPlayer) {
 
 //----------------------------------------------------------------------------
 /// Returns the passed pile of the player
-/// \param player: Number of player
-/// \param pile: ID of the pile to return
-/// \returns ICardPile*: Pointer to pile to use or NULL
+/// \param player Number of player
+/// \param pile ID of the pile to return
+/// \returns ICardPile* Pointer to pile to use or NULL
 //----------------------------------------------------------------------------
 ICardPile* Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
    if (((pile > 3) && (pile < 100)) || (player >= NUM_PLAYERS))
@@ -2093,10 +2092,10 @@ ICardPile* Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
 
 //----------------------------------------------------------------------------
 /// Handles the messages the server might send for the Buraco cardgame
-/// \param player: ID of the player sending the message
-/// \param message: Message received from the server
-/// \returns bool: True, if message has been processed completey
-/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
+/// \param player ID of the player sending the message
+/// \param message Message received from the server
+/// \returns bool True, if message has been processed completey
+/// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
 bool Buraco::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    TRACE1 ("Buraco::handleMessage (unsigned int player, const std::string&) - "
@@ -2144,9 +2143,9 @@ bool Buraco::handleMessage (unsigned int player, const std::string& message) thr
 
 //----------------------------------------------------------------------------
 /// Executes the remote move locally
-/// \param pile: Pile to move to/from
-/// \param dest: ID of target as send by the partner
-/// \returns bool: True, if the timer to execute the move should be set
+/// \param pile Pile to move to/from
+/// \param dest ID of target as send by the partner
+/// \returns bool True, if the timer to execute the move should be set
 /// \pre Expects \c pos1Play and \c pos2Play to be set to the positions to play
 /// \remarks
 ///    - \c dest == 0: Computerplayer playing its card
@@ -2154,7 +2153,7 @@ bool Buraco::handleMessage (unsigned int player, const std::string& message) thr
 ///    - \c dest == 2: Pick up from staple
 ///    - \c dest == 3: Pick up from dumped pile
 ///    - \c dest == 100 + pile/card: Played from hand to table pile \c pile
-/// \throw YGP::ParseError: In case of an invalid value
+/// \throw YGP::ParseError In case of an invalid value
 //----------------------------------------------------------------------------
 bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) throw (YGP::ParseError) {
    TRACE8 ("Buraco::executeRemoteMove (ICardPile&, unsigned int) - " << dest);
@@ -2201,7 +2200,7 @@ bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) throw (YGP::
 
 //----------------------------------------------------------------------------
 /// Returns the actual target, where flipCard2Play should position the cards to
-/// \returns unsigned int: ID of the target
+/// \returns unsigned int ID of the target
 //----------------------------------------------------------------------------
 unsigned int Buraco::getActTarget () const {
    return 0;
@@ -2210,7 +2209,7 @@ unsigned int Buraco::getActTarget () const {
 
 //-----------------------------------------------------------------------------
 /// Adds buraco-specific menus
-/// \param mgrUI: UIManager to add to
+/// \param mgrUI UIManager to add to
 //-----------------------------------------------------------------------------
 void Buraco::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    TRACE1 ("Buraco::addMenus (Glib::RefPtr<Gtk::UIManager>)");
@@ -2248,7 +2247,7 @@ void Buraco::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 
 //-----------------------------------------------------------------------------
 /// Removes the buraco-specific menus
-/// \param mgrUI: UIManager to remove from
+/// \param mgrUI UIManager to remove from
 //-----------------------------------------------------------------------------
 void Buraco::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
@@ -2270,7 +2269,7 @@ void Buraco::undoMove () {
 
 //-----------------------------------------------------------------------------
 /// Undoes the last move
-/// \param player: Player whose turn to undo
+/// \param player Player whose turn to undo
 //-----------------------------------------------------------------------------
 void Buraco::undoLast (unsigned int player) {
    TRACE4 ("Buraco::undoLast (unsigned int) - " << player << ": " << undo.destPile
