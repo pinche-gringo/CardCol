@@ -50,18 +50,18 @@ class CardImages {
    void loadBack (const std::string& file) throw (YGP::FileError);
 
    /// Loads the cards (faces and background)
-   /// \param path: Path to files
-   /// \param back: File containing background picture
-   /// \throw YGP::FileError: An describing text in case of error
+   /// \param path Path to files
+   /// \param back File containing background picture
+   /// \throw YGP::FileError An describing text in case of error
    void load (const std::string& path, const std::string& back) throw (YGP::FileError) {
       loadDecks (path);
       loadBack (back);
    }
    /// Loads the cards (faces and background)
-   /// \param cards: Number of cards expected
-   /// \param path: Path to files
-   /// \param back: File containing background picture
-   /// \throw YGP::FileError: An describing text in case of error
+   /// \param cards Number of cards expected
+   /// \param path Path to files
+   /// \param back File containing background picture
+   /// \throw YGP::FileError An describing text in case of error
    void load (unsigned int cards, const std::string& path, const std::string& back) throw (YGP::FileError) {
       cards_.reserve (cards);
       load (path, back); }

@@ -27,7 +27,7 @@
 class CardValue : public YGP::MetaEnum {
  public:
    /// Creates a meta-enum of type CardValue
-   /// \returns const CardValue&: Instance of CardValue
+   /// \returns const CardValue& Instance of CardValue
    static const CardValue& get () {
       if (!instance)
 	 instance = new CardValue;

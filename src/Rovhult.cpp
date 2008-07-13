@@ -66,12 +66,12 @@ CardWidget::NUMBERS Rovhult::cardReverse (CardWidget::SEVEN);
 
 //-----------------------------------------------------------------------------
 /// Defaultconstructor; all widgets are created
-/// \param parent: Parent widget (box) to display the game in
-/// \param statusbar: Status bar widget to display information about the game
-/// \param cardset: Cardset to use
-/// \param names: Vector of players
-/// \param posPlayer: Position of player for the server
-/// \param mxSerialize: Mutex to serialize messages from the server
+/// \param parent Parent widget (box) to display the game in
+/// \param statusbar Status bar widget to display information about the game
+/// \param cardset Cardset to use
+/// \param names Vector of players
+/// \param posPlayer Position of player for the server
+/// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                   CardSet& cardset, const std::vector<Player*>& player,
@@ -166,7 +166,7 @@ void Rovhult::start () {
 
 //-----------------------------------------------------------------------------
 /// Callback after finishing card-exchange
-/// \param iCard: Offset of card in hand
+/// \param iCard Offset of card in hand
 //-----------------------------------------------------------------------------
 void Rovhult::finishedExchange (unsigned int iCard) {
    unregisterDND ();
@@ -198,8 +198,8 @@ void Rovhult::finishedExchange (unsigned int iCard) {
 
 //-----------------------------------------------------------------------------
 /// Values a card; this ranges from 3 to 9, J, K, A, 2, 10
-/// \param card: Card to value
-/// \returns unsigned int: Value representing the card
+/// \param card Card to value
+/// \returns unsigned int Value representing the card
 //-----------------------------------------------------------------------------
 unsigned int Rovhult::getCardValue (const CardWidget& card) {
    return ((card.number () == CardWidget::TWO)
@@ -209,8 +209,8 @@ unsigned int Rovhult::getCardValue (const CardWidget& card) {
 
 //-----------------------------------------------------------------------------
 /// Compares two cards according the rules of Rovhult
-/// \param lhs, rhs: Cards to compare
-/// \returns \c int: >0, if number of lhs is smaller; 0 if equal or >0 if
+/// \param lhs, rhs Cards to compare
+/// \returns int >0, if number of lhs is smaller; 0 if equal or >0 if
 ///     bigger
 //-----------------------------------------------------------------------------
 int Rovhult::compareCards (const CardWidget& lhs, const CardWidget& rhs) {
@@ -219,7 +219,7 @@ int Rovhult::compareCards (const CardWidget& lhs, const CardWidget& rhs) {
 
 //-----------------------------------------------------------------------------
 /// Exchanges the cards of the computer-players
-/// \param player: Not really a void*, but actually the (next computer)player
+/// \param player Not really a void*, but actually the (next computer)player
 //-----------------------------------------------------------------------------
 void Rovhult::exchangeAutoplayerCards () {
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT)
@@ -266,7 +266,7 @@ void Rovhult::exchangeAutoplayerCards () {
 
 //----------------------------------------------------------------------------
 /// Broadcasts the exchanged cards to the clients
-/// \param player: Player whose cards to send
+/// \param player Player whose cards to send
 //----------------------------------------------------------------------------
 void Rovhult::sendExchangedCards (unsigned int player) {
    // Send starting positions to the clients
@@ -290,7 +290,7 @@ void Rovhult::sendExchangedCards (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Sorts the cards on the reserve piles
-/// \param player: Player whose cards should be sorted
+/// \param player Player whose cards should be sorted
 //-----------------------------------------------------------------------------
 void Rovhult::sortReserve (unsigned int player) {
    // Sort cards on piles
@@ -312,7 +312,7 @@ void Rovhult::sortReserve (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Enables the cards of the human player
-/// \param player: Player to enable
+/// \param player Player to enable
 //-----------------------------------------------------------------------------
 bool Rovhult::enableHuman () {
    Check3 (activeCards.empty ());
@@ -349,7 +349,7 @@ bool Rovhult::enableHuman () {
 
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card on the table
-/// \param pile: Offset of selected pile
+/// \param pile Offset of selected pile
 //-----------------------------------------------------------------------------
 void Rovhult::pileSelected (unsigned int pile) {
    TRACE1 ("Rovhult::pileSelected (unsinged int) - Pile " << pile);
@@ -413,9 +413,9 @@ void Rovhult::pileSelected (unsigned int pile) {
 
 //-----------------------------------------------------------------------------
 /// Executes the move from a pile: Moves the cards and enables next
-/// \param player: ID of player
-/// \param pile: Offset of selected pile
-/// \returns \c bool: false
+/// \param player ID of player
+/// \param pile Offset of selected pile
+/// \returns bool false
 //-----------------------------------------------------------------------------
 bool Rovhult::doPileSelected (unsigned int player, unsigned int pile) {
    TRACE1 ("Rovhult::doPileSelected (unsigned int, unsinged int) - "
@@ -453,9 +453,9 @@ bool Rovhult::doPileSelected (unsigned int player, unsigned int pile) {
 ///   - cardSkip (8): Skips the next player
 ///   - cardNuke (10): Clears the staple; the
 /// same player can continue with cards in hand
-/// \param nr: Card to check
-/// \param silent: Flag, if error should be displayed
-/// \returns \c bool: True, if card can be played
+/// \param nr Card to check
+/// \param silent Flag, if error should be displayed
+/// \returns bool True, if card can be played
 //-----------------------------------------------------------------------------
 bool Rovhult::cardValid (CardWidget::NUMBERS nr, bool silent) const {
    TRACE5 ("Rovhult::cardValid (CardWidget::NUMBERS, bool) const - Checking "
@@ -491,7 +491,7 @@ bool Rovhult::cardValid (CardWidget::NUMBERS nr, bool silent) const {
 
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card in hand
-/// \param pos: Offset of card in hand
+/// \param pos Offset of card in hand
 //-----------------------------------------------------------------------------
 void Rovhult::handSelected (unsigned int pos) {
    TRACE3 ("Rovhult::handSelected (unsinged int) - Checking card at " << pos);
@@ -524,9 +524,9 @@ void Rovhult::handSelected (unsigned int pos) {
 //-----------------------------------------------------------------------------
 /// Move card (and cards with equal number below) from player to played
 /// staple. The cards are replaced, if the staple contains cards
-/// \param player: ID of player who played the last card
-/// \param start: Offset of first card in hand to play
-/// \param end: Offset of last card in hand to play
+/// \param player ID of player who played the last card
+/// \param start Offset of first card in hand to play
+/// \param end Offset of last card in hand to play
 //-----------------------------------------------------------------------------
 void Rovhult::playCardsFromHand (unsigned int player, unsigned int start,
                                                 unsigned int end) {
@@ -540,10 +540,10 @@ void Rovhult::playCardsFromHand (unsigned int player, unsigned int start,
 
 //-----------------------------------------------------------------------------
 /// Unmarks any played card and moves the played cards to the passed player
-/// \param player: ID of actual player
-/// \param start: First card to play
-/// \param end: Last card to play
-/// \returns bool: False, to stop the time
+/// \param player ID of actual player
+/// \param start First card to play
+/// \param end Last card to play
+/// \returns bool False, to stop the time
 //-----------------------------------------------------------------------------
 bool Rovhult::unmarkAndMoveToLoser (unsigned int player, unsigned int start, unsigned int end) {
    TRACE8 ("Rovhult::unmarkAndMoveToLoser (3x unsigned int) - Player " << player
@@ -559,9 +559,9 @@ bool Rovhult::unmarkAndMoveToLoser (unsigned int player, unsigned int start, uns
 
 //-----------------------------------------------------------------------------
 /// Unmarks any played card and executes the move
-/// \param player: ID of actual player
-/// \param count: Number of cards to unmark
-/// \returns bool: False, to stop the time
+/// \param player ID of actual player
+/// \param count Number of cards to unmark
+/// \returns bool False, to stop the time
 //-----------------------------------------------------------------------------
 void Rovhult::unmarkAndExecuteMove (unsigned int player, unsigned int count) {
    TRACE8 ("Rovhult::unmarkAndExecuteMove (2x unsigned int) - Player " << player << "; Cards: " << count);
@@ -574,7 +574,7 @@ void Rovhult::unmarkAndExecuteMove (unsigned int player, unsigned int count) {
 //-----------------------------------------------------------------------------
 /// Executes the move -> Check consequences for next in round and calculate
 /// next player
-/// \param player: ID of player who played the last card
+/// \param player ID of player who played the last card
 //-----------------------------------------------------------------------------
 void Rovhult::executeMove (unsigned int player) {
    TRACE3 ("Rovhult::executeMove (unsigned int) - Player " << player);
@@ -629,7 +629,7 @@ void Rovhult::executeMove (unsigned int player) {
 //-----------------------------------------------------------------------------
 /// Callback after selection top card on played pile -> Moves all its card to
 /// the passed player
-/// \param player: ID of player picking up the cards
+/// \param player ID of player picking up the cards
 //-----------------------------------------------------------------------------
 void Rovhult::takeCards () {
    TRACE2 ("Rovhult::takeCards ()");
@@ -647,8 +647,8 @@ void Rovhult::takeCards () {
 
 //-----------------------------------------------------------------------------
 /// Fills up the passed pile til it contains the specified number of cards
-/// \param pile: Pile to fill up
-/// \param minCards: Minimal number of cards pile should hold
+/// \param pile Pile to fill up
+/// \param minCards Minimal number of cards pile should hold
 //-----------------------------------------------------------------------------
 void Rovhult::fillUpPile (ICardPile& pile, unsigned int minCards) {
    TRACE3 ("Rovhult::fillUpPile (ICardPile&, unsinged int) - "
@@ -660,7 +660,7 @@ void Rovhult::fillUpPile (ICardPile& pile, unsigned int minCards) {
 
 //-----------------------------------------------------------------------------
 /// Returns the number of equal cards from the played pile
-/// \returns \c unsigned int: Number of equal cards
+/// \returns unsigned int Number of equal cards
 //-----------------------------------------------------------------------------
 unsigned int Rovhult::numberOfEqualTopCards () const {
    TRACE8 ("Rovhult::numberOfEqualTopCards () const");
@@ -688,7 +688,7 @@ unsigned int Rovhult::numberOfEqualTopCards () const {
 
 //-----------------------------------------------------------------------------
 /// Clears the played staple if the last 4 cards are equal
-/// \returns \c bool: True, if 4 equal cards found
+/// \returns bool True, if 4 equal cards found
 //-----------------------------------------------------------------------------
 bool Rovhult::played4Equal () {
    TRACE8 ("Rovhult::played4Equal ()");
@@ -703,7 +703,7 @@ bool Rovhult::played4Equal () {
 
 //-----------------------------------------------------------------------------
 /// Method to move the cards of the actual round to the winner
-/// \param nrLoser: Nr. of player getting all played cards
+/// \param nrLoser Nr. of player getting all played cards
 //-----------------------------------------------------------------------------
 void Rovhult::movePlayedCardsToLoser (unsigned int nrLoser) {
    TRACE8 ("Rovhult::movePlayedCardsToLoser () - Player " << nrLoser << " gets "
@@ -723,7 +723,7 @@ void Rovhult::movePlayedCardsToLoser (unsigned int nrLoser) {
 //-----------------------------------------------------------------------------
 /// Callback after cards of played pile have been animated toh the hand of
 /// a player
-/// \param player: Player who took the cards
+/// \param player Player who took the cards
 //-----------------------------------------------------------------------------
 void Rovhult::cardsTaken (unsigned int player) {
    players[player].hand.sortByNumber ();
@@ -733,8 +733,8 @@ void Rovhult::cardsTaken (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Checks which player has still cards left
-/// \param actPlayer: ID of actual player
-/// \returns \c int: ID of player or -1 (if none can continue)
+/// \param actPlayer ID of actual player
+/// \returns int ID of player or -1 (if none can continue)
 //-----------------------------------------------------------------------------
 int Rovhult::nextAvailablePlayer (unsigned int actPlayer) const {
    // We assume (without checking), that the acutal player still has cards
@@ -777,10 +777,10 @@ void Rovhult::clean () {
 }
 
 //-----------------------------------------------------------------------------
-/// Prepares the card for drag´n´drop (starting from the table, ending on the
+/// Prepares the card for drag'n'drop (starting from the table, ending on the
 /// hand or ending on the table, starting from the hand)
-/// \param card: Card to prepare for drag´n´drop
-/// \param pile: Number of pile on reserve holding card
+/// \param card Card to prepare for drag'n'drop
+/// \param pile Number of pile on reserve holding card
 //-----------------------------------------------------------------------------
 void Rovhult::registerTableDND (CardWidget& card, unsigned int pile) {
    TRACE8 ("Rovhult::registerTableDND (CardWidget&, unsigned int) - "
@@ -802,10 +802,10 @@ void Rovhult::registerTableDND (CardWidget& card, unsigned int pile) {
 }
 
 //-----------------------------------------------------------------------------
-/// Prepares the card for drag´n´drop (starting from the hand ending on table
+/// Prepares the card for drag'n'drop (starting from the hand ending on table
 /// or ending on hand, starting from table)
-/// \param card: Card to prepare for drag´n´drop
-/// \param pile: Number of pile on reserve holding card
+/// \param card Card to prepare for drag'n'drop
+/// \param pile Number of pile on reserve holding card
 //-----------------------------------------------------------------------------
 void Rovhult::registerHandDND (CardWidget& card,  unsigned int iCard) {
    TRACE8 ("Rovhult::registerHandDND (CardWidget&, unsigned int) - " << card
@@ -837,8 +837,8 @@ void Rovhult::registerHandDND (CardWidget& card,  unsigned int iCard) {
 }
 
 //-----------------------------------------------------------------------------
-/// Stops the drag´n´drop abilities of the passed card
-/// \param card: Card to unregister of dnd
+/// Stops the drag'n'drop abilities of the passed card
+/// \param card Card to unregister of dnd
 //-----------------------------------------------------------------------------
 void Rovhult::unregisterDND (CardWidget& card) const {
    card.drag_dest_unset ();
@@ -846,8 +846,8 @@ void Rovhult::unregisterDND (CardWidget& card) const {
 }
 
 //-----------------------------------------------------------------------------
-/// Stops the drag´n´drop abilities of the cards of player 0
-/// \param card: Card to unregister of dnd
+/// Stops the drag'n'drop abilities of the cards of player 0
+/// \param card Card to unregister of dnd
 //-----------------------------------------------------------------------------
 void Rovhult::unregisterDND () {
    TRACE8 ("Rovhult::unregisterDND () - Status: " << gameStatus ());
@@ -938,13 +938,13 @@ void Rovhult::dealCards () {
 
 //-----------------------------------------------------------------------------
 /// Callback after dropping a card onto (cards on) table
-/// \param pContext: Context of the drag (contains things like source,
-/// \param target, action, ...)
-/// \param data: Describes the thing which was dropped
-/// \param info: Describes the type of data (should be 0)
-/// \param time: Timestamp of the drag
-/// \param pile: Number of pile
-/// \param Requieres : pContext not NULL; Expects info to be 0
+/// \param pContext Context of the drag (contains things like source,
+///    target, action, ...)
+/// \param data Describes the thing which was dropped
+/// \param info Describes the type of data (should be 0)
+/// \param time Timestamp of the drag
+/// \param pile Number of pile
+/// \pre pContext not NULL; Expects info to be 0
 //-----------------------------------------------------------------------------
 void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
                                   int, int, const Gtk::SelectionData& data,
@@ -970,9 +970,9 @@ void Rovhult::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 
 //-----------------------------------------------------------------------------
 /// Swaps a card in the hand with one (top-card) on the table
-/// \param pile: Offset of pile whose top-card should be swapped
-/// \param card: Offset of card in the hand which should be swapped
-/// \returns bool: Always false
+/// \param pile Offset of pile whose top-card should be swapped
+/// \param card Offset of card in the hand which should be swapped
+/// \returns bool Always false
 //-----------------------------------------------------------------------------
 bool Rovhult::doSwapCards (unsigned int pile, unsigned int card) {
    CardWidget& cardTable (players[0].reserve[pile].removeTopCard ());
@@ -999,13 +999,13 @@ bool Rovhult::doSwapCards (unsigned int pile, unsigned int card) {
 
 //-----------------------------------------------------------------------------
 /// Callback after dropping a card onto onto hand
-/// \param context: Context of the drag (contains things like source,
-/// \param target, action, ...)
-/// \param data: Describes the thing which was dropped
-/// \param info: Describes the type of data (should be 0)
-/// \param time: Timestamp of the drag
-/// \param card: Number of card
-/// \param Requieres : Expects info to be 0
+/// \param context Context of the drag (contains things like source,
+///    target, action, ...)
+/// \param data Describes the thing which was dropped
+/// \param info Describes the type of data (should be 0)
+/// \param time Timestamp of the drag
+/// \param card Number of card
+/// \pre Expects info to be 0
 //-----------------------------------------------------------------------------
 void Rovhult::cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
                                  int, int, const Gtk::SelectionData& data,
@@ -1032,12 +1032,12 @@ void Rovhult::cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
 
 //-----------------------------------------------------------------------------
 /// Callback to query the data to drop
-/// \param context: Context of the drag (contains things like source,
-/// \param target, action, ...)
-/// \param data: Describes the thing which was dropped
-/// \param time: Timestamp of the drag
-/// \param cardPos: Position of card (either in hand or pile on table)
-/// \param Requieres : pContext not NULL; Expects info to be 0
+/// \param context Context of the drag (contains things like source,
+///     target, action, ...)
+/// \param data Describes the thing which was dropped
+/// \param time Timestamp of the drag
+/// \param cardPos Position of card (either in hand or pile on table)
+/// \pre pContext not NULL; Expects info to be 0
 //-----------------------------------------------------------------------------
 void Rovhult::getDropData (const Glib::RefPtr<Gdk::DragContext>& context,
                            Gtk::SelectionData& data, guint info,
@@ -1051,9 +1051,9 @@ void Rovhult::getDropData (const Glib::RefPtr<Gdk::DragContext>& context,
 
 //-----------------------------------------------------------------------------
 /// Shows visually the card the non-human is about to play from a pile
-/// \param player: Player in question
-/// \param pile: Pile in question
-/// \param invalid: Flag, if the card is invalid (can't actually be played)
+/// \param player Player in question
+/// \param pile Pile in question
+/// \param invalid Flag, if the card is invalid (can't actually be played)
 //-----------------------------------------------------------------------------
 void Rovhult::showCardOfPile (unsigned int player, unsigned int pile, bool invalid) const {
    TRACE9 ("Rovhult::showCardOfPile (2x unsigned int) - " << player << "->" << pile);
@@ -1066,9 +1066,9 @@ void Rovhult::showCardOfPile (unsigned int player, unsigned int pile, bool inval
 
 //-----------------------------------------------------------------------------
 /// Shows the cards the user is about to play
-/// \param player: Player in turn
-/// \param start: First card to play
-/// \param end: Last card to play
+/// \param player Player in turn
+/// \param start First card to play
+/// \param end Last card to play
 //-----------------------------------------------------------------------------
 void Rovhult::showCards2Play (unsigned int player, unsigned int start, unsigned int end) {
    TRACE2 ("Rovhult::showCards2Play (3x unsigned int) - Player " << player << ": " << start << '/' << end);
@@ -1147,10 +1147,10 @@ void Rovhult::makeMove (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Checks if there are only special cards up to the passed position
-/// \param pile: Pile to inspect
-/// \param start: Lower position of cards to inspect
-/// \param end: Upper position of cards to inspect
-/// \returns \c bool: True, if there are only special cards
+/// \param pile Pile to inspect
+/// \param start Lower position of cards to inspect
+/// \param end Upper position of cards to inspect
+/// \returns bool True, if there are only special cards
 //-----------------------------------------------------------------------------
 bool Rovhult::existOnlySpecialCards (const ICardPile& pile, unsigned int start,
                                      unsigned int end) const {
@@ -1168,9 +1168,9 @@ bool Rovhult::existOnlySpecialCards (const ICardPile& pile, unsigned int start,
 
 //-----------------------------------------------------------------------------
 /// Finds the next card to play (for a computer controlled player)
-/// \param player: Player to inspect
-/// \param start: Position of (first) card to play
-/// \param end: Position of (last) card to play
+/// \param player Player to inspect
+/// \param start Position of (first) card to play
+/// \param end Position of (last) card to play
 //-----------------------------------------------------------------------------
 void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
                              unsigned int& end) const {
@@ -1353,10 +1353,10 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
 
 //-----------------------------------------------------------------------------
 /// Retrieves the minimal and maximal card of the player
-/// \param player: Player whose card to analyse
-/// \param min: Returns the minimal card
-/// \param max: Returns the maximal card
-/// \returns \c bool: true, if cardinfo is available
+/// \param player Player whose card to analyse
+/// \param min Returns the minimal card
+/// \param max Returns the maximal card
+/// \returns bool true, if cardinfo is available
 //-----------------------------------------------------------------------------
 bool Rovhult::getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
                              CardWidget::NUMBERS& max) const {
@@ -1394,7 +1394,7 @@ bool Rovhult::getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
 
 //-----------------------------------------------------------------------------
 /// Shows or hides the cards of the computer player
-/// \param open: Flag if cards should be shown or hidden
+/// \param open Flag if cards should be shown or hidden
 //-----------------------------------------------------------------------------
 void Rovhult::playOpen (bool open) {
    ICardPile::ShowOpt show (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
@@ -1420,7 +1420,7 @@ void Rovhult::end (bool restart) {
 
 //-----------------------------------------------------------------------------
 /// Changes the names of the playing people
-/// \param newPlayer: Array holding the new player
+/// \param newPlayer Array holding the new player
 //-----------------------------------------------------------------------------
 void Rovhult::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
@@ -1431,13 +1431,13 @@ void Rovhult::changeNames (const std::vector<Player*>& newPlayer) {
 
 //----------------------------------------------------------------------------
 /// Converts a pile-number to the actual pile
-/// \param player: Actual player
-/// \param pile: ID of the pile to return
+/// \param player Actual player
+/// \param pile ID of the pile to return
 ///    - 0: Play from hand
 ///    - 1 - 3: Play from pile 0 - 2
 ///    - 4: Pick up played pile
 ///    - 5 - 7: Tried to play from pile 0 - 2, but failed
-/// \returns ICardPile*: Pile corresponding to the passed number or NULL
+/// \returns ICardPile* Pile corresponding to the passed number or NULL
 //----------------------------------------------------------------------------
 ICardPile* Rovhult::getPileOfPlayer (unsigned int player, unsigned int pile) {
    if ((player >= NUM_PLAYERS) || (pile > 7))
@@ -1466,10 +1466,10 @@ ICardPile* Rovhult::getPileOfPlayer (unsigned int player, unsigned int pile) {
 
 //----------------------------------------------------------------------------
 /// Handles the messages the server might send for the Rovhult cardgame
-/// \param player: ID of player sending the message
-/// \param message: Message received from the server
-/// \returns bool: True, if message has been completey processed
-/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
+/// \param player ID of player sending the message
+/// \param message Message received from the server
+/// \returns bool True, if message has been completey processed
+/// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
 bool Rovhult::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    if (gameStatus () >= EXCHANGE) {
@@ -1552,10 +1552,10 @@ bool Rovhult::handleMessage (unsigned int player, const std::string& message) th
 
 //----------------------------------------------------------------------------
 /// Executes the remote move locally
-/// \param pile: Pile to move to/from
-/// \param target: ID of target as send by the partner
-/// \returns bool: True, if the timer to execute the move should be set
-/// \throw YGP::ParseError: In case of an error
+/// \param pile Pile to move to/from
+/// \param target ID of target as send by the partner
+/// \returns bool True, if the timer to execute the move should be set
+/// \throw YGP::ParseError In case of an error
 //----------------------------------------------------------------------------
 bool Rovhult::executeRemoteMove (ICardPile& pile, unsigned int target) throw (YGP::ParseError) {
    if (target) {
@@ -1615,7 +1615,7 @@ void Rovhult::resizeCards () {
 
 //-----------------------------------------------------------------------------
 /// Checks if there are only computer-player with cards left
-/// \returns bool: True, if only computer-players are left
+/// \returns bool True, if only computer-players are left
 //-----------------------------------------------------------------------------
 bool Rovhult::noMoreHumans () const {
    int first (nextAvailablePlayer (0));
@@ -1630,8 +1630,8 @@ bool Rovhult::noMoreHumans () const {
 
 //-----------------------------------------------------------------------------
 /// Selects a random card for the passed player
-/// \param player: Player to analyse
-/// \returns unsigned int: Card to play
+/// \param player Player to analyse
+/// \returns unsigned int Card to play
 //-----------------------------------------------------------------------------
 unsigned int Rovhult::selectRandomCard (unsigned int player) {
    Check3 (players[player].hand.size ());

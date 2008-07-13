@@ -27,7 +27,7 @@
 class BuracoCards : public YGP::MetaEnum {
  public:
    /// Creates a meta-enum of type BuracoCards
-   /// \returns GamesTypes&: Instance of BuracoCards
+   /// \returns BuracoCards& Instance of BuracoCards
    static const BuracoCards& get () {
       if (!instance)
 	 instance = new BuracoCards;

@@ -72,12 +72,12 @@ static std::vector<Gtk::TargetEntry> dndTypeBoth;
 
 //-----------------------------------------------------------------------------
 /// Constructor
-/// \param parent: Parent widget to display the game in
-/// \param statusbar: Status bar widget to display information about the game
-/// \param cardset: Cardset to use
-/// \param player: Vector of player
-/// \param posPlayer: Position of player for the server
-/// \param mxSerialize: Mutex to serialize messages from the server
+/// \param parent Parent widget to display the game in
+/// \param statusbar Status bar widget to display information about the game
+/// \param cardset Cardset to use
+/// \param player Vector of player
+/// \param posPlayer Position of player for the server
+/// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 			  CardSet& cardset, const std::vector<Player*>& player,
@@ -206,7 +206,7 @@ void Machiavelli::clean () {
 
 //-----------------------------------------------------------------------------
 /// Shows or hides the cards of the computer player
-/// \param open: Flag if cards should be shown or hidden
+/// \param open Flag if cards should be shown or hidden
 //-----------------------------------------------------------------------------
 void Machiavelli::playOpen (bool open) {
     for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
@@ -217,7 +217,7 @@ void Machiavelli::playOpen (bool open) {
 
 //-----------------------------------------------------------------------------
 /// Makes the move for the next player.
-/// \param player: Actual player
+/// \param player Actual player
 /// \remarks This method expects the target pile to play in the target-member
 ///     and the positions to play in pos1Play and pos2Play
 //-----------------------------------------------------------------------------
@@ -308,7 +308,7 @@ void Machiavelli::disableHuman () {
 
 //----------------------------------------------------------------------------
 /// Changes the names of the playing people
-/// \param newPlayer: Array holding the new player
+/// \param newPlayer Array holding the new player
 //----------------------------------------------------------------------------
 void Machiavelli::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
@@ -321,7 +321,7 @@ void Machiavelli::changeNames (const std::vector<Player*>& newPlayer) {
 
 //----------------------------------------------------------------------------
 /// Sets the startplayer; including showing it in the status bar
-/// \param player: Player to start the game
+/// \param player Player to start the game
 //----------------------------------------------------------------------------
 void Machiavelli::setStartPlayer () {
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
@@ -401,8 +401,8 @@ void Machiavelli::doEndTurn () {
 
 //-----------------------------------------------------------------------------
 /// Prepares the passed region of cards for drag´n´drop
-/// \param start: Number of first card to prepare for DND
-/// \param end: Number of last card to prepare for DND
+/// \param start Number of first card to prepare for DND
+/// \param end Number of last card to prepare for DND
 /// \pre \c start < \c end; \c end <= Nr. ofcards
 //-----------------------------------------------------------------------------
 void Machiavelli::registerHandDND (unsigned int start, unsigned int end) {
@@ -419,7 +419,7 @@ void Machiavelli::registerHandDND (unsigned int start, unsigned int end) {
 
 //-----------------------------------------------------------------------------
 /// Prepares the card for drag´n´drop
-/// \param iCard: Number of card in hand
+/// \param iCard Number of card in hand
 //-----------------------------------------------------------------------------
 void Machiavelli::registerHandDND (unsigned int iCard) {
    Check1 (iCard < hands[0].size ());
@@ -444,7 +444,7 @@ void Machiavelli::registerHandDND (unsigned int iCard) {
 
 //-----------------------------------------------------------------------------
 /// Stops the drag´n´drop abilities of the passed card
-/// \param card: Card to unregister of dnd
+/// \param card Card to unregister of dnd
 //-----------------------------------------------------------------------------
 void Machiavelli::unregisterHandDND (CardWidget& card) {
    TRACE9 ("Machiavelli::unregisterHandDND (CardWidget&) - Card: " << card);
@@ -462,11 +462,11 @@ void Machiavelli::unregisterHandDND (CardWidget& card) {
 
 //-----------------------------------------------------------------------------
 /// Prepares the passed region of cards for drag´n´drop
-/// \param pile: Pile whose cards should be registered. This value is calcualated
+/// \param pile Pile whose cards should be registered. This value is calcualated
 ///     like (row << 4) + column
-/// \param start: Number of first card to prepare for DND
-/// \param end: Number of last card to prepare for DND
-/// \pre: \c start < \c end; \c end <= Number of cards
+/// \param start Number of first card to prepare for DND
+/// \param end Number of last card to prepare for DND
+/// \pre \c start < \c end; \c end <= Number of cards
 //-----------------------------------------------------------------------------
 void Machiavelli::registerTableDND (unsigned int pile, unsigned int start, unsigned int end) {
    TRACE9 ("Machiavelli::registerTableDND (unsigned int, unsigned int, unsigned int)"
@@ -487,8 +487,8 @@ void Machiavelli::registerTableDND (unsigned int pile, unsigned int start, unsig
 
 //-----------------------------------------------------------------------------
 /// Prepares the card for drag´n´drop
-/// \param card: Card to register
-/// \param nr: Number of card in pile
+/// \param card Card to register
+/// \param nr Number of card in pile
 //-----------------------------------------------------------------------------
 void Machiavelli::registerTableDND (CardWidget& card, unsigned int nr) {
    TRACE9 ("Machiavelli::registerTableDND (CardWidget&, unsigned int) - " << card
@@ -509,7 +509,7 @@ void Machiavelli::registerTableDND (CardWidget& card, unsigned int nr) {
 
 //-----------------------------------------------------------------------------
 /// Stops the drag´n´drop abilities of the passed card
-/// \param card: Card to de-register
+/// \param card Card to de-register
 //-----------------------------------------------------------------------------
 void Machiavelli::unregisterTableDND (CardWidget& card) {
    TRACE9 ("Machiavelli::unregisterTableDND (unsigned int) - Card: " << card
@@ -540,11 +540,11 @@ void Machiavelli::unregisterTableDND () {
 
 //-----------------------------------------------------------------------------
 /// Callback after dropping a card (within the hand)
-/// \param pContext: Context of the drag (contains things like source,
-/// \param target, action, ...)
-/// \param data: Describes the thing which was dropped
-/// \param time: Timestamp of the drag
-/// \param card: Number of card where something was dropped at
+/// \param pContext Context of the drag (contains things like source,
+///     target, action, ...)
+/// \param data Describes the thing which was dropped
+/// \param time Timestamp of the drag
+/// \param card Number of card where something was dropped at
 /// \pre \c pContext not NULL; Expects \c info to be 0
 //-----------------------------------------------------------------------------
 void Machiavelli::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
@@ -580,8 +580,8 @@ void Machiavelli::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
 
 //-----------------------------------------------------------------------------
 /// Checks if the piles on the table are valid (have at least 3 cards)
-/// \param except: Pile which can be invalid
-/// \returns \c True, if the piles are OK
+/// \param except Pile which can be invalid
+/// \returns bool True, if the piles are OK
 //-----------------------------------------------------------------------------
 bool Machiavelli::doRegisterHand (unsigned int first, unsigned int last) {
    TRACE9 ("Buraco::doRegisterHand (unsigned int, unsigned int) - [" << first << '-' << last);
@@ -595,11 +595,11 @@ bool Machiavelli::doRegisterHand (unsigned int first, unsigned int last) {
 
 //-----------------------------------------------------------------------------
 /// Callback to query the data to drop
-/// \param pContext: Context of the drag (contains things like source,
-/// \param target, action, ...)
-/// \param data: Describes the thing which was dropped
-/// \param time: Timestamp of the drag
-/// \param cardPos: Position of card (either in hand or pile on table)
+/// \param pContext Context of the drag (contains things like source,
+///   target, action, ...)
+/// \param data Describes the thing which was dropped
+/// \param time Timestamp of the drag
+/// \param cardPos Position of card (either in hand or pile on table)
 /// \pre \c pContext not NULL; Expects \c info to be 0
 //-----------------------------------------------------------------------------
 void Machiavelli::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
@@ -613,12 +613,12 @@ void Machiavelli::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
 
 //-----------------------------------------------------------------------------
 /// Callback after dropping a card on the table
-/// \param pContext: Context of the drag (contains things like source,
-/// \param target, action, ...)
-/// \param data: Describes the thing which was dropped
-/// \param info: Describes the type of data (should be HAND or TABLE)
-/// \param time: Timestamp of the drag
-/// \param iCard: Combination of card and pile on which card was dropped
+/// \param pContext Context of the drag (contains things like source,
+///   target, action, ...)
+/// \param data Describes the thing which was dropped
+/// \param info Describes the type of data (should be HAND or TABLE)
+/// \param time Timestamp of the drag
+/// \param iCard Combination of card and pile on which card was dropped
 /// \pre \c pContext not NULL;
 //-----------------------------------------------------------------------------
 void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
@@ -809,8 +809,8 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
 
 //----------------------------------------------------------------------------
 /// Finds the next player still having cards
-/// \param player: Player to find next player to
-/// \return unsigned int: Next player having cards
+/// \param player Player to find next player to
+/// \return unsigned int Next player having cards
 /// \remarks We assume (without really checking), that there's a next player.
 //----------------------------------------------------------------------------
 unsigned int Machiavelli::findNextPlayer (unsigned int player) const {
@@ -827,7 +827,7 @@ unsigned int Machiavelli::findNextPlayer (unsigned int player) const {
 
 //-----------------------------------------------------------------------------
 /// Makes a new pile.
-/// \returns MachiPile&: New created pile
+/// \returns MachiPile& New created pile
 //-----------------------------------------------------------------------------
 MachiPile& Machiavelli::makeNewPile () {
    TRACE8 ("Machiavelli::makeNewPile ()");
@@ -842,8 +842,8 @@ MachiPile& Machiavelli::makeNewPile () {
 
 //-----------------------------------------------------------------------------
 /// Makes a new pile in a certain position
-/// \param pos: Position of pile on the table
-/// \returns MachiPile&: New created pile
+/// \param pos Position of pile on the table
+/// \returns MachiPile& New created pile
 //-----------------------------------------------------------------------------
 MachiPile& Machiavelli::makeNewPile (unsigned int pos) {
    TRACE8 ("Machiavelli::makeNewPile ()");
@@ -859,8 +859,8 @@ MachiPile& Machiavelli::makeNewPile (unsigned int pos) {
 //-----------------------------------------------------------------------------
 /// Searches the passed pile, if it has a serie of 3 or more and animates them
 /// to a new created pile.
-/// \param playerPile: Pile to inspect
-/// \returns \c bool:
+/// \param playerPile Pile to inspect
+/// \returns bool true, if there's a serie
 /// \requires The pile must have at least 3 cards
 //-----------------------------------------------------------------------------
 bool Machiavelli::playSerie (ICardPile& playerPile) {
@@ -897,10 +897,10 @@ bool Machiavelli::playSerie (ICardPile& playerPile) {
 //-----------------------------------------------------------------------------
 /// Searches for cards to play and shows them in the hand of the actual player.
 /// Afterwards they are animated to the target pile.
-/// \param card: Card which might be added to a pile on the table
-/// \param offset: Offset of the card in the hand of the player
-/// \returns bool: True, if the card fits on the pile
-/// \remarks: Creates a new pile if needed
+/// \param card Card which might be added to a pile on the table
+/// \param offset Offset of the card in the hand of the player
+/// \returns bool True, if the card fits on the pile
+/// \remarks Creates a new pile if needed
 //-----------------------------------------------------------------------------
 bool Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int offset) {
    TRACE8 ("Machiavelli::cardFitsOnPile (const CardWidget&, unsigned int) - Adding card " << card << '?');
@@ -956,8 +956,8 @@ bool Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int offset) {
 //-----------------------------------------------------------------------------
 /// Searches for cards to play and shows them in the hand of the actual player.
 /// Then they are animated to the target pile.
-/// \param player: Player to inspect
-/// \returns bool: True, if no card can be played
+/// \param player Player to inspect
+/// \returns bool True, if no card can be played
 //-----------------------------------------------------------------------------
 bool Machiavelli::showCardsToPlay (unsigned int player) {
    TRACE2 ("Machiavelli::showCardsToPlay (unsigned int) - Player " << player);
@@ -1005,8 +1005,8 @@ bool Machiavelli::showCardsToPlay (unsigned int player) {
 /// Tries to play a card by rearranging the cards on the table. First it checks
 /// if two cards in the hand can be extended by a card on the table.
 /// If that fails it calls other methods to perform other checks.
-/// \param playerPile: Pile to inspect
-/// \returns bool: True, if table can be re-ordered
+/// \param playerPile Pile to inspect
+/// \returns bool True, if table can be re-ordered
 //-----------------------------------------------------------------------------
 bool Machiavelli::reorderTableToFit (ICardPile& playerPile) {
    for (ICardPile::const_iterator p (playerPile.begin ());
@@ -1088,8 +1088,8 @@ bool Machiavelli::reorderTableToFit (ICardPile& playerPile) {
 //-----------------------------------------------------------------------------
 /// Tries to play a card by moving one card from one pile on the table to
 /// another one, so that a card from the hand also fits.
-/// \param playerPile: Pile to inspect
-/// \returns bool: True, if cards to play have been found
+/// \param playerPile Pile to inspect
+/// \returns bool True, if cards to play have been found
 //-----------------------------------------------------------------------------
 bool Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
    unsigned int pos2Play;
@@ -1177,8 +1177,8 @@ bool Machiavelli::reorderTableToFit2 (ICardPile& playerPile) {
 
 //-----------------------------------------------------------------------------
 /// Tries to play a card by rearranging two piles on the table
-/// \param playerPile: Pile to inspect
-/// \returns bool: True, if table can be re-ordered
+/// \param playerPile Pile to inspect
+/// \returns bool True, if table can be re-ordered
 //-----------------------------------------------------------------------------
 bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
    unsigned int pos2Play;
@@ -1301,7 +1301,7 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
 //-----------------------------------------------------------------------------
 /// Tries to play a card indirectly by filling up a pile missing one card,
 /// so that in the next turn the card can be played
-/// \returns bool: True, if the table can be re-ordered
+/// \returns bool True, if the table can be re-ordered
 //-----------------------------------------------------------------------------
 bool Machiavelli::reorderTableToFit4 () {
    TRACE8 ("Machiavelli::reorderTableToFit4 ()");
@@ -1374,7 +1374,7 @@ bool Machiavelli::reorderTableToFit4 () {
 
 //----------------------------------------------------------------------------
 /// Deals a card to the passed player
-/// \param player: Player to give a card to
+/// \param player Player to give a card to
 //----------------------------------------------------------------------------
 void Machiavelli::dealCard (unsigned int player) {
    if (staple.size () == 1) {
@@ -1416,7 +1416,7 @@ void Machiavelli::checkPiles (YGP::StatusObject& obj) const {
 
 //----------------------------------------------------------------------------
 /// Undoes the passed number of moves (starting from the last)
-/// \param number: Number of moves to undo
+/// \param number Number of moves to undo
 //----------------------------------------------------------------------------
 void Machiavelli::undoMove (unsigned int number) {
    TRACE3 ("Machiavelli::undoMove (unsigned int) - Undo " << number);
@@ -1497,7 +1497,7 @@ void Machiavelli::undoMove (unsigned int number) {
 
 //----------------------------------------------------------------------------
 /// Removes the passed pile from the table and internally
-/// \param pile: Offset of pile to remove
+/// \param pile Offset of pile to remove
 //----------------------------------------------------------------------------
 void Machiavelli::removePile (unsigned int pile) {
    TRACE8 ("Machiavelli::removePile (unsigned int) - " << pile);
@@ -1513,7 +1513,7 @@ void Machiavelli::removePile (unsigned int pile) {
 
 //----------------------------------------------------------------------------
 /// Ends the game
-/// \param looser: Number of player having lost the game
+/// \param looser Number of player having lost the game
 //----------------------------------------------------------------------------
 void Machiavelli::endGame (unsigned int looser) {
    Check1 (looser < NUM_PLAYERS);
@@ -1527,9 +1527,9 @@ void Machiavelli::endGame (unsigned int looser) {
 
 //----------------------------------------------------------------------------
 /// Converts the pile-number to the actual pile
-/// \param player: Number of player
-/// \param pile: ID of the pile to return
-/// \returns ICardPile*: Pile corresponding to the passed number or NULL
+/// \param player Number of player
+/// \param pile ID of the pile to return
+/// \returns ICardPile* Pile corresponding to the passed number or NULL
 //----------------------------------------------------------------------------
 ICardPile* Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile) {
    if ((player >= NUM_PLAYERS) || ((pile >> 16) > tablePiles.size ()))
@@ -1545,10 +1545,10 @@ ICardPile* Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pile)
 
 //----------------------------------------------------------------------------
 /// Handles the messages the server might send for the Machiavelli cardgame
-/// \param player: ID of the player sending the message
-/// \param message: Message received from the server
-/// \returns bool: True, if message has been processed completey
-/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
+/// \param player ID of the player sending the message
+/// \param message Message received from the server
+/// \returns bool True, if message has been processed completey
+/// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
 bool Machiavelli::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    TRACE1 ("Machiavelli::handleMessage (unsigned int player, const std::string&) - "
@@ -1699,7 +1699,7 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
 
 //----------------------------------------------------------------------------
 /// Returns the actual target, where flipCard2Play should position the cards to
-/// \returns unsigned int: ID of the target
+/// \returns unsigned int ID of the target
 //----------------------------------------------------------------------------
 unsigned int Machiavelli::getActTarget () const {
    Check3 ((target >> 16) < tablePiles.size ());
@@ -1708,7 +1708,7 @@ unsigned int Machiavelli::getActTarget () const {
 
 //-----------------------------------------------------------------------------
 /// Adds machiavelli-specific menus
-/// \param mgrUI: UIManager to add to
+/// \param mgrUI UIManager to add to
 //-----------------------------------------------------------------------------
 void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
@@ -1753,7 +1753,7 @@ void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 
 //-----------------------------------------------------------------------------
 /// Removes the machiavelli-specific menus
-/// \param mgrUI: UIManager to remove from
+/// \param mgrUI UIManager to remove from
 //-----------------------------------------------------------------------------
 void Machiavelli::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
@@ -1790,9 +1790,9 @@ void Machiavelli::sortHandByColour () {
 /// "Bordering cards" are defined as either the cards which would fit
 /// on the edge for numbered piles or the missing colour in a coloured
 /// pile.
-/// \param iPile: Offset of pile to get the "bordering" cards from
-/// \param which: Defines for numbered pile at which end of the pile a card
-///               should  be added (0x1: left; 0x2: right; can be or-ed together)
+/// \param iPile Offset of pile to get the "bordering" cards from
+/// \param which Defines for numbered pile at which end of the pile a card
+///              should  be added (0x1: left; 0x2: right; can be or-ed together)
 //-----------------------------------------------------------------------------
 void Machiavelli::addBorderCards2Missing (unsigned int iPile, unsigned int which) {
    TRACE8 ("Machiavelli::addBorderCards2Missing (MachiPile&) - Pile: " << iPile << "; Which: " << which);
@@ -1854,7 +1854,7 @@ void Machiavelli::resizeCards () {
 //-----------------------------------------------------------------------------
 /// Callback after animating marked cards; all cards in the passed pile are
 /// unmarked
-/// \param pile: Pile to unmark
+/// \param pile Pile to unmark
 //-----------------------------------------------------------------------------
 void Machiavelli::unmarkAndEnd (MachiPile* pile) {
    Check1 (pile);

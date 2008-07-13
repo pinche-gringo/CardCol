@@ -135,8 +135,8 @@ void CardgameCollection::initCommunication () {
 
 //----------------------------------------------------------------------------
 /// Wait for messages
-/// \param player: ID of player (-1 for server; 0 .. n for clients)
-/// \returns \c void*: NULL
+/// \param player ID of player (-1 for server; 0 .. n for clients)
+/// \returns \c void* NULL
 //----------------------------------------------------------------------------
 void* CardgameCollection::waitForMessages (void* thread) {
    TRACE1 ("CardgameCollection::waitForMessage (void*)");
@@ -234,9 +234,9 @@ void* CardgameCollection::waitForMessages (void* thread) {
 ///      <pre>  <b>Msg</b>=<tt>message</tt>;<b>Sender</b>=<tt>who</tt>;
 ///   - Name messages (to change the name of the players):
 ///      <pre>  <b>ChgNames</b>=<tt>lines-with-names</tt>;
-/// \param player: Player sending the message
-/// \param msg: Received message to handle
-/// \returns int: True: Message was a supported message and has been processed;
+/// \param player Player sending the message
+/// \param msg Received message to handle
+/// \returns int True: Message was a supported message and has been processed;
 ///     -1 if Message was handled, but not fully processed yet; else false
 //----------------------------------------------------------------------------
 int CardgameCollection::handleGlobalMessage (unsigned int player,
@@ -386,9 +386,9 @@ int CardgameCollection::handleGlobalMessage (unsigned int player,
 
 //----------------------------------------------------------------------------
 /// Handles received messages
-/// \param player: Player sending the message (relative to server)
-/// \param msg: Received message to handle
-/// \returns bool: False
+/// \param player Player sending the message (relative to server)
+/// \param msg Received message to handle
+/// \returns bool False
 //----------------------------------------------------------------------------
 bool CardgameCollection::handleMessage (unsigned int player, const std::string msg) {
    TRACE5 ("CardgameCollection::handleMessage (unsigned int, char*) - " << msg);
@@ -441,7 +441,7 @@ void CardgameCollection::showChatDlg () {
 
 //-----------------------------------------------------------------------------
 /// Sends the passes message to the partners
-/// \param msg: Message to send
+/// \param msg Message to send
 //-----------------------------------------------------------------------------
 void CardgameCollection::sendMessage (const Glib::ustring& msg) {
    TRACE9 ("CardgameCollection::sendMessage (const Glib::ustring&) - " << msg);
@@ -460,8 +460,8 @@ void CardgameCollection::sendMessage (const Glib::ustring& msg) {
 
 //-----------------------------------------------------------------------------
 /// Broadcast a message to all partners
-/// \param msg: Message to broadcast
-/// \param exclude: Partner to exclude (Zero-based; -1: None)
+/// \param msg Message to broadcast
+/// \param exclude Partner to exclude (Zero-based; -1: None)
 //-----------------------------------------------------------------------------
 void CardgameCollection::broadcastMsg (const std::string& msg, unsigned int exclude) {
    TRACE9 ("CardgameCollection::broadcastMsg (const Glib::ustring&, unsigned int) - " << msg << "; Exclude: " << exclude);
@@ -484,7 +484,7 @@ void CardgameCollection::broadcastMsg (const std::string& msg, unsigned int excl
 
 //-----------------------------------------------------------------------------
 /// Starts the connections, if passed as options
-/// \param options: Options of program; containing host/port
+/// \param options Options of program; containing host/port
 //-----------------------------------------------------------------------------
 void CardgameCollection::autoConnect (const Options& options) {
    if (options.port.size ()) {

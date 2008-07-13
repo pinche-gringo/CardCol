@@ -42,7 +42,7 @@ class ChatDlg : public XGP::XDialog {
    virtual ~ChatDlg ();
 
    /// Creates the dialog
-   /// \param parent: Parent window
+   /// \param parent Parent window
    static ChatDlg* create (const Glib::RefPtr<Gdk::Window>& parent) {
       ChatDlg* dlg (new ChatDlg);
       dlg->get_window ()->set_transient_for (parent);

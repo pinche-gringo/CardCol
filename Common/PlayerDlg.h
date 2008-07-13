@@ -39,6 +39,10 @@ class PlayerDlg : public XGP::XDialog {
    PlayerDlg (std::vector<Player*>& player);
    virtual ~PlayerDlg ();
 
+   /// Creates a new player-dialogue; showing the passed players. Any
+   /// changes to the names are also reflected into the passed names
+   /// \param player Vector holding name of all players
+   /// \returns PlayerDlg* Pointer to the created dialoge
    static PlayerDlg* create (std::vector<Player*>& player) {
       PlayerDlg* dlg (new PlayerDlg (player));
       dlg->signal_response ().connect (mem_fun (*dlg, &PlayerDlg::free));
@@ -49,12 +53,14 @@ class PlayerDlg : public XGP::XDialog {
    sigc::signal<void> sigCommit;
 
  protected:
-   virtual void okEvent ();
+   virtual void okEvent ();                     ///< Callback after clicking OK
 
  private:
-   //Prohibited manager functions
+   /// \name Prohibited manager functions
+   //@{
    PlayerDlg (const PlayerDlg& other);
    const PlayerDlg& operator= (const PlayerDlg& other);
+   //@}
 
    Gtk::Table* pClient;
 

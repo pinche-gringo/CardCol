@@ -35,12 +35,16 @@ class Player : public sigc::trackable {
    Player (const Glib::ustring& playerName);
    virtual ~Player ();
 
+   /// Returns the name of the player
+   /// \returns Glib::ustring Name of the player
    const Glib::ustring& getName () const { return name; }
+   /// Sets/changes the name of this player
+   /// \param playerName New name of this player
    void setName (const Glib::ustring& playerName) { name = playerName; }
 
    /// Executes the turn of the player.
-   /// \param game: Game playing.
-   /// \returns bool: Flag, if the method should be called again in the next turn.
+   /// \param game Game playing.
+   /// \returns bool Flag, if the method should be called again in the next turn.
    virtual bool makeTurn (Game* game) = 0;
 
    virtual unsigned int timeout () const;

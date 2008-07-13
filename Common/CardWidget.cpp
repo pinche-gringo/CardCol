@@ -42,8 +42,8 @@ CardWidget::COLOURS CardWidget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMON
 
 //-----------------------------------------------------------------------------
 /// Constructor; creates a cardwidget with the passed index of a pixmap
-/// \param card: Number of image inside the set to display
-/// \param visible: Flag, if card should be displayed visible
+/// \param card Number of image inside the set to display
+/// \param visible Flag, if card should be displayed visible
 //-----------------------------------------------------------------------------
 CardWidget::CardWidget (const unsigned int card, bool visible)
    : isVisible (visible), nrCard (card) {
@@ -62,7 +62,7 @@ CardWidget::CardWidget (const unsigned int card, bool visible)
 
 //-----------------------------------------------------------------------------
 /// Copyconstructor; copies the image for the passed cardwidget
-/// \param other: Card to copy
+/// \param other Card to copy
 //-----------------------------------------------------------------------------
 CardWidget::CardWidget (const CardWidget& other)
    : isVisible (other.isVisible), nrCard (other.nrCard) {
@@ -97,7 +97,7 @@ void CardWidget::showFace (bool visible) {
 
 //-----------------------------------------------------------------------------
 /// Returns the number of the card as character
-/// \returns \c char: Character describing number of card
+/// \returns char Character describing number of card
 //-----------------------------------------------------------------------------
 char CardWidget::strNumber (CardWidget::NUMBERS nr) {
    static Glib::ustring specialCards (_("TJQKA"));
@@ -106,7 +106,7 @@ char CardWidget::strNumber (CardWidget::NUMBERS nr) {
 
 //-----------------------------------------------------------------------------
 /// Returns the colour of the card as character
-/// \returns \c char: Character describing colour of card
+/// \returns char Character describing colour of card
 //-----------------------------------------------------------------------------
 char CardWidget::strColour (CardWidget::COLOURS col) {
    // Letters describing the colours (clubs, spades, hearts, diamonds)
@@ -115,8 +115,7 @@ char CardWidget::strColour (CardWidget::COLOURS col) {
 }
 
 //-----------------------------------------------------------------------------
-/// Returns the colour of the card as character
-/// \returns \c char: Character describing colour of card
+/// Updates the widget; i.e. shows its image according to the status
 //-----------------------------------------------------------------------------
 void CardWidget::update () {
    TRACE3 ("CardWidget::update () - Card " << nrCard);
@@ -180,8 +179,8 @@ void CardWidget::unmark () {
 
 //-----------------------------------------------------------------------------
 /// Returns an empty card (without any image)
-/// \returns CardWidget*: Empty card
-/// \remarks Don't use; but if you do, you are responsible of deleting the it
+/// \returns CardWidget* Empty card
+/// \remarks Don't use; but if you do, you are responsible of deleting it
 //-----------------------------------------------------------------------------
 CardWidget* CardWidget::getEmpty () {
    return new CardWidget;

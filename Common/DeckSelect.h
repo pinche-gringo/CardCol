@@ -49,9 +49,9 @@ class DeckSelectDlg : public XGP::XDialog {
    virtual ~DeckSelectDlg ();
 
    /// Creates a DeckSelect-dialog on the heap
-   /// \param deck: Pre-selected deck
-   /// \param back: Pre-selected back
-   /// \returns DeckSelectDlg*: Created dialog
+   /// \param deck Pre-selected deck
+   /// \param back Pre-selected back
+   /// \returns DeckSelectDlg* Created dialog
    static DeckSelectDlg* create (const std::string& deck, const std::string& back) {
       DeckSelectDlg* dlg (new DeckSelectDlg (deck, back));
       dlg->signal_response ().connect (mem_fun (*dlg, &DeckSelectDlg::free));

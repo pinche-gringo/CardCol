@@ -63,9 +63,9 @@ CardSizes::~CardSizes () {
 
 //-----------------------------------------------------------------------------
 /// Returns the size (as enum-value) which corresponds to the passes values
-/// \param width: Width to check
-/// \param height: Height to check
-/// \returns SIZE: Corresponding size
+/// \param width Width to check
+/// \param height Height to check
+/// \returns CardSizes::SIZES Corresponding size
 //-----------------------------------------------------------------------------
 CardSizes::SIZES CardSizes::getSize (unsigned int width, unsigned int height) {
    width += height;
@@ -80,8 +80,8 @@ CardSizes::SIZES CardSizes::getSize (unsigned int width, unsigned int height) {
 
 //-----------------------------------------------------------------------------
 /// Returns the width corresponding to the passed size
-/// \param size: Size
-/// \returns unsigned int: Width corresponding to size
+/// \param size Size
+/// \returns unsigned int Width corresponding to size
 //-----------------------------------------------------------------------------
 unsigned int CardSizes::getWidth (SIZES size) {
    return WIDTH_TINY + size * 3;
@@ -89,8 +89,8 @@ unsigned int CardSizes::getWidth (SIZES size) {
 
 //-----------------------------------------------------------------------------
 /// Returns the height corresponding to the passed size
-/// \param size: Size
-/// \returns unsigned int: Height corresponding to size
+/// \param size Size
+/// \returns unsigned int Height corresponding to size
 //-----------------------------------------------------------------------------
 unsigned int CardSizes::getHeight (SIZES size) {
    return HEIGHT_TINY + (size << 2);

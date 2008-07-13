@@ -42,7 +42,7 @@
 
 //-----------------------------------------------------------------------------
 /// Constructor
-/// \param player: Vector containing the players
+/// \param player Vector containing the players
 //-----------------------------------------------------------------------------
 PlayerDlg::PlayerDlg (std::vector<Player*>& player)
    : XDialog (OKCANCEL), pClient (new Gtk::Table (player.size () + 1, 3)), values (player) {
@@ -95,8 +95,8 @@ void PlayerDlg::okEvent () {
 
 //-----------------------------------------------------------------------------
 /// Constructor
-/// \param label: Text for label
-/// \param attribute: Value for entryfield (to be updated)
+/// \param label Text for label
+/// \param attribute Value for entryfield (to be updated)
 //-----------------------------------------------------------------------------
 PlayerDlg::line::line (const Glib::ustring& labelVal, const Glib::ustring& attribute)
     : label (manage (new Gtk::Label (labelVal, 0, 0.5, true)))
@@ -116,8 +116,8 @@ PlayerDlg::line::~line () {
 
 //-----------------------------------------------------------------------------
 /// Attaches the values of the structure to the passed table
-/// \param table: Table where to attach the values to
-/// \param line: Line in which to attach
+/// \param table Table where to attach the values to
+/// \param line Line in which to attach
 //-----------------------------------------------------------------------------
 void PlayerDlg::line::attach (Gtk::Table& table, unsigned int line) {
    Check3 (label); Check3 (value);

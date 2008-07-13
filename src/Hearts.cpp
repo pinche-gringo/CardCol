@@ -59,12 +59,12 @@ unsigned int Hearts::ENDPOINTS (100);
 
 //-----------------------------------------------------------------------------
 /// Constructor
-/// \param parent: Parent widget to display the game in
-/// \param statusbar: Status bar widget to display information about the game
-/// \param cardset: Cardset to use
-/// \param player: Vector of player
-/// \param posPlayer: Position of player for the server
-/// \param mxSerialize: Mutex to serialize messages from the server
+/// \param parent Parent widget to display the game in
+/// \param statusbar Status bar widget to display information about the game
+/// \param cardset Cardset to use
+/// \param player Vector of player
+/// \param posPlayer Position of player for the server
+/// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
                 const std::vector<Player*>& player, unsigned int posPlayer,
@@ -139,7 +139,7 @@ Hearts::~Hearts () {
 
 //-----------------------------------------------------------------------------
 /// Makes the move for the next player.
-/// \param player: Actual player
+/// \param player Actual player
 //-----------------------------------------------------------------------------
 void Hearts::makeMove (unsigned int player) {
    TRACE5 ("Hearts::makeMove () - Turn of player " << player);
@@ -180,7 +180,7 @@ void Hearts::finishMove () {
 
 //-----------------------------------------------------------------------------
 /// Picks up the won cards
-/// \param player: Player taking won cards
+/// \param player Player taking won cards
 //-----------------------------------------------------------------------------
 void Hearts::takeWonCards (unsigned int player) {
    TRACE9 ("Hearts::takeWonCards (unsigned int) - " << player);
@@ -257,7 +257,7 @@ void Hearts::clean () {
 
 //-----------------------------------------------------------------------------
 /// Shows or hides the cards of the computer player
-/// \param open: Flag if cards should be shown or hidden
+/// \param open Flag if cards should be shown or hidden
 //-----------------------------------------------------------------------------
 void Hearts::playOpen (bool open) {
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
@@ -272,7 +272,7 @@ void Hearts::playOpen (bool open) {
 
 //-----------------------------------------------------------------------------
 /// Enables the cards of the human player
-/// \returns \c Flag, if time should be continued
+/// \returns Flag, if time should be continued
 /// \remarks Depending of the status of the game (PLAYING2) also the top card
 ///     of the played pile is enabled
 //-----------------------------------------------------------------------------
@@ -297,7 +297,7 @@ bool Hearts::enableHuman () {
 
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card in the played field
-/// \param iCard: Offset of card in hand
+/// \param iCard Offset of card in hand
 //-----------------------------------------------------------------------------
 void Hearts::takeCard (unsigned int iCard) {
    TRACE9 ("Hearts::takeCard (unsigned int) - Picking up card " << iCard);
@@ -320,7 +320,7 @@ void Hearts::cardTaken () {
 
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card in hand
-/// \param iCard: Offset of card in hand
+/// \param iCard Offset of card in hand
 //-----------------------------------------------------------------------------
 void Hearts::cardSelected (unsigned int iCard) {
    TRACE5 ("Hearts::cardSelected (unsigned int) - Position " << iCard);
@@ -445,8 +445,8 @@ unsigned int Hearts::check4Winner () const {
 
 //-----------------------------------------------------------------------------
 /// Checks if the round is at end and gives the cards to winner if so
-/// \param player: ID of player who did the last turn
-/// \returns \c Next player
+/// \param player ID of player who did the last turn
+/// \returns unsigned int Next player
 //-----------------------------------------------------------------------------
 unsigned int Hearts::calcNextPlayer (unsigned int player) {
    TRACE9 ("Hearts::calcNextPlayer (unsigned int) - " << player);
@@ -504,9 +504,9 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Moves the selected card to the played pile
-/// \param player: ID of player
-/// \param card: Offset of card to play
-/// \returns \c Status of moving; true: Card could be moved; false else
+/// \param player ID of player
+/// \param card Offset of card to play
+/// \returns bool Status of move; true: Card could be moved; false else
 //-----------------------------------------------------------------------------
 bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
    TRACE5 ("Hearts::moveSelectedCardToPlayed (unsigned int, unsigned int) - Player "
@@ -706,8 +706,8 @@ void Hearts::finishExchangeCards () {
 
 //-----------------------------------------------------------------------------
 /// Stores the last position of each colour in the pile
-/// \param pile: Pile to inspect
-/// \param result: Array of position of last cards of earch colour
+/// \param pile Pile to inspect
+/// \param result Array of position of last cards of earch colour
 //-----------------------------------------------------------------------------
 void Hearts::getPositionOfColours (ICardPile& pile, int result[4]) {
    memset (result, (char)-1, sizeof (int[4]));
@@ -723,9 +723,9 @@ void Hearts::getPositionOfColours (ICardPile& pile, int result[4]) {
 
 //-----------------------------------------------------------------------------
 /// Calculate the number of cards out of the positions
-/// \param aPositions: Array of positions
-/// \param colour: Colour whose number should be calculated
-/// \returns \c int: Number of cards for colour
+/// \param aPositions Array of positions
+/// \param colour Colour whose number should be calculated
+/// \returns unsigned int Number of cards for colour
 //-----------------------------------------------------------------------------
 unsigned int Hearts::numberOfCards (const int aPositions[4], CardWidget::COLOURS colour) {
    Check1 (colour <= CardWidget::HEARTS);
@@ -745,7 +745,7 @@ unsigned int Hearts::numberOfCards (const int aPositions[4], CardWidget::COLOURS
 
 //-----------------------------------------------------------------------------
 /// Searches for the card to play
-/// \param player: Player to inspect
+/// \param player Player to inspect
 //-----------------------------------------------------------------------------
 unsigned int Hearts::findPos2Play (unsigned int player) {
    Check1 (player < NUM_PLAYERS);
@@ -815,9 +815,9 @@ unsigned int Hearts::findPos2Play (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Find a lower card than the previously played ones
-/// \param pile: Pile from which to play
-/// \param aPositions: Array with positions of cards
-/// \returns \c Position of card to play
+/// \param pile Pile from which to play
+/// \param aPositions Array with positions of cards
+/// \returns unsigned int Position of card to play
 //-----------------------------------------------------------------------------
 unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[4]) const {
    TRACE9 ("Hearts::findLowerCard (const ICardPile&, const int[4]");
@@ -891,9 +891,9 @@ unsigned int Hearts::findLowerCard (const ICardPile& pile, const int aPositions[
 /// Find the worst card to play (defined as having the highest number of bad
 /// points (like the queen of spades with 13 points and every heart with 1
 /// point) or the highest numbered card).
-/// \param pile: Pile from which to play
-/// \param aPositions: Array with positions of cards
-/// \returns \c Position of card to play or -1
+/// \param pile Pile from which to play
+/// \param aPositions Array with positions of cards
+/// \returns unsigned int Position of card to play or -1
 //-----------------------------------------------------------------------------
 unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[4]) const {
    TRACE9 ("Hearts::findWorstCard (const ICardPile&, const int[4]");
@@ -954,8 +954,8 @@ unsigned int Hearts::findWorstCard (const ICardPile& pile, const int aPositions[
 //-----------------------------------------------------------------------------
 /// Counts the points in the passed pile. The queen of spades counts 13 points
 /// and every heart 1 point
-/// \param pile: Pile to inspect
-/// \returns \c unsigned int: Number of points
+/// \param pile Pile to inspect
+/// \returns unsigned int Number of points
 //-----------------------------------------------------------------------------
 unsigned int Hearts::pointsOfPile (const ICardPile& pile) {
    unsigned int points (0);
@@ -974,7 +974,7 @@ unsigned int Hearts::pointsOfPile (const ICardPile& pile) {
 
 //-----------------------------------------------------------------------------
 /// Changes the names of the playing people
-/// \param newPlayer: Array holding the new player
+/// \param newPlayer Array holding the new player
 //-----------------------------------------------------------------------------
 void Hearts::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
@@ -991,9 +991,9 @@ void Hearts::changeNames (const std::vector<Player*>& newPlayer) {
 
 //----------------------------------------------------------------------------
 /// Converts a pile-number to the actual pile
-/// \param newPlayer: Array holding the new player
-/// \param pile: ID of the pile to return
-/// \returns ICardPile*: Pointer to pile to use or NULL
+/// \param newPlayer Array holding the new player
+/// \param pile ID of the pile to return
+/// \returns ICardPile* Pointer to pile to use or NULL
 //----------------------------------------------------------------------------
 ICardPile* Hearts::getPileOfPlayer (unsigned int player, unsigned int pile) {
    return ((player >= NUM_PLAYERS) || pile) ? NULL : players[player].hand;
@@ -1001,10 +1001,10 @@ ICardPile* Hearts::getPileOfPlayer (unsigned int player, unsigned int pile) {
 
 //----------------------------------------------------------------------------
 /// Handles the messages the server might send for the hearts cardgame
-/// \param player: ID of player sending the message
-/// \param message: Message received from the server
-/// \returns bool: True, if message has been completey processed
-/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
+/// \param player ID of player sending the message
+/// \param message Message received from the server
+/// \returns bool True, if message has been completey processed
+/// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
 bool Hearts::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    if (gameStatus () == EXCHANGE) {
@@ -1066,8 +1066,8 @@ bool Hearts::handleMessage (unsigned int player, const std::string& message) thr
 
 //----------------------------------------------------------------------------
 /// Checks if the number of exchanged cards is equal to the passed value.
-/// \param cards: Number of cards to exchange
-/// \returns bool: True, if all cards have been exchanged
+/// \param cards Number of cards to exchange
+/// \returns bool True, if all cards have been exchanged
 /// \pre Game must be in EXCHANGE state
 //----------------------------------------------------------------------------
 bool Hearts::cardsExchanged (unsigned int cards) {
@@ -1082,7 +1082,7 @@ bool Hearts::cardsExchanged (unsigned int cards) {
 
 //-----------------------------------------------------------------------------
 /// Adds game-specific menus
-/// \param mgrUI: UIManager to add to
+/// \param mgrUI UIManager to add to
 //-----------------------------------------------------------------------------
 void Hearts::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
@@ -1110,7 +1110,7 @@ void Hearts::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 
 //-----------------------------------------------------------------------------
 /// Removes the game-specific menus
-/// \param mgrUI: UIManager to remove from
+/// \param mgrUI UIManager to remove from
 //-----------------------------------------------------------------------------
 void Hearts::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);

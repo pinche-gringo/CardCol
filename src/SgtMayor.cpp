@@ -60,12 +60,12 @@ unsigned int SgtMayor::ENDTRICKS (10);
 
 //-----------------------------------------------------------------------------
 /// Constructor
-/// \param parent: Parent widget to display the game in
-/// \param statusbar: Status bar widget to display information about the game
-/// \param cardset: Cardset to use
-/// \param player: Vector of player
-/// \param posPlayer: Position of player for the server
-/// \param mxSerialize: Mutex to serialize messages from the server
+/// \param parent Parent widget to display the game in
+/// \param statusbar Status bar widget to display information about the game
+/// \param cardset Cardset to use
+/// \param player Vector of player
+/// \param posPlayer Position of player for the server
+/// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
                     const std::vector<Player*>& player, unsigned int posPlayer,
@@ -127,7 +127,7 @@ SgtMayor::~SgtMayor () {
 
 //-----------------------------------------------------------------------------
 /// Makes the move for the next player.
-/// \param player: Actual player
+/// \param player Actual player
 //-----------------------------------------------------------------------------
 void SgtMayor::makeMove (unsigned int player) {
    if ((player + posServer) >= NUM_PLAYERS)
@@ -243,7 +243,7 @@ void SgtMayor::clean () {
 
 //-----------------------------------------------------------------------------
 /// Shows or hides the cards of the computer player
-/// \param open: Flag if cards should be shown or hidden
+/// \param open Flag if cards should be shown or hidden
 //-----------------------------------------------------------------------------
 void SgtMayor::playOpen (bool open) {
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
@@ -282,7 +282,7 @@ bool SgtMayor::enableHuman () {
 
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card in hand
-/// \param iCard: Offset of card in hand
+/// \param iCard Offset of card in hand
 //-----------------------------------------------------------------------------
 void SgtMayor::cardSelected (unsigned int iCard) {
    TRACE5 ("SgtMayor::cardSelected (unsigned int) - Position " << iCard);
@@ -332,7 +332,7 @@ void SgtMayor::cardSelected (unsigned int iCard) {
 
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card to select the special colour
-/// \param iCard: Offset of card in hand
+/// \param iCard Offset of card in hand
 //-----------------------------------------------------------------------------
 void SgtMayor::cardColourSelect (unsigned int iCard) {
    TRACE5 ("SgtMayor::cardColourSelect (unsigned int) - Position " << iCard);
@@ -346,7 +346,7 @@ void SgtMayor::cardColourSelect (unsigned int iCard) {
 
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card to exchange bad cards with good ones
-/// \param iCard: Offset of card in hand
+/// \param iCard Offset of card in hand
 //-----------------------------------------------------------------------------
 void SgtMayor::cardExchange (unsigned int iCard) {
    TRACE5 ("SgtMayor::cardExchange (unsigned int) - Position " << iCard);
@@ -363,7 +363,7 @@ void SgtMayor::cardExchange (unsigned int iCard) {
 
 //-----------------------------------------------------------------------------
 /// Selects the trump
-/// \returns bool: False, if a human must select the trump colour
+/// \returns bool False, if a human must select the trump colour
 //-----------------------------------------------------------------------------
 bool SgtMayor::selectTrump () {
    TRACE9 ("SgtMayor::selectTrump ()");
@@ -431,8 +431,8 @@ void SgtMayor::startPlaying () {
 
 //-----------------------------------------------------------------------------
 /// Searches for the card to play
-/// \param player: Player to inspect
-/// \return unsigned int: Card to play
+/// \param player Player to inspect
+/// \return unsigned int Card to play
 //-----------------------------------------------------------------------------
 unsigned int SgtMayor::findPos2Play (unsigned int player) {
    TRACE8 ("SgtMayor::findPos2Play (unsigned int) - Player " << player);
@@ -597,7 +597,7 @@ unsigned int SgtMayor::findPos2Play (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Changes the names of the playing people
-/// \param newPlayer: Array holding the new player
+/// \param newPlayer Array holding the new player
 //-----------------------------------------------------------------------------
 void SgtMayor::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
@@ -614,9 +614,9 @@ void SgtMayor::changeNames (const std::vector<Player*>& newPlayer) {
 
 //----------------------------------------------------------------------------
 /// Converts a pile-number to the actual pile
-/// \param player: Actual player
-/// \param pile: ID of the pile to return
-/// \returns ICardPile*: Pointer to pile to use or NULL
+/// \param player Actual player
+/// \param pile ID of the pile to return
+/// \returns ICardPile* Pointer to pile to use or NULL
 //----------------------------------------------------------------------------
 ICardPile* SgtMayor::getPileOfPlayer (unsigned int player, unsigned int pile) {
    TRACE9 ("SgtMayor::getPileOfPlayer (2x unsigned int) - Player " << player << "; " << pile);
@@ -629,10 +629,10 @@ ICardPile* SgtMayor::getPileOfPlayer (unsigned int player, unsigned int pile) {
 
 //-----------------------------------------------------------------------------
 /// Reads card- and playernumber from the next tokens
-/// \param src: String to analyze
-/// \param card: Filled with number of card
-/// \param player: Filled with player number
-/// \returns bool: True, if parsing was successfull
+/// \param src String to analyze
+/// \param card Filled with number of card
+/// \param player Filled with player number
+/// \returns bool True, if parsing was successfull
 //-----------------------------------------------------------------------------
 bool SgtMayor::readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned long& player) {
    std::string strCard (src.getNextNode (';'));
@@ -649,10 +649,10 @@ bool SgtMayor::readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned l
 
 //----------------------------------------------------------------------------
 /// Handles the messages the server might send for the Sgt.Mayor cardgame
-/// \param player: ID of player sending the message
-/// \param message: Message received from the server
-/// \returns bool: True, if message has been completey processed
-/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
+/// \param player ID of player sending the message
+/// \param message Message received from the server
+/// \returns bool True, if message has been completey processed
+/// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
 bool SgtMayor::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    TRACE1 ("SgtMayor::handleMessage (unsigned int player, const std::string&) - "
@@ -711,7 +711,7 @@ bool SgtMayor::handleMessage (unsigned int player, const std::string& message) t
 //----------------------------------------------------------------------------
 /// Shows the special colour on the board (the ace with that colour). Also
 /// inform connected player about it
-/// \param colour: The special colour to display
+/// \param colour The special colour to display
 //----------------------------------------------------------------------------
 void SgtMayor::showTrump (CardWidget::COLOURS colour) {
    TRACE9 ("SgtMayor::showTrump (CardWidget::COLOURS) - " << colour);
@@ -729,7 +729,7 @@ void SgtMayor::showTrump (CardWidget::COLOURS colour) {
 
 //----------------------------------------------------------------------------
 /// Shows the special colour on the board (the ace with that colour)
-/// \param colour: The special colour to display
+/// \param colour The special colour to display
 //----------------------------------------------------------------------------
 void SgtMayor::doShowTrump (CardWidget::COLOURS colour) {
    TRACE9 ("SgtMayor::doShowTrump (CardWidget::COLOURS) - " << colour);
@@ -751,9 +751,9 @@ void SgtMayor::doShowTrump (CardWidget::COLOURS colour) {
 //----------------------------------------------------------------------------
 /// Plays the passed card; find winner and give him the cards at the end of a
 /// turn.
-/// \param player: Player on turn
-/// \param card: Card to play
-/// \returns unsigned int: Next player; or -1U, if end of game
+/// \param player Player on turn
+/// \param card Card to play
+/// \returns unsigned int Next player; or -1U, if end of game
 //----------------------------------------------------------------------------
 unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
    TRACE3 ("SgtMayor::playCard (unsigned int, unsigned int) - Player " << player);
@@ -870,8 +870,8 @@ unsigned int SgtMayor::playCard (unsigned int player, unsigned int card) {
 
 //-----------------------------------------------------------------------------
 /// Formats a number with sign character always shown
-/// \param nr: Number to format
-/// \returns std::string: Formatted number
+/// \param nr Number to format
+/// \returns std::string Formatted number
 /// \remarks Shows the sign always (e.g. also the plus sign (+)
 //-----------------------------------------------------------------------------
 std::string SgtMayor::formatNumber (int nr) {
@@ -883,8 +883,8 @@ std::string SgtMayor::formatNumber (int nr) {
 //----------------------------------------------------------------------------
 /// Checks if the passed card is the highest card of its colour, which has
 /// not been played.
-/// \param card: Card to inspect
-/// \return bool: True, if card is the highest unplayed one
+/// \param card Card to inspect
+/// \return bool True, if card is the highest unplayed one
 //----------------------------------------------------------------------------
 bool SgtMayor::isHighest (const CardWidget& card) const {
    TRACE8 ("SgtMayor::isHighest (const CardWidget&) - " << card);
@@ -900,8 +900,8 @@ bool SgtMayor::isHighest (const CardWidget& card) const {
 //----------------------------------------------------------------------------
 /// Tries to get the trick with a trump card; returns a bad card, if there's no
 /// trump.
-/// \param pile: Pile to play from
-/// \return unsigned int: Position of card to play
+/// \param pile Pile to play from
+/// \return unsigned int Position of card to play
 //----------------------------------------------------------------------------
 unsigned int SgtMayor::tryToGetTrickWithTrump (const ICardPile& pile) const {
    TRACE8 ("SgtMayor::tryToGetTrickWithTrump (const ICardPile&)  - Size " << pile.size ());
@@ -992,8 +992,8 @@ void SgtMayor::displayExchangeStatus () {
 
 //----------------------------------------------------------------------------
 /// Exchanges a good card from playerGood with a bad card from player bad
-/// \param playerBad: Player giving away a bad card
-/// \param playerGood: Player giving away a good card
+/// \param playerBad Player giving away a bad card
+/// \param playerGood Player giving away a good card
 //----------------------------------------------------------------------------
 void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int playerGood) {
    TRACE7 ("SgtMayor::exchangeCards (unsigned int, unsigned int) - Players "
@@ -1008,10 +1008,10 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int playerGood) {
 
 //-----------------------------------------------------------------------------
 /// Exchanges cards directly; e.g. between computer players
-/// \param playerBad: Player giving away a bad card
-/// \param posBad: Position of bad card to give away
-/// \param playerGood: Player giving away a good card
-/// \param posGood: Position of good card to give away
+/// \param playerBad Player giving away a bad card
+/// \param posBad Position of bad card to give away
+/// \param playerGood Player giving away a good card
+/// \param posGood Position of good card to give away
 //-----------------------------------------------------------------------------
 void SgtMayor::directExchange (unsigned int playerBad, unsigned int posBad,
 			       unsigned int playerGood, unsigned int posGood) {
@@ -1026,10 +1026,10 @@ void SgtMayor::directExchange (unsigned int playerBad, unsigned int posBad,
 
 //-----------------------------------------------------------------------------
 /// Exchanges cards indirectly; e.g. between a human and a  computer player
-/// \param playerBad: Player giving away a bad card
-/// \param posBad: Position of bad card to give away
-/// \param playerGood: Player giving away a good card
-/// \param posGood: Position of good card to give away
+/// \param playerBad Player giving away a bad card
+/// \param posBad Position of bad card to give away
+/// \param playerGood Player giving away a good card
+/// \param posGood Position of good card to give away
 //-----------------------------------------------------------------------------
 void SgtMayor::delayedExchange (unsigned int playerBad, unsigned int posBad,
 				unsigned int playerGood, unsigned int posGood) {
@@ -1066,9 +1066,9 @@ void SgtMayor::delayedExchange (unsigned int playerBad, unsigned int posBad,
 
 //----------------------------------------------------------------------------
 /// Exchanges a good card from playerGood with a bad card from player bad
-/// \param playerBad: Player giving away a bad card
-/// \param posBad: Position of bad card to give away
-/// \param playerGood: Player giving away a good card
+/// \param playerBad Player giving away a bad card
+/// \param posBad Position of bad card to give away
+/// \param playerGood Player giving away a good card
 //----------------------------------------------------------------------------
 void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
                               unsigned int playerGood) {
@@ -1093,9 +1093,9 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
 //----------------------------------------------------------------------------
 /// Exchanges a good card from playerGood with a bad card from player bad
 /// and informs the connected partners about it
-/// \param playerBad: Player giving away a bad card
-/// \param posBad: Position of bad card to give away
-/// \param playerGood: Player giving away a good card
+/// \param playerBad Player giving away a bad card
+/// \param posBad Position of bad card to give away
+/// \param playerGood Player giving away a good card
 //----------------------------------------------------------------------------
 void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
                               unsigned int playerGood, unsigned int posGood) {
@@ -1123,10 +1123,10 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int posBad,
 
 //----------------------------------------------------------------------------
 /// Exchanges a good card from playerGood with a bad card from player bad
-/// \param playerBad: Player giving away a bad card
-/// \param posBad: Position of bad card to give away
-/// \param playerGood: Player giving away a good card
-/// \param posGood: Position of good card to give away
+/// \param playerBad Player giving away a bad card
+/// \param posBad Position of bad card to give away
+/// \param playerGood Player giving away a good card
+/// \param posGood Position of good card to give away
 //----------------------------------------------------------------------------
 void SgtMayor::doExchangeCards (unsigned int playerBad, unsigned int posBad,
 				unsigned int playerGood, unsigned int posGood) {
@@ -1155,8 +1155,8 @@ void SgtMayor::doExchangeCards (unsigned int playerBad, unsigned int posBad,
 
 //----------------------------------------------------------------------------
 /// Exchanges the passed card with the first one in the played area (if any)
-/// \param cardHuman: Pointer to (marked) card the human received
-/// \return bool: Always false to end the timer
+/// \param cardHuman Pointer to (marked) card the human received
+/// \return bool Always false to end the timer
 //----------------------------------------------------------------------------
 bool SgtMayor::unmarkExchanged (CardWidget* cardHuman) {
    TRACE9 ("SgtMayor::unmarkExchanged (CardWidget*, unsigned int)");
@@ -1178,8 +1178,8 @@ bool SgtMayor::unmarkExchanged (CardWidget* cardHuman) {
 
 //----------------------------------------------------------------------------
 /// Unmarks the passed card
-/// \param card: Position of card to unmark
-/// \return bool: Always false to end the timer
+/// \param card Position of card to unmark
+/// \return bool Always false to end the timer
 //----------------------------------------------------------------------------
 bool SgtMayor::unmark (unsigned int card) {
    Check2 (card < players[0].hand.size ());
@@ -1191,7 +1191,7 @@ bool SgtMayor::unmark (unsigned int card) {
 
 //-----------------------------------------------------------------------------
 /// Adds game-specific menus
-/// \param mgrUI: UIManager to add to
+/// \param mgrUI UIManager to add to
 //-----------------------------------------------------------------------------
 void SgtMayor::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
@@ -1219,7 +1219,7 @@ void SgtMayor::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 
 //-----------------------------------------------------------------------------
 /// Removes the game-specific menus
-/// \param mgrUI: UIManager to remove from
+/// \param mgrUI UIManager to remove from
 //-----------------------------------------------------------------------------
 void SgtMayor::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
@@ -1228,7 +1228,7 @@ void SgtMayor::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 
 //-----------------------------------------------------------------------------
 /// Shows or hides the won cards
-/// \param show: Flag if to show or to hide the cards
+/// \param show Flag if to show or to hide the cards
 //-----------------------------------------------------------------------------
 void SgtMayor::showWonCards (bool show, unsigned int style) {
    TRACE9 ("SgtMayor::showWonCards (bool, unsigned int) - " << show << '/' << style);

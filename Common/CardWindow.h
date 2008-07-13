@@ -90,13 +90,13 @@ class CardPileWindow : public CardWindow {
    ~CardPileWindow ();
 
    /// Creates a CardPileWindow object
-   /// \param dest: Destination pile
-   /// \param posDest: Where to put the card in the destination
-   /// \param src: Source pile; should be a CardPile<T>
-   /// \param start: First card of source to move
-   /// \param end: Last card of source to move
-   /// \returns CardPileWindow*: Created window to animate
-   /// \pre: The first card must be shown somewhere (to get its position)
+   /// \param dest Destination pile
+   /// \param posDest Where to put the card in the destination
+   /// \param src Source pile; should be a CardPile<T>
+   /// \param start First card of source to move
+   /// \param end Last card of source to move
+   /// \returns CardPileWindow* Created window to animate
+   /// \pre The first card must be shown somewhere (to get its position)
    static CardPileWindow* create (ICardPile& dest, unsigned int posDest,
 				  ICardPile& src, unsigned int start, unsigned int end) {
       Check1 (src.getWidget ());

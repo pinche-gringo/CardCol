@@ -41,8 +41,8 @@ Human::~Human () {
 
 //----------------------------------------------------------------------------
 /// Allows the human to execute its turn by enabling its cards
-/// \param game: Game played
-/// \returns bool: Flag, if the method should be called again in the next turn.
+/// \param game Game played
+/// \returns bool Flag, if the method should be called again in the next turn.
 //----------------------------------------------------------------------------
 bool Human::makeTurn (Game* game) {
    TRACE1 ("Human::makeTurn (Game*) - " << name);

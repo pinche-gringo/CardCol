@@ -99,20 +99,27 @@ class Game : public Gtk::Table {
    /// \name Status handling
    //@{
    /// Checks if the game is being played
+   /// \returns bool True, if the game is running (i.e. can't be interrupted at the moment)
    bool isRunning () const { return statGame >= PLAYING; }
    /// Checks if the game can be stopped at the moment (only when it's the
    /// turn of the human)
    virtual bool canBeStopped () const;
 
    /// Handling the actual game status
+   /// \returns unsigned int Status of the game
    unsigned int gameStatus () const { return statGame; }
    void setGameStatus (unsigned int newStatus);
    bool isShowingCardsToPlay () const { return pos1Play != -1U; }
    //@}
 
+   /// Sets the position of the game/player for a network game; this
+   /// position is relative to the server (i.e. the player inviting
+   /// the (other) players and starting the game
+   /// \param posPlayer Position of player as seen from the server
    void setPlayerPosition (unsigned int posPlayer) { posServer = posPlayer; }
 
    virtual void disableHuman ();
+   /// Sets the internal status of the game to turn ended
    void endTurn () { stati.pendingTurn = 0; }
 
    /// \name Player actions
@@ -242,15 +249,19 @@ class TGame : public Parent {
  public:
    typedef void (Controller::*PCALLBACK) (unsigned int);
 
+   /// Constructor
+   /// \param controller Object controlling the game
+   /// \param callback Method of object to call in case of changes of status
    TGame (Controller& controller, PCALLBACK callback)
       : Parent (controller.getClient (), controller.getStatusbar (),
                 controller.getCards (), controller.getPlayer (),
                 controller.getPlayerPosition (), controller.getClientMutex ())
       , obj (controller), pCallback (callback) { }
+   /// Destructor
    virtual ~TGame () { }
 
    /// Callback to inform a controller about status changes
-   /// \param status: New status of the game
+   /// \param status New status of the game
    virtual void control (unsigned int status) const {
       (obj.*pCallback) (status);
    }

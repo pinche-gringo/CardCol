@@ -47,8 +47,8 @@
 
 //-----------------------------------------------------------------------------
 /// Constructor; adds all controls to the dialog
-/// \param deck: Name of deck to preselect
-/// \param back: Name of back to preselect
+/// \param deck Name of deck to preselect
+/// \param back Name of back to preselect
 //-----------------------------------------------------------------------------
 DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
    : XGP::XDialog (_("Select carddeck"), OKCANCEL),
@@ -245,7 +245,7 @@ DeckSelectDlg::~DeckSelectDlg () {
 
 //-----------------------------------------------------------------------------
 /// Callback after selecting a button
-/// \param action: ID of selected button
+/// \param action ID of selected button
 //-----------------------------------------------------------------------------
 void DeckSelectDlg::command (int action) {
    TRACE9 ("DeckSelectDlg::command (int) - Command: " << action);
@@ -276,9 +276,9 @@ void DeckSelectDlg::okEvent () {
 
 //-----------------------------------------------------------------------------
 /// Returns an image specified by the passed file
-/// \param file: File containing the image
-/// \param scale: Flag, if image should be scaled
-/// \returns Glib::RefPtr<Gdk::Pixbuf>: Created image
+/// \param file File containing the image
+/// \param scale Flag, if image should be scaled
+/// \returns Glib::RefPtr<Gdk::Pixbuf> Created image
 //-----------------------------------------------------------------------------
 Glib::RefPtr<Gdk::Pixbuf> DeckSelectDlg::getImage (const std::string& file, bool scale) {
    TRACE9 ("DeckSelectDlg::getImage (const std::string&, bool) - " << file);
@@ -342,7 +342,7 @@ void DeckSelectDlg::backSelected () {
 
 //-----------------------------------------------------------------------------
 /// Callback when a deck is activated
-/// \param path: Activated deck
+/// \param path Activated deck
 //-----------------------------------------------------------------------------
 void DeckSelectDlg::deckActivated (const Gtk::TreeModel::Path& path) {
    TRACE8 ("DeckSelectDlg::deckActivated (const Gtk::TreeModel::Path&)");
@@ -361,7 +361,7 @@ void DeckSelectDlg::deckActivated (const Gtk::TreeModel::Path& path) {
 
 //-----------------------------------------------------------------------------
 /// Callback when a back is activated
-/// \param path: Activated back
+/// \param path Activated back
 //-----------------------------------------------------------------------------
 void DeckSelectDlg::backActivated (const Gtk::TreeModel::Path& path) {
    TRACE8 ("DeckSelectDlg::backActivated (const Gtk::TreeModel::Path&)");

@@ -74,8 +74,8 @@ ImageLoader::~ImageLoader () {
 
 //-----------------------------------------------------------------------------
 /// Loads the cards (faces)
-/// \param cards: Vector of pixbufs to load the cards into
-/// \param path: Path to files
+/// \param cards Vector of pixbufs to load the cards into
+/// \param path Path to files
 //-----------------------------------------------------------------------------
 void ImageLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
 			      const std::string& path) throw (YGP::FileError) {
@@ -99,8 +99,8 @@ void ImageLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
 
 //-----------------------------------------------------------------------------
 /// Loads the card (back)
-/// \param back: Pixbuf to load the card into
-/// \param file: File to load from
+/// \param back Pixbuf to load the card into
+/// \param file File to load from
 //-----------------------------------------------------------------------------
 void ImageLoader::loadBack (Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& file) throw (YGP::FileError) {
    back = loadImage (file);
@@ -110,9 +110,9 @@ void ImageLoader::loadBack (Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& 
 
 //-----------------------------------------------------------------------------
 /// Loads an image from the passed file
-/// \param file: File to load
-/// \returns Glib::RefPtr<Gdk::Pixbuf>: Created image
-/// \throw YGP::FileError: An describing text in case of error
+/// \param file File to load
+/// \returns Glib::RefPtr<Gdk::Pixbuf> Created image
+/// \throw YGP::FileError An describing text in case of error
 //-----------------------------------------------------------------------------
 Glib::RefPtr<Gdk::Pixbuf> ImageLoader::loadImage (const std::string& file) throw (YGP::FileError) {
    Glib::RefPtr<Gdk::Pixbuf> img;
@@ -131,8 +131,8 @@ Glib::RefPtr<Gdk::Pixbuf> ImageLoader::loadImage (const std::string& file) throw
 
 //-----------------------------------------------------------------------------
 /// Converts an image-number to a file-name. Default style: nrImage -> "(nrImage +1).png"
-/// \param nrImage: Number of image to convert (in the range 0 - 51)
-/// \returns std::string: Filename (KDE-style)
+/// \param nrImage Number of image to convert (in the range 0 - 51)
+/// \returns std::string Filename (KDE-style)
 //-----------------------------------------------------------------------------
 std::string ImageLoader::convert2File (unsigned int nrImage) {
    Check3 (nrImage < 52);
@@ -161,8 +161,8 @@ CardpicsLoader::~CardpicsLoader () {
 
 //-----------------------------------------------------------------------------
 /// Converts an image-number to a file-name (Cardpics-style)
-/// \param nrImage: Number of image to convert (in the range 0 - 51)
-/// \returns std::string: Filename (Cardpics-style)
+/// \param nrImage Number of image to convert (in the range 0 - 51)
+/// \returns std::string Filename (Cardpics-style)
 //-----------------------------------------------------------------------------
 std::string CardpicsLoader::convert2File (unsigned int nrImage) {
    Check3 (nrImage < 52);
@@ -205,8 +205,8 @@ GnomeLoader::~GnomeLoader () {
 
 //-----------------------------------------------------------------------------
 /// Loads the cards (faces)
-/// \param cards: Vector of pixbufs to load the cards into
-/// \param path: Path to files
+/// \param cards Vector of pixbufs to load the cards into
+/// \param path Path to files
 //-----------------------------------------------------------------------------
 void GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
 			      const std::string& path) throw (YGP::FileError) {
@@ -232,8 +232,8 @@ void GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
 
 //-----------------------------------------------------------------------------
 /// Loads the card (back)
-/// \param back: Pixbuf to load the card into
-/// \param file: File to load from
+/// \param back Pixbuf to load the card into
+/// \param file File to load from
 //-----------------------------------------------------------------------------
 void GnomeLoader::loadBack (Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& file) throw (YGP::FileError) {
    Glib::RefPtr<Gdk::Pixbuf> img (loadImage (file));
@@ -256,7 +256,7 @@ CardImages::~CardImages () {
 
 //-----------------------------------------------------------------------------
 /// Retrieves the specified cardnumber
-/// \param nr: Number of card to retrieve
+/// \param nr Number of card to retrieve
 //-----------------------------------------------------------------------------
 const Glib::RefPtr<Gdk::Pixbuf> CardImages::getCardImage (unsigned int nr) const {
    TRACE9 ("CardImages::getCardImage (unsigned int) - Request for card " << nr);
@@ -267,7 +267,7 @@ const Glib::RefPtr<Gdk::Pixbuf> CardImages::getCardImage (unsigned int nr) const
 
 //-----------------------------------------------------------------------------
 /// Loads the cards (faces)
-/// \param path: Path to files
+/// \param path Path to files
 //-----------------------------------------------------------------------------
 void CardImages::loadDecks (const std::string& path) throw (YGP::FileError) {
    TRACE1 ("CardImages::loadDecks (const std::string&) - " << path);
@@ -290,8 +290,8 @@ void CardImages::loadDecks (const std::string& path) throw (YGP::FileError) {
 
 //-----------------------------------------------------------------------------
 /// Loads the background card
-/// \param back: File containing background picture
-/// \throw YGP::FileError: An describing text in case of error
+/// \param back File containing background picture
+/// \throw YGP::FileError An describing text in case of error
 //-----------------------------------------------------------------------------
 void CardImages::loadBack (const std::string& back) throw (YGP::FileError) {
    ImageLoader* ldr (NULL);

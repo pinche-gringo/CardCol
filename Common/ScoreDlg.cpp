@@ -45,7 +45,7 @@ int ScoreDlg::LASTY (-1);
 
 //-----------------------------------------------------------------------------
 /// (Default-)Constructor; Shows the dialog
-/// \param player: Vector with player
+/// \param player Vector with player
 //-----------------------------------------------------------------------------
 ScoreDlg::ScoreDlg (const std::vector<Player*>& player)
    : XDialog (OK), client (new Gtk::HBox) {
@@ -83,7 +83,7 @@ ScoreDlg::~ScoreDlg () {
 
 //-----------------------------------------------------------------------------
 /// Adds a line to the scores
-/// \param aPoints: Array of points
+/// \param aPoints Array of points
 //-----------------------------------------------------------------------------
 void ScoreDlg::addPoints (int aPoints[]) {
    for (std::vector<column*>::iterator i (aColumns.begin ());
@@ -95,7 +95,7 @@ void ScoreDlg::addPoints (int aPoints[]) {
 
 //-----------------------------------------------------------------------------
 /// Adds a line to the scores
-/// \param aPoints: Vector of points
+/// \param aPoints Vector of points
 //-----------------------------------------------------------------------------
 void ScoreDlg::addPoints (const std::vector<int>& aPoints) {
    Check1 (aPoints.size () <= aColumns.size ());
@@ -119,8 +119,8 @@ void ScoreDlg::okEvent () {
 
 //-----------------------------------------------------------------------------
 /// Gets the player with highest number of points and the points
-/// \param points: Reference where to put the highest points
-/// \param player: Reference where to put the player with the highest points
+/// \param points Reference where to put the highest points
+/// \param player Reference where to put the player with the highest points
 //-----------------------------------------------------------------------------
 void ScoreDlg::getMaxPoints (int& points, unsigned int& player) {
    points = INT_MIN;
@@ -138,8 +138,8 @@ void ScoreDlg::getMaxPoints (int& points, unsigned int& player) {
 
 //-----------------------------------------------------------------------------
 /// Gets the player with highest number of points and the points
-/// \param points: Reference where to put the highest points
-/// \param player: Reference where to put the player with the highest points
+/// \param points Reference where to put the highest points
+/// \param player Reference where to put the player with the highest points
 //-----------------------------------------------------------------------------
 void ScoreDlg::getMinPoints (int& points, unsigned int& player) {
    points = INT_MAX;
@@ -153,7 +153,7 @@ void ScoreDlg::getMinPoints (int& points, unsigned int& player) {
 
 //-----------------------------------------------------------------------------
 /// Changes the names of the playing people
-/// \param player: Array holding the new player
+/// \param player Array holding the new player
 //-----------------------------------------------------------------------------
 void ScoreDlg::update (const std::vector<Player*>& player) {
    Check1 (player.size () <= aColumns.size ());
@@ -196,7 +196,7 @@ ScoreDlg::column::~column () {
 
 //-----------------------------------------------------------------------------
 /// Adds a value to the column
-/// \param points: Number to add to column
+/// \param points Number to add to column
 //-----------------------------------------------------------------------------
 void ScoreDlg::column::addEntry (int points) {
    Check3 (pBox);
@@ -211,7 +211,7 @@ void ScoreDlg::column::addEntry (int points) {
 
 //-----------------------------------------------------------------------------
 /// Sets the "title" (the first line) of the column
-/// \param title: New "title"
+/// \param title New "title"
 //-----------------------------------------------------------------------------
 void ScoreDlg::column::setTitle (const Glib::ustring& title) {
    Check3 (pTitle);

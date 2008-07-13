@@ -103,8 +103,8 @@ void ChatDlg::sendMessage () {
 
 //-----------------------------------------------------------------------------
 /// Adds a message to the message-list
-/// \param sender: Sender of message
-/// \param msg: Sent message
+/// \param sender Sender of message
+/// \param msg Sent message
 //-----------------------------------------------------------------------------
 void ChatDlg::addMessage (const Glib::ustring& sender, const Glib::ustring& msg) {
    TRACE3 ("ChatDlg::addMessage (2x const Glib::ustring&) - " << sender << ": " << msg);

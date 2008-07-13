@@ -51,7 +51,7 @@ MachiPile::~MachiPile () {
 
 //----------------------------------------------------------------------------
 /// Sets a new top card of the pile.
-/// \param newCard: Card to set as uppermost card of the pile
+/// \param newCard Card to set as uppermost card of the pile
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
 void MachiPile::setTopCard (CardWidget& newCard) {
@@ -62,10 +62,10 @@ void MachiPile::setTopCard (CardWidget& newCard) {
 
 //----------------------------------------------------------------------------
 /// Inserts a card into the pile.
-/// \param card: Card to insert into the pile
-/// \param pos: Zero-based offset of where to insert the card
+/// \param card Card to insert into the pile
+/// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
-/// \returns unsigned int: Position where card was inserted
+/// \returns unsigned int Position where card was inserted
 //----------------------------------------------------------------------------
 unsigned int MachiPile::insert (CardWidget& card, unsigned int pos) {
    TRACE9 ("MachiPile::insert (CardWidget&, unsigned int) - " << card
@@ -78,8 +78,8 @@ unsigned int MachiPile::insert (CardWidget& card, unsigned int pos) {
 
 //----------------------------------------------------------------------------
 /// Removes the passed card from the pile.
-/// \param card: Card to remove from the pile
-/// \param pos: Zero-based offset of where to insert the card
+/// \param card Card to remove from the pile
+/// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
 CardWidget& MachiPile::remove (CardWidget& card) {
@@ -90,8 +90,8 @@ CardWidget& MachiPile::remove (CardWidget& card) {
 
 //----------------------------------------------------------------------------
 /// Removes the passed card from the pile.
-/// \param card: Card to remove from the pile
-/// \param pos: Zero-based offset of where to insert the card
+/// \param card Card to remove from the pile
+/// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
 CardWidget& MachiPile::remove (CardWidget& card, bool visible) {
@@ -102,8 +102,8 @@ CardWidget& MachiPile::remove (CardWidget& card, bool visible) {
 
 //----------------------------------------------------------------------------
 /// Removes the passed card from the pile.
-/// \param card: Card to remove from the pile
-/// \param pos: Zero-based offset of where to insert the card
+/// \param card Card to remove from the pile
+/// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
 CardWidget& MachiPile::remove (unsigned int pos) {
@@ -115,8 +115,8 @@ CardWidget& MachiPile::remove (unsigned int pos) {
 
 //----------------------------------------------------------------------------
 /// Removes the passed card from the pile.
-/// \param card: Card to remove from the pile
-/// \param pos: Zero-based offset of where to insert the card
+/// \param card Card to remove from the pile
+/// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
 CardWidget& MachiPile::remove (unsigned int pos, bool visible) {
@@ -130,8 +130,8 @@ CardWidget& MachiPile::remove (unsigned int pos, bool visible) {
 /// - Card played on an empty pile -> Valid
 /// - Check if the card "fits": Either the same number as the other (first and
 ///   last) card, or the same colour and the number in serie.
-/// \param card: Card to inspect.
-/// \returns unsigned int: Position of card in pile or -1U
+/// \param card Card to inspect.
+/// \returns unsigned int Position of card in pile or -1U
 /// \pre Coloured piles must be sorted strict ascending
 //----------------------------------------------------------------------------
 unsigned int MachiPile::getPosition4Card (const CardWidget& card) const {
@@ -171,10 +171,10 @@ unsigned int MachiPile::getPosition4Card (const CardWidget& card) const {
 //----------------------------------------------------------------------------
 /// Returns the distance between two cards. The ace also counts as one (if the
 /// other card is a 2 or a 3)
-/// \param a: Card to compare
-/// \param b: Card to compare
-/// \param aceIsOne: Flag, if aces should (also) be treated as one
-/// \returns \c int: Distance of the two passed cards (a - b)
+/// \param a Card to compare
+/// \param b Card to compare
+/// \param aceIsOne Flag, if aces should (also) be treated as one
+/// \returns int Distance of the two passed cards (a - b)
 //----------------------------------------------------------------------------
 int MachiPile::cardDistance (const CardWidget& a, const CardWidget& b,
                              ACEFLAG aceIsOne) {
@@ -242,8 +242,8 @@ void MachiPile::checkIntegrity () throw (PileError) {
 
 //-----------------------------------------------------------------------------
 /// Returns the position of the first card having the passed colour
-/// \param colour: Colour to find
-/// \returns int: Position of card or -1
+/// \param colour Colour to find
+/// \returns int Position of card or -1
 //-----------------------------------------------------------------------------
 int MachiPile::getPosOfColour (CardWidget::COLOURS colour) const {
    TRACE9 ("MachiPile::getPosOfColour (CardWidget::COLOURS) - " << colour);
@@ -261,16 +261,16 @@ int MachiPile::getPosOfColour (CardWidget::COLOURS colour) const {
 
 //----------------------------------------------------------------------------
 /// Checks if this has a card matching to the ones passed in pair
-/// \param pair: Pile holding the pair to match
-/// \param match: Set to
+/// \param pair Pile holding the pair to match
+/// \param match Set to
 ///    - Position of the card which matches the pair (if this card can be
 ///      played directly)
 ///    - Position where the pile has to split, so that the matching card can be
 ///      played
-/// \param nr: Number of cards which have to be moved (1, if the card can be
+/// \param nr Number of cards which have to be moved (1, if the card can be
 ///    played directly, else the number of cards to move to "free" the matching
 ///    one)
-/// \return bool: True, if a matching card can be found
+/// \return bool True, if a matching card can be found
 /// \remarks \c match and \c nr might be changed, even if no matching card is
 ///     found!
 //----------------------------------------------------------------------------

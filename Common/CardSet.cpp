@@ -48,7 +48,7 @@ CardSet::~CardSet () {
 
 //-----------------------------------------------------------------------------
 /// Adds a set of cards (with images specified by decks) to set
-/// \param decks: Class holding the images to add
+/// \param decks Class holding the images to add
 //-----------------------------------------------------------------------------
 void CardSet::addPacket (const CardImages& decks) {
    TRACE9 ("CardSet::addPacket (const CardImages&)");
@@ -78,8 +78,8 @@ void CardSet::shuffle () {
 
 //-----------------------------------------------------------------------------
 /// Sets the specified card in the passed slot of the set
-/// \param pos: Slot (position) of the card to set
-/// \param card: Card to swap
+/// \param pos Slot (position) of the card to set
+/// \param card Card to swap
 /// \pre The \c card must not be in a position before \c pos.
 //-----------------------------------------------------------------------------
 void CardSet::set (unsigned int pos, unsigned int card) {
@@ -98,7 +98,7 @@ void CardSet::set (unsigned int pos, unsigned int card) {
 
 //-----------------------------------------------------------------------------
 /// Retrieves the specified card
-/// \returns \c CardWidget&: Reference to CardWidget
+/// \returns CardWidget& Reference to CardWidget
 //-----------------------------------------------------------------------------
 CardWidget& CardSet::getCard (unsigned int nr) const {
    TRACE3 ("CardSet::getCard (unsigned int) - " << nr);
@@ -108,7 +108,7 @@ CardWidget& CardSet::getCard (unsigned int nr) const {
 }
 
 //-----------------------------------------------------------------------------
-/// Actualizes the card set (after changes of the images)
+/// Actualises the card set (after changes of the images)
 //-----------------------------------------------------------------------------
 void CardSet::update () const {
    TRACE3 ("CardSet::update () const");

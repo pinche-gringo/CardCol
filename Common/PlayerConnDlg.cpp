@@ -51,9 +51,9 @@
 
 //-----------------------------------------------------------------------------
 /// Default constructor
-/// \param player: The player
-/// \param defPort: Default port to listen at/send to
-/// \param connMgr: Connection manager; holding the connections to use
+/// \param player The player
+/// \param defPort Default port to listen at/send to
+/// \param connMgr Connection manager; holding the connections to use
 //-----------------------------------------------------------------------------
 PlayerConnectDlg::PlayerConnectDlg (std::vector<Player*>& player,
                                     const Glib::ustring& port,
@@ -85,10 +85,10 @@ PlayerConnectDlg::~PlayerConnectDlg () {
 
 //----------------------------------------------------------------------------
 /// Performs the dialog (modal)
-/// \param player: The player
-/// \param defPort: Default port to listen at/send to
-/// \param connMgr: Connection manager; holding the connections to use
-/// \returns <tt>unsigned int</tt>: Number player has for the server
+/// \param player The player
+/// \param defPort Default port to listen at/send to
+/// \param connMgr Connection manager; holding the connections to use
+/// \returns unsigned int Number player has for the server
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, unsigned int defPort,
                                         YGP::ConnectionMgr& connMgr) {
@@ -99,10 +99,10 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, unsigned i
 
 //----------------------------------------------------------------------------
 /// Performs the dialog (modal)
-/// \param player: The player
-/// \param defPort: Default port to listen at/send to
-/// \param connMgr: Connection manager; holding the connections to use
-/// \returns <tt>unsigned int</tt>: Number player has for the server
+/// \param player The player
+/// \param defPort Default port to listen at/send to
+/// \param connMgr Connection manager; holding the connections to use
+/// \returns unsigned int Number player has for the server
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, const Glib::ustring& defPort,
                                         YGP::ConnectionMgr& connMgr) {
@@ -116,10 +116,10 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, const Glib
 
 //----------------------------------------------------------------------------
 /// Performs the dialog (modal)
-/// \param player: The player
-/// \param connMgr: Connection manager; holding the connections to use
-/// \param listenAt: Port the server should listen at
-/// \returns <tt>unsigned int</tt>: The number the player has for the server
+/// \param player The player
+/// \param connMgr Connection manager; holding the connections to use
+/// \param listenAt Port the server should listen at
+/// \returns unsigned int The number the player has for the server
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
                                         YGP::ConnectionMgr& cmgr, const Glib::ustring& listenAt) {
@@ -136,11 +136,11 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
 
 //----------------------------------------------------------------------------
 /// Performs the dialog (modal)
-/// \param player: The player
-/// \param connMgr: Connection manager; holding the connections to use
-/// \param host: Host the client should connect too
-/// \param hostPort: Port the host is listening at
-/// \returns <tt>unsigned int</tt>: The number the player has for the server
+/// \param player The player
+/// \param connMgr Connection manager; holding the connections to use
+/// \param host Host the client should connect too
+/// \param hostPort Port the host is listening at
+/// \returns unsigned int The number the player has for the server
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
                                         YGP::ConnectionMgr& cmgr, const Glib::ustring& host,
@@ -158,9 +158,9 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
 
 //----------------------------------------------------------------------------
 /// Connects this application to a server
-/// \param target: Name or IP address of the server
-/// \param port: Port the server is listening at
-/// \throw YGP::CommError: Does not throw;
+/// \param target Name or IP address of the server
+/// \param port Port the server is listening at
+/// \throw YGP::CommError Does not throw
 //----------------------------------------------------------------------------
 void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
     throw (YGP::CommError) {
@@ -240,7 +240,7 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
 
 //----------------------------------------------------------------------------
 /// Updates the name of the player with the data send from the client
-/// \param socket: Socket over which the clients communicates
+/// \param socket Socket over which the clients communicates
 //----------------------------------------------------------------------------
 YGP::Socket* PlayerConnectDlg::addClient (int socket) {
    TRACE3 ("PlayerConnectDlg::addClient (int)");

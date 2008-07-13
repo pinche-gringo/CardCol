@@ -44,6 +44,9 @@ class ScoreDlg : public XGP::XDialog {
    ScoreDlg (const std::vector<Player*>& player);
    virtual ~ScoreDlg ();
 
+   /// Creates a new score-dialogue; showing the passed players
+   /// \param player Vector holding name of all players
+   /// \returns ScoreDlg* Pointer to the created dialoge
    static ScoreDlg* create (const std::vector<Player*>& player) {
       return new ScoreDlg (player); }
 

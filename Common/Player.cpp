@@ -30,7 +30,7 @@
 
 //-----------------------------------------------------------------------------
 /// Constructor; from a name
-/// \param playerName: Name of the player
+/// \param playerName Name of the player
 //-----------------------------------------------------------------------------
 Player::Player (const Glib::ustring& playerName) : name (playerName) {
 }
@@ -44,7 +44,7 @@ Player::~Player () {
 
 //----------------------------------------------------------------------------
 /// Time in between two turns of the player.
-/// \returns unsigned int: Time to delay: 0 -> execute immediately
+/// \returns unsigned int Time to delay: 0 -> execute immediately
 //----------------------------------------------------------------------------
 unsigned int Player::timeout () const {
    return 0;

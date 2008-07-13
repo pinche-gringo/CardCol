@@ -160,8 +160,8 @@ void CardgameAppl::showHelp () const {
 
 //-----------------------------------------------------------------------------
 /// Checks the validity of the passed option
-/// \param option: Actual option
-/// \returns \c bool: Status; false: Invalid option/option-value Require :
+/// \param option Actual option
+/// \returns bool Status; false: Invalid option/option-value Require :
 ///     option not '\0´'
 //-----------------------------------------------------------------------------
 bool CardgameAppl::handleOption (const char option) {
@@ -277,8 +277,8 @@ bool CardgameAppl::handleOption (const char option) {
 
 //-----------------------------------------------------------------------------
 /// Converts a text to a game type
-/// \param pText: Text to convert
-/// \returns \c Type of game as understood by the CardgameCollection
+/// \param pText Text to convert
+/// \returns int Type of game as understood by the CardgameCollection
 //-----------------------------------------------------------------------------
 int CardgameAppl::convertToGameType (const char* pText) {
    TRACE9 ("CardgameAppl::convertToGameType (const char*) - " << pText);
@@ -303,7 +303,7 @@ int CardgameAppl::convertToGameType (const char* pText) {
 
 //-----------------------------------------------------------------------------
 /// Reads the options of the INI-file
-/// \param pFile: Pointer to filename
+/// \param pFile Pointer to filename
 /// \pre pFile not NULL
 //-----------------------------------------------------------------------------
 void CardgameAppl::readINIFile (const char* pFile) {
@@ -396,9 +396,9 @@ void CardgameAppl::readINIFile (const char* pFile) {
 
 //-----------------------------------------------------------------------------
 /// Performs the job of the applications
-/// \param int: Number of parameters (without options)
-/// \param const char*: Array with pointer to arguments
-/// \returns \c int: Status
+/// \param int Number of parameters (without options)
+/// \param const char* Array with pointer to arguments
+/// \returns int Status
 //-----------------------------------------------------------------------------
 int CardgameAppl::perform (int, const char**) {
    TRACE5 ("CardgameAppl::perform (int, const char**) - Params: " << args);
@@ -436,9 +436,9 @@ void CardgameAppl::showGames () const {
 
 //-----------------------------------------------------------------------------
 /// Entrypoint of application
-/// \param argc: Number of parameters
-/// \param argv: Array with pointer to parameter
-/// \returns \c int: Status
+/// \param argc Number of parameters
+/// \param argv Array with pointer to parameter
+/// \returns int Status
 //-----------------------------------------------------------------------------
 int main (int argc, const char* argv[]) {
    YGP::IVIOApplication::initI18n (PACKAGE, LOCALEDIR);

@@ -41,7 +41,7 @@ class CardWidget : public Gtk::EventBox {
    ~CardWidget ();
 
    /// Sets the card deck to use
-   /// \param carddeck: Deck to use
+   /// \param carddeck Deck to use
    static void setDeck (const CardImages& carddeck) { deck = &carddeck; }
 
    // Methods to show card. Note that just the image is changed

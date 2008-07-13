@@ -42,8 +42,8 @@ RemotePlayer::~RemotePlayer () {
 
 //----------------------------------------------------------------------------
 /// Reads the turn of a remote player.
-/// \param game: Game played
-/// \returns bool: Flag, if the method should be called again in the next turn.
+/// \param game Game played
+/// \returns bool Flag, if the method should be called again in the next turn.
 //----------------------------------------------------------------------------
 bool RemotePlayer::makeTurn (Game* game) {
    TRACE1 ("RemotePlayer::makeTurn (Game*) - " << name);

@@ -27,6 +27,7 @@
 class ComputerPlayer : public Player {
  public:
    /// Constructor from a name
+   /// \param name Name of the computer player
    ComputerPlayer (const Glib::ustring& name) : Player (name) { }
    virtual ~ComputerPlayer ();
 

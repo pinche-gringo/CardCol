@@ -124,9 +124,9 @@ namespace YGP {
 
 /// Writes the contents of the passed values to the passed stream
 /// (in its own section named \c section).
-/// \param stream: Stream to write to
-/// \param section: Name of section to write
-/// \param values: Values to write
+/// \param stream Stream to write to
+/// \param section Name of section to write
+/// \param values Values to write
 template <>
 void INIList<Glib::ustring>::write (std::ostream& stream, const char* section, const std::vector<Glib::ustring>& values) {
    writeHeader (stream, section);
@@ -654,7 +654,7 @@ static const char* xpmJoker[] = {
 
 //-----------------------------------------------------------------------------
 /// Defaultconstructor; all widget are created
-/// \param opts: Options for the program
+/// \param opts Options for the program
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
    : XApplication (PACKAGE " V" PRG_RELEASE),
@@ -1040,7 +1040,7 @@ void CardgameCollection::endGame () {
 
 //-----------------------------------------------------------------------------
 /// Changes the type of the next game
-/// \param game: Type of the next game
+/// \param game Type of the next game
 //-----------------------------------------------------------------------------
 void CardgameCollection::changeGame (int game) {
    TRACE9 ("CardgameCollection::changeGame (games) - " << game);
@@ -1166,7 +1166,7 @@ void CardgameCollection::exit () {
 
 //-----------------------------------------------------------------------------
 /// Stops the game and quits application
-/// \returns bool: Always false
+/// \returns bool Always false
 //-----------------------------------------------------------------------------
 bool CardgameCollection::terminateGameAndExit () {
    Check2 (game);
@@ -1176,7 +1176,7 @@ bool CardgameCollection::terminateGameAndExit () {
 
 //-----------------------------------------------------------------------------
 /// Waits til the game can be ended; stops it and quits application
-/// \returns bool: Always false
+/// \returns bool Always false
 //-----------------------------------------------------------------------------
 bool CardgameCollection::wait4EndGameAndExit () {
    Check2 (game);
@@ -1251,8 +1251,8 @@ void CardgameCollection::changePlayernames () {
 
 //-----------------------------------------------------------------------------
 /// Callback to change the carddecks
-/// \param deck: Deck to set
-/// \param back: Back of cards to set
+/// \param deck Deck to set
+/// \param back Back of cards to set
 //-----------------------------------------------------------------------------
 void CardgameCollection::changeDecks (const std::string& deck, const std::string& back) {
    TRACE2 ("CardgameCollection::changeDecks (2x const std::string&)");
@@ -1284,8 +1284,8 @@ void CardgameCollection::resizeCards () {
 
 //-----------------------------------------------------------------------------
 /// Loads the cards
-/// \param opt: Actually a bit field! Option indicationg what to load
-/// \returns \c void*: Status; Not NULL when loading was OK, NULL otherwise
+/// \param opt Actually a bit field! Option indicationg what to load
+/// \returns void* Status; Not NULL when loading was OK, NULL otherwise
 //-----------------------------------------------------------------------------
 void* CardgameCollection::changeCards (void* opt) {
    TRACE2 ("CardgameCollection::changeCards (void*) - Option: " << opt);
@@ -1330,8 +1330,8 @@ void* CardgameCollection::changeCards (void* opt) {
 
 //----------------------------------------------------------------------------
 /// Shows an error from the communication thread
-/// \param msg: Received message to handle
-/// \returns bool: False
+/// \param msg Received message to handle
+/// \returns bool False
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
 bool CardgameCollection::showMessage (const std::string msg) {
@@ -1345,8 +1345,8 @@ bool CardgameCollection::showMessage (const std::string msg) {
 
 //-----------------------------------------------------------------------------
 /// Frees the passed dialog
-/// \param int: Response of dialog (ignored)
-/// \param dlg: Dialog to close additionally
+/// \param int Response of dialog (ignored)
+/// \param dlg Dialog to close additionally
 //-----------------------------------------------------------------------------
 void CardgameCollection::closeDialog (int, const Gtk::Dialog* dlg) {
    Check1 (dlg);
@@ -1356,7 +1356,7 @@ void CardgameCollection::closeDialog (int, const Gtk::Dialog* dlg) {
 //-----------------------------------------------------------------------------
 /// Checks the user-input after asking if he wants to end the game; depending
 /// on the answer either stops or continues
-/// \returns bool: Flag, if the game has already been started
+/// \returns bool Flag, if the game has already been started
 //-----------------------------------------------------------------------------
 bool CardgameCollection::restartGame () {
    TRACE8 ("CardgameCollection::restartGame () - Restart: " << restart);
@@ -1420,7 +1420,7 @@ void CardgameCollection::loadCards () {
 
 //-----------------------------------------------------------------------------
 /// Handling of game-events
-/// \param status: New status of game
+/// \param status New status of game
 //-----------------------------------------------------------------------------
 void CardgameCollection::gameEvents (unsigned int status) {
    TRACE8 ("CardgameCollection::gameEvents (unsigned int) const - New status: "

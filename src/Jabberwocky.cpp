@@ -64,12 +64,12 @@ char Jabberwocky::sortOrder[4];
 
 //-----------------------------------------------------------------------------
 /// Constructor
-/// \param parent: Parent widget to display the game in
-/// \param statusbar: Status bar widget to display information about the game
-/// \param cardset: Cardset to use
-/// \param player: Vector of player
-/// \param posPlayer: Position of player for the server
-/// \param mxSerialize: Mutex to serialize messages from the server
+/// \param parent Parent widget to display the game in
+/// \param statusbar Status bar widget to display information about the game
+/// \param cardset Cardset to use
+/// \param player Vector of player
+/// \param posPlayer Position of player for the server
+/// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
 			  const std::vector<Player*>& player, unsigned int posPlayer,
@@ -207,7 +207,7 @@ void Jabberwocky::clean () {
 
 //-----------------------------------------------------------------------------
 /// Enables the cards of the passed player
-/// \returns bool: Flag, if timer should be continued; False
+/// \returns bool Flag, if timer should be continued; False
 /// \remarks Depending of the status of the game (PLAYING2) also the top card
 ///     of the played pile is enabled
 //-----------------------------------------------------------------------------
@@ -227,7 +227,7 @@ bool Jabberwocky::enableHuman () {
 
 //-----------------------------------------------------------------------------
 /// Makes the move for the next player.
-/// \param player: Actual player
+/// \param player Actual player
 //-----------------------------------------------------------------------------
 void Jabberwocky::makeMove (unsigned int player) {
    TRACE5 ("Jabberwocky::makeMove () - Turn of player " << player);
@@ -257,7 +257,7 @@ void Jabberwocky::finishMove () {
 
 //-----------------------------------------------------------------------------
 /// Picks up the won cards
-/// \param player: Player taking won cards
+/// \param player Player taking won cards
 //-----------------------------------------------------------------------------
 void Jabberwocky::takeWonCards (unsigned int player) {
    TRACE9 ("Jabberwocky::takeWonCards (unsigned int) - " << player);
@@ -275,7 +275,7 @@ void Jabberwocky::takeWonCards (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Shows or hides the cards of the computer player
-/// \param open: Flag if cards should be shown or hidden
+/// \param open Flag if cards should be shown or hidden
 //-----------------------------------------------------------------------------
 void Jabberwocky::playOpen (bool open) {
    ICardPile::ShowOpt show (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
@@ -291,7 +291,7 @@ void Jabberwocky::playOpen (bool open) {
 
 //-----------------------------------------------------------------------------
 /// Changes the names of the playing people
-/// \param newPlayer: Array holding the new player
+/// \param newPlayer Array holding the new player
 //-----------------------------------------------------------------------------
 void Jabberwocky::changeNames (const std::vector<Player*>& newPlayer) {
    Game::changeNames (newPlayer);
@@ -308,9 +308,9 @@ void Jabberwocky::changeNames (const std::vector<Player*>& newPlayer) {
 
 //----------------------------------------------------------------------------
 /// Converts a pile-number to the actual pile
-/// \param newPlayer: Array holding the new player
-/// \param pile: ID of the pile to return
-/// \returns ICardPile*: Pile corresponding to the passed number or NULL
+/// \param newPlayer Array holding the new player
+/// \param pile ID of the pile to return
+/// \returns ICardPile* Pile corresponding to the passed number or NULL
 //----------------------------------------------------------------------------
 ICardPile* Jabberwocky::getPileOfPlayer (unsigned int player, unsigned int pile) {
    TRACE8 ("Jabberwocky::getPileOfPlayer (unsigned int, unsigned int) - Player "
@@ -323,7 +323,7 @@ ICardPile* Jabberwocky::getPileOfPlayer (unsigned int player, unsigned int pile)
 
 //-----------------------------------------------------------------------------
 /// Adds game-specific menus
-/// \param mgrUI: UIManager to add to
+/// \param mgrUI UIManager to add to
 //-----------------------------------------------------------------------------
 void Jabberwocky::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
@@ -351,7 +351,7 @@ void Jabberwocky::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 
 //-----------------------------------------------------------------------------
 /// Removes the game-specific menus
-/// \param mgrUI: UIManager to remove from
+/// \param mgrUI UIManager to remove from
 //-----------------------------------------------------------------------------
 void Jabberwocky::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    Check1 (mgrUI);
@@ -360,7 +360,7 @@ void Jabberwocky::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 
 //-----------------------------------------------------------------------------
 /// Callback after clicking on a card in hand
-/// \param pos: Offset of card in hand
+/// \param pos Offset of card in hand
 //-----------------------------------------------------------------------------
 void Jabberwocky::cardSelected (unsigned int pos) {
    TRACE5 ("Jabberwocky::cardSelected (unsigned int) - Position " << pos);
@@ -411,7 +411,7 @@ void Jabberwocky::cardSelected (unsigned int pos) {
 
 //-----------------------------------------------------------------------------
 /// Makes (or waits) for the bids of the users
-/// \param start: Number of first player to make its bid
+/// \param start Number of first player to make its bid
 //-----------------------------------------------------------------------------
 void Jabberwocky::makeBids (unsigned int start) {
    TRACE8 ("Jabberwocky::makeBids (unsigned int) - Start: " << start);
@@ -472,7 +472,7 @@ void Jabberwocky::makeBids (unsigned int start) {
 
 //-----------------------------------------------------------------------------
 /// Returns the sum of all bids
-/// \returns unsinged int: Sum o fall bids
+/// \returns unsinged int Sum o fall bids
 //-----------------------------------------------------------------------------
 unsigned int Jabberwocky::sumBids () const {
    unsigned int sum (0);
@@ -492,9 +492,9 @@ void Jabberwocky::startGame () {
 
 //-----------------------------------------------------------------------------
 /// Commits the bid of the user and continues bidding
-/// \param value: Entryfield where user entered his bid
-/// \param commit: Button commiting the bid
-/// \param start: Number of first player to make its bid
+/// \param value Entryfield where user entered his bid
+/// \param commit Button commiting the bid
+/// \param start Number of first player to make its bid
 //-----------------------------------------------------------------------------
 void Jabberwocky::placedBid (Gtk::SpinButton* value, Gtk::Button* commit, unsigned int start) {
    TRACE4 ("Jabberwocky::placedBid (Gtk::SpinButton*, Gtk::Button*, unsigned int) - " << start);
@@ -527,7 +527,7 @@ void Jabberwocky::placedBid (Gtk::SpinButton* value, Gtk::Button* commit, unsign
 
 //-----------------------------------------------------------------------------
 /// Shows the bid the passed player has set
-/// \param player: Player whose bid shall be shown
+/// \param player Player whose bid shall be shown
 //-----------------------------------------------------------------------------
 void Jabberwocky::showBid (unsigned int player) {
    if (players[player].bid.isDefined ()) {
@@ -540,8 +540,8 @@ void Jabberwocky::showBid (unsigned int player) {
 
 //-----------------------------------------------------------------------------
 /// Calculates the bids for the passed player
-/// \param player: Number of player to calculate tricks to make for
-/// \returns unsigned int: Number of tricks player will win
+/// \param player Number of player to calculate tricks to make for
+/// \returns unsigned int Number of tricks player will win
 //-----------------------------------------------------------------------------
 unsigned int Jabberwocky::calcTricks (unsigned int player) const {
    TRACE5 ("Jabberwocky::calcTricks (unsigned int) - " << player);
@@ -569,9 +569,9 @@ unsigned int Jabberwocky::calcTricks (unsigned int player) const {
 //-----------------------------------------------------------------------------
 /// Compares the cards in the pile with regard of the colour and with special
 /// consideration of trumps
-/// \param a: Card to compare
-/// \param b: Card to compare
-/// \returns bool: True, if a < b
+/// \param a Card to compare
+/// \param b Card to compare
+/// \returns bool True, if a < b
 //-----------------------------------------------------------------------------
 bool Jabberwocky::compByColourAccTrumps (const CardWidget* a, const CardWidget* b) {
    Check3 (a); Check3 (b);
@@ -582,7 +582,7 @@ bool Jabberwocky::compByColourAccTrumps (const CardWidget* a, const CardWidget* 
 
 //-----------------------------------------------------------------------------
 /// Shows the card to play
-/// \param player: Player to inspect
+/// \param player Player to inspect
 //-----------------------------------------------------------------------------
 void Jabberwocky::showCards2Play (unsigned int player) {
    TRACE3 ("Jabberwocky::showCards2Play (unsigned int) - Player: " << player);
@@ -713,10 +713,10 @@ void Jabberwocky::showCards2Play (unsigned int player) {
 //-----------------------------------------------------------------------------
 /// Find the highest card lower than the passed one or the lowest card
 /// of the colour of the passed card to match
-/// \param cardCmp: Card which should not be passed
-/// \param pile: Pile from which to play
-/// \param aPosColour: Position of last card in the pile with that colour
-/// \returns \c Position of card to play
+/// \param cardCmp Card which should not be passed
+/// \param pile Pile from which to play
+/// \param aPosColour Position of last card in the pile with that colour
+/// \returns unsigned int Position of card to play
 //-----------------------------------------------------------------------------
 unsigned int Jabberwocky::findLowerCard (const CardWidget& cardCmp, const ICardPile& pile, int aPosColour) const {
    TRACE9 ("Jabberwocky::findLowerCard (const CardWidget&, const ICardPile&, int) - " << aPosColour);
@@ -741,10 +741,10 @@ unsigned int Jabberwocky::findLowerCard (const CardWidget& cardCmp, const ICardP
 
 //-----------------------------------------------------------------------------
 /// Find the lowest card higher than the passed one
-/// \param cardCmp: Card which should not be passed
-/// \param pile: Pile from which to play
-/// \param aPositions: Array with positions of cards
-/// \returns \c Position of card to play
+/// \param cardCmp Card which should not be passed
+/// \param pile Pile from which to play
+/// \param aPositions Array with positions of cards
+/// \returns unsigned int Position of card to play
 //-----------------------------------------------------------------------------
 unsigned int Jabberwocky::findHigherCard (const CardWidget& cardCmp, const ICardPile& pile, unsigned int aPosColour) const {
    TRACE9 ("Jabberwocky::findHigherCard (const CardWidget&, const ICardPile&, unsigned int)");
@@ -796,9 +796,9 @@ unsigned int Jabberwocky::check4Winner () const {
 
 //-----------------------------------------------------------------------------
 /// Find the worst card to play (e.g. card not likely to win the trick)
-/// \param pile: Pile from which to play
-/// \param aPositions: Array with positions of cards
-/// \returns \c Position of card to play or -1
+/// \param pile Pile from which to play
+/// \param aPositions Array with positions of cards
+/// \returns unsigned int Position of card to play or -1
 //-----------------------------------------------------------------------------
 unsigned int Jabberwocky::findWorstCard (const ICardPile& pile, const int aPositions[4]) const {
    TRACE9 ("Jabberwocky::findWorstCard (const ICardPile&, const int[4])");
@@ -826,8 +826,8 @@ unsigned int Jabberwocky::findWorstCard (const ICardPile& pile, const int aPosit
 //----------------------------------------------------------------------------
 /// Checks if the passed card might be the highest, considering the unused and
 /// played cards.
-/// \param card: Card to inspect
-/// \return bool: True, if card is likely highest unplayed one
+/// \param card Card to inspect
+/// \return bool True, if card is likely highest unplayed one
 //----------------------------------------------------------------------------
 bool Jabberwocky::isHighEnough (const CardWidget& card) const {
    TRACE8 ("Jabberwocky::isHighEnough (const CardWidget&) - " << card);
@@ -837,8 +837,8 @@ bool Jabberwocky::isHighEnough (const CardWidget& card) const {
 //----------------------------------------------------------------------------
 /// Checks if the passed card is the highest card of its colour, which has
 /// not been played.
-/// \param card: Card to inspect
-/// \return bool: True, if card is the highest unplayed one
+/// \param card Card to inspect
+/// \return bool True, if card is the highest unplayed one
 //----------------------------------------------------------------------------
 bool Jabberwocky::isHighest (const CardWidget& card) const {
    TRACE8 ("Jabberwocky::isHighest (const CardWidget&) - " << card);
@@ -852,8 +852,8 @@ bool Jabberwocky::isHighest (const CardWidget& card) const {
 }
 //-----------------------------------------------------------------------------
 /// Stores the last position of each colour in the pile
-/// \param pile: Pile to inspect
-/// \param result: Array of position of last cards of earch colour
+/// \param pile Pile to inspect
+/// \param result Array of position of last cards of earch colour
 //-----------------------------------------------------------------------------
 void Jabberwocky::getPositionOfColours (const ICardPile& pile, int result[4]) {
    memset (result, (char)-1, sizeof (int[4]));
@@ -869,8 +869,8 @@ void Jabberwocky::getPositionOfColours (const ICardPile& pile, int result[4]) {
 
 //-----------------------------------------------------------------------------
 /// Plays a card out of a hand
-/// \param player: ID of player
-/// \returns int: Next player or -1 at end
+/// \param player ID of player
+/// \returns int Next player or -1 at end
 //-----------------------------------------------------------------------------
 int Jabberwocky::playCard (unsigned int player) {
    TRACE5 ("Jabberwocky::playCard (unsigned int) - Player: " << player);
@@ -949,10 +949,10 @@ int Jabberwocky::playCard (unsigned int player) {
 
 //----------------------------------------------------------------------------
 /// Handles the messages the server might send for the Jabberwocky cardgame
-/// \param player: ID of player sending the message
-/// \param message: Message received from the server
-/// \returns bool: True, if message has been completey processed
-/// \throw YGP::ParseError, YGP::CommError: In case of an error an describing text
+/// \param player ID of player sending the message
+/// \param message Message received from the server
+/// \returns bool True, if message has been completey processed
+/// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
 bool Jabberwocky::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    YGP::Tokenize command (message);

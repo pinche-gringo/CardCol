@@ -45,7 +45,7 @@ ComputerPlayer::~ComputerPlayer () {
 
 //----------------------------------------------------------------------------
 /// Executes the turn of a computer player
-/// \param game: Game played
+/// \param game Game played
 //----------------------------------------------------------------------------
 bool ComputerPlayer::makeTurn (Game* game) {
    TRACE1 ("ComputerPlayer::makeTurn (Game*) - " << name);
@@ -55,7 +55,7 @@ bool ComputerPlayer::makeTurn (Game* game) {
 
 //----------------------------------------------------------------------------
 /// Time in between two turns of the player.
-/// \returns unsigned int: Time to delay: 0 -> execute immediately
+/// \returns unsigned int Time to delay: 0 -> execute immediately
 //----------------------------------------------------------------------------
 unsigned int ComputerPlayer::timeout () const {
    return TIMEOUT;

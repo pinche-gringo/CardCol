@@ -35,6 +35,8 @@ class RemotePlayer : public Player {
  public:
    /// Constructor; taking the socket for the communication and a name of the
    /// player
+   /// \param socket Socket used for the communication
+   /// \param name Name of the (remote) player
    RemotePlayer (YGP::Socket* socket, const Glib::ustring& name) : Player (name)
        , sock (socket) { }
    virtual ~RemotePlayer ();

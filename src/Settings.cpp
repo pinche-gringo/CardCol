@@ -80,7 +80,7 @@ Settings* Settings::instance (NULL);
 
 //-----------------------------------------------------------------------------
 /// Constructor
-/// \param options: Options to change
+/// \param options Options to change
 //-----------------------------------------------------------------------------
 Settings::Settings (Options& options)
    : XGP::XDialog (OKCANCEL),
@@ -248,8 +248,8 @@ void Settings::okEvent () {
 //-----------------------------------------------------------------------------
 /// Creates or selects (if already existing) a dialog to change the
 /// preferences.
-/// \param parent: Parent window
-/// \returns Settings*: Pointer to the created window
+/// \param parent Parent window
+/// \returns Settings* Pointer to the created window
 //-----------------------------------------------------------------------------
 Settings* Settings::create (const Glib::RefPtr<Gdk::Window>& parent,
 			    Options& options) {
@@ -266,7 +266,7 @@ Settings* Settings::create (const Glib::RefPtr<Gdk::Window>& parent,
 #ifdef WITH_ROVHULT
 //-----------------------------------------------------------------------------
 /// Callback when a value of the Røvhult-settings have been changed
-/// \param which: ID of changed control
+/// \param which ID of changed control
 //-----------------------------------------------------------------------------
 void Settings::chgValueRovhult (unsigned int which) {
    TRACE8 ("Settings::chgValueRovhult (unsigned int) - " << which);

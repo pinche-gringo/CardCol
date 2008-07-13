@@ -29,7 +29,7 @@ class CardSizes : public YGP::MetaEnum {
    typedef enum { TINY = 0, SMALL, NORMAL, BIG } SIZES;
 
    /// Creates a meta-enum of type CardSizes
-   /// \returns CardSizes&: Instance of CardSizes
+   /// \returns CardSizes& Instance of CardSizes
    static const CardSizes& get () {
       if (!instance)
          instance = new CardSizes;

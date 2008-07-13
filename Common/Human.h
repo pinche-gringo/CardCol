@@ -27,6 +27,7 @@
 class Human : public Player {
  public:
    /// Constructor from a name
+   /// \param name Name of the human player
    Human (const Glib::ustring& name) : Player (name) { }
    virtual ~Human ();
 
