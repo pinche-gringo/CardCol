@@ -35,8 +35,6 @@
 #include <gtkmm/stock.h>
 #include <gtkmm/statusbar.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -400,7 +398,7 @@ void Machiavelli::doEndTurn () {
 }
 
 //-----------------------------------------------------------------------------
-/// Prepares the passed region of cards for drag´n´drop
+/// Prepares the passed region of cards for drag'n'drop
 /// \param start Number of first card to prepare for DND
 /// \param end Number of last card to prepare for DND
 /// \pre \c start < \c end; \c end <= Nr. ofcards
@@ -418,7 +416,7 @@ void Machiavelli::registerHandDND (unsigned int start, unsigned int end) {
 }
 
 //-----------------------------------------------------------------------------
-/// Prepares the card for drag´n´drop
+/// Prepares the card for drag'n'drop
 /// \param iCard Number of card in hand
 //-----------------------------------------------------------------------------
 void Machiavelli::registerHandDND (unsigned int iCard) {
@@ -443,7 +441,7 @@ void Machiavelli::registerHandDND (unsigned int iCard) {
 }
 
 //-----------------------------------------------------------------------------
-/// Stops the drag´n´drop abilities of the passed card
+/// Stops the drag'n'drop abilities of the passed card
 /// \param card Card to unregister of dnd
 //-----------------------------------------------------------------------------
 void Machiavelli::unregisterHandDND (CardWidget& card) {
@@ -461,7 +459,7 @@ void Machiavelli::unregisterHandDND (CardWidget& card) {
 }
 
 //-----------------------------------------------------------------------------
-/// Prepares the passed region of cards for drag´n´drop
+/// Prepares the passed region of cards for drag'n'drop
 /// \param pile Pile whose cards should be registered. This value is calcualated
 ///     like (row << 4) + column
 /// \param start Number of first card to prepare for DND
@@ -486,7 +484,7 @@ void Machiavelli::registerTableDND (unsigned int pile, unsigned int start, unsig
 }
 
 //-----------------------------------------------------------------------------
-/// Prepares the card for drag´n´drop
+/// Prepares the card for drag'n'drop
 /// \param card Card to register
 /// \param nr Number of card in pile
 //-----------------------------------------------------------------------------
@@ -508,7 +506,7 @@ void Machiavelli::registerTableDND (CardWidget& card, unsigned int nr) {
 }
 
 //-----------------------------------------------------------------------------
-/// Stops the drag´n´drop abilities of the passed card
+/// Stops the drag'n'drop abilities of the passed card
 /// \param card Card to de-register
 //-----------------------------------------------------------------------------
 void Machiavelli::unregisterTableDND (CardWidget& card) {
@@ -526,7 +524,7 @@ void Machiavelli::unregisterTableDND (CardWidget& card) {
 }
 
 //-----------------------------------------------------------------------------
-/// Stops the drag´n´drop abilities of all cards on the table
+/// Stops the drag'n'drop abilities of all cards on the table
 //-----------------------------------------------------------------------------
 void Machiavelli::unregisterTableDND () {
    for (std::map<CardWidget*, CONNECTIONS>::iterator i (aDNDTable.begin ());
@@ -928,23 +926,23 @@ bool Machiavelli::cardFitsOnPile (const CardWidget& card, unsigned int offset) {
 
       int pos ((*m)->size () - static_cast<unsigned int> (diff));
       TRACE7 ("Machiavelli::cardFitsOnPile (const CardWidget&, unsigned int) - Splitting "
-              << (m - tablePiles.begin ()) << " at " << diff << " (" << pos << ")?");
+              << (m - tablePiles.begin ()) << " at " << pos << " (" << diff << ") of " << (*m)->size ());
 
       // A new pile can be made directly (enough cards on both sides)
       if ((pos > 2) && (diff > 1)) {
-         ++diff;
+         pos = ++diff;
          TRACE8 ("Machiavelli::cardFitsOnPile (const CardWidget&, unsigned int) - Marked pile: "
                  << std::hex << (m - tablePiles.begin ()) << std::dec);
 
 	 ICardPile& source (**m);
-         do {
-            Check3 ((unsigned int)diff < source.size ());
+	 Check3 ((unsigned int)diff < source.size ());
+         do
             source[diff]->mark ();
-         } while (static_cast<unsigned int> (++diff) < source.size ());
+	 while (static_cast<unsigned int> (++diff) < source.size ());
 	 MachiPile& newPile (makeNewPile ());
 	 flipCards2Play (hands[currentPlayer ()], offset, offset);
-	 CardPileWindows& win (animateCards2 (**m, hands[currentPlayer ()], offset, offset));
-	 win.addWindow (diff > 0, source, pos, source.size () - 1);
+	 CardPileWindows& win (animateCards2 (newPile, hands[currentPlayer ()], offset, offset));
+	 win.addWindow (1, source, pos, source.size () - 1);
 	 win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
 					 &newPile));
 	 return true;
@@ -1072,7 +1070,8 @@ bool Machiavelli::reorderTableToFit (ICardPile& playerPile) {
 	       MachiPile& newPile (makeNewPile ());
 	       CardPileWindows& win (animateCards2 (newPile, playerPile,
 						    pos1Play, pos2Play));
-	       win.addWindow (src, posSrc1, posSrc2);
+	       win.addWindow ((MachiPile::cardDistance (*playerPile[pos2Play], **c) == 1)
+			      ? 2 : 0, src, posSrc1, posSrc2);
 	       win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
 					       &newPile));
                return true;
@@ -1210,7 +1209,7 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
 
             diff = MachiPile::cardDistance (**p, **i);
             TRACE6 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Matching " << **i
-                    << "differs " << diff);
+                    << " differs " << diff);
             work.append (**p);
             work.append (**i);
 
@@ -1260,13 +1259,13 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
 		     unsigned int posSrc2 (c - (*o)->begin ());
                      TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Piles "
                              << (t - tablePiles.begin ()) << " (" << posSrc1 << ") and "
-                             << (o - tablePiles.begin ()) << " (" << posSrc2);
+                             << (o - tablePiles.begin ()) << " (" << posSrc2 << ')');
                      (*i)->mark ();
 
 		     MachiPile& newPile (makeNewPile ());
 		     CardPileWindows& win (animateCards2 (newPile, playerPile, pos2Play, pos2Play));
 		     win.addWindow (diff < 0 ? 0 : 1, src1, posSrc1, posSrc1);
-		     win.addWindow (diff2 < 0 ? 1 : 2, src2, posSrc2, posSrc2);
+		     win.addWindow (diff2 < 0 ? diff2 : 2, src2, posSrc2, posSrc2);
 		     win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
 						     &newPile));
                   }
@@ -1403,7 +1402,7 @@ void Machiavelli::checkPiles (YGP::StatusObject& obj) const {
            (*i)->checkIntegrity ();
        }
        catch (MachiPile::PileError& error) {
-           TRACE8 ("Machiavelli::checkPiles () const - " << (i - tablePiles.begin ())
+           TRACE8 ("Machiavelli::checkPiles () const - Pile " << (i - tablePiles.begin ())
                    << ": " << error.what ());
            Glib::ustring msg (_("Pile %1: %2\n"));
            msg.replace (msg.find ("%1"), 2,
