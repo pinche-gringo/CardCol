@@ -3,7 +3,7 @@
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Machiavelli
 //REFERENCES  :
-//TODO        :
+//TODO        : Rewrite reorderTableToFit() to only iterate once over the piles
 //BUGS        :
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
@@ -1043,8 +1043,13 @@ bool Machiavelli::reorderTableToFit (ICardPile& playerPile) {
 		  continue;
 	       }
 
+	       // **h is the 1st card from the hand
+	       // **p is the 2nd card from the hand
+	       // **c is the card from the second pile (*t)
 	       TRACE6 ("Machiavelli::reorderTableToFit (ICardPile&) - Hand "
 		       << (p - playerPile.begin ()) << "; " << h - playerPile.begin ());
+	       // Sort the card in the hands in the right order;
+	       // pos1Play points to the first, pos2Play to the second
 	       if (diff < 0) {
 		  pos1Play = h - playerPile.begin ();
 		  playerPile.move (pos1Play - 1,
@@ -1070,7 +1075,7 @@ bool Machiavelli::reorderTableToFit (ICardPile& playerPile) {
 	       MachiPile& newPile (makeNewPile ());
 	       CardPileWindows& win (animateCards2 (newPile, playerPile,
 						    pos1Play, pos2Play));
-	       win.addWindow ((MachiPile::cardDistance (*playerPile[pos2Play], **c) == 1)
+	       win.addWindow ((MachiPile::cardDistance (**c, *playerPile[pos2Play]) == 1)
 			      ? 2 : 0, src, posSrc1, posSrc2);
 	       win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
 					       &newPile));
@@ -1207,6 +1212,9 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                 && ((diff < 3) || (diff > (int)((*t)->size () - 4))))
                continue;
 
+	    // **p card in hand
+	    // *t 1st pile on table
+	    // **i 1st matching card
             diff = MachiPile::cardDistance (**p, **i);
             TRACE6 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Matching " << **i
                     << " differs " << diff);
@@ -1221,6 +1229,8 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                   Check3 (c != (*o)->end ());
 		  TRACE6 ("Machiavelli::reorderTableToFit3 (ICardPile&) - 3rd: " << **c);
 
+		  // *o 2nd pile on table
+		  // **c 2nd matching card
 		  if ((*o)->size () < 4) {
 		     addBorderCards2Missing (o - tablePiles.begin (), 1 << (c == (*o)->begin ()));
 		     if (missing.size ()
@@ -1241,13 +1251,10 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                   }
 
                   if (work.size ()) {
-                     TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Hand "
-                             << (p - playerPile.begin ()));
                      pos2Play = p - playerPile.begin ();
-
+                     TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Hand " << pos2Play);
 		     Check3 (o >= tablePiles.begin ());
 		     Check3 (c >= (*o)->begin ());
-
                      Check3 (t >= tablePiles.begin ());
                      Check3 (i >= (*t)->begin ());
 		     flipCards2Play (playerPile, pos2Play, pos2Play);
@@ -1261,11 +1268,13 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                              << (t - tablePiles.begin ()) << " (" << posSrc1 << ") and "
                              << (o - tablePiles.begin ()) << " (" << posSrc2 << ')');
                      (*i)->mark ();
+		     (*c)->mark ();
 
 		     MachiPile& newPile (makeNewPile ());
 		     CardPileWindows& win (animateCards2 (newPile, playerPile, pos2Play, pos2Play));
-		     win.addWindow (diff < 0 ? 0 : 1, src1, posSrc1, posSrc1);
-		     win.addWindow (diff2 < 0 ? diff2 : 2, src2, posSrc2, posSrc2);
+		     win.addWindow ((diff < 0) && (diff2 != 2), src1, posSrc1, posSrc1);
+		     win.addWindow ((diff2 > 0) ? (1 - (diff > 0)) : (2 - (diff == 2)),
+				    src2, posSrc2, posSrc2);
 		     win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
 						     &newPile));
                   }
@@ -1279,12 +1288,14 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
 		     CardPileWindow& win (animateCards (newPile, src, posSrc, posSrc + nr - 1));
 		     win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
 						     &newPile));
+
+		     TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Pile "
+			     << (o - tablePiles.begin ()) << "; Card "
+			     << (c - (*o)->begin ()) << '-' << (c - (*o)->begin () + nr - 1));
+		     Check3 (((unsigned int)(c - (*o)->begin ()) + nr) <= (*o)->size ());
+		     while (nr--)
+			(*c++)->mark ();
 		  }
-                  TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Pile "
-                          << (o - tablePiles.begin ()) << "; Card "
-                          << (c - (*o)->begin ()) << '-' << (c - (*o)->begin () + nr - 1));
-                  while (nr--)
-                     (*c++)->mark ();
                   return true;
                } // endif pile has matching card
             } // endfor all following piles
