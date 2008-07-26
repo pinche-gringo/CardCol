@@ -382,7 +382,7 @@ void CardPileWindows::AnimatedPile::getEndPos (int& x, int& y) {
 //-----------------------------------------------------------------------------
 void CardPileWindows::AnimatedPile::start () {
    TRACE1 ("CardPileWindows::AnimatedPile::start ()");
-   for (unsigned int i (first + 1); i <= last; ++i) {
+   for (unsigned int i (first); i <= last; ++i) {
       Check3 (source.at (i)->get_window ());
       source.at (i)->get_window ()->raise ();
    }
