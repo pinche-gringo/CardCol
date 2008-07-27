@@ -18,11 +18,11 @@
 
 2008-07-16 21:31:54 +0200  Markus Schwab  <g17m0@lycos.com>
 
-        * Fixed some bugs in Machiavelli's computer-player
+        * Machiavelli: Fixed some bugs in computer-player
 
 2008-07-13 21:43:10 +0200  Markus Schwab  <g17m0@lycos.com>
 
-        * Fixed doxygen-comments
+        * *.html: Fixed doxygen-comments
 
 2008-07-13 21:42:28 +0200  Markus Schwab  <g17m0@lycos.com>
 
