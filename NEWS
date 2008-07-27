@@ -1,3 +1,10 @@
+Overview of changes in version 0.9.10:
+
+  - Enabling Machiavelli
+  - Fixed of-by-1 error when starting animation of multiple piles
+  - Fixed doxygen-comments
+
+
 Overview of changes in version 0.9.00:
 
   - Animate cards (A great idea from int (at) arcor (dot) de)

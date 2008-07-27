@@ -1,3 +1,41 @@
+2008-07-27 20:59:28 +0200  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.9.10 documented
+
+        * Actualised translations
+
+2008-07-26 19:06:48 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * configure.in: Version to 0.9.10; Enabling Machiavelli
+
+2008-07-26 19:06:18 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * CardPilewindows::AnimatedPile: Fixed of by 1 error when starting animation
+
+2008-07-26 19:05:08 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * Machiavelli: Bugfixes
+
+2008-07-16 21:31:54 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * Fixed some bugs in Machiavelli's computer-player
+
+2008-07-13 21:43:10 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * Fixed doxygen-comments
+
+2008-07-13 21:42:28 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * .gitignore: Added
+
+2008-07-13 21:02:05 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * CardOptions.h: Removed trailing space
+
+2008-07-12 21:24:20 +0000  Markus Schwab  <g17m0@lycos.com>
+
+        * Converted to UTF-8
+
 2008-07-12  Markus Schwab  <g17m0@lycos.com>
 
 	* NEWS, ChangeLog: Changes of V0.9.00 documented
