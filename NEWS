@@ -1,3 +1,10 @@
+Overview of changes in version 0.9.11:
+
+  - Fixed picking up the played cards in Twopart, part II
+  - Fixed showing monos when picking up the buraco
+  - Buraco shows the points immediately after playing the last card
+
+
 Overview of changes in version 0.9.10:
 
   - Enabling Machiavelli

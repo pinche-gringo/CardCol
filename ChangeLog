@@ -1,3 +1,17 @@
+2008-08-03 22:01:58 +0200  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.9.11 documented
+
+        * configure.in: Version to 0.9.11
+
+2008-08-03 21:59:09 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * Buraco: Improved game-flow
+
+2008-08-03 13:24:37 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * Twopart: Fixed bug when 4th player picked up the played pile
+
 2008-07-27 20:59:28 +0200  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.9.10 documented
