@@ -194,14 +194,11 @@ unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
    TRACE3 ("Twopart::pickUpPlayedPile (unsigned int) - Player " << player
            << " picks up played pile at " << offPos << '(' << startPos[offPos - 1] << ')');
    Check3 (bfPlayers);
+   Check3 (gameStatus () == PLAYING2);
 
    // Move played cards to player
-   Check3 (offPos > 0);
    CardPileWindow* anim;
-   if (gameStatus () == PLAYING2)
-      anim = &animateCards (players[player].hand, played, startPos[--offPos], played.size () - 1);
-   else
-      anim = &animateCards (players[player].won, played, 0, played.size () - 1);
+   anim = &animateCards (players[player].hand, played, startPos[--offPos], played.size () - 1);
    anim->sigAnimation.connect (bind (mem_fun (*this, &Twopart::endPickup), player));
    removePlayer (player);
 
@@ -246,7 +243,7 @@ unsigned int Twopart::pickUpPlayedPile (unsigned int player) {
 /// \pre Call only in part 2 of the game
 //-----------------------------------------------------------------------------
 void Twopart::playedSelected () {
-   TRACE3 ("Twopart::playedSelected (unsigned int) - Human picks up played pile");
+   TRACE3 ("Twopart::playedSelected (unsigned int) - Human picks up played pile - " << played.size ());
    Check3 (gameStatus () == PLAYING2);
    Check3 (bfPlayers);
 
@@ -299,6 +296,8 @@ void Twopart::cardSelected (unsigned int pos) {
             return;
          }
       }
+      TRACE1 ("TwoPart::cardSelected - Position: " << offPos << " -> " << played.size ());
+      startPos[offPos++] = played.size ();
       animateCards (played, players[0].hand, start, pos)
 	 .sigAnimation.connect (bind (mem_fun (*this, &Twopart::endTurn), 0));
    }
@@ -349,14 +348,8 @@ void Twopart::endTurn (unsigned int player) {
    TRACE7 ("Twopart::endTurn (unsigned int) - Players: " << std::hex << bfPlayers << std::dec);
    removePlayer (player);
    unsigned int newPlayer (player);
-   if (bfPlayers) {
+   if (bfPlayers)
       newPlayer = (unsigned int)findNextPlayer (player);
-
-      if (gameStatus () == PLAYING2) {
-	 startPos[++offPos] = played.size ();
-	 TRACE1 ("endTurn " << player << "; Position: " << offPos << " -> " << startPos[offPos]);
-      }
-   }
    else {
       // Show trump if not already visible
       if (pTrump && !pTrump->is_visible ()) {
@@ -407,7 +400,12 @@ void Twopart::makeMove (unsigned int player) {
 
    unsigned int pos1Play, pos2Play;
    if (findPos2Play (player, pos1Play, pos2Play) != -1) {
-      // Flip card(s) to play
+      if (gameStatus () == PLAYING2) {
+	 TRACE1 ("TwoPart::makeMove " << player << "; Position: " << offPos << " -> " << played.size ());
+	 startPos[offPos++] = played.size ();
+      }
+
+      // Show card(s) to play
       flipCards2Play (players[player].hand, pos1Play, pos2Play);
       animateCards (played, players[player].hand, pos1Play, pos2Play)
 	 .sigAnimation.connect (bind (mem_fun (*this, &Twopart::endTurn), player));
