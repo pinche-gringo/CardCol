@@ -197,7 +197,7 @@ void Buraco::makeMove (unsigned int player) {
       TRACE5 ("Buraco::makeMove (unsigned int) - Player with monos: " << oldPlayer);
       if (oldPlayer && (pile->size () > CARDS2DEAL)) {
 	 Check3 (pile->size () > CARDS2DEAL);
-	 hideJoker (pile, pile->size () - CARDS2DEAL);
+	 showJoker (pile, pile->size () - CARDS2DEAL, false);
       }
       undo.pickUp = 0;
    }
@@ -1382,19 +1382,9 @@ void Buraco::addBuraco (unsigned int player) {
    Check3 (actPlayers[player]);
 
    // If the computer-player had jokers left, show them
-   if (player && cJokers) {
-      TRACE3 ("Buraco::addBuraco (unsigned int) - Jokers: " << cJokers);
-      for (ICardPile::iterator i (hands[player].begin () + CARDS2DEAL);
-	   i != hands[player].end (); ++i) {
-	 (*i)->showFace ();
-	 hands[player].resize (**i, ICardPile::COMPRESSED);
-
-	 Glib::signal_timeout ().connect
-	    (bind (sigc::ptr_fun (&Buraco::hideJoker), &hands[player], cJokers),
-	     ComputerPlayer::TIMEOUT);
-      }
-      hands[player].resize (10 + cJokers, ICardPile::NORMAL);
-   }
+   if (player && cJokers)
+      Glib::signal_idle ().connect
+	 (bind (sigc::ptr_fun (&Buraco::showJoker), &hands[player], cJokers, true));
 
    status.pop ();
    Glib::ustring stat (_("%1 picked up the burraco"));
@@ -1404,21 +1394,28 @@ void Buraco::addBuraco (unsigned int player) {
 }
 
 //-----------------------------------------------------------------------------
-/// Hides the joker, which are displayed when picking up the buraco
+/// Shows or hides the joker, which are displayed when picking up the buraco
 /// \param pile Pile holding the jokers shown
 /// \param cJokers Numer of jokers shown
+/// \param show Flag if the jokers should be shown or hidden
 /// \returns bool false
 //-----------------------------------------------------------------------------
-bool Buraco::hideJoker (ICardPile* pile, unsigned int cJokers) {
-   TRACE9 ("Buraco::hideJoker (ICardPile*, unsigned int) - " << cJokers);
+bool Buraco::showJoker (ICardPile* pile, unsigned int cJokers, bool show) {
+   TRACE9 ("Buraco::showJoker (ICardPile*, unsigned int, bool) - " << cJokers);
    Check1 (cJokers);
    Check1 ((cJokers + CARDS2DEAL) <= pile->size ());
 
+   ICardPile::PileStyle opt (show ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
    for (ICardPile::iterator i (pile->begin () + CARDS2DEAL); i != pile->end (); ++i) {
-      (*i)->showBack ();
-      pile->resize (**i, ICardPile::VERY_COMPRESSED);
+      show ? (*i)->showFace () : (*i)->showBack ();
+      pile->resize (**i, opt);
    }
-   pile->resize (10 + cJokers, ICardPile::NORMAL);
+   pile->resize (CARDS2DEAL - 1 + cJokers, ICardPile::NORMAL);
+
+   if (show)
+      Glib::signal_timeout ().connect
+	 (bind (sigc::ptr_fun (&Buraco::showJoker), pile, cJokers, false),
+	  ComputerPlayer::TIMEOUT - 50);
    return false;
 }
 
