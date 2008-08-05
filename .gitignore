@@ -25,3 +25,4 @@ aclocal.m4
 *.sin
 *.pot
 *.gmo
+*.in

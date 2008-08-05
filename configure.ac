@@ -1,0 +1,346 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_PREREQ(2.52)
+AC_REVISION($Revision$)
+AC_INIT(Cardgames, 0.9.11, [g17m0@lycos.com], CardCol)
+
+RELEASE=${PACKAGE_VERSION%.*}
+AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
+                   [Define to the release of the program])
+AC_SUBST(PACKAGE_VERSION)
+AC_SUBST(RELEASE)
+
+dnl Defines for the Version of the communication protocoll
+PROTOCOLL=1
+VARIANT=3
+AC_DEFINE_UNQUOTED(PROTOCOLL, $PROTOCOLL, [Version of the communication protocoll])
+AC_DEFINE_UNQUOTED(PROT_VARIANT, $VARIANT, [Variant of the verstion of the communication protocoll])
+AC_DEFINE_UNQUOTED(STRPROTOCOLL, "$PROTOCOLL", [Version of the communication protocoll - stringified verstion])
+AC_DEFINE_UNQUOTED(STRVARIANT, "$VARIANT", [Variant of the verstion of the communication protocoll - stringified verstion])
+
+LIBRELEASE=$RELEASE
+AC_SUBST(LIBRELEASE)
+
+INCLUDES="-I. -I\$(top_srcdir) -DLOCALEDIR=\\\"\$(datadir)/locale\\\" -DDOCUDIR=\\\"\$(datadir)/doc/\$(PACKAGE)/\\\""
+AC_SUBST(INCLUDES)
+
+dnl AC_CANONICAL_SYSTEM
+
+AC_LANG_CPLUSPLUS
+
+AC_C_BIGENDIAN
+
+ALL_LINGUAS="de en es tr"
+
+AM_INIT_AUTOMAKE(dist-bzip2)
+AM_CONFIG_HEADER(cardgames-cfg.h)
+
+dnl Checks for programs.
+AC_PROG_CXX
+AC_LANG_CPLUSPLUS
+AM_PROG_LIBTOOL
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+
+AC_GNU_SOURCE
+AM_GNU_GETTEXT
+
+dnl Checks for libraries.
+AC_CHECK_LIB(stdc++, main)
+
+PKG_CHECK_MODULES(DEPENDENCIES, gtkmm-2.4 >= 2.6.0 gthread-2.0 > 2.2.0
+                  YGP >= 0.9.00 XGP >= 0.9.03)
+AC_SUBST(DEPENDENCIES_CFLAGS)
+AC_SUBST(DEPENDENCIES_LIBS)
+
+if $PKG_CONFIG --exists "gtkmm-2.4 >= 2.12.0" ; then
+   GTKMM_VERSION=`$PKG_CONFIG --modversion gtkmm-2.4`
+   AC_DEFINE_UNQUOTED([HAVE_GTKMM2_12], $GTKMM_VERSION,
+                      [Set to version if GTKMM is version 2.12 or above])
+fi
+
+dnl Checks for header files.
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+
+dnl Checks for library functions.
+
+dnl Enable special features
+AC_ARG_ENABLE(network,
+              AC_HELP_STRING([--disable-network],
+                             [Disables the network capabilities]))
+AC_MSG_NOTICE(Network-games are disabled in this version!)
+enable_network=no
+if test "$enable_network" != "no"; then
+   AC_CHECK_LIB(pthread, main)
+
+   if test $ac_cv_lib_pthread_main = no; then
+      AC_MSG_WARN(libpthread is not installed! Disabling network features)
+      enable_network=no
+   else
+      AC_DEFINE_UNQUOTED(WITH_NETWORK, 1, [Define if the network capabilities should be included])
+   fi
+fi
+AM_CONDITIONAL(HAVE_NETWORK, test "$enable_network" != "no")
+
+
+AC_ARG_ENABLE(debug,
+              AC_HELP_STRING([[[[[--enable-debug[=LEVEL]]]]]],
+                             [Enables additional traces]),
+              if test "$enableval" != "no"; then
+                  test "$enableval" = "yes" && enableval=0
+                  CXXFLAGS="-g -DTRACELEVEL=$enableval $CXXFLAGS";
+              else
+                  CXXFLAGS="-UTRACELEVEL $CXXFLAGS"; fi)
+AC_ARG_ENABLE(checks,
+              AC_HELP_STRING([[[[[--enable-checks[=LEVEL]]]]]],
+                             [Enables additional (internal) checks]),
+              if test "$enableval" != "no"; then
+                  test "$enableval" = "yes" && enableval=0
+                  CXXFLAGS="$CXXFLAGS -DCHECK=$enableval";
+              else
+                  CXXFLAGS="$CXXFLAGS -DNDEBUG -UCHECK"; fi)
+AC_ARG_ENABLE(saving,
+              AC_HELP_STRING([--enable-saving],
+                             [Enables saving and loading games (for testing)]),
+              if test "$enableval" != "no"; then
+                  test "$enableval" = "yes" && enableval=0
+                  CXXFLAGS="$CXXFLAGS -DSAVE_GAME";
+              fi)
+
+AC_ARG_ENABLE(rovhult,
+              AC_HELP_STRING([--disable-rovhult],
+                             [Disables the Røvhult cardgame]))
+if test "$enable_rovhult" != "no"; then
+   AC_DEFINE_UNQUOTED(WITH_ROVHULT, 1, [Define if the Røvhult cardgame shall be included])
+fi
+AM_CONDITIONAL(SUPPORT_ROVHULT, test "$enable_rovhult" != "no")
+
+AC_ARG_ENABLE(twopart,
+              AC_HELP_STRING([--disable-twopart],
+                             [Disables the Twopart cardgame]))
+if test "$enable_twopart" != "no"; then
+   AC_DEFINE_UNQUOTED(WITH_TWOPART, 1, [Define if the Twopart cardgame shall be included])
+fi
+AM_CONDITIONAL(SUPPORT_TWOPART, test "$enable_twopart" != "no")
+
+AC_ARG_ENABLE(hearts,
+              AC_HELP_STRING([--disable-hearts],
+                             [Disables the Hearts cardgame]))
+if test "$enable_hearts" != "no"; then
+   AC_DEFINE_UNQUOTED(WITH_HEARTS, 1, [Define if the Hearts cardgame shall be included])
+fi
+AM_CONDITIONAL(SUPPORT_HEARTS, test "$enable_hearts" != "no")
+
+AC_ARG_ENABLE(buraco,
+              AC_HELP_STRING([--disable-buraco],
+                             [Disables the Buraco cardgame]))
+if test "$enable_buraco" != "no"; then
+   AC_DEFINE_UNQUOTED(WITH_BURACO, 1, [Define if the Buraco cardgame shall be included])
+fi
+AM_CONDITIONAL(SUPPORT_BURACO, test "$enable_buraco" != "no")
+
+AC_ARG_ENABLE(machiavelli,
+              AC_HELP_STRING([--disable-machiavelli],
+                             [Disables the Machiavelli cardgame]))
+if test "$enable_machiavelli" != "no"; then
+   AC_DEFINE_UNQUOTED(WITH_MACHIAVELLI, 1, [Define if the Machiavelli cardgame shall be included])
+fi
+AM_CONDITIONAL(SUPPORT_MACHIAVELLI, test "$enable_machiavelli" != "no")
+
+AC_ARG_ENABLE(sgtmayor,
+              AC_HELP_STRING([--disable-sgtmayor],
+                             [Disables the Sgt. Mayor cardgame]))
+if test "$enable_sgtmayor" != "no"; then
+dnl   AC_DEFINE_UNQUOTED(WITH_SGTMAYOR, 1, [Define if the Sgt. Mayor cardgame shall be included])
+   AC_MSG_NOTICE(The game Sgt. Mayor is disabled in this version)
+   enable_sgtmayor="no"
+fi
+AM_CONDITIONAL(SUPPORT_SGTMAYOR, test "$enable_sgtmayor" != "no")
+
+AC_ARG_ENABLE(jabberwocky,
+              AC_HELP_STRING([--disable-jabberwocky],
+                             [Disables the Jabberwocky cardgame]))
+if test "$enable_jabberwocky" != "no"; then
+   AC_DEFINE_UNQUOTED(WITH_JABBERWOCKY, 1, [Define if the Jabberwocky cardgame shall be included])
+fi
+AM_CONDITIONAL(SUPPORT_JABBERWOCKY, test "$enable_jabberwocky" != "no")
+
+if test "$enable_rovhult" = "no" -a "$enable_twopart" = "no" \
+	-a "$enable_hearts" = "no" -a "$enable_buraco" = "no" \
+	-a "$enable_machiavelli" = "no" -a "$enable_sgtmayor" = "no" \
+	-a "$enable_jabberwocky" = "no"; then
+   AC_MSG_ERROR("All games are disabled!")
+fi
+
+
+HAVE_CARDS=0
+AC_ARG_WITH(kde-carddir,
+            AC_HELP_STRING([--with-kde-carddir=DIR], [Path to the KDE carddecks]),
+            [test -n "$withval" && KDECARDS_DIR=$withval])
+
+if test "$KDECARDS_DIR" != "no"; then
+   AC_MSG_CHECKING(for KDE carddecks)
+   dnl Try to find the KDE carddecks (if not specified)
+   if test -z "$KDECARDS_DIR"; then
+      for version in 4.1 4.0 4 3.5 3.4 3.3 3.2 3.1 3.0 3; do
+      	 for dir in /opt/kde$version/share/apps/carddecks \
+                    /usr/share/kde$version/share/apps/carddecks \
+                    /usr/share/kde$version/apps/carddecks \
+                    /usr/kde$version/share/apps/carddecks \
+                    /usr/share/apps/carddecks \
+                    /usr/local/share/apps/carddecks \
+                    /usr/kde/$version/share/apps/carddecks; do
+	    if test -d "$dir/"; then
+	       KDECARDS_DIR="$dir/"
+	       break
+	    fi
+      	 done
+	 if test -n "$KDECARDS_DIR"; then
+	    break;
+	 fi
+      done
+
+      # If no KDE cards have been found, use a default value
+      if test -z "$KDECARDS_DIR"; then
+	 KDECARDS_DIR=/opt/kde3/share/apps/carddecks/
+	 AC_MSG_NOTICE(using default)
+      fi
+   else
+      test "${KDECARDS_DIR%/}" = "$KDECARDS_DIR" && KDECARDS_DIR="$KDECARDS_DIR/"
+   fi
+
+   AC_MSG_RESULT($KDECARDS_DIR)
+   if test -d "$KDECARDS_DIR"; then
+      if test -d "$KDECARDS_DIR/decks"; then
+	 HAVE_CARDS=1
+	 AC_DEFINE_UNQUOTED(KDECARDS_DIR, "$KDECARDS_DIR",
+                            [Directory holding the KDE carddecks])
+      else
+	 AC_MSG_WARN("Directory `$KDECARDS_DIR' does not seem to hold KDE carddecks!")
+      fi
+   else
+      AC_MSG_WARN("Directory `$KDECARDS_DIR' does not exist!")
+   fi
+fi
+
+AC_ARG_WITH(gnome-carddir,
+            AC_HELP_STRING([--with-gnome-carddir=DIR], [Path to the GNOME carddecks]),
+            [test -n "$withval" && GNOMECARDS_DIR=$withval])
+
+if test "$GNOMECARDS_DIR" != "no"; then
+   AC_MSG_CHECKING(for GNOME carddecks)
+   dnl Try to find the GNOME carddecks (if not specified)
+   if test -z "$GNOMECARDS_DIR"; then
+      for dir in /usr/share/pixmaps/gnome-games-common/cards \
+	         /usr/share/gnome/pixmaps/gnome-games-common/cards \
+	         /usr/share/gnome/gnome-games-common/cards \
+	         /usr/share/gnome/cards /usr/share/pixmaps/gnome/cards \
+	         /usr/share/gnome/pixmaps/cards \
+		 /usr/share/gnome-games-common/cards/; do
+	 if test -d "$dir/"; then
+	    GNOMECARDS_DIR="$dir/"
+	    break
+	 fi
+      done
+
+      if test -z "$GNOMECARDS_DIR"; then
+	 GNOMECARDS_DIR=/usr/share/pixmaps/gnome-games-common/cards/
+	 AC_MSG_NOTICE(using default)
+      fi
+   else
+      test "${GNOMECARDS_DIR%/}" = "$GNOMECARDS_DIR" && GNOMECARDS_DIR="$GNOMECARDS_DIR/"
+   fi
+
+   AC_MSG_RESULT($GNOMECARDS_DIR)
+   if test -d "$GNOMECARDS_DIR"; then
+      if test -f "$GNOMECARDS_DIR/bonded.png" -o -f "$GNOMECARDS_DIR/bonded.svg"; then
+	 HAVE_CARDS=1
+	 AC_DEFINE_UNQUOTED(GNOMECARDS_DIR, "$GNOMECARDS_DIR",
+                            [Directory holding the GNOME carddecks])
+      else
+	 AC_MSG_WARN("Directory `$GNOMECARDS_DIR' does not seem to hold GNOME carddecks!")
+      fi
+   else
+      AC_MSG_WARN("Directory `$GNOMECARDS_DIR' does not exist!")
+   fi
+fi
+
+AC_ARG_WITH(cardpics-dir,
+            AC_HELP_STRING([--with-cardpics-dir=DIR], [Path to cardpics]),
+            [test -n "$withval" && CARDPIC_DIR=$withval])
+
+if test "$CARDPIC_DIR" != "no"; then
+   AC_MSG_CHECKING(for cardpics)
+   dnl Try to find the cardpics (if not specified)
+   if test -z "$CARDPICS_DIR"; then
+      for dir in /usr/share/games/cardpics/images /usr/share/cardpics/images; do
+	 if test -d "$dir/"; then
+	    CARDPICS_DIR="$dir/"
+	    break
+	 fi
+      done
+
+      if test -z "$CARDPICS_DIR"; then
+	 CARDPICS_DIR=/usr/share/games/cardpics/images
+	 AC_MSG_NOTICE(using default)
+      fi
+   else
+      test "${CARDPICS_DIR%/}" = "$CARDPICS_DIR" && CARDPICS_DIR="$CARDPICS_DIR/"
+   fi
+
+   AC_MSG_RESULT($CARDPICS_DIR)
+   if test -d "$CARDPICS_DIR"; then
+      if test -f "$CARDPICS_DIR/00.png"; then
+	 HAVE_CARDS=1
+	 AC_DEFINE_UNQUOTED(CARDPICS_DIR, "$CARDPICS_DIR",
+                            [Directory holding the cardpics])
+      else
+	 AC_MSG_WARN("Directory `$CARDPICS_DIR' does not seem to hold cardpics!")
+      fi
+   else
+      AC_MSG_WARN("Directory `$CARDPICS_DIR' does not exist!")
+   fi
+fi
+
+if test $HAVE_CARDS -eq 0; then
+   AC_MSG_ERROR("Didn't find any carddecks!")
+fi
+
+AC_OUTPUT([Makefile Common/Makefile src/Makefile intl/Makefile po/Makefile.in doc/Makefile])
+
+dnl Settings for autoheader
+AH_TOP([#ifndef CARDGAMES_CFG_H
+#define CARDGAMES_CFG_H
+
+//$Id$
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+])
+AH_BOTTOM([#if defined (HAVE_GETTEXT) && defined (ENABLE_NLS)
+#  include <libintl.h>
+#  include <glibmm/convert.h>
+#  define _(String)                           Glib::locale_to_utf8 (gettext (String))
+#  define N_(String)                          gettext_noop (String)
+#  define gettext_noop(String)                (String)
+#else
+#  define _(String)                           (String)
+#  define N_(String)                          (String)
+#  define ngettext(Str1, Str2, flag)          (((flag) == 1) ? (Str1) : (Str2))
+#  define  binddomain(Domain)
+#  define bindtextdomain(Package, Directory)
+#endif
+
+#endif])
