@@ -96,6 +96,7 @@ class SgtMayor : public Game {
    void makeExchange ();
    void displayExchangeStatus ();
    void startPlaying ();
+   void playCardDelayed (unsigned int player, unsigned int card);
    unsigned int playCard (unsigned int player, unsigned int card);
    static unsigned int calcNextPlayer (unsigned int player) {
       return (++player >= NUM_PLAYERS) ? 0 : player;
