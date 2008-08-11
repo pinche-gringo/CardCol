@@ -38,8 +38,6 @@
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -360,13 +358,13 @@ void SgtMayor::cardExchange (unsigned int iCard) {
    TRACE5 ("SgtMayor::cardExchange (unsigned int) - Position " << iCard);
    Check3 (diffTricks[0]);
 
+   disableHuman ();
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
       if (diffTricks[i] < 0) {
          exchangeCards (0, iCard, i);
          break;
       }
    }
-   disableHuman ();
 }
 
 //-----------------------------------------------------------------------------
@@ -924,13 +922,12 @@ unsigned int SgtMayor::tryToGetTrickWithTrump (const ICardPile& pile) const {
 //----------------------------------------------------------------------------
 void SgtMayor::makeExchange () {
    TRACE5 ("SgtMayor::makeExchange () - Exchanging cards: " << (*diffTricks > 0 ? (int)*diffTricks : 0) + (diffTricks[1] > 0 ? (int)diffTricks[1] : 0) + (diffTricks[2] > 0 ? (int)diffTricks[2] : 0));
-   Check3 (*diffTricks + diffTricks[1] == -diffTricks[2]);
+   Check3 ((*diffTricks + diffTricks[1]) == -diffTricks[2]);
 
-   bool humanExchange (*diffTricks);
    for (unsigned int i (startPlayer); (i - startPlayer) < NUM_PLAYERS; ++i) {
       TRACE9 ("SgtMayor::makeExchange () - " << i % NUM_PLAYERS << "'s tricks: " << (int)diffTricks[i % NUM_PLAYERS]);
 
-      while (diffTricks[i % NUM_PLAYERS] > 0) {
+      if (diffTricks[i % NUM_PLAYERS] > 0) {
 	 Check3 ((diffTricks[(i + 1) % NUM_PLAYERS] < 0)
 		 || (diffTricks[(i + 2) % NUM_PLAYERS] < 0));
 
@@ -944,7 +941,6 @@ void SgtMayor::makeExchange () {
 		     Glib::ustring msg (_("Waiting for %1 to exchange cards ..."));
 		     msg.replace (msg.find ("%1"), 2, actPlayers[convertPlayer (i % NUM_PLAYERS)]->getName ());
 		     status.push (msg);
-		     return;
 		  }
 		  else
 		     exchangeCards (i % NUM_PLAYERS, (i + j) % NUM_PLAYERS);
@@ -957,15 +953,15 @@ void SgtMayor::makeExchange () {
 		     activeCards.push_back
 			(players[0].hand[i]->signal_clicked ().connect
 			 (bind (mem_fun (*this, (&SgtMayor::cardExchange)), i)));
-		  return;
 	       }
+	       return;
 	    }
 	 }
       }
    }
 
-   if (!humanExchange)
-      startPlaying ();
+   // Glib::signal_timeout ().connect (bind_return (mem_fun (*this, &SgtMayor::makeExchange), false), 400);
+   startPlaying ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1012,62 +1008,49 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int playerGood) {
 }
 
 //-----------------------------------------------------------------------------
-/// Exchanges cards directly; e.g. between computer players
+/// Animated exchange of cards
 /// \param playerBad Player giving away a bad card
 /// \param posBad Position of bad card to give away
 /// \param playerGood Player giving away a good card
 /// \param posGood Position of good card to give away
 //-----------------------------------------------------------------------------
-void SgtMayor::directExchange (unsigned int playerBad, unsigned int posBad,
-			       unsigned int playerGood, unsigned int posGood) {
-   CardWidget& bad (players[playerBad].hand.remove (posBad));
-   CardWidget& good (players[playerGood].hand.remove (posGood));
-   players[playerBad].hand.insertColourSorted (good);
-   players[playerGood].hand.insertColourSorted (bad);
-   TRACE9 ("SgtMayor::directExchange (4x unsigned int ) - Player "
-           << playerBad << " and " << playerGood << " exchange " << bad
-           << " and " << good);
-}
-
-//-----------------------------------------------------------------------------
-/// Exchanges cards indirectly; e.g. between a human and a  computer player
-/// \param playerBad Player giving away a bad card
-/// \param posBad Position of bad card to give away
-/// \param playerGood Player giving away a good card
-/// \param posGood Position of good card to give away
-//-----------------------------------------------------------------------------
-void SgtMayor::delayedExchange (unsigned int playerBad, unsigned int posBad,
-				unsigned int playerGood, unsigned int posGood) {
+void SgtMayor::exchange (unsigned int playerBad, unsigned int posBad,
+			 unsigned int playerGood, unsigned int posGood) {
    Check1 (playerBad < NUM_PLAYERS);
    Check1 (playerGood < NUM_PLAYERS);
-   Check2 (!(playerBad && playerGood));
+   Check2 (playerBad != playerGood);
    Check2 (posBad < players[playerBad].hand.size ());
    Check2 (posGood < players[playerGood].hand.size ());
 
-   // For easier handling: playerBad is human
-   if (playerBad) {
-      std::swap (playerGood, playerBad);
-      std::swap (posGood, posBad);
-   }
-   Check3 (playerGood); Check3 (!playerBad);
+   CardHPile& pileBad (players[playerBad].hand);
+   CardHPile& pileGood (players[playerGood].hand);
+   TRACE9 ("SgtMayor::exchange (4x unsigned int ) - Player " << playerBad << " and " << playerGood
+	   << " exchange " << *pileBad.at (posBad) << " and " << *pileGood.at (posGood));
 
-   CardWidget& good (players[playerGood].hand.remove (posGood));
-   CardWidget* bad (&players[0].hand.remove (posBad));
-   TRACE9 ("SgtMayor::delayedExchange (4x unsigned int ) - Player "
-           << playerBad << " and " << playerGood << " exchange " << *bad
-           << " and " << good);
-
-   players[0].hand.insertColourSorted (good);
-   players[playerGood].hand.insertColourSorted (*bad);
-   good.mark ();
-   Glib::signal_timeout ().connect
-      (bind (mem_fun (*this, &SgtMayor::unmarkExchanged), &good), 1000);
-
-   bad = new CardWidget (*bad);
-   bad->show ();
-   bad->showFace ();
-   played.append (*bad);
+   if (!playerGood)
+      pileBad.at (posBad)->showFace ();
+   animateCard (pileGood, pileBad, posBad)
+      .sigAnimation.connect (bind (mem_fun (*this, &SgtMayor::exchgBack),
+				   playerBad, posBad, playerGood, posGood));
 }
+
+void SgtMayor::exchgBack (unsigned int playerBad, unsigned int posBad,
+			  unsigned int playerGood, unsigned int posGood) {
+   CardHPile& pileGood (players[playerGood].hand);
+   CardHPile& pileBad (players[playerBad].hand);
+   pileGood.sortByColour ();
+
+   if (!playerBad)
+      pileGood.at (posGood)->showFace ();
+   animateCard (pileBad, pileGood, posGood)
+      .sigAnimation.connect (bind (mem_fun (*this, &SgtMayor::exchgNext), &pileBad));
+}
+
+void SgtMayor::exchgNext (CardHPile* pile) {
+   pile->sortByColour ();
+   makeExchange ();
+}
+
 
 //----------------------------------------------------------------------------
 /// Exchanges a good card from playerGood with a bad card from player bad
@@ -1152,46 +1135,7 @@ void SgtMayor::doExchangeCards (unsigned int playerBad, unsigned int posBad,
    --diffTricks[playerBad];
    ++diffTricks[playerGood];
 
-   if (playerBad && playerGood)
-      directExchange (playerBad, posBad, playerGood, posGood);
-   else
-      delayedExchange (playerBad, posBad, playerGood, posGood);
-}
-
-//----------------------------------------------------------------------------
-/// Exchanges the passed card with the first one in the played area (if any)
-/// \param cardHuman Pointer to (marked) card the human received
-/// \return bool Always false to end the timer
-//----------------------------------------------------------------------------
-bool SgtMayor::unmarkExchanged (CardWidget* cardHuman) {
-   TRACE9 ("SgtMayor::unmarkExchanged (CardWidget*, unsigned int)");
-   Check1 (cardHuman); Check3 (played.size ());
-
-   cardHuman->unmark ();
-   CardWidget* card (0);
-   played.remove (0);
-   delete card;
-
-   if (played.empty ()) {
-      if (*diffTricks || diffTricks[1])
-	 makeExchange ();
-      else
-	 startPlaying ();
-   }
-   return false;
-}
-
-//----------------------------------------------------------------------------
-/// Unmarks the passed card
-/// \param card Position of card to unmark
-/// \return bool Always false to end the timer
-//----------------------------------------------------------------------------
-bool SgtMayor::unmark (unsigned int card) {
-   Check2 (card < players[0].hand.size ());
-   TRACE9 ("SgtMayor::unmark (unsigned int) - Unmarking " << card);
-
-   players[0].hand.at (card)->unmark ();
-   return false;
+   exchange (playerBad, posBad, playerGood, posGood);
 }
 
 //-----------------------------------------------------------------------------

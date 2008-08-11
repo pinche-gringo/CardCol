@@ -71,8 +71,6 @@ class SgtMayor : public Game {
    void cardSelected (unsigned int iCard);
    void cardExchange (unsigned int iCard);
    void cardColourSelect (unsigned int iCard);
-   bool unmarkExchanged (CardWidget* cardHuman);
-   bool unmark (unsigned int card);
 
    //@Section Virtual methods
    virtual void makeMove (unsigned int player);
@@ -84,10 +82,11 @@ class SgtMayor : public Game {
    void exchangeCards (unsigned int playerBad, unsigned int posBad,
 		       unsigned int playerGood, unsigned int posGood);
    void exchangeCards (unsigned int playerBad, unsigned int playerGood);
-   void directExchange (unsigned int playerBad, unsigned int posBad,
-			unsigned int playerGood, unsigned int posGood);
-   void delayedExchange (unsigned int playerBad, unsigned int posBad,
-			 unsigned int playerGood, unsigned int posGood);
+   void exchange (unsigned int playerBad, unsigned int posBad,
+		  unsigned int playerGood, unsigned int posGood);
+   void exchgBack (unsigned int playerBad, unsigned int posBad,
+		   unsigned int playerGood, unsigned int posGood);
+   void exchgNext (CardHPile* pile);
    void doExchangeCards (unsigned int playerBad, unsigned int posBad,
 			 unsigned int playerGood, unsigned int posGood);
    void showNeededTricks ();
