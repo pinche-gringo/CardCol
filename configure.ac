@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.9.11, [g17m0@lycos.com], CardCol)
+AC_INIT(Cardgames, 0.9.20, [g17m0@lycos.com], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -152,9 +152,7 @@ AC_ARG_ENABLE(sgtmayor,
               AC_HELP_STRING([--disable-sgtmayor],
                              [Disables the Sgt. Mayor cardgame]))
 if test "$enable_sgtmayor" != "no"; then
-dnl   AC_DEFINE_UNQUOTED(WITH_SGTMAYOR, 1, [Define if the Sgt. Mayor cardgame shall be included])
-   AC_MSG_NOTICE(The game Sgt. Mayor is disabled in this version)
-   enable_sgtmayor="no"
+   AC_DEFINE_UNQUOTED(WITH_SGTMAYOR, 1, [Define if the Sgt. Mayor cardgame shall be included])
 fi
 AM_CONDITIONAL(SUPPORT_SGTMAYOR, test "$enable_sgtmayor" != "no")
 
