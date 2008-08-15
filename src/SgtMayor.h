@@ -84,9 +84,8 @@ class SgtMayor : public Game {
    void exchangeCards (unsigned int playerBad, unsigned int playerGood);
    void exchange (unsigned int playerBad, unsigned int posBad,
 		  unsigned int playerGood, unsigned int posGood);
-   void exchgBack (unsigned int playerBad, unsigned int posBad,
-		   unsigned int playerGood, unsigned int posGood);
-   void exchgNext (CardHPile* pile);
+   void exchgBack (unsigned int playerBad, unsigned int playerGood, unsigned int posGood);
+   void exchgNext (CardHPile* pileGood, CardHPile* pileBad);
    void doExchangeCards (unsigned int playerBad, unsigned int posBad,
 			 unsigned int playerGood, unsigned int posGood);
    void showNeededTricks ();

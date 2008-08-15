@@ -280,7 +280,7 @@ void SgtMayor::playOpen (bool open) {
 ///     of the played pile is enabled
 //-----------------------------------------------------------------------------
 bool SgtMayor::enableHuman () {
-   Check3 (activeCards.empty ());
+   Check3 (activeCards.empty ()); Check3 (!currentPlayer ());
    TRACE2 ("SgtMayor::enableHuman () - Human has " << players[0].hand.size () << " cards");
 
    for (int i (players[0].hand.size () - 1); i >= 0; --i)
@@ -1008,7 +1008,7 @@ void SgtMayor::exchangeCards (unsigned int playerBad, unsigned int playerGood) {
 }
 
 //-----------------------------------------------------------------------------
-/// Animated exchange of cards
+/// Animated exchange of a card; after the exchange, the receiver gives back a card.
 /// \param playerBad Player giving away a bad card
 /// \param posBad Position of bad card to give away
 /// \param playerGood Player giving away a good card
@@ -1028,26 +1028,37 @@ void SgtMayor::exchange (unsigned int playerBad, unsigned int posBad,
 	   << " exchange " << *pileBad.at (posBad) << " and " << *pileGood.at (posGood));
 
    if (!playerGood)
-      pileBad.at (posBad)->showFace ();
+      flipCards2Play (pileBad, posBad, posBad);
    animateCard (pileGood, pileBad, posBad)
       .sigAnimation.connect (bind (mem_fun (*this, &SgtMayor::exchgBack),
-				   playerBad, posBad, playerGood, posGood));
+				   playerBad, playerGood, posGood));
 }
 
-void SgtMayor::exchgBack (unsigned int playerBad, unsigned int posBad,
-			  unsigned int playerGood, unsigned int posGood) {
+//-----------------------------------------------------------------------------
+/// Animated exchange of a card; after the exchange further cards might be exchanged
+/// \param playerBad Player giving away a bad card
+/// \param playerGood Player giving away a good card
+/// \param posGood Position of good card to give away
+//-----------------------------------------------------------------------------
+void SgtMayor::exchgBack (unsigned int playerBad, unsigned int playerGood, unsigned int posGood) {
    CardHPile& pileGood (players[playerGood].hand);
    CardHPile& pileBad (players[playerBad].hand);
-   pileGood.sortByColour ();
 
    if (!playerBad)
-      pileGood.at (posGood)->showFace ();
+      flipCards2Play (pileGood, posGood, posGood);
    animateCard (pileBad, pileGood, posGood)
-      .sigAnimation.connect (bind (mem_fun (*this, &SgtMayor::exchgNext), &pileBad));
+      .sigAnimation.connect (bind (mem_fun (*this, &SgtMayor::exchgNext), &pileGood, &pileBad));
 }
 
-void SgtMayor::exchgNext (CardHPile* pile) {
-   pile->sortByColour ();
+//-----------------------------------------------------------------------------
+/// Sorts the passed pile and exchanges the next cards (or starts the game)
+/// \param pileGood Pile to sort
+/// \param pileBad Pile to sort
+//-----------------------------------------------------------------------------
+void SgtMayor::exchgNext (CardHPile* pileGood, CardHPile* pileBad) {
+   Check1 (pileGood); Check1 (pileBad);
+   pileBad->sortByColour ();
+   pileGood->sortByColour ();
    makeExchange ();
 }
 
