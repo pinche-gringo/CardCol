@@ -26,3 +26,4 @@ aclocal.m4
 *.pot
 *.gmo
 *.in
+*.meta
