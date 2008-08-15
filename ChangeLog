@@ -1,3 +1,37 @@
+2008-08-15 16:57:21 +0200  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.9.20 documented
+
+        * .gitignore: Ignoring (generated) .meta-files
+
+2008-08-15 16:56:26 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * *.po: Actualised
+
+2008-08-15 16:55:17 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * configure.ac: Version to 0.9.20; Enabling Sgt. Mayor
+
+2008-08-15 16:53:51 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * SgtMayor: Fixed exchange; added comments
+
+2008-08-11 21:01:20 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * SgtMayor: Animating card-exchange
+
+2008-08-05 22:46:17 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * Sgt.Mayor: Player is on bottom of the window; First draft of animation
+
+2008-08-05 22:11:46 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * configure.in: Renamed to configure.ac
+
+2008-08-05 21:09:35 +0200  Markus Schwab  <g17m0@lycos.com>
+
+        * Renamed configure.in to configure.ac (so that *.in can be .gitignored)
+
 2008-08-03 22:01:58 +0200  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.9.11 documented
