@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.9 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2008-07-27 20:59+0200\n"
+"POT-Creation-Date: 2008-08-15 16:55+0200\n"
 "PO-Revision-Date: 2008-07-12 22:50+0200\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -41,7 +41,7 @@ msgstr "Die Karte muß größer oder gleich der letzten gespielten Karte sein!"
 msgid "Pile cleared; "
 msgstr "Stapel geleert; "
 
-#: src/Rovhult.cpp:610 src/Twopart.cpp:383 src/Machiavelli.cpp:1532
+#: src/Rovhult.cpp:610 src/Twopart.cpp:376 src/Machiavelli.cpp:1532
 msgid "%1 lost"
 msgstr "%1 hat verloren"
 
@@ -71,12 +71,12 @@ msgid_plural "%1 cards"
 msgstr[0] "%1 Karte"
 msgstr[1] "%1 Karten"
 
-#: src/Twopart.cpp:233
+#: src/Twopart.cpp:230
 msgid "%1 can't continue -> Picking up last cards; "
 msgstr ""
 "%1 kann nicht fortsetzen und bekommt daher den ganzen Stapel. %2 ist am Zug"
 
-#: src/Twopart.cpp:293
+#: src/Twopart.cpp:290
 msgid ""
 "The played card must have the same colour and must be bigger (or be a trump)!"
 msgid_plural ""
@@ -88,20 +88,20 @@ msgstr[1] ""
 "Die gespielten Karten müssen die gleiche Farbe haben und größer\n"
 "(oder Trumpfkarten) sein!"
 
-#: src/Twopart.cpp:378
+#: src/Twopart.cpp:371
 msgid "First part ended; Part 2 starts %1"
 msgstr "Erster Teil beendet; %1 startet den 2. Teil"
 
-#: src/Twopart.cpp:1187 src/CardCol.cpp:779
+#: src/Twopart.cpp:1185 src/CardCol.cpp:779
 msgid "_Twopart"
 msgstr ""
 
-#: src/Twopart.cpp:1189 src/Hearts.cpp:1099 src/SgtMayor.cpp:1208
+#: src/Twopart.cpp:1187 src/Hearts.cpp:1099 src/SgtMayor.cpp:1168
 #: src/Jabberwocky.cpp:340
 msgid "_Sort won cards (by number)"
 msgstr "Nach _Nummern ordnen"
 
-#: src/Twopart.cpp:1193 src/Hearts.cpp:1103 src/SgtMayor.cpp:1212
+#: src/Twopart.cpp:1191 src/Hearts.cpp:1103 src/SgtMayor.cpp:1172
 #: src/Jabberwocky.cpp:344
 msgid "Sort won cards (by _colour)"
 msgstr "Nach _Farben ordnen"
@@ -288,7 +288,7 @@ msgstr "_Optionen"
 msgid "_Change game"
 msgstr "_Spiel auswählen..."
 
-#: src/CardCol.cpp:748 src/Buraco.cpp:2227 src/Settings.cpp:151
+#: src/CardCol.cpp:748 src/Buraco.cpp:2224 src/Settings.cpp:151
 msgid "_Buraco"
 msgstr ""
 
@@ -328,7 +328,7 @@ msgstr "_Røvhult"
 msgid "<ctl>R"
 msgstr ""
 
-#: src/CardCol.cpp:774 src/SgtMayor.cpp:1206
+#: src/CardCol.cpp:774 src/SgtMayor.cpp:1166
 msgid "_Sgt. Mayor"
 msgstr ""
 
@@ -676,7 +676,7 @@ msgstr ""
 msgid "Select 3 cards to exchange with %1"
 msgstr "Wähle 3 Karten zum Tauschen mit %1 aus"
 
-#: src/Hearts.cpp:481 src/Buraco.cpp:1741
+#: src/Hearts.cpp:481 src/Buraco.cpp:1738
 msgid "Round ended"
 msgstr "Runde beendet"
 
@@ -775,53 +775,53 @@ msgstr "Dieser neue Stapel kann nicht mit einem Joker angefangen werden!"
 msgid "This card does not fit on that pile!"
 msgstr "Diese Karte paßt nicht auf diesen Stapel!"
 
-#: src/Buraco.cpp:1400
+#: src/Buraco.cpp:1390
 msgid "%1 picked up the burraco"
 msgstr "%1 hat den Burraco-Reservestapel aufgenommen"
 
-#: src/Buraco.cpp:1565
+#: src/Buraco.cpp:1562
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr "Punkte [Buraco]: %1 [%2] / %3 [%4]"
 
-#: src/Buraco.cpp:1567 src/Buraco.cpp:1569
+#: src/Buraco.cpp:1564 src/Buraco.cpp:1566
 msgid "N"
 msgstr ""
 
-#: src/Buraco.cpp:1567 src/Buraco.cpp:1569
+#: src/Buraco.cpp:1564 src/Buraco.cpp:1566
 msgid "Y"
 msgstr "J"
 
-#: src/Buraco.cpp:1683
+#: src/Buraco.cpp:1680
 msgid ""
 "Team %1\n"
 "%2/%3"
 msgstr ""
 
-#: src/Buraco.cpp:1747
+#: src/Buraco.cpp:1744
 msgid "Game ended; Team %1 won"
 msgstr "Das Spiel ist zu Ende; Team %1 hat gewonnen"
 
-#: src/Buraco.cpp:2124
+#: src/Buraco.cpp:2121
 msgid "Invalid pile!"
 msgstr "Ungültiger Stapel!"
 
-#: src/Buraco.cpp:2127
+#: src/Buraco.cpp:2124
 msgid "Invalid card!"
 msgstr "Ungültige Karte!"
 
-#: src/Buraco.cpp:2189
+#: src/Buraco.cpp:2186
 msgid "Invalid target specification!"
 msgstr "Ungültige Zielangabe!"
 
-#: src/Buraco.cpp:2229
+#: src/Buraco.cpp:2226
 msgid "<ctl>Z"
 msgstr ""
 
-#: src/Buraco.cpp:2232 src/Machiavelli.cpp:1746
+#: src/Buraco.cpp:2229 src/Machiavelli.cpp:1746
 msgid "_Sort cards (by number)"
 msgstr "Karten ordnen (nach _Nummern)"
 
-#: src/Buraco.cpp:2236 src/Machiavelli.cpp:1750
+#: src/Buraco.cpp:2233 src/Machiavelli.cpp:1750
 msgid "Sort cards (by _colour)"
 msgstr "Karten ordnen (nach _Farben)"
 
@@ -901,55 +901,55 @@ msgstr "Ungültiger Stapeltyp!"
 msgid "Card %1 does not fit!"
 msgstr "Karte %1 paßt nicht!"
 
-#: src/SgtMayor.cpp:213
+#: src/SgtMayor.cpp:224
 msgid "(needs %1 tricks)"
 msgstr "(benötigt %1 Stiche)"
 
-#: src/SgtMayor.cpp:302
+#: src/SgtMayor.cpp:312
 msgid "Play a card with an equal colour as the first played one!"
 msgstr ""
 "Es muß eine Karte mit der gleichen Farbe wie die zuerst gespielte verwendet "
 "werden!"
 
-#: src/SgtMayor.cpp:378
+#: src/SgtMayor.cpp:384
 msgid "Waiting for %1 to select the special colour ..."
 msgstr "Warte, daß %1 die Trumpffarbe auswählt ..."
 
-#: src/SgtMayor.cpp:407
+#: src/SgtMayor.cpp:413
 msgid "Select the special colour"
 msgstr "Wählte die Trumpf-Farbe"
 
-#: src/SgtMayor.cpp:675
+#: src/SgtMayor.cpp:681
 msgid "Card not found!"
 msgstr "Karte nicht gefunden!"
 
-#: src/SgtMayor.cpp:817
+#: src/SgtMayor.cpp:820
 msgid "Game ended; %1 has %2 %7, %3 %4 and %5 %6 %8"
 msgstr "Spiel ist zu Ende; %1 hat %2 %7; %3 %4 und %5 hat %6 %8"
 
-#: src/SgtMayor.cpp:847 src/Jabberwocky.cpp:938
+#: src/SgtMayor.cpp:850 src/Jabberwocky.cpp:938
 msgid "; %1 won"
 msgstr "; %1 hat gewonnen"
 
-#: src/SgtMayor.cpp:861 src/SgtMayor.cpp:863
+#: src/SgtMayor.cpp:864 src/SgtMayor.cpp:866
 msgid "trick"
 msgid_plural "tricks"
 msgstr[0] "Stich"
 msgstr[1] "Stiche"
 
-#: src/SgtMayor.cpp:939
+#: src/SgtMayor.cpp:941
 msgid "Waiting for %1 to exchange cards ..."
 msgstr "Warte, daß %1 Karten austauscht ..."
 
-#: src/SgtMayor.cpp:974
+#: src/SgtMayor.cpp:975
 msgid "You can exchange %1 %2; %4 with %3 (and than %5 with %6)!"
 msgstr "Du kannnst %1 %2 tauschen; %4 mit %3 (und dann %6 mit %6)!"
 
-#: src/SgtMayor.cpp:981
+#: src/SgtMayor.cpp:982
 msgid "You can exchange %1 %2 with %3!"
 msgstr "Du kannst %1 %2 mit %3 tauschen!"
 
-#: src/SgtMayor.cpp:986
+#: src/SgtMayor.cpp:987
 msgid "bad card"
 msgid_plural "bad cards"
 msgstr[0] "schlechte Karte"
