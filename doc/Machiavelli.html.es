@@ -120,7 +120,7 @@
         </td>
         <td><a href="Hearts.html.es">Anterior</a><br>(Corazones)</td>
         <td><a href="CardCol.html.es">Contenido</a></td>
-        <td><a href="R%C3%B8vhult.html.es">Pr&oacute;ximo</a><br>(R&oslash;vhult)</td>
+        <td><a href="Rovhult.html.es">Pr&oacute;ximo</a><br>(R&oslash;vhult)</td>
       </tr>
     </table>
   </body>

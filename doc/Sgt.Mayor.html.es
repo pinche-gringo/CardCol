@@ -126,7 +126,7 @@
             <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
           </address>
         </td>
-        <td><a href="R%C3%B8vhult.html.es">Anterior</a><br>(R&oslash;vhult)</td>
+        <td><a href="Rovhult.html.es">Anterior</a><br>(R&oslash;vhult)</td>
         <td><a href="CardCol.html.es">Contenido</a></td>
         <td><a href="Twopart.html.es">Pr&oacute;ximo</a><br>(Twopart)</td>
       </tr>

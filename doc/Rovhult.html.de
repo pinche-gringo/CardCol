@@ -1,0 +1,172 @@
+<!-- -*-HTML-*- -->
+<!-- $Id$ -->
+
+<!--
+  Copyright (C) 2003 - 2008 Markus Schwab (g17m0@lycos.com)
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//DE"
+        "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <title>R&oslash;vhult - Ein international bekanntes Spiel (alias Shithead, Asshole, ...)</title>
+    <meta name="description" content="Dokumentation des R&oslash;vhult Kartenspiels">
+    <meta name="keywords" content="Dokumentation, Doku, Rovhult, R&oslash;vhult, Shithead, Spiel, Karten, Kartenspiel">
+
+    <meta name="DC.Creator" content="Markus Schwab">
+    <meta name="DC.Date" content="2002-07-20">
+    <meta name="DC.Rights" content="Copyright (C) 2002 - 2008, distributed under the GNU Free Documentation License">
+  </head>
+
+  <body>
+    <h1 align="center">R&oslash;vhult</h1>
+    <hr size=2>
+
+    <p>R&oslash;vhult lernte ich von drei D&auml;nen; daher auch der recht
+      d&auml;nische Name und dieser h&uuml;bsche, unaussprechliche Buchstabe
+      (klingt etwa wie ein &laquo;&Ouml;&raquo;, wenn man sich gerade
+      ankotzt).  Andere Name f&uuml;r das Spiel sind Shithead (UK) oder
+      Asshole (Australien, USA).</p>
+
+    <p>Das Zielt des Spieles ist es, <b>nicht</b> als Letzter alle
+      seine Karten loszuwerden. Dabei gibt es die folgenden - recht
+      einfachen, da auch Yankees dieses Spiel kennen ;) - Regeln:</p>
+
+    <h2>Karten austeilen/Vorbereitung</h2>
+    <p>Jeder Spieler startet mit drei Kartein in der Hand und zweimal
+      drei Karten auf dem Tisch (die unteren drei jeweils mit der
+      R&uuml;ckseite und die oberen mit der Vorderseite nach
+      oben). Die restlichen Karten kommen auf einen Stapel.</p>
+
+    <p>Die Karten mit gezeigter Vorderseite auf dem Tisch k&ouml;nnen
+      mit denen in der Hand getauscht werden (mit &laquo;Ziehen und
+      Ablegen&raquo; - drag and drop <a
+      href="#Note1"><sup>1</sup></a>). Normalerweise versucht man,
+      &quot;gute&quot; Karten auf den Tisch zu bekommen, aber das ist
+      nat&uuml;rlich Geschmackssache.</p>
+
+    <p>Das eigentlich Spiel wird gestart, indem man auf eine Karte in
+      seiner Hand klickt. Die Karten werden sortiert und das Spiel
+      beginnt mit einem zufällig ausgewählten Spieler.</p>
+
+    <h2>Das Spiel</h2>
+    <p>Es wird gegen den Uhrzeigersinn gespielt; jeder Spieler legt
+      eine gleichwertige oder h&ouml;here als die zuletzt gespielte
+      Karte ab (Asse gelten as h&ouml;her als alle anderen Karten). Man kann
+      eine beliebige Anzahl von Karten mit der gleichen Nummer spielen
+      (z.B.: die &spades;-5 und die &clubs;-5). Nach dem Zug muss
+      der Spieler Karten vom Reservestapel aufnehmen, bis er wieder
+      drei Karten in der Hand hat oder der Reservestapel leer ist.</p>
+
+    <p>Es gibt einige Spezialkarten und Ausnahmen::</p>
+    <dl>
+      <dt><b>2'er</b></dt>
+      <dd><p>K&ouml;nnen immer gespielt werden; der n&auml;chste Spieler kann
+          mit einer beliebigen Karte fortsetzen.</p></dd>
+      <dt><b>Die letzte gespielte Karte ist die Umkehr-Karte (7)<a href="#Note2"><sup>2</sup></a></b></dt>
+      <dd><p>Die n&auml;chste Karte muss kleiner oder gleich sein.</p></dd>
+      <dt><b>&Uuml;berspringen-Karte (8)<a href="#Note2"><sup>2</sup></a></b></dt>
+      <dd><p>Der n&auml;chste Spieler wird &uuml;bersprungen.</p></dd>
+      <dt><b>Entfernen-Karte (10)<a href="#Note2"><sup>2</sup></a></b></dt>
+      <dd><p>K&ouml;nnen immer gespielt werden (analog zu 2'ern), aber es wird
+          zus&auml;tzlich der Stapel der gespielten Karten entfernt und der
+          gleiche Spieler kann fortsetzen (allerdings ohne vorher Karten
+          aufzunehmen - au&szlig;er, wenn er keine Karten mehr &uuml;brig hat).</p></dd>
+      <dt><b>Vier Karten mit der gleichen Nummer am Stapel</b></dt>
+      <dd><p>Haben die letzten vier Karten am Stapel die gleiche
+          Nummer, wird dieser entfernt und der gleiche Spieler kann
+          fortsetzen (&auml;hnlich wie das Spielen einer Entfernen-Karte
+          (10), nur dass man Karten aufnehmen kann).  Beachte
+          auch, dass der Effekt von "Spezialkarten" aufgehoben
+          wird (d.h. bei vier 8'ern wird der n&auml;chste Spieler
+          nicht &uuml;bersprungen).
+        </p></dd>
+    </dl>
+
+    <p>Wenn ein Spieler nicht nach diesen Regeln fortsetzen kann, muss er
+      alle gespielten Karten aufnehemn. Nat&uuml;rlich kann dies auch freiwillig
+      gemacht werden, wonach der n&auml;chste Spieler fortsetzt.</p>
+
+    <h2>Spielen der Karten vom Tisch</h2>
+    <p>Wenn ein Spieler keine Karten mehr in der Hand hat (und auch
+      der Stapel bereits leer ist), kann er mit den Karten auf dem
+      Tisch fortsetzen. Diese werden nach den selben Regeln gespielt;
+      zun&auml;chst die mit sichtbarer Vorderseite und dann - wenn
+      diese auch erfolgreich gespielt wurden - mit der sichtbaren
+      Rückseite.</p>
+
+    <p>Beachte, dass, wenn der gespielte Stapel aufgenommen
+      werden muss, die Karten mit sichtbarer Vorderseite nicht
+      vom Tisch in die Hand genommen werden d&uuml;rfen und dass
+      danach die (neu aufgenommenen) Karten in der Hand gespielt
+      werden m&uuml;ssen, ehe wieder mit denen auf dem Tisch
+      fortgesetzt werden kann.</p>
+
+    <p>Mit den Karten mit sichtbarer R&uuml;ckseite muss auf gut
+      Gl&uuml;ck gespielt werden.  Wenn die Karte nicht
+      gem&auml;&szlig; den Regeln, muss sie und der ganze Stapel
+      aufgenommen werden.</p>
+
+    <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
+
+    <h2>Anmerkungen zum Layout</h2>
+    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+      unten):</p>
+
+    <ul>
+      <li>Den Reservestapel: Ein Haufen von (verdeckten) Karten, von dem
+        neue Karten aufgenommen werden. Wird die Mauszeiger darauf
+        positioniert, erscheint ein kleines Fenster, das &uuml;ber die
+        Anzahl der &uuml;brigen Karten informiert.</li>
+
+      <li>Die Karten des Spielers. Die Karten in der Hand oberhalb, darunter die
+        auf dem Tisch.</li>
+
+      <li>In der n&auml;chsten Reihe befinden sich die Karten der Spieler
+        1 und 3. Zwischen ihnen ist der Stapel der gespielten Karten (der
+        ebenfalls die Anzahl der gespielten Karten anzeigt, wenn der Mauszeiger
+        dar&uuml;ber positioniert wird).</li>
+
+      <li>In der letzten Reihe sind die Karten von Spieler 2.</li>
+    </ul>
+
+    <hr size=1 noshade>
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
+      Ziehen und Ablegen bedeutet, eine Karte mit einer Maustaste anzuklicken,
+      diese Taste festzuhalten un dann das Objekt (die Karte, in unserem
+      Fall) zu seinem Ziel zu ziehen. Das Ende dieser Aktion wird durch
+      Loslassen der Maustaste signalisiert.</p>
+
+    <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note2"></a>2)
+      Diese Karte kann im Eigenschaften-Fenster ge&auml;ndert werden.</p>
+
+    <hr size=3 noshade>
+    <table width="100%">
+      <tr>
+        <td width="*">
+          <address>
+            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+          </address>
+        </td>
+        <td><a href="Machiavelli.html.de">Vorherige</a><br>(Machiavelli)</td>
+        <td><a href="CardCol.html.de">&Uuml;berblick</a></td>
+        <td><a href="Sgt.Mayor.html.de">N&auml;chste</a><br>(Sgt. Mayor)</td>
+      </tr>
+    </table>
+  </body>
+</html>

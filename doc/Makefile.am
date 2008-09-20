@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 INSTALL_DOCU=CardCol.html.en CardCol.html.de CardCol.html.es \
-             Røvhult.html.de Røvhult.html.en Røvhult.html.es \
+             Rovhult.html.de Rovhult.html.en Rovhult.html.es \
 	     Twopart.html.en Twopart.html.de Twopart.html.es \
 	     Hearts.html.en Hearts.html.es Hearts.html.de Buraco.html.de \
 	     Buraco.html.en Buraco.html.es Machiavelli.html.de \
