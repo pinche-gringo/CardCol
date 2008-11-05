@@ -12,7 +12,7 @@ config.*
 configure
 ABOUT-NLS
 COPYING
-ygp-cfg.h
+cardgames-cfg.h
 stamp-h1
 install-sh
 missing
