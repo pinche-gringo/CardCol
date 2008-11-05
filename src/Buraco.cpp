@@ -891,9 +891,10 @@ void Buraco::dumpedSelected () {
       CardWindow& win (animateCard (*target, dumped, dumped.size () - 1));
       win.sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
    }
-   else
-      animateCard (staple, dumped, dumped.size () - 1)
-	 .sigAnimation.connect (mem_fun (*this, (void (Buraco::*)())&Buraco::enableHuman));
+   else {
+      staple.append (dumped.removeTopCard ());
+      enableHuman ();
+   }
 }
 
 //-----------------------------------------------------------------------------
