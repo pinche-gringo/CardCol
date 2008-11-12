@@ -1,3 +1,9 @@
+Overview of changes in version 0.9.21:
+
+  - Buraco: Fixed trap showing dumped cards after ending a game
+  - Docu: Renamed Røvhult.html.* to Rovhult.html.*
+
+
 Overview of changes in version 0.9.20:
 
   - Enabling Sgt. Mayor
