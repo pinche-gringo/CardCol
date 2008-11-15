@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.9.21, [g17m0@lycos.com], CardCol)
+AC_INIT(Cardgames, 0.9.22, [g17m0@lycos.com], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -235,7 +235,7 @@ if test "$GNOMECARDS_DIR" != "no"; then
 	         /usr/share/gnome/gnome-games-common/cards \
 	         /usr/share/gnome/cards /usr/share/pixmaps/gnome/cards \
 	         /usr/share/gnome/pixmaps/cards \
-		 /usr/share/gnome-games-common/cards/; do
+		 /usr/share/gnome-games-common/cards; do
 	 if test -d "$dir/"; then
 	    GNOMECARDS_DIR="$dir/"
 	    break
@@ -252,7 +252,8 @@ if test "$GNOMECARDS_DIR" != "no"; then
 
    AC_MSG_RESULT($GNOMECARDS_DIR)
    if test -d "$GNOMECARDS_DIR"; then
-      if test -f "$GNOMECARDS_DIR/bonded.png" -o -f "$GNOMECARDS_DIR/bonded.svg"; then
+      if test -f "$GNOMECARDS_DIR/bonded.png" -o -f "$GNOMECARDS_DIR/bonded.svg" \
+              -o -f "$GNOMECARDS_DIR/paris.svg"; then
 	 HAVE_CARDS=1
 	 AC_DEFINE_UNQUOTED(GNOMECARDS_DIR, "$GNOMECARDS_DIR",
                             [Directory holding the GNOME carddecks])
