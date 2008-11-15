@@ -213,6 +213,9 @@ class Game : public Gtk::Table {
    unsigned int ignoreNextMsg;        ///< Number of received message to ignore
 
  private:
+   Game (const Game&);
+   Game& operator= (const Game&);
+
    bool endGame (bool startNew);
 
    bool enableActWonCards ();

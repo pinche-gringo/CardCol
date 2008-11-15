@@ -57,7 +57,7 @@ class CardWidget : public Gtk::EventBox {
    unsigned int id () const { return nrCard; }
    COLOURS colour () const { return transColour[nrCard & 0x3]; }
    NUMBERS number () const {
-      return static_cast <NUMBERS> ((nrCard > 51) ? UNREACHABLE : (51 - nrCard) >> 2); }
+      return  (nrCard > 51) ? UNREACHABLE : static_cast<NUMBERS> ((51 - nrCard) >> 2); }
    char numberStr () const { return strNumber (number ()); }
    char colourStr () const { return strColour (colour ()); }
 
@@ -87,7 +87,7 @@ class CardWidget : public Gtk::EventBox {
    virtual bool on_button_release_event (GdkEventButton* ev);
 
  private:
-   CardWidget () : isVisible (false), nrCard (0) { }
+   CardWidget () : clicked_ (), img (), isVisible (false), nrCard (0) { }
 
    sigc::signal<void> clicked_;
    Gtk::Image img;

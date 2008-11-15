@@ -46,7 +46,7 @@ CardWidget::COLOURS CardWidget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMON
 /// \param visible Flag, if card should be displayed visible
 //-----------------------------------------------------------------------------
 CardWidget::CardWidget (const unsigned int card, bool visible)
-   : isVisible (visible), nrCard (card) {
+   : clicked_ (), img (), isVisible (visible), nrCard (card) {
    TRACE3 ("CardWidget::CardWidget (const CardImages&, unsinged int, bool) - "
            << card << " (" << visible << ')');
    Check1 (deck);
@@ -65,7 +65,7 @@ CardWidget::CardWidget (const unsigned int card, bool visible)
 /// \param other Card to copy
 //-----------------------------------------------------------------------------
 CardWidget::CardWidget (const CardWidget& other)
-   : isVisible (other.isVisible), nrCard (other.nrCard) {
+   : Gtk::EventBox (), clicked_ (), img (), isVisible (other.isVisible), nrCard (other.nrCard) {
    TRACE3 ("CardWidget::CardWidget (const CardWidget&) - " << nrCard << " (" << isVisible << ')');
    Check1 (deck);
 

@@ -48,7 +48,7 @@ int ScoreDlg::LASTY (-1);
 /// \param player Vector with player
 //-----------------------------------------------------------------------------
 ScoreDlg::ScoreDlg (const std::vector<Player*>& player)
-   : XDialog (OK), client (new Gtk::HBox) {
+   : XDialog (OK), client (new Gtk::HBox), aColumns () {
    TRACE9 ("ScoreDlg::ScoreDlg ()");
    set_title (_("Score"));
 

@@ -52,8 +52,9 @@
 //-----------------------------------------------------------------------------
 DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
    : XGP::XDialog (_("Select carddeck"), OKCANCEL),
-     txtDecks (_("Available decks")),
-     txtBack (_("Available backgrounds")) {
+     setDecks (), cols (), mDecks (), mBacks (), boxDecks (), txtDecks (_("Available decks")),
+     selDeck (), decks (), selBack (), boxBack (), txtBack (_("Available backgrounds")),
+     backs () {
    TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (2x const std::string&) - " << deck << " - " << back);
    Check1 (deck[deck.size () - 1] == YGP::File::DIRSEPARATOR);
 

@@ -31,8 +31,8 @@ class CardImages;
 */
 class CardSet {
  public:
-   CardSet () { }
-   CardSet (const CardImages& decks) { addPacket (decks); }
+   CardSet () : cards_ () { }
+   CardSet (const CardImages& decks)  : cards_ () { addPacket (decks); }
    ~CardSet ();
 
    CardWidget& getCard (unsigned int nrCard) const;

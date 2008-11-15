@@ -72,6 +72,10 @@ class PlayerDlg : public XGP::XDialog {
       ~line ();
 
       void attach (Gtk::Table& table, unsigned int line);
+
+    private:
+      line (const line&);
+      line& operator= (const line&);
    } line;
 
    std::vector<line*>    aPlayers;

@@ -37,7 +37,7 @@ class DeckSelectDlg : public XGP::XDialog {
     */
    class DeckColumns : public Gtk::TreeModel::ColumnRecord {
     public:
-      DeckColumns () { add (path); add (name); add (icon); }
+      DeckColumns () : path (), name (), icon () { add (path); add (name); add (icon); }
 
       Gtk::TreeModelColumn<std::string> path;
       Gtk::TreeModelColumn<Glib::ustring> name;

@@ -30,7 +30,7 @@
 */
 class CardImages {
  public:
-   CardImages () : cards_ (52) { }
+   CardImages () : cards_ (52), back_ () { }
    ~CardImages ();
 
    unsigned int addImage (const char* const* data) {

@@ -41,7 +41,7 @@
 /// \param src Source card
 //-----------------------------------------------------------------------------
 AnimatedCard::AnimatedCard (ICardPile& dest, unsigned int posDest, Gtk::Widget& src)
-   : XGP::AnimatedWindow (src.get_window ()), dest (dest), posDest (posDest) {
+   : XGP::AnimatedWindow (src.get_window ()), sigAnimation (), dest (dest), posDest (posDest) {
    TRACE9 ("AnimatedCard::AnimatedCard (ICardPile&, unsigned int, Gtk::Widget&) - " << posDest);
 }
 
@@ -237,7 +237,7 @@ void CardPileWindow::cleanup () {
 //-----------------------------------------------------------------------------
 CardPileWindows::CardPileWindows (ICardPile& dest, unsigned int posDest,
 				  ICardPile& src, unsigned int start, unsigned int end)
-   : CardPileWindow (dest, posDest, src, start, end) {
+   : CardPileWindow (dest, posDest, src, start, end), wins () {
    TRACE8 ("CardPileWindows::CardPileWindows (...) - " << start << '/' << end);
 }
 

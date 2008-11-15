@@ -45,7 +45,8 @@
 /// \param player Vector containing the players
 //-----------------------------------------------------------------------------
 PlayerDlg::PlayerDlg (std::vector<Player*>& player)
-   : XDialog (OKCANCEL), pClient (new Gtk::Table (player.size () + 1, 3)), values (player) {
+   : XDialog (OKCANCEL), sigCommit (), pClient (new Gtk::Table (player.size () + 1, 3)),
+     aPlayers (), values (player) {
    TRACE2 ("PlayerDlg::PlayerDlg (std::vector<Player*>&) - Players: "
            << player.size ());
    Check1 (player.size () > 1);
