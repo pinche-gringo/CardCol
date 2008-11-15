@@ -50,8 +50,10 @@ CardCol.cpp CardColAppl.h $(USE_NETWORK)
 
 INCLUDES = @INCLUDES@ -I../Common @DEPENDENCIES_CFLAGS@
 
+AM_CPPFLAGS = -Wall -Wextra
+AM_CXXFLAGS = -Woverloaded-virtual -Weffc++
 CardCol_LDFLAGS=-L../Common -lCard @DEPENDENCIES_LIBS@ @LTLIBINTL@
-DEFS = @DEFS@ -Wall
+DEFS = @DEFS@
 
 EXTRA_DIST=Options.meta CardOptions.meta $(SRC_BURACO) $(SRC_HEARTS)	\
 $(SRC_JABBERWOCKY) $(SRC_MACHIAVELLI) $(SRC_ROVHULT) $(SRC_SGTMAYOR)	\
