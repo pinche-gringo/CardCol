@@ -84,6 +84,7 @@ Settings* Settings::instance (NULL);
 //-----------------------------------------------------------------------------
 Settings::Settings (Options& options)
    : XGP::XDialog (OKCANCEL),
+     sigCommit (), sigCardResize (),
      adjTimeout (0, 100.0, 10000.0, 1, 100),
      gameType (GameTypes::get ()),
      timeout (ComputerPlayer::TIMEOUT, adjTimeout),

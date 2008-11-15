@@ -103,10 +103,16 @@ class Hearts : public Game {
    unsigned int player2Exchange;  // ID of (next) player to exchange cards with
    ICardPile aExchange[NUM_PLAYERS];        // Cards the players are exchanging
 
-   struct {
+   struct playerCards {
       ICardPile*  hand;                       // For players: Cards in the hand
       ICardPile*  won;                                             // Won cards
       Gtk::Label name;
+
+      playerCards () : hand (NULL), won (NULL), name () { }
+
+    private:
+      playerCards (const playerCards&);
+      playerCards& operator= (const playerCards&);
    } players[NUM_PLAYERS];
    CardHPile played;
 

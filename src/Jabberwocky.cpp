@@ -77,7 +77,7 @@ Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& 
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 15, 15),
      played (ICardPile::COMPRESSED, ICardPile::SHOWFACE),
      pTrump (NULL), startPlayer (rand () % NUM_PLAYERS), turn (0),
-     pScoreDlg (NULL)
+     idMrg (), pScoreDlg (NULL), menuSort (), menuSort2 ()
  {
    TRACE9 ("Jabberwocky::Jabberwocky (Box&, Statusbar&, CardSet&, ...)");
 

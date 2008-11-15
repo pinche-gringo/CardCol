@@ -38,8 +38,7 @@
 //-----------------------------------------------------------------------------
 /// Constructor
 //-----------------------------------------------------------------------------
-BuracoPile::BuracoPile ()
-    : CardVPile (COMPRESSED, SHOWFACE) {
+BuracoPile::BuracoPile () : CardVPile (COMPRESSED, SHOWFACE), status () {
    status.type = UNDEFINED;
    status.posFirst = status.posLast = status.posJoker = 7;
    status.points = 0;

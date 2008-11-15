@@ -81,10 +81,10 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 			  CardSet& cardset, const std::vector<Player*>& player,
 			  unsigned int posPlayer, YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10),
-     startPlayer (-1U), newPile (_("New pile")),
+     piles (), tablePiles (), startPlayer (-1U), newPile (_("New pile")),
      staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK),
-     nextTurn (_("_End turn"), true),
-     target (-1U), undoDlg (NULL) {
+     nextTurn (_("_End turn"), true), aDNDHand (), aDNDTable (), target (-1U),
+     undo (), missing (), undoDlg (NULL), undo1 (), undoAll (), nxtTurn (), idMrg () {
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&)");
 

@@ -116,11 +116,17 @@ class SgtMayor : public Game {
 
    static const unsigned int NUM_PLAYERS = 3;              // Number of players
 
-   struct {
+   struct playerCards {
       CardHPile  hand;                        // For players: Cards in the hand
       CardHPile  won;                                             // Won tricks
       Gtk::Label name;
       Gtk::Label neededTricks;
+
+      playerCards () : hand (), won (), name (), neededTricks () { }
+
+    private:
+      playerCards (const playerCards&);
+      playerCards& operator= (const playerCards&);
    } players[NUM_PLAYERS];
    CardHPile played;
    CardWidget* pTrump;

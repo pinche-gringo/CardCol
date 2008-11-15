@@ -167,7 +167,6 @@ class Buraco : public Game {
    std::vector<Player*> nameTeams;
    unsigned int startPlayer;
 
-   Gtk::Frame frameInfo;
    Gtk::Label info;
    Gtk::HBox  boxTeam[NUM_PLAYERS >> 1];
 

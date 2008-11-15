@@ -123,14 +123,17 @@ class Twopart : public Game {
 
    CardHInfoPile played;
    CardVInfoPile staple;                                     // Cards on staple
-   struct {
+   struct playerCards {
       CardHPile hand;                         // For players: Cards in the hand
       CardHPile won;                            // Reserve-cards (for end-game)
       Gtk::Label name;
-   } players[NUM_PLAYERS];
 
-   Widget* pMenuNew;
-   Widget* pMenuEnd;
+      playerCards () : hand (), won (), name () { }
+
+    private:
+      playerCards (const playerCards&);
+      playerCards& operator= (const playerCards&);
+   } players[NUM_PLAYERS];
 
    Gtk::UIManager::ui_merge_id idMrg;
 };

@@ -78,8 +78,8 @@ Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                   unsigned int posPlayer, YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 16, 20),
      played (ICardPile::VERY_COMPRESSED, ICardPile::SHOWFACE),
-     staple (ICardPile::VERY_COMPRESSED),
-     aExchanged (0) {
+     staple (ICardPile::VERY_COMPRESSED), aExchanged (0), cEndgame (0),
+     aTableDND (), aHandDND (), aHandData (), aTableData () {
     TRACE9 ("Rovhult::Rovhult (Gtk::Box& Gtk::Statusbar&, CardSet&,"
             " const std::vector<Glib::ustring>&)");
 
@@ -1200,12 +1200,9 @@ void Rovhult::findCard2Play (unsigned int player, unsigned int& start,
           && (((nextMin > cardReverse)
                && ((hpPos = players[player].hand.find (cardReverse)) =! -1))
               || (((hpPos = (players[player].hand.findFirstEqualOrBigger
-                             (CardWidget::NUMBERS (nextMax + 1))))
-                   != -1)
-                  && ((hpPos = skip (cardReverse, players[player].hand, hpPos))
-                      != -1)
-                  && ((hpPos = skip (cardNuke, players[player].hand, hpPos))
-                      != -1))
+                             (CardWidget::NUMBERS (nextMax + 1)))) != -1)
+                  && ((hpPos = skip (cardReverse, players[player].hand, hpPos)) != -1)
+                  && ((hpPos = skip (cardNuke, players[player].hand, hpPos)) != -1))
               && cardValid (players[player].hand[hpPos]->number (), true)))
          ? hpPos : players[player].hand.findFirstEqualOrBigger (cardMin);
       TRACE6 ("Rovhult::findCard2Play (unsigned int) - First matching card"

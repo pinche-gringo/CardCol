@@ -143,10 +143,16 @@ class Rovhult : public Game {
 
    CardHInfoPile played;
    CardVInfoPile staple;                                     // Cards on staple
-   struct {
+   struct playerCards {
       CardHPile hand;                         // For players: Cards in the hand
       CardVPile reserve[3];                     // Reserve-cards (for end-game)
       Gtk::Label name;
+
+      playerCards () : hand (), name () { }
+
+    private:
+      playerCards (const playerCards&);
+      playerCards& operator= (const playerCards&);
    } players[NUM_PLAYERS];
 
    unsigned int aExchanged;

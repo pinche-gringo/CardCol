@@ -98,12 +98,17 @@ class Jabberwocky : public Game {
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
-   struct {
+   struct playerCards {
       CardHPile  hand;                        // For players: Cards in the hand
       CardHPile  won;                                              // Won ticks
       Gtk::Label name;
-
       YGP::ANumeric bid;
+
+      playerCards () : hand (), won (), name (), bid () { }
+
+    private:
+      playerCards (const playerCards&);
+      playerCards& operator= (const playerCards&);
    } players[NUM_PLAYERS];
    CardHPile played;
    CardWidget* pTrump;

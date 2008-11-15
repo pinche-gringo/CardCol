@@ -73,11 +73,11 @@ char Twopart::sortOrder[4];
 Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                   CardSet& cardset, const std::vector<Player*>& player,
                   unsigned int posPlayer, YGP::Mutex& mxSerialize)
-   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 12, 15)
-     , bfPlayers ((1 << NUM_PLAYERS) - 1), offPos (0)
-     , bfOldPlayers (bfPlayers), pTrump (NULL)
-     , played (ICardPile::COMPRESSED, ICardPile::SHOWFACE)
-     , staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK) {
+   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 12, 15),
+     bfPlayers ((1 << NUM_PLAYERS) - 1), offPos (0), startPlayer (0),
+     bfOldPlayers (bfPlayers), pTrump (NULL),
+     played (ICardPile::COMPRESSED, ICardPile::SHOWFACE),
+     staple (ICardPile::VERY_COMPRESSED, ICardPile::SHOWBACK), idMrg () {
    staple.show ();
    attach (staple, 2, 3, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
 

@@ -197,7 +197,7 @@ class Machiavelli : public Game {
 
       missingCards (unsigned int pile, CardWidget::NUMBERS nr, CardWidget::COLOURS colour)
 	 : pile (pile), nr (nr), colour (colour) { }
-      missingCards (unsigned int pile) : pile (pile) { }
+      missingCards (unsigned int pile) : pile (pile), nr (CardWidget::UNREACHABLE), colour () { }
    } missingCards;
    std::vector<missingCards> missing;
 

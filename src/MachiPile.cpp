@@ -38,8 +38,7 @@
 //-----------------------------------------------------------------------------
 /// Default constructor
 //-----------------------------------------------------------------------------
-MachiPile::MachiPile () : CardHPile (COMPRESSED, SHOWFACE) {
-   type = UNDEFINED;
+MachiPile::MachiPile () : CardHPile (COMPRESSED, SHOWFACE), type (UNDEFINED) {
 }
 
 //-----------------------------------------------------------------------------

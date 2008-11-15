@@ -657,11 +657,11 @@ static const char* xpmJoker[] = {
 /// \param opts Options for the program
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection (Options& opts)
-   : XApplication (PACKAGE " V" PRG_RELEASE),
+   : XApplication (PACKAGE " V" PRG_RELEASE), status (), cardFaces (), cards (),
 #ifdef WITH_NETWORK
-     dlgChat (NULL),
+     aCommThreads (), mxGuiCmd (), dlgChat (NULL),
 #endif
-     playerPos (0) , options (opts),
+     mxThreadCmd (),  cmgr (), playerPos (0), options (opts), aPlayer (),
      oldGame (GameTypes::NONE), actGame (opts.type),
      restart (false), game (NULL) {
    TRACE9 ("CardGameCollection::CardGameCollection (Options&) - Game: " << actGame);

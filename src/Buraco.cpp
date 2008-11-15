@@ -75,11 +75,12 @@ unsigned int Buraco::CARDS2DEAL (11);
 Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
                 CardSet& cardset, const std::vector<Player*>& player,
                 unsigned int posPlayer, YGP::Mutex& mxSerialize)
-   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10)
-     , startPlayer (-1U) , newPile (_("New pile"))
-     , staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK)
-     , dumped (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWFACE)
-     , pScoreDlg (NULL) {
+   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10),
+     nameTeams (), startPlayer (-1U), info (), newPile (_("New pile")),
+     staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK),
+     dumped (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWFACE),
+     dumpedTop (), stapleTop (), aDNDHand (), aDNDTable (), gStatus (),
+     undo (), pScoreDlg (NULL), idMrg (), menuUndo (), menuSort (), menuSort2 () {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&)");
 
@@ -131,11 +132,12 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       dndType.push_back
          (Gtk::TargetEntry ("icon/card", Gtk::TARGET_SAME_APP, 0));
 
-   statusbar.pack_end (frameInfo, Gtk::PACK_SHRINK, 5);
-   frameInfo.set_shadow_type (Gtk::SHADOW_IN);
-   frameInfo.show ();
+   Gtk::Frame* frameInfo (new Gtk::Frame);
+   statusbar.pack_end (*manage (frameInfo), Gtk::PACK_SHRINK, 5);
+   frameInfo->set_shadow_type (Gtk::SHADOW_IN);
+   frameInfo->show ();
    info.show ();
-   frameInfo.add (info);
+   frameInfo->add (info);
 
    changeNames (player);
    resizeCards ();

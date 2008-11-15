@@ -38,7 +38,7 @@
 class CardgameAppl : public YGP::IVIOApplication {
  public:
    CardgameAppl (const int argc, const char* argv[])
-      : IVIOApplication (argc, argv, lo) { }
+      : IVIOApplication (argc, argv, lo), options () { }
    ~CardgameAppl () { }
 
    static int convertToGameType (const char* pText);

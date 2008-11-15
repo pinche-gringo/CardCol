@@ -72,7 +72,7 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 18, 12),
      playedSQ (false), player2Exchange (3),
      played (ICardPile::COMPRESSED, ICardPile::SHOWFACE),
-     pScoreDlg (NULL)
+     pScoreDlg (NULL), idMrg ()
  {
    TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&, ...");
    CardHPile* hand0 (new CardHPile); players[0].hand = hand0;

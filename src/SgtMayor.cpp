@@ -73,8 +73,8 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardse
                     YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 10, 8),
      played (ICardPile::COMPRESSED, ICardPile::SHOWFACE),
-     pTrump (NULL), startPlayer (rand () % NUM_PLAYERS),
-     pScoreDlg (NULL)
+     pTrump (NULL), bfColours (0), startPlayer (rand () % NUM_PLAYERS),
+     idMrg (), pScoreDlg (NULL)
  {
    TRACE9 ("SgtMayor::SgtMayor (Box&, Statusbar&, CardSet&, ...)");
 

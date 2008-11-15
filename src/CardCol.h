@@ -65,7 +65,7 @@ class CardgameCollection : public XGP::XApplication {
    const std::vector<Player*>& getPlayer () const { return aPlayer; }
    YGP::ConnectionMgr& getConnectionMgr () { return cmgr; };
    YGP::Mutex& getClientMutex () { return mxThreadCmd; }
-   const unsigned int getPlayerPosition () const { return playerPos; }
+   unsigned int getPlayerPosition () const { return playerPos; }
 
 #ifdef WITH_ROVHULT
    static void checkRovhultSpecialCards ();
