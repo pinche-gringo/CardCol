@@ -13,5 +13,7 @@ include_HEADERS=CardWidget.h CardImgs.h CardPile.h CardSet.h		\
 CardWindow.h Game.h DeckSelect.h PlayerDlg.h ScoreDlg.h			\
 PlayerConnDlg.h Player.h Human.h RemotePlayer.h ComputerPlayer.h
 
+AM_CPPFLAGS = -Wall -Wextra
+AM_CXXFLAGS = -Woverloaded-virtual -Weffc++
 INCLUDES = @INCLUDES@ @DEPENDENCIES_CFLAGS@
 DEFS= @DEFS@ -DPKGDIR=\"$(pkgdatadir)\" -Wall
