@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.9 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2008-08-15 16:55+0200\n"
+"POT-Creation-Date: 2008-11-15 12:06+0100\n"
 "PO-Revision-Date: 2008-07-12 22:51+0200\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -24,7 +24,7 @@ msgid "You must first play the visible cards!"
 msgstr "¡Primero se tiene que usar las cartas visibles!"
 
 #: src/Rovhult.cpp:369 src/Rovhult.cpp:482 src/Buraco.cpp:736
-#: src/Buraco.cpp:848 src/Buraco.cpp:1268 src/Machiavelli.cpp:677
+#: src/Buraco.cpp:848 src/Buraco.cpp:1269 src/Machiavelli.cpp:677
 #: src/Machiavelli.cpp:690
 msgid "Invalid move"
 msgstr "¡El turno realizado es inválido!"
@@ -287,7 +287,7 @@ msgstr "_Opciones"
 msgid "_Change game"
 msgstr "Cambiar el _juego"
 
-#: src/CardCol.cpp:748 src/Buraco.cpp:2224 src/Settings.cpp:151
+#: src/CardCol.cpp:748 src/Buraco.cpp:2225 src/Settings.cpp:151
 msgid "_Buraco"
 msgstr ""
 
@@ -672,7 +672,7 @@ msgstr ""
 msgid "Select 3 cards to exchange with %1"
 msgstr "Selecte 3 cartas para cambiar con %1"
 
-#: src/Hearts.cpp:481 src/Buraco.cpp:1738
+#: src/Hearts.cpp:481 src/Buraco.cpp:1739
 msgid "Round ended"
 msgstr "Turno terminó"
 
@@ -737,51 +737,51 @@ msgstr ""
 "¡Robando el burro te dejaría sin cartas, pero\n"
 "aún no puedes terminar el juego!"
 
-#: src/Buraco.cpp:1130
+#: src/Buraco.cpp:1131
 msgid "You need to fill up other piles first!"
 msgstr "¡Necesitas llenar las otras pilas primero!"
 
-#: src/Buraco.cpp:1143
+#: src/Buraco.cpp:1144
 msgid "There are no cards to make a valid new pile!"
 msgstr "¡No tienes cartas para crear una pila con tres semejantes!"
 
-#: src/Buraco.cpp:1149 src/Buraco.cpp:1174
+#: src/Buraco.cpp:1150 src/Buraco.cpp:1175
 msgid "You can't end the game (a pile of monos is not finished)!"
 msgstr "¡No puedes terminar el juego (no tienes cerrado un motón de monos)!"
 
-#: src/Buraco.cpp:1151 src/Buraco.cpp:1175
+#: src/Buraco.cpp:1152 src/Buraco.cpp:1176
 msgid "You can't end the game (there's no \"cerrado\")!"
 msgstr "¡No puedes terminar el juego (no tienes ningún cerrado)!"
 
-#: src/Buraco.cpp:1152
+#: src/Buraco.cpp:1153
 msgid "Not enough cards to make new pile!"
 msgstr "¡No tienes las suficientes cartas para hacer una nueva pila!"
 
-#: src/Buraco.cpp:1161
+#: src/Buraco.cpp:1162
 msgid "You may not start this new pile with a joker!"
 msgstr "¡No se puede iniciar esa pila nueva con un mono!"
 
-#: src/Buraco.cpp:1168 src/Machiavelli.cpp:675
+#: src/Buraco.cpp:1169 src/Machiavelli.cpp:675
 msgid "This card does not fit on that pile!"
 msgstr "¡Esta carta no sirve para esta pila!"
 
-#: src/Buraco.cpp:1390
+#: src/Buraco.cpp:1391
 msgid "%1 picked up the burraco"
 msgstr "%1 tomó el burraco"
 
-#: src/Buraco.cpp:1562
+#: src/Buraco.cpp:1563
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr "Puntos [Buraco]: %1 [%2] / %3 [%4]"
 
-#: src/Buraco.cpp:1564 src/Buraco.cpp:1566
+#: src/Buraco.cpp:1565 src/Buraco.cpp:1567
 msgid "N"
 msgstr ""
 
-#: src/Buraco.cpp:1564 src/Buraco.cpp:1566
+#: src/Buraco.cpp:1565 src/Buraco.cpp:1567
 msgid "Y"
 msgstr "S"
 
-#: src/Buraco.cpp:1680
+#: src/Buraco.cpp:1681
 msgid ""
 "Team %1\n"
 "%2/%3"
@@ -789,31 +789,31 @@ msgstr ""
 "Equipo %1\n"
 "%2/%3"
 
-#: src/Buraco.cpp:1744
+#: src/Buraco.cpp:1745
 msgid "Game ended; Team %1 won"
 msgstr "Juego terminó; Equipo %1 ganó"
 
-#: src/Buraco.cpp:2121
+#: src/Buraco.cpp:2122
 msgid "Invalid pile!"
 msgstr "¡Pila inválido!"
 
-#: src/Buraco.cpp:2124
+#: src/Buraco.cpp:2125
 msgid "Invalid card!"
 msgstr "¡Carta inválida!"
 
-#: src/Buraco.cpp:2186
+#: src/Buraco.cpp:2187
 msgid "Invalid target specification!"
 msgstr "¡Pila final inválida!"
 
-#: src/Buraco.cpp:2226
+#: src/Buraco.cpp:2227
 msgid "<ctl>Z"
 msgstr ""
 
-#: src/Buraco.cpp:2229 src/Machiavelli.cpp:1746
+#: src/Buraco.cpp:2230 src/Machiavelli.cpp:1746
 msgid "_Sort cards (by number)"
 msgstr "Ordena cartas (por _números)"
 
-#: src/Buraco.cpp:2233 src/Machiavelli.cpp:1750
+#: src/Buraco.cpp:2234 src/Machiavelli.cpp:1750
 msgid "Sort cards (by _colour)"
 msgstr "Ordena cartas (por _pinta)"
 
