@@ -1,3 +1,33 @@
+2008-11-17 07:04:41 +0100  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.9.22 documented
+
+        * po/*.po: Actualised
+
+2008-11-15 23:42:43 +0100  Markus Schwab  <g17m0@lycos.com>
+
+        * src/*.cpp: Fixed compiler warnings
+
+2008-11-15 15:03:04 +0100  Markus Schwab  <g17m0@lycos.com>
+
+        * src/Makefile.am: Enabled compiler-warnings
+
+2008-11-15 13:32:53 +0100  Markus Schwab  <g17m0@lycos.com>
+
+        * Common/*.cpp: Fixed compiler warnings
+
+2008-11-15 13:31:16 +0100  Markus Schwab  <g17m0@lycos.com>
+
+        * Common/Makefile.am: Enabling compiler-warnings
+
+2008-11-15 12:11:52 +0100  Markus Schwab  <g17m0@lycos.com>
+
+        * configure.ac: Adapted check card decks to support GNOME 2.24; Version to 0.9.22
+
+2008-11-15 12:10:53 +0100  Markus Schwab  <g17m0@lycos.com>
+
+        * po/*.po: Actualised
+
 2008-11-12 14:51:37 +0100  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.9.21 documented

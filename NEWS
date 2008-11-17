@@ -1,3 +1,9 @@
+Overview of changes in version 0.9.22:
+
+  - configure.ac: Adapted check for card decks to support GNOME 2.24
+  - Enabled and fixed compiler-warnings (GCC 4.3)
+
+
 Overview of changes in version 0.9.21:
 
   - Buraco: Fixed trap showing dumped cards after ending a game
