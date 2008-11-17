@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.9 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2008-11-15 12:06+0100\n"
+"POT-Creation-Date: 2008-11-15 18:16+0100\n"
 "PO-Revision-Date: 2008-07-12 22:50+0200\n"
 "Last-Translator: Markus Schwab <g17m0@lycos.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -23,8 +23,8 @@ msgstr "Warte, daß alle Spieler ihre Karten austauschen ..."
 msgid "You must first play the visible cards!"
 msgstr "Es müssen zuerst die sichtbaren Karten gespielt werden!"
 
-#: src/Rovhult.cpp:369 src/Rovhult.cpp:482 src/Buraco.cpp:736
-#: src/Buraco.cpp:848 src/Buraco.cpp:1269 src/Machiavelli.cpp:677
+#: src/Rovhult.cpp:369 src/Rovhult.cpp:482 src/Buraco.cpp:738
+#: src/Buraco.cpp:850 src/Buraco.cpp:1271 src/Machiavelli.cpp:677
 #: src/Machiavelli.cpp:690
 msgid "Invalid move"
 msgstr "Ungültiger Zug"
@@ -61,7 +61,7 @@ msgstr ""
 "Tausche Karten der Hand mit jenen am Tisch (mit Ziehen & Ablegen); Beginne "
 "durch Klicken einer Karte der Hand"
 
-#: Common/CardImgs.cpp:126 Common/DeckSelect.cpp:300
+#: Common/CardImgs.cpp:126 Common/DeckSelect.cpp:301
 msgid "Unknown error"
 msgstr "Unbekannter Fehler"
 
@@ -118,7 +118,7 @@ msgstr "Vorhande Kartendecks"
 msgid "Available backgrounds"
 msgstr "Vorhande Hintergründe"
 
-#: Common/DeckSelect.cpp:303
+#: Common/DeckSelect.cpp:304
 msgid ""
 "Error loading image from file `%1'!\n"
 "\n"
@@ -128,11 +128,11 @@ msgstr ""
 "\n"
 "Ursache: %1"
 
-#: Common/Game.cpp:188 Common/Game.cpp:367
+#: Common/Game.cpp:189 Common/Game.cpp:368
 msgid "Invalid card specification!"
 msgstr "Ungültige Karte angegeben!"
 
-#: Common/Game.cpp:200
+#: Common/Game.cpp:201
 msgid ""
 "Received invalid input from the server!\n"
 "\n"
@@ -142,19 +142,19 @@ msgstr ""
 "\n"
 "Ursache: %1"
 
-#: Common/Game.cpp:326 Common/Game.cpp:337
+#: Common/Game.cpp:327 Common/Game.cpp:338
 msgid "Turn of %1"
 msgstr "%1 ist am Zug"
 
-#: Common/Game.cpp:495
+#: Common/Game.cpp:496
 msgid "Sort by _number"
 msgstr "Nach _Nummern ordnen"
 
-#: Common/Game.cpp:498
+#: Common/Game.cpp:499
 msgid "Sort by _colour"
 msgstr "Nach _Farben ordnen"
 
-#: Common/Game.cpp:627
+#: Common/Game.cpp:628
 msgid ""
 "Can't write message!\n"
 "\n"
@@ -164,27 +164,27 @@ msgstr ""
 "\n"
 "Ursache: %1\""
 
-#: Common/Game.cpp:713 Common/Game.cpp:718
+#: Common/Game.cpp:714 Common/Game.cpp:719
 msgid "Invalid target!"
 msgstr "Ungültiges Ziel!"
 
-#: Common/Game.cpp:741
+#: Common/Game.cpp:742
 msgid "Invalid number"
 msgstr "Ungültige Nummer"
 
-#: Common/Game.cpp:753
+#: Common/Game.cpp:754
 msgid "Unknown command!"
 msgstr "Unbekannter Befehl!"
 
-#: Common/PlayerDlg.cpp:54
+#: Common/PlayerDlg.cpp:55
 msgid "Set the name of the player"
 msgstr "Ändere Spielername"
 
-#: Common/PlayerDlg.cpp:56
+#: Common/PlayerDlg.cpp:57
 msgid "_Human:"
 msgstr "_Spieler: "
 
-#: Common/PlayerDlg.cpp:60
+#: Common/PlayerDlg.cpp:61
 msgid "Player _%1:"
 msgstr "Spieler _%1:"
 
@@ -288,7 +288,7 @@ msgstr "_Optionen"
 msgid "_Change game"
 msgstr "_Spiel auswählen..."
 
-#: src/CardCol.cpp:748 src/Buraco.cpp:2225 src/Settings.cpp:151
+#: src/CardCol.cpp:748 src/Buraco.cpp:2227 src/Settings.cpp:152
 msgid "_Buraco"
 msgstr ""
 
@@ -296,7 +296,7 @@ msgstr ""
 msgid "<ctl>B"
 msgstr ""
 
-#: src/CardCol.cpp:753 src/Settings.cpp:161
+#: src/CardCol.cpp:753 src/Settings.cpp:162
 msgid "_Hearts"
 msgstr ""
 
@@ -320,7 +320,7 @@ msgstr ""
 msgid "<ctl>M"
 msgstr ""
 
-#: src/CardCol.cpp:769 src/Settings.cpp:187
+#: src/CardCol.cpp:769 src/Settings.cpp:188
 msgid "_Rovhult"
 msgstr "_Røvhult"
 
@@ -676,7 +676,7 @@ msgstr ""
 msgid "Select 3 cards to exchange with %1"
 msgstr "Wähle 3 Karten zum Tauschen mit %1 aus"
 
-#: src/Hearts.cpp:481 src/Buraco.cpp:1739
+#: src/Hearts.cpp:481 src/Buraco.cpp:1741
 msgid "Round ended"
 msgstr "Runde beendet"
 
@@ -723,21 +723,21 @@ msgstr "Punkte"
 msgid "New pile"
 msgstr "Neuer Stapel"
 
-#: src/Buraco.cpp:734
+#: src/Buraco.cpp:736
 msgid "Every pile on the table must have at least 3 cards!"
 msgstr "Jeder Stapel am Tisch muß mindestens 3 Karten enthalten!"
 
-#: src/Buraco.cpp:834
+#: src/Buraco.cpp:836
 msgid "You can't pick up monos!"
 msgstr "Es können keine Joker aufgenommen werden!"
 
-#: src/Buraco.cpp:837
+#: src/Buraco.cpp:839
 msgid "You need a fitting pair to pick up the pile of dumped cards!"
 msgstr ""
 "Man muß ein passendes Paar in der Hand haben,\n"
 "um die abgelegten Karten aufnehmen zu können!"
 
-#: src/Buraco.cpp:843
+#: src/Buraco.cpp:845
 msgid ""
 "Picking up the staple would leave you without cards\n"
 "and you can't end the game now!"
@@ -745,83 +745,83 @@ msgstr ""
 "Nicht genug Karten, um die abgeworfene Karte aufzunehmen\n"
 "(Spiel kann noch nicht beendet werden)!"
 
-#: src/Buraco.cpp:1131
+#: src/Buraco.cpp:1133
 msgid "You need to fill up other piles first!"
 msgstr "Es müssen zunächst die anderen Stapel aufgefüllt werden!"
 
-#: src/Buraco.cpp:1144
+#: src/Buraco.cpp:1146
 msgid "There are no cards to make a valid new pile!"
 msgstr "Mit dieser Karte kann man keine Dreiergruppe bilden!"
 
-#: src/Buraco.cpp:1150 src/Buraco.cpp:1175
+#: src/Buraco.cpp:1152 src/Buraco.cpp:1177
 msgid "You can't end the game (a pile of monos is not finished)!"
 msgstr ""
 "Das Spiel kann nicht beendet werden (ein Stapel von Jokern ist nicht "
 "beendet)!"
 
-#: src/Buraco.cpp:1152 src/Buraco.cpp:1176
+#: src/Buraco.cpp:1154 src/Buraco.cpp:1178
 msgid "You can't end the game (there's no \"cerrado\")!"
 msgstr "Das Spiel kann nicht beendet werden (es gibt noch keinen \"cerrado\")!"
 
-#: src/Buraco.cpp:1153
+#: src/Buraco.cpp:1155
 msgid "Not enough cards to make new pile!"
 msgstr "Nicht genug Karten, um einen neuen Stapel anzulegen!"
 
-#: src/Buraco.cpp:1162
+#: src/Buraco.cpp:1164
 msgid "You may not start this new pile with a joker!"
 msgstr "Dieser neue Stapel kann nicht mit einem Joker angefangen werden!"
 
-#: src/Buraco.cpp:1169 src/Machiavelli.cpp:675
+#: src/Buraco.cpp:1171 src/Machiavelli.cpp:675
 msgid "This card does not fit on that pile!"
 msgstr "Diese Karte paßt nicht auf diesen Stapel!"
 
-#: src/Buraco.cpp:1391
+#: src/Buraco.cpp:1393
 msgid "%1 picked up the burraco"
 msgstr "%1 hat den Burraco-Reservestapel aufgenommen"
 
-#: src/Buraco.cpp:1563
+#: src/Buraco.cpp:1565
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr "Punkte [Buraco]: %1 [%2] / %3 [%4]"
 
-#: src/Buraco.cpp:1565 src/Buraco.cpp:1567
+#: src/Buraco.cpp:1567 src/Buraco.cpp:1569
 msgid "N"
 msgstr ""
 
-#: src/Buraco.cpp:1565 src/Buraco.cpp:1567
+#: src/Buraco.cpp:1567 src/Buraco.cpp:1569
 msgid "Y"
 msgstr "J"
 
-#: src/Buraco.cpp:1681
+#: src/Buraco.cpp:1683
 msgid ""
 "Team %1\n"
 "%2/%3"
 msgstr ""
 
-#: src/Buraco.cpp:1745
+#: src/Buraco.cpp:1747
 msgid "Game ended; Team %1 won"
 msgstr "Das Spiel ist zu Ende; Team %1 hat gewonnen"
 
-#: src/Buraco.cpp:2122
+#: src/Buraco.cpp:2124
 msgid "Invalid pile!"
 msgstr "Ungültiger Stapel!"
 
-#: src/Buraco.cpp:2125
+#: src/Buraco.cpp:2127
 msgid "Invalid card!"
 msgstr "Ungültige Karte!"
 
-#: src/Buraco.cpp:2187
+#: src/Buraco.cpp:2189
 msgid "Invalid target specification!"
 msgstr "Ungültige Zielangabe!"
 
-#: src/Buraco.cpp:2227
+#: src/Buraco.cpp:2229
 msgid "<ctl>Z"
 msgstr ""
 
-#: src/Buraco.cpp:2230 src/Machiavelli.cpp:1746
+#: src/Buraco.cpp:2232 src/Machiavelli.cpp:1746
 msgid "_Sort cards (by number)"
 msgstr "Karten ordnen (nach _Nummern)"
 
-#: src/Buraco.cpp:2234 src/Machiavelli.cpp:1750
+#: src/Buraco.cpp:2236 src/Machiavelli.cpp:1750
 msgid "Sort cards (by _colour)"
 msgstr "Karten ordnen (nach _Farben)"
 
@@ -889,15 +889,15 @@ msgstr "Ungültige Position im Zielstapel!"
 msgid "Undo _all"
 msgstr "Undo _alle"
 
-#: src/MachiPile.cpp:225
+#: src/MachiPile.cpp:224
 msgid "Not enough cards (must be at least 3)!"
 msgstr "Nicht genug Karten (müssen zumindes 3 sein)!"
 
-#: src/MachiPile.cpp:228
+#: src/MachiPile.cpp:227
 msgid "Invalid type!"
 msgstr "Ungültiger Stapeltyp!"
 
-#: src/MachiPile.cpp:236
+#: src/MachiPile.cpp:235
 msgid "Card %1 does not fit!"
 msgstr "Karte %1 paßt nicht!"
 
@@ -955,51 +955,51 @@ msgid_plural "bad cards"
 msgstr[0] "schlechte Karte"
 msgstr[1] "schlechte Karten"
 
-#: src/Settings.cpp:113
+#: src/Settings.cpp:114
 msgid "Preferences"
 msgstr "Einstellungen"
 
-#: src/Settings.cpp:118
+#: src/Settings.cpp:119
 msgid "_Delay of computer player (ms):"
 msgstr "_Verzögerung des Computerspielers (in ms):"
 
-#: src/Settings.cpp:123
+#: src/Settings.cpp:124
 msgid "D_efault game:"
 msgstr "_Anfangsspiel:"
 
-#: src/Settings.cpp:129
+#: src/Settings.cpp:130
 msgid "_General"
 msgstr "_Allgemein"
 
-#: src/Settings.cpp:131
+#: src/Settings.cpp:132
 msgid "C_ard size:"
 msgstr "_Kartengröße:"
 
-#: src/Settings.cpp:140 src/Settings.cpp:156
+#: src/Settings.cpp:141 src/Settings.cpp:157
 msgid "_Points to end game:"
 msgstr "_Punkte zum Gewinnen:"
 
-#: src/Settings.cpp:145
+#: src/Settings.cpp:146
 msgid "_Number of cards:"
 msgstr "_Anzahl der Karten:"
 
-#: src/Settings.cpp:166
+#: src/Settings.cpp:167
 msgid "_Nuke card (default 10):"
 msgstr "_Entfernen-Karte (default 10):"
 
-#: src/Settings.cpp:173
+#: src/Settings.cpp:174
 msgid "Re_verse card (default 7):"
 msgstr "_Umkehr-Karte (default: 7):"
 
-#: src/Settings.cpp:180
+#: src/Settings.cpp:181
 msgid "_Skip card (default 8):"
 msgstr "_Überspringen-Karte (default 8):"
 
-#: src/Settings.cpp:192
+#: src/Settings.cpp:193
 msgid "_Tricks to win game:"
 msgstr "_Punkte zum Gewinnen:"
 
-#: src/Settings.cpp:197
+#: src/Settings.cpp:198
 msgid "Sgt. _Mayor"
 msgstr "Sgt. _Mayor"
 
