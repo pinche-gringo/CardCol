@@ -31,16 +31,25 @@ Additional prerequisite software:
   - autoconf
   - automake
 
+The source can be obtained via
+
+  cvs -d:pserver:anonymous@cardcol.cvs.sourceforge.net:/cvsroot/cardcol login
+  cvs -z3 -d:pserver:anonymous@cardcol.cvs.sourceforge.net:/cvsroot/cardcol co -P CardCol
 
 Inside the directory containing the source code type
 
   gettextize --intl --no-changelog    # Newer versions need an -f
   mv Makefile.am~ Makefile.am
-  mv configure.in~ configure.in
+  mv configure.ac~ configure.ac
   libtoolize -f
   aclocal && autoheader && automake -a && autoconf
   ./configure [configure-options]
   make [make-options]
+
+Updates can be received and compiled with (in the appropiate directory):
+
+  cvs update -R
+  make
 
 
 Common options for configure
