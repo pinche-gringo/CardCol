@@ -142,6 +142,9 @@
       deshace de su &uacute;ltima carta (sea o echandola o
       a&ntilde;adiendo a una pila en la mesa).</p>
 
+    <p>El equipo ''no'' puede terminar el juego, cuando tiene una pila
+      de solamente monos y 2 que no est&eacute; cerrada</p>
+
     <h2>Puntaci&oacute;n</h2>
     <p>Al fin del juego  los puntos est&aacute;n calculados. Cada cerrado
       sin mono o 2 cuenta 400 puntos; si no 200s; excepto los de los ases -

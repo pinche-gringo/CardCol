@@ -142,12 +142,15 @@
       Sto&szlig; abwerfen (durch anklicken) und der n&auml;chste
       Spieler setzt (gegen den Uhrzeigersinn) fort.</p>
 
-
     <h3>Ende des Spiels</h3>
     <p>Das Spiel endet, wenn ein Team mindestens einen &bdquo;Cerrado&rdquo; hat,
       bereits den &bdquo;Buraco&rdquo; aufgenommen hat und dann einer des Teams
-      alle seine Karten loswird (dabei kann noch eine Karte auf den
+      alle seine Karten los wird (dabei kann noch eine Karte auf den
       Sto&szlig; abgeworfen werden, muss aber nicht).</p>
+
+    <p>Ein Team kann das Spiel jedoch nicht beenden, wenn es einen
+      Stapel von ausschlieﬂlich Jokern und 2'ern angefangen aber nicht
+      <i>geschlossen</i> hat.</p>
 
     <h2>Abrechnung</h2>
     <p>Ist das Spiel beendet, werden die Punkte gez&auml;hlt. Jeder
