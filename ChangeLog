@@ -1,3 +1,33 @@
+2009-01-10 01:01:47 -0300  Markus Schwab  <g17m0@lycos.com>
+
+	* ChangeLog, NEWS: Changes of V0.9.23 documented
+
+	* CardCol: Copyright-message actualised (2004-2009)
+
+2009-01-10 00:56:22 -0300  Markus Schwab  <g17m0@lycos.com>
+
+	* All games: Call disableHuman() in Game::clean()
+
+2009-01-10 00:54:11 -0300  Markus Schwab  <g17m0@lycos.com>
+
+	* configure.ac: Version to 0.9.23; Adapted test for card-decks to GNOME 2.24/Fedora 10
+
+2009-01-10 00:45:03 -0300  Markus Schwab  <g17m0@lycos.com>
+
+	* Documentation: Fixed document-type for non-english documents
+
+2008-12-17 12:54:45 -0300  Markus Schwab  <g17m0@lycos.com>
+
+	* INSTALL: Improved section install from CVS
+
+2008-12-17 12:39:12 -0300  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco: Added information about not ending the game with not-finished joker-pile
+
+2008-12-15 11:13:20 -0300  Markus Schwab  <g17m0@lycos.com>
+
+	* Buraco.html.de: Fixed grammar error
+
 2008-11-17 07:04:41 +0100  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.9.22 documented

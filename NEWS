@@ -1,3 +1,11 @@
+Overview of changes in version 0.9.23:
+
+  - configure.ac: Adapted check for card decks to support Fedora 10
+  - Buraco: Fixed cleanup after game
+  - Buraco: Improved the documentation
+  - Documentation (non-english): Fixed document-type
+
+
 Overview of changes in version 0.9.22:
 
   - configure.ac: Adapted check for card decks to support GNOME 2.24
