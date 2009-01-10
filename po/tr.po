@@ -1,5 +1,5 @@
 # Turkish translation of the cardgames
-# Copyright (C) 2006 - 2008 Adeviye Yilmaz
+# Copyright (C) 2006 - 2009 Adeviye Yilmaz
 # Adeviye Yilmaz <adeviyeyilmaz@hotmail.com>, 2006.
 #
 msgid ""
@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: Cardgames V0.9 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
 "POT-Creation-Date: 2009-01-10 00:58-0300\n"
-"PO-Revision-Date: 2008-07-12 22:50+0200\n"
+"PO-Revision-Date: 2009-01-10 20:41-0300\n"
 "Last-Translator: Adeviye Yilmaz <adeviyeyilmaz@hotmail.com>\n"
 "Language-Team: ??? <???@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -390,14 +390,13 @@ msgid "A game is running. Do you really want to quit?"
 msgstr "Bir oyun çalýþýyor. Çýkmak istediðinizden emin misiniz?"
 
 #: src/CardCol.cpp:1227
-#, fuzzy
 msgid ""
 "Copyright (C) 2002 - 2009 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
 "\n"
 "Compiled on %1 at %2"
 msgstr ""
-"Telif hakký © 2002 - 2008 Markus Schwab\n"
+"Telif hakký © 2002 - 2009 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
 "\n"
 "Compiled on %1 at %2"
@@ -660,12 +659,11 @@ msgid "Compiled on"
 msgstr "Derlendi"
 
 #: src/CardColAppl.cpp:420
-#, fuzzy
 msgid ""
 "Copyright (C) 2002 - 2009 Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
 msgstr ""
-"Telif hakký © 2002 - 2008 Markus Schwab; e-mail: g17m0@lycos.com\n"
+"Telif hakký © 2002 - 2009 Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
 
 #: src/CardColAppl.cpp:431
