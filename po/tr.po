@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.9 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@lycos.com\n"
-"POT-Creation-Date: 2008-11-15 18:16+0100\n"
+"POT-Creation-Date: 2009-01-10 00:58-0300\n"
 "PO-Revision-Date: 2008-07-12 22:50+0200\n"
 "Last-Translator: Adeviye Yilmaz <adeviyeyilmaz@hotmail.com>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: src/Rovhult.cpp:196 src/Hearts.cpp:375
+#: src/Rovhult.cpp:196 src/Hearts.cpp:374
 msgid "Waiting for other player to exchange their cards ..."
 msgstr "Diðer oyuncularýn kartlarýný deðiþtirmeleri bekleniyor ..."
 
@@ -24,8 +24,8 @@ msgid "You must first play the visible cards!"
 msgstr "Ýlk önce uygun kartlarý oynamalýsýnýz!"
 
 #: src/Rovhult.cpp:369 src/Rovhult.cpp:482 src/Buraco.cpp:738
-#: src/Buraco.cpp:850 src/Buraco.cpp:1271 src/Machiavelli.cpp:677
-#: src/Machiavelli.cpp:690
+#: src/Buraco.cpp:850 src/Buraco.cpp:1271 src/Machiavelli.cpp:676
+#: src/Machiavelli.cpp:689
 msgid "Invalid move"
 msgstr "Geçersiz taþýma"
 
@@ -41,7 +41,7 @@ msgstr "Oynanan kart eþit veya büyük olmalýdýr!"
 msgid "Pile cleared; "
 msgstr "Yýðýn temizlendi"
 
-#: src/Rovhult.cpp:610 src/Twopart.cpp:376 src/Machiavelli.cpp:1532
+#: src/Rovhult.cpp:610 src/Twopart.cpp:376 src/Machiavelli.cpp:1531
 msgid "%1 lost"
 msgstr "%1 yenildi"
 
@@ -53,7 +53,7 @@ msgstr "%1 atlýyor; "
 msgid "%1 can't continue -> Taking the whole pile. "
 msgstr "%1 devam edememiyor -> yýðýn bitti"
 
-#: src/Rovhult.cpp:935
+#: src/Rovhult.cpp:932
 msgid ""
 "Exchange the cards in your hand with the one on the table (with drag and "
 "drop) - click on one card to start playing"
@@ -91,17 +91,17 @@ msgstr[1] ""
 msgid "First part ended; Part 2 starts %1"
 msgstr "Birinci bölüm bitti; "
 
-#: src/Twopart.cpp:1185 src/CardCol.cpp:779
+#: src/Twopart.cpp:1184 src/CardCol.cpp:779
 msgid "_Twopart"
 msgstr "_Twopart"
 
-#: src/Twopart.cpp:1187 src/Hearts.cpp:1099 src/SgtMayor.cpp:1168
-#: src/Jabberwocky.cpp:340
+#: src/Twopart.cpp:1186 src/Hearts.cpp:1098 src/SgtMayor.cpp:1167
+#: src/Jabberwocky.cpp:339
 msgid "_Sort won cards (by number)"
 msgstr "_Kazanan kartlarý sýrala (sayýya göre)"
 
-#: src/Twopart.cpp:1191 src/Hearts.cpp:1103 src/SgtMayor.cpp:1172
-#: src/Jabberwocky.cpp:344
+#: src/Twopart.cpp:1190 src/Hearts.cpp:1102 src/SgtMayor.cpp:1171
+#: src/Jabberwocky.cpp:343
 msgid "Sort won cards (by _colour)"
 msgstr "Kazanan kartlarý sýrala(_renge göre)"
 
@@ -127,7 +127,7 @@ msgstr ""
 "\n"
 "Sebep: %2"
 
-#: Common/Game.cpp:189 Common/Game.cpp:368
+#: Common/Game.cpp:189 Common/Game.cpp:369
 msgid "Invalid card specification!"
 msgstr "Geçersiz kart özellikleri!"
 
@@ -141,19 +141,19 @@ msgstr ""
 "\n"
 "Sebep: %1"
 
-#: Common/Game.cpp:327 Common/Game.cpp:338
+#: Common/Game.cpp:328 Common/Game.cpp:339
 msgid "Turn of %1"
 msgstr "Kapat %1"
 
-#: Common/Game.cpp:496
+#: Common/Game.cpp:497
 msgid "Sort by _number"
 msgstr "Sýrala _numaraya göre"
 
-#: Common/Game.cpp:499
+#: Common/Game.cpp:500
 msgid "Sort by _colour"
 msgstr "Sýrala _Renge göre"
 
-#: Common/Game.cpp:628
+#: Common/Game.cpp:629
 msgid ""
 "Can't write message!\n"
 "\n"
@@ -163,15 +163,15 @@ msgstr ""
 "\n"
 "Reason: %1"
 
-#: Common/Game.cpp:714 Common/Game.cpp:719
+#: Common/Game.cpp:715 Common/Game.cpp:720
 msgid "Invalid target!"
 msgstr "Geçersiz hedef!"
 
-#: Common/Game.cpp:742
+#: Common/Game.cpp:743
 msgid "Invalid number"
 msgstr "Geçersiz sayý"
 
-#: Common/Game.cpp:754
+#: Common/Game.cpp:755
 msgid "Unknown command!"
 msgstr "Geçersiz konut!"
 
@@ -304,7 +304,7 @@ msgstr "_Hearts"
 msgid "<ctl>H"
 msgstr "<ctl>H"
 
-#: src/CardCol.cpp:758 src/Jabberwocky.cpp:338
+#: src/CardCol.cpp:758 src/Jabberwocky.cpp:337
 msgid "_Jabberwocky"
 msgstr "_Jabberwocky"
 
@@ -312,7 +312,7 @@ msgstr "_Jabberwocky"
 msgid "<ctl>J"
 msgstr "<ctl>J"
 
-#: src/CardCol.cpp:763 src/Machiavelli.cpp:1738
+#: src/CardCol.cpp:763 src/Machiavelli.cpp:1737
 msgid "_Machiavelli"
 msgstr "_Machiavelli"
 
@@ -328,7 +328,7 @@ msgstr "_Røvhult"
 msgid "<ctl>R"
 msgstr "<ctl>R"
 
-#: src/CardCol.cpp:774 src/SgtMayor.cpp:1166
+#: src/CardCol.cpp:774 src/SgtMayor.cpp:1165
 msgid "_Sgt. Mayor"
 msgstr "_Sgt. Mayor"
 
@@ -390,8 +390,9 @@ msgid "A game is running. Do you really want to quit?"
 msgstr "Bir oyun çalýþýyor. Çýkmak istediðinizden emin misiniz?"
 
 #: src/CardCol.cpp:1227
+#, fuzzy
 msgid ""
-"Copyright (C) 2002 - 2008 Markus Schwab\n"
+"Copyright (C) 2002 - 2009 Markus Schwab\n"
 "e-mail: g17m0@lycos.com\n"
 "\n"
 "Compiled on %1 at %2"
@@ -659,8 +660,9 @@ msgid "Compiled on"
 msgstr "Derlendi"
 
 #: src/CardColAppl.cpp:420
+#, fuzzy
 msgid ""
-"Copyright (C) 2002 - 2008 Markus Schwab; e-mail: g17m0@lycos.com\n"
+"Copyright (C) 2002 - 2009 Markus Schwab; e-mail: g17m0@lycos.com\n"
 "Distributed under the terms of the GNU General Public License"
 msgstr ""
 "Telif hakký © 2002 - 2008 Markus Schwab; e-mail: g17m0@lycos.com\n"
@@ -678,39 +680,39 @@ msgstr ""
 msgid "Select 3 cards to exchange with %1"
 msgstr "%1 ile deðiþtirmek için 3 kart seç"
 
-#: src/Hearts.cpp:481 src/Buraco.cpp:1741
+#: src/Hearts.cpp:480 src/Buraco.cpp:1741
 msgid "Round ended"
 msgstr "El bitti"
 
-#: src/Hearts.cpp:486
+#: src/Hearts.cpp:485
 msgid "Game ended; %1 won"
 msgstr "Oyun bitti; %1 kazandý"
 
-#: src/Hearts.cpp:531 src/Jabberwocky.cpp:380
+#: src/Hearts.cpp:530 src/Jabberwocky.cpp:379
 msgid "Play first cards with an equal colour as the first played one!"
 msgstr "Birinci oyunda oynandýðý gibi ilk kartlarý ayný renkte oynayýn!"
 
-#: src/Hearts.cpp:538
+#: src/Hearts.cpp:537
 msgid "The game must be started with the two of clubs!"
 msgstr "Oyun gruptan iki kiþiyle baþlamalý"
 
-#: src/Hearts.cpp:544
+#: src/Hearts.cpp:543
 msgid "You can't start with a heart, if they have not been played before!"
 msgstr "Eðer daha önce oynanmadýysa, kupa ile baþlayamazsýnýz!"
 
-#: src/Hearts.cpp:550
+#: src/Hearts.cpp:549
 msgid "The queen of spades can't be played in the first round!"
 msgstr "Maça kýzýný ilk elde oynayamazsýnýz!"
 
-#: src/Hearts.cpp:554
+#: src/Hearts.cpp:553
 msgid "Hearts can't be played in the first round!"
 msgstr "Kupayý ilk elde oynayamazsýnýz! "
 
-#: src/Hearts.cpp:559 src/GameTypes.cpp:59
+#: src/Hearts.cpp:558 src/GameTypes.cpp:59
 msgid "Hearts"
 msgstr "Kupalar"
 
-#: src/Hearts.cpp:1097
+#: src/Hearts.cpp:1096
 msgid "H_earts"
 msgstr "K_upalar"
 
@@ -766,7 +768,7 @@ msgstr "yeni bir yýðýn için kartlar yeterli deðil!"
 msgid "You may not start this new pile with a joker!"
 msgstr ""
 
-#: src/Buraco.cpp:1171 src/Machiavelli.cpp:675
+#: src/Buraco.cpp:1171 src/Machiavelli.cpp:674
 msgid "This card does not fit on that pile!"
 msgstr "Bu kart yýðýnla baðdaþmýyor!"
 
@@ -814,15 +816,15 @@ msgstr "Geçersiz hedef belirtimi"
 msgid "<ctl>Z"
 msgstr "<ctl>Z"
 
-#: src/Buraco.cpp:2232 src/Machiavelli.cpp:1746
+#: src/Buraco.cpp:2232 src/Machiavelli.cpp:1745
 msgid "_Sort cards (by number)"
 msgstr "_Kartlarý sýrala (numaraya göre)"
 
-#: src/Buraco.cpp:2236 src/Machiavelli.cpp:1750
+#: src/Buraco.cpp:2236 src/Machiavelli.cpp:1749
 msgid "Sort cards (by _colour)"
 msgstr "Kartlarý sýrala (_renge göre)"
 
-#: src/Machiavelli.cpp:86 src/Machiavelli.cpp:1753
+#: src/Machiavelli.cpp:86 src/Machiavelli.cpp:1752
 msgid "_End turn"
 msgstr "_Oyunu durdur"
 
@@ -834,55 +836,55 @@ msgstr ""
 "Elinizdeki kartlarý sürükle býrak tekniðiyle sýralayabilirsiniz veya onlarý "
 "masaya  koyabilirsiniz - en baþtakine týkla ve oyunu bitir"
 
-#: src/Machiavelli.cpp:347 src/Machiavelli.cpp:1500
+#: src/Machiavelli.cpp:346 src/Machiavelli.cpp:1499
 msgid "Can't end turn: The piles are not valid!"
 msgstr "Oyunu bitiremezsiniz: Yýðýnlar geçerli deðil!"
 
-#: src/Machiavelli.cpp:354
+#: src/Machiavelli.cpp:353
 msgid "_Undo all"
 msgstr "_Hepsini geri al"
 
-#: src/Machiavelli.cpp:355
+#: src/Machiavelli.cpp:354
 msgid "Undo _last"
 msgstr "_Sonuncuyu geri al"
 
-#: src/Machiavelli.cpp:688
+#: src/Machiavelli.cpp:687
 msgid "Can't move this card - try splitting the origin first!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1391
+#: src/Machiavelli.cpp:1390
 msgid "Taking last card! Solve the game (somehow) ..."
 msgstr ""
 
-#: src/Machiavelli.cpp:1393
+#: src/Machiavelli.cpp:1392
 msgid "Game over"
 msgstr "Oyunu kaybettiniz"
 
-#: src/Machiavelli.cpp:1418
+#: src/Machiavelli.cpp:1417
 msgid "Pile %1: %2\n"
 msgstr "Yýðýn %1: %2\n"
 
-#: src/Machiavelli.cpp:1502
+#: src/Machiavelli.cpp:1501
 msgid "Could end turn: The piles are OK!"
 msgstr "Oyun bitti: yýðýnlar tamam!"
 
-#: src/Machiavelli.cpp:1613 src/Machiavelli.cpp:1675
+#: src/Machiavelli.cpp:1612 src/Machiavelli.cpp:1674
 msgid "Invalid source pile!"
 msgstr "Geçersiz yýðýn kaynaðý!"
 
-#: src/Machiavelli.cpp:1616 src/Machiavelli.cpp:1678
+#: src/Machiavelli.cpp:1615 src/Machiavelli.cpp:1677
 msgid "Invalid cards!"
 msgstr "Geçersiz kartlar!"
 
-#: src/Machiavelli.cpp:1634 src/Machiavelli.cpp:1663
+#: src/Machiavelli.cpp:1633 src/Machiavelli.cpp:1662
 msgid "Invalid destination pile!"
 msgstr "Geçersiz yýðýna eriþim!"
 
-#: src/Machiavelli.cpp:1672
+#: src/Machiavelli.cpp:1671
 msgid "Invalid position in destination pile!"
 msgstr "Geçersiz yýðýna eriþim durumu!"
 
-#: src/Machiavelli.cpp:1742
+#: src/Machiavelli.cpp:1741
 msgid "Undo _all"
 msgstr "_Hepsini geri al"
 
@@ -902,49 +904,49 @@ msgstr "Kart %1 uygun deðil!"
 msgid "(needs %1 tricks)"
 msgstr "(ihtiyaç var %1 ele)"
 
-#: src/SgtMayor.cpp:312
+#: src/SgtMayor.cpp:311
 msgid "Play a card with an equal colour as the first played one!"
 msgstr "Ýlk oyunanan da olduðu gibi ayný renkli bir kart oynayýn!"
 
-#: src/SgtMayor.cpp:384
+#: src/SgtMayor.cpp:383
 msgid "Waiting for %1 to select the special colour ..."
 msgstr "%1 özel bir renk seçmesi bekleniyor ..."
 
-#: src/SgtMayor.cpp:413
+#: src/SgtMayor.cpp:412
 msgid "Select the special colour"
 msgstr "Özel bir renk seçin"
 
-#: src/SgtMayor.cpp:681
+#: src/SgtMayor.cpp:680
 msgid "Card not found!"
 msgstr "Kart bulunamadý!"
 
-#: src/SgtMayor.cpp:820
+#: src/SgtMayor.cpp:819
 msgid "Game ended; %1 has %2 %7, %3 %4 and %5 %6 %8"
 msgstr "Oyun bitti; %1 sahip %2 %7, %3 %4 ve %5 %6 %8"
 
-#: src/SgtMayor.cpp:850 src/Jabberwocky.cpp:938
+#: src/SgtMayor.cpp:849 src/Jabberwocky.cpp:937
 msgid "; %1 won"
 msgstr "; %1 kazandý"
 
-#: src/SgtMayor.cpp:864 src/SgtMayor.cpp:866
+#: src/SgtMayor.cpp:863 src/SgtMayor.cpp:865
 msgid "trick"
 msgid_plural "tricks"
 msgstr[0] "el"
 msgstr[1] "eller"
 
-#: src/SgtMayor.cpp:941
+#: src/SgtMayor.cpp:940
 msgid "Waiting for %1 to exchange cards ..."
 msgstr " %1 kartlarý deðiþtirmek için bekliyor ..."
 
-#: src/SgtMayor.cpp:975
+#: src/SgtMayor.cpp:974
 msgid "You can exchange %1 %2; %4 with %3 (and than %5 with %6)!"
 msgstr "%1 %2; %4 ile %3 (ve sonra %5 ile %6)!"
 
-#: src/SgtMayor.cpp:982
+#: src/SgtMayor.cpp:981
 msgid "You can exchange %1 %2 with %3!"
 msgstr "%1 %2 ile %3 deðiþtirebilirsin!"
 
-#: src/SgtMayor.cpp:987
+#: src/SgtMayor.cpp:986
 msgid "bad card"
 msgid_plural "bad cards"
 msgstr[0] "Kötü kart"
@@ -1006,7 +1008,7 @@ msgstr "Røvhult"
 msgid "Twopart"
 msgstr "Twopart"
 
-#: src/GameTypes.cpp:62 src/Jabberwocky.cpp:407 src/Jabberwocky.cpp:507
+#: src/GameTypes.cpp:62 src/Jabberwocky.cpp:406 src/Jabberwocky.cpp:506
 msgid "Jabberwocky"
 msgstr "Jabberwocky"
 
@@ -1034,7 +1036,7 @@ msgstr "_Gönder"
 msgid ": "
 msgstr ": "
 
-#: src/Jabberwocky.cpp:389
+#: src/Jabberwocky.cpp:388
 msgid ""
 "You can't start with a trump,\n"
 "if they have not been played before!"
@@ -1042,19 +1044,19 @@ msgstr ""
 "Bir kozla baþlayamazsýnýz,\n"
 "eðer onlar daha önce oynamadýysa!"
 
-#: src/Jabberwocky.cpp:443
+#: src/Jabberwocky.cpp:442
 msgid "Waiting for %1 to bid ..."
 msgstr "Oyun için %1 bekleniyor ..."
 
-#: src/Jabberwocky.cpp:451
+#: src/Jabberwocky.cpp:450
 msgid "Make your bid for the number of tricks you are going to make!"
 msgstr "Oyun için numaraný yap ve öle oyna!"
 
-#: src/Jabberwocky.cpp:453
+#: src/Jabberwocky.cpp:452
 msgid "_Bid"
 msgstr "_Oyun"
 
-#: src/Jabberwocky.cpp:506
+#: src/Jabberwocky.cpp:505
 msgid ""
 "The sum of all bids must be different\n"
 "than the number of possible tricks!"
@@ -1062,11 +1064,11 @@ msgstr ""
 "Tüm oyunlarýn toplamý farklý olmalý\n"
 "sonra elin mümkün numaralarý!"
 
-#: src/Jabberwocky.cpp:534
+#: src/Jabberwocky.cpp:533
 msgid "; bids %1 tricks"
 msgstr "; %1 el oynandý"
 
-#: src/Jabberwocky.cpp:916
+#: src/Jabberwocky.cpp:915
 msgid "Game ended"
 msgstr "Oyun bitti"
 

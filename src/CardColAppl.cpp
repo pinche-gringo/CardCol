@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 7.7.2005
-//COPYRIGHT   : Copyright (C) 2005 - 2008
+//COPYRIGHT   : Copyright (C) 2005 - 2009
 
 // This file is part of CardCol.
 //
@@ -417,7 +417,7 @@ const char* CardgameAppl::description () const {
       (PACKAGE " V" VERSION " - "
        + std::string (_("Compiled on"))
        + std::string (" " __DATE__ " - " __TIME__ "\n\n")
-       + std::string (_("Copyright (C) 2002 - 2008 Markus Schwab; e-mail: g17m0@lycos.com"
+       + std::string (_("Copyright (C) 2002 - 2009 Markus Schwab; e-mail: g17m0@lycos.com"
 			"\nDistributed under the terms of the GNU General "
 			"Public License")));
    return version.c_str ();

@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 9.9.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2009
 
 // This file is part of CardCol.
 //
@@ -1224,7 +1224,7 @@ const char* CardgameCollection::getHelpfile () {
 /// Shows the about box for the program
 //-----------------------------------------------------------------------------
 void CardgameCollection::showAboutbox () {
-   std::string ver (_("Copyright (C) 2002 - 2008 Markus Schwab"
+   std::string ver (_("Copyright (C) 2002 - 2009 Markus Schwab"
                       "\ne-mail: g17m0@lycos.com\n\nCompiled on %1 at %2"));
    ver.replace (ver.find ("%1"), 2, __DATE__);
    ver.replace (ver.find ("%2"), 2, __TIME__);
