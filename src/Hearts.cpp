@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.12.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2009
 
 // This file is part of CardCol.
 //
@@ -251,7 +251,6 @@ void Hearts::clean () {
    }
 
    played.clear ();
-   disableHuman ();
    Game::clean ();
 }
 

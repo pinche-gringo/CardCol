@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.02.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2008
+//COPYRIGHT   : Copyright (C) 2003 - 2009
 
 // This file is part of CardCol.
 //

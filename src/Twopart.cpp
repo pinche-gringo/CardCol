@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 20.7.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2009
 
 // This file is part of CardCol.
 //
@@ -966,7 +966,6 @@ void Twopart::clean () {
    }
    played.clear ();
 
-   disableHuman ();
    staple.show ();
    if (pTrump) {
       remove (*pTrump);

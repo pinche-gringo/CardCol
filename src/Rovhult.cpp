@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 28.3.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2009
 
 // This file is part of CardCol.
 //
@@ -769,10 +769,7 @@ void Rovhult::clean () {
       players[i].hand.clear ();
    }
    played.clear ();
-
    players[0].hand.setStyle (ICardPile::NORMAL);
-   disableHuman ();
-
    Game::clean ();
 }
 

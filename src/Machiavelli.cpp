@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2008
+//COPYRIGHT   : Copyright (C) 2003 - 2009
 
 // This file is part of CardCol.
 //
@@ -186,7 +186,6 @@ void Machiavelli::start () {
 //-----------------------------------------------------------------------------
 void Machiavelli::clean () {
    TRACE6 ("Machiavelli::clean ()");
-   disableHuman ();
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       hands[i].clear ();
 

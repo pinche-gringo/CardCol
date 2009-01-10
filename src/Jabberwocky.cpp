@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 09.08.2006
-//COPYRIGHT   : Copyright (C) 2006, 2008
+//COPYRIGHT   : Copyright (C) 2006, 2009
 
 // This file is part of CardCol.
 //
@@ -193,7 +193,6 @@ void Jabberwocky::clean () {
    while (status.children ().size () > 1)
       status.children ().remove (status.children ()[1]);
 
-   disableHuman ();
    if (pTrump) {
       remove (*pTrump);
       pTrump = NULL;

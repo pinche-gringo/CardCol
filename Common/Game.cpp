@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 10.9.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2009
 
 // This file is part of CardCol.
 //
@@ -253,6 +253,7 @@ void Game::movePile (ICardPile& dest, unsigned int posDest, ICardPile& source,
 //-----------------------------------------------------------------------------
 void Game::clean () {
    TRACE8 ("Game::clean ()");
+   disableHuman ();
    disableWonCards ();
 }
 

@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 11.4.2004
-//COPYRIGHT   : Copyright (C) 2004 - 2008
+//COPYRIGHT   : Copyright (C) 2004 - 2009
 
 // This file is part of CardCol.
 //
@@ -248,7 +248,6 @@ void SgtMayor::clean () {
    }
 
    played.clear ();
-   disableHuman ();
    Game::clean ();
 }
 
