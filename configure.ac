@@ -181,7 +181,7 @@ if test "$KDECARDS_DIR" != "no"; then
    AC_MSG_CHECKING(for KDE carddecks)
    dnl Try to find the KDE carddecks (if not specified)
    if test -z "$KDECARDS_DIR"; then
-      for version in 4.1 4.0 4 3.5 3.4 3.3 3.2 3.1 3.0 3; do
+      for version in 4.2 4.1 4.0 4 3.5 3.4 3.3 3.2 3.1 3.0 3; do
       	 for dir in /opt/kde$version/share/apps/carddecks \
                     /usr/share/kde$version/share/apps/carddecks \
                     /usr/share/kde$version/apps/carddecks \
