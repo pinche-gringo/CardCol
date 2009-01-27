@@ -895,7 +895,7 @@ void Buraco::dumpedSelected () {
    }
    else {
       staple.append (dumped.removeTopCard ());
-      enableHuman ();
+      Glib::signal_idle ().connect (mem_fun (*this, &Buraco::enableHuman));
    }
 }
 
