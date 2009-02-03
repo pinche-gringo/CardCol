@@ -417,7 +417,7 @@ const char* CardgameAppl::description () const {
       (PACKAGE " V" VERSION " - "
        + std::string (_("Compiled on"))
        + std::string (" " __DATE__ " - " __TIME__ "\n\n")
-       + std::string (_("Copyright (C) 2002 - 2009 Markus Schwab; e-mail: g17m0@lycos.com"
+       + std::string (_("Copyright (C) 2002 - 2009 Markus Schwab; e-mail: g17m0@users.sourceforge.net"
 			"\nDistributed under the terms of the GNU General "
 			"Public License")));
    return version.c_str ();

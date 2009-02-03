@@ -1,3 +1,9 @@
+Overview of changes in version 0.9.24:
+
+  - Buraco: Fixed stepping through cards on staples after game
+  - Updated contact information (Lycos discontinued its service)
+
+
 Overview of changes in version 0.9.23:
 
   - configure.ac: Adapted check for card decks to support Fedora 10

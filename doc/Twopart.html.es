@@ -1,8 +1,6 @@
 <!-- -*-HTML-*- -->
-<!-- $Id$ -->
-
 <!--
-  Copyright (C) 2003 - 2008 Markus Schwab (g17m0@lycos.com)
+  Copyright (C) 2003 - 2009 Markus Schwab (g17m0@users.sourceforge.net)
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -30,7 +28,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-11">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2008, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2009, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -141,7 +139,7 @@
       <tr>
         <td width="*">
           <address>
-            <a href="mailto:g17m0@lycos.com">Markus Schwab (g17m0@lycos.com)</a><br>
+            <a href="mailto:g17m0@users.sourceforge.net">Markus Schwab (g17m0@users.sourceforge.net)</a><br>
           </address>
         </td>
         <td><a href="Sgt.Mayor.html.es">Anterior</a><br>(Sgt. Mayor)</td>

@@ -26,8 +26,8 @@ Various card games; til now they consist of:
 
 The whole thing is:
 
-Copyright (C) 2002 - 2007 Markus Schwab <g17m0@lycos.com>
----------------------------------------------------------
+Copyright (C) 2002 - 2007 Markus Schwab <g17m0@users.sourceforge.net>
+---------------------------------------------------------------------
 
 The package is distributed under the GNU General Public License; in the hope
 that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
@@ -63,7 +63,7 @@ How to report bugs and/or send patches
 --------------------------------------
 
 Bug reports and patches should be send to the e-mail address of the author (me)
-(g17m0@lycos.com).
+(g17m0@users.sourceforge.net).
 
 Please include for bugs:
 
