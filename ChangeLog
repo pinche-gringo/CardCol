@@ -1,3 +1,17 @@
+2009-02-03 13:07:19 -0300  Markus Schwab  <g17m0@users.sourceforge.net>
+
+	* ChangeLog: Changes of V0.9.24 documented
+
+	* Changed contact and copyright information
+
+2009-01-26 22:29:32 -0300  Markus Schwab  <g17m0@users.sourceforge.net>
+
+	* configure.ac: Potentially checking for KDE 4.2 decks
+
+2009-01-26 21:46:01 -0300  Markus Schwab  <g17m0@users.sourceforge.net>
+
+	* Buraco: Delayed activating cards when clicking on dumped pile after end of game
+
 2009-01-10 01:01:47 -0300  Markus Schwab  <g17m0@lycos.com>
 
 	* ChangeLog, NEWS: Changes of V0.9.23 documented

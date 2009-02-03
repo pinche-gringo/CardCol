@@ -658,7 +658,8 @@ msgid ""
 "net\n"
 "Distributed under the terms of the GNU General Public License"
 msgstr ""
-"Copyright (C) 2002 - 2009 Markus Schwab; correo-e: g17m0@users.sourceforge.net\n"
+"Copyright (C) 2002 - 2009 Markus Schwab; correo-e: g17m0@users.sourceforge."
+"net\n"
 "Distribuido bajo las condicones de la GNU Licensia General Públic"
 
 #: src/CardColAppl.cpp:431

@@ -664,7 +664,8 @@ msgid ""
 "net\n"
 "Distributed under the terms of the GNU General Public License"
 msgstr ""
-"Telif hakký © 2002 - 2009 Markus Schwab; e-mail: g17m0@users.sourceforge.net\n"
+"Telif hakký © 2002 - 2009 Markus Schwab; e-mail: g17m0@users.sourceforge."
+"net\n"
 "Distributed under the terms of the GNU General Public License"
 
 #: src/CardColAppl.cpp:431
