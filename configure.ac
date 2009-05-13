@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.9.24, [g17m0@users.sourceforge.net], CardCol)
+AC_INIT(Cardgames, 0.9.25, [g17m0@users.sourceforge.net], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -49,7 +49,7 @@ dnl Checks for libraries.
 AC_CHECK_LIB(stdc++, main)
 
 PKG_CHECK_MODULES(DEPENDENCIES, gtkmm-2.4 >= 2.6.0 gthread-2.0 > 2.2.0
-                  YGP >= 0.9.00 XGP >= 0.9.03)
+                  YGP >= 0.9.00 XGP >= 0.9.20)
 AC_SUBST(DEPENDENCIES_CFLAGS)
 AC_SUBST(DEPENDENCIES_LIBS)
 
@@ -269,13 +269,14 @@ fi
 
 AC_ARG_WITH(cardpics-dir,
             AC_HELP_STRING([--with-cardpics-dir=DIR], [Path to cardpics]),
-            [test -n "$withval" && CARDPIC_DIR=$withval])
+            [test -n "$withval" && CARDPICS_DIR=$withval])
 
-if test "$CARDPIC_DIR" != "no"; then
+if test "$CARDPICS_DIR" != "no"; then
    AC_MSG_CHECKING(for cardpics)
    dnl Try to find the cardpics (if not specified)
    if test -z "$CARDPICS_DIR"; then
-      for dir in /usr/share/games/cardpics/images /usr/share/cardpics/images; do
+      for dir in /usr/share/games/cardpics/images /usr/share/cardpics/images \
+                 /usr/local/share/games/cardpics/images /usr/local/share/cardpics/images; do
 	 if test -d "$dir/"; then
 	    CARDPICS_DIR="$dir/"
 	    break
