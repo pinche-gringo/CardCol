@@ -309,7 +309,8 @@ if test $HAVE_CARDS -eq 0; then
    AC_MSG_ERROR("Didn't find any carddecks!")
 fi
 
-AC_OUTPUT([Makefile Common/Makefile src/Makefile intl/Makefile po/Makefile.in doc/Makefile])
+AC_OUTPUT([Makefile Common/Makefile src/Makefile intl/Makefile po/Makefile.in doc/Makefile\
+	   data/Makefile])
 
 dnl Settings for autoheader
 AH_TOP([#ifndef CARDGAMES_CFG_H
