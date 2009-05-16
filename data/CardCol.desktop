@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Cardgame Collection
+Name[de]=Kartenspielsammlung
+Name[es]=Colección de juegos de naipes
+Comment=Play many different multi-player cardgames
+Comment[de]=Viele verschiedene Mehrfachspieler-Kartenspiele spielen
+Comment[es]=Juege a diferentes juegos de naipes para varias personas
+Categories=GTK;Game;CardGame;
+Exec=CardCol
+Icon=CardCol
+StartupNotify=true
+Terminal=false
+Type=Application
