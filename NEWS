@@ -1,3 +1,12 @@
+Overview of changes in version 0.9.30:
+
+  - Installing menu entry for desktop environments
+  - Fixed handling configure-argument --with-cardpics-dir
+  - configure searches for cardpics in more directories (handling FreeBSD)
+  - Fixed trap pickung up dumped cards with only 2 cards in hand
+  - Improved the author's logo (thanks to Fabian Hernandez; cocoknight.com)
+
+
 Overview of changes in version 0.9.24:
 
   - Buraco: Fixed stepping through cards on staples after game

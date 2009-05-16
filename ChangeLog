@@ -1,3 +1,41 @@
+2009-05-16 22:05:40 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+	* ChangeLog, NEWS: Changes of V0.9.30 documented
+
+        * *.po: Actualised
+
+2009-05-16 19:22:43 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Buraco.cpp: Fixed trap picking up pile with only 2 cards in hand
+
+2009-05-16 17:46:39 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * configure.ac: Handling data-directory
+
+2009-05-16 17:45:57 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardCol: Added .desktop-file and icon
+
+2009-05-16 16:03:47 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * configure.ac: Version to 0.9.30
+
+2009-05-16 16:03:27 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * AUTHORS: Added Fabian as designer of the logo; Fixes
+
+2009-05-16 16:02:58 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardCol.cpp: Using (external) inline version of the about icons
+
+2009-05-16 16:02:09 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardCol.cpp: Inline versions of about-icons
+
+2009-05-13 23:27:24 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * configure.ac: Fixed and improved check for cardpics; Version to 0.9.25
+
 2009-02-03 13:07:19 -0300  Markus Schwab  <g17m0@users.sourceforge.net>
 
 	* ChangeLog: Changes of V0.9.24 documented
