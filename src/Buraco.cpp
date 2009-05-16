@@ -1261,7 +1261,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       }
 
       // Re-register the cards in the hand of the human for DND
-      if (*pValue < hands[0].size ())
+      if (*pValue < size)
 	 registerHandDND (*pValue, size - 1);
       Check3 (aDNDHand.size () == hands[0].size ());
    }
