@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.9 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@users.sourceforge.net\n"
-"POT-Creation-Date: 2009-02-03 12:59-0300\n"
+"POT-Creation-Date: 2009-05-16 16:04+0200\n"
 "PO-Revision-Date: 2009-02-03 13:06-0300\n"
 "Last-Translator: Markus Schwab <g17m0@users.sourceforge.net>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -91,7 +91,7 @@ msgstr[1] ""
 msgid "First part ended; Part 2 starts %1"
 msgstr "La primera parte terminó; %1 comienza el parte 2"
 
-#: src/Twopart.cpp:1184 src/CardCol.cpp:779
+#: src/Twopart.cpp:1184 src/CardCol.cpp:435
 msgid "_Twopart"
 msgstr ""
 
@@ -255,125 +255,125 @@ msgstr ""
 "\n"
 "Causa: %1"
 
-#: src/CardCol.cpp:725
+#: src/CardCol.cpp:381
 msgid "_Game"
 msgstr "_Juego"
 
-#: src/CardCol.cpp:728
+#: src/CardCol.cpp:384
 msgid "_End"
 msgstr "_Terminar"
 
-#: src/CardCol.cpp:731
+#: src/CardCol.cpp:387
 msgid "_Connect ..."
 msgstr "_Conectar ..."
 
-#: src/CardCol.cpp:732
+#: src/CardCol.cpp:388
 msgid "<shft><ctl>C"
 msgstr "<ctl>C"
 
-#: src/CardCol.cpp:735
+#: src/CardCol.cpp:391
 msgid "_Chat ..."
 msgstr ""
 
-#: src/CardCol.cpp:736
+#: src/CardCol.cpp:392
 msgid "<alt><ctl>C"
 msgstr ""
 
-#: src/CardCol.cpp:743
+#: src/CardCol.cpp:399
 msgid "_Options"
 msgstr "_Opciones"
 
-#: src/CardCol.cpp:744
+#: src/CardCol.cpp:400
 msgid "_Change game"
 msgstr "Cambiar el _juego"
 
-#: src/CardCol.cpp:748 src/Buraco.cpp:2227 src/Settings.cpp:152
+#: src/CardCol.cpp:404 src/Buraco.cpp:2227 src/Settings.cpp:152
 msgid "_Buraco"
 msgstr ""
 
-#: src/CardCol.cpp:749
+#: src/CardCol.cpp:405
 msgid "<ctl>B"
 msgstr ""
 
-#: src/CardCol.cpp:753 src/Settings.cpp:162
+#: src/CardCol.cpp:409 src/Settings.cpp:162
 msgid "_Hearts"
 msgstr "_Corazones"
 
-#: src/CardCol.cpp:754
+#: src/CardCol.cpp:410
 msgid "<ctl>H"
 msgstr "<ctl>O"
 
-#: src/CardCol.cpp:758 src/Jabberwocky.cpp:337
+#: src/CardCol.cpp:414 src/Jabberwocky.cpp:337
 msgid "_Jabberwocky"
 msgstr ""
 
-#: src/CardCol.cpp:759
+#: src/CardCol.cpp:415
 msgid "<ctl>J"
 msgstr "<ctl>J"
 
-#: src/CardCol.cpp:763 src/Machiavelli.cpp:1737
+#: src/CardCol.cpp:419 src/Machiavelli.cpp:1737
 msgid "_Machiavelli"
 msgstr ""
 
-#: src/CardCol.cpp:764
+#: src/CardCol.cpp:420
 msgid "<ctl>M"
 msgstr ""
 
-#: src/CardCol.cpp:769 src/Settings.cpp:188
+#: src/CardCol.cpp:425 src/Settings.cpp:188
 msgid "_Rovhult"
 msgstr "_Røvhult"
 
-#: src/CardCol.cpp:770
+#: src/CardCol.cpp:426
 msgid "<ctl>R"
 msgstr ""
 
-#: src/CardCol.cpp:774 src/SgtMayor.cpp:1165
+#: src/CardCol.cpp:430 src/SgtMayor.cpp:1165
 msgid "_Sgt. Mayor"
 msgstr ""
 
-#: src/CardCol.cpp:775
+#: src/CardCol.cpp:431
 msgid "<ctl>Y"
 msgstr ""
 
-#: src/CardCol.cpp:780
+#: src/CardCol.cpp:436
 msgid "<ctl>T"
 msgstr "<ctl>P"
 
-#: src/CardCol.cpp:784
+#: src/CardCol.cpp:440
 msgid "Change _decks ..."
 msgstr "Cambiar _imágenes de las cartas ..."
 
-#: src/CardCol.cpp:785
+#: src/CardCol.cpp:441
 msgid "<ctl>D"
 msgstr "<ctl>I"
 
-#: src/CardCol.cpp:787
+#: src/CardCol.cpp:443
 msgid "Change _names ..."
 msgstr "Cambiar los nombres del los _jugadores ..."
 
-#: src/CardCol.cpp:788
+#: src/CardCol.cpp:444
 msgid "<ctl>C"
 msgstr "<ctl>J"
 
-#: src/CardCol.cpp:791
+#: src/CardCol.cpp:447
 msgid "F9"
 msgstr ""
 
-#: src/CardCol.cpp:794
+#: src/CardCol.cpp:450
 msgid "_Save preferences"
 msgstr "_Guardar opciónes"
 
-#: src/CardCol.cpp:1009
+#: src/CardCol.cpp:665
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 "Un juego ya está activo. ¿Seguro que quieres terminarlo y comencar de nuevo?"
 
-#: src/CardCol.cpp:1032
+#: src/CardCol.cpp:688
 msgid "Do you really want to end the game?"
 msgstr "¿Seguro que quieres terminar el juego activo?"
 
-#: src/CardCol.cpp:1134
+#: src/CardCol.cpp:790
 msgid ""
 "Couldn't save options (to file %1)!\n"
 "\n"
@@ -383,11 +383,11 @@ msgstr ""
 "\n"
 "Causa: %2"
 
-#: src/CardCol.cpp:1147
+#: src/CardCol.cpp:803
 msgid "A game is running. Do you really want to quit?"
 msgstr "Un juego está activo. ¿Seguro que quieres terminar?"
 
-#: src/CardCol.cpp:1227
+#: src/CardCol.cpp:883
 msgid ""
 "Copyright (C) 2002 - 2009 Markus Schwab\n"
 "e-mail: g17m0@users.sourceforge.net\n"
@@ -399,7 +399,7 @@ msgstr ""
 "\n"
 "Compilado el %1 a las %2"
 
-#: src/CardCol.cpp:1315
+#: src/CardCol.cpp:971
 msgid ""
 "Couldn't load the card images!\n"
 "\n"
@@ -409,19 +409,19 @@ msgstr ""
 "\n"
 "Causa: %1"
 
-#: src/CardCol.cpp:1367
+#: src/CardCol.cpp:1023
 msgid "User canceled"
 msgstr "Usario terminó"
 
-#: src/CardCol.cpp:1395
+#: src/CardCol.cpp:1051
 msgid "Loading cardimages ..."
 msgstr "Abriendo las imágenes de las cartas ..."
 
-#: src/CardCol.cpp:1414
+#: src/CardCol.cpp:1070
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Comienca un juego nuevo con Ctrl+N (o Juego -> Nuevo)"
 
-#: src/CardCol.cpp:1486
+#: src/CardCol.cpp:1142
 msgid ""
 "Invalid values for Rovhult's special cards!\n"
 "Resetting them to default values."
