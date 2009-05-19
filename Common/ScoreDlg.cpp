@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 02.01.2003
-//COPYRIGHT   : Copyright (C) 2002 - 2004, 2007, 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2004, 2007 - 2009
 
 // This file is part of CardCol.
 //
@@ -33,6 +33,8 @@
 #include <gtkmm/label.h>
 #include <gtkmm/separator.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
@@ -60,19 +62,14 @@ ScoreDlg::ScoreDlg (const std::vector<Player*>& player)
 
    client->show ();
    get_vbox ()->pack_start (*client, Gtk::SHRINK, 5);
-
-   if (LASTX != -1)
-      move (LASTX, LASTY);
-
-   show ();
-   if (LASTX != -1)
-      move (LASTX, LASTY);
+   display ();
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
 ScoreDlg::~ScoreDlg () {
+   TRACE9 ("ScoreDlg::~ScoreDlg ()");
    for (std::vector<column*>::iterator i (aColumns.begin ());
         i != aColumns.end (); ++i)
       delete *i;
@@ -113,6 +110,7 @@ void ScoreDlg::addPoints (const std::vector<int>& aPoints) {
 /// Callback after selecting OK; Hides the dialog
 //-----------------------------------------------------------------------------
 void ScoreDlg::okEvent () {
+   TRACE9 ("ScoreDlg::okEvent ()");
    hide ();
 }
 
@@ -126,9 +124,8 @@ void ScoreDlg::getMaxPoints (int& points, unsigned int& player) {
    points = INT_MIN;
    for (std::vector<column*>::iterator i (aColumns.begin ());
         i != aColumns.end (); ++i) {
-      TRACE9 ("ScoreDlg::addPoints (int&, unsigned int&) - " << points
-              << '/' << (*i)->getPoints () << ": "
-              << (((*i)->getPoints () > points) ? '>' : '<'));
+      TRACE9 ("ScoreDlg::getMaxPoints (int&, unsigned int&) - " << points << '/'
+	      << (*i)->getPoints () << ": " << (((*i)->getPoints () > points) ? '>' : '<'));
       if ((*i)->getPoints () > points) {
          player = i - aColumns.begin ();
          points = (*i)->getPoints ();
@@ -216,4 +213,30 @@ void ScoreDlg::column::addEntry (int points) {
 void ScoreDlg::column::setTitle (const Glib::ustring& title) {
    Check3 (pTitle);
    pTitle->set_text (title);
+}
+
+//-----------------------------------------------------------------------------
+/// Shows the passed widget (if not NULL)
+/// \param widget Pointer to pointer to widget to show
+/// \pre widget must not be NULL
+//-----------------------------------------------------------------------------
+void ScoreDlg::display (ScoreDlg** dlg) {
+   Check1 (dlg);
+   if (*dlg) {
+      (*dlg)->show ();
+      (*dlg)->display ();
+   }
+}
+
+//-----------------------------------------------------------------------------
+/// Shows the passed widget (if not NULL)
+/// \param widget Pointer to pointer to widget to show
+/// \pre widget must not be NULL
+//-----------------------------------------------------------------------------
+void ScoreDlg::display () {
+   show ();
+   if (LASTX != -1)
+      move (LASTX, LASTY);
+   if (LASTX != -1)
+      move (LASTX, LASTY);
 }

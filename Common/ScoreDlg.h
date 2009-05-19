@@ -61,6 +61,9 @@ class ScoreDlg : public XGP::XDialog {
    static int LASTX;
    static int LASTY;
 
+   static void display (ScoreDlg** widget);
+   void display ();
+
  private:
    //Prohibited manager functions
    ScoreDlg (const ScoreDlg& other);
