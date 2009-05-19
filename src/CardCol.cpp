@@ -384,7 +384,7 @@ CardgameCollection::CardgameCollection (Options& opts)
    grpAction->add (apMenus[END] = Gtk::Action::create ("End", Gtk::Stock::CLOSE, _("_End")),
 		   mem_fun (*this, &CardgameCollection::endGame));
 #ifdef WITH_NETWORK
-   grpAction->add (apMenus[CONNECT] = Gtk::Action::create ("Connect", _("_Connect ...")),
+   grpAction->add (apMenus[CONNECT] = Gtk::Action::create ("Connect", Gtk::Stock::CONNECT),
 		   Gtk::AccelKey (_("<shft><ctl>C")),
 		   mem_fun (*this, &CardgameCollection::connect));
    apMenus[CONNECT]->set_sensitive (false);
