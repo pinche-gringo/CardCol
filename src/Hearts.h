@@ -119,6 +119,9 @@ class Hearts : public Game {
    ScoreDlg* pScoreDlg;
 
    Gtk::UIManager::ui_merge_id idMrg;
+   Glib::RefPtr<Gtk::Action> menuSort;
+   Glib::RefPtr<Gtk::Action> menuSort2;
+   Glib::RefPtr<Gtk::Action> menuShowScoreDlg;
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];

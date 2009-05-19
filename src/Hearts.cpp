@@ -72,7 +72,7 @@ Hearts::Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 18, 12),
      playedSQ (false), player2Exchange (3),
      played (ICardPile::COMPRESSED, ICardPile::SHOWFACE),
-     pScoreDlg (NULL), idMrg ()
+     pScoreDlg (NULL), idMrg (), menuSort (), menuSort2 (), menuShowScoreDlg ()
  {
    TRACE9 ("Hearts::Hearts (Box&, Statusbar&, CardSet&, ...");
    CardHPile* hand0 (new CardHPile); players[0].hand = hand0;
@@ -188,8 +188,11 @@ void Hearts::takeWonCards (unsigned int player) {
    if (played.size () == NUM_PLAYERS) {
       movePile (*players[player].won, played, 0, NUM_PLAYERS - 1);
 
-      if (!player)
+      if (!player) {
 	 enableWonCards (*players[0].won);
+	 menuSort->set_sensitive ();
+	 menuSort2->set_sensitive ();
+      }
    }
 }
 
@@ -218,8 +221,9 @@ void Hearts::start () {
          int points;
          pScoreDlg->getMaxPoints (points, player);
          if ((unsigned int)points >= ENDPOINTS) {
-             delete pScoreDlg;
-             pScoreDlg = NULL;
+	    menuShowScoreDlg->set_sensitive (false);
+	    delete pScoreDlg;
+	    pScoreDlg = NULL;
          }
       }
 
@@ -252,6 +256,9 @@ void Hearts::clean () {
 
    played.clear ();
    Game::clean ();
+
+   menuSort->set_sensitive (false);
+   menuSort2->set_sensitive (false);
 }
 
 //-----------------------------------------------------------------------------
@@ -461,6 +468,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       if (!pScoreDlg) {
          pScoreDlg = ScoreDlg::create (actPlayers);
          pScoreDlg->get_window ()->set_transient_for (get_window ());
+	 menuShowScoreDlg->set_sensitive ();
       }
 
       int aScore[NUM_PLAYERS];
@@ -475,7 +483,7 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       aScore[player] += pointsOfPile (played);   // Adds points still on table
 
       pScoreDlg->addPoints (aScore);
-      pScoreDlg->show ();
+      pScoreDlg->display ();
 
       Glib::ustring stat (_("Round ended"));
       unsigned int player;
@@ -1090,21 +1098,29 @@ void Hearts::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 		     "    <menu action='MB'>"
 		     "      <menuitem action='HeartSort'/>"
 		     "      <menuitem action='HeartSortCol'/>"
+		     "      <separator/>"
+		     "      <menuitem action='showScoreDlg'/>"
 		     "    </menu></placeholder></menubar>");
 
    Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
    grpAction->add (Gtk::Action::create ("MB", _("H_earts")));
-   grpAction->add (Gtk::Action::create ("HeartSort", Gtk::Stock::SORT_ASCENDING,
-					_("_Sort won cards (by number)")),
+   grpAction->add (menuSort = Gtk::Action::create ("HeartSort", Gtk::Stock::SORT_ASCENDING,
+						   _("_Sort won cards (by number)")),
 		   Gtk::AccelKey ("<shft>S"),
 		   mem_fun (*this, &Hearts::sortWonByNumber));
-   grpAction->add (Gtk::Action::create ("HeartSortCol", Gtk::Stock::SORT_ASCENDING,
-					_("Sort won cards (by _colour)")),
+   grpAction->add (menuSort2 = Gtk::Action::create ("HeartSortCol", Gtk::Stock::SORT_ASCENDING,
+						    _("Sort won cards (by _colour)")),
 		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Hearts::sortWonByColour));
+   grpAction->add (menuShowScoreDlg = Gtk::Action::create ("showScoreDlg", Gtk::Stock::EDIT,
+							   _("Show score dialog")),
+		   Gtk::AccelKey ("<shft><ctl>S"),
+		   bind (ptr_fun (&ScoreDlg::display), &pScoreDlg));
 
    mgrUI->insert_action_group (grpAction);
    idMrg = mgrUI->add_ui_from_string (ui);
+
+   menuShowScoreDlg->set_sensitive (false);
 }
 
 //-----------------------------------------------------------------------------
