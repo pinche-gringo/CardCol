@@ -33,8 +33,6 @@
 #include <gtkmm/label.h>
 #include <gtkmm/separator.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
@@ -111,6 +109,8 @@ void ScoreDlg::addPoints (const std::vector<int>& aPoints) {
 //-----------------------------------------------------------------------------
 void ScoreDlg::okEvent () {
    TRACE9 ("ScoreDlg::okEvent ()");
+   get_position (LASTX, LASTY);
+   TRACE1 ("ScoreDlg::okEvent () - Position: " << LASTX << '/' << LASTY);
    hide ();
 }
 
@@ -222,10 +222,8 @@ void ScoreDlg::column::setTitle (const Glib::ustring& title) {
 //-----------------------------------------------------------------------------
 void ScoreDlg::display (ScoreDlg** dlg) {
    Check1 (dlg);
-   if (*dlg) {
-      (*dlg)->show ();
+   if (*dlg)
       (*dlg)->display ();
-   }
 }
 
 //-----------------------------------------------------------------------------
@@ -234,9 +232,9 @@ void ScoreDlg::display (ScoreDlg** dlg) {
 /// \pre widget must not be NULL
 //-----------------------------------------------------------------------------
 void ScoreDlg::display () {
-   show ();
-   if (LASTX != -1)
+   if (!is_visible ()) {
+      TRACE1 ("ScoreDlg::display () - Position: " << LASTX << '/' << LASTY);
+      show ();
       move (LASTX, LASTY);
-   if (LASTX != -1)
-      move (LASTX, LASTY);
+   }
 }
