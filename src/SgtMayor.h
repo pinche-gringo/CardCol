@@ -138,6 +138,9 @@ class SgtMayor : public Game {
    int diffTricks[NUM_PLAYERS];
 
    Gtk::UIManager::ui_merge_id idMrg;
+   Glib::RefPtr<Gtk::Action> menuSort;
+   Glib::RefPtr<Gtk::Action> menuSort2;
+   Glib::RefPtr<Gtk::Action> menuShowScoreDlg;
 
    ScoreDlg* pScoreDlg;
 
