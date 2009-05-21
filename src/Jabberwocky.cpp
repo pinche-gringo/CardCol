@@ -77,7 +77,7 @@ Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& 
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 15, 15),
      played (ICardPile::COMPRESSED, ICardPile::SHOWFACE),
      pTrump (NULL), startPlayer (rand () % NUM_PLAYERS), turn (0),
-     idMrg (), pScoreDlg (NULL), menuSort (), menuSort2 ()
+     idMrg (), pScoreDlg (NULL), menuSort (), menuSort2 (), menuShowScoreDlg ()
  {
    TRACE9 ("Jabberwocky::Jabberwocky (Box&, Statusbar&, CardSet&, ...)");
 
@@ -163,6 +163,7 @@ void Jabberwocky::start () {
       memset (outOfColour, 0, sizeof (outOfColour));
 
       if (!turn && pScoreDlg) {
+	 menuShowScoreDlg->set_sensitive (false);
 	 delete pScoreDlg;
 	 pScoreDlg = NULL;
       }
@@ -331,6 +332,8 @@ void Jabberwocky::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 		     "    <menu action='MB'>"
 		     "      <menuitem action='JabberwockySort'/>"
 		     "      <menuitem action='JabberwockySortCol'/>"
+		     "      <separator/>"
+		     "      <menuitem action='showScoreDlg'/>"
 		     "    </menu></placeholder></menubar>");
 
    Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
@@ -343,9 +346,15 @@ void Jabberwocky::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 						    _("Sort won cards (by _colour)")),
 		   Gtk::AccelKey ("S"),
 		   mem_fun (*this, &Jabberwocky::sortWonByColour));
+   grpAction->add (menuShowScoreDlg = Gtk::Action::create ("showScoreDlg", Gtk::Stock::EDIT,
+							   _("Show score dialog")),
+		   Gtk::AccelKey ("<shft><ctl>S"),
+		   bind (ptr_fun (&ScoreDlg::display), &pScoreDlg));
 
    mgrUI->insert_action_group (grpAction);
    idMrg = mgrUI->add_ui_from_string (ui);
+
+   menuShowScoreDlg->set_sensitive (false);
 }
 
 //-----------------------------------------------------------------------------
@@ -915,6 +924,7 @@ int Jabberwocky::playCard (unsigned int player) {
       Glib::ustring stat (_("Game ended"));
       // Create score-dialog
       if (!pScoreDlg) {
+	 menuShowScoreDlg->set_sensitive ();
 	 pScoreDlg = ScoreDlg::create (actPlayers);
 	 pScoreDlg->get_window ()->set_transient_for (get_window ());
       }
@@ -926,7 +936,7 @@ int Jabberwocky::playCard (unsigned int player) {
 		      == ((players[i].won.size () / NUM_PLAYERS)
 			  + (player == i)));
       pScoreDlg->addPoints (points);
-      pScoreDlg->show ();
+      pScoreDlg->display ();
 
       // Stop after 13 rounds
       if (++turn == 13) {
