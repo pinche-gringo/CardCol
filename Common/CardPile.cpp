@@ -105,6 +105,22 @@ void ICardPile::showTopCardFace (bool visible) {
 }
 
 //-----------------------------------------------------------------------------
+/// Method to append a card in compressed style
+/// \param card: Card to append
+/// \note Usefull when a bunch of cards is added to the pile
+//-----------------------------------------------------------------------------
+void ICardPile::appendCompressedCard (CardWidget& card) {
+   push_back (&card);
+   if (style > NORMAL) {
+      Check3 (operator[] (size () - 1));
+      resize (size () - 1, style);
+   }
+
+   if (showOpt < DONT_CHANGE)
+      card.showFace ((bool)showOpt);
+}
+
+//-----------------------------------------------------------------------------
 /// Adds various cards to the pile
 /// \param visible Flag if cardface should be shown or back
 //-----------------------------------------------------------------------------
@@ -113,8 +129,9 @@ void ICardPile::setTopCards (const std::vector<CardWidget*>& staple) {
 
    for (i = staple.begin (); i != staple.end (); ++i) {
       Check3 (*i);
-      setTopCard (**i);
+      appendCompressedCard (**i);
    }
+   resize (size () - 1, NORMAL);
 }
 
 //-----------------------------------------------------------------------------
@@ -126,8 +143,9 @@ void ICardPile::setTopCards (const std::vector<CardWidget*>& staple, bool visibl
 
    for (i = staple.begin (); i != staple.end (); ++i) {
       Check3 (*i);
-      setTopCard (**i, visible);
+      appendCompressedCard (**i);
    }
+   resize (size () - 1, NORMAL);
 }
 
 //-----------------------------------------------------------------------------
