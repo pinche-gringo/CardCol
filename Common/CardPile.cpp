@@ -105,11 +105,12 @@ void ICardPile::showTopCardFace (bool visible) {
 }
 
 //-----------------------------------------------------------------------------
-/// Method to append a card in compressed style
+/// Method to append a card in compressed style without changing the size of
+/// other cards
 /// \param card: Card to append
 /// \note Usefull when a bunch of cards is added to the pile
 //-----------------------------------------------------------------------------
-void ICardPile::appendCompressedCard (CardWidget& card) {
+void ICardPile::appendCardFast (CardWidget& card) {
    push_back (&card);
    if (style > NORMAL) {
       Check3 (operator[] (size () - 1));
@@ -121,6 +122,15 @@ void ICardPile::appendCompressedCard (CardWidget& card) {
 }
 
 //-----------------------------------------------------------------------------
+/// Method to remove the first card from the pile without actualising the size
+/// of the other cards in the pile
+/// \note Usefull when a bunch of cards is removed
+//-----------------------------------------------------------------------------
+void ICardPile::remove1stCardFast () {
+   erase (begin ());
+}
+
+//-----------------------------------------------------------------------------
 /// Adds various cards to the pile
 /// \param visible Flag if cardface should be shown or back
 //-----------------------------------------------------------------------------
@@ -129,7 +139,7 @@ void ICardPile::setTopCards (const std::vector<CardWidget*>& staple) {
 
    for (i = staple.begin (); i != staple.end (); ++i) {
       Check3 (*i);
-      appendCompressedCard (**i);
+      appendCardFast (**i);
    }
    resize (size () - 1, NORMAL);
 }
@@ -143,7 +153,8 @@ void ICardPile::setTopCards (const std::vector<CardWidget*>& staple, bool visibl
 
    for (i = staple.begin (); i != staple.end (); ++i) {
       Check3 (*i);
-      appendCompressedCard (**i);
+      (*i)->showFace (visible);
+      appendCardFast (**i);
    }
    resize (size () - 1, NORMAL);
 }
@@ -153,7 +164,7 @@ void ICardPile::setTopCards (const std::vector<CardWidget*>& staple, bool visibl
 //-----------------------------------------------------------------------------
 void ICardPile::clear () {
    while (size ())
-      remove (getTopCard ());
+      remove1stCardFast ();
 }
 
 //-----------------------------------------------------------------------------

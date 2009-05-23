@@ -194,7 +194,8 @@ class ICardPile : public std::vector<CardWidget*> {
    PileStyle style;
    ShowOpt showOpt;
 
-   virtual void appendCompressedCard (CardWidget& card);
+   virtual void appendCardFast (CardWidget& card);
+   virtual void remove1stCardFast ();
 
  private:
    static void deleteElement (unsigned int elem,
@@ -270,11 +271,15 @@ template <class T> class CardPile : public T, public ICardPile {
          resize (size () - 1, NORMAL);
    }
 
-   virtual void appendCompressedCard (CardWidget& card) {
-      ICardPile::appendCompressedCard (card);
+   virtual void appendCardFast (CardWidget& card) {
+      ICardPile::appendCardFast (card);
       T::pack_start (card, Gtk::PACK_SHRINK);
    }
 
+   virtual void remove1stCardFast () {
+      T::remove (**begin ());
+      ICardPile::remove1stCardFast ();
+   }
 
  private:
    CardPile (const CardPile<T>& other);
@@ -407,11 +412,6 @@ template <class T> class CardInfoPile : public CardPile<T> {
                    YGP::ANumeric::toString (CardPile<T>::size ()));
       for (unsigned int i (0); i < CardPile<T>::size (); ++i)
          SET_TIP (*(CardPile<T>::operator[] (i)), tip);
-   }
-
-   virtual void appendCompressedCard (CardWidget& card) {
-      ICardPile::appendCompressedCard (card);
-      T::pack_start (card, Gtk::PACK_SHRINK);
    }
 
  private:
