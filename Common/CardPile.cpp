@@ -110,8 +110,8 @@ void ICardPile::showTopCardFace (bool visible) {
 /// \param card: Card to append
 /// \note Usefull when a bunch of cards is added to the pile
 //-----------------------------------------------------------------------------
-void ICardPile::appendCardFast (CardWidget& card) {
-   push_back (&card);
+void ICardPile::insertCardFast (CardWidget& card, unsigned int offset) {
+   std::vector<CardWidget*>::insert (begin () + offset, &card);
    if (style > NORMAL) {
       Check3 (operator[] (size () - 1));
       resize (size () - 1, style);
@@ -124,10 +124,15 @@ void ICardPile::appendCardFast (CardWidget& card) {
 //-----------------------------------------------------------------------------
 /// Method to remove the first card from the pile without actualising the size
 /// of the other cards in the pile
+/// \param offset Offset of card to remove
+/// \returns CardWidget& Removed card
 /// \note Usefull when a bunch of cards is removed
 //-----------------------------------------------------------------------------
-void ICardPile::remove1stCardFast () {
-   erase (begin ());
+CardWidget& ICardPile::removeCardFast (unsigned int offset) {
+   std::vector<CardWidget*>::iterator i (begin () + offset);
+   CardWidget& card (**i);
+   erase (i);
+   return card;
 }
 
 //-----------------------------------------------------------------------------
@@ -139,7 +144,7 @@ void ICardPile::setTopCards (const std::vector<CardWidget*>& staple) {
 
    for (i = staple.begin (); i != staple.end (); ++i) {
       Check3 (*i);
-      appendCardFast (**i);
+      insertCardFast (**i, size ());
    }
    resize (size () - 1, NORMAL);
 }
@@ -154,7 +159,7 @@ void ICardPile::setTopCards (const std::vector<CardWidget*>& staple, bool visibl
    for (i = staple.begin (); i != staple.end (); ++i) {
       Check3 (*i);
       (*i)->showFace (visible);
-      appendCardFast (**i);
+      insertCardFast (**i, size ());
    }
    resize (size () - 1, NORMAL);
 }
@@ -164,7 +169,7 @@ void ICardPile::setTopCards (const std::vector<CardWidget*>& staple, bool visibl
 //-----------------------------------------------------------------------------
 void ICardPile::clear () {
    while (size ())
-      remove1stCardFast ();
+      removeCardFast (0);
 }
 
 //-----------------------------------------------------------------------------
@@ -907,4 +912,39 @@ int ICardPile::findLastEqualOrBiggerColour (CardWidget::COLOURS col) const {
 //-----------------------------------------------------------------------------
 void ICardPile::getSize (int& width, int& height) {
    width = height = -1;
+}
+
+//-----------------------------------------------------------------------------
+/// Moves cards to another pile
+/// \param dest Destination pile
+/// \param posDest Position where to move card
+/// \param start First card to move
+/// \param end Last card to move; -1: Move til end
+//-----------------------------------------------------------------------------
+void ICardPile::moveCards (ICardPile& dest, unsigned int posDest, unsigned int start, int end) {
+   TRACE3 ("ICardPile::moveCards (ICardPile&, unsigned int, unsigned int, int) - "
+           "moving from pos " << start << " to " << end);
+   Check3 (size ());
+   Check3 (start < size ());
+
+   if (end == -1)
+      end = size () - 1;
+   Check1 (end < static_cast<int> (size ()));
+   Check1 (static_cast<int> (start) <= end);
+
+   do {
+      CardWidget& card (removeCardFast (start));
+      dest.insertCardFast (card, posDest++);
+      if (style != dest.style)
+	 if (dest.style >= TOTALLY_COMPRESSED)
+	    card.hide ();
+	 else
+	    card.show ();
+   } while ((unsigned int)end-- > start);
+
+   if (posDest == (dest.size () - 1))
+      dest.resize (dest.size () - 1, NORMAL);
+
+   if (start == (size () - 1))
+      resize (size () - 1, NORMAL);
 }

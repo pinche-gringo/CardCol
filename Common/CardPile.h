@@ -190,12 +190,15 @@ class ICardPile : public std::vector<CardWidget*> {
    static bool compCardsByID (const CardWidget* a, const CardWidget* b);
    //@}
 
+   void moveCards (ICardPile& dest, unsigned int start = 0, int end = -1) { moveCards (dest, dest.size (), start, end); }
+   void moveCards (ICardPile& dest, unsigned int posDest, unsigned int start = 0, int end = -1);
+
  protected:
    PileStyle style;
    ShowOpt showOpt;
 
-   virtual void appendCardFast (CardWidget& card);
-   virtual void remove1stCardFast ();
+   virtual void insertCardFast (CardWidget& card, unsigned int offset);
+   virtual CardWidget& removeCardFast (unsigned int offset);
 
  private:
    static void deleteElement (unsigned int elem,
@@ -271,14 +274,15 @@ template <class T> class CardPile : public T, public ICardPile {
          resize (size () - 1, NORMAL);
    }
 
-   virtual void appendCardFast (CardWidget& card) {
-      ICardPile::appendCardFast (card);
+   virtual void insertCardFast (CardWidget& card, unsigned int offset) {
+      ICardPile::insertCardFast (card, offset);
       T::pack_start (card, Gtk::PACK_SHRINK);
+      T::reorder_child (card, offset);
    }
 
-   virtual void remove1stCardFast () {
-      T::remove (**begin ());
-      ICardPile::remove1stCardFast ();
+   virtual CardWidget& removeCardFast (unsigned int offset) {
+      T::remove (**(begin () + offset));
+      return ICardPile::removeCardFast (offset);
    }
 
  private:
