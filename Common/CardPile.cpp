@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 03.04.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2009
 
 // This file is part of CardCol.
 //
@@ -24,6 +24,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
+
 
 #include "CardPile.h"
 
@@ -915,36 +916,46 @@ void ICardPile::getSize (int& width, int& height) {
 }
 
 //-----------------------------------------------------------------------------
-/// Moves cards to another pile
-/// \param dest Destination pile
+/// Moves cards from another pile
 /// \param posDest Position where to move card
+/// \param src Source pile
 /// \param start First card to move
 /// \param end Last card to move; -1: Move til end
 //-----------------------------------------------------------------------------
-void ICardPile::moveCards (ICardPile& dest, unsigned int posDest, unsigned int start, int end) {
-   TRACE3 ("ICardPile::moveCards (ICardPile&, unsigned int, unsigned int, int) - "
-           "moving from pos " << start << " to " << end);
-   Check3 (size ());
-   Check3 (start < size ());
+void ICardPile::getCards (unsigned int posDest, ICardPile& src, unsigned int start, int end) {
+   TRACE0 ("ICardPile::getCards (unsigned int, ICardPile&, unsigned int, int) - "
+	   "moving from pos " << start << " to " << end);
+   Check3 (src.size ());
+   Check3 (start < src.size ());
 
    if (end == -1)
-      end = size () - 1;
-   Check1 (end < static_cast<int> (size ()));
+      end = src.size () - 1;
+   Check1 (end < static_cast<int> (src.size ()));
    Check1 (static_cast<int> (start) <= end);
 
+   TRACE0 ("ICardPile::getCards (unsigned int, ICardPile&, unsigned int, int) - Old dest: "
+	   << posDest << '/' << size ());
+   if (posDest && (posDest == size ()))
+      resize (size () - 1, style);
+
    do {
-      CardWidget& card (removeCardFast (start));
-      dest.insertCardFast (card, posDest++);
-      if (style != dest.style)
-	 if (dest.style >= TOTALLY_COMPRESSED)
+      CardWidget& card (src.removeCardFast (start));
+      insertCardFast (card, posDest++);
+      if (style != src.style) {
+	 if (style == TOTALLY_COMPRESSED)
 	    card.hide ();
 	 else
 	    card.show ();
+      }
    } while ((unsigned int)end-- > start);
 
-   if (posDest == (dest.size () - 1))
-      dest.resize (dest.size () - 1, NORMAL);
+   TRACE0 ("ICardPile::getCards (unsigned int, ICardPile&, unsigned int, int) - Source: "
+	   << start << '/' << src.size ());
+   if ((start + 1) == src.size ()) { Check (!"Src");
+      src.resize (src.size () - 1, NORMAL); }
 
-   if (start == (size () - 1))
+   TRACE0 ("ICardPile::getCards (unsigned int, ICardPile&, unsigned int, int) - New dest: "
+	   << posDest << '/' << size ());
+   if (posDest == (size ()))
       resize (size () - 1, NORMAL);
 }

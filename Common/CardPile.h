@@ -190,8 +190,8 @@ class ICardPile : public std::vector<CardWidget*> {
    static bool compCardsByID (const CardWidget* a, const CardWidget* b);
    //@}
 
-   void moveCards (ICardPile& dest, unsigned int start = 0, int end = -1) { moveCards (dest, dest.size (), start, end); }
-   void moveCards (ICardPile& dest, unsigned int posDest, unsigned int start = 0, int end = -1);
+   void getCards (ICardPile& src, unsigned int start = 0, int end = -1) { getCards (size (), src, start, end); }
+   void getCards (unsigned int posDest, ICardPile& src, unsigned int start = 0, int end = -1);
 
  protected:
    PileStyle style;
@@ -295,7 +295,7 @@ typedef CardPile<Gtk::VBox>  CardVPile;
 typedef CardPile<Gtk::HBox>  CardHPile;
 
 
-/// Implementation of the getCompressionRate() method for Gtk::VBox
+/// Implementation of the getCompressedSize() method for Gtk::VBox
 template <> inline unsigned int CardVPile::getCompressedSize (PileStyle s) {
    int height[(int)LAST] = { CardImages::HEIGHT, 15, 7, 1 };
    return height[s];
@@ -317,7 +317,7 @@ template <> inline void CardVPile::getSize (int& width, int& height) {
 template <> inline void CardVPile::resize (unsigned int pos, PileStyle s) {
    ICardPile::resize (pos, s); }
 template <> inline void CardVPile::resize (CardWidget& card, PileStyle s) {
-   if (s >= TOTALLY_COMPRESSED)
+   if (s == TOTALLY_COMPRESSED)
       card.hide ();
    else {
       card.set_size_request (-1, getCompressedSize (s));
@@ -348,7 +348,7 @@ template <> inline void CardHPile::getSize (int& width, int& height) {
 template <> inline void CardHPile::resize (unsigned int pos, PileStyle s) {
    ICardPile::resize (pos, s); }
 template <> inline void CardHPile::resize (CardWidget& card, PileStyle s) {
-   if (s >= TOTALLY_COMPRESSED)
+   if (s == TOTALLY_COMPRESSED)
       card.hide ();
    else {
       card.set_size_request (getCompressedSize (s), -1);
