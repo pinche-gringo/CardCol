@@ -209,6 +209,11 @@ void Buraco::makeMove (unsigned int player) {
    playCards ();
 }
 
+#include <sys/time.h>
+#include <YGP/ATime.h>
+#include <iomanip>
+#define TIME(x) YGP::ATime ((time_t)x.tv_sec, false).toString ("%X") << ':' << std::setw (6) << std::setfill ('0') << x.tv_usec
+
 //-----------------------------------------------------------------------------
 /// Cleanup of piles after each turn
 /// \returns bool True, if game has been ended
@@ -226,7 +231,7 @@ bool Buraco::cleanup () {
    if (gStatus.pickUpPlayed) {
       Check3 (dumped.size ());
       gStatus.pickUpPlayed = 0;
-      movePile (source, dumped);
+      source.getCards (dumped);
       hands[player].sort (compByNumberWithJokers);
    }
 
@@ -235,7 +240,6 @@ bool Buraco::cleanup () {
 	 addBuraco (player);
       else
 	 if (source.empty ()) {
-	    cleanCerrado (player);
 	    Check3 (points[player & 1] > 100);
 	    points[player & 1] += 100;
 	    endGame ();
@@ -556,13 +560,13 @@ void Buraco::start () {
    }
 
    if (randomizeCardsToPile (staple)) {
-      for (unsigned int j (0); j < CARDS2DEAL; ++j) {
-         for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-            hands[(i - posServer) & 0x3].setTopCard (staple.removeTopCard ());
+      for (unsigned int i (0); i < NUM_PLAYERS; ++i)
+	 hands[(i - posServer) & 0x3].getCards (staple, staple.size () - CARDS2DEAL - 1, staple.size () - 1);
 
-         for (unsigned int i (0); i < (sizeof (reserve) / sizeof (reserve[0])); ++i)
-            reserve[(i - posServer) & 1].push_back (&staple.removeTopCard ());
-      }
+      for (unsigned int i (0); i < (sizeof (reserve) / sizeof (reserve[0])); ++i)
+	 for (unsigned int j (0); j < CARDS2DEAL; ++j)
+	    reserve[(i - posServer) & 1].push_back (&staple.removeTopCard ());
+
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          hands[i].sort (compByNumberWithJokers);
       for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
@@ -909,7 +913,7 @@ void Buraco::doDumpedSelected () {
    unsigned int player (currentPlayer ());
 
    dumped.getTopCard ().show ();
-   movePile (hands[player], dumped);
+   hands[player].getCards (dumped);
 }
 
 //-----------------------------------------------------------------------------
@@ -1234,7 +1238,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       // disabled, if the human picked up the dumped pile.
       unsigned int size (hands[0].size ());
       if ((pile->size () == 3) && gStatus.pickUpPlayed) {
-	 movePile (hands[0], dumped);
+	 hands[0].getCards (dumped);
 	 menuUndo->set_sensitive (false);
 	 gStatus.pickUpPlayed = 0;
 
