@@ -163,10 +163,6 @@ class Game : public Gtk::Table {
    virtual void makeMove (unsigned int player) = 0;
 
    bool randomizeCardsToPile (ICardPile& pile) const;
-   static void movePile (ICardPile& dest, ICardPile& source, unsigned int start = 0,
-			 int end = -1) { movePile (dest, dest.size (), source, start, end); }
-   static void movePile (ICardPile& dest, unsigned int posDest, ICardPile& source,
-                         unsigned int start = 0, int end = -1);
 
    /// \name Animation
    //@{
@@ -278,6 +274,5 @@ class TGame : public Parent {
    Controller& obj;
    PCALLBACK pCallback;
 };
-
 
 #endif

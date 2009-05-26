@@ -263,7 +263,7 @@ void Jabberwocky::takeWonCards (unsigned int player) {
    TRACE9 ("Jabberwocky::takeWonCards (unsigned int) - " << player);
    Check1 (player < NUM_PLAYERS);
    if (played.size () == NUM_PLAYERS) {
-      movePile (players[player].won, played, 0, NUM_PLAYERS - 1);
+      players[player].won.getCards (played, 0, NUM_PLAYERS - 1);
 
       if (!player) {
 	 enableWonCards (players[0].won);

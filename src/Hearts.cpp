@@ -186,7 +186,7 @@ void Hearts::takeWonCards (unsigned int player) {
    TRACE9 ("Hearts::takeWonCards (unsigned int) - " << player);
    Check1 (player < NUM_PLAYERS);
    if (played.size () == NUM_PLAYERS) {
-      movePile (*players[player].won, played, 0, NUM_PLAYERS - 1);
+      players[player].won->getCards (played, 0, NUM_PLAYERS - 1);
 
       if (!player) {
 	 enableWonCards (*players[0].won);
@@ -597,7 +597,7 @@ void Hearts::exchangeCards () {
    Check1 (player2Exchange); Check1 (player2Exchange < NUM_PLAYERS);
    Check3 (played.size () == 3);
 
-   movePile (aExchange[0], played); Check9 (aExchange[0].size () == 3);
+   aExchange[0].getCards (played); Check9 (aExchange[0].size () == 3);
    if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
       for (unsigned int i (getConnectionMgr ().getClients ().size () + 1);
            i < NUM_PLAYERS; ++i) {
@@ -613,7 +613,7 @@ void Hearts::exchangeCards () {
          if (cCards && (cCards < 3)) {
             TRACE3 ("Hearts::exchangeCards () - Getting rid of all clubs: 0 - "
                     << cCards - 1 << "; " << cCards << " cards");
-            movePile (aExchange[i], source, 0, posColours[CardWidget::CLUBS]);
+            aExchange[i].getCards (source, 0, posColours[CardWidget::CLUBS]);
             moved = cCards;
          }
          cCards = numberOfCards (posColours, CardWidget::DIAMONDS);
@@ -622,9 +622,9 @@ void Hearts::exchangeCards () {
                     << posColours[CardWidget::DIAMONDS] - moved  - cCards + 1
                     << " - " << posColours[CardWidget::DIAMONDS] - moved << "; "
                     << cCards << " cards");
-            movePile (aExchange[i], source,
-                      posColours[CardWidget::DIAMONDS] - moved - cCards + 1,
-                      posColours[CardWidget::DIAMONDS] - moved);
+            aExchange[i].getCards (source,
+				   posColours[CardWidget::DIAMONDS] - moved - cCards + 1,
+				   posColours[CardWidget::DIAMONDS] - moved);
             moved += cCards;
          }
 
@@ -644,7 +644,7 @@ void Hearts::exchangeCards () {
             if (source[start]->number () == CardWidget::QUEEN) {
                TRACE3 ("Hearts::exchangeCards () - Getting rid of queen of spades at "
                        << start);
-               movePile (aExchange[i], source, start, start);
+               aExchange[i].getCards (source, start, start);
                moved++;
             }
 
@@ -655,7 +655,7 @@ void Hearts::exchangeCards () {
                TRACE3 ("Hearts::exchangeCards () - Getting rid of all high spades: "
                        << start -  cCards << " - " << start << "; " << (cCards + 1)
                        << " cards");
-               movePile (aExchange[i], source, start - cCards, start);
+               aExchange[i].getCards (source, start - cCards, start);
                moved += cCards + 1;
             }
          }
@@ -668,7 +668,7 @@ void Hearts::exchangeCards () {
             if ((cardPos = source.find (CardWidget::NUMBERS (nr))) != -1) {
                TRACE3 ("Hearts::exchangeCards () - Getting rid of high card at "
                        << cardPos);
-               movePile (aExchange[i], source, cardPos, cardPos);
+               aExchange[i].getCards (source, cardPos, cardPos);
                moved++;
             }
          }
@@ -684,7 +684,7 @@ void Hearts::exchangeCards () {
    }
 
    Check3 (played.empty ()); Check3 (aExchange[player2Exchange].size () == 3);
-   movePile (played, aExchange[NUM_PLAYERS - player2Exchange]);
+   played.getCards (aExchange[NUM_PLAYERS - player2Exchange]);
    Glib::signal_timeout ().connect
       (bind_return (mem_fun (*this, &Hearts::finishExchangeCards), false), ComputerPlayer::TIMEOUT);
 }
@@ -694,14 +694,14 @@ void Hearts::exchangeCards () {
 //-----------------------------------------------------------------------------
 void Hearts::finishExchangeCards () {
    TRACE9 ("Hearts::finishExchangeCards ()");
-   movePile (aExchange[NUM_PLAYERS - player2Exchange], played);
+   aExchange[NUM_PLAYERS - player2Exchange].getCards (played);
 
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       TRACE9 ("Hearts::finishExchangeCards () - " << i << " gives to "
               << ((i + player2Exchange) & 0x3));
       Check3 (aExchange[i].size () == 3);
       ICardPile& target (*players[(i + player2Exchange) & 0x3].hand);
-      movePile (target, aExchange[i]);
+      target.getCards (aExchange[i]);
 
       target.sortByColour ();
       Check3 (target.size () == (cards.size () / NUM_PLAYERS));
@@ -1046,8 +1046,7 @@ bool Hearts::handleMessage (unsigned int player, const std::string& message) thr
                   card = players[lPlayer].hand->find (static_cast<unsigned int> (card));
                   Check3 (card < players[lPlayer].hand->size ());
                   if (card != -1U)
-                     movePile (aExchange[lPlayer], *players[lPlayer].hand,
-                               card, card);
+                     aExchange[lPlayer].getCards (*players[lPlayer].hand, card, card);
                }
             }
 

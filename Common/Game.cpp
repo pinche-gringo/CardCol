@@ -224,31 +224,6 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
 }
 
 //-----------------------------------------------------------------------------
-/// Moves cards from one pile to another
-/// \param dest Destination pile
-/// \param posDest Position where to move card
-/// \param source Source pile
-/// \param start First card to move
-/// \param end Last card to move; -1: Move til end
-//-----------------------------------------------------------------------------
-void Game::movePile (ICardPile& dest, unsigned int posDest, ICardPile& source,
-		     unsigned int start, int end) {
-   TRACE3 ("Game::movePile (ICardPile&, unsigned int, ICardPile&, unsigned int, int) - "
-           "moving from pos " << start << " to " << end);
-   Check3 (source.size ());
-   Check3 (start < source.size ());
-
-   if (end == -1)
-      end = source.size () - 1;
-   Check1 (end < static_cast<int> (source.size ()));
-   Check1 (static_cast<int> (start) <= end);
-
-   do {
-      dest.insert (source.remove (start), posDest++);
-   } while ((unsigned int)end-- > start);
-}
-
-//-----------------------------------------------------------------------------
 /// Cleans the table
 //-----------------------------------------------------------------------------
 void Game::clean () {
