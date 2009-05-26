@@ -418,6 +418,12 @@ template <class T> class CardInfoPile : public CardPile<T> {
          SET_TIP (*(CardPile<T>::operator[] (i)), tip);
    }
 
+   virtual CardWidget& removeCardFast (unsigned int offset) {
+      CardWidget& card (CardPile<T>::removeCardFast (offset));
+      UNSET_TIP (card);
+      return card;
+   }
+
  private:
 #ifndef HAVE_GTKMM2_12
     Gtk::Tooltips tt;

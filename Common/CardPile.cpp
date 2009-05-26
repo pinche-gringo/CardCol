@@ -25,7 +25,8 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
+#define CHECK 1
+#define TRACELEVEL 0
 #include "CardPile.h"
 
 //-----------------------------------------------------------------------------
@@ -933,29 +934,18 @@ void ICardPile::getCards (unsigned int posDest, ICardPile& src, unsigned int sta
    Check1 (end < static_cast<int> (src.size ()));
    Check1 (static_cast<int> (start) <= end);
 
-   TRACE0 ("ICardPile::getCards (unsigned int, ICardPile&, unsigned int, int) - Old dest: "
-	   << posDest << '/' << size ());
    if (posDest && (posDest == size ()))
       resize (size () - 1, style);
 
-   do {
+   while ((unsigned int)--end > start) {
       CardWidget& card (src.removeCardFast (start));
-      insertCardFast (card, posDest++);
       if (style != src.style) {
 	 if (style == TOTALLY_COMPRESSED)
 	    card.hide ();
 	 else
 	    card.show ();
       }
-   } while ((unsigned int)end-- > start);
-
-   TRACE0 ("ICardPile::getCards (unsigned int, ICardPile&, unsigned int, int) - Source: "
-	   << start << '/' << src.size ());
-   if ((start + 1) == src.size ()) { Check (!"Src");
-      src.resize (src.size () - 1, NORMAL); }
-
-   TRACE0 ("ICardPile::getCards (unsigned int, ICardPile&, unsigned int, int) - New dest: "
-	   << posDest << '/' << size ());
-   if (posDest == (size ()))
-      resize (size () - 1, NORMAL);
+      insertCardFast (card, posDest++);
+   }
+   insert (src.remove (start), posDest);
 }
