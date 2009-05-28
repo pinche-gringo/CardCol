@@ -25,8 +25,6 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-#define CHECK 1
-#define TRACELEVEL 0
 #include "CardPile.h"
 
 //-----------------------------------------------------------------------------
@@ -924,7 +922,7 @@ void ICardPile::getSize (int& width, int& height) {
 /// \param end Last card to move; -1: Move til end
 //-----------------------------------------------------------------------------
 void ICardPile::getCards (unsigned int posDest, ICardPile& src, unsigned int start, int end) {
-   TRACE0 ("ICardPile::getCards (unsigned int, ICardPile&, unsigned int, int) - "
+   TRACE3 ("ICardPile::getCards (unsigned int, ICardPile&, unsigned int, int) - "
 	   "moving from pos " << start << " to " << end);
    Check3 (src.size ());
    Check3 (start < src.size ());
@@ -937,7 +935,7 @@ void ICardPile::getCards (unsigned int posDest, ICardPile& src, unsigned int sta
    if (posDest && (posDest == size ()))
       resize (size () - 1, style);
 
-   while ((unsigned int)--end > start) {
+   while ((unsigned int)end-- > start) {
       CardWidget& card (src.removeCardFast (start));
       if (style != src.style) {
 	 if (style == TOTALLY_COMPRESSED)
