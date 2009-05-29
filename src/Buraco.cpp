@@ -1250,10 +1250,15 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       else
 	 menuUndo->set_sensitive ();
 
+      if (*pValue < size)
+	 registerHandDND (*pValue, size - 1);
+
       // If the player has no more cards left (except of joker): Give him the reserve
       if (containsOnlyJoker (hands[0]) && humanPilesOK ()) {
 	 if (!reserve[0].empty ()) {
+	    disableHuman ();
 	    addBuraco (0);
+	    enableHuman ();
 	    return;
 	 }
 	 else
@@ -1263,10 +1268,6 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 	       return;
 	    }
       }
-
-      // Re-register the cards in the hand of the human for DND
-      if (*pValue < size)
-	 registerHandDND (*pValue, size - 1);
       Check3 (aDNDHand.size () == hands[0].size ());
    }
    catch (Glib::ustring& error) {
@@ -1320,7 +1321,7 @@ void Buraco::registerHandDND (unsigned int start, unsigned int end) {
       unregisterHandDND (*hands[0][start]);
       registerHandDND (start);
    }
-   TRACE9 ("Buraco::registerHandDND (unsigned int, unsigned int) - End ");
+   TRACE9 ("Buraco::registerHandDND (unsigned int, unsigned int) - End");
 }
 
 //-----------------------------------------------------------------------------
@@ -1378,12 +1379,6 @@ void Buraco::addBuraco (unsigned int player) {
 	i != reserve[player & 1].rend (); ++i)
       hands[player].insert (**i, 0);
    reserve[player & 1].clear ();
-
-   if (!player)
-      for (unsigned int i (0); i < hands[0].size (); ++i) {
-         enableCard (i);
-         registerHandDND (i);
-      }
 
    Check3 (actPlayers.size () > player);
    Check3 (actPlayers[player]);
