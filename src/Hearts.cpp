@@ -212,9 +212,11 @@ void Hearts::start () {
    Check2 (!played.size ());
    ICardPile pile;
    if (randomizeCardsToPile (pile)) {
-      for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-         for (unsigned int j (0); j < (cards.size () / NUM_PLAYERS); ++j)
-            players[(i - posServer) & 0x3].hand->insertColourSorted (pile.removeTopCard ());
+      for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
+	 ICardPile* actPile (players[(i - posServer) & 0x3].hand);
+	 actPile->getCards (pile, 0, (cards.size () / NUM_PLAYERS) - 1);
+	 actPile->sortByColour ();
+      }
 
       if (pScoreDlg) {
          unsigned int player;
@@ -522,7 +524,6 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
    Check1 (card < players[player].hand->size ());
    Check1 ((gameStatus () == PLAYING) || (gameStatus () == EXCHANGE));
 
-   CardWindow& win (animateCard (played, *players[player].hand, card));
    if (gameStatus () == PLAYING) {
       CardWidget& actCard (*(*players[player].hand)[card]);
       CardWidget::COLOURS playColour (actCard.colour ());
@@ -535,7 +536,7 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
 	    // The same colour must be played again (if available)
 	    CardWidget::COLOURS colour (played[0]->colour ());
 	    if ((playColour != colour) && players[player].hand->exists (colour))
-	       throw _("Play first cards with an equal colour as the first played one!");
+	       throw _("You must play a card with an equal colour as the first played one!");
 	 }
 	 else {
 	    // The game must be started with the two of clubs
@@ -571,12 +572,14 @@ bool Hearts::moveSelectedCardToPlayed (unsigned int player, unsigned int card) {
       Check3 ((unsigned)playColour < (unsigned)(sizeof (aPlayed) / sizeof (aPlayed[0])));
       aPlayed[playColour]++;
 
+      CardWindow& win (animateCard (played, *players[player].hand, card));
       win.sigAnimation.connect (mem_fun (*this, &Hearts::finishMove));
    }
    else {
       players[player].hand->resize (card, ICardPile::NORMAL);
       // If there are already two cards exchanged (and thus the 3rd is going
       // to be exchanged) start exchanging of cards for the computer players
+      CardWindow& win (animateCard (played, *players[player].hand, card));
       win.sigAnimation.connect ((played.size () != 2)
 				? mem_fun (*this, &Hearts::makeNextMoves)
 				: mem_fun (*this, &Hearts::exchangeCards));
