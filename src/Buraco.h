@@ -215,6 +215,7 @@ class Buraco : public Game {
    Glib::RefPtr<Gtk::Action> menuUndo;
    Glib::RefPtr<Gtk::Action> menuSort;
    Glib::RefPtr<Gtk::Action> menuSort2;
+   Glib::RefPtr<Gtk::Action> menuShowScoreDlg;
 
    static unsigned int ENDPOINTS;
    static unsigned int CARDS2DEAL;

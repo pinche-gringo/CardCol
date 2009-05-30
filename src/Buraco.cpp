@@ -80,7 +80,8 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
      staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK),
      dumped (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWFACE),
      dumpedTop (), stapleTop (), aDNDHand (), aDNDTable (), gStatus (),
-     undo (), pScoreDlg (NULL), idMrg (), menuUndo (), menuSort (), menuSort2 () {
+     undo (), pScoreDlg (NULL), idMrg (), menuUndo (), menuSort (), menuSort2 (),
+     menuShowScoreDlg () {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&)");
 
@@ -554,6 +555,7 @@ void Buraco::start () {
       int points;
       pScoreDlg->getMaxPoints (points, player);
       if (points >= (int)ENDPOINTS) {
+	 menuShowScoreDlg->set_sensitive (false);
          delete pScoreDlg;
          pScoreDlg = NULL;
       }
@@ -1699,6 +1701,7 @@ void Buraco::endGame () {
       disableHuman ();
 
    if (!pScoreDlg) {
+      menuShowScoreDlg->set_sensitive ();
       pScoreDlg = ScoreDlg::create (nameTeams);
       pScoreDlg->get_window ()->set_transient_for (get_window ());
    }
@@ -2220,6 +2223,8 @@ void Buraco::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 		     "      <separator/>"
 		     "      <menuitem action='BuracoSort'/>"
 		     "      <menuitem action='BuracoSortCol'/>"
+		     "      <separator/>"
+		     "      <menuitem action='showScoreDlg'/>"
 		     "    </menu></placeholder></menubar>");
 
    Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
@@ -2235,6 +2240,10 @@ void Buraco::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 						    _("Sort cards (by _colour)")),
 		   Gtk::AccelKey ("<shft>S"),
 		   mem_fun (*this, &Buraco::sortHandByColour));
+   grpAction->add (menuShowScoreDlg = Gtk::Action::create ("showScoreDlg", Gtk::Stock::EDIT,
+							   _("Show score dialog")),
+		   Gtk::AccelKey ("<shft><ctl>S"),
+		   bind (ptr_fun (&ScoreDlg::display), &pScoreDlg));
 
    mgrUI->insert_action_group (grpAction);
    idMrg = mgrUI->add_ui_from_string (ui);
@@ -2242,6 +2251,7 @@ void Buraco::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    menuUndo->set_sensitive (false);
    menuSort->set_sensitive (false);
    menuSort2->set_sensitive (false);
+   menuShowScoreDlg->set_sensitive (false);
 }
 
 //-----------------------------------------------------------------------------
