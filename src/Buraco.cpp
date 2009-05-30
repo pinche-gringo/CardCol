@@ -1258,7 +1258,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 	 if (!reserve[0].empty ()) {
 	    disableHuman ();
 	    addBuraco (0);
-	    enableHuman ();
+	    enableHumanHand ();
 	    return;
 	 }
 	 else
