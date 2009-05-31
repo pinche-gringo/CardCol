@@ -162,7 +162,7 @@ class Game : public Gtk::Table {
    bool endRemoteMove (unsigned int player);
    virtual void makeMove (unsigned int player) = 0;
 
-   bool randomizeCardsToPile (ICardPile& pile) const;
+   bool randomiseCardsToPile (ICardPile& pile) const;
 
    /// \name Animation
    //@{

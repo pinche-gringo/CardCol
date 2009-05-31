@@ -131,7 +131,7 @@ Twopart::~Twopart () {
 void Twopart::start () {
    TRACE8 ("Twopart::start ()");
    Game::start ();
-   if (randomizeCardsToPile (staple)) {
+   if (randomiseCardsToPile (staple)) {
       // Show cards on the table: For all players put 3 cards in hand
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          for (unsigned int j (0); j < 3; ++j)

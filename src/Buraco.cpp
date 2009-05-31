@@ -561,7 +561,7 @@ void Buraco::start () {
       }
    }
 
-   if (randomizeCardsToPile (staple)) {
+   if (randomiseCardsToPile (staple)) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
 	 hands[(i - posServer) & 0x3].getCards (staple, staple.size () - CARDS2DEAL - 1, staple.size () - 1);
 

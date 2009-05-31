@@ -150,7 +150,7 @@ void Rovhult::start () {
    Game::start ();
 
    setGameStatus (EXCHANGE);
-   if (randomizeCardsToPile (staple)) {
+   if (randomiseCardsToPile (staple)) {
       dealCards ();
 
       aExchanged = 0;

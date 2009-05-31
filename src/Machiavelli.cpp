@@ -156,7 +156,7 @@ void Machiavelli::start () {
    pos1Play = pos2Play = 0;
    target = -1U;
 
-   if (randomizeCardsToPile (staple)) {
+   if (randomiseCardsToPile (staple)) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
 	 for (unsigned int j (0); j < 7; ++j)
              hands[(i - posServer) & 0x3].append (staple.removeTopCard ());

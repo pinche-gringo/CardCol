@@ -170,7 +170,7 @@ void SgtMayor::start () {
 
    Check2 (!played.size ());
    ICardPile pile;
-   if (randomizeCardsToPile (pile)) {
+   if (randomiseCardsToPile (pile)) {
       // Delete the score-dialog if the game has ended
       if (pScoreDlg) {
          unsigned int player;

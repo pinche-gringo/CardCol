@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 09.08.2006
-//COPYRIGHT   : Copyright (C) 2006, 2009
+//COPYRIGHT   : Copyright (C) 2006 - 2009
 
 // This file is part of CardCol.
 //
@@ -132,7 +132,7 @@ void Jabberwocky::start () {
    startPlayer = (startPlayer + 1) % NUM_PLAYERS;
 
    ICardPile pile;
-   if (randomizeCardsToPile (pile)) {
+   if (randomiseCardsToPile (pile)) {
       // Show cards on the table: For all players put 3 cards in hand
       for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
 	 players[i].bid.undefine ();

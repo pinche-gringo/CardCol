@@ -211,7 +211,7 @@ void Hearts::start () {
 
    Check2 (!played.size ());
    ICardPile pile;
-   if (randomizeCardsToPile (pile)) {
+   if (randomiseCardsToPile (pile)) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
 	 ICardPile* actPile (players[(i - posServer) & 0x3].hand);
 	 actPile->getCards (pile, 0, (cards.size () / NUM_PLAYERS) - 1);

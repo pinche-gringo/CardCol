@@ -160,7 +160,7 @@ void Game::disableHuman () {
 /// \param pile Pile to which the cards should be shuffeled to
 /// \returns bool Flag, if method completed successfully
 //-----------------------------------------------------------------------------
-bool Game::randomizeCardsToPile (ICardPile& pile) const {
+bool Game::randomiseCardsToPile (ICardPile& pile) const {
    // Randomize and put cards onto staple
    YGP::ConnectionMgr& cmgr (getConnectionMgr ());
 
@@ -174,7 +174,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
          ap.assignValues (input);
 
          YGP::Tokenize positions (input);
-         TRACE8 ("Game::randomizeCardsToPile (ICardPile&) - Cards: " << cards.size ());
+         TRACE8 ("Game::randomiseCardsToPile (ICardPile&) - Cards: " << cards.size ());
          for (unsigned int i (0); i < (cards.size () - 1); ++i) {
             unsigned long pos (0);
             std::string token;
@@ -190,7 +190,7 @@ bool Game::randomizeCardsToPile (ICardPile& pile) const {
                throw YGP::CommError (error);
             }
 
-            TRACE9 ("Game::randomizeCardsToPile (ICardPile&) const - [" << i
+            TRACE9 ("Game::randomiseCardsToPile (ICardPile&) const - [" << i
                     << "] = " << pos);
             cards.set (i, pos);
          }
