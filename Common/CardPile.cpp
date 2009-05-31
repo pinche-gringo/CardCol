@@ -112,10 +112,8 @@ void ICardPile::showTopCardFace (bool visible) {
 //-----------------------------------------------------------------------------
 void ICardPile::insertCardFast (CardWidget& card, unsigned int offset) {
    std::vector<CardWidget*>::insert (begin () + offset, &card);
-   if (style > NORMAL) {
-      Check3 (operator[] (size () - 1));
-      resize (size () - 1, style);
-   }
+   Check3 (operator[] (size () - 1));
+   resize (size () - 1, style);
 
    if (showOpt < DONT_CHANGE)
       card.showFace ((bool)showOpt);
@@ -586,10 +584,11 @@ int ICardPile::find (unsigned int id, unsigned int start) const {
 
 //-----------------------------------------------------------------------------
 /// Resizing of a card in the pile
-/// \param CardWidget& Card to resize
+/// \param card Card to resize
 /// \param PileStyle Style of pile
 //-----------------------------------------------------------------------------
-void ICardPile::resize (CardWidget&, PileStyle) {
+void ICardPile::resize (CardWidget& card, PileStyle) {
+   card.set_size_request (CardImages::HEIGHT, CardImages::HEIGHT);
 }
 
 
