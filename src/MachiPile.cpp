@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2006, 2008
+//COPYRIGHT   : Copyright (C) 2003 - 2006, 2008, 2009
 
 // This file is part of CardCol.
 //
@@ -260,7 +260,7 @@ int MachiPile::getPosOfColour (CardWidget::COLOURS colour) const {
 
 //----------------------------------------------------------------------------
 /// Checks if this has a card matching to the ones passed in pair
-/// \param pair Pile holding the pair to match
+/// \param pair Vector holding the pair to match
 /// \param match Set to
 ///    - Position of the card which matches the pair (if this card can be
 ///      played directly)
@@ -273,7 +273,7 @@ int MachiPile::getPosOfColour (CardWidget::COLOURS colour) const {
 /// \remarks \c match and \c nr might be changed, even if no matching card is
 ///     found!
 //----------------------------------------------------------------------------
-bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& match,
+bool MachiPile::hasMatching3rd (std::vector<CardWidget*>& pair, MachiPile::const_iterator& match,
 				unsigned int& nr) const {
    Check1 (pair.size () == 2);
    CardWidget *card (operator[] (0));
@@ -307,7 +307,8 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
              && (type == COLOUR)
              && (((int)(size () - 4) > diffTable)
                  || ((int)(size () - 1) == diffTable))
-             && (pair.find (operator[] (diffTable)->id ()) == -1)) {
+	     && (pair[0]->id () != operator[] (diffTable)->id ())
+	     && (pair[1]->id () != operator[] (diffTable)->id ())) {
             match = begin () + diffTable;
             nr = end () - match;
             if (((int)(size () - 4) > diffTable)
@@ -319,13 +320,15 @@ bool MachiPile::hasMatching3rd (ICardPile& pair, MachiPile::const_iterator& matc
          if (getType () == NUMBER) {
             match = begin ();
             while (match != end ()) {
-               if (pair.find ((*match)->id ()) == -1)
+	       if ((pair[0]->id () != (*match)->id ())
+		   && (pair[1]->id () != (*match)->id ()))
                   break;
                ++match;
             }
          }
          else
-            if (pair.find (card->id ()) == -1)
+	    if ((pair[0]->id () != card->id ())
+		&& (pair[1]->id () != card->id ()))
                match = begin ();
       }
       break;
