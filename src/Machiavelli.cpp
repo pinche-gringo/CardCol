@@ -61,7 +61,6 @@
 #endif
 
 
-
 enum { HAND, TABLE };
 static std::vector<Gtk::TargetEntry> dndTypeHand;
 static std::vector<Gtk::TargetEntry> dndTypeTable;
@@ -291,6 +290,7 @@ void Machiavelli::disableHuman () {
    if (aDNDHand.size ())
       for (unsigned int i (0); i < hands[0].size (); ++i)
          unregisterHandDND (*hands[0][i]);
+   TRACE9 ("Machiavelli::disableHuman () - Remaining cards: " << aDNDHand.size ());
    Check3 (aDNDHand.empty ());
 
    unregisterTableDND ();
@@ -1009,7 +1009,7 @@ bool Machiavelli::reorderTableToFit (ICardPile& playerPile) {
    for (ICardPile::const_iterator p (playerPile.begin ());
         p != playerPile.end (); ++p) {
       ICardPile::const_iterator h (p);
-      ICardPile work;
+      std::vector<CardWidget*> work;
       unsigned int pos1Play, pos2Play;
 
       // First try to make piles with two cards from the hand
@@ -1020,8 +1020,8 @@ bool Machiavelli::reorderTableToFit (ICardPile& playerPile) {
          if ((diff == 0) && ((*p)->id () == (*h)->id ()))
             continue;
 
-         work.append (**p);
-         work.append (**h);
+         work.push_back (*p);
+         work.push_back (*h);
          TRACE8 ("Machiavelli::reorderTableToFit (ICardPile&) - Pair: " << **p << " - " << **h);
 
          // Try to add from the table
@@ -1188,7 +1188,7 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
 
    for (ICardPile::const_iterator p (playerPile.begin ());
         p != playerPile.end (); ++p) {
-      ICardPile work;
+      std::vector<CardWidget*> work;
 
       // Try to find two cards from the table (from different piles)
       for (std::vector<MachiPile*>::const_iterator t (tablePiles.begin ());
@@ -1217,8 +1217,8 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
             diff = MachiPile::cardDistance (**p, **i);
             TRACE6 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Matching " << **i
                     << " differs " << diff);
-            work.append (**p);
-            work.append (**i);
+            work.push_back (*p);
+            work.push_back (*i);
 
             for (std::vector<MachiPile*>::const_iterator o (t + 1);
                  o != tablePiles.end (); ++o) {
@@ -1386,6 +1386,7 @@ bool Machiavelli::reorderTableToFit4 () {
 /// \param player Player to give a card to
 //----------------------------------------------------------------------------
 void Machiavelli::dealCard (unsigned int player) {
+   TRACE5 ("Machiavelli::dealCard (unsigned int) - " << player);
    if (staple.size () == 1) {
       Gtk::MessageDialog dlg (_("Taking last card! Solve the game (somehow) ..."),
                               Gtk::MESSAGE_ERROR);
@@ -1872,10 +1873,16 @@ void Machiavelli::unmarkAndEnd (MachiPile* pile) {
    endComputerMove ();
 }
 
+//-----------------------------------------------------------------------------
+/// Finishes the turn and starts the next one
+//-----------------------------------------------------------------------------
 void Machiavelli::endComputerMove () {
+   TRACE9 ("Machiavelli::endComputerMove ()");
+#if CHECK > 0
    YGP::StatusObject obj;
    checkPiles (obj);
-   Check1 (obj.getType () == YGP::StatusObject::UNDEFINED);
+   Check (obj.getType () == YGP::StatusObject::UNDEFINED);
+#endif
 
    makeNextMoves ();
 }
