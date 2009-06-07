@@ -722,8 +722,7 @@ unsigned int ICardPile::sortColourSerie (std::map<unsigned int, unsigned int>& a
       if (((p + 1) != aOrder.rend ()) && (*(p + 1) < oldOrder))
 	 ++pos;
    }
-   TRACE9 ("ICardPile::sortColourSeries (...) - Moved "
-           << size () - aPos.size () << " cards");
+   TRACE9 ("ICardPile::sortColourSeries (...) - Moved to pos " << size () - aPos.size ());
    return size () - aPos.size ();
 }
 
