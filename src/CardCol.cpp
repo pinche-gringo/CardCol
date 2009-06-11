@@ -785,13 +785,15 @@ void CardgameCollection::savePreferences () {
 #endif
       inifile << '\n';
 
+      inifile.flush ();
+      if (inifile)
+	 return;
    }
-   else {
-      Glib::ustring msg (_("Couldn't save options (to file %1)!\n\nReason: %2."));
-      msg.replace (msg.find ("%1"), 2, options.pNameINIFile);
-      msg.replace (msg.find ("%2"), 2, strerror (errno));
-      Gtk::MessageDialog (msg, false, Gtk::MESSAGE_ERROR).run ();
-   }
+
+   Glib::ustring msg (_("Couldn't save options (to file %1)!\n\nReason: %2."));
+   msg.replace (msg.find ("%1"), 2, options.pNameINIFile);
+   msg.replace (msg.find ("%2"), 2, strerror (errno));
+   Gtk::MessageDialog (msg, false, Gtk::MESSAGE_ERROR).run ();
 }
 
 //-----------------------------------------------------------------------------
