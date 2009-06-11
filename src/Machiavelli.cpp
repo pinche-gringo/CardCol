@@ -157,8 +157,7 @@ void Machiavelli::start () {
 
    if (randomiseCardsToPile (staple)) {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-	 for (unsigned int j (0); j < 7; ++j)
-             hands[(i - posServer) & 0x3].append (staple.removeTopCard ());
+	 hands[(i - posServer) & 0x3].getCards (staple, staple.size () - 7, staple.size () - 1);
 
       hands[0].sortByColour ();
       for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
@@ -1220,6 +1219,7 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
             work.push_back (*p);
             work.push_back (*i);
 
+	    // Now try to find a 3rd matching card somewhere on the table
             for (std::vector<MachiPile*>::const_iterator o (t + 1);
                  o != tablePiles.end (); ++o) {
                MachiPile::const_iterator c;
@@ -1251,14 +1251,15 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
 
                   if (work.size ()) {
                      pos2Play = p - playerPile.begin ();
-                     TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Hand " << pos2Play);
 		     Check3 (o >= tablePiles.begin ());
 		     Check3 (c >= (*o)->begin ());
                      Check3 (t >= tablePiles.begin ());
                      Check3 (i >= (*t)->begin ());
 		     flipCards2Play (playerPile, pos2Play, pos2Play);
 
-		     int diff2 (MachiPile::cardDistance (**i, **c));
+		     int diff2 (MachiPile::cardDistance (**p, **c));
+                     TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Hand " << pos2Play
+			     << " differs from 2nd table: " << diff2);
 		     MachiPile& src1 (**t);
 		     MachiPile& src2 (**o);
 		     unsigned int posSrc1 (i - (*t)->begin ());
@@ -1271,8 +1272,8 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
 
 		     MachiPile& newPile (makeNewPile ());
 		     CardPileWindows& win (animateCards2 (newPile, playerPile, pos2Play, pos2Play));
-		     win.addWindow ((diff < 0) && (diff2 != 2), src1, posSrc1, posSrc1);
-		     win.addWindow ((diff2 > 0) ? (1 - (diff > 0)) : (2 - (diff == 2)),
+		     win.addWindow (diff < 0, src1, posSrc1, posSrc1);
+		     win.addWindow ((diff2 > diff) ? (diff2 == -1) : ((diff2 < 0) ? 2 : 1),
 				    src2, posSrc2, posSrc2);
 		     win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
 						     &newPile));
@@ -1347,14 +1348,13 @@ bool Machiavelli::reorderTableToFit4 () {
 		  else
 		     if ((pos > 3) && (pos < ((*t)->size () - 2))) {
 			MachiPile& src (**t);
-			unsigned int nr ((*t)->size () - pos);
+			unsigned int nr ((*t)->size () - pos - 1);
 			MachiPile& newPile (makeNewPile ());
 			CardPileWindow& win (animateCards (newPile, src, pos, pos + nr));
 			win.sigAnimation.connect (bind (mem_fun (*this, &Machiavelli::unmarkAndEnd),
 							&newPile));
-			while (--nr)
-			   src[pos + nr]->mark ();
-
+			while (nr)
+			   src[pos + --nr]->mark ();
 			return true;
 		     }
 	       }
