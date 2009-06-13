@@ -1,3 +1,125 @@
+2009-06-13 19:17:22 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+	* ChangeLog, NEWS: Changes of V0.9.40 documented
+
+        * *.po: Acutalised
+
+2009-06-13 17:15:14 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Machiavelli: Fixed computer player
+
+2009-06-13 17:14:59 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * MachiPile.cpp: Improved traces
+
+2009-06-13 14:50:50 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Machiavelli: clean() first calles parent::clean() to prevent check
+
+2009-06-11 20:54:31 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Machiavelli.cpp: Speed-up dealing; Fixes
+
+2009-06-11 16:09:32 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardCol.cpp: Ensure file INI-file is written to disk
+
+2009-06-07 21:21:58 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Machiavelli: Fixed expanding cards in hand while checking for card to play
+
+2009-06-07 21:11:03 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Machiavelli: MachiPile::hasMatching3rd() uses std::vector for pair
+
+2009-06-07 21:04:58 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardPile: Improved debug-output
+
+2009-05-31 16:02:22 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardPile: Fixed sizeing card when fast inserting/removing
+
+2009-05-31 15:44:48 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Renamed randomizeCardsToPile() to randomiseCardsToPile()
+
+2009-05-30 18:26:12 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Hearts: Fixed checking played card; Speed-up dealing
+
+2009-05-30 15:05:28 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Buraco: Added menu to re-show score dialog
+
+2009-05-30 14:37:19 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Buraco: Fixing enabling cards to play after picking up the buraco
+
+2009-05-29 22:03:03 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * configure.ac: Version to 0.9.40
+
+2009-05-29 22:02:49 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Buraco: Fixed enabling cards for DND after picking up buraco
+
+2009-05-28 21:50:51 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Common/CardPile.cpp: Fixed moving pile; removed checks and traces
+
+2009-05-26 21:12:03 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardCol: Using new CardPile.getCards() instead of Game::movePile()
+
+2009-05-26 21:06:38 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardPile: Fixed getCards()
+
+2009-05-25 21:40:59 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Speed up dealing
+
+2009-05-25 21:40:15 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardPile: Added getCards()
+
+2009-05-25 20:09:14 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Added moveCards(); Optimisied fast-manipulation methods
+
+2009-05-23 18:05:30 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardPile: Optimised clean (); renamed appendCompressedCard() to appendCardFast()
+
+2009-05-21 17:50:27 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardPile: setTopCards() doesn't resize each added card twice (only last)
+
+2009-05-21 16:32:09 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Jabberwocky: Added menu to re-show score dialog
+
+2009-05-20 19:07:25 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Sgt. Mayor: Only enable entries in game-menu when applicable
+
+2009-05-20 19:06:30 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * ScoreDlg.cpp: Only showing and moving dialog if not already shown
+
+2009-05-19 20:45:16 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Hearts: Added menu to re-show score dialog; Offer sorting cards when cards won
+
+2009-05-19 20:43:59 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * ScoreDlg: Added display() to show and positionate
+
+2009-05-19 18:25:43 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardCol.cpp: Using Gtk's stock icon for connect menu
+
 2009-05-16 22:05:40 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
 
 	* ChangeLog, NEWS: Changes of V0.9.30 documented

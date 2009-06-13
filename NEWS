@@ -1,3 +1,13 @@
+Overview of changes in version 0.9.40:
+
+  - Menu to re-open the score-dialog (Buraco, Hearts, Jabberwocky, Sgt. Mayor)
+  - Hearts: Enable sort-menus only when cards are available
+  - Hearts: Fix checking if played card is valid
+  - Renamed randomizeCardsToPile() to randomiseCardsToPile()
+  - Machiavelli: Fixed computer player
+  - Speed-up dealing cards
+
+
 Overview of changes in version 0.9.30:
 
   - Installing menu entry for desktop environments
