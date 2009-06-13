@@ -1250,16 +1250,16 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                   }
 
                   if (work.size ()) {
+		     int diff2 (MachiPile::cardDistance (**p, **c));
+                     TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Hand " << pos2Play
+			     << " differs from 2nd table: " << diff2);
+
                      pos2Play = p - playerPile.begin ();
 		     Check3 (o >= tablePiles.begin ());
 		     Check3 (c >= (*o)->begin ());
                      Check3 (t >= tablePiles.begin ());
                      Check3 (i >= (*t)->begin ());
-		     flipCards2Play (playerPile, pos2Play, pos2Play);
 
-		     int diff2 (MachiPile::cardDistance (**p, **c));
-                     TRACE8 ("Machiavelli::reorderTableToFit3 (ICardPile&) - Hand " << pos2Play
-			     << " differs from 2nd table: " << diff2);
 		     MachiPile& src1 (**t);
 		     MachiPile& src2 (**o);
 		     unsigned int posSrc1 (i - (*t)->begin ());
@@ -1270,6 +1270,7 @@ bool Machiavelli::reorderTableToFit3 (ICardPile& playerPile) {
                      (*i)->mark ();
 		     (*c)->mark ();
 
+		     flipCards2Play (playerPile, pos2Play, pos2Play);
 		     MachiPile& newPile (makeNewPile ());
 		     CardPileWindows& win (animateCards2 (newPile, playerPile, pos2Play, pos2Play));
 		     win.addWindow (diff < 0, src1, posSrc1, posSrc1);
