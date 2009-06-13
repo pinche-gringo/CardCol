@@ -184,6 +184,8 @@ void Machiavelli::start () {
 //-----------------------------------------------------------------------------
 void Machiavelli::clean () {
    TRACE6 ("Machiavelli::clean ()");
+   Game::clean ();
+
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
       hands[i].clear ();
 
@@ -195,8 +197,6 @@ void Machiavelli::clean () {
       piles.remove (**i);
    }
    tablePiles.clear ();
-
-   Game::clean ();
 }
 
 //-----------------------------------------------------------------------------
