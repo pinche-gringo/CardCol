@@ -4,18 +4,18 @@
 #
 # Package source files
 src/Rovhult.cpp
-Common/CardImgs.cpp
-Common/CardPile.h
+card/CardImgs.cpp
+card/CardPile.h
 src/Twopart.cpp
-Common/DeckSelect.cpp
-Common/Game.cpp
-Common/PlayerDlg.cpp
-Common/PlayerConnDlg.cpp
+card/DeckSelect.cpp
+card/Game.cpp
+card/PlayerDlg.cpp
+card/PlayerConnDlg.cpp
 src/CardCol.cpp
 src/CardColNet.cpp
 src/CardColAppl.cpp
 src/Hearts.cpp
-Common/ScoreDlg.cpp
+card/ScoreDlg.cpp
 src/Buraco.cpp
 src/Machiavelli.cpp
 src/MachiPile.cpp

@@ -48,11 +48,11 @@ Options.h CardOptions.h CardCol.h GameTypes.cpp GameTypes.h		\
 Settings.cpp Settings.h CardSizes.cpp CardSizes.h CardColAppl.cpp	\
 CardCol.cpp CardColAppl.h $(USE_NETWORK)
 
-INCLUDES = @INCLUDES@ -I../Common @DEPENDENCIES_CFLAGS@
+INCLUDES = @INCLUDES@ @DEPENDENCIES_CFLAGS@
 
 AM_CPPFLAGS = -Wall -Wextra
 AM_CXXFLAGS = -Woverloaded-virtual -Weffc++
-CardCol_LDFLAGS=-L../Common -lCard @DEPENDENCIES_LIBS@ @LTLIBINTL@
+CardCol_LDFLAGS=-L../card -lCard @DEPENDENCIES_LIBS@ @LTLIBINTL@
 DEFS = @DEFS@
 
 EXTRA_DIST=Options.meta CardOptions.meta $(SRC_BURACO) $(SRC_HEARTS)	\
