@@ -38,7 +38,7 @@
 //-----------------------------------------------------------------------------
 /// Default constructor
 //-----------------------------------------------------------------------------
-MachiPile::MachiPile () : CardHPile (COMPRESSED, SHOWFACE), type (UNDEFINED) {
+MachiPile::MachiPile () : Card::HPile (COMPRESSED, SHOWFACE), type (UNDEFINED) {
 }
 
 //-----------------------------------------------------------------------------
@@ -53,9 +53,9 @@ MachiPile::~MachiPile () {
 /// \param newCard Card to set as uppermost card of the pile
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
-void MachiPile::setTopCard (CardWidget& newCard) {
-   TRACE9 ("MachiPile::setTopCard (CardWidget&) - " << newCard);
-   CardHPile::setTopCard (newCard);
+void MachiPile::setTopCard (Card::Widget& newCard) {
+   TRACE9 ("MachiPile::setTopCard (Card::Widget&) - " << newCard);
+   Card::HPile::setTopCard (newCard);
    analyzePile ();
 }
 
@@ -66,10 +66,10 @@ void MachiPile::setTopCard (CardWidget& newCard) {
 /// \pre \c newCard must be a valid card
 /// \returns unsigned int Position where card was inserted
 //----------------------------------------------------------------------------
-unsigned int MachiPile::insert (CardWidget& card, unsigned int pos) {
-   TRACE9 ("MachiPile::insert (CardWidget&, unsigned int) - " << card
+unsigned int MachiPile::insert (Card::Widget& card, unsigned int pos) {
+   TRACE9 ("MachiPile::insert (Card::Widget&, unsigned int) - " << card
            << " to " << pos);
-   unsigned int rc (CardHPile::insert (card, pos));
+   unsigned int rc (Card::HPile::insert (card, pos));
    analyzePile ();
    return rc;
 }
@@ -81,8 +81,8 @@ unsigned int MachiPile::insert (CardWidget& card, unsigned int pos) {
 /// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
-CardWidget& MachiPile::remove (CardWidget& card) {
-   CardWidget& rcard (CardHPile::remove (card));
+Card::Widget& MachiPile::remove (Card::Widget& card) {
+   Card::Widget& rcard (Card::HPile::remove (card));
    analyzePile ();
    return rcard;
 }
@@ -93,8 +93,8 @@ CardWidget& MachiPile::remove (CardWidget& card) {
 /// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
-CardWidget& MachiPile::remove (CardWidget& card, bool visible) {
-   CardWidget& rcard (CardHPile::remove (card, visible));
+Card::Widget& MachiPile::remove (Card::Widget& card, bool visible) {
+   Card::Widget& rcard (Card::HPile::remove (card, visible));
    analyzePile ();
    return rcard;
 }
@@ -105,9 +105,9 @@ CardWidget& MachiPile::remove (CardWidget& card, bool visible) {
 /// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
-CardWidget& MachiPile::remove (unsigned int pos) {
+Card::Widget& MachiPile::remove (unsigned int pos) {
    TRACE9 ("MachiPile::remove (unsigned int) - " << pos);
-   CardWidget& card (CardHPile::remove (pos));
+   Card::Widget& card (Card::HPile::remove (pos));
    analyzePile ();
    return card;
 }
@@ -118,8 +118,8 @@ CardWidget& MachiPile::remove (unsigned int pos) {
 /// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
-CardWidget& MachiPile::remove (unsigned int pos, bool visible) {
-   CardWidget& card (CardHPile::remove (pos, visible));
+Card::Widget& MachiPile::remove (unsigned int pos, bool visible) {
+   Card::Widget& card (Card::HPile::remove (pos, visible));
    analyzePile ();
    return card;
 }
@@ -133,8 +133,8 @@ CardWidget& MachiPile::remove (unsigned int pos, bool visible) {
 /// \returns unsigned int Position of card in pile or -1U
 /// \pre Coloured piles must be sorted strict ascending
 //----------------------------------------------------------------------------
-unsigned int MachiPile::getPosition4Card (const CardWidget& card) const {
-   TRACE1 ("MachiPile::getPosition4Card (const CardWidget&) const - " << card);
+unsigned int MachiPile::getPosition4Card (const Card::Widget& card) const {
+   TRACE1 ("MachiPile::getPosition4Card (const Card::Widget&) const - " << card);
 
    if (empty ())
       return 0;
@@ -149,17 +149,17 @@ unsigned int MachiPile::getPosition4Card (const CardWidget& card) const {
    }
 
    // Now check for matching colour
-   TRACE9 ("MachiPile::getPosition4Card (const CardWidget&) const - Checking colour");
+   TRACE9 ("MachiPile::getPosition4Card (const Card::Widget&) const - Checking colour");
    if (operator[] (0)->colour () == card.colour ()) {
-      CardWidget* cmp (operator[] (0));
+      Card::Widget* cmp (operator[] (0));
       if (cardDistance (card, *cmp,
-                        ((cmp->number () == CardWidget::ACE)
+                        ((cmp->number () == Card::Widget::ACE)
                          && (size () > 1) ? ONE : BOTH)) == -1)
          return 0;
 
       cmp = operator[] (size () - 1);
       if (cardDistance (card, *cmp,
-                        ((cmp->number () == CardWidget::ACE)
+                        ((cmp->number () == Card::Widget::ACE)
                          && (size () > 1) ? ACE : BOTH)) == 1)
          return size ();
    }
@@ -175,31 +175,31 @@ unsigned int MachiPile::getPosition4Card (const CardWidget& card) const {
 /// \param aceIsOne Flag, if aces should (also) be treated as one
 /// \returns int Distance of the two passed cards (a - b)
 //----------------------------------------------------------------------------
-int MachiPile::cardDistance (const CardWidget& a, const CardWidget& b,
+int MachiPile::cardDistance (const Card::Widget& a, const Card::Widget& b,
                              ACEFLAG aceIsOne) {
-   TRACE9 ("MachiPile::cardDistance (2x const CardWidget&, ACEFLAG) - "
+   TRACE9 ("MachiPile::cardDistance (2x const Card::Widget&, ACEFLAG) - "
            << a << "<->" << b);
 
    if (a.colour () != b.colour ())
       return (a.number () == b.number ()) ? 0 : 99;
 
    if (aceIsOne != ACE) {                 // Special handling of the ace like 1
-      TRACE9 ("MachiPile::cardDistance (2x const CardWidget&, ACEFLAG) - "
+      TRACE9 ("MachiPile::cardDistance (2x const Card::Widget&, ACEFLAG) - "
                "Checking for Ace");
-     if (a.number () == CardWidget::ACE) {
+     if (a.number () == Card::Widget::ACE) {
         if ((aceIsOne == ONE)
-            || ((b.number () < CardWidget::FOUR)
-                && (b.number () != CardWidget::ACE)))
+            || ((b.number () < Card::Widget::FOUR)
+                && (b.number () != Card::Widget::ACE)))
            return -static_cast<int> (b.number ()) - 1;
      }
-     else if (b.number () == CardWidget::ACE)
+     else if (b.number () == Card::Widget::ACE)
         if ((aceIsOne == ONE)
-            || ((a.number () < CardWidget::FOUR)
-                && (a.number () != CardWidget::ACE)))
+            || ((a.number () < Card::Widget::FOUR)
+                && (a.number () != Card::Widget::ACE)))
            return static_cast<int> (a.number ()) + 1;
    }
 
-   TRACE9 ("MachiPile::cardDistance (2x const CardWidget&, ACEFLAG) - "
+   TRACE9 ("MachiPile::cardDistance (2x const Card::Widget&, ACEFLAG) - "
            "Distance: " << a.number () - b.number ());
    return a.number () - b.number ();
 }
@@ -244,8 +244,8 @@ void MachiPile::checkIntegrity () throw (PileError) {
 /// \param colour Colour to find
 /// \returns int Position of card or -1
 //-----------------------------------------------------------------------------
-int MachiPile::getPosOfColour (CardWidget::COLOURS colour) const {
-   TRACE9 ("MachiPile::getPosOfColour (CardWidget::COLOURS) - " << colour);
+int MachiPile::getPosOfColour (Card::Widget::COLOURS colour) const {
+   TRACE9 ("MachiPile::getPosOfColour (Card::Widget::COLOURS) - " << colour);
    Check3 (size ());
 
    if (type == NUMBER) {
@@ -273,10 +273,10 @@ int MachiPile::getPosOfColour (CardWidget::COLOURS colour) const {
 /// \remarks \c match and \c nr might be changed, even if no matching card is
 ///     found!
 //----------------------------------------------------------------------------
-bool MachiPile::hasMatching3rd (std::vector<CardWidget*>& pair, MachiPile::const_iterator& match,
+bool MachiPile::hasMatching3rd (std::vector<Card::Widget*>& pair, MachiPile::const_iterator& match,
 				unsigned int& nr) const {
    Check1 (pair.size () == 2);
-   CardWidget *card (operator[] (0));
+   Card::Widget *card (operator[] (0));
 
    // For numbered pile find right colour (if pair has the same colour)
    if ((type == NUMBER) && (pair[0]->colour () == pair[1]->colour ())) {
@@ -288,7 +288,7 @@ bool MachiPile::hasMatching3rd (std::vector<CardWidget*>& pair, MachiPile::const
    int diff (cardDistance (*pair[1], *pair[0]));
    int diffTable (cardDistance (*pair[0], *card,
                                 (diff < 0) ? ONE
-                                : ((pair[0]->number () == CardWidget::ACE)
+                                : ((pair[0]->number () == Card::Widget::ACE)
                                    && (pair[1]->number () < 5)) ? ACE : BOTH));
    TRACE1 ("MachiPile::hasMatching3rd (ICardPile&) - Differences: "
            << diff << '/' << diffTable);

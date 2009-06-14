@@ -1,11 +1,11 @@
-//$Id$
+//$Id: ScoreDlg.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Common
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
+//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 02.01.2003
 //COPYRIGHT   : Copyright (C) 2002 - 2004, 2007 - 2009
@@ -39,6 +39,8 @@
 #include "Player.h"
 #include "ScoreDlg.h"
 
+
+namespace Card {
 
 int ScoreDlg::LASTX (-1);
 int ScoreDlg::LASTY (-1);
@@ -237,4 +239,6 @@ void ScoreDlg::display () {
       show ();
       move (LASTX, LASTY);
    }
+}
+
 }

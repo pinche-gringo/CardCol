@@ -1,11 +1,11 @@
-//$Id$
+//$Id: Game.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Common/Game
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
+//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 10.9.2002
 //COPYRIGHT   : Copyright (C) 2002 - 2009
@@ -46,14 +46,16 @@
 #include <YGP/ConnMgr.h>
 #include <YGP/AttrParse.h>
 
+#include "Set.h"
+#include "Pile.h"
 #include "Player.h"
-#include "CardSet.h"
-#include "CardImgs.h"
-#include "CardPile.h"
-#include "CardWindow.h"
+#include "Images.h"
+#include "Window.h"
 #include "ComputerPlayer.h"
 
 #include "Game.h"
+
+namespace Card {
 
 
 //-----------------------------------------------------------------------------
@@ -66,7 +68,7 @@
 /// \param rows Number of rows needed by game
 /// \param columns Number of columns needed by game
 //-----------------------------------------------------------------------------
-Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
+Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset,
             const std::vector<Player*>& player, unsigned int posPlayer,
             YGP::Mutex& mxSerialize, unsigned int rows, unsigned int columns)
    : Gtk::Table (rows, columns), status (statusbar) , cards (cardset),
@@ -74,7 +76,7 @@ Game::Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
      posServer (posPlayer), pos2Play (-1U) , pos1Play (-1U), ignoreNextMsg (false),
      data (NULL), statGame (NONE) , actPlayer (0), stati (), wonCards (),
      pWonPile (NULL), pMenuPopSort (NULL), cardOrder () {
-   TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, Cardset&, std::vector<Player*>,"
+   TRACE3 ("Game::Game (Gtk::Box&, Gtk::Statusbar&, set&, std::vector<Player*>,"
            "unsinged int, unsigned int)");
    Check3 (cardset.size ());
 
@@ -160,7 +162,7 @@ void Game::disableHuman () {
 /// \param pile Pile to which the cards should be shuffeled to
 /// \returns bool Flag, if method completed successfully
 //-----------------------------------------------------------------------------
-bool Game::randomiseCardsToPile (ICardPile& pile) const {
+bool Game::randomiseCardsToPile (IPile& pile) const {
    // Randomize and put cards onto staple
    YGP::ConnectionMgr& cmgr (getConnectionMgr ());
 
@@ -174,7 +176,7 @@ bool Game::randomiseCardsToPile (ICardPile& pile) const {
          ap.assignValues (input);
 
          YGP::Tokenize positions (input);
-         TRACE8 ("Game::randomiseCardsToPile (ICardPile&) - Cards: " << cards.size ());
+         TRACE8 ("Game::randomiseCardsToPile (IPile&) - Cards: " << cards.size ());
          for (unsigned int i (0); i < (cards.size () - 1); ++i) {
             unsigned long pos (0);
             std::string token;
@@ -190,7 +192,7 @@ bool Game::randomiseCardsToPile (ICardPile& pile) const {
                throw YGP::CommError (error);
             }
 
-            TRACE9 ("Game::randomiseCardsToPile (ICardPile&) const - [" << i
+            TRACE9 ("Game::randomiseCardsToPile (IPile&) const - [" << i
                     << "] = " << pos);
             cards.set (i, pos);
          }
@@ -331,8 +333,8 @@ void Game::setGameStatus (unsigned int newStatus) {
 /// \param cards String containing the (comma-separated) IDs of the cards to flip
 /// \throw YGP::ParseError If invalid numbers for cards are found
 //-----------------------------------------------------------------------------
-void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (YGP::ParseError) {
-   TRACE2 ("Game::flipCards2Play (ICardPile&, const std::string&) - Cards " << cards);
+void Game::flipCards2Play (IPile& pile, const std::string& cards) throw (YGP::ParseError) {
+   TRACE2 ("Game::flipCards2Play (IPile&, const std::string&) - Cards " << cards);
    Check1 (cards.size ());
 
    YGP::Tokenize tokCards (cards);
@@ -348,22 +350,22 @@ void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (YGP
       card = pile.find (static_cast <unsigned int> (card));
       if ((card != -1U) && (card < (pile.size () - cCards))) {
          Check3 (card < pile.size ());
-         TRACE9 ("Game::flipCards2Play (ICardPile&, const std::string&) - Found "
+         TRACE9 ("Game::flipCards2Play (IPile&, const std::string&) - Found "
                  << card << " = " << *pile[card]);
          ++cCards;
 
-         CardWidget& cardWg (*pile[card]);
+	 Card::Widget& cardWg (*pile[card]);
          pile.move (pile.size () - 1, card);
          cardWg.showFace ();
 
-         if ((pile.getStyle () != ICardPile::NORMAL) && bFollow) {
+         if ((pile.getStyle () != IPile::NORMAL) && bFollow) {
             Check3 (pile.size () > 1);
-            pile.resize (pile.size () - 2, ICardPile::COMPRESSED);
+            pile.resize (pile.size () - 2, IPile::COMPRESSED);
          }
          bFollow = true;
       }
       else {
-         TRACE1 ("Game::flipCards2Play (ICardPile&, const std::string&) - "
+         TRACE1 ("Game::flipCards2Play (IPile&, const std::string&) - "
                  "Card " << tokCards.getActNode () << " not found in "
                  << pile.size () << " cards");
          std::string error ("Card not found!");
@@ -373,7 +375,7 @@ void Game::flipCards2Play (ICardPile& pile, const std::string& cards) throw (YGP
    pos2Play = pile.size () - 1;
    pos1Play = pos2Play - cCards + 1;
    Check3 (pos1Play <= pos2Play);
-   TRACE8 ("Game::flipCards2Play (ICardPile&, const std::string&) - "
+   TRACE8 ("Game::flipCards2Play (IPile&, const std::string&) - "
            "New positions " << pos1Play << " and " << pos2Play);
 }
 
@@ -392,8 +394,8 @@ unsigned int Game::getActTarget () const {
 /// \param end Position of last card to play; update to reflect moving
 /// \remarks It is safe to pass the same variable as start and end
 //-----------------------------------------------------------------------------
-void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end) {
-   TRACE2 ("Game::flipCards2Play (ICardPile&, unsigned int, unsigned int) - "
+void Game::flipCards2Play (IPile& pile, unsigned int& start, unsigned int& end) {
+   TRACE2 ("Game::flipCards2Play (IPile&, unsigned int, unsigned int) - "
            "Cards " << start << " - " << end);
    Check3 (end < pile.size ());
    Check3 (start <= end);
@@ -413,11 +415,11 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
    }
 
    do {
-      CardWidget& card (*pile[start]);
+      Card::Widget& card (*pile[start]);
       pile.move (pile.size () - 1, start);
       card.showFace ();
 
-      if ((pile.getStyle () != ICardPile::NORMAL) && bFollow) {
+      if ((pile.getStyle () != IPile::NORMAL) && bFollow) {
          Check3 (pile.size () > 1);
          pile.resize (pile.size () - 2, pile.getStyle ());
       }
@@ -426,7 +428,7 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
 
    start = pile.size () - 1 - (end - start);
    end =  pile.size () - 1;
-   TRACE8 ("Game::flipCards2Play (ICardPile&, unsigned int, unsigned int) - "
+   TRACE8 ("Game::flipCards2Play (IPile&, unsigned int, unsigned int) - "
            "New positions " << start << " and " << end);
 }
 
@@ -434,16 +436,16 @@ void Game::flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& e
 /// Shows or hides the won cards
 /// \param show Flag if to show or to hide the cards
 /// \param style Style how pile should be displayed; must be a value understood
-///     by ICardPile::setStyle
+///     by IPile::setStyle
 //-----------------------------------------------------------------------------
 void Game::showWonCards (bool show, unsigned int style) {
    if (pWonPile) {
       if (style == -1U)
-	 style = show ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED;
-      Check3 (style < ICardPile::LAST);
+	 style = show ? IPile::COMPRESSED : IPile::VERY_COMPRESSED;
+      Check3 (style < IPile::LAST);
 
-      pWonPile->setShowOption (show ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
-      pWonPile->setStyle ((ICardPile::PileStyle)style);
+      pWonPile->setShowOption (show ? IPile::SHOWFACE : IPile::SHOWBACK);
+      pWonPile->setStyle ((IPile::PileStyle)style);
       Glib::signal_idle ().connect (mem_fun (*this, &Game::enableActWonCards));
       disableWonCards ();
    }
@@ -461,7 +463,7 @@ bool Game::wonCardsSelected (GdkEvent* event) {
       switch (bev->button) {
       case 1:
          Check3 (pWonPile);
-         showWonCards (pWonPile->getShowOption () == ICardPile::SHOWBACK);
+         showWonCards (pWonPile->getShowOption () == IPile::SHOWBACK);
          break;
 
       case 3: {
@@ -690,7 +692,7 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (Y
          throw YGP::ParseError (N_("Invalid target!"));
 
       Check3 (actPlayer >= 0);
-      ICardPile* pile (getPileOfPlayer (actPlayer, target));
+      IPile* pile (getPileOfPlayer (actPlayer, target));
       if (!pile)
          throw YGP::ParseError (N_("Invalid target!"));
       flipCards2Play (*pile, cmd);
@@ -752,8 +754,8 @@ bool Game::stringToNumber (unsigned long& number, const char* text) {
 /// \returns bool True, if the timer to execute the move should be set
 /// \throw YGP::ParseError In case of an invalid value
 //----------------------------------------------------------------------------
-bool Game::executeRemoteMove (ICardPile& pile, unsigned int card) throw (YGP::ParseError) {
-   TRACE8 ("Game::executeRemoteMove (ICardPile&, unsigned int) - " << pos2Play);
+bool Game::executeRemoteMove (IPile& pile, unsigned int card) throw (YGP::ParseError) {
+   TRACE8 ("Game::executeRemoteMove (IPile&, unsigned int) - " << pos2Play);
    return true;
 }
 
@@ -796,7 +798,7 @@ void Game::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
 
 //-----------------------------------------------------------------------------
 /// Actions to take when the cards are resized
-/// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
+/// \pre The cardsize must be set in Images::WIDTH/HEIGHT
 //-----------------------------------------------------------------------------
 void Game::resizeCards () {
 }
@@ -810,19 +812,19 @@ void Game::resizeCards () {
 /// \param pos First card of source to move
 /// \pre The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
-CardWindow& Game::animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int pos) {
+Window& Game::animateCard (IPile& dest, unsigned int posDest, IPile& src, unsigned int pos) {
    TRACE3 ("Game::animateCard (...) - " << pos);
    Check1 (pos < src.size ());
    Check1 (posDest <= dest.size ());
 
-   CardWindow& win (*CardWindow::create (dest, posDest, src, pos));
+   Window& win (*Window::create (dest, posDest, src, pos));
    unsigned int timeout (actPlayers[actPlayer]->timeout ());
    if (timeout)
       Glib::signal_timeout ().connect
-	 (bind_return (mem_fun (win, &CardWindow::animate), false), timeout);
+	 (bind_return (mem_fun (win, &Window::animate), false), timeout);
    else
       Glib::signal_idle ().connect
-	 (bind_return (mem_fun (win, &CardWindow::animate), false));
+	 (bind_return (mem_fun (win, &Window::animate), false));
    return win;
 }
 
@@ -835,20 +837,20 @@ CardWindow& Game::animateCard (ICardPile& dest, unsigned int posDest, ICardPile&
 /// \param end Last card of source to move
 /// \pre The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
-CardPileWindow& Game::animateCards (ICardPile& dest, unsigned int posDest, ICardPile& src,
-				    unsigned int start, unsigned int end) {
+PileWindow& Game::animateCards (IPile& dest, unsigned int posDest, IPile& src,
+				unsigned int start, unsigned int end) {
    TRACE3 ("Game::animateCards (...) - " << start << '/' << end);
    Check1 (end < src.size ()); Check1 (start <= end);
    Check1 (posDest <= dest.size ());
 
-   CardPileWindow& win (*CardPileWindow::create (dest, posDest, src, start, end));
+   PileWindow& win (*PileWindow::create (dest, posDest, src, start, end));
    unsigned int timeout (actPlayers[actPlayer]->timeout ());
    if (timeout)
       Glib::signal_timeout ().connect
-	 (bind_return (mem_fun (win, &CardPileWindow::animate), false), timeout);
+	 (bind_return (mem_fun (win, &PileWindow::animate), false), timeout);
    else
       Glib::signal_idle ().connect
-	 (bind_return (mem_fun (win, &CardPileWindow::animate), false));
+	 (bind_return (mem_fun (win, &PileWindow::animate), false));
    return win;
 }
 
@@ -862,19 +864,21 @@ CardPileWindow& Game::animateCards (ICardPile& dest, unsigned int posDest, ICard
 /// \param end Last card of source to move
 /// \pre The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
-CardPileWindows& Game::animateCards2 (ICardPile& dest, unsigned int posDest, ICardPile& src,
-				      unsigned int start, unsigned int end) {
+PileWindows& Game::animateCards2 (IPile& dest, unsigned int posDest, IPile& src,
+				  unsigned int start, unsigned int end) {
    TRACE3 ("Game::animateCards2 (...) - " << start << '/' << end);
    Check1 (end < src.size ()); Check1 (start <= end);
    Check1 (posDest <= dest.size ());
 
-   CardPileWindows& win (*CardPileWindows::create (dest, posDest, src, start, end));
+   PileWindows& win (*PileWindows::create (dest, posDest, src, start, end));
    unsigned int timeout (actPlayers[actPlayer]->timeout ());
    if (timeout)
       Glib::signal_timeout ().connect
-	 (bind_return (mem_fun (win, &CardPileWindow::animate), false), timeout);
+	 (bind_return (mem_fun (win, &PileWindow::animate), false), timeout);
    else
       Glib::signal_idle ().connect
-	 (bind_return (mem_fun (win, &CardPileWindow::animate), false));
+	 (bind_return (mem_fun (win, &PileWindow::animate), false));
    return win;
+}
+
 }

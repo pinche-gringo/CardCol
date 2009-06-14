@@ -1,14 +1,14 @@
-//$Id$
+//$Id: PlayerConnDlg.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Common
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
+//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.07.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2006, 2008
+//COPYRIGHT   : Copyright (C) 2003 - 2006, 2008, 2009
 
 // This file is part of CardCol.
 //
@@ -48,6 +48,8 @@
 
 #include "PlayerConnDlg.h"
 
+
+namespace Card {
 
 //-----------------------------------------------------------------------------
 /// Default constructor
@@ -307,4 +309,6 @@ YGP::Socket* PlayerConnectDlg::addClient (int socket) {
       dlg.run ();
    }
    return sock;
+}
+
 }

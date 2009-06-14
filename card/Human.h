@@ -1,7 +1,7 @@
-#ifndef CARDSET_H
-#define CARDSET_H
+#ifndef HUMAN_H
+#define HUMAN_H
 
-//$Id$
+//$Id: Human.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -19,35 +19,28 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <string>
-#include <vector>
+#include <card/Player.h>
 
 
-class CardWidget;
-class CardImages;
+namespace Card {
 
-
-/**Class to hold the cards used in a game
+/**Implementation of a human player.
 */
-class CardSet {
+class Human : public Player {
  public:
-   CardSet () : cards_ () { }
-   CardSet (const CardImages& decks)  : cards_ () { addPacket (decks); }
-   ~CardSet ();
+   /// Constructor from a name
+   /// \param name Name of the human player
+   Human (const Glib::ustring& name) : Player (name) { }
+   virtual ~Human ();
 
-   CardWidget& getCard (unsigned int nrCard) const;
-   const std::vector<CardWidget*>& getCards () const { return cards_; }
-   unsigned int size () const { return cards_.size (); }
-
-   void shuffle ();
-   void set (unsigned int pos, unsigned int nrCard);
-
-   void clear ();
-   void addPacket (const CardImages& decks);
-   void update () const;
+   virtual bool makeTurn (Game* game);
 
  private:
-   std::vector<CardWidget*> cards_;
+   Human ();
+   Human (const Human& other);
+   const Human& operator= (const Human& other);
 };
+
+}
 
 #endif

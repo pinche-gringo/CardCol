@@ -1,7 +1,7 @@
-#ifndef HUMAN_H
-#define HUMAN_H
+#ifndef COMPUTERPLAYER_H
+#define COMPUTERPLAYER_H
 
-//$Id$
+//$Id: ComputerPlayer.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -19,24 +19,31 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "Player.h"
+#include <card/Player.h>
 
 
-/**Implementation of a human player.
+namespace Card {
+
+/**Implementation of a computer player.
 */
-class Human : public Player {
+class ComputerPlayer : public Player {
  public:
    /// Constructor from a name
-   /// \param name Name of the human player
-   Human (const Glib::ustring& name) : Player (name) { }
-   virtual ~Human ();
+   /// \param name Name of the computer player
+   ComputerPlayer (const Glib::ustring& name) : Player (name) { }
+   virtual ~ComputerPlayer ();
 
    virtual bool makeTurn (Game* game);
+   virtual unsigned int timeout () const;
+
+   static unsigned int TIMEOUT;
 
  private:
-   Human ();
-   Human (const Human& other);
-   const Human& operator= (const Human& other);
+   ComputerPlayer ();
+   ComputerPlayer (const ComputerPlayer& other);
+   const ComputerPlayer& operator= (const ComputerPlayer& other);
 };
+
+}
 
 #endif

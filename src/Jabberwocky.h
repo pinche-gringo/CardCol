@@ -26,10 +26,10 @@
 
 #include <YGP/ANumeric.h>
 
-#include <CardSet.h>
-#include <CardPile.h>
+#include <card/Set.h>
+#include <card/Pile.h>
 
-#include <Game.h>
+#include <card/Game.h>
 
 
 namespace Gtk {
@@ -40,10 +40,10 @@ namespace Gtk {
 
 /**Class to handle the Jabberwocky card game
  */
-class Jabberwocky : public Game {
+class Jabberwocky : public Card::Game {
  public:
-   Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-		const std::vector<Player*>& player, unsigned int posPlayer,
+   Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
+		const std::vector<Card::Player*>& player, unsigned int posPlayer,
 		YGP::Mutex& mxSerialize);
    virtual ~Jabberwocky ();
 
@@ -51,13 +51,13 @@ class Jabberwocky : public Game {
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Jabberwocky"; }
-   virtual void changeNames (const std::vector<Player*>& newPlayer);
+   virtual void changeNames (const std::vector<Card::Player*>& newPlayer);
    virtual void resizeCards ();
 
    virtual bool handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError);
 
  protected:
-   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
 
  private:
    Jabberwocky ();
@@ -83,24 +83,24 @@ class Jabberwocky : public Game {
    void showCards2Play (unsigned int player);
    int playCard (unsigned int player);
    void finishMove ();
-   void getPositionOfColours (const ICardPile& pile, int result[4]);
-   bool isHighest (const CardWidget& card) const;
-   bool isHighEnough (const CardWidget& card) const;
-   unsigned int findHigherCard (const CardWidget& cardCmp, const ICardPile& pile, unsigned int aPosColour) const;
-   unsigned int findLowerCard (const CardWidget& cardCmp, const ICardPile& pile, int aPosColour) const;
-   unsigned int findWorstCard (const ICardPile& card, const int aPositions[4]) const;
+   void getPositionOfColours (const Card::IPile& pile, int result[4]);
+   bool isHighest (const Card::Widget& card) const;
+   bool isHighEnough (const Card::Widget& card) const;
+   unsigned int findHigherCard (const Card::Widget& cardCmp, const Card::IPile& pile, unsigned int aPosColour) const;
+   unsigned int findLowerCard (const Card::Widget& cardCmp, const Card::IPile& pile, int aPosColour) const;
+   unsigned int findWorstCard (const Card::IPile& card, const int aPositions[4]) const;
    unsigned int check4Winner () const;
    unsigned int sumBids () const;
    void takeWonCards (unsigned int player);
 
    static char sortOrder[4];
-   static bool compByColourAccTrumps (const CardWidget* a, const CardWidget* b);
+   static bool compByColourAccTrumps (const Card::Widget* a, const Card::Widget* b);
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
    struct playerCards {
-      CardHPile  hand;                        // For players: Cards in the hand
-      CardHPile  won;                                              // Won ticks
+      Card::HPile  hand;                      // For players: Cards in the hand
+      Card::HPile  won;                                            // Won ticks
       Gtk::Label name;
       YGP::ANumeric bid;
 
@@ -110,8 +110,8 @@ class Jabberwocky : public Game {
       playerCards (const playerCards&);
       playerCards& operator= (const playerCards&);
    } players[NUM_PLAYERS];
-   CardHPile played;
-   CardWidget* pTrump;
+   Card::HPile played;
+   Card::Widget* pTrump;
 
    unsigned int startPlayer;
    unsigned int turn;
@@ -121,7 +121,7 @@ class Jabberwocky : public Game {
    std::bitset<13> playedCards[4];
    bool outOfColour[NUM_PLAYERS][4];
 
-   ScoreDlg*   pScoreDlg;
+   Card::ScoreDlg*   pScoreDlg;
 
    Glib::RefPtr<Gtk::Action> menuSort;
    Glib::RefPtr<Gtk::Action> menuSort2;

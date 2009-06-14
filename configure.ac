@@ -1,8 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
-AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.9.40, [g17m0@users.sourceforge.net], CardCol)
+AC_REVISION($Revision: 1.7 $)
+AC_INIT(Cardgames, 0.5.40, [g17m0@users.sourceforge.net], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -309,14 +309,14 @@ if test $HAVE_CARDS -eq 0; then
    AC_MSG_ERROR("Didn't find any carddecks!")
 fi
 
-AC_OUTPUT([Makefile Common/Makefile src/Makefile intl/Makefile po/Makefile.in doc/Makefile\
+AC_OUTPUT([Makefile card/Makefile src/Makefile intl/Makefile po/Makefile.in doc/Makefile\
 	   data/Makefile])
 
 dnl Settings for autoheader
 AH_TOP([#ifndef CARDGAMES_CFG_H
 #define CARDGAMES_CFG_H
 
-//$Id$
+//$Id: configure.ac,v 1.7 2009/06/14 07:03:27 g17m0 Exp $
 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

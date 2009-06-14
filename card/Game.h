@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-//$Id$
+//$Id: Game.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -30,7 +30,7 @@
 #include <YGP/Mutex.h>
 #include <YGP/Exception.h>
 
-#include "CardPile.h"
+#include <card/Pile.h>
 
 
 // Forward declarations
@@ -40,18 +40,22 @@ namespace Gtk {
    class Dialog;
    class MenuShell;
    class Statusbar;
-};
+}
 namespace YGP {
    class Socket;
    class ConnectionMgr;
 }
-class Player;
-class CardSet;
-class CardWidget;
-class CardWindow;
-class CardPileWindow;
-class CardPileWindows;
+namespace Card {
+   class Set;
+   class Player;
+   class Widget;
+   class Window;
+   class PileWindow;
+   class PileWindows;
+}
 
+
+namespace Card {
 
 /**Abstract base class providing usefull methods for card games.
 */
@@ -65,7 +69,7 @@ class Game : public Gtk::Table {
           PLAYING,                                    ///< Game is being played
           LAST };
 
-   Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
+   Game (Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset,
          const std::vector<Player*>& player, unsigned int posPlayer,
          YGP::Mutex& mxSerialize, unsigned int rows, unsigned int columns);
    virtual ~Game ();
@@ -136,8 +140,8 @@ class Game : public Gtk::Table {
    //@}
 
  protected:
-   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile) = 0;
-   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target) throw (YGP::ParseError);
+   virtual IPile* getPileOfPlayer (unsigned int player, unsigned int pile) = 0;
+   virtual bool executeRemoteMove (IPile& pile, unsigned int target) throw (YGP::ParseError);
    virtual unsigned int getActTarget () const;
 
    /// \name Communication helper methods
@@ -154,29 +158,29 @@ class Game : public Gtk::Table {
    /// Sets the next player
    void setNextPlayer (unsigned int player);
 
-   void flipCards2Play (ICardPile& pile, unsigned int& start, unsigned int& end);
-   void flipCards2Play (ICardPile& pile, const std::string& cards) throw (YGP::ParseError);
+   void flipCards2Play (IPile& pile, unsigned int& start, unsigned int& end);
+   void flipCards2Play (IPile& pile, const std::string& cards) throw (YGP::ParseError);
    void displayTurn (unsigned int player);
    void displayTurn (unsigned int player, const Glib::ustring& preText);
    void makeNextMoves ();
    bool endRemoteMove (unsigned int player);
    virtual void makeMove (unsigned int player) = 0;
 
-   bool randomiseCardsToPile (ICardPile& pile) const;
+   bool randomiseCardsToPile (IPile& pile) const;
 
    /// \name Animation
    //@{
-   CardWindow& animateCard (ICardPile& dest, ICardPile& src, unsigned int pos) {
+   Window& animateCard (IPile& dest, IPile& src, unsigned int pos) {
       return animateCard (dest, dest.size (), src, pos); }
-   CardWindow& animateCard (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int pos);
-   CardPileWindow& animateCards (ICardPile& dest, ICardPile& src, unsigned int start, unsigned int end) {
+   Window& animateCard (IPile& dest, unsigned int posDest, IPile& src, unsigned int pos);
+   PileWindow& animateCards (IPile& dest, IPile& src, unsigned int start, unsigned int end) {
       return animateCards (dest, dest.size (), src, start, end); }
-   CardPileWindow& animateCards (ICardPile& dest, unsigned int posDest, ICardPile& src,
-				 unsigned int start, unsigned int end);
-   CardPileWindows& animateCards2 (ICardPile& dest, ICardPile& src, unsigned int start, unsigned int end) {
+   PileWindow& animateCards (IPile& dest, unsigned int posDest, IPile& src,
+			     unsigned int start, unsigned int end);
+   PileWindows& animateCards2 (IPile& dest, IPile& src, unsigned int start, unsigned int end) {
       return animateCards2 (dest, dest.size (), src, start, end); }
-   CardPileWindows& animateCards2 (ICardPile& dest, unsigned int posDest, ICardPile& src,
-				   unsigned int start, unsigned int end);
+   PileWindows& animateCards2 (IPile& dest, unsigned int posDest, IPile& src,
+			       unsigned int start, unsigned int end);
    //@}
 
    bool performCommand (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
@@ -185,7 +189,7 @@ class Game : public Gtk::Table {
    // Handling of won cards (if any)
    bool wonCardsSelected (GdkEvent *event);
    virtual void showWonCards (bool show = true, unsigned int style = -1U);
-   int  enableWonCards (ICardPile& pile) {
+   int  enableWonCards (IPile& pile) {
       pWonPile = &pile;
       return enableActWonCards (); }
    void disableWonCards ();
@@ -194,7 +198,7 @@ class Game : public Gtk::Table {
    void sortWonByColour ();
 
    Gtk::Statusbar& status;
-   CardSet& cards;
+   Set& cards;
 
    std::vector<sigc::connection> activeCards;
    const std::vector<Player*>&   actPlayers;
@@ -227,7 +231,7 @@ class Game : public Gtk::Table {
    } stati;
 
    std::vector<sigc::connection> wonCards;     // Connections to show won cards
-   ICardPile*                    pWonPile;
+   IPile*                        pWonPile;
    Gtk::Menu*                    pMenuPopSort;
 
    std::string cardOrder;
@@ -274,5 +278,7 @@ class TGame : public Parent {
    Controller& obj;
    PCALLBACK pCallback;
 };
+
+}
 
 #endif

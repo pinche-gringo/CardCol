@@ -37,9 +37,9 @@
 
 #include <XGP/XAttribute.h>
 
-#include <ScoreDlg.h>
-#include <CardImgs.h>
-#include <ComputerPlayer.h>
+#include <card/Images.h>
+#include <card/ScoreDlg.h>
+#include <card/ComputerPlayer.h>
 
 #ifdef WITH_BURACO
 #  include "Buraco.h"
@@ -326,18 +326,18 @@ void CardgameAppl::readINIFile (const char* pFile) {
       INIATTR2 (Game, unsigned int, CardgameCollection::HEIGHT, WindowHeight);
       INIATTR2 (Game, int, CardgameCollection::POSX, WindowPosX);
       INIATTR2 (Game, int, CardgameCollection::POSY, WindowPosY);
-      INIATTR2 (Game, int, ScoreDlg::LASTX, ScoreDlgPosX);
-      INIATTR2 (Game, int, ScoreDlg::LASTY, ScoreDlgPosY);
+      INIATTR2 (Game, int, Card::ScoreDlg::LASTX, ScoreDlgPosX);
+      INIATTR2 (Game, int, Card::ScoreDlg::LASTY, ScoreDlgPosY);
       INIATTR2 (Game, std::string, options.co.decks, CardFront);
       INIATTR2 (Game, std::string, options.co.back, CardBack);
-      INIATTR2 (Game, unsigned int, ComputerPlayer::TIMEOUT, Delay);
+      INIATTR2 (Game, unsigned int, Card::ComputerPlayer::TIMEOUT, Delay);
 
       INILIST2 (Player, Glib::ustring, options.names);
 
       INISECTION (Cards);
       _inifile_.addEntity (options.co, Cards);
-      INIATTR2 (Cards, unsigned int, CardImages::HEIGHT, Height);
-      INIATTR2 (Cards, unsigned int, CardImages::WIDTH, Width);
+      INIATTR2 (Cards, unsigned int, Card::Images::HEIGHT, Height);
+      INIATTR2 (Cards, unsigned int, Card::Images::WIDTH, Width);
 
 #ifdef WITH_BURACO
       INISECTION (Buraco);
@@ -386,8 +386,8 @@ void CardgameAppl::readINIFile (const char* pFile) {
    }
 
    // Correct the timeout of the computer player
-   if (ComputerPlayer::TIMEOUT < 100)
-      ComputerPlayer::TIMEOUT = 100;
+   if (Card::ComputerPlayer::TIMEOUT < 100)
+      Card::ComputerPlayer::TIMEOUT = 100;
 
 #ifdef WITH_ROVHULT
    CardgameCollection::checkRovhultSpecialCards ();

@@ -4,10 +4,10 @@
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
+//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 25.07.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2005, 2008
+//COPYRIGHT   : Copyright (C) 2003 - 2005, 2008, 2009
 
 // This file is part of CardCol.
 //
@@ -33,6 +33,8 @@
 #include "RemotePlayer.h"
 
 
+namespace Card {
+
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
@@ -52,4 +54,6 @@ bool RemotePlayer::makeTurn (Game* game) {
 
    game->endTurn ();
    return false;
+}
+
 }

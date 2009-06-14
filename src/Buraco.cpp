@@ -47,11 +47,11 @@
 #include <YGP/Tokenize.h>
 #include <YGP/AttrParse.h>
 
-#include <Human.h>
-#include <ScoreDlg.h>
-#include <CardImgs.h>
-#include <CardWindow.h>
-#include <ComputerPlayer.h>
+#include <card/Human.h>
+#include <card/ScoreDlg.h>
+#include <card/Images.h>
+#include <card/Window.h>
+#include <card/ComputerPlayer.h>
 
 #include "Buraco.h"
 
@@ -73,16 +73,16 @@ unsigned int Buraco::CARDS2DEAL (11);
 /// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
-                CardSet& cardset, const std::vector<Player*>& player,
+                Card::Set& cardset, const std::vector<Card::Player*>& player,
                 unsigned int posPlayer, YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10),
      nameTeams (), startPlayer (-1U), info (), newPile (_("New pile")),
-     staple (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWBACK),
-     dumped (ICardPile::TOTALLY_COMPRESSED, ICardPile::SHOWFACE),
+     staple (Card::IPile::TOTALLY_COMPRESSED, Card::IPile::SHOWBACK),
+     dumped (Card::IPile::TOTALLY_COMPRESSED, Card::IPile::SHOWFACE),
      dumpedTop (), stapleTop (), aDNDHand (), aDNDTable (), gStatus (),
      undo (), pScoreDlg (NULL), idMrg (), menuUndo (), menuSort (), menuSort2 (),
      menuShowScoreDlg () {
-   TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
+   TRACE9 ("Buraco::Buraco (Box&, Statusbar&, Card::Set&, const "
            "std::vector<Glib::ustring>&)");
 
    for (unsigned int i (0); i < (NUM_PLAYERS >> 1); ++i) {
@@ -92,7 +92,7 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
        scrlTable[i]->show ();
    }
 
-   TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
+   TRACE9 ("Buraco::Buraco (Box&, Statusbar&, Card::Set&, const "
            "std::vector<Glib::ustring>&) - Init common staples");
 
    boxTeam[0].pack_end (newPile, Gtk::PACK_EXPAND_WIDGET, 5);
@@ -105,12 +105,12 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       hands[i].show ();
       names[i].show ();
    }
-   hands[0].setStyle (ICardPile::COMPRESSED);
-   hands[0].setShowOption (ICardPile::SHOWFACE);
+   hands[0].setStyle (Card::IPile::COMPRESSED);
+   hands[0].setShowOption (Card::IPile::SHOWFACE);
    hands[0].show ();
    names[0].show ();
 
-   TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
+   TRACE9 ("Buraco::Buraco (Box&, Statusbar&, Card::Set&, const "
            "std::vector<Glib::ustring>&) - Attach widgets");
    attach (hands[0], 3, 10, 4, 5, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
    attach (names[0], 3, 10, 5, 6, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
@@ -121,7 +121,7 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    attach (*scrlTable[0], 0, 10, 3, 4, Gtk::EXPAND | Gtk::FILL,
            Gtk::EXPAND | Gtk::FILL, 0, 5);
 
-   TRACE9 ("Buraco::Buraco (Box&, Statusbar&, CardSet&, const "
+   TRACE9 ("Buraco::Buraco (Box&, Statusbar&, Card::Set&, const "
            "std::vector<Glib::ustring>&) - Show widgets");
    newPile.show ();
    staple.show ();
@@ -153,7 +153,7 @@ Buraco::~Buraco () {
    delete pScoreDlg;
 
    // Free team names
-   for (std::vector<Player*>::iterator i (nameTeams.begin ());
+   for (std::vector<Card::Player*>::iterator i (nameTeams.begin ());
         i != nameTeams.end (); ++i)
       delete *i;
 
@@ -195,7 +195,7 @@ void Buraco::makeMove (unsigned int player) {
    // Turn back jokers
    if (undo.pickUp) {
       unsigned int oldPlayer (gStatus.startTurn ? ((player - 1) & 0x3) : player);
-      CardHPile* pile (&hands[oldPlayer]);
+      Card::HPile* pile (&hands[oldPlayer]);
 
       TRACE5 ("Buraco::makeMove (unsigned int) - Player with monos: " << oldPlayer);
       if (oldPlayer && (pile->size () > CARDS2DEAL)) {
@@ -228,7 +228,7 @@ bool Buraco::cleanup () {
    // First cleanup cerrado made in the last turn
    cleanCerrado (player);
 
-   ICardPile& source (hands[player]);
+   Card::IPile& source (hands[player]);
    if (gStatus.pickUpPlayed) {
       Check3 (dumped.size ());
       gStatus.pickUpPlayed = 0;
@@ -266,12 +266,12 @@ void Buraco::playCards () {
 	   == (player >> 1)))
       ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = 0x3;
 
-   ICardPile& playerPile (hands[player]);
+   Card::IPile& playerPile (hands[player]);
    if (gStatus.startTurn) {
       Check3 (dumped.size ());
       gStatus.startTurn = 0;
 
-      CardWidget& dumpedCard (dumped.getTopCard ());
+      Card::Widget& dumpedCard (dumped.getTopCard ());
       if (gStatus.startGame
           ? (isJoker (dumpedCard)
              || playerPile.getFittingCard (dumpedCard, &cardDistance) != playerPile.end ())
@@ -329,7 +329,7 @@ void Buraco::playCards () {
 	    flipCards2Play (playerPile, pos1Play, pos2Play);
 
             BuracoPile& newPile (makeNewPile (player & 1));
-	    CardPileWindows& win (animateCards2 (newPile, playerPile, pos1Play, pos2Play));
+	    Card::PileWindows& win (animateCards2 (newPile, playerPile, pos1Play, pos2Play));
 	    win.sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
 	    win.addWindow (posTarget, dumped, dumped.size () - 1, dumped.size () - 1);
 	    return;
@@ -387,11 +387,11 @@ void Buraco::playCards () {
 int Buraco::executeMove (unsigned int player, unsigned int& pos1Play, unsigned int& pos2Play) {
    TRACE6 ("Buraco::executeMove (player) - " << player);
 
-   ICardPile& playerPile (hands[player]);
+   Card::IPile& playerPile (hands[player]);
    unsigned int target;
 
    // Check if any card can be added to an existing pile
-   for (ICardPile::const_iterator p (playerPile.begin ());
+   for (Card::IPile::const_iterator p (playerPile.begin ());
 	p != playerPile.end (); ++p) {
       TRACE8 ("Buraco::executeMove (unsigned int) - Adding card " << **p << '?');
       target = cardFitsOnPlayedPile (player, p - playerPile.begin ());
@@ -455,10 +455,10 @@ int Buraco::executeMove (unsigned int player, unsigned int& pos1Play, unsigned i
    if (!unfinishedMonoPiles[player & 1]
        && ((points[player & 1] > 100)
 	   || (reserve[player & 1].size () && canGetRidOfCards (player)))) {
-      ICardPile::const_iterator ci (playerPile.begin ());
+      Card::IPile::const_iterator ci (playerPile.begin ());
       // If pile still has normal cards (no joker)
       while (!((ci == playerPile.end ()) || isJoker (**ci))) {
-	 ICardPile::const_iterator next (playerPile.getFittingCard (**ci, ci + 1,
+	 Card::IPile::const_iterator next (playerPile.getFittingCard (**ci, ci + 1,
                                                                     &cardDistance));
 	 if ((next != playerPile.end ())
              && isJoker (*playerPile[playerPile.size () - 1])) {
@@ -527,7 +527,7 @@ int Buraco::executeMove (unsigned int player, unsigned int& pos1Play, unsigned i
    // No more cards to put down: Find a card to dump
    TRACE8 ("Buraco::executeMove (unsigned int) - Searching for a card to dump");
    for (i = 0; i < playerPile.size () - 1; ++i) {
-      ICardPile::const_iterator p (playerPile.getFittingCard (*playerPile[i], playerPile.begin (),
+      Card::IPile::const_iterator p (playerPile.getFittingCard (*playerPile[i], playerPile.begin (),
                                                               &cardDistance));
       if (static_cast<unsigned int> (p - playerPile.begin ()) == i)
          p = playerPile.getFittingCard (*playerPile[i], ++p, &cardDistance);
@@ -572,8 +572,8 @@ void Buraco::start () {
       for (unsigned int i (0); i < NUM_PLAYERS; ++i)
          hands[i].sort (compByNumberWithJokers);
       for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-          hands[i].setStyle (ICardPile::QUITE_COMPRESSED);
-          hands[i].setShowOption (ICardPile::SHOWBACK);
+          hands[i].setStyle (Card::IPile::QUITE_COMPRESSED);
+          hands[i].setShowOption (Card::IPile::SHOWBACK);
       }
 
       dumped.setTopCard (staple.removeTopCard ());
@@ -834,8 +834,8 @@ void Buraco::dumpedSelected () {
    disableHuman ();
 
    if (gameStatus () != STOPPED) {
-      ICardPile* target (NULL);
-      CardWidget& card (dumped.getTopCard ());
+      Card::IPile* target (NULL);
+      Card::Widget& card (dumped.getTopCard ());
       if (!gStatus.startGame)
 	 try {
 	    if (isJoker (card))
@@ -896,7 +896,7 @@ void Buraco::dumpedSelected () {
 	    gStatus.pickUpPlayed = 1;
       }
       Check2 (target);
-      CardWindow& win (animateCard (*target, dumped, dumped.size () - 1));
+      Card::Window& win (animateCard (*target, dumped, dumped.size () - 1));
       win.sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
    }
    else {
@@ -939,7 +939,7 @@ void Buraco::registerHandDND (unsigned int iCard) {
    TRACE9 ("Buraco::registerHandDND (unsigned int) - Card: " << iCard << " ("
            << *hands[0][iCard] << " = " << hands[0][iCard] << ')');
 
-   CardWidget& card (*hands[0][iCard]);
+   Card::Widget& card (*hands[0][iCard]);
    Check3 (aDNDHand.find (&card) == aDNDHand.end ());
 
    // Card accepts drops from hand and drags from table
@@ -959,12 +959,12 @@ void Buraco::registerHandDND (unsigned int iCard) {
 /// Stops the drag´n´drop abilities of the passed card
 /// \param card Card to unregister of dnd
 //-----------------------------------------------------------------------------
-void Buraco::unregisterHandDND (CardWidget& card) {
-   TRACE9 ("Buraco::unregisterHandDND (CardWidget&) - Card: " << card
+void Buraco::unregisterHandDND (Card::Widget& card) {
+   TRACE9 ("Buraco::unregisterHandDND (Card::Widget&) - Card: " << card
            << " -> Address: " << &card);
    Check1 (aDNDHand.size ());
 
-   std::map<CardWidget*, CONNECTIONS>::iterator i (aDNDHand.find (&card));
+   std::map<Card::Widget*, CONNECTIONS>::iterator i (aDNDHand.find (&card));
    Check1 (i != aDNDHand.end ());
 
    card.drag_dest_unset ();
@@ -988,10 +988,10 @@ void Buraco::registerTableDND (unsigned int pile, unsigned int start, unsigned i
    Check1 (start <= end);
    Check1 (end < tablePiles[0][pile]->size ());
 
-   ICardPile& tmp (*tablePiles[0][pile]);
+   Card::IPile& tmp (*tablePiles[0][pile]);
    pile <<= 8;
    for (; start <= end; ++start) {
-      CardWidget& card (*tmp[start]);
+      Card::Widget& card (*tmp[start]);
       unregisterTableDND (card);
       registerTableDND (card, pile + start);
    }
@@ -1002,8 +1002,8 @@ void Buraco::registerTableDND (unsigned int pile, unsigned int start, unsigned i
 /// \param card Card to register
 /// \param nr Number of card in pile
 //-----------------------------------------------------------------------------
-void Buraco::registerTableDND (CardWidget& card, unsigned int nr) {
-   TRACE9 ("Buraco::registerTableDND (CardWidget&, unsigned int) - " << card
+void Buraco::registerTableDND (Card::Widget& card, unsigned int nr) {
+   TRACE9 ("Buraco::registerTableDND (Card::Widget&, unsigned int) - " << card
            << " = " << std::hex << nr << " - " << &card << std::dec);
 
    // Card accepts drops from hand and drags from table
@@ -1016,12 +1016,12 @@ void Buraco::registerTableDND (CardWidget& card, unsigned int nr) {
 /// Stops the drag´n´drop abilities of the passed card
 /// \param card Card to de-register
 //-----------------------------------------------------------------------------
-void Buraco::unregisterTableDND (CardWidget& card) {
+void Buraco::unregisterTableDND (Card::Widget& card) {
    TRACE9 ("Buraco::unregisterTableDND (unsigned int) - Card: " << card
            << " - " << &card );
    Check1 (aDNDTable.size () > 1);
 
-   std::map<CardWidget*, sigc::connection>::iterator i (aDNDTable.find (&card));
+   std::map<Card::Widget*, sigc::connection>::iterator i (aDNDTable.find (&card));
    Check1 (i != aDNDTable.end ());
 
    card.drag_dest_unset ();
@@ -1056,7 +1056,7 @@ void Buraco::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
 
    context->drag_finish (true, false, time);                     // End old DND
 
-   CardWidget& cardMoved (hands[0].remove (*pValue));
+   Card::Widget& cardMoved (hands[0].remove (*pValue));
    hands[0].insert (cardMoved, card);                     // Insert moved card
 
    // Adapt dnd-settigns
@@ -1138,7 +1138,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       if (!humanPilesOK (iCard >> 8))
 	 throw Glib::ustring (_("You need to fill up other piles first!"));
 
-      CardWidget& moved (*hands[0][*pValue]);
+      Card::Widget& moved (*hands[0][*pValue]);
       TRACE4 ("Buraco::cardDroppedOnTable (...) - Card dropped: " << moved);
 
       // Move dropped card to a (new) pile on the table
@@ -1332,10 +1332,10 @@ void Buraco::registerHandDND (unsigned int start, unsigned int end) {
 /// \param pile Pile to inspect
 /// \returns bool True, if there are only jokers (or pile is empty)
 //-----------------------------------------------------------------------------
-bool Buraco::containsOnlyJoker (const std::vector<CardWidget*>& pile) {
-   TRACE8 ("Buraco::containsOnlyJoker (const std::vector<CardWidget*>&)");
+bool Buraco::containsOnlyJoker (const std::vector<Card::Widget*>& pile) {
+   TRACE8 ("Buraco::containsOnlyJoker (const std::vector<Card::Widget*>&)");
 
-   for (std::vector<CardWidget*>::const_iterator i (pile.begin ());
+   for (std::vector<Card::Widget*>::const_iterator i (pile.begin ());
         i != pile.end (); ++i) {
       Check3 (*i);
       if (!isJoker (**i))
@@ -1349,8 +1349,8 @@ bool Buraco::containsOnlyJoker (const std::vector<CardWidget*>& pile) {
 /// \param pile Pile to inspect
 /// \returns bool True, if there are no jokers
 //-----------------------------------------------------------------------------
-bool Buraco::containsNoJoker (const std::vector<CardWidget*>& pile) {
-   for (std::vector<CardWidget*>::const_iterator i (pile.begin ());
+bool Buraco::containsNoJoker (const std::vector<Card::Widget*>& pile) {
+   for (std::vector<Card::Widget*>::const_iterator i (pile.begin ());
         i != pile.end (); ++i) {
       Check3 (*i);
       if (isJoker (**i))
@@ -1377,7 +1377,7 @@ void Buraco::addBuraco (unsigned int player) {
    sort (reserve[player & 1].begin (), reserve[player & 1].end (),
 	 compByNumberWithJokers);
 
-   for (std::vector<CardWidget*>::reverse_iterator i (reserve[player & 1].rbegin ());
+   for (std::vector<Card::Widget*>::reverse_iterator i (reserve[player & 1].rbegin ());
 	i != reserve[player & 1].rend (); ++i)
       hands[player].insert (**i, 0);
    reserve[player & 1].clear ();
@@ -1404,22 +1404,22 @@ void Buraco::addBuraco (unsigned int player) {
 /// \param show Flag if the jokers should be shown or hidden
 /// \returns bool false
 //-----------------------------------------------------------------------------
-bool Buraco::showJoker (ICardPile* pile, unsigned int cJokers, bool show) {
-   TRACE9 ("Buraco::showJoker (ICardPile*, unsigned int, bool) - " << cJokers);
+bool Buraco::showJoker (Card::IPile* pile, unsigned int cJokers, bool show) {
+   TRACE9 ("Buraco::showJoker (Card::IPile*, unsigned int, bool) - " << cJokers);
    Check1 (cJokers);
    Check1 ((cJokers + CARDS2DEAL) <= pile->size ());
 
-   ICardPile::PileStyle opt (show ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
-   for (ICardPile::iterator i (pile->begin () + CARDS2DEAL); i != pile->end (); ++i) {
+   Card::IPile::PileStyle opt (show ? Card::IPile::COMPRESSED : Card::IPile::VERY_COMPRESSED);
+   for (Card::IPile::iterator i (pile->begin () + CARDS2DEAL); i != pile->end (); ++i) {
       show ? (*i)->showFace () : (*i)->showBack ();
       pile->resize (**i, opt);
    }
-   pile->resize (CARDS2DEAL - 1 + cJokers, ICardPile::NORMAL);
+   pile->resize (CARDS2DEAL - 1 + cJokers, Card::IPile::NORMAL);
 
    if (show)
       Glib::signal_timeout ().connect
 	 (bind (sigc::ptr_fun (&Buraco::showJoker), pile, cJokers, false),
-	  ComputerPlayer::TIMEOUT - 50);
+	  Card::ComputerPlayer::TIMEOUT - 50);
    return false;
 }
 
@@ -1455,7 +1455,7 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
    Check1 (player);
    Check1 (player < NUM_PLAYERS);
    Check1 (iCard < hands[player].size ());
-   CardWidget& card (*hands[player][iCard]);
+   Card::Widget& card (*hands[player][iCard]);
    TRACE3 ("Buraco::cardFitsOnPlayedPile (unsigned int, unsigned int) - Card " << card);
 
    unsigned int bestPile (-1U);
@@ -1529,9 +1529,9 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
 /// \param card Card to inspect
 /// \returns bool True if card is a joker
 //-----------------------------------------------------------------------------
-bool Buraco::isJoker (const CardWidget& card) {
-   return ((card.number () == CardWidget::TWO)
-           || (card.number () > CardWidget::ACE));
+bool Buraco::isJoker (const Card::Widget& card) {
+   return ((card.number () == Card::Widget::TWO)
+           || (card.number () > Card::Widget::ACE));
 }
 
 //-----------------------------------------------------------------------------
@@ -1578,7 +1578,7 @@ void Buraco::updateInfo () {
 /// \param card Card to check
 /// \returns Position where card can be played to, or -1 if card does not fit
 //-----------------------------------------------------------------------------
-int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
+int Buraco::cardFitsOnPile (unsigned int iPile, const Card::Widget& card) const {
    Check1 (iPile < tablePiles[currentPlayer () & 1].size ());
    BuracoPile& pile (*tablePiles[currentPlayer () & 1][iPile]);
    Check2 (pile.size ()); Check2 (pile.size () < 7);
@@ -1590,7 +1590,7 @@ int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
       if (pile.getPosJoker ())
          return isJoker (card) ? 0 : -1;
       else {
-         ICardPile::const_iterator pCard
+         Card::IPile::const_iterator pCard
              (hands[currentPlayer ()].getFittingCard (card, &cardDistance));
          if (*pCard == &card)
              pCard = hands[currentPlayer ()].getFittingCard (card, ++pCard,
@@ -1605,16 +1605,16 @@ int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
       if ((pile.size () > 1) || isJoker (card))
           return pos;
       else {
-         const CardHPile& hand (hands[currentPlayer ()]);
+         const Card::HPile& hand (hands[currentPlayer ()]);
          if (!containsNoJoker (hand))
             return pos;
 
-         CardWidget& pileCard (*pile[pile.getPosFirst ()]);
+         Card::Widget& pileCard (*pile[pile.getPosFirst ()]);
          int dist (cardDistance (pileCard, card));
          Check3 ((dist > -2) && (dist < 2));
          int cmp (0);
 
-         ICardPile::const_iterator pCard (hand.begin ());
+         Card::IPile::const_iterator pCard (hand.begin ());
          do {
             pCard = hand.getFittingCard (pileCard, pCard, &cardDistance);
             if (*pCard == &card)
@@ -1622,7 +1622,7 @@ int Buraco::cardFitsOnPile (unsigned int iPile, const CardWidget& card) const {
             if (pCard == hand.end ())
                return -1;
 
-            TRACE8 ("Buraco::cardFitsOnPile (unsigned int, const CardWidget&) const -  "
+            TRACE8 ("Buraco::cardFitsOnPile (unsigned int, const Card::Widget&) const -  "
                     "Dist: " << dist << "<->" << cardDistance (**pCard, card));
 
             cmp = dist - cardDistance (**pCard, card);
@@ -1662,8 +1662,8 @@ void Buraco::sendMoveCard (unsigned int pile, unsigned int from, unsigned int to
 //-----------------------------------------------------------------------------
 void Buraco::playOpen (bool open) {
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      hands[i].setShowOption (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
-      hands[i].setStyle (open ? ICardPile::COMPRESSED : ICardPile::QUITE_COMPRESSED);
+      hands[i].setShowOption (open ? Card::IPile::SHOWFACE : Card::IPile::SHOWBACK);
+      hands[i].setStyle (open ? Card::IPile::COMPRESSED : Card::IPile::QUITE_COMPRESSED);
    }
 }
 
@@ -1671,7 +1671,7 @@ void Buraco::playOpen (bool open) {
 /// Creates the combined team names from the players
 /// \param names Array to receive groups
 //-----------------------------------------------------------------------------
-void Buraco::makeTeamNames (std::vector<Player*>& names) const {
+void Buraco::makeTeamNames (std::vector<Card::Player*>& names) const {
    Check1 (actPlayers.size () >= NUM_PLAYERS);
 
    // First delete old names
@@ -1686,8 +1686,8 @@ void Buraco::makeTeamNames (std::vector<Player*>& names) const {
       name.replace (name.find ("%2"), 2, actPlayers[i]->getName ());
       name.replace (name.find ("%3"), 2, actPlayers[i + 2]->getName ());
 
-      TRACE8 ("Buraco::makeTeamNames (std::vector<Player*>) - Add: " << name);
-      names.push_back (new Human (name));
+      TRACE8 ("Buraco::makeTeamNames (std::vector<Card::Player*>) - Add: " << name);
+      names.push_back (new Card::Human (name));
    }
 }
 
@@ -1702,7 +1702,7 @@ void Buraco::endGame () {
 
    if (!pScoreDlg) {
       menuShowScoreDlg->set_sensitive ();
-      pScoreDlg = ScoreDlg::create (nameTeams);
+      pScoreDlg = Card::ScoreDlg::create (nameTeams);
       pScoreDlg->get_window ()->set_transient_for (get_window ());
    }
 
@@ -1733,7 +1733,7 @@ void Buraco::endGame () {
    }
 
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      for (std::vector<CardWidget*>::const_iterator c (hands[i].begin ());
+      for (std::vector<Card::Widget*>::const_iterator c (hands[i].begin ());
            c != hands[i].end (); ++c)
          points[i & 1] -= getPoints (**c);
 
@@ -1752,8 +1752,8 @@ void Buraco::endGame () {
 
    // Move cards of partners to first player and show them
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      hands[i].setStyle (ICardPile::COMPRESSED);
-      hands[i].setShowOption (ICardPile::SHOWFACE);
+      hands[i].setStyle (Card::IPile::COMPRESSED);
+      hands[i].setShowOption (Card::IPile::SHOWFACE);
    }
 
    status.pop ();
@@ -1770,7 +1770,7 @@ void Buraco::endGame () {
 /// \param card Card to inspect
 /// \returns unsigned int Value of the card
 //-----------------------------------------------------------------------------
-unsigned int Buraco::getPoints (const CardWidget& card) {
+unsigned int Buraco::getPoints (const Card::Widget& card) {
    // Card:                 2   3  4  5  6  7  8   9   10  J   Q   K   A   Joker
    static char values[] = { 25, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 10, 20, 50 };
    Check3 (card.number () < static_cast<int> (sizeof (values) / sizeof (values[0])));
@@ -1787,11 +1787,11 @@ unsigned int Buraco::getPoints (const CardWidget& card) {
 bool Buraco::canGetRidOfCards (unsigned int player) const {
    TRACE5 ("Buraco::canGetRidOfCards (unsigned int) - Checking player " << player);
    std::bitset<160> used; Check3 (hands[player].size () < used.size ());
-   const CardHPile& pile (hands[player]);
+   const Card::HPile& pile (hands[player]);
 
    unsigned int cJokers (0);
    unsigned int piles (0);
-   for (ICardPile::const_iterator i (pile.begin ()); i != pile.end (); ++i) {
+   for (Card::IPile::const_iterator i (pile.begin ()); i != pile.end (); ++i) {
       if (used[i - pile.begin ()])
          continue;
 
@@ -1803,7 +1803,7 @@ bool Buraco::canGetRidOfCards (unsigned int player) const {
 
       // If there are equal cards (and the first card is not already marked as
       // used: Mark both card as used
-      ICardPile::const_iterator o (pile.getFittingCard (**i, i + 1, &cardDistance));
+      Card::IPile::const_iterator o (pile.getFittingCard (**i, i + 1, &cardDistance));
       if ((o != pile.end ()) && !used[o - pile.begin ()]) {
          ++piles;
          used.set (i - pile.begin ());
@@ -1887,7 +1887,7 @@ bool Buraco::canClosePile (unsigned int player, unsigned int pile) const {
    // Make a copy of the original pile
    BuracoPile copy;
    for (BuracoPile::const_iterator i (orig.begin ()); i != orig.end (); ++i)
-       copy.append (*new CardWidget (**i));
+       copy.append (*new Card::Widget (**i));
 
    unsigned int pos, move;
    for (unsigned int i (0); i < 2; ++i) {
@@ -1898,7 +1898,7 @@ bool Buraco::canClosePile (unsigned int player, unsigned int pile) const {
              Check3 (move != copy.getPosJoker ());
              copy.move (move, copy.getPosJoker ());
           }
-	  copy.insert (*new CardWidget (*hands[player][i]), pos);
+	  copy.insert (*new Card::Widget (*hands[player][i]), pos);
 
           if (copy.getPosition4Card (*hands[player][!i], pos, move)) {
              isOK = true;
@@ -1923,14 +1923,13 @@ bool Buraco::canClosePile (unsigned int player, unsigned int pile) const {
 /// \param withJokers Flag, if jokers should be inspected
 /// \returns bool True, if the pile contains a matching pair
 //-----------------------------------------------------------------------------
-bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
+bool Buraco::pileHasFittingPair (const Card::IPile& pile, const Card::Widget& card,
                                  bool withJokers) {
-   TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&, const CardWidget&,"
+   TRACE3 ("Buraco::pileHasFittingPair (const Card::IPile&, const Card::Widget&,"
            " bool) - " << card);
 
    if (withJokers) {
-      ICardPile::const_iterator i (pile.getFittingCard (card, pile.begin (),
-                                                        &cardDistance));
+      Card::IPile::const_iterator i (pile.getFittingCard (card, pile.begin (), &cardDistance));
       if (*i == &card)
          i = pile.getFittingCard (card, ++i, &cardDistance);
       if ((i != pile.end ()) && !containsNoJoker (pile))
@@ -1946,10 +1945,10 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
 /// \param exclude Card to not inspect (can be NULL)
 /// \returns bool True, if the pile contains a matching pair
 //-----------------------------------------------------------------------------
-bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget* exclude) {
-   TRACE3 ("Buraco::pileHasFittingPair (const ICardPile&, const CardWidget*)");
+bool Buraco::pileHasFittingPair (const Card::IPile& pile, const Card::Widget* exclude) {
+   TRACE3 ("Buraco::pileHasFittingPair (const Card::IPile&, const Card::Widget*)");
 
-   for (std::vector<CardWidget*>::const_iterator p (pile.begin ());
+   for (std::vector<Card::Widget*>::const_iterator p (pile.begin ());
         p != pile.end (); ++p)
       if (*p != exclude)
          if ((pile.getFittingCard (**p, pile.begin (), &cardDistance) != p)
@@ -1965,7 +1964,7 @@ bool Buraco::pileHasFittingPair (const ICardPile& pile, const CardWidget* exclud
 /// \param b Card to compare
 /// \returns bool True, if a < b
 //-----------------------------------------------------------------------------
-bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
+bool Buraco::compByNumberWithJokers (const Card::Widget* a, const Card::Widget* b) {
    // Card:                 2   3  4  5  6  7  8  9  10 J  Q   K  A   Joker
    static char values[] = { 12, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13 };
    Check3 (a->number () < static_cast<int> (sizeof (values) / sizeof (values[0])));
@@ -1981,13 +1980,13 @@ bool Buraco::compByNumberWithJokers (const CardWidget* a, const CardWidget* b) {
 /// \param b Card to compare
 /// \returns bool True, if a < b
 //-----------------------------------------------------------------------------
-bool Buraco::compByColourWithJokers (const CardWidget* a, const CardWidget* b) {
+bool Buraco::compByColourWithJokers (const Card::Widget* a, const Card::Widget* b) {
    switch (a->number ()) {
-   case CardWidget::TWO:
-      return b->number () == CardWidget::UNREACHABLE;
+   case Card::Widget::TWO:
+      return b->number () == Card::Widget::UNREACHABLE;
       break;
 
-   case CardWidget::UNREACHABLE:
+   case Card::Widget::UNREACHABLE:
       return false;
       break;
 
@@ -2005,7 +2004,7 @@ bool Buraco::compByColourWithJokers (const CardWidget* a, const CardWidget* b) {
 /// \param b Card to compare
 /// \returns int Distance of the two passed cards (a - b)
 //----------------------------------------------------------------------------
-int Buraco::cardDistance (const CardWidget& a, const CardWidget& b) {
+int Buraco::cardDistance (const Card::Widget& a, const Card::Widget& b) {
    return cardDistance (a, b, true);
 }
 
@@ -2017,8 +2016,8 @@ int Buraco::cardDistance (const CardWidget& a, const CardWidget& b) {
 /// \param aceIsOne Flag, if aces should (also) be treated as one
 /// \returns int Distance of the two passed cards (a - b)
 //----------------------------------------------------------------------------
-int Buraco::cardDistance (const CardWidget& a, const CardWidget& b, bool aceIsOne) {
-   TRACE9 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
+int Buraco::cardDistance (const Card::Widget& a, const Card::Widget& b, bool aceIsOne) {
+   TRACE9 ("Buraco::cardDistance (2x const Card::Widget&, bool) - "
            << a << "<->" << b);
    // Special handling of jokers
    bool aJoker (isJoker (a));
@@ -2030,16 +2029,16 @@ int Buraco::cardDistance (const CardWidget& a, const CardWidget& b, bool aceIsOn
       return (a.number () == b.number ()) ? 0 : 99;
 
    if (aceIsOne) {                        // Special handling of the ace like 1
-      TRACE9 ("Buraco::cardDistance (2x const CardWidget&, bool) - Ace");
-      if ((a.number () == CardWidget::ACE)
-          && (b.number () < CardWidget::EIGHT))
+      TRACE9 ("Buraco::cardDistance (2x const Card::Widget&, bool) - Ace");
+      if ((a.number () == Card::Widget::ACE)
+          && (b.number () < Card::Widget::EIGHT))
          return -static_cast<int> (b.number ());
-      else if ((b.number () == CardWidget::ACE)
-               && (a.number () < CardWidget::EIGHT))
+      else if ((b.number () == Card::Widget::ACE)
+               && (a.number () < Card::Widget::EIGHT))
          return static_cast<int> (a.number ());
    }
 
-   TRACE9 ("Buraco::cardDistance (2x const CardWidget&, bool) - "
+   TRACE9 ("Buraco::cardDistance (2x const Card::Widget&, bool) - "
            "Distance: " << a.number () - b.number ());
    return a.number () - b.number ();
 }
@@ -2048,12 +2047,12 @@ int Buraco::cardDistance (const CardWidget& a, const CardWidget& b, bool aceIsOn
 /// Changes the names of the playing people
 /// \param newPlayer Array holding the new player
 //----------------------------------------------------------------------------
-void Buraco::changeNames (const std::vector<Player*>& newPlayer) {
+void Buraco::changeNames (const std::vector<Card::Player*>& newPlayer) {
    Game::changeNames (newPlayer);
    makeTeamNames (nameTeams);
 
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      TRACE1 ("Buraco::changeNames () " << i << ": " << newPlayer[i]->getName ());
+      TRACE1 ("Buraco::changeNames (...) " << i << ": " << newPlayer[i]->getName ());
       names[i].set_text (newPlayer[i]->getName ());
    }
 
@@ -2065,9 +2064,9 @@ void Buraco::changeNames (const std::vector<Player*>& newPlayer) {
 /// Returns the passed pile of the player
 /// \param player Number of player
 /// \param pile ID of the pile to return
-/// \returns ICardPile* Pointer to pile to use or NULL
+/// \returns Card::IPile* Pointer to pile to use or NULL
 //----------------------------------------------------------------------------
-ICardPile* Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
+Card::IPile* Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
    if (((pile > 3) && (pile < 100)) || (player >= NUM_PLAYERS))
       return NULL;
 
@@ -2086,10 +2085,10 @@ ICardPile* Buraco::getPileOfPlayer (unsigned int player, unsigned int pile) {
       return &hands[player];
    }
    return &((pile == 2)
-            ? static_cast<ICardPile&> (staple)
+            ? static_cast<Card::IPile&> (staple)
             : ((pile == 3)
-               ? static_cast<ICardPile&> (dumped)
-               : static_cast<ICardPile&> (hands[player])));
+               ? static_cast<Card::IPile&> (dumped)
+               : static_cast<Card::IPile&> (hands[player])));
 }
 
 //----------------------------------------------------------------------------
@@ -2124,7 +2123,7 @@ bool Buraco::handleMessage (unsigned int player, const std::string& message) thr
 
       if (iPile >= tablePiles[currentPlayer () & 1].size ())
          throw YGP::ParseError (N_("Invalid pile!"));
-      ICardPile& pile (*tablePiles[currentPlayer () & 1][iPile]);
+      Card::IPile& pile (*tablePiles[currentPlayer () & 1][iPile]);
       if ((card >= pile.size ()) || (dest >= pile.size ()))
          throw YGP::ParseError (N_("Invalid card!"));
 
@@ -2157,8 +2156,8 @@ bool Buraco::handleMessage (unsigned int player, const std::string& message) thr
 ///    - \c dest == 100 + pile/card: Played from hand to table pile \c pile
 /// \throw YGP::ParseError In case of an invalid value
 //----------------------------------------------------------------------------
-bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) throw (YGP::ParseError) {
-   TRACE8 ("Buraco::executeRemoteMove (ICardPile&, unsigned int) - " << dest);
+bool Buraco::executeRemoteMove (Card::IPile& pile, unsigned int dest) throw (YGP::ParseError) {
+   TRACE8 ("Buraco::executeRemoteMove (Card::IPile&, unsigned int) - " << dest);
    Check1 ((dest < 4) || (dest >= 100));
    Check2 (pos1Play != -1U);
    Check2 (pos2Play != -1U);
@@ -2171,7 +2170,7 @@ bool Buraco::executeRemoteMove (ICardPile& pile, unsigned int dest) throw (YGP::
 
    case 2: {
       Check3 (staple.size ());
-      CardWindow& win (animateCard (hands[currentPlayer ()], staple, staple.size () - 1));
+      Card::Window& win (animateCard (hands[currentPlayer ()], staple, staple.size () - 1));
       if (!currentPlayer ())
 	 win.sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
       return false;
@@ -2243,7 +2242,7 @@ void Buraco::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    grpAction->add (menuShowScoreDlg = Gtk::Action::create ("showScoreDlg", Gtk::Stock::EDIT,
 							   _("Show score dialog")),
 		   Gtk::AccelKey ("<shft><ctl>S"),
-		   bind (ptr_fun (&ScoreDlg::display), &pScoreDlg));
+		   bind (ptr_fun (&Card::ScoreDlg::display), &pScoreDlg));
 
    mgrUI->insert_action_group (grpAction);
    idMrg = mgrUI->add_ui_from_string (ui);
@@ -2350,14 +2349,14 @@ void Buraco::sortHandByColour () {
 
 //-----------------------------------------------------------------------------
 /// Actions to take when the cards are resized
-/// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
+/// \pre The cardsize must be set in Card::Images::WIDTH/HEIGHT
 //-----------------------------------------------------------------------------
 void Buraco::resizeCards () {
-   staple.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
-   dumped.set_size_request (CardImages::WIDTH, CardImages::HEIGHT);
+   staple.set_size_request (Card::Images::WIDTH, Card::Images::HEIGHT);
+   dumped.set_size_request (Card::Images::WIDTH, Card::Images::HEIGHT);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i)
-      hands[i].set_size_request (-1, CardImages::HEIGHT);
+      hands[i].set_size_request (-1, Card::Images::HEIGHT);
 
-   scrlTable[0]->set_size_request (-1, CardImages::HEIGHT + 5 * 15);
-   scrlTable[1]->set_size_request (-1, CardImages::HEIGHT + 5 * 15);
+   scrlTable[0]->set_size_request (-1, Card::Images::HEIGHT + 5 * 15);
+   scrlTable[1]->set_size_request (-1, Card::Images::HEIGHT + 5 * 15);
 }

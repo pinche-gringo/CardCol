@@ -19,25 +19,25 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <CardPile.h>
+#include <card/Pile.h>
 
 /**Class for piles in the Buraco cardgame
  */
-class BuracoPile : public CardVPile {
+class BuracoPile : public Card::VPile {
  public:
    BuracoPile ();
    virtual ~BuracoPile ();
 
-   virtual void setTopCard (CardWidget& newCard);
-   void setTopCard (CardWidget& newCard, bool visible) {
-      CardVPile::setTopCard (newCard, visible); }
+   virtual void setTopCard (Card::Widget& newCard);
+   void setTopCard (Card::Widget& newCard, bool visible) {
+      Card::VPile::setTopCard (newCard, visible); }
 
-   virtual unsigned int insert (CardWidget& card, unsigned int pos);
+   virtual unsigned int insert (Card::Widget& card, unsigned int pos);
 
-   virtual CardWidget& remove (CardWidget& card);
-   CardWidget& remove (CardWidget& card, bool visible);
-   virtual CardWidget& remove (unsigned int pos);
-   CardWidget& remove (unsigned int pos, bool visible);
+   virtual Card::Widget& remove (Card::Widget& card);
+   Card::Widget& remove (Card::Widget& card, bool visible);
+   virtual Card::Widget& remove (unsigned int pos);
+   Card::Widget& remove (unsigned int pos, bool visible);
 
    unsigned int getCardPoints () const;
    unsigned int getPotentialPoints () const { return status.points; }
@@ -49,11 +49,11 @@ class BuracoPile : public CardVPile {
    unsigned int getPosFirst () const { return status.posFirst; }
    unsigned int getPosLast () const { return status.posLast; }
 
-   bool getPosition4Card (const CardWidget& card, unsigned int& pos,
+   bool getPosition4Card (const Card::Widget& card, unsigned int& pos,
                           unsigned int& move) const;
 
  protected:
-   bool isValid (const CardWidget& card) const {
+   bool isValid (const Card::Widget& card) const {
       unsigned int pos, move;
       return getPosition4Card (card, pos, move); }
    void analyzePile ();

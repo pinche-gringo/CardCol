@@ -28,7 +28,7 @@
 
 #include <cardgames-cfg.h>
 
-#include "CardWidget.h"
+#include "card/Widget.h"
 
 #include "CardValue.h"
 
@@ -40,13 +40,13 @@ CardValue* CardValue::instance (NULL);
 /// Default constructor; Fills the values
 //-----------------------------------------------------------------------------
 CardValue::CardValue () {
-   for (unsigned nr (CardWidget::THREE); nr < CardWidget::TEN; ++nr)
-      insert (std::make_pair (nr, std::string (1, CardWidget::strNumber (static_cast<CardWidget::NUMBERS> (nr)))));
-   insert (std::make_pair (CardWidget::TEN, _("10")));
-   insert (std::make_pair (CardWidget::JACK, _("Jack")));
-   insert (std::make_pair (CardWidget::QUEEN, _("Queen")));
-   insert (std::make_pair (CardWidget::KING, _("King")));
-   insert (std::make_pair (CardWidget::ACE, _("Ace")));
+   for (unsigned nr (Card::Widget::THREE); nr < Card::Widget::TEN; ++nr)
+      insert (std::make_pair (nr, std::string (1, Card::Widget::strNumber (static_cast<Card::Widget::NUMBERS> (nr)))));
+   insert (std::make_pair (Card::Widget::TEN, _("10")));
+   insert (std::make_pair (Card::Widget::JACK, _("Jack")));
+   insert (std::make_pair (Card::Widget::QUEEN, _("Queen")));
+   insert (std::make_pair (Card::Widget::KING, _("King")));
+   insert (std::make_pair (Card::Widget::ACE, _("Ace")));
 }
 
 //-----------------------------------------------------------------------------

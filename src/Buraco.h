@@ -26,32 +26,34 @@
 #include <gtkmm/label.h>
 #include <gtkmm/frame.h>
 
-#include <CardSet.h>
-#include <CardPile.h>
-#include <CardWidget.h>
+#include <card/Set.h>
+#include <card/Pile.h>
+#include <card/Widget.h>
 
 #include "BuracoPile.h"
 
-#include <Game.h>
+#include <card/Game.h>
 
 
 namespace Gtk {
    class ScrolledWindow;
 }
 
-class ScoreDlg;
+namespace Card {
+   class ScoreDlg;
+}
 
 
 /**Class handling the Buraco cardgame
  */
-class Buraco : public Game {
+class Buraco : public Card::Game {
    friend class Settings;
    friend class CardgameAppl;
    friend class CardgameCollection;
 
  public:
-   Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-           const std::vector<Player*>& player, unsigned int posPlayer,
+   Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
+           const std::vector<Card::Player*>& player, unsigned int posPlayer,
            YGP::Mutex& mxSerialize);
    virtual ~Buraco ();
 
@@ -62,7 +64,7 @@ class Buraco : public Game {
    virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
    virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
 
-   virtual void changeNames (const std::vector<Player*>& newPlayer);
+   virtual void changeNames (const std::vector<Card::Player*>& newPlayer);
    virtual void resizeCards ();
 
    virtual unsigned int numberOfDecks () const { return 4; }
@@ -70,10 +72,10 @@ class Buraco : public Game {
 
    virtual bool handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
 
-   static unsigned int getPoints (const CardWidget& card);
-   static bool isJoker (const CardWidget& card);
-   static int cardDistance (const CardWidget& a, const CardWidget& b);
-   static int cardDistance (const CardWidget& a, const CardWidget& b,
+   static unsigned int getPoints (const Card::Widget& card);
+   static bool isJoker (const Card::Widget& card);
+   static int cardDistance (const Card::Widget& a, const Card::Widget& b);
+   static int cardDistance (const Card::Widget& a, const Card::Widget& b,
                             bool aceIsOne);
 
  private:
@@ -87,8 +89,8 @@ class Buraco : public Game {
    virtual bool enableHuman ();
    virtual void disableHuman ();
 
-   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
-   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target) throw (YGP::ParseError);
+   virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual bool executeRemoteMove (Card::IPile& pile, unsigned int target) throw (YGP::ParseError);
    virtual unsigned int getActTarget () const;
 
    //@Section Event handling
@@ -107,9 +109,9 @@ class Buraco : public Game {
    //@Section helper methods
    void enableHumanHand ();
    void enableCard (unsigned int pos);
-   static bool containsOnlyJoker (const std::vector<CardWidget*>& pile);
-   static bool containsNoJoker (const std::vector<CardWidget*>& pile);
-   static bool showJoker (ICardPile* pile, unsigned int cJokers, bool show);
+   static bool containsOnlyJoker (const std::vector<Card::Widget*>& pile);
+   static bool containsNoJoker (const std::vector<Card::Widget*>& pile);
+   static bool showJoker (Card::IPile* pile, unsigned int cJokers, bool show);
    void addBuraco (unsigned int player);
    void playCards ();
    int  executeMove (unsigned int player, unsigned int& pos1Play, unsigned int& pos2Play);
@@ -120,19 +122,19 @@ class Buraco : public Game {
                       unsigned int pile = -1U) const;
 
    void sendMoveCard (unsigned int pile, unsigned int from, unsigned int to) const;
-   static bool pileHasFittingPair (const ICardPile& pile, const CardWidget& card,
+   static bool pileHasFittingPair (const Card::IPile& pile, const Card::Widget& card,
                                    bool withJokers = false);
-   static bool pileHasFittingPair (const ICardPile& pile, const CardWidget* exclude = NULL);
-   static bool compByNumberWithJokers (const CardWidget* a, const CardWidget* b);
-   static bool compByColourWithJokers (const CardWidget* a, const CardWidget* b);
-   void makeTeamNames (std::vector<Player*>& names) const;
+   static bool pileHasFittingPair (const Card::IPile& pile, const Card::Widget* exclude = NULL);
+   static bool compByNumberWithJokers (const Card::Widget* a, const Card::Widget* b);
+   static bool compByColourWithJokers (const Card::Widget* a, const Card::Widget* b);
+   void makeTeamNames (std::vector<Card::Player*>& names) const;
    void setStartPlayer ();
    bool cleanup ();
 
    //@Section to handle piles on table
    BuracoPile& makeNewPile (unsigned int team);
    unsigned int cardFitsOnPlayedPile (unsigned int player, unsigned int card);
-   int  cardFitsOnPile (unsigned int pile, const CardWidget& card) const;
+   int  cardFitsOnPile (unsigned int pile, const Card::Widget& card) const;
    void removeCerrado (unsigned int player, BuracoPile& pile);
    void cleanCerrado (unsigned int player);
    void updateInfo ();
@@ -140,11 +142,11 @@ class Buraco : public Game {
 
    //@Section DND
    void registerTableDND (unsigned int pile, unsigned int start, unsigned int end);
-   void registerTableDND (CardWidget& card, unsigned int nr);
-   void unregisterTableDND (CardWidget& card);
+   void registerTableDND (Card::Widget& card, unsigned int nr);
+   void unregisterTableDND (Card::Widget& card);
    void registerHandDND (unsigned int start, unsigned int end);
    void registerHandDND (unsigned int iCard);
-   void unregisterHandDND (CardWidget& card);
+   void unregisterHandDND (Card::Widget& card);
    void getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
                      Gtk::SelectionData& data, guint info, guint32 time,
                      unsigned int cardPos);
@@ -156,23 +158,23 @@ class Buraco : public Game {
                             guint32 time, unsigned int cardPile);
 
    Gtk::Label names[NUM_PLAYERS];                        // Names of the player
-   CardHPile hands[NUM_PLAYERS];              // For all players: Cards in hand
+   Card::HPile hands[NUM_PLAYERS];            // For all players: Cards in hand
    std::vector<BuracoPile*> tablePiles[NUM_PLAYERS >> 1];     // Piles on table
-   std::vector<CardWidget*> reserve[NUM_PLAYERS >> 1];  // New staple for teams
+   std::vector<Card::Widget*> reserve[NUM_PLAYERS >> 1];  // New staple 4 teams
    int points[NUM_PLAYERS >> 1];                       // Number of points/team
    unsigned int unfinishedMonoPiles[NUM_PLAYERS >> 1];
 
    Gtk::ScrolledWindow* scrlTable[NUM_PLAYERS >> 1];   // Scroll-ctrls for table
 
-   std::vector<Player*> nameTeams;
+   std::vector<Card::Player*> nameTeams;
    unsigned int startPlayer;
 
    Gtk::Label info;
    Gtk::HBox  boxTeam[NUM_PLAYERS >> 1];
 
    Gtk::Label       newPile;
-   CardVInfoPile    staple;
-   CardVInfoPile    dumped;
+   Card::VInfoPile    staple;
+   Card::VInfoPile    dumped;
    sigc::connection dumpedTop;
    sigc::connection stapleTop;
 
@@ -180,8 +182,8 @@ class Buraco : public Game {
       sigc::connection connReceive;
       sigc::connection connGet;
    } CONNECTIONS;
-   std::map<CardWidget*, CONNECTIONS> aDNDHand;
-   std::map<CardWidget*, sigc::connection> aDNDTable;
+   std::map<Card::Widget*, CONNECTIONS> aDNDHand;
+   std::map<Card::Widget*, sigc::connection> aDNDTable;
 
    static std::vector<Gtk::TargetEntry> dndType;
 
@@ -209,7 +211,7 @@ class Buraco : public Game {
    } undoValue;
    undoValue undo;
 
-   ScoreDlg* pScoreDlg;
+   Card::ScoreDlg* pScoreDlg;
 
    Gtk::UIManager::ui_merge_id idMrg;
    Glib::RefPtr<Gtk::Action> menuUndo;

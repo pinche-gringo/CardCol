@@ -1,11 +1,11 @@
-//$Id$
+//$Id: ComputerPlayer.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Common
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
+//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 25.07.2003
 //COPYRIGHT   : Copyright (C) 2003 - 2005, 2008
@@ -30,23 +30,37 @@
 #include <YGP/Trace.h>
 
 #include "Game.h"
-#include "Human.h"
+#include "ComputerPlayer.h"
+
+
+namespace Card {
+
+unsigned int ComputerPlayer::TIMEOUT (700);
 
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-Human::~Human () {
+ComputerPlayer::~ComputerPlayer () {
+}
+
+
+//----------------------------------------------------------------------------
+/// Executes the turn of a computer player
+/// \param game Game played
+//----------------------------------------------------------------------------
+bool ComputerPlayer::makeTurn (Game* game) {
+   TRACE1 ("ComputerPlayer::makeTurn (Game*) - " << name);
+   Check1 (game);
+   return game->makeComputerMove ();
 }
 
 //----------------------------------------------------------------------------
-/// Allows the human to execute its turn by enabling its cards
-/// \param game Game played
-/// \returns bool Flag, if the method should be called again in the next turn.
+/// Time in between two turns of the player.
+/// \returns unsigned int Time to delay: 0 -> execute immediately
 //----------------------------------------------------------------------------
-bool Human::makeTurn (Game* game) {
-   TRACE1 ("Human::makeTurn (Game*) - " << name);
-   Check1 (game);
-   game->enableHuman ();
-   return false;
+unsigned int ComputerPlayer::timeout () const {
+   return TIMEOUT;
+}
+
 }

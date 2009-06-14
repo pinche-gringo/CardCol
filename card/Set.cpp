@@ -1,14 +1,14 @@
-//$Id$
+//$Id: Set.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Common
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
+//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 8.5.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2004, 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2004, 2008, 2009
 
 // This file is part of CardCol.
 //
@@ -31,17 +31,19 @@
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
-#include "CardImgs.h"
-#include "CardWidget.h"
+#include "Images.h"
+#include "Widget.h"
 
-#include "CardSet.h"
+#include "Set.h"
 
+
+namespace Card {
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-CardSet::~CardSet () {
-   TRACE9 ("CardSet::~CardSet ()");
+Set::~Set () {
+   TRACE9 ("Set::~Set ()");
    clear ();
 }
 
@@ -50,12 +52,12 @@ CardSet::~CardSet () {
 /// Adds a set of cards (with images specified by decks) to set
 /// \param decks Class holding the images to add
 //-----------------------------------------------------------------------------
-void CardSet::addPacket (const CardImages& decks) {
-   TRACE9 ("CardSet::addPacket (const CardImages&)");
+void Set::addPacket (const Images& decks) {
+   TRACE9 ("Set::addPacket (const Images&)");
 
-   CardWidget::setDeck (decks);
+   Widget::setDeck (decks);
    for (unsigned int i (0); i < decks.size (); ++i) {
-      CardWidget* card (new CardWidget (i, true)); Check3 (card);
+      Widget* card (new Widget (i, true)); Check3 (card);
       card->show ();
       cards_.push_back (card);
    } // endfor
@@ -65,13 +67,13 @@ void CardSet::addPacket (const CardImages& decks) {
 //-----------------------------------------------------------------------------
 /// Shuffles the cards in the deck
 //-----------------------------------------------------------------------------
-void CardSet::shuffle () {
-   TRACE2 ("CardSet::shuffle ()");
+void Set::shuffle () {
+   TRACE2 ("Set::shuffle ()");
 
    unsigned int nr;
    for (int i (size ()); i > 0;) {
       nr = rand () % i--;
-      TRACE2 ("CardSet::shuffle () - " << i << " = " << nr);
+      TRACE2 ("Set::shuffle () - " << i << " = " << nr);
       std::swap (cards_[i], cards_[nr]);
    }
 }
@@ -82,14 +84,14 @@ void CardSet::shuffle () {
 /// \param card Card to swap
 /// \pre The \c card must not be in a position before \c pos.
 //-----------------------------------------------------------------------------
-void CardSet::set (unsigned int pos, unsigned int card) {
-   TRACE2 ("CardSet::set (unsigned int, unsigned int) - [" << pos << "] = " << card);
+void Set::set (unsigned int pos, unsigned int card) {
+   TRACE2 ("Set::set (unsigned int, unsigned int) - [" << pos << "] = " << card);
    Check1 (card < cards_.size ());
 
-   for (std::vector<CardWidget*>::iterator i (cards_.begin () + pos);
+   for (std::vector<Widget*>::iterator i (cards_.begin () + pos);
         i != cards_.end (); ++i)
       if ((*i)->id () == card) {
-         std::vector<CardWidget*>::iterator t (cards_.begin () + pos);
+         std::vector<Widget*>::iterator t (cards_.begin () + pos);
          std::swap (*t, *i);
          return;
        }
@@ -98,10 +100,10 @@ void CardSet::set (unsigned int pos, unsigned int card) {
 
 //-----------------------------------------------------------------------------
 /// Retrieves the specified card
-/// \returns CardWidget& Reference to CardWidget
+/// \returns Widget& Reference to Widget
 //-----------------------------------------------------------------------------
-CardWidget& CardSet::getCard (unsigned int nr) const {
-   TRACE3 ("CardSet::getCard (unsigned int) - " << nr);
+Widget& Set::getCard (unsigned int nr) const {
+   TRACE3 ("Set::getCard (unsigned int) - " << nr);
    Check3 (nr < size ()); Check3 (cards_[nr]);
 
    return *cards_[nr];
@@ -110,10 +112,10 @@ CardWidget& CardSet::getCard (unsigned int nr) const {
 //-----------------------------------------------------------------------------
 /// Actualises the card set (after changes of the images)
 //-----------------------------------------------------------------------------
-void CardSet::update () const {
-   TRACE3 ("CardSet::update () const");
+void Set::update () const {
+   TRACE3 ("Set::update () const");
 
-   for (std::vector<CardWidget*>::const_iterator i (cards_.begin ());
+   for (std::vector<Widget*>::const_iterator i (cards_.begin ());
         i != cards_.end (); ++i)
       (*i)->update ();
 }
@@ -121,9 +123,11 @@ void CardSet::update () const {
 //-----------------------------------------------------------------------------
 /// Removes all cards from the set
 //-----------------------------------------------------------------------------
-void CardSet::clear () {
-   for (std::vector<CardWidget*>::iterator i (cards_.begin ());
+void Set::clear () {
+   for (std::vector<Widget*>::iterator i (cards_.begin ());
         i != cards_.end (); ++i)
       delete *i;
    cards_.clear ();
+}
+
 }

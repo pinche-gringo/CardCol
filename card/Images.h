@@ -1,7 +1,7 @@
 #ifndef CARDIMGS_H
 #define CARDIMGS_H
 
-//$Id$
+//$Id: Images.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -26,12 +26,14 @@
 #include <YGP/Exception.h>
 
 
+namespace Card {
+
 /**Class to load & store the images of the used cards
 */
-class CardImages {
+class Images {
  public:
-   CardImages () : cards_ (52), back_ () { }
-   ~CardImages ();
+   Images () : cards_ (52), back_ () { }
+   ~Images ();
 
    unsigned int addImage (const char* const* data) {
       Glib::RefPtr<Gdk::Pixbuf> card (Gdk::Pixbuf::create_from_xpm_data (data));
@@ -80,5 +82,7 @@ class CardImages {
 
    void unload ();
 };
+
+}
 
 #endif

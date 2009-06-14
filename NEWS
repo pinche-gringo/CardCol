@@ -1,3 +1,8 @@
+Overview of changes in version 0.9.50:
+
+  - libCard uses namespace
+
+
 Overview of changes in version 0.9.40:
 
   - Menu to re-open the score-dialog (Buraco, Hearts, Jabberwocky, Sgt. Mayor)

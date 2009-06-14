@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-//$Id$
+//$Id: Player.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -23,8 +23,12 @@
 #include <glibmm/ustring.h>
 
 
-class Game;
+namespace Card {
+   class Game;
+}
 
+
+namespace Card {
 
 /**Abstract base class representing a player of the game.
 
@@ -56,5 +60,7 @@ class Player : public sigc::trackable {
    Player (const Player& other);
    const Player& operator= (const Player& other);
 };
+
+}
 
 #endif

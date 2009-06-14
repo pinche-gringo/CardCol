@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 28.4.2005
-//COPYRIGHT   : Copyright (C) 2005 - 2008
+//COPYRIGHT   : Copyright (C) 2005 - 2009
 
 // This file is part of CardCol.
 //
@@ -37,8 +37,8 @@
 #include <YGP/Trace.h>
 #include <YGP/MetaEnum.h>
 
-#include <CardImgs.h>
-#include <ComputerPlayer.h>
+#include <card/Images.h>
+#include <card/ComputerPlayer.h>
 
 #ifdef WITH_BURACO
 #  include "Buraco.h"
@@ -87,7 +87,7 @@ Settings::Settings (Options& options)
      sigCommit (), sigCardResize (),
      adjTimeout (0, 100.0, 10000.0, 1, 100),
      gameType (GameTypes::get ()),
-     timeout (ComputerPlayer::TIMEOUT, adjTimeout),
+     timeout (Card::ComputerPlayer::TIMEOUT, adjTimeout),
      cardSize (CardSizes::get ()),
 #ifdef WITH_BURACO
      adjBPoints (0, 0, 100000.0, 1, 100),
@@ -134,7 +134,7 @@ Settings::Settings (Options& options)
    pagGeneral.attach (*lbl,     0, 1, 2, 3, Gtk::FILL, Gtk::FILL, 5, 3);
    pagGeneral.attach (cardSize, 1, 2, 2, 3, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
 
-   cardSize.set_active_text (CardSizes::get ()[CardSizes::getSize (CardImages::WIDTH, CardImages::HEIGHT)]);
+   cardSize.set_active_text (CardSizes::get ()[CardSizes::getSize (Card::Images::WIDTH, Card::Images::HEIGHT)]);
 
 #ifdef WITH_BURACO
    Gtk::Table& pagBuraco (*manage (new Gtk::Table (2, 2)));
@@ -227,16 +227,16 @@ void Settings::okEvent () {
 
     unsigned int width (CardSizes::getWidth ((CardSizes::SIZES)CardSizes::get ()[cardSize.get_active_text ()]));
     unsigned int height (CardSizes::getHeight ((CardSizes::SIZES)CardSizes::get ()[cardSize.get_active_text ()]));
-    if ((width != CardImages::WIDTH) || (height != CardImages::HEIGHT)) {
-       CardImages::WIDTH = width;
-       CardImages::HEIGHT = height;
+    if ((width != Card::Images::WIDTH) || (height != Card::Images::HEIGHT)) {
+       Card::Images::WIDTH = width;
+       Card::Images::HEIGHT = height;
        sigCardResize.emit ();
     }
 
 #ifdef WITH_ROVHULT
-    Rovhult::cardNuke = static_cast<CardWidget::NUMBERS> (CardValue::get ()[cardNuke.get_active_text ()]);
-    Rovhult::cardReverse = static_cast<CardWidget::NUMBERS> (CardValue::get ()[cardReverse.get_active_text ()]);
-    Rovhult::cardSkip = static_cast<CardWidget::NUMBERS> (CardValue::get ()[cardSkip.get_active_text ()]);
+    Rovhult::cardNuke = static_cast<Card::Widget::NUMBERS> (CardValue::get ()[cardNuke.get_active_text ()]);
+    Rovhult::cardReverse = static_cast<Card::Widget::NUMBERS> (CardValue::get ()[cardReverse.get_active_text ()]);
+    Rovhult::cardSkip = static_cast<Card::Widget::NUMBERS> (CardValue::get ()[cardSkip.get_active_text ()]);
 #endif
 
 #ifdef WITH_BURACO

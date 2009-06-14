@@ -1,14 +1,14 @@
-//$Id$
+//$Id: Player.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Common
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
+//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 25.07.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2005, 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2004, 2008
 
 // This file is part of CardCol.
 //
@@ -26,37 +26,31 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <YGP/Check.h>
-#include <YGP/Trace.h>
-
-#include "Game.h"
-#include "ComputerPlayer.h"
+#include "Player.h"
 
 
-unsigned int ComputerPlayer::TIMEOUT (700);
+namespace Card {
 
+//-----------------------------------------------------------------------------
+/// Constructor; from a name
+/// \param playerName Name of the player
+//-----------------------------------------------------------------------------
+Player::Player (const Glib::ustring& playerName) : name (playerName) {
+}
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-ComputerPlayer::~ComputerPlayer () {
+Player::~Player () {
 }
 
-
-//----------------------------------------------------------------------------
-/// Executes the turn of a computer player
-/// \param game Game played
-//----------------------------------------------------------------------------
-bool ComputerPlayer::makeTurn (Game* game) {
-   TRACE1 ("ComputerPlayer::makeTurn (Game*) - " << name);
-   Check1 (game);
-   return game->makeComputerMove ();
-}
 
 //----------------------------------------------------------------------------
 /// Time in between two turns of the player.
 /// \returns unsigned int Time to delay: 0 -> execute immediately
 //----------------------------------------------------------------------------
-unsigned int ComputerPlayer::timeout () const {
-   return TIMEOUT;
+unsigned int Player::timeout () const {
+   return 0;
+}
+
 }

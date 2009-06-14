@@ -24,29 +24,30 @@
 
 #include <gtkmm/label.h>
 
-#include <CardSet.h>
-#include <CardPile.h>
+#include <card/Set.h>
+#include <card/Pile.h>
 
-#include <Game.h>
+#include <card/Game.h>
 
 
 namespace YGP {
    class Tokenize;
 }
 
-
-class ScoreDlg;
+namespace Card {
+   class ScoreDlg;
+}
 
 
 // Class to handle the Hearts cardgame
-class SgtMayor : public Game {
+class SgtMayor : public Card::Game {
    friend class Settings;
    friend class CardgameAppl;
    friend class CardgameCollection;
 
  public:
-   SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-             const std::vector<Player*>& player, unsigned int posPlayer,
+   SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
+             const std::vector<Card::Player*>& player, unsigned int posPlayer,
              YGP::Mutex& mxSerialize);
    virtual ~SgtMayor ();
 
@@ -54,13 +55,13 @@ class SgtMayor : public Game {
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Sgt. Mayor"; }
-   virtual void changeNames (const std::vector<Player*>& newPlayer);
+   virtual void changeNames (const std::vector<Card::Player*>& newPlayer);
    virtual void resizeCards ();
 
    virtual bool handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError);
 
  protected:
-   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
 
  private:
    // Protected manager functions
@@ -85,17 +86,17 @@ class SgtMayor : public Game {
    void exchange (unsigned int playerBad, unsigned int posBad,
 		  unsigned int playerGood, unsigned int posGood);
    void exchgBack (unsigned int playerBad, unsigned int playerGood, unsigned int posGood);
-   void exchgNext (CardHPile* pileGood, CardHPile* pileBad);
+   void exchgNext (Card::HPile* pileGood, Card::HPile* pileBad);
    void doExchangeCards (unsigned int playerBad, unsigned int posBad,
 			 unsigned int playerGood, unsigned int posGood);
    void showNeededTricks ();
-   void showTrump (CardWidget::COLOURS);
-   void doShowTrump (CardWidget::COLOURS);
+   void showTrump (Card::Widget::COLOURS);
+   void doShowTrump (Card::Widget::COLOURS);
    void makeExchange ();
    void displayExchangeStatus ();
    void startPlaying ();
-   void playCardDelayed (unsigned int player, unsigned int card);
-   unsigned int playCard (unsigned int player, unsigned int card);
+   void playCardDelayed (unsigned int player);
+   unsigned int playCard (unsigned int player);
    static unsigned int calcNextPlayer (unsigned int player) {
       return (++player >= NUM_PLAYERS) ? 0 : player;
    }
@@ -107,8 +108,8 @@ class SgtMayor : public Game {
 
    //@Section Computer player
    unsigned int findPos2Play (unsigned int player);
-   bool isHighest (const CardWidget& card) const;
-   unsigned int tryToGetTrickWithTrump (const ICardPile& pile) const;
+   bool isHighest (const Card::Widget& card) const;
+   unsigned int tryToGetTrickWithTrump (const Card::IPile& pile) const;
 
    virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
    virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
@@ -117,8 +118,8 @@ class SgtMayor : public Game {
    static const unsigned int NUM_PLAYERS = 3;              // Number of players
 
    struct playerCards {
-      CardHPile  hand;                        // For players: Cards in the hand
-      CardHPile  won;                                             // Won tricks
+      Card::HPile  hand;                      // For players: Cards in the hand
+      Card::HPile  won;                                           // Won tricks
       Gtk::Label name;
       Gtk::Label neededTricks;
 
@@ -128,8 +129,8 @@ class SgtMayor : public Game {
       playerCards (const playerCards&);
       playerCards& operator= (const playerCards&);
    } players[NUM_PLAYERS];
-   CardHPile played;
-   CardWidget* pTrump;
+   Card::HPile played;
+   Card::Widget* pTrump;
 
    unsigned int bfColours;
 
@@ -142,7 +143,7 @@ class SgtMayor : public Game {
    Glib::RefPtr<Gtk::Action> menuSort2;
    Glib::RefPtr<Gtk::Action> menuShowScoreDlg;
 
-   ScoreDlg* pScoreDlg;
+   Card::ScoreDlg* pScoreDlg;
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];

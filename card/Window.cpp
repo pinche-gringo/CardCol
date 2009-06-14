@@ -1,14 +1,14 @@
-//$Id$
+//$Id: Window.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 //PROJECT     : Cardgames
 //SUBSYSTEM   : libCard
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
+//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 20.05.2007
-//COPYRIGHT   : Copyright (C) 2007, 2008
+//COPYRIGHT   : Copyright (C) 2007 - 2009
 
 // This file is part of CardCol.
 //
@@ -28,11 +28,13 @@
 
 #include <YGP/Trace.h>
 
-#include "CardPile.h"
-#include "CardWidget.h"
+#include "Pile.h"
+#include "Widget.h"
 
-#include "CardWindow.h"
+#include "Window.h"
 
+
+namespace Card {
 
 //-----------------------------------------------------------------------------
 /// Constructor
@@ -40,9 +42,9 @@
 /// \param posDest Where to put the card in the destination
 /// \param src Source card
 //-----------------------------------------------------------------------------
-AnimatedCard::AnimatedCard (ICardPile& dest, unsigned int posDest, Gtk::Widget& src)
+AnimatedCard::AnimatedCard (IPile& dest, unsigned int posDest, Gtk::Widget& src)
    : XGP::AnimatedWindow (src.get_window ()), sigAnimation (), dest (dest), posDest (posDest) {
-   TRACE9 ("AnimatedCard::AnimatedCard (ICardPile&, unsigned int, Gtk::Widget&) - " << posDest);
+   TRACE9 ("AnimatedCard::AnimatedCard (IPile&, unsigned int, Gtk::Widget&) - " << posDest);
 }
 
 
@@ -60,7 +62,7 @@ void AnimatedCard::start () {
    TRACE5 ("AnimatedCard::start () - " << posDest << '/' << dest.size ());
    if (dest.empty ()) {
       TRACE8 ("AnimatedCard::start () - Adding empty card");
-      CardWidget* card (CardWidget::getEmpty ());
+      Widget* card (Widget::getEmpty ());
       card->show ();
       dest.setTopCard (*card);
       posDest = -1U;
@@ -95,8 +97,8 @@ void AnimatedCard::finish () {
 //-----------------------------------------------------------------------------
 void AnimatedCard::getEndPos (int& x, int& y) {
    Check2 (dest.size ());
-   CardWidget* widget ((posDest == -1U) ? dest.at (0)
-		       : dest.at ((posDest >= dest.size ()) ? posDest - 1 : posDest));
+   Widget* widget ((posDest == -1U) ? dest.at (0)
+		   : dest.at ((posDest >= dest.size ()) ? posDest - 1 : posDest));
    Check2 (widget); Check2 (widget->get_window ()); Check2 (win);
 
    widget->get_window ()->get_origin (x, y);
@@ -111,49 +113,49 @@ void AnimatedCard::getEndPos (int& x, int& y) {
 /// \param card Card to show
 /// \param card Card to animate
 //-----------------------------------------------------------------------------
-CardWindow::CardWindow (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc)
+Window::Window (IPile& dest, unsigned int posDest, IPile& src, unsigned int posSrc)
    : AnimatedCard (dest, posDest, *src.at (posSrc)), src (src), posSrc (posSrc) {
-   TRACE9 ("CardWindow::CardWindow (2x(ICardPile&, unsigned int)) - " << posSrc << " -> " << posDest);
+   TRACE9 ("Window::Window (2x(IPile&, unsigned int)) - " << posSrc << " -> " << posDest);
    Check1 (posSrc < src.size ());
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-CardWindow::~CardWindow () {
+Window::~Window () {
 }
 
 //-----------------------------------------------------------------------------
-/// Creates an CardWindow-object
+/// Creates an Window-object
 /// \param dest Destination pile
 /// \param posDest Where to put the card in the destination
 /// \param src Source card
-/// \returns CardWindow* Created window to animate
+/// \returns Window* Created window to animate
 /// \pre The card must be shown (to get its position)
 //-----------------------------------------------------------------------------
-CardWindow* CardWindow::create (ICardPile& dest, unsigned int posDest, ICardPile& src, unsigned int posSrc) {
+Window* Window::create (IPile& dest, unsigned int posDest, IPile& src, unsigned int posSrc) {
    Check1 (posSrc < src.size ());
-   return new CardWindow (dest, posDest, src, posSrc);
+   return new Window (dest, posDest, src, posSrc);
 }
 
 //-----------------------------------------------------------------------------
 /// Additional actions when starting the animation
 //-----------------------------------------------------------------------------
-void CardWindow::start () {
-   TRACE8 ("CardWindow::start ()");
+void Window::start () {
+   TRACE8 ("Window::start ()");
    AnimatedCard::start ();
    win->raise ();
-   src.resize (posSrc, ICardPile::NORMAL);
+   src.resize (posSrc, IPile::NORMAL);
 }
 
 //-----------------------------------------------------------------------------
 /// Cleanup of the animation; moves the animated card to the distination pile
 //-----------------------------------------------------------------------------
-void CardWindow::cleanup () {
-   TRACE5 ("CardWindow::cleanup () - " << posSrc << " -> " << posDest);
+void Window::cleanup () {
+   TRACE5 ("Window::cleanup () - " << posSrc << " -> " << posDest);
    AnimatedCard::cleanup ();
    dest.insert (src.remove (posSrc), posDest);
-   TRACE8 ("CardWindow::cleanup () - finish");
+   TRACE8 ("Window::cleanup () - finish");
 }
 
 
@@ -166,10 +168,10 @@ void CardWindow::cleanup () {
 /// \param start First card to animate from source
 /// \param end Last card to animate from source
 //-----------------------------------------------------------------------------
-CardPileWindow::CardPileWindow (ICardPile& dest, unsigned int posDest,
-				ICardPile& src, unsigned int start, unsigned int end)
-   : CardWindow (dest, posDest, src, start), last (end) {
-   TRACE8 ("CardPileWindow::CardPileWindow (...) - " << start << '/' << end);
+PileWindow::PileWindow (IPile& dest, unsigned int posDest,
+			IPile& src, unsigned int start, unsigned int end)
+   : Window (dest, posDest, src, start), last (end) {
+   TRACE8 ("PileWindow::PileWindow (...) - " << start << '/' << end);
    Check3 (src.size ()); Check3 (start <= end); Check3 (end < src.size ());
    Check1 (posDest <= dest.size ());
 }
@@ -177,7 +179,7 @@ CardPileWindow::CardPileWindow (ICardPile& dest, unsigned int posDest,
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-CardPileWindow::~CardPileWindow () {
+PileWindow::~PileWindow () {
 }
 
 
@@ -188,10 +190,10 @@ CardPileWindow::~CardPileWindow () {
 /// \param y Y-coordinate
 /// \returns bool Always false
 //-----------------------------------------------------------------------------
-void CardPileWindow::getEndPos (int& x, int& y) {
-   TRACE8 ("CardPileWindow::getEndPos (2x int&)");
+void PileWindow::getEndPos (int& x, int& y) {
+   TRACE8 ("PileWindow::getEndPos (2x int&)");
    Check2 (src.size () > last);
-   CardWindow::getEndPos (x, y);
+   Window::getEndPos (x, y);
 
    // Also move the remaining cards
    Glib::RefPtr<Gdk::Window> oldWin (win);
@@ -206,9 +208,9 @@ void CardPileWindow::getEndPos (int& x, int& y) {
 //-----------------------------------------------------------------------------
 /// Additional actions when starting the animation
 //-----------------------------------------------------------------------------
-void CardPileWindow::start () {
-   TRACE8 ("CardPileWindow::start ()");
-   CardWindow::start ();
+void PileWindow::start () {
+   TRACE8 ("PileWindow::start ()");
+   Window::start ();
    for (unsigned int i (posSrc + 1); i <= last; ++i) {
       Check3 (src.at (i)->get_window ());
       src.at (i)->get_window ()->raise ();
@@ -218,15 +220,15 @@ void CardPileWindow::start () {
 //-----------------------------------------------------------------------------
 /// Cleanup of the animation; moves the animated cards to the distination pile
 //-----------------------------------------------------------------------------
-void CardPileWindow::cleanup () {
-   TRACE5 ("CardPileWindow::cleanup () - " << posSrc << '/' << last << " -> " << (int)posDest);
-   CardWindow::cleanup ();
+void PileWindow::cleanup () {
+   TRACE5 ("PileWindow::cleanup () - " << posSrc << '/' << last << " -> " << (int)posDest);
+   Window::cleanup ();
 
    while (last-- > posSrc) {
-      TRACE5 ("CardPileWindow::cleanup () - Move " << posSrc << '/' << last << " -> " << (int)posDest);
+      TRACE5 ("PileWindow::cleanup () - Move " << posSrc << '/' << last << " -> " << (int)posDest);
       dest.insert (src.remove (posSrc), ++posDest);
    }
-   TRACE8 ("CardPileWindow::cleanup () - Finished");
+   TRACE8 ("PileWindow::cleanup () - Finished");
 }
 
 
@@ -235,16 +237,16 @@ void CardPileWindow::cleanup () {
 /// \param dest Destination pile
 /// \param posDest Where to put the card in the destination
 //-----------------------------------------------------------------------------
-CardPileWindows::CardPileWindows (ICardPile& dest, unsigned int posDest,
-				  ICardPile& src, unsigned int start, unsigned int end)
-   : CardPileWindow (dest, posDest, src, start, end), wins () {
-   TRACE8 ("CardPileWindows::CardPileWindows (...) - " << start << '/' << end);
+PileWindows::PileWindows (IPile& dest, unsigned int posDest,
+			  IPile& src, unsigned int start, unsigned int end)
+   : PileWindow (dest, posDest, src, start, end), wins () {
+   TRACE8 ("PileWindows::PileWindows (...) - " << start << '/' << end);
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-CardPileWindows::~CardPileWindows () {
+PileWindows::~PileWindows () {
    for (std::vector<AnimatedPile*>::iterator i (wins.begin ());
 	i != wins.end (); ++i)
       delete *i;
@@ -252,33 +254,33 @@ CardPileWindows::~CardPileWindows () {
 
 
 //-----------------------------------------------------------------------------
-/// Creates a CardPileWindow object
+/// Creates a PileWindow object
 /// \param dest Destination pile
 /// \param posDest Where to put the card in the destination
 /// \param src Source pile
 /// \param start First card of source to animate
 /// \param end Last card of source to animate
-/// \returns CardPileWindow* Created window to animate
+/// \returns PileWindow* Created window to animate
 /// \pre The first card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
-CardPileWindows* CardPileWindows::create (ICardPile& dest, unsigned int posDest,
-					  ICardPile& src, unsigned int start, unsigned int end) {
+PileWindows* PileWindows::create (IPile& dest, unsigned int posDest,
+				  IPile& src, unsigned int start, unsigned int end) {
    Check3 (src.size ()); Check3 (start <= end); Check3 (end < src.size ());
    Check1 (posDest <= dest.size ());
-   return new CardPileWindows (dest, posDest, src, start, end);
+   return new PileWindows (dest, posDest, src, start, end);
 }
 
 
 //-----------------------------------------------------------------------------
 /// Additional actions when starting the animation
 //-----------------------------------------------------------------------------
-void CardPileWindows::start () {
-   TRACE8 ("CardPileWindow::start ()");
-   CardPileWindow::start ();
+void PileWindows::start () {
+   TRACE8 ("PileWindow::start ()");
+   PileWindow::start ();
 
    for (std::vector<AnimatedPile*>::iterator i (wins.begin ());
 	i != wins.end (); ++i) {
-      TRACE9 ("CardPileWindows::start () - Subwin: " << (i - wins.begin ()));
+      TRACE9 ("PileWindows::start () - Subwin: " << (i - wins.begin ()));
       Check3 (*i);
       (*i)->start ();
    }
@@ -289,12 +291,12 @@ void CardPileWindows::start () {
 /// \param x X-coordinate of destination
 /// \param y Y-coordinate of destination
 //-----------------------------------------------------------------------------
-void CardPileWindows::getEndPos (int& x, int& y) {
-   CardPileWindow::getEndPos (x, y);
+void PileWindows::getEndPos (int& x, int& y) {
+   PileWindow::getEndPos (x, y);
 
    for (std::vector<AnimatedPile*>::iterator i (wins.begin ());
 	i != wins.end (); ++i) {
-      TRACE9 ("CardPileWindows::getEndPos (2x int&) - Subwin: " << (i - wins.begin ()));
+      TRACE9 ("PileWindows::getEndPos (2x int&) - Subwin: " << (i - wins.begin ()));
       Check3 (*i);
       (*i)->animateTo (x, y);
    }
@@ -303,9 +305,9 @@ void CardPileWindows::getEndPos (int& x, int& y) {
 //-----------------------------------------------------------------------------
 /// Cleanup of the animation; moves the animated card to the destination pile
 //-----------------------------------------------------------------------------
-void CardPileWindows::cleanup () {
-   TRACE5 ("CardPileWindows::cleanup () - Subwindows: " << wins.size ());
-   CardPileWindow::cleanup ();
+void PileWindows::cleanup () {
+   TRACE5 ("PileWindows::cleanup () - Subwindows: " << wins.size ());
+   PileWindow::cleanup ();
 
    // Move the animated cards to their target; remove the animated widget
    for (std::vector<AnimatedPile*>::const_iterator i (wins.begin ());
@@ -313,13 +315,13 @@ void CardPileWindows::cleanup () {
       unsigned int first ((*i)->first);
       unsigned int last ((*i)->last);
       Check3 ((*i)->posDest <= dest.size ());
-      TRACE8 ("CardPileWindows::cleanup () - Moving [" << first << '/' << last
+      TRACE8 ("PileWindows::cleanup () - Moving [" << first << '/' << last
 	      << "] of " << (*i)->source.size () << " to " << (*i)->posDest << " of " << dest.size ());
       do
 	 dest.insert ((*i)->source.remove (first), ((*i)->posDest)++);
       while (first < last--);
    }
-   TRACE8 ("CardPileWindows::cleanup () - Finished");
+   TRACE8 ("PileWindows::cleanup () - Finished");
 }
 
 //-----------------------------------------------------------------------------
@@ -329,8 +331,8 @@ void CardPileWindows::cleanup () {
 /// \param start First card of source to animate
 /// \param end Last card of source to animate
 //-----------------------------------------------------------------------------
-void CardPileWindows::addWindow (unsigned int dest, ICardPile& src, unsigned int start, unsigned int end) {
-   TRACE3 ("CardPileWindows::addWindow (unsigned int, ICardPile& src, 2x unsigned int) - " << start
+void PileWindows::addWindow (unsigned int dest, IPile& src, unsigned int start, unsigned int end) {
+   TRACE3 ("PileWindows::addWindow (unsigned int, IPile& src, 2x unsigned int) - " << start
 	   << '-' << end << " -> " << dest);
    Check1 (start <= end);
    Check1 (end < src.size ());
@@ -344,8 +346,8 @@ void CardPileWindows::addWindow (unsigned int dest, ICardPile& src, unsigned int
 /// \param start First card of source to animate
 /// \param end Last card of source to animate
 //-----------------------------------------------------------------------------
-void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned int end) {
-   TRACE3 ("CardPileWindows::addWindow (ICardPile& src, 2x unsigned int) - " << start << '-' << end);
+void PileWindows::addWindow (IPile& src, unsigned int start, unsigned int end) {
+   TRACE3 ("PileWindows::addWindow (IPile& src, 2x unsigned int) - " << start << '-' << end);
    Check1 (start <= end); Check1 (end < src.size ());
 
    AnimatedPile* win (new AnimatedPile (src, start, end)); Check3 (win);
@@ -360,10 +362,10 @@ void CardPileWindows::addWindow (ICardPile& src, unsigned int start, unsigned in
 /// \param start First card of source to animate
 /// \param end Last card of source to animate
 //-----------------------------------------------------------------------------
-CardPileWindows::AnimatedPile::AnimatedPile (ICardPile& src, unsigned int start, unsigned int end)
+PileWindows::AnimatedPile::AnimatedPile (IPile& src, unsigned int start, unsigned int end)
    : XGP::AnimatedWindow (src.at (start)->get_window ()),
      source (src), first (start), last (end), posDest (0) {
-   TRACE9 ("CardPileWindows::AnimatedPile::AnimatedPile (ICardPile&, 2x unsigned int)");
+   TRACE9 ("PileWindows::AnimatedPile::AnimatedPile (IPile&, 2x unsigned int)");
 }
 
 //-----------------------------------------------------------------------------
@@ -371,8 +373,8 @@ CardPileWindows::AnimatedPile::AnimatedPile (ICardPile& src, unsigned int start,
 /// \param x X-coordinate of destination
 /// \param y Y-coordinate of destination
 //-----------------------------------------------------------------------------
-void CardPileWindows::AnimatedPile::getEndPos (int& x, int& y) {
-   TRACE1 ("CardPileWindows::AnimatedPile::getEndPos (2x int& x)");
+void PileWindows::AnimatedPile::getEndPos (int& x, int& y) {
+   TRACE1 ("PileWindows::AnimatedPile::getEndPos (2x int& x)");
    Check (0);
    x = y = 0;
 }
@@ -380,8 +382,8 @@ void CardPileWindows::AnimatedPile::getEndPos (int& x, int& y) {
 //-----------------------------------------------------------------------------
 /// Additional actions when starting the animation
 //-----------------------------------------------------------------------------
-void CardPileWindows::AnimatedPile::start () {
-   TRACE1 ("CardPileWindows::AnimatedPile::start ()");
+void PileWindows::AnimatedPile::start () {
+   TRACE1 ("PileWindows::AnimatedPile::start ()");
    for (unsigned int i (first); i <= last; ++i) {
       Check3 (source.at (i)->get_window ());
       source.at (i)->get_window ()->raise ();
@@ -393,8 +395,8 @@ void CardPileWindows::AnimatedPile::start () {
 /// \param x X-coordinate of destination
 /// \param y Y-coordinate of destination
 //-----------------------------------------------------------------------------
-void CardPileWindows::AnimatedPile::animateTo (int x, int y) {
-   TRACE5 ("CardPileWindows::AnimatedPile::animateTo (2x int) - " << first << '/' << last
+void PileWindows::AnimatedPile::animateTo (int x, int y) {
+   TRACE5 ("PileWindows::AnimatedPile::animateTo (2x int) - " << first << '/' << last
 	   << " to " << x << '/' << y);
    XGP::AnimatedWindow::animateTo (x, y);
 
@@ -403,9 +405,11 @@ void CardPileWindows::AnimatedPile::animateTo (int x, int y) {
    for (unsigned int i (first + 1); i <= last; ++i) {
       Check3 (source.at (i)->get_window ());
       win = source.at (i)->get_window (); Check3 (win);
-      TRACE9 ("CardPileWindows::AnimatedPile::animateTo (2x int) - Visible " << win->is_visible ());
+      TRACE9 ("PileWindows::AnimatedPile::animateTo (2x int) - Visible " << win->is_visible ());
       if (win->is_visible ())
 	 XGP::AnimatedWindow::animateTo (x, y);
    }
    win = oldWin;
+}
+
 }

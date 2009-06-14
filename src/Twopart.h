@@ -23,19 +23,19 @@
 
 #include <gtkmm/label.h>
 
-#include <CardSet.h>
-#include <CardPile.h>
+#include <card/Set.h>
+#include <card/Pile.h>
 
-#include <Game.h>
+#include <card/Game.h>
 
 
 /**Class to handle the Twopart-cardgame
  */
-class Twopart : public Game {
+class Twopart : public Card::Game {
  public:
    // Manager functions
-   Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<Player*>& players, unsigned int posPlayer,
+   Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
+            const std::vector<Card::Player*>& players, unsigned int posPlayer,
             YGP::Mutex& mxSerialize);
    ~Twopart ();
 
@@ -43,14 +43,14 @@ class Twopart : public Game {
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Twopart"; }
-   virtual void changeNames (const std::vector<Player*>& newPlayer);
+   virtual void changeNames (const std::vector<Card::Player*>& newPlayer);
    virtual void resizeCards ();
 
    virtual bool handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
 
  protected:
-   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
-   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target) throw (YGP::ParseError);
+   virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual bool executeRemoteMove (Card::IPile& pile, unsigned int target) throw (YGP::ParseError);
 
  private:
    // Status of game
@@ -91,7 +91,7 @@ class Twopart : public Game {
    unsigned int findSmallestCard (unsigned int player) const;
    unsigned int findEndOfSerie (unsigned int player, unsigned int start) const;
    unsigned int findStartOfSerie (unsigned int player, unsigned int start) const;
-   int findBigger (const ICardPile& pile, CardWidget::NUMBERS nr) const;
+   int findBigger (const Card::IPile& pile, Card::Widget::NUMBERS nr) const;
 
 
    bool startPartTwo (unsigned int player);
@@ -103,7 +103,7 @@ class Twopart : public Game {
    virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
 
    static char sortOrder[4];
-   static bool compByColourAccTrumps (const CardWidget* a, const CardWidget* b);
+   static bool compByColourAccTrumps (const Card::Widget* a, const Card::Widget* b);
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
@@ -119,13 +119,13 @@ class Twopart : public Game {
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
 
-   CardWidget* pTrump;
+   Card::Widget* pTrump;
 
-   CardHInfoPile played;
-   CardVInfoPile staple;                                     // Cards on staple
+   Card::HInfoPile played;
+   Card::VInfoPile staple;                                   // Cards on staple
    struct playerCards {
-      CardHPile hand;                         // For players: Cards in the hand
-      CardHPile won;                            // Reserve-cards (for end-game)
+      Card::HPile hand;                       // For players: Cards in the hand
+      Card::HPile won;                          // Reserve-cards (for end-game)
       Gtk::Label name;
 
       playerCards () : hand (), won (), name () { }

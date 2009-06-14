@@ -1,14 +1,14 @@
-//$Id$
+//$Id: PlayerDlg.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Common
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
+//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 07.01.2003
-//COPYRIGHT   : Copyright (C) 2002 - 2004, 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2004, 2009
 
 // This file is part of CardCol.
 //
@@ -39,6 +39,8 @@
 #include "Player.h"
 #include "PlayerDlg.h"
 
+
+namespace Card {
 
 //-----------------------------------------------------------------------------
 /// Constructor
@@ -125,4 +127,6 @@ void PlayerDlg::line::attach (Gtk::Table& table, unsigned int line) {
    table.attach (*label, 1, 2, line + 1, line + 2, Gtk::FILL, Gtk::FILL, 5, 3);
    table.attach (*value, 2, 3, line + 1, line + 2, Gtk::FILL | Gtk::EXPAND,
                  Gtk::FILL | Gtk::EXPAND, 5, 3);
+}
+
 }

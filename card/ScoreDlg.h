@@ -1,7 +1,7 @@
 #ifndef SCOREDLG_H
 #define SCOREDLG_H
 
-//$Id$
+//$Id: ScoreDlg.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -35,8 +35,12 @@ namespace Gtk {
    class Separator;
 }
 
-class Player;
+namespace Card {
+   class Player;
+}
 
+
+namespace Card {
 
 // Class to display the score of the cardgames
 class ScoreDlg : public XGP::XDialog {
@@ -100,5 +104,7 @@ class ScoreDlg : public XGP::XDialog {
 
    std::vector<column*> aColumns;
 };
+
+}
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef PLAYERDLG_H
 #define PLAYERDLG_H
 
-//$Id$
+//$Id: PlayerDlg.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -30,8 +30,12 @@ namespace Gtk {
    class Table;
 }
 
-class Player;
+namespace Card {
+   class Player;
+}
 
+
+namespace Card {
 
 // Class to enter the names of the players
 class PlayerDlg : public XGP::XDialog {
@@ -81,5 +85,7 @@ class PlayerDlg : public XGP::XDialog {
    std::vector<line*>    aPlayers;
    std::vector<Player*>& values;
 };
+
+}
 
 #endif

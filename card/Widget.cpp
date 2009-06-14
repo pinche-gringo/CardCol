@@ -1,14 +1,14 @@
-//$Id$
+//$Id: Widget.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 //PROJECT     : Cardgames
 //SUBSYSTEM   : libCard
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
+//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 27.03.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2009
 
 // This file is part of CardCol.
 //
@@ -33,11 +33,14 @@
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
-#include "CardWidget.h"
+#include "Widget.h"
 
 
-const CardImages* CardWidget::deck (NULL);
-CardWidget::COLOURS CardWidget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
+namespace Card {
+
+
+const Images* Widget::deck (NULL);
+Widget::COLOURS Widget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
 
 
 //-----------------------------------------------------------------------------
@@ -45,9 +48,9 @@ CardWidget::COLOURS CardWidget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMON
 /// \param card Number of image inside the set to display
 /// \param visible Flag, if card should be displayed visible
 //-----------------------------------------------------------------------------
-CardWidget::CardWidget (const unsigned int card, bool visible)
+Widget::Widget (const unsigned int card, bool visible)
    : clicked_ (), img (), isVisible (visible), nrCard (card) {
-   TRACE3 ("CardWidget::CardWidget (const CardImages&, unsinged int, bool) - "
+   TRACE3 ("Widget::Widget (const Images&, unsinged int, bool) - "
            << card << " (" << visible << ')');
    Check1 (deck);
 
@@ -64,9 +67,9 @@ CardWidget::CardWidget (const unsigned int card, bool visible)
 /// Copyconstructor; copies the image for the passed cardwidget
 /// \param other Card to copy
 //-----------------------------------------------------------------------------
-CardWidget::CardWidget (const CardWidget& other)
+Widget::Widget (const Widget& other)
    : Gtk::EventBox (), clicked_ (), img (), isVisible (other.isVisible), nrCard (other.nrCard) {
-   TRACE3 ("CardWidget::CardWidget (const CardWidget&) - " << nrCard << " (" << isVisible << ')');
+   TRACE3 ("Widget::Widget (const Widget&) - " << nrCard << " (" << isVisible << ')');
    Check1 (deck);
 
    img.set (isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground ());
@@ -82,15 +85,15 @@ CardWidget::CardWidget (const CardWidget& other)
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-CardWidget::~CardWidget () {
-   TRACE9 ("CardWidget::~CardWidget () - " << *this);
+Widget::~Widget () {
+   TRACE9 ("Widget::~Widget () - " << *this);
 }
 
 
 //-----------------------------------------------------------------------------
 /// Shows either the cardimage or the image of the deck
 //-----------------------------------------------------------------------------
-void CardWidget::showFace (bool visible) {
+void Widget::showFace (bool visible) {
    isVisible = visible;
    update ();
 }
@@ -99,16 +102,16 @@ void CardWidget::showFace (bool visible) {
 /// Returns the number of the card as character
 /// \returns char Character describing number of card
 //-----------------------------------------------------------------------------
-char CardWidget::strNumber (CardWidget::NUMBERS nr) {
+char Widget::strNumber (Widget::NUMBERS nr) {
    static Glib::ustring specialCards (_("TJQKA"));
-   return ((nr >= CardWidget::TEN) ? specialCards[nr  - CardWidget::TEN] : nr + '2');
+   return ((nr >= Widget::TEN) ? specialCards[nr  - Widget::TEN] : nr + '2');
 }
 
 //-----------------------------------------------------------------------------
 /// Returns the colour of the card as character
 /// \returns char Character describing colour of card
 //-----------------------------------------------------------------------------
-char CardWidget::strColour (CardWidget::COLOURS col) {
+char Widget::strColour (Widget::COLOURS col) {
    // Letters describing the colours (clubs, spades, hearts, diamonds)
    static Glib::ustring colours (_("CDSH"));
    return colours[col];
@@ -117,25 +120,25 @@ char CardWidget::strColour (CardWidget::COLOURS col) {
 //-----------------------------------------------------------------------------
 /// Updates the widget; i.e. shows its image according to the status
 //-----------------------------------------------------------------------------
-void CardWidget::update () {
-   TRACE3 ("CardWidget::update () - Card " << nrCard);
+void Widget::update () {
+   TRACE3 ("Widget::update () - Card " << nrCard);
 
    img.set (isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground ());
 }
 
 //-----------------------------------------------------------------------------
-/// Callback after clicking a CardWidget
+/// Callback after clicking a Widget
 //-----------------------------------------------------------------------------
-void CardWidget::on_clicked () {
-   TRACE9 ("CardWidget::on_clicked () - " << *this);
+void Widget::on_clicked () {
+   TRACE9 ("Widget::on_clicked () - " << *this);
 }
 
 //-----------------------------------------------------------------------------
-/// Callback after releasing the button on a CardWidget
+/// Callback after releasing the button on a Widget
 //-----------------------------------------------------------------------------
-bool CardWidget::on_button_release_event (GdkEventButton* ev) {
+bool Widget::on_button_release_event (GdkEventButton* ev) {
    Check1 (ev);
-   TRACE9 ("CardWidget::on_button_release_event (GdkEventButton*) - "
+   TRACE9 ("Widget::on_button_release_event (GdkEventButton*) - "
            << ev->button << "; X: " << ev->x << "; Y: " << ev->y
            << "; W: " << get_width () << "; H: " << get_height ());
 
@@ -151,7 +154,7 @@ bool CardWidget::on_button_release_event (GdkEventButton* ev) {
 //-----------------------------------------------------------------------------
 /// Output operator; Writes number and colour of the card
 //-----------------------------------------------------------------------------
-std::ostream& operator<< (std::ostream& out, const CardWidget& card) {
+std::ostream& operator<< (std::ostream& out, const Widget& card) {
    if (card.nrCard >= 52)
       out << "Joker";
    else
@@ -162,7 +165,7 @@ std::ostream& operator<< (std::ostream& out, const CardWidget& card) {
 //-----------------------------------------------------------------------------
 /// Marks the card; this is done by changing the saturation
 //-----------------------------------------------------------------------------
-void CardWidget::mark () {
+void Widget::mark () {
    Glib::RefPtr<Gdk::Pixbuf> pic (getShownImage ());
    Glib::RefPtr<Gdk::Pixbuf> dest (pic->copy ());
 
@@ -173,7 +176,7 @@ void CardWidget::mark () {
 //-----------------------------------------------------------------------------
 /// Unmarks the card; this is done by changing the saturation back
 //-----------------------------------------------------------------------------
-void CardWidget::unmark () {
+void Widget::unmark () {
    update ();
 }
 
@@ -182,6 +185,8 @@ void CardWidget::unmark () {
 /// \returns CardWidget* Empty card
 /// \remarks Don't use; but if you do, you are responsible of deleting it
 //-----------------------------------------------------------------------------
-CardWidget* CardWidget::getEmpty () {
-   return new CardWidget;
+Widget* Widget::getEmpty () {
+   return new Widget;
+}
+
 }

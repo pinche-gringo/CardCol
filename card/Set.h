@@ -1,7 +1,7 @@
-#ifndef COMPUTERPLAYER_H
-#define COMPUTERPLAYER_H
+#ifndef CARDSET_H
+#define CARDSET_H
 
-//$Id$
+//$Id: Set.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -19,27 +19,39 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "Player.h"
+#include <string>
+#include <vector>
 
 
-/**Implementation of a computer player.
+namespace Card {
+
+class Widget;
+class Images;
+
+
+/**Class to hold the cards used in a game
 */
-class ComputerPlayer : public Player {
+class Set {
  public:
-   /// Constructor from a name
-   /// \param name Name of the computer player
-   ComputerPlayer (const Glib::ustring& name) : Player (name) { }
-   virtual ~ComputerPlayer ();
+   Set () : cards_ () { }
+   Set (const Images& decks)  : cards_ () { addPacket (decks); }
+   ~Set ();
 
-   virtual bool makeTurn (Game* game);
-   virtual unsigned int timeout () const;
+   Widget& getCard (unsigned int nrCard) const;
+   const std::vector<Widget*>& getCards () const { return cards_; }
+   unsigned int size () const { return cards_.size (); }
 
-   static unsigned int TIMEOUT;
+   void shuffle ();
+   void set (unsigned int pos, unsigned int nrCard);
+
+   void clear ();
+   void addPacket (const Images& decks);
+   void update () const;
 
  private:
-   ComputerPlayer ();
-   ComputerPlayer (const ComputerPlayer& other);
-   const ComputerPlayer& operator= (const ComputerPlayer& other);
+   std::vector<Widget*> cards_;
 };
+
+}
 
 #endif

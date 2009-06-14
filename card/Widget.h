@@ -1,7 +1,7 @@
 #ifndef CARDWIDGET_H
 #define CARDWIDGET_H
 
-//$Id$
+//$Id: Widget.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -26,23 +26,25 @@
 #include <gtkmm/image.h>
 #include <gtkmm/eventbox.h>
 
-#include <CardImgs.h>
+#include <card/Images.h>
 
+
+namespace Card {
 
 /**Class to display a card on the screen.
 
   This is actually an event-box and not a button, to avoid
   side-effects caused by the theme.
  */
-class CardWidget : public Gtk::EventBox {
+class Widget : public Gtk::EventBox {
  public:
-   CardWidget (unsigned int card, bool showFace = true);
-   CardWidget (const CardWidget&);
-   ~CardWidget ();
+   Widget (unsigned int card, bool showFace = true);
+   Widget (const Widget&);
+   ~Widget ();
 
    /// Sets the card deck to use
    /// \param carddeck Deck to use
-   static void setDeck (const CardImages& carddeck) { deck = &carddeck; }
+   static void setDeck (const Images& carddeck) { deck = &carddeck; }
 
    // Methods to show card. Note that just the image is changed
    void flip () { showFace (!isVisible); }
@@ -67,9 +69,9 @@ class CardWidget : public Gtk::EventBox {
    unsigned int getImageWidth () const { return deck->getCardImage (nrCard)->get_width (); }
    unsigned int getImageHeight () const { return deck->getCardImage (nrCard)->get_height (); }
 
-   int compareNumber (CardWidget& other) const { return number () - other.number (); }
+   int compareNumber (Widget& other) const { return number () - other.number (); }
 
-   friend std::ostream& operator<< (std::ostream& out, const CardWidget& card);
+   friend std::ostream& operator<< (std::ostream& out, const Widget& card);
    void update ();
 
    sigc::signal<void> signal_clicked () { return clicked_; }
@@ -77,17 +79,17 @@ class CardWidget : public Gtk::EventBox {
    void mark ();
    void unmark ();
 
-   static CardWidget* getEmpty ();
+   static Widget* getEmpty ();
 
-   static char strNumber (CardWidget::NUMBERS nr);
-   static char strColour (CardWidget::COLOURS col);
+   static char strNumber (Widget::NUMBERS nr);
+   static char strColour (Widget::COLOURS col);
 
  protected:
    virtual void on_clicked ();
    virtual bool on_button_release_event (GdkEventButton* ev);
 
  private:
-   CardWidget () : clicked_ (), img (), isVisible (false), nrCard (0) { }
+   Widget () : clicked_ (), img (), isVisible (false), nrCard (0) { }
 
    sigc::signal<void> clicked_;
    Gtk::Image img;
@@ -95,8 +97,10 @@ class CardWidget : public Gtk::EventBox {
    bool isVisible;
    unsigned int nrCard;
 
-   static const CardImages* deck;
+   static const Images* deck;
    static COLOURS transColour[4];
 };
+
+}
 
 #endif

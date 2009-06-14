@@ -1,7 +1,7 @@
 #ifndef PLAYERCONNECTDLG_H
 #define PLAYERCONNECTDLG_H
 
-//$Id$
+//$Id: PlayerConnDlg.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -23,7 +23,12 @@
 
 #include <XGP/ConnectDlg.h>
 
-class Player;
+namespace Card {
+   class Player;
+}
+
+
+namespace Card {
 
 /**Implementation of the connect dialog for the players of the Cardgame
    collection.
@@ -60,5 +65,7 @@ class PlayerConnectDlg : public XGP::ConnectDlg {
    PlayerConnectDlg (const PlayerConnectDlg& other);
    const PlayerConnectDlg& operator= (const PlayerConnectDlg& other);
 };
+
+}
 
 #endif

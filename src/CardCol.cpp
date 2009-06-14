@@ -52,11 +52,11 @@
 
 #include <XGP/XAbout.h>
 
-#include <Human.h>
-#include <ScoreDlg.h>
-#include <PlayerDlg.h>
-#include <DeckSelect.h>
-#include <ComputerPlayer.h>
+#include <card/Human.h>
+#include <card/ScoreDlg.h>
+#include <card/PlayerDlg.h>
+#include <card/DeckSelect.h>
+#include <card/ComputerPlayer.h>
 
 #include "GameTypes.h"
 
@@ -495,9 +495,9 @@ CardgameCollection::CardgameCollection (Options& opts)
 void CardgameCollection::makePlayer () {
    Check3 (options.names.size ());
    std::vector<Glib::ustring>::iterator i (options.names.begin ());
-   aPlayer.push_back (new Human (*i));
+   aPlayer.push_back (new Card::Human (*i));
    while (++i != options.names.end ())
-       aPlayer.push_back (new ComputerPlayer (*i));
+       aPlayer.push_back (new Card::ComputerPlayer (*i));
 }
 
 //-----------------------------------------------------------------------------
@@ -510,7 +510,7 @@ CardgameCollection::~CardgameCollection () {
       delete game;
    }
 
-   for (std::vector<Player*>::iterator i (aPlayer.begin ());
+   for (std::vector<Card::Player*>::iterator i (aPlayer.begin ());
         i != aPlayer.end (); ++i)
       delete *i;
 
@@ -549,49 +549,49 @@ void CardgameCollection::startGame () {
       switch (oldGame) {
 #ifdef WITH_ROVHULT
       case GameTypes::ROVHULT:
-         game = new TGame<Rovhult, CardgameCollection>
+         game = new Card::TGame<Rovhult, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_TWOPART
       case GameTypes::TWOPART:
-         game = new TGame<Twopart, CardgameCollection>
+         game = new Card::TGame<Twopart, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_HEARTS
       case GameTypes::HEARTS:
-         game = new TGame<Hearts, CardgameCollection>
+         game = new Card::TGame<Hearts, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_BURACO
       case GameTypes::BURACO:
-         game = new TGame<Buraco, CardgameCollection>
+         game = new Card::TGame<Buraco, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_MACHIAVELLI
       case GameTypes::MACHIAVELLI:
-         game = new TGame<Machiavelli, CardgameCollection>
+         game = new Card::TGame<Machiavelli, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_SGTMAYOR
       case GameTypes::SGTMAYOR:
-         game = new TGame<SgtMayor, CardgameCollection>
+         game = new Card::TGame<SgtMayor, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_JABBERWOCKY
       case GameTypes::JABBERWOCKY:
-         game = new TGame<Jabberwocky, CardgameCollection>
+         game = new Card::TGame<Jabberwocky, CardgameCollection>
             (*this, &CardgameCollection::gameEvents);
          break;
 #endif
@@ -652,7 +652,7 @@ void CardgameCollection::startGame () {
       game->clearCardOrder ();
    }
    else
-      game->setGameStatus (Game::NONE);
+      game->setGameStatus (Card::Game::NONE);
 }
 
 //-----------------------------------------------------------------------------
@@ -709,7 +709,7 @@ void CardgameCollection::changeGame (int game) {
 /// Opens a dialog allowing to change the card decks
 //-----------------------------------------------------------------------------
 void CardgameCollection::showChangeDeckDlg () {
-   DeckSelectDlg& dlg (*DeckSelectDlg::create (options.co.decks, options.co.back));
+   Card::DeckSelectDlg& dlg (*Card::DeckSelectDlg::create (options.co.decks, options.co.back));
    dlg.get_window ()->set_transient_for (get_window ());
    dlg.setDecks.connect (mem_fun (this, &CardgameCollection::changeDecks));
 }
@@ -718,7 +718,7 @@ void CardgameCollection::showChangeDeckDlg () {
 /// Opens a dialog allowing to change the names of the players
 //-----------------------------------------------------------------------------
 void CardgameCollection::changeNames () {
-   PlayerDlg* dlg (PlayerDlg::create (aPlayer));
+   Card::PlayerDlg* dlg (Card::PlayerDlg::create (aPlayer));
    dlg->sigCommit.connect (mem_fun (*this, &CardgameCollection::changePlayernames));
    dlg->get_window ()->set_transient_for (get_window ());
 }
@@ -747,13 +747,13 @@ void CardgameCollection::savePreferences () {
       int x, y, width, height;
       get_size (width, height);
       get_position (x, y);
-      inifile << "Delay=" << ComputerPlayer::TIMEOUT << "\nWindowPosX=" << x
+      inifile << "Delay=" << Card::ComputerPlayer::TIMEOUT << "\nWindowPosX=" << x
 	      << "\nWindowPosY=" << y << "\nWindowWidth=" << width
-	      << "\nWindowHeight=" << height << "\nScoreDlgPosX=" << ScoreDlg::LASTX
-	      << "\nScoreDlgPosY=" << ScoreDlg::LASTY << "\n\n";
+	      << "\nWindowHeight=" << height << "\nScoreDlgPosX=" << Card::ScoreDlg::LASTX
+	      << "\nScoreDlgPosY=" << Card::ScoreDlg::LASTY << "\n\n";
 
       YGP::INIFile::write (inifile, "Cards", options.co);
-      inifile << "Width=" << CardImages::WIDTH << "\nHeight=" << CardImages::HEIGHT << "\n\n";
+      inifile << "Width=" << Card::Images::WIDTH << "\nHeight=" << Card::Images::HEIGHT << "\n\n";
 
       for (unsigned int i (0); i < aPlayer.size (); ++i)
 	 options.names[i] = aPlayer[i]->getName ();
@@ -1085,7 +1085,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
            << status << "; Restart: " << restart);
 
    switch (status) {
-   case Game::PLAYING:
+   case Card::Game::PLAYING:
       Check3 (apMenus[END]);
       apMenus[END]->set_sensitive (true);
 #ifdef WITH_NETWORK
@@ -1094,7 +1094,7 @@ void CardgameCollection::gameEvents (unsigned int status) {
 #endif
       break;
 
-   case Game::STOPPED:
+   case Card::Game::STOPPED:
       Check3 (apMenus[END]);
       apMenus[END]->set_sensitive (false);
 #ifdef WITH_NETWORK
@@ -1132,14 +1132,14 @@ void CardgameCollection::doStartGame () {
 /// Checks if Røvhult's special cards are valid; reset them if not
 //-----------------------------------------------------------------------------
 void CardgameCollection::checkRovhultSpecialCards () {
-   CardWidget::NUMBERS* cards[] = { &Rovhult::cardNuke, &Rovhult::cardReverse, &Rovhult::cardSkip };
+   Card::Widget::NUMBERS* cards[] = { &Rovhult::cardNuke, &Rovhult::cardReverse, &Rovhult::cardSkip };
 
    for (unsigned int i (0); i < (sizeof (cards) / sizeof (*cards) - 1); ++i)
       for (unsigned int j (i + 1); j < (sizeof (cards) / sizeof (*cards)); ++j)
 	 if (*cards[i] == *cards[j]) {
-	    Rovhult::cardNuke = CardWidget::TEN;
-	    Rovhult::cardReverse = CardWidget::SEVEN;
-	    Rovhult::cardSkip = CardWidget::EIGHT;
+	    Rovhult::cardNuke = Card::Widget::TEN;
+	    Rovhult::cardReverse = Card::Widget::SEVEN;
+	    Rovhult::cardSkip = Card::Widget::EIGHT;
 
 	    Gtk::MessageDialog* dlg (new Gtk::MessageDialog (_("Invalid values for Rovhult's special cards!\n"
 							       "Resetting them to default values."), false, Gtk::MESSAGE_ERROR));

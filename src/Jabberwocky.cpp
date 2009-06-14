@@ -46,12 +46,12 @@
 #include <YGP/Tokenize.h>
 #include <YGP/ANumeric.h>
 
-#include <Player.h>
-#include <ScoreDlg.h>
-#include <CardImgs.h>
-#include <CardWindow.h>
-#include <RemotePlayer.h>
-#include <ComputerPlayer.h>
+#include <card/Player.h>
+#include <card/Images.h>
+#include <card/Window.h>
+#include <card/ScoreDlg.h>
+#include <card/RemotePlayer.h>
+#include <card/ComputerPlayer.h>
 
 #include "Jabberwocky.h"
 
@@ -71,11 +71,11 @@ char Jabberwocky::sortOrder[4];
 /// \param posPlayer Position of player for the server
 /// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
-Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-			  const std::vector<Player*>& player, unsigned int posPlayer,
+Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
+			  const std::vector<Card::Player*>& player, unsigned int posPlayer,
 			  YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 15, 15),
-     played (ICardPile::COMPRESSED, ICardPile::SHOWFACE),
+     played (Card::IPile::COMPRESSED, Card::IPile::SHOWFACE),
      pTrump (NULL), startPlayer (rand () % NUM_PLAYERS), turn (0),
      idMrg (), pScoreDlg (NULL), menuSort (), menuSort2 (), menuShowScoreDlg ()
  {
@@ -104,10 +104,10 @@ Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& 
               ROWS_PLAYER[i] + 1, Gtk::SHRINK, Gtk::SHRINK, 1);
       TRACE9 ("Jabberwocky::Jabberwocky () - Hand at: " << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
 
-      players[i].won.setShowOption (ICardPile::SHOWBACK);
-      players[i].hand.setShowOption (i ? ICardPile::SHOWBACK : ICardPile::SHOWFACE);
-      players[i].hand.setStyle (i ? ICardPile::QUITE_COMPRESSED : ICardPile::COMPRESSED);
-      players[i].won.setStyle (ICardPile::QUITE_COMPRESSED);
+      players[i].won.setShowOption (Card::IPile::SHOWBACK);
+      players[i].hand.setShowOption (i ? Card::IPile::SHOWBACK : Card::IPile::SHOWFACE);
+      players[i].hand.setStyle (i ? Card::IPile::QUITE_COMPRESSED : Card::IPile::COMPRESSED);
+      players[i].won.setStyle (Card::IPile::QUITE_COMPRESSED);
    }
    attach (played, 3, 11, 6, 9, Gtk::SHRINK, Gtk::SHRINK, 0, 5);
 
@@ -131,7 +131,7 @@ void Jabberwocky::start () {
    Game::start ();
    startPlayer = (startPlayer + 1) % NUM_PLAYERS;
 
-   ICardPile pile;
+   Card::IPile pile;
    if (randomiseCardsToPile (pile)) {
       // Show cards on the table: For all players put 3 cards in hand
       for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
@@ -247,7 +247,7 @@ void Jabberwocky::finishMove () {
    if (played.size () == NUM_PLAYERS)
       Glib::signal_timeout ().connect
 	 (bind_return (bind (mem_fun (*this, &Jabberwocky::takeWonCards), next), false),
-	  ComputerPlayer::TIMEOUT - 50);
+	  Card::ComputerPlayer::TIMEOUT - 50);
 
    if (players[next].hand.size ()) {
       setNextPlayer (next);
@@ -278,14 +278,14 @@ void Jabberwocky::takeWonCards (unsigned int player) {
 /// \param open Flag if cards should be shown or hidden
 //-----------------------------------------------------------------------------
 void Jabberwocky::playOpen (bool open) {
-   ICardPile::ShowOpt show (open ? ICardPile::SHOWFACE : ICardPile::SHOWBACK);
+   Card::IPile::ShowOpt show (open ? Card::IPile::SHOWFACE : Card::IPile::SHOWBACK);
 
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].won.setShowOption (show);
-      players[i].won.setStyle (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
+      players[i].won.setStyle (open ? Card::IPile::COMPRESSED : Card::IPile::VERY_COMPRESSED);
       if (i)
-         players[i].hand.setStyle (open ? ICardPile::COMPRESSED : ICardPile::VERY_COMPRESSED);
-      players[i].hand.setShowOption (i ? show : ICardPile::SHOWFACE);
+         players[i].hand.setStyle (open ? Card::IPile::COMPRESSED : Card::IPile::VERY_COMPRESSED);
+      players[i].hand.setShowOption (i ? show : Card::IPile::SHOWFACE);
    }
 }
 
@@ -293,10 +293,10 @@ void Jabberwocky::playOpen (bool open) {
 /// Changes the names of the playing people
 /// \param newPlayer Array holding the new player
 //-----------------------------------------------------------------------------
-void Jabberwocky::changeNames (const std::vector<Player*>& newPlayer) {
+void Jabberwocky::changeNames (const std::vector<Card::Player*>& newPlayer) {
    Game::changeNames (newPlayer);
 
-   std::vector<Player*> player;
+   std::vector<Card::Player*> player;
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       player.push_back (actPlayers[(i + posServer) % NUM_PLAYERS]);
       players[i].name.set_text (actPlayers[i]->getName ());
@@ -310,9 +310,9 @@ void Jabberwocky::changeNames (const std::vector<Player*>& newPlayer) {
 /// Converts a pile-number to the actual pile
 /// \param newPlayer Array holding the new player
 /// \param pile ID of the pile to return
-/// \returns ICardPile* Pile corresponding to the passed number or NULL
+/// \returns Card::IPile* Pile corresponding to the passed number or NULL
 //----------------------------------------------------------------------------
-ICardPile* Jabberwocky::getPileOfPlayer (unsigned int player, unsigned int pile) {
+Card::IPile* Jabberwocky::getPileOfPlayer (unsigned int player, unsigned int pile) {
    TRACE8 ("Jabberwocky::getPileOfPlayer (unsigned int, unsigned int) - Player "
            << player << "; Pile " << pile);
    if ((player >= NUM_PLAYERS) || pile)
@@ -349,7 +349,7 @@ void Jabberwocky::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
    grpAction->add (menuShowScoreDlg = Gtk::Action::create ("showScoreDlg", Gtk::Stock::EDIT,
 							   _("Show score dialog")),
 		   Gtk::AccelKey ("<shft><ctl>S"),
-		   bind (ptr_fun (&ScoreDlg::display), &pScoreDlg));
+		   bind (ptr_fun (&Card::ScoreDlg::display), &pScoreDlg));
 
    mgrUI->insert_action_group (grpAction);
    idMrg = mgrUI->add_ui_from_string (ui);
@@ -381,7 +381,7 @@ void Jabberwocky::cardSelected (unsigned int pos) {
       takeWonCards (0);
 
    try {
-      CardWidget& card (*players[0].hand[pos]);
+      Card::Widget& card (*players[0].hand[pos]);
       TRACE4 ("Jabberwocky::cardSelected (unsigned int) - Playing " << card);
       if (played.size ()) {
 	 if ((card.colour () != played[0]->colour ()) && players[0].hand.exists (played[0]->colour ()))
@@ -430,7 +430,7 @@ void Jabberwocky::makeBids (unsigned int start) {
       TRACE8 ("Jabberwocky::makeBids (unsigned int) - PlayerID: " << actPlayer);
 
       if (actPlayer) {
-	 if (typeid (*actPlayers[actPlayer]) == typeid (ComputerPlayer)) {
+	 if (typeid (*actPlayers[actPlayer]) == typeid (Card::ComputerPlayer)) {
 	    // Estimate the tricks for the player; take care the last player
 	    // does not place a bid which sums all bids up to the number of players
 	    players[actPlayer].bid = calcTricks (actPlayer);
@@ -559,10 +559,10 @@ unsigned int Jabberwocky::calcTricks (unsigned int player) const {
    unsigned int tricks (0);
    unsigned int left (cards.size () - 1 - NUM_PLAYERS * getTricks (turn));
 
-   for (ICardPile::const_iterator i (players[player].hand.begin ());
+   for (Card::IPile::const_iterator i (players[player].hand.begin ());
 	i != players[player].hand.end (); ++i) {
       if ((*i)->colour () == pTrump->colour ()) {
-	 if (((*i)->number () > CardWidget::EIGHT) || (left > 19))
+	 if (((*i)->number () > Card::Widget::EIGHT) || (left > 19))
 	    ++tricks;
 	 ++tricks;
       }
@@ -581,7 +581,7 @@ unsigned int Jabberwocky::calcTricks (unsigned int player) const {
 /// \param b Card to compare
 /// \returns bool True, if a < b
 //-----------------------------------------------------------------------------
-bool Jabberwocky::compByColourAccTrumps (const CardWidget* a, const CardWidget* b) {
+bool Jabberwocky::compByColourAccTrumps (const Card::Widget* a, const Card::Widget* b) {
    Check3 (a); Check3 (b);
    return ((a->colour () == b->colour ())
            ? a->number () < b->number ()
@@ -598,7 +598,7 @@ void Jabberwocky::showCards2Play (unsigned int player) {
    Check2 (played.size () < NUM_PLAYERS);
    unsigned int pos2Play (-1U);
 
-   ICardPile& hand (players[player].hand);
+   Card::IPile& hand (players[player].hand);
    int aPosColours[4];
    getPositionOfColours (hand, aPosColours);
    TRACE3 ("Jabberwocky::showCards2Play (unsigned int) - Missing tricks: " << ((int)players[player].bid - (players[player].won.size () / NUM_PLAYERS)));
@@ -673,7 +673,7 @@ void Jabberwocky::showCards2Play (unsigned int player) {
 	    unsigned int offset (0);
 	    for (unsigned int i (1); i < (sizeof (aPosColours) / sizeof (aPosColours[0])); ++i) {
 	       TRACE5 ("Jabberwocky::showCards2Play (unsigned int) - No more tricks; Colour: " << i);
-	       if ((CardWidget::COLOURS (i) != pTrump->colour ())
+	       if ((Card::Widget::COLOURS (i) != pTrump->colour ())
 		   && (aPosColours[i] != -1)
 		   && ((aPosColours[offset] == -1)
 		       || ((hand[aPosColours[i]]->number () > hand[offset]->number ())
@@ -697,11 +697,11 @@ void Jabberwocky::showCards2Play (unsigned int player) {
 	    pos2Play = aPosColours[pTrump->colour ()];
 	 else
 	    for (unsigned int i (0); i < 4; ++i)
-	       if (CardWidget::COLOURS (i) != pTrump->colour ())
-		  if ((aPosColours[CardWidget::COLOURS (i)] != -1)
-		      && (isHighest (*hand[aPosColours[CardWidget::COLOURS (i)]])
-			  || isHighEnough (*hand[aPosColours[CardWidget::COLOURS (i)]])))
-		     pos2Play = aPosColours[CardWidget::COLOURS (i)];
+	       if (Card::Widget::COLOURS (i) != pTrump->colour ())
+		  if ((aPosColours[Card::Widget::COLOURS (i)] != -1)
+		      && (isHighest (*hand[aPosColours[Card::Widget::COLOURS (i)]])
+			  || isHighEnough (*hand[aPosColours[Card::Widget::COLOURS (i)]])))
+		     pos2Play = aPosColours[Card::Widget::COLOURS (i)];
       }
 
       if (pos2Play == -1U)
@@ -726,8 +726,8 @@ void Jabberwocky::showCards2Play (unsigned int player) {
 /// \param aPosColour Position of last card in the pile with that colour
 /// \returns unsigned int Position of card to play
 //-----------------------------------------------------------------------------
-unsigned int Jabberwocky::findLowerCard (const CardWidget& cardCmp, const ICardPile& pile, int aPosColour) const {
-   TRACE9 ("Jabberwocky::findLowerCard (const CardWidget&, const ICardPile&, int) - " << aPosColour);
+unsigned int Jabberwocky::findLowerCard (const Card::Widget& cardCmp, const Card::IPile& pile, int aPosColour) const {
+   TRACE9 ("Jabberwocky::findLowerCard (const Card::Widget&, const Card::IPile&, int) - " << aPosColour);
    Check1 ((unsigned int)aPosColour < pile.size ());
    Check2 (pile[aPosColour]->colour () == cardCmp.colour ());
    Check3 (played.size ());
@@ -735,14 +735,14 @@ unsigned int Jabberwocky::findLowerCard (const CardWidget& cardCmp, const ICardP
    // Search for a lower card
    while (aPosColour >= 0 && (pile[aPosColour]->colour () == cardCmp.colour ())) {
       if (pile[aPosColour]->number () < cardCmp.number ()) {
-	 TRACE5 ("Jabberwocky::findLowerCard (const CardWidget&, const ICardPile&, int) - "
+	 TRACE5 ("Jabberwocky::findLowerCard (const Card::Widget&, const Card::IPile&, int) - "
 		 "Playing card at " << aPosColour  << ": " << *pile[aPosColour]);
 	 return aPosColour;
       }
       --aPosColour;
    }
 
-   TRACE5 ("Jabberwocky::findLowerCard (const CardWidget&, const ICardPile&, int) - "
+   TRACE5 ("Jabberwocky::findLowerCard (const Card::Widget&, const Card::IPile&, int) - "
 	   "Forced to play card at " << aPosColour + 1 << ": " << *pile[aPosColour + 1]);
    return aPosColour + 1;
 }
@@ -754,8 +754,8 @@ unsigned int Jabberwocky::findLowerCard (const CardWidget& cardCmp, const ICardP
 /// \param aPositions Array with positions of cards
 /// \returns unsigned int Position of card to play
 //-----------------------------------------------------------------------------
-unsigned int Jabberwocky::findHigherCard (const CardWidget& cardCmp, const ICardPile& pile, unsigned int aPosColour) const {
-   TRACE9 ("Jabberwocky::findHigherCard (const CardWidget&, const ICardPile&, unsigned int)");
+unsigned int Jabberwocky::findHigherCard (const Card::Widget& cardCmp, const Card::IPile& pile, unsigned int aPosColour) const {
+   TRACE9 ("Jabberwocky::findHigherCard (const Card::Widget&, const Card::IPile&, unsigned int)");
    Check1 (aPosColour < pile.size ());
    Check2 (pile[aPosColour]->colour () == cardCmp.colour ());
    Check3 (played.size ());
@@ -767,7 +767,7 @@ unsigned int Jabberwocky::findHigherCard (const CardWidget& cardCmp, const ICard
 	 break;
    } // end-while
 
-   TRACE5 ("Jabberwocky::findHigherCard (const CardWidget&, const ICardPile&, unsigned int) - Playing card at " << pos);
+   TRACE5 ("Jabberwocky::findHigherCard (const Card::Widget&, const Card::IPile&, unsigned int) - Playing card at " << pos);
    return pos;
 }
 
@@ -778,8 +778,8 @@ unsigned int Jabberwocky::findHigherCard (const CardWidget& cardCmp, const ICard
 //-----------------------------------------------------------------------------
 unsigned int Jabberwocky::check4Winner () const {
    Check2 (played.size ()); Check2 (pTrump);
-   CardWidget::COLOURS colour (played[0]->colour ());
-   CardWidget::NUMBERS highest (played[0]->number ());
+   Card::Widget::COLOURS colour (played[0]->colour ());
+   Card::Widget::NUMBERS highest (played[0]->number ());
    unsigned int pos (0);
    for (unsigned int i (1); i < played.size (); ++i)
       if ((played[i]->colour () == colour)
@@ -808,8 +808,8 @@ unsigned int Jabberwocky::check4Winner () const {
 /// \param aPositions Array with positions of cards
 /// \returns unsigned int Position of card to play or -1
 //-----------------------------------------------------------------------------
-unsigned int Jabberwocky::findWorstCard (const ICardPile& pile, const int aPositions[4]) const {
-   TRACE9 ("Jabberwocky::findWorstCard (const ICardPile&, const int[4])");
+unsigned int Jabberwocky::findWorstCard (const Card::IPile& pile, const int aPositions[4]) const {
+   TRACE9 ("Jabberwocky::findWorstCard (const Card::IPile&, const int[4])");
    Check1 (pile.size ());
 
    // Special handling of a pile full of trumps
@@ -827,7 +827,7 @@ unsigned int Jabberwocky::findWorstCard (const ICardPile& pile, const int aPosit
 		     < playedCards[pile[pos]->colour ()].count ())))
 	    pos = aPositions[i] + 1;
 
-   TRACE8 ("Jabberwocky::findWorstCard (const ICardPile&, const int[4]) - " << pos);
+   TRACE8 ("Jabberwocky::findWorstCard (const Card::IPile&, const int[4]) - " << pos);
    return pos;
 }
 
@@ -837,9 +837,9 @@ unsigned int Jabberwocky::findWorstCard (const ICardPile& pile, const int aPosit
 /// \param card Card to inspect
 /// \return bool True, if card is likely highest unplayed one
 //----------------------------------------------------------------------------
-bool Jabberwocky::isHighEnough (const CardWidget& card) const {
-   TRACE8 ("Jabberwocky::isHighEnough (const CardWidget&) - " << card);
-   return (card.number () >= CardWidget::NUMBERS (CardWidget::TEN + ((getTricks (turn) - 3) >> 1)));
+bool Jabberwocky::isHighEnough (const Card::Widget& card) const {
+   TRACE8 ("Jabberwocky::isHighEnough (const Card::Widget&) - " << card);
+   return (card.number () >= Card::Widget::NUMBERS (Card::Widget::TEN + ((getTricks (turn) - 3) >> 1)));
 }
 
 //----------------------------------------------------------------------------
@@ -848,11 +848,11 @@ bool Jabberwocky::isHighEnough (const CardWidget& card) const {
 /// \param card Card to inspect
 /// \return bool True, if card is the highest unplayed one
 //----------------------------------------------------------------------------
-bool Jabberwocky::isHighest (const CardWidget& card) const {
-   TRACE8 ("Jabberwocky::isHighest (const CardWidget&) - " << card);
+bool Jabberwocky::isHighest (const Card::Widget& card) const {
+   TRACE8 ("Jabberwocky::isHighest (const Card::Widget&) - " << card);
 
    int nr (card.number ());
-   while (++nr <= CardWidget::ACE) {
+   while (++nr <= Card::Widget::ACE) {
       if (!playedCards[card.colour ()][nr])
          return false;
    }
@@ -863,14 +863,14 @@ bool Jabberwocky::isHighest (const CardWidget& card) const {
 /// \param pile Pile to inspect
 /// \param result Array of position of last cards of earch colour
 //-----------------------------------------------------------------------------
-void Jabberwocky::getPositionOfColours (const ICardPile& pile, int result[4]) {
+void Jabberwocky::getPositionOfColours (const Card::IPile& pile, int result[4]) {
    memset (result, (char)-1, sizeof (int[4]));
    for (unsigned int i (0); i < (pile.size () - 1); ++i)
       if (pile[i]->colour () != pile[i + 1]->colour ())
          result[pile[i]->colour ()] = i;
    result[pile[pile.size () - 1]->colour ()] = pile.size () - 1;
 
-   TRACE9 ("Jabberwocky::getPositionOfColours (const ICardPile&, unsigned int) - Pos. of "
+   TRACE9 ("Jabberwocky::getPositionOfColours (const Card::IPile&, unsigned int) - Pos. of "
            "cards: " << result[0] << ", " << result[1]
            << ", " << result[2] << ", " << result[3]);
 }
@@ -887,9 +887,9 @@ int Jabberwocky::playCard (unsigned int player) {
    // All players have placed their cards
    if (played.size () == NUM_PLAYERS) {
       // Find the winner
-      ICardPile::const_iterator i (played.begin ());
-      CardWidget::NUMBERS nr ((*i)->number ());
-      CardWidget::COLOURS col ((*i)->colour ());
+      Card::IPile::const_iterator i (played.begin ());
+      Card::Widget::NUMBERS nr ((*i)->number ());
+      Card::Widget::COLOURS col ((*i)->colour ());
       unsigned int bestPlayer (0);
 
       Check3 (pTrump);
@@ -925,7 +925,7 @@ int Jabberwocky::playCard (unsigned int player) {
       // Create score-dialog
       if (!pScoreDlg) {
 	 menuShowScoreDlg->set_sensitive ();
-	 pScoreDlg = ScoreDlg::create (actPlayers);
+	 pScoreDlg = Card::ScoreDlg::create (actPlayers);
 	 pScoreDlg->get_window ()->set_transient_for (get_window ());
       }
       // Add points, if bid has been met; take care of the cards won in the
@@ -1006,9 +1006,9 @@ bool Jabberwocky::handleMessage (unsigned int player, const std::string& message
 /// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
 //-----------------------------------------------------------------------------
 void Jabberwocky::resizeCards () {
-   played.set_size_request (CardImages::WIDTH + 150, CardImages::HEIGHT);
+   played.set_size_request (Card::Images::WIDTH + 150, Card::Images::HEIGHT);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      players[i].won.set_size_request (CardImages::WIDTH + 20, CardImages::HEIGHT + 5);
-      players[i].hand.set_size_request ((i & 1) ? CardImages::WIDTH + 8 * 5: CardImages::WIDTH * 3, CardImages::HEIGHT + 5);
+      players[i].won.set_size_request (Card::Images::WIDTH + 20, Card::Images::HEIGHT + 5);
+      players[i].hand.set_size_request ((i & 1) ? Card::Images::WIDTH + 8 * 5: Card::Images::WIDTH * 3, Card::Images::HEIGHT + 5);
    }
 }

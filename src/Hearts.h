@@ -23,23 +23,26 @@
 
 #include <gtkmm/label.h>
 
-#include <CardSet.h>
-#include <CardPile.h>
+#include <card/Set.h>
+#include <card/Pile.h>
 
-#include <Game.h>
+#include <card/Game.h>
 
-class ScoreDlg;
+
+namespace Card {
+   class ScoreDlg;
+}
 
 
 // Class to handle the Hearts cardgame
-class Hearts : public Game {
+class Hearts : public Card::Game {
    friend class Settings;
    friend class CardgameAppl;
    friend class CardgameCollection;
 
  public:
-   Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-           const std::vector<Player*>& player, unsigned int posPlayer,
+   Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
+           const std::vector<Card::Player*>& player, unsigned int posPlayer,
            YGP::Mutex& mxSerialize);
    virtual ~Hearts ();
 
@@ -47,18 +50,18 @@ class Hearts : public Game {
    virtual void clean ();
    virtual void playOpen (bool open);
    virtual const char* name () { return "Hearts"; }
-   virtual void changeNames (const std::vector<Player*>& newPlayer);
+   virtual void changeNames (const std::vector<Card::Player*>& newPlayer);
    virtual void resizeCards ();
 
    virtual bool handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError);
 
  protected:
-   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
 
  private:
    enum Status { EXCHANGE = Game::LAST };
 
-   static void getPositionOfColours (ICardPile& pile, int result[4]);
+   static void getPositionOfColours (Card::IPile& pile, int result[4]);
 
    // Protected manager functions
    Hearts (const Hearts& other);
@@ -82,13 +85,13 @@ class Hearts : public Game {
    void finishMove ();
    void takeWonCards (unsigned int player);
    bool cardsExchanged (unsigned int cards);
-   static unsigned int numberOfCards (const int aPositions[4], CardWidget::COLOURS colour);
-   static unsigned int pointsOfPile (const ICardPile& pile);
+   static unsigned int numberOfCards (const int aPositions[4], Card::Widget::COLOURS colour);
+   static unsigned int pointsOfPile (const Card::IPile& pile);
 
    //@Section Computer player
    unsigned int findPos2Play (unsigned int player);
-   unsigned int findWorstCard (const ICardPile& pile, const int aPositions[4]) const;
-   unsigned int findLowerCard (const ICardPile& pile, const int aPositions[4]) const;
+   unsigned int findWorstCard (const Card::IPile& pile, const int aPositions[4]) const;
+   unsigned int findLowerCard (const Card::IPile& pile, const int aPositions[4]) const;
 
    void startPlaying ();
 
@@ -101,11 +104,11 @@ class Hearts : public Game {
    unsigned int aPlayed[4];        // Array holding played cars for each colour
 
    unsigned int player2Exchange;  // ID of (next) player to exchange cards with
-   ICardPile aExchange[NUM_PLAYERS];        // Cards the players are exchanging
+   Card::IPile aExchange[NUM_PLAYERS];      // Cards the players are exchanging
 
    struct playerCards {
-      ICardPile*  hand;                       // For players: Cards in the hand
-      ICardPile*  won;                                             // Won cards
+      Card::IPile*  hand;                     // For players: Cards in the hand
+      Card::IPile*  won;                                           // Won cards
       Gtk::Label name;
 
       playerCards () : hand (NULL), won (NULL), name () { }
@@ -114,9 +117,9 @@ class Hearts : public Game {
       playerCards (const playerCards&);
       playerCards& operator= (const playerCards&);
    } players[NUM_PLAYERS];
-   CardHPile played;
+   Card::HPile played;
 
-   ScoreDlg* pScoreDlg;
+   Card::ScoreDlg* pScoreDlg;
 
    Gtk::UIManager::ui_merge_id idMrg;
    Glib::RefPtr<Gtk::Action> menuSort;

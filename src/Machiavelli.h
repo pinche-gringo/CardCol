@@ -30,9 +30,9 @@
 
 #include <XGP/AutoContainer.h>
 
-#include <Game.h>
-#include <CardWindow.h>
-#include <CardWidget.h>
+#include <card/Game.h>
+#include <card/Window.h>
+#include <card/Widget.h>
 
 #include "MachiPile.h"
 
@@ -53,10 +53,10 @@ namespace Gtk {
 
 /**Class handling the Machiavelli cardgame
  */
-class Machiavelli : public Game {
+class Machiavelli : public Card::Game {
  public:
-   Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-                const std::vector<Player*>& player, unsigned int posPlayer,
+   Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
+                const std::vector<Card::Player*>& player, unsigned int posPlayer,
                 YGP::Mutex& mxSerialize);
    virtual ~Machiavelli ();
 
@@ -85,9 +85,9 @@ class Machiavelli : public Game {
    virtual void makeMove (unsigned int player);
    virtual bool enableHuman ();
    virtual void disableHuman ();
-   void changeNames (const std::vector<Player*>& newPlayer);
+   void changeNames (const std::vector<Card::Player*>& newPlayer);
 
-   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
    virtual unsigned int getActTarget () const;
    //@}
 
@@ -102,11 +102,11 @@ class Machiavelli : public Game {
    void dealCard (unsigned int player);
    void checkPiles (YGP::StatusObject& obj) const;
    void endGame (unsigned int looser);
-   bool playSerie (ICardPile& playerPile);
-   bool cardFitsOnPile (const CardWidget& card, unsigned int offset);
-   bool reorderTableToFit (ICardPile& playerPile);
-   bool reorderTableToFit2 (ICardPile& playerPile);
-   bool reorderTableToFit3 (ICardPile& playerPile);
+   bool playSerie (Card::IPile& playerPile);
+   bool cardFitsOnPile (const Card::Widget& card, unsigned int offset);
+   bool reorderTableToFit (Card::IPile& playerPile);
+   bool reorderTableToFit2 (Card::IPile& playerPile);
+   bool reorderTableToFit3 (Card::IPile& playerPile);
    bool reorderTableToFit4 ();
    void addBorderCards2Missing (unsigned int iPile, unsigned int which = -1U);
    //@}
@@ -114,12 +114,12 @@ class Machiavelli : public Game {
    /// \name Drag-and-drop methods
    //@{
    void registerTableDND (unsigned int pile, unsigned int start, unsigned int end);
-   void registerTableDND (CardWidget& card, unsigned int nr);
-   void unregisterTableDND (CardWidget& card);
+   void registerTableDND (Card::Widget& card, unsigned int nr);
+   void unregisterTableDND (Card::Widget& card);
    void unregisterTableDND ();
    void registerHandDND (unsigned int start, unsigned int end);
    void registerHandDND (unsigned int iCard);
-   void unregisterHandDND (CardWidget& card);
+   void unregisterHandDND (Card::Widget& card);
    void getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
                      Gtk::SelectionData& data, guint, guint32 time,
                      unsigned int cardPos);
@@ -147,7 +147,7 @@ class Machiavelli : public Game {
    void endComputerMove ();
 
    Gtk::Label names[NUM_PLAYERS];                        // Names of the player
-   CardHPile  hands[NUM_PLAYERS];             // For all players: Cards in hand
+   Card::HPile  hands[NUM_PLAYERS];           // For all players: Cards in hand
 
    XGP::AutoContainer piles;                              // Piles on the table
    std::vector<MachiPile*> tablePiles;     // Piles on table; for faster access
@@ -155,15 +155,15 @@ class Machiavelli : public Game {
    unsigned int startPlayer;
 
    Gtk::Label       newPile;
-   CardVInfoPile    staple;
+   Card::VInfoPile    staple;
    Gtk::Button      nextTurn;
 
    typedef struct {
       sigc::connection connReceive;
       sigc::connection connGet;
    } CONNECTIONS;
-   std::map<CardWidget*, CONNECTIONS> aDNDHand;
-   std::map<CardWidget*, CONNECTIONS> aDNDTable;
+   std::map<Card::Widget*, CONNECTIONS> aDNDHand;
+   std::map<Card::Widget*, CONNECTIONS> aDNDTable;
 
    unsigned int target;       // Target of the last move of the computer player
 
@@ -192,12 +192,12 @@ class Machiavelli : public Game {
    // Structure to store which cards are missing on a pile, to be able to add from hand
    typedef struct missingCards {
       unsigned int        pile;
-      CardWidget::NUMBERS nr;
-      CardWidget::COLOURS colour;
+      Card::Widget::NUMBERS nr;
+      Card::Widget::COLOURS colour;
 
-      missingCards (unsigned int pile, CardWidget::NUMBERS nr, CardWidget::COLOURS colour)
+      missingCards (unsigned int pile, Card::Widget::NUMBERS nr, Card::Widget::COLOURS colour)
 	 : pile (pile), nr (nr), colour (colour) { }
-      missingCards (unsigned int pile) : pile (pile), nr (CardWidget::UNREACHABLE), colour () { }
+      missingCards (unsigned int pile) : pile (pile), nr (Card::Widget::UNREACHABLE), colour () { }
    } missingCards;
    std::vector<missingCards> missing;
 

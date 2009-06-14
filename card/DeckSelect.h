@@ -1,7 +1,7 @@
 #ifndef DECKSELECT_H
 #define DECKSELECT_H
 
-//$Id$
+//$Id: DeckSelect.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -29,6 +29,8 @@
 
 #include <XGP/XDialog.h>
 
+
+namespace Card {
 
 // Class to select the card decks to use
 class DeckSelectDlg : public XGP::XDialog {
@@ -94,5 +96,6 @@ class DeckSelectDlg : public XGP::XDialog {
    Gtk::IconView backs;
 };
 
+}
 
 #endif

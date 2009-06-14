@@ -1,7 +1,7 @@
 #ifndef REMOTEHUMAN_H
 #define REMOTEHUMAN_H
 
-//$Id$
+//$Id: RemotePlayer.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 // This file is part of CardCol.
 //
@@ -28,6 +28,8 @@ namespace YGP {
 }
 
 
+namespace Card {
+
 /**Implementation of a player on a (remote) computer, communicating over a
    network.
 */
@@ -51,5 +53,7 @@ class RemotePlayer : public Player {
    RemotePlayer (const RemotePlayer& other);
    const RemotePlayer& operator= (const RemotePlayer& other);
 };
+
+}
 
 #endif

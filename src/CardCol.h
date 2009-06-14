@@ -31,9 +31,9 @@
 #include <YGP/ConnMgr.h>
 #include <YGP/Exception.h>
 
-#include <CardSet.h>
-#include <CardPile.h>
-#include <CardImgs.h>
+#include <card/Set.h>
+#include <card/Pile.h>
+#include <card/Images.h>
 
 #include <XGP/XApplication.h>
 
@@ -42,11 +42,13 @@ namespace Gtk {
    class Dialog;
 }
 
-class Game;
-class Player;
+namespace Card {
+   class Game;
+   class Player;
+}
+
 class Options;
 class ChatDlg;
-class ICarddeckSelectDlg;
 
 
 /**Class to handle the cardgame collection
@@ -61,8 +63,8 @@ class CardgameCollection : public XGP::XApplication {
 
    Gtk::Box& getClient () { return *XGP::XApplication::getClient (); }
    Gtk::Statusbar& getStatusbar () { return status; }
-   CardSet& getCards () { return cards; }
-   const std::vector<Player*>& getPlayer () const { return aPlayer; }
+   Card::Set& getCards () { return cards; }
+   const std::vector<Card::Player*>& getPlayer () const { return aPlayer; }
    YGP::ConnectionMgr& getConnectionMgr () { return cmgr; };
    YGP::Mutex& getClientMutex () { return mxThreadCmd; }
    unsigned int getPlayerPosition () const { return playerPos; }
@@ -160,8 +162,8 @@ class CardgameCollection : public XGP::XApplication {
 
    Gtk::Statusbar status;
 
-   CardImages cardFaces;
-   CardSet cards;
+   Card::Images cardFaces;
+   Card::Set cards;
 
 #ifdef WITH_NETWORK
    typedef YGP::OThread<CardgameCollection> THRDAPPL;
@@ -175,12 +177,12 @@ class CardgameCollection : public XGP::XApplication {
    unsigned int playerPos;
 
    Options& options;
-   std::vector<Player*> aPlayer;
+   std::vector<Card::Player*> aPlayer;
 
    int oldGame, actGame;
    unsigned int restart;
 
-   Game* game;
+   Card::Game* game;
 
    static int POSX;
    static int POSY;

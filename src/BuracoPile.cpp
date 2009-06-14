@@ -29,7 +29,7 @@
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
-#include <CardWidget.h>
+#include <card/Widget.h>
 
 #include "Buraco.h"
 #include "BuracoPile.h"
@@ -38,7 +38,7 @@
 //-----------------------------------------------------------------------------
 /// Constructor
 //-----------------------------------------------------------------------------
-BuracoPile::BuracoPile () : CardVPile (COMPRESSED, SHOWFACE), status () {
+BuracoPile::BuracoPile () : Card::VPile (COMPRESSED, SHOWFACE), status () {
    status.type = UNDEFINED;
    status.posFirst = status.posLast = status.posJoker = 7;
    status.points = 0;
@@ -56,9 +56,9 @@ BuracoPile::~BuracoPile () {
 /// \param newCard Card to set as uppermost card of the pile
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
-void BuracoPile::setTopCard (CardWidget& newCard) {
-   TRACE9 ("BuracoPile::setTopCard (CardWidget&) - " << newCard);
-   CardVPile::setTopCard (newCard);
+void BuracoPile::setTopCard (Card::Widget& newCard) {
+   TRACE9 ("BuracoPile::setTopCard (Card::Widget&) - " << newCard);
+   Card::VPile::setTopCard (newCard);
    analyzePile ();
 }
 
@@ -69,10 +69,10 @@ void BuracoPile::setTopCard (CardWidget& newCard) {
 /// \pre \c newCard must be a valid card
 /// \returns unsigned int Position where card was inserted
 //----------------------------------------------------------------------------
-unsigned int BuracoPile::insert (CardWidget& card, unsigned int pos) {
-   TRACE9 ("BuracoPile::insert (CardWidget&, unsigned int) - " << card
+unsigned int BuracoPile::insert (Card::Widget& card, unsigned int pos) {
+   TRACE9 ("BuracoPile::insert (Card::Widget&, unsigned int) - " << card
            << " to " << pos);
-   unsigned int rc (CardVPile::insert (card, pos));
+   unsigned int rc (Card::VPile::insert (card, pos));
    analyzePile ();
    return rc;
 }
@@ -83,8 +83,8 @@ unsigned int BuracoPile::insert (CardWidget& card, unsigned int pos) {
 /// \param card Card to remove from the pile
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
-CardWidget& BuracoPile::remove (CardWidget& card) {
-   CardWidget& rcard (CardVPile::remove (card));
+Card::Widget& BuracoPile::remove (Card::Widget& card) {
+   Card::Widget& rcard (Card::VPile::remove (card));
    analyzePile ();
    return rcard;
 }
@@ -95,8 +95,8 @@ CardWidget& BuracoPile::remove (CardWidget& card) {
 /// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
-CardWidget& BuracoPile::remove (CardWidget& card, bool visible) {
-   CardWidget& rcard (CardVPile::remove (card, visible));
+Card::Widget& BuracoPile::remove (Card::Widget& card, bool visible) {
+   Card::Widget& rcard (Card::VPile::remove (card, visible));
    analyzePile ();
    return rcard;
 }
@@ -106,9 +106,9 @@ CardWidget& BuracoPile::remove (CardWidget& card, bool visible) {
 /// \param pos Zero-based offset of card to remove
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
-CardWidget& BuracoPile::remove (unsigned int pos) {
+Card::Widget& BuracoPile::remove (unsigned int pos) {
    TRACE9 ("BuracoPile::remove (unsigned int) - " << pos);
-   CardWidget& card (CardVPile::remove (pos));
+   Card::Widget& card (Card::VPile::remove (pos));
    analyzePile ();
    return card;
 }
@@ -119,8 +119,8 @@ CardWidget& BuracoPile::remove (unsigned int pos) {
 /// \param visible Flag if the card face should be shown
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
-CardWidget& BuracoPile::remove (unsigned int pos, bool visible) {
-   CardWidget& card (CardVPile::remove (pos, visible));
+Card::Widget& BuracoPile::remove (unsigned int pos, bool visible) {
+   Card::Widget& card (Card::VPile::remove (pos, visible));
    analyzePile ();
    return card;
 }
@@ -139,9 +139,9 @@ CardWidget& BuracoPile::remove (unsigned int pos, bool visible) {
 /// \returns bool True, if card fits on pile
 /// \pre Coloured piles must be sorted strict ascending
 //----------------------------------------------------------------------------
-bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
+bool BuracoPile::getPosition4Card (const Card::Widget& card, unsigned int& pos,
                                    unsigned int& move) const {
-   TRACE6 ("BuracoPile::getPosition4Card (const CardWidget&, 2x unsigned int&) - "
+   TRACE6 ("BuracoPile::getPosition4Card (const Card::Widget&, 2x unsigned int&) - "
            << card);
    Check2 ((status.posJoker < size () || (status.posJoker > 6)));
    move = -1U;
@@ -158,7 +158,7 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
       pos = ((status.type == NUMBER)
 	     ? 1
 	     : ((((status.posFirst < 7))
-		&& (operator[] (status.posFirst)->number () == CardWidget::ACE))
+		&& (operator[] (status.posFirst)->number () == Card::Widget::ACE))
 		? (status.posLast + 1) : 0));
       return true;
    }
@@ -166,7 +166,7 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
    Check2 (status.posLast < size ());
 
    // Else check if the pile is a numberd or a coloured one
-   TRACE5 ("BuracoPile::getPosition4Card (const CardWidget&, 2x unsigned int&) "
+   TRACE5 ("BuracoPile::getPosition4Card (const Card::Widget&, 2x unsigned int&) "
            "- Cards: " << *at (status.posFirst) << " and " << *at (status.posLast));
    if (operator[] (status.posFirst)->number () == card.number ()) {
        if (status.type != COLOUR) {
@@ -184,10 +184,10 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
              && (Buraco::cardDistance (card, *operator[] (status.posFirst))
                  == static_cast<int> (status.posJoker))) {
             if ((status.posJoker && (status.posJoker < status.posLast))
-		|| (card.number () == CardWidget::ACE))
+		|| (card.number () == Card::Widget::ACE))
                move = ((((status.posJoker > status.posFirst)
                          ? operator[] (status.posFirst)->number ()
-                         : card.number ()) == CardWidget::ACE)
+                         : card.number ()) == Card::Widget::ACE)
                        ? status.posLast : 0);
             pos = status.posJoker;
             if ((move != -1U) && (move < pos))
@@ -201,12 +201,12 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
                                    || (status.posJoker > status.posLast))
                                   ? 2 : 1));
          if ((status.posFirst == status.posLast)
-             || (operator[] (status.posFirst)->number () != CardWidget::ACE)) {
+             || (operator[] (status.posFirst)->number () != Card::Widget::ACE)) {
             unsigned int diff (Buraco::cardDistance
                                (*operator[] (status.posFirst), card,
                                 operator[] (status.posFirst)->number ()
-                                < CardWidget::FIVE));
-            TRACE9 ("BuracoPile::getPosition4Card (const CardWidget&, 2x unsigned "
+                                < Card::Widget::FIVE));
+            TRACE9 ("BuracoPile::getPosition4Card (const Card::Widget&, 2x unsigned "
                     "int&) - Diff: " << diff << "; max: " << maxDiff);
             Check3 (diff);
 
@@ -215,15 +215,15 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
 	       if ((status.posJoker < 7)) {
 		  if ((diff == 2)
 		      ? ((status.posJoker > status.posFirst)
-			 && ((operator[] (status.posFirst)->number () != CardWidget::ACE)
+			 && ((operator[] (status.posFirst)->number () != Card::Widget::ACE)
 			     || (size () < 3)))
-		      : ((card.number () == CardWidget::ACE)
+		      : ((card.number () == Card::Widget::ACE)
 			 ? (!status.posJoker && (pos == 1))
-			 : ((card.number () == CardWidget::KING)
+			 : ((card.number () == Card::Widget::KING)
 			    && (!pos && status.posJoker)))) {
 		     move = ((((status.posJoker > status.posFirst)
 			       ? operator[] (status.posFirst)->number ()
-			       : card.number ()) == CardWidget::ACE)
+			       : card.number ()) == Card::Widget::ACE)
 			     ? status.posLast : 0);
 		     move ? --pos : ++pos;
 		  }
@@ -235,7 +235,7 @@ bool BuracoPile::getPosition4Card (const CardWidget& card, unsigned int& pos,
          // Test if card fits at other end
          unsigned int diff (Buraco::cardDistance (card, *operator[] (status.posLast),
                                                   status.posFirst == status.posLast));
-         TRACE9 ("BuracoPile::getPosition4Card (const CardWidget&, 2x unsigned "
+         TRACE9 ("BuracoPile::getPosition4Card (const Card::Widget&, 2x unsigned "
                  "int&) - Diff (end): " << diff << "; max: " << maxDiff);
          if (diff && (diff <= maxDiff)) {
             pos = status.posLast + diff;
@@ -288,14 +288,14 @@ void BuracoPile::analyzePile () {
 
       // Correct points if it is "sucio"
       for (const_iterator i (begin ()); i != end (); ++i)
-         if ((*i)->number () == CardWidget::UNREACHABLE) {
+         if ((*i)->number () == Card::Widget::UNREACHABLE) {
             status.points = 1000;
             break;
          }
    }
    else {
       status.points = (((status.type == NUMBER)
-                        && (operator[] (status.posFirst)->number () == CardWidget::ACE))
+                        && (operator[] (status.posFirst)->number () == Card::Widget::ACE))
                        ? 300 : 200);
       if (status.posJoker > 6)
          status.points += 200;

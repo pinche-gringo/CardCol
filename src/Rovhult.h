@@ -24,23 +24,23 @@
 
 #include <gtkmm/label.h>
 
-#include <CardSet.h>
-#include <CardPile.h>
+#include <card/Set.h>
+#include <card/Pile.h>
 
-#include <Game.h>
+#include <card/Game.h>
 
 
 /**Class to handle the Rovhult-cardgame
  */
-class Rovhult : public Game {
+class Rovhult : public Card::Game {
    friend class Settings;
    friend class CardgameAppl;
    friend class CardgameCollection;
 
  public:
    // Manager functions
-   Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, CardSet& cardset,
-            const std::vector<Player*>& players, unsigned int posPlayer,
+   Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
+            const std::vector<Card::Player*>& players, unsigned int posPlayer,
             YGP::Mutex& mxSerialize);
    ~Rovhult ();
 
@@ -49,14 +49,14 @@ class Rovhult : public Game {
    virtual void playOpen (bool open);
    virtual void clean ();
    virtual const char* name () { return "Rovhult"; }
-   virtual void changeNames (const std::vector<Player*>& newPlayer);
+   virtual void changeNames (const std::vector<Card::Player*>& newPlayer);
    virtual void resizeCards ();
 
    virtual bool handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
 
  protected:
-   virtual ICardPile* getPileOfPlayer (unsigned int player, unsigned int pile);
-   virtual bool executeRemoteMove (ICardPile& pile, unsigned int target) throw (YGP::ParseError);
+   virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual bool executeRemoteMove (Card::IPile& pile, unsigned int target) throw (YGP::ParseError);
 
  private:
    enum { EXCHANGE = Game::LAST, EXCHANGED };
@@ -77,9 +77,9 @@ class Rovhult : public Game {
                            int, int, const Gtk::SelectionData& selection_data, guint,
                            guint time, unsigned int card);
 
-   void registerHandDND (CardWidget& card, unsigned int iCard);
-   void registerTableDND (CardWidget& card, unsigned int pile);
-   void unregisterDND (CardWidget& card) const;
+   void registerHandDND (Card::Widget& card, unsigned int iCard);
+   void registerTableDND (Card::Widget& card, unsigned int pile);
+   void unregisterDND (Card::Widget& card) const;
    void unregisterDND ();
 
    // Event-handling
@@ -104,7 +104,7 @@ class Rovhult : public Game {
 
    unsigned int numberOfEqualTopCards () const;
    bool played4Equal ();
-   void fillUpPile (ICardPile& pile, unsigned int minCards);
+   void fillUpPile (Card::IPile& pile, unsigned int minCards);
 
    int makeTurn (unsigned int player);
    void findCard2Play (unsigned int player, unsigned int& start, unsigned int& end) const;
@@ -112,23 +112,23 @@ class Rovhult : public Game {
    void showCardOfPile (unsigned int player, unsigned int pile, bool invalid) const;
    unsigned int selectRandomCard (unsigned int player);
 
-   static int compareCards (const CardWidget& lhs, const CardWidget& rhs);
-   bool getPileLimits (unsigned int player, CardWidget::NUMBERS& min,
-                       CardWidget::NUMBERS& max) const;
-   bool existOnlySpecialCards (const ICardPile& pile, unsigned int start,
+   static int compareCards (const Card::Widget& lhs, const Card::Widget& rhs);
+   bool getPileLimits (unsigned int player, Card::Widget::NUMBERS& min,
+                       Card::Widget::NUMBERS& max) const;
+   bool existOnlySpecialCards (const Card::IPile& pile, unsigned int start,
                                unsigned int end) const;
-   bool isSpecialCard (CardWidget::NUMBERS nr) const {
-      return (nr == CardWidget::TEN) || (nr == CardWidget::TWO); }
-   static unsigned int getCardValue (const CardWidget& card);
+   bool isSpecialCard (Card::Widget::NUMBERS nr) const {
+      return (nr == Card::Widget::TEN) || (nr == Card::Widget::TWO); }
+   static unsigned int getCardValue (const Card::Widget& card);
 
-   int skip (CardWidget::NUMBERS nr, const ICardPile& pile, unsigned int pos) const {
+   int skip (Card::Widget::NUMBERS nr, const Card::IPile& pile, unsigned int pos) const {
       if (pile[pos]->number () == nr) {
          pos = pile.findLastEqual (pos) + 1;
          return (pos < pile.size ()) ? (int)pos : -1; }
       return pos;
    }
 
-   bool cardValid (CardWidget::NUMBERS nr, bool silent = false) const;
+   bool cardValid (Card::Widget::NUMBERS nr, bool silent = false) const;
    void executeMove (unsigned int player);
    void unmarkAndExecuteMove (unsigned int player, unsigned int count);
    bool unmarkAndMoveToLoser (unsigned int player, unsigned int start, unsigned int end);
@@ -141,11 +141,11 @@ class Rovhult : public Game {
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
 
-   CardHInfoPile played;
-   CardVInfoPile staple;                                     // Cards on staple
+   Card::HInfoPile played;
+   Card::VInfoPile staple;                                   // Cards on staple
    struct playerCards {
-      CardHPile hand;                         // For players: Cards in the hand
-      CardVPile reserve[3];                     // Reserve-cards (for end-game)
+      Card::HPile hand;                       // For players: Cards in the hand
+      Card::VPile reserve[3];                   // Reserve-cards (for end-game)
       Gtk::Label name;
 
       playerCards () : hand (), name () { }
@@ -164,18 +164,18 @@ class Rovhult : public Game {
    static std::vector<Gtk::TargetEntry> dndTypeHand;
    static std::vector<Gtk::TargetEntry> dndTypeTable;
 
-   void disconnectCard (const CardWidget& card);
-   void disconnectCardInHand (const CardWidget& card);
-   void disconnectCardOnTable (const CardWidget& card);
+   void disconnectCard (const Card::Widget& card);
+   void disconnectCardInHand (const Card::Widget& card);
+   void disconnectCardOnTable (const Card::Widget& card);
 
-   std::map <const CardWidget*, sigc::connection> aTableDND;
-   std::map <const CardWidget*, sigc::connection> aHandDND;
-   std::map <const CardWidget*, sigc::connection> aHandData;
-   std::map <const CardWidget*, sigc::connection> aTableData;
+   std::map <const Card::Widget*, sigc::connection> aTableDND;
+   std::map <const Card::Widget*, sigc::connection> aHandDND;
+   std::map <const Card::Widget*, sigc::connection> aHandData;
+   std::map <const Card::Widget*, sigc::connection> aTableData;
 
-   static CardWidget::NUMBERS cardNuke;
-   static CardWidget::NUMBERS cardSkip;
-   static CardWidget::NUMBERS cardReverse;
+   static Card::Widget::NUMBERS cardNuke;
+   static Card::Widget::NUMBERS cardSkip;
+   static Card::Widget::NUMBERS cardReverse;
 };
 
 #endif

@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 7.7.2005
-//COPYRIGHT   : Copyright (C) 2005 - 2008
+//COPYRIGHT   : Copyright (C) 2005 - 2009
 
 // This file is part of CardCol.
 //
@@ -40,10 +40,10 @@
 #include <YGP/Socket.h>
 #include <YGP/AttrParse.h>
 
-#include <Game.h>
-#include <Player.h>
-#include <PlayerConnDlg.h>
-#include <ComputerPlayer.h>
+#include <card/Game.h>
+#include <card/Player.h>
+#include <card/PlayerConnDlg.h>
+#include <card/ComputerPlayer.h>
 
 #include "ChatDlg.h"
 #include "GameTypes.h"

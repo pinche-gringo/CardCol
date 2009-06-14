@@ -1,11 +1,11 @@
-//$Id$
+//$Id: DeckSelect.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
 
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Common/DeckSelect
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
+//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 29.8.2002
 //COPYRIGHT   : Copyright (C) 2002 - 2008
@@ -40,10 +40,12 @@
 #include <YGP/Trace.h>
 #include <YGP/DirSrch.h>
 
-#include <CardImgs.h>
+#include "Images.h"
 
 #include "DeckSelect.h"
 
+
+namespace Card {
 
 //-----------------------------------------------------------------------------
 /// Constructor; adds all controls to the dialog
@@ -55,7 +57,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
      setDecks (), cols (), mDecks (), mBacks (), boxDecks (), txtDecks (_("Available decks")),
      selDeck (), decks (), selBack (), boxBack (), txtBack (_("Available backgrounds")),
      backs () {
-   TRACE3 ("CarddeckSelectDlg::CarddeckSelectDlg (2x const std::string&) - " << deck << " - " << back);
+   TRACE3 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - " << deck << " - " << back);
    Check1 (deck[deck.size () - 1] == YGP::File::DIRSEPARATOR);
 
    Gtk::ScrolledWindow* scrl (new Gtk::ScrolledWindow);
@@ -193,7 +195,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
 	 row[cols.path] = file;
 	 row[cols.name] = file.substr (strlen (GNOMECARDS_DIR), strlen (gfile->name ()) - 4);
 	 Glib::RefPtr<Gdk::Pixbuf> dest (Gdk::Pixbuf::create_subpixbuf (actImg, widthImg * 10, heightImg * 3, widthImg, heightImg));
-	 row[cols.icon] = dest->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
+	 row[cols.icon] = dest->scale_simple (Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);
 
 	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
 		 << (std::string (GNOMECARDS_DIR) + gfile->name ()) << " with " << deck);
@@ -203,7 +205,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
 	 row = (*mBacks->append ());
 	 row[cols.path] = file;
 	 dest = Gdk::Pixbuf::create_subpixbuf (actImg, widthImg << 1, heightImg << 2, widthImg, heightImg);
-	 row[cols.icon] = dest->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
+	 row[cols.icon] = dest->scale_simple (Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);
 
 	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
 		 << (std::string (GNOMECARDS_DIR) + gfile->name ()) << " with " << back);
@@ -240,7 +242,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
 /// Destructor
 //-----------------------------------------------------------------------------
 DeckSelectDlg::~DeckSelectDlg () {
-   TRACE9 ("CarddeckSelectDlg::~CarddeckSelectDlg ()");
+   TRACE9 ("DeckSelectDlg::~DeckSelectDlg ()");
 }
 
 
@@ -288,8 +290,8 @@ Glib::RefPtr<Gdk::Pixbuf> DeckSelectDlg::getImage (const std::string& file, bool
 
    try {
       imgBuf = Gdk::Pixbuf::create_from_file (file.c_str ());
-      if (scale && ((imgBuf->get_height () != (int)CardImages::WIDTH) || (imgBuf->get_width () != (int)CardImages::HEIGHT)))
-	 imgBuf = imgBuf->scale_simple (CardImages::WIDTH, CardImages::HEIGHT, Gdk::INTERP_BILINEAR);
+      if (scale && ((imgBuf->get_height () != (int)Images::WIDTH) || (imgBuf->get_width () != (int)Images::HEIGHT)))
+	 imgBuf = imgBuf->scale_simple (Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);
    }
    catch (Gdk::PixbufError& e) {
       err = e.what ();
@@ -377,4 +379,6 @@ void DeckSelectDlg::backActivated (const Gtk::TreeModel::Path& path) {
       deck = row[cols.path];
    }
    setDecks.emit (deck, back);
+}
+
 }

@@ -21,12 +21,12 @@
 
 #include <stdexcept>
 
-#include <CardPile.h>
+#include <card/Pile.h>
 
 
 /**Class for piles in the Machiavelli cardgame
  */
-class MachiPile : public CardHPile {
+class MachiPile : public Card::HPile {
  public:
    /**Exception indicating an error in the pile
     */
@@ -41,29 +41,29 @@ class MachiPile : public CardHPile {
    MachiPile ();
    virtual ~MachiPile ();
 
-   virtual void setTopCard (CardWidget& newCard);
-   void setTopCard (CardWidget& newCard, bool visible) {
-      CardHPile::setTopCard (newCard, visible); }
+   virtual void setTopCard (Card::Widget& newCard);
+   void setTopCard (Card::Widget& newCard, bool visible) {
+      Card::HPile::setTopCard (newCard, visible); }
 
-   virtual unsigned int insert (CardWidget& card, unsigned int pos);
+   virtual unsigned int insert (Card::Widget& card, unsigned int pos);
 
-   virtual CardWidget& remove (CardWidget& card);
-   CardWidget& remove (CardWidget& card, bool visible);
-   virtual CardWidget& remove (unsigned int pos);
-   CardWidget& remove (unsigned int pos, bool visible);
+   virtual Card::Widget& remove (Card::Widget& card);
+   Card::Widget& remove (Card::Widget& card, bool visible);
+   virtual Card::Widget& remove (unsigned int pos);
+   Card::Widget& remove (unsigned int pos, bool visible);
 
-   unsigned int getPosition4Card (const CardWidget& card) const;
-   bool hasMatching3rd (std::vector<CardWidget*>& pair, MachiPile::const_iterator& match,
+   unsigned int getPosition4Card (const Card::Widget& card) const;
+   bool hasMatching3rd (std::vector<Card::Widget*>& pair, MachiPile::const_iterator& match,
 			unsigned int& nr) const;
 
    TYPE getType () const { return type; }
 
-   int getPosOfColour (CardWidget::COLOURS colour) const;
+   int getPosOfColour (Card::Widget::COLOURS colour) const;
 
    typedef enum { ACE, BOTH, ONE } ACEFLAG;
-   static int cardDistance (const CardWidget& a, const CardWidget& b) {
+   static int cardDistance (const Card::Widget& a, const Card::Widget& b) {
        return cardDistance (a, b, BOTH); }
-   static int cardDistance (const CardWidget& a, const CardWidget& b,
+   static int cardDistance (const Card::Widget& a, const Card::Widget& b,
                             ACEFLAG aceIsOne);
 
    void checkIntegrity () throw (PileError);
