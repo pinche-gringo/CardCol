@@ -226,7 +226,7 @@ template <class T> class Pile : public T, public IPile {
    virtual ~Pile () { }
 
    virtual void setTopCard (Widget& newCard) {
-      Pile::setTopCard (newCard);
+      IPile::setTopCard (newCard);
       T::pack_start (newCard, Gtk::PACK_SHRINK); }
    void setTopCard (Widget& newCard, bool visible) {
       IPile::setTopCard (newCard, visible); }
