@@ -474,15 +474,16 @@ unsigned int Hearts::calcNextPlayer (unsigned int player) {
       }
 
       int aScore[NUM_PLAYERS];
+      memset (aScore, 0, sizeof (aScore));
+      aScore[player] = pointsOfPile (played);    // Adds points still on table
       for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-         aScore[i] = pointsOfPile (*players[i].won);
+         aScore[i] += pointsOfPile (*players[i].won);
          if (aScore[i] == 26) {
             aScore[0] = aScore[1] = aScore[2] = aScore[3] = 26;
             aScore[i] = 0;
             break;
          }
       }
-      aScore[player] += pointsOfPile (played);   // Adds points still on table
 
       pScoreDlg->addPoints (aScore);
       pScoreDlg->display ();
