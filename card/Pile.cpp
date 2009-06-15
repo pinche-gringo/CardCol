@@ -36,8 +36,7 @@ namespace Card {
 /// \param set Specifier for type of cardset
 /// \param show Flag, if cards show their faces
 //-----------------------------------------------------------------------------
-IPile::IPile (PileStyle s, ShowOpt show)
-   : style (s), showOpt (show) {
+IPile::IPile (PileStyle s, ShowOpt show) : style (s), showOpt (show), cards () {
    TRACE3 ("IPile::IPile (PileStyle) - " << (int)style);
    Check3 (s < LAST);
 }
@@ -64,7 +63,7 @@ void IPile::setTopCard (Widget& card) {
    if (showOpt < DONT_CHANGE)
       card.showFace ((bool)showOpt);
 
-   push_back (&card);
+   cards.push_back (&card);
    resize (size () - 1, NORMAL);
 }
 
@@ -77,7 +76,7 @@ Widget& IPile::removeTopCard () {
    Check3 (size () > 0); Check3 (operator[] (size () - 1));
 
    Widget& card (getTopCard ());
-   pop_back ();
+   cards.pop_back ();
 
    TRACE5 ("IPile::removeTopCard () - Card " << card
            << " -> new size: " << size ());
@@ -114,7 +113,7 @@ void IPile::showTopCardFace (bool visible) {
 /// \note Usefull when a bunch of cards is added to the pile
 //-----------------------------------------------------------------------------
 void IPile::insertCardFast (Widget& card, unsigned int offset) {
-   std::vector<Widget*>::insert (begin () + offset, &card);
+   cards.insert (begin () + offset, &card);
    Check3 (operator[] (size () - 1));
    resize (size () - 1, style);
 
@@ -132,7 +131,7 @@ void IPile::insertCardFast (Widget& card, unsigned int offset) {
 Widget& IPile::removeCardFast (unsigned int offset) {
    std::vector<Widget*>::iterator i (begin () + offset);
    Widget& card (**i);
-   erase (i);
+   cards.erase (i);
    return card;
 }
 
@@ -202,8 +201,7 @@ unsigned int IPile::insert (Widget& card, unsigned int pos) {
    if (showOpt < DONT_CHANGE)
       card.showFace ((bool)showOpt);
 
-   std::vector<Widget*>::iterator i
-      (std::vector<Widget*>::insert (begin () + pos, &card));
+   std::vector<Widget*>::iterator i (cards.insert (begin () + pos, &card));
 
    if (style > NORMAL)                          // Cards to display compressed?
       resize ((pos == (size () - 1)) ? pos - 1 : pos, style);
@@ -233,7 +231,7 @@ Widget& IPile::remove (Widget& card) {
    // Search for card and remove it
    std::vector<Widget*>::iterator i (std::find (begin (), end (), &card));
    Check3 (i != end ());
-   i = erase (i);
+   i = cards.erase (i);
 
    // Check if we have to resize a card
    if (style > NORMAL)
@@ -255,7 +253,7 @@ Widget& IPile::remove (unsigned int pos) {
    // Remove card on passed position
    std::vector<Widget*>::iterator i (begin () + pos);
    Widget* pTemp (*i); Check3 (pTemp);
-   i = erase (i);
+   i = cards.erase (i);
 
    // Check if we have to resize a card
    if (style > NORMAL)

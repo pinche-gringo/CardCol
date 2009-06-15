@@ -109,8 +109,8 @@ class Buraco : public Card::Game {
    //@Section helper methods
    void enableHumanHand ();
    void enableCard (unsigned int pos);
-   static bool containsOnlyJoker (const std::vector<Card::Widget*>& pile);
-   static bool containsNoJoker (const std::vector<Card::Widget*>& pile);
+   static bool containsOnlyJoker (const Card::IPile& pile);
+   static bool containsNoJoker (const Card::IPile& pile);
    static bool showJoker (Card::IPile* pile, unsigned int cJokers, bool show);
    void addBuraco (unsigned int player);
    void playCards ();

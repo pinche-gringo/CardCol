@@ -1332,10 +1332,10 @@ void Buraco::registerHandDND (unsigned int start, unsigned int end) {
 /// \param pile Pile to inspect
 /// \returns bool True, if there are only jokers (or pile is empty)
 //-----------------------------------------------------------------------------
-bool Buraco::containsOnlyJoker (const std::vector<Card::Widget*>& pile) {
-   TRACE8 ("Buraco::containsOnlyJoker (const std::vector<Card::Widget*>&)");
+bool Buraco::containsOnlyJoker (const Card::IPile& pile) {
+   TRACE8 ("Buraco::containsOnlyJoker (const Card::IPile&)");
 
-   for (std::vector<Card::Widget*>::const_iterator i (pile.begin ());
+   for (Card::IPile::const_iterator i (pile.begin ());
         i != pile.end (); ++i) {
       Check3 (*i);
       if (!isJoker (**i))
@@ -1349,8 +1349,8 @@ bool Buraco::containsOnlyJoker (const std::vector<Card::Widget*>& pile) {
 /// \param pile Pile to inspect
 /// \returns bool True, if there are no jokers
 //-----------------------------------------------------------------------------
-bool Buraco::containsNoJoker (const std::vector<Card::Widget*>& pile) {
-   for (std::vector<Card::Widget*>::const_iterator i (pile.begin ());
+bool Buraco::containsNoJoker (const Card::IPile& pile) {
+   for (Card::IPile::const_iterator i (pile.begin ());
         i != pile.end (); ++i) {
       Check3 (*i);
       if (isJoker (**i))

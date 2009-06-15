@@ -51,9 +51,8 @@ namespace Card {
 
 
 /**Class to display a pile of cards on the screen
- * \todo Don't derive from std::vector
  */
-class IPile : public std::vector<Widget*> {
+class IPile {
  public:
    typedef enum { NORMAL = 0, COMPRESSED, QUITE_COMPRESSED, VERY_COMPRESSED,
                   TOTALLY_COMPRESSED, LAST } PileStyle;
@@ -61,6 +60,11 @@ class IPile : public std::vector<Widget*> {
 
    typedef bool (*CMPFUNC) (const Widget*, const Widget*);
    typedef int (*CMPFUNC2) (const Widget&, const Widget&);
+
+   typedef std::vector<Widget*>::reference         reference;
+   typedef std::vector<Widget*>::const_reference   const_reference;
+   typedef std::vector<Widget*>::iterator          iterator;
+   typedef std::vector<Widget*>::const_iterator    const_iterator;
 
    IPile (PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE);
    virtual ~IPile ();
@@ -105,6 +109,20 @@ class IPile : public std::vector<Widget*> {
 
    Widget* get (unsigned int id) const;
    //@}
+
+   /// \name std::vector-like interface
+   //@{
+   unsigned int size () const { return cards.size (); }
+   bool empty () const { return cards.empty (); }
+
+   reference operator[] (size_t __n) { return cards[__n]; }
+   const_reference operator[] (size_t __n) const { return cards[__n]; }
+   iterator begin () { return cards.begin (); }
+   const_iterator begin () const { return cards.begin (); }
+   iterator end () { return cards.end (); }
+   const_iterator end () const { return cards.end (); }
+   //@}
+
 
    /// \name Find methods
    //@{
@@ -199,6 +217,7 @@ class IPile : public std::vector<Widget*> {
  protected:
    PileStyle style;
    ShowOpt showOpt;
+   std::vector<Widget*> cards;
 
    virtual void insertCardFast (Widget& card, unsigned int offset);
    virtual Widget& removeCardFast (unsigned int offset);

@@ -1487,7 +1487,7 @@ bool Rovhult::handleMessage (unsigned int player, const std::string& message) th
             // Don't exchange already exchanged cards
             if (save != posServer) {
                // Remove the cards in the hand and the top of the table piles
-               Card::IPile pile;
+	       std::vector<Card::Widget*> pile;
                for (unsigned int i (0); i < 3; ++i) {
                   pile.push_back (&players[lPlayer].hand.removeTopCard ());
                   pile.push_back (&players[lPlayer].reserve[i].removeTopCard ());
@@ -1509,15 +1509,14 @@ bool Rovhult::handleMessage (unsigned int player, const std::string& message) th
 
                   TRACE8 ("Rovhult::handleMessage (unsigned int, const std::string&) - "
                           << lPlayer << ": " << card);
-                  card = pile.find (static_cast<unsigned int> (card));
-                  Check3 (card < pile.size ());
-                  if (card != -1U) {
-                     Card::Widget& movedCard (*pile[card]);
-                     if (target > 2)
-                        movedCard.showFace ();
-                     piles[target++]->setTopCard (movedCard);
-                     pile.erase (pile.begin () + card);
-                  }
+		  for (std::vector<Card::Widget*>::iterator i (pile.begin ()); i != pile.end (); ++i)
+		     if ((*i)->id () == card) {
+			Card::Widget& movedCard (**i);
+			if (target > 2)
+			   movedCard.showFace ();
+			piles[target++]->setTopCard (movedCard);
+			pile.erase (i);
+		     }
                }
                if (pile.empty ()) {
                   aExchanged |= (1 << lPlayer);

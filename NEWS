@@ -1,6 +1,7 @@
 Overview of changes in version 0.9.50:
 
   - libCard uses namespace
+  - Card::Pile doesn't derive from std::vector anymore
 
 
 Overview of changes in version 0.9.40:

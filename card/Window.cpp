@@ -97,8 +97,8 @@ void AnimatedCard::finish () {
 //-----------------------------------------------------------------------------
 void AnimatedCard::getEndPos (int& x, int& y) {
    Check2 (dest.size ());
-   Widget* widget ((posDest == -1U) ? dest.at (0)
-		   : dest.at ((posDest >= dest.size ()) ? posDest - 1 : posDest));
+   Widget* widget ((posDest == -1U) ? dest[0]
+		   : dest[(posDest >= dest.size ()) ? posDest - 1 : posDest]);
    Check2 (widget); Check2 (widget->get_window ()); Check2 (win);
 
    widget->get_window ()->get_origin (x, y);
@@ -114,7 +114,7 @@ void AnimatedCard::getEndPos (int& x, int& y) {
 /// \param card Card to animate
 //-----------------------------------------------------------------------------
 Window::Window (IPile& dest, unsigned int posDest, IPile& src, unsigned int posSrc)
-   : AnimatedCard (dest, posDest, *src.at (posSrc)), src (src), posSrc (posSrc) {
+   : AnimatedCard (dest, posDest, *src[posSrc]), src (src), posSrc (posSrc) {
    TRACE9 ("Window::Window (2x(IPile&, unsigned int)) - " << posSrc << " -> " << posDest);
    Check1 (posSrc < src.size ());
 }
@@ -198,8 +198,8 @@ void PileWindow::getEndPos (int& x, int& y) {
    // Also move the remaining cards
    Glib::RefPtr<Gdk::Window> oldWin (win);
    for (unsigned int i (posSrc + 1); i <= last; ++i) {
-      Check3 (src.at (i)->get_window ());
-      win = src.at (i)->get_window (); Check3 (win);
+      Check3 (src[i]->get_window ());
+      win = src[i]->get_window (); Check3 (win);
       animateTo (x, y);
    }
    win = oldWin;
@@ -212,8 +212,8 @@ void PileWindow::start () {
    TRACE8 ("PileWindow::start ()");
    Window::start ();
    for (unsigned int i (posSrc + 1); i <= last; ++i) {
-      Check3 (src.at (i)->get_window ());
-      src.at (i)->get_window ()->raise ();
+      Check3 (src[i]->get_window ());
+      src[i]->get_window ()->raise ();
    }
 }
 
@@ -363,7 +363,7 @@ void PileWindows::addWindow (IPile& src, unsigned int start, unsigned int end) {
 /// \param end Last card of source to animate
 //-----------------------------------------------------------------------------
 PileWindows::AnimatedPile::AnimatedPile (IPile& src, unsigned int start, unsigned int end)
-   : XGP::AnimatedWindow (src.at (start)->get_window ()),
+   : XGP::AnimatedWindow (src[start]->get_window ()),
      source (src), first (start), last (end), posDest (0) {
    TRACE9 ("PileWindows::AnimatedPile::AnimatedPile (IPile&, 2x unsigned int)");
 }
@@ -385,8 +385,8 @@ void PileWindows::AnimatedPile::getEndPos (int& x, int& y) {
 void PileWindows::AnimatedPile::start () {
    TRACE1 ("PileWindows::AnimatedPile::start ()");
    for (unsigned int i (first); i <= last; ++i) {
-      Check3 (source.at (i)->get_window ());
-      source.at (i)->get_window ()->raise ();
+      Check3 (source[i]->get_window ());
+      source[i]->get_window ()->raise ();
    }
 }
 
@@ -403,8 +403,8 @@ void PileWindows::AnimatedPile::animateTo (int x, int y) {
    // Also move the remaining cards
    Glib::RefPtr<Gdk::Window> oldWin (win);
    for (unsigned int i (first + 1); i <= last; ++i) {
-      Check3 (source.at (i)->get_window ());
-      win = source.at (i)->get_window (); Check3 (win);
+      Check3 (source[i]->get_window ());
+      win = source[i]->get_window (); Check3 (win);
       TRACE9 ("PileWindows::AnimatedPile::animateTo (2x int) - Visible " << win->is_visible ());
       if (win->is_visible ())
 	 XGP::AnimatedWindow::animateTo (x, y);
