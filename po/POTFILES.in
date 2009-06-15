@@ -4,8 +4,8 @@
 #
 # Package source files
 src/Rovhult.cpp
-card/CardImgs.cpp
-card/CardPile.h
+card/Images.cpp
+card/Pile.h
 src/Twopart.cpp
 card/DeckSelect.cpp
 card/Game.cpp
