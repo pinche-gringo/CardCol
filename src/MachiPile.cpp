@@ -383,3 +383,18 @@ bool MachiPile::hasMatching3rd (std::vector<Card::Widget*>& pair, MachiPile::con
    return match != end ();
 }
 
+//----------------------------------------------------------------------------
+/// Marks all cards in the pile
+//----------------------------------------------------------------------------
+void MachiPile::mark () const {
+   for (MachiPile::const_iterator i (begin ()); i != end (); ++i)
+      (*i)->mark ();
+}
+
+//----------------------------------------------------------------------------
+/// Unmarks all cards in the pile
+//----------------------------------------------------------------------------
+void MachiPile::unmark () const {
+   for (MachiPile::const_iterator i (begin ()); i != end (); ++i)
+      (*i)->unmark ();
+}

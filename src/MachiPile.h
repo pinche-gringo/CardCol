@@ -67,6 +67,8 @@ class MachiPile : public Card::HPile {
                             ACEFLAG aceIsOne);
 
    void checkIntegrity () throw (PileError);
+   void mark () const;
+   void unmark () const;
 
  private:
    MachiPile (const MachiPile& other);
