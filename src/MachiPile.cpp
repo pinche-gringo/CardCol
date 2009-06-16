@@ -56,7 +56,7 @@ MachiPile::~MachiPile () {
 void MachiPile::setTopCard (Card::Widget& newCard) {
    TRACE9 ("MachiPile::setTopCard (Card::Widget&) - " << newCard);
    Card::HPile::setTopCard (newCard);
-   analyzePile ();
+   analysePile ();
 }
 
 //----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ unsigned int MachiPile::insert (Card::Widget& card, unsigned int pos) {
    TRACE9 ("MachiPile::insert (Card::Widget&, unsigned int) - " << card
            << " to " << pos);
    unsigned int rc (Card::HPile::insert (card, pos));
-   analyzePile ();
+   analysePile ();
    return rc;
 }
 
@@ -83,7 +83,7 @@ unsigned int MachiPile::insert (Card::Widget& card, unsigned int pos) {
 //----------------------------------------------------------------------------
 Card::Widget& MachiPile::remove (Card::Widget& card) {
    Card::Widget& rcard (Card::HPile::remove (card));
-   analyzePile ();
+   analysePile ();
    return rcard;
 }
 
@@ -95,7 +95,7 @@ Card::Widget& MachiPile::remove (Card::Widget& card) {
 //----------------------------------------------------------------------------
 Card::Widget& MachiPile::remove (Card::Widget& card, bool visible) {
    Card::Widget& rcard (Card::HPile::remove (card, visible));
-   analyzePile ();
+   analysePile ();
    return rcard;
 }
 
@@ -108,7 +108,7 @@ Card::Widget& MachiPile::remove (Card::Widget& card, bool visible) {
 Card::Widget& MachiPile::remove (unsigned int pos) {
    TRACE9 ("MachiPile::remove (unsigned int) - " << pos);
    Card::Widget& card (Card::HPile::remove (pos));
-   analyzePile ();
+   analysePile ();
    return card;
 }
 
@@ -120,7 +120,7 @@ Card::Widget& MachiPile::remove (unsigned int pos) {
 //----------------------------------------------------------------------------
 Card::Widget& MachiPile::remove (unsigned int pos, bool visible) {
    Card::Widget& card (Card::HPile::remove (pos, visible));
-   analyzePile ();
+   analysePile ();
    return card;
 }
 
@@ -205,9 +205,9 @@ int MachiPile::cardDistance (const Card::Widget& a, const Card::Widget& b,
 }
 
 //----------------------------------------------------------------------------
-/// Analyzes the pile and stores its characteristics
+/// Analyses the pile and stores its characteristics
 //----------------------------------------------------------------------------
-void MachiPile::analyzePile () {
+void MachiPile::analysePile () {
    if (size () == 2)
       type = ((operator[] (0)->number () == operator[] (1)->number ())
               ? NUMBER : COLOUR);
@@ -219,7 +219,7 @@ void MachiPile::analyzePile () {
 /// Checks the integrity of the object
 /// \throw PileError describing the error
 //----------------------------------------------------------------------------
-void MachiPile::checkIntegrity () throw (PileError) {
+void MachiPile::checkIntegrity () const throw (PileError) {
    if (size () < 3)
       throw PileError (_("Not enough cards (must be at least 3)!"));
 
@@ -397,4 +397,17 @@ void MachiPile::mark () const {
 void MachiPile::unmark () const {
    for (MachiPile::const_iterator i (begin ()); i != end (); ++i)
       (*i)->unmark ();
+}
+
+//----------------------------------------------------------------------------
+/// Unmarks all cards in the pile
+//----------------------------------------------------------------------------
+void MachiPile::markValidity () const {
+   try {
+      checkIntegrity ();
+      unmark ();
+   }
+   catch (PileError&) {
+      mark ();
+   }
 }

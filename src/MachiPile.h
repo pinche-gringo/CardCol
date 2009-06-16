@@ -66,15 +66,16 @@ class MachiPile : public Card::HPile {
    static int cardDistance (const Card::Widget& a, const Card::Widget& b,
                             ACEFLAG aceIsOne);
 
-   void checkIntegrity () throw (PileError);
+   void checkIntegrity () const throw (PileError);
    void mark () const;
    void unmark () const;
+   void markValidity () const;
 
  private:
    MachiPile (const MachiPile& other);
    const MachiPile& operator= (const MachiPile& other);
 
-   void analyzePile ();
+   void analysePile ();
 
    TYPE type;
 };
