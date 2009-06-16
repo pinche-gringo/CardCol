@@ -100,7 +100,7 @@ class Machiavelli : public Card::Game {
    void removePile (unsigned int pile);
    bool showCardsToPlay (unsigned int player);
    void dealCard (unsigned int player);
-   void checkPiles (YGP::StatusObject& obj) const;
+   void checkPiles (YGP::StatusObject& obj, bool mark = false) const;
    void endGame (unsigned int looser);
    bool playSerie (Card::IPile& playerPile);
    bool cardFitsOnPile (const Card::Widget& card, unsigned int offset);

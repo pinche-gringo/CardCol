@@ -340,7 +340,7 @@ void Machiavelli::endTurn () {
 
    // Show error, if any
    YGP::StatusObject obj;
-   checkPiles (obj);
+   checkPiles (obj, true);
    if (obj.getType () != YGP::StatusObject::UNDEFINED) {
       obj.generalize (_("Can't end turn: The piles are not valid!"));
       undoDlg = new XGP::MessageDlg (obj);
@@ -760,7 +760,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    // Check if human got rid of all cards
    if (hands[0].empty ()) {
       YGP::StatusObject obj;
-      checkPiles (obj);
+      checkPiles (obj, true);
       if (obj.getType () == YGP::StatusObject::UNDEFINED) {
 	 doEndTurn ();
 	 return;
@@ -790,6 +790,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
            unregisterTableDND (**i);
            registerTableDND (**i, (nrpile << 8) + i - tablePiles[nrpile]->begin ());
         }
+	((MachiPile&)src).markValidity ();
       }
    }
 
@@ -797,6 +798,8 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    if ((info ==HAND) && *pValue < hands[0].size ())
       registerHandDND (*pValue, hands[0].size () - 1);
    Check3 (aDNDHand.size () == hands[0].size ());
+
+   pile->markValidity ();
 
    undo.push (val);
    undo1->set_sensitive (true);
@@ -1406,21 +1409,23 @@ void Machiavelli::dealCard (unsigned int player) {
 
 //----------------------------------------------------------------------------
 /// Checks, if all the piles on the table are valid
+/// \param obj Object collecting all errors
+/// \param mark Flag if invalid piles should be marked
 //----------------------------------------------------------------------------
-void Machiavelli::checkPiles (YGP::StatusObject& obj) const {
+void Machiavelli::checkPiles (YGP::StatusObject& obj, bool mark) const {
    for (std::vector<MachiPile*>::const_iterator i (tablePiles.begin ());
         i != tablePiles.end (); ++i) {
        try {
            (*i)->checkIntegrity ();
+	   (*i)->unmark ();
        }
        catch (MachiPile::PileError& error) {
-           TRACE8 ("Machiavelli::checkPiles () const - Pile " << (i - tablePiles.begin ())
-                   << ": " << error.what ());
-           Glib::ustring msg (_("Pile %1: %2\n"));
-           msg.replace (msg.find ("%1"), 2,
-                        YGP::ANumeric::toString (i - tablePiles.begin () + 1));
-           msg.replace (msg.find ("%2"), 2, error.what ());
-           obj.setMessage (YGP::StatusObject::ERROR, msg);
+	  (*i)->mark ();
+	  TRACE8 ("Machiavelli::checkPiles () const - Pile " << (i - tablePiles.begin ()) << ": " << error.what ());
+	  Glib::ustring msg (_("Pile %1: %2\n"));
+	  msg.replace (msg.find ("%1"), 2, YGP::ANumeric::toString (i - tablePiles.begin () + 1));
+	  msg.replace (msg.find ("%2"), 2, error.what ());
+          obj.setMessage (YGP::StatusObject::ERROR, msg);
        }
    }
 }
@@ -1496,7 +1501,7 @@ void Machiavelli::undoMove (unsigned int number) {
    else
       if (undoDlg) {
 	 YGP::StatusObject obj;
-	 checkPiles (obj);
+	 checkPiles (obj, true);
 	 if (obj.getType () != YGP::StatusObject::UNDEFINED)
 	    obj.generalize (_("Can't end turn: The piles are not valid!"));
 	 else
@@ -1869,8 +1874,7 @@ void Machiavelli::resizeCards () {
 //-----------------------------------------------------------------------------
 void Machiavelli::unmarkAndEnd (MachiPile* pile) {
    Check1 (pile);
-   for (MachiPile::iterator i (pile->begin ()); i != pile->end (); ++i)
-      (*i)->unmark ();
+   pile->unmark ();
    endComputerMove ();
 }
 
