@@ -97,7 +97,7 @@ bool CardgameCollection::stopClientWaiting () {
 /// Opens a dialog allowing to connect to other computers
 //-----------------------------------------------------------------------------
 void CardgameCollection::connect () {
-   playerPos = PlayerConnectDlg::perform (aPlayer, CardgameAppl::PORT, cmgr);
+   playerPos = Card::PlayerConnectDlg::perform (aPlayer, CardgameAppl::PORT, cmgr);
    TRACE1 ("CardgameCollection::connect () - Mode: " << cmgr.getMode ()
 	   << "; Pos: " << playerPos);
    if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
@@ -199,16 +199,16 @@ void* CardgameCollection::waitForMessages (void* thread) {
    // The server must change the disconnected remote to a computer controled player
    if (cmgr.getMode () == YGP::ConnectionMgr::SERVER) {
       TRACE7 ("CardgameCollection::waitForMessages (void*) - Removing " << aPlayer[iPlayer]->getName ());
-      Player* oldPlayer (aPlayer[iPlayer]); Check3 (oldPlayer);
-      aPlayer[iPlayer] = new ComputerPlayer (oldPlayer->getName ());
+      Card::Player* oldPlayer (aPlayer[iPlayer]); Check3 (oldPlayer);
+      aPlayer[iPlayer] = new Card::ComputerPlayer (oldPlayer->getName ());
       delete oldPlayer;
    }
    // while the client changes all remote to computer controled player
    else {
-      std::vector<Player*>::iterator i (aPlayer.begin ()); Check3 (i != aPlayer.end ());
+      std::vector<Card::Player*>::iterator i (aPlayer.begin ()); Check3 (i != aPlayer.end ());
       for (++i; i != aPlayer.end (); ++i) {
-	 Player* oldPlayer (*i); Check3 (oldPlayer);
-	 *i = new ComputerPlayer (oldPlayer->getName ());
+	 Card::Player* oldPlayer (*i); Check3 (oldPlayer);
+	 *i = new Card::ComputerPlayer (oldPlayer->getName ());
 	 delete oldPlayer;
       }
    }
@@ -491,10 +491,10 @@ void CardgameCollection::autoConnect (const Options& options) {
       TRACE9 ("CardgameCollection::autoConnect (const Options&) - Connect: "
               << options.target << '-' << options.port);
       if (options.target.size ())
-         playerPos = PlayerConnectDlg::perform (aPlayer, cmgr, options.target,
-                                                options.port);
+         playerPos = Card::PlayerConnectDlg::perform (aPlayer, cmgr, options.target,
+						      options.port);
       else
-          playerPos = PlayerConnectDlg::perform (aPlayer, cmgr, options.port);
+          playerPos = Card::PlayerConnectDlg::perform (aPlayer, cmgr, options.port);
 
       TRACE1 ("CardgameCollection::autoConnect (const Options&) - "
               << cmgr.getMode () << "; Pos: " << playerPos);
@@ -532,7 +532,7 @@ void CardgameCollection::broadcastNames () {
 
    std::string msg ("ChgNames=");
    if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
-      for (std::vector<Player*>::iterator i (aPlayer.begin ());
+      for (std::vector<Card::Player*>::iterator i (aPlayer.begin ());
 	   i != aPlayer.end (); ++i)
 	 msg += (*i)->getName () + std::string (1, '\n');
    else
