@@ -210,11 +210,6 @@ void Buraco::makeMove (unsigned int player) {
    playCards ();
 }
 
-#include <sys/time.h>
-#include <YGP/ATime.h>
-#include <iomanip>
-#define TIME(x) YGP::ATime ((time_t)x.tv_sec, false).toString ("%X") << ':' << std::setw (6) << std::setfill ('0') << x.tv_usec
-
 //-----------------------------------------------------------------------------
 /// Cleanup of piles after each turn
 /// \returns bool True, if game has been ended
