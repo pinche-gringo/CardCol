@@ -92,18 +92,18 @@ void CardgameAppl::showHelp () const {
    std::cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
              << _(" [OPTIONS]\n\n")
       /* For translations: Write the Rovhult as o-slash */
-             << "  -g, --game ......... " << _("[GAME] Select game to start (default: Rovhult)\n")
+             << "  -g, --game ......... " << _("GAME Select game to start (default: Rovhult)\n")
              << "  -G, --list-games ... " << _("List available games\n")
-             << "  -f, --file ......... " << _("[FILE] Use file as INI file\n")
-             << "  -b, --browser ...... " << _("[NAME] Browser to use to display the help\n")
-             << "  -d, --dir-help ..... " << _("[DIR] Directory to search for help\n")
+             << "  -f, --file ......... " << _("FILE Use file as INI file\n")
+             << "  -b, --browser ...... " << _("NAME Browser to use to display the help\n")
+             << "  -d, --dir-help ..... " << _("DIR Directory to search for help\n")
 #ifdef WITH_NETWORK
-             << "  -l, --listen-at .... " << _("[PORT] Awaits connections on port PORT\n")
-             << "  -c, --connect-to ... " << _("[SERVER[:PORT]] Connects to SERVER:PORT\n")
+             << "  -l, --listen-at .... " << _("PORT Awaits connections on port PORT\n")
+             << "  -c, --connect-to ... " << _("SERVER:PORT Connects to SERVER:PORT\n")
 #endif
 #ifdef SAVE_GAME
-             << "  -S, --save-game .... " << _("[FILE] Saves game into FILE\n")
-             << "  -L, --load-game .... " << _("[FILE] Load game from FILE\n")
+             << "  -S, --save-game .... " << _("FILE Saves game into FILE\n")
+             << "  -L, --load-game .... " << _("FILE Load game from FILE\n")
 #endif
              << "  -V, --version ...... " << _("Output version information and exit\n")
              << "  -h, -?, --help ..... " << _("Displays this help and exit\n\n")
@@ -218,8 +218,11 @@ bool CardgameAppl::handleOption (const char option) {
       const char* port (getOptionValue ());
       if (port)
          options.port = port;
-      else
-         std::cerr << PACKAGE << _("-warning: No port specified! Ignoring option `l'\n");
+      else {
+	 std::string e (_("-warning: No port specified - using %1!\n"));
+	 e.replace (e.find ("%1"), 2, options.port = STRING (DEFPORT));
+	 std::cerr << PACKAGE << e;
+      }
       break; }
 
    case 'c': {

@@ -28,7 +28,8 @@
 
 #ifdef WITH_NETWORK
 #  define DEFPORT                31338
-#  define STRING(nr)             #nr
+#  define STR(nr)                #nr
+#  define STRING(nr)             STR (nr)
 #endif
 
 
