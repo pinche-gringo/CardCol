@@ -647,7 +647,7 @@ void Buraco::clean () {
 /// \returns bool False
 //-----------------------------------------------------------------------------
 bool Buraco::enableHuman () {
-   Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
+   Check3 (stapleTop.empty ()); Check3 (dumpedTop.empty ());
 
    if (gameStatus () == PLAYING)
       cleanup ();
@@ -695,6 +695,7 @@ void Buraco::enableHumanHand () {
 
 //-----------------------------------------------------------------------------
 /// Disables the cards the human player can select
+/// This method must not assume that cards are activated
 //-----------------------------------------------------------------------------
 void Buraco::disableHuman () {
    TRACE2 ("Buraco::disableHuman () - DND: " << aDNDHand.size () << "; "
@@ -832,6 +833,20 @@ void Buraco::dumpedSelected () {
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
    Check2 (!gStatus.pickUpPlayed);
    disableHuman ();
+
+   // Move top card to human and enable the cards in his hand, when idle
+   // (means: *after* this signalhandler terminates)
+   Glib::signal_idle ().connect
+      (bind_return (mem_fun (*this, &Buraco::doDelayedDumpedSelected), false));
+}
+
+//-----------------------------------------------------------------------------
+/// Handles the user clicking the top card on the dumped staple
+/// This is intened to be called after the callback has been de-registered to
+/// to prevent side-effects caused by timing-issues
+//-----------------------------------------------------------------------------
+void Buraco::doDelayedDumpedSelected () {
+   TRACE5 ("Buraco::doDelayedDumpedSelected ()");
 
    if (gameStatus () != STOPPED) {
       ICardPile* target (NULL);
@@ -1259,8 +1274,8 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       if (containsOnlyJoker (hands[0]) && humanPilesOK ()) {
 	 if (!reserve[0].empty ()) {
 	    disableHuman ();
-	    addBuraco (0);
-	    enableHumanHand ();
+	    Glib::signal_idle ().connect
+	       (bind_return (mem_fun (*this, &Buraco::addBuraco4HumanAndEnable), false));
 	    return;
 	 }
 	 else
@@ -1279,6 +1294,14 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       dlg.run ();
       return;
    }
+}
+
+//-----------------------------------------------------------------------------
+/// Adds the buraco to the human and re-enables his cards
+//-----------------------------------------------------------------------------
+void Buraco::addBuraco4HumanAndEnable () {
+   addBuraco (0);
+   enableHumanHand ();
 }
 
 //-----------------------------------------------------------------------------

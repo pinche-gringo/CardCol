@@ -94,6 +94,7 @@ class Buraco : public Game {
    //@Section Event handling
    void cardSelected (unsigned int iCard);
    void dumpedSelected ();
+   void doDelayedDumpedSelected ();
    void doDumpedSelected ();
    void stapleSelected ();
    void doStapleSelected ();
@@ -105,6 +106,7 @@ class Buraco : public Game {
    void sortHandByColour ();
 
    //@Section helper methods
+   void addBuraco4HumanAndEnable ();
    void enableHumanHand ();
    void enableCard (unsigned int pos);
    static bool containsOnlyJoker (const std::vector<CardWidget*>& pile);
