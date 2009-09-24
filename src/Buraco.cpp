@@ -1273,6 +1273,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       // If the player has no more cards left (except of joker): Give him the reserve
       if (containsOnlyJoker (hands[0]) && humanPilesOK ()) {
 	 if (!reserve[0].empty ()) {
+	    disableHuman ();
 	    Glib::signal_idle ().connect
 	       (bind_return (mem_fun (*this, &Buraco::addBuraco4HumanAndEnable), false));
 	    return;
