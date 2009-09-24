@@ -92,10 +92,12 @@ class Buraco : public Card::Game {
    virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
    virtual bool executeRemoteMove (Card::IPile& pile, unsigned int target) throw (YGP::ParseError);
    virtual unsigned int getActTarget () const;
+   void endTurn (unsigned int player, int card2Dump);
 
    //@Section Event handling
    void cardSelected (unsigned int iCard);
    void dumpedSelected ();
+   void doDelayedDumpedSelected ();
    void doDumpedSelected ();
    void stapleSelected ();
    void doStapleSelected ();
@@ -107,6 +109,7 @@ class Buraco : public Card::Game {
    void sortHandByColour ();
 
    //@Section helper methods
+   void addBuraco4HumanAndEnable ();
    void enableHumanHand ();
    void enableCard (unsigned int pos);
    static bool containsOnlyJoker (const Card::IPile& pile);
@@ -173,8 +176,8 @@ class Buraco : public Card::Game {
    Gtk::HBox  boxTeam[NUM_PLAYERS >> 1];
 
    Gtk::Label       newPile;
-   Card::VInfoPile    staple;
-   Card::VInfoPile    dumped;
+   Card::VInfoPile  staple;
+   Card::VInfoPile  dumped;
    sigc::connection dumpedTop;
    sigc::connection stapleTop;
 
@@ -218,6 +221,8 @@ class Buraco : public Card::Game {
    Glib::RefPtr<Gtk::Action> menuSort;
    Glib::RefPtr<Gtk::Action> menuSort2;
    Glib::RefPtr<Gtk::Action> menuShowScoreDlg;
+
+   unsigned int target;               ///< Id identifying the target to play to
 
    static unsigned int ENDPOINTS;
    static unsigned int CARDS2DEAL;

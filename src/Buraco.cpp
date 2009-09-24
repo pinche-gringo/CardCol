@@ -40,6 +40,8 @@
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/scrolledwindow.h>
 
+#define CHECK 9
+#define TRACELEVEL 8
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
@@ -81,7 +83,7 @@ Buraco::Buraco (Gtk::Box& parent, Gtk::Statusbar& statusbar,
      dumped (Card::IPile::TOTALLY_COMPRESSED, Card::IPile::SHOWFACE),
      dumpedTop (), stapleTop (), aDNDHand (), aDNDTable (), gStatus (),
      undo (), pScoreDlg (NULL), idMrg (), menuUndo (), menuSort (), menuSort2 (),
-     menuShowScoreDlg () {
+     menuShowScoreDlg (), target (-1U) {
    TRACE9 ("Buraco::Buraco (Box&, Statusbar&, Card::Set&, const "
            "std::vector<Glib::ustring>&)");
 
@@ -348,8 +350,7 @@ void Buraco::playCards () {
       dumpedCard.show ();
    }
 
-   unsigned int pos1Play, pos2Play;
-   unsigned int target (executeMove (player, pos1Play, pos2Play));
+   target = executeMove (player, pos1Play, pos2Play);
    TRACE1 ("Buraco::playCards () - " << pos1Play << '/' << pos2Play << " -> " << std::hex << target << std::dec);
 
    flipCards2Play (playerPile, pos1Play, pos2Play);
@@ -360,15 +361,27 @@ void Buraco::playCards () {
 	 .sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
    else {
       Check3 (pos1Play == pos2Play);
-      gStatus.startTurn = 1;
-
-      animateCard (dumped, playerPile, pos1Play)
-	 .sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
-
-      ++player &= 0x3;
-      displayTurn (player);
-      setNextPlayer (player);
+      endTurn (player, pos1Play);
    }
+}
+
+//-----------------------------------------------------------------------------
+/// Ends the actual turn by dumping a card
+/// \param player Number of player ending the turn
+/// \param card2Dump Offset of card to dump in th ehand of th ecurrent player
+//-----------------------------------------------------------------------------
+void Buraco::endTurn (unsigned int player, int card2Dump) {
+   Check1 (player < NUM_PLAYERS);
+   Card::IPile& playerPile (hands[player]);
+   Check1 (playerPile.size () > card2Dump);
+
+   gStatus.startTurn = 1;
+   animateCard (dumped, playerPile, pos1Play)
+      .sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
+
+   ++player &= 0x3;
+   displayTurn (player);
+   setNextPlayer (player);
 }
 
 //-----------------------------------------------------------------------------
@@ -643,7 +656,6 @@ void Buraco::clean () {
 //-----------------------------------------------------------------------------
 bool Buraco::enableHuman () {
    Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
-
    if (gameStatus () == PLAYING)
       cleanup ();
 
@@ -653,7 +665,7 @@ bool Buraco::enableHuman () {
    if (dumped.size ())
       dumpedTop = dumped.getTopCard ().signal_clicked ().connect
 	 (mem_fun (*this, (&Buraco::dumpedSelected)));
-
+   Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
    return false;
 }
 
@@ -784,6 +796,7 @@ void Buraco::stapleSelected () {
 
    dumpedTop.disconnect ();
    stapleTop.disconnect ();
+   Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
 
    // Move top card to human and enable the cards in his hand, when idle
    // (means: *after* this signalhandler terminates)
@@ -797,6 +810,7 @@ void Buraco::stapleSelected () {
 void Buraco::doStapleSelected () {
    TRACE5 ("Buraco::doStapleSelected ()");
    Check2 (staple.size ());
+   Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
 
    if (gameStatus () != STOPPED) {
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
@@ -809,8 +823,10 @@ void Buraco::doStapleSelected () {
 	 broadcastMessage (msg.str ());
       }
 
-      animateCard (hands[0], staple, staple.size () - 1)
-	 .sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
+      unsigned int player (currentPlayer ());
+      Card::Window& win (animateCard (hands[player], staple, staple.size () - 1));
+      if (!player)
+	 win.sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
    }
    else {
       dumped.append (staple.removeTopCard ());
@@ -827,6 +843,21 @@ void Buraco::dumpedSelected () {
    Check3 (stapleTop.connected ()); Check3 (dumpedTop.connected ());
    Check2 (!gStatus.pickUpPlayed);
    disableHuman ();
+
+   // Move top card to human and enable the cards in his hand, when idle
+   // (means: *after* this signalhandler terminates)
+   Glib::signal_idle ().connect
+      (bind_return (mem_fun (*this, &Buraco::doDelayedDumpedSelected), false));
+}
+
+//-----------------------------------------------------------------------------
+/// Handles the user clicking the top card on the dumped staple
+/// This is intened to be called after the callback has been de-registered to
+/// to prevent side-effects caused by timing-issues
+//-----------------------------------------------------------------------------
+void Buraco::doDelayedDumpedSelected () {
+   TRACE4 ("Buraco::doDelayedDumpedSelected ()");
+   Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
 
    if (gameStatus () != STOPPED) {
       Card::IPile* target (NULL);
@@ -1254,8 +1285,8 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       if (containsOnlyJoker (hands[0]) && humanPilesOK ()) {
 	 if (!reserve[0].empty ()) {
 	    disableHuman ();
-	    addBuraco (0);
-	    enableHumanHand ();
+	    Glib::signal_idle ().connect
+	       (bind_return (mem_fun (*this, &Buraco::addBuraco4HumanAndEnable), false));
 	    return;
 	 }
 	 else
@@ -1274,6 +1305,14 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
       dlg.run ();
       return;
    }
+}
+
+//-----------------------------------------------------------------------------
+/// Adds the buraco to the human and re-enables his cards
+//-----------------------------------------------------------------------------
+void Buraco::addBuraco4HumanAndEnable () {
+   addBuraco (0);
+   enableHumanHand ();
 }
 
 //-----------------------------------------------------------------------------
@@ -2159,39 +2198,44 @@ bool Buraco::executeRemoteMove (Card::IPile& pile, unsigned int dest) throw (YGP
 
    switch (dest) {
    case 1:
-      // TODO: What? target = 0xffff0000;
+      Check3 (pos1Play == pos2Play);
       gStatus.startGame = gStatus.startTurn = 0;
+      endTurn (currentPlayer (), pos1Play);
       break;
 
    case 2: {
-      Check3 (staple.size ());
-      Card::Window& win (animateCard (hands[currentPlayer ()], staple, staple.size () - 1));
-      if (!currentPlayer ())
+      unsigned int player (currentPlayer ());
+      Card::Window& win (animateCard (hands[player], staple, staple.size () - 1));
+      if (!player)
 	 win.sigAnimation.connect (mem_fun (*this, &Buraco::enableHumanHand));
-      return false;
+      break;
    }
+
    case 3:
-      Check3 (dumped.size ());
-      pos1Play = pos2Play = -1U;
       doDumpedSelected ();
-      return false;
+      break;
 
    default:
       if (dest != 0xffff0000) {
-         dest -= 100;
          if (((dest >> 16) >= tablePiles[currentPlayer () & 1].size ())
              || (tablePiles[currentPlayer () & 1][dest >> 16]->size ()
                  < (dest & 0xffff)))
             throw YGP::ParseError (N_("Invalid target specification!"));
+	 unsigned int player (currentPlayer ());
 
 	 Check3 (pos1Play != -1U); Check3 (pos2Play != -1U);
+	 Check2 (pos1Play <= pos2Play); Check2 (pos2Play < hands[player].size ());
 	 if (pos1Play == pos2Play)
 	    undo.assign (dest >> 16, dest & 0xffff, pos1Play);
+
+	 animateCards (*tablePiles[player & 1][dest >> 16], dest & 0xff,
+		       hands[player], pos1Play, pos2Play)
+	    .sigAnimation.connect (mem_fun (*this, &Buraco::makeNextMoves));
       }
       break;
    }
 
-   return Game::executeRemoteMove (pile, dest);
+   return false;
 }
 
 //----------------------------------------------------------------------------
@@ -2199,8 +2243,7 @@ bool Buraco::executeRemoteMove (Card::IPile& pile, unsigned int dest) throw (YGP
 /// \returns unsigned int ID of the target
 //----------------------------------------------------------------------------
 unsigned int Buraco::getActTarget () const {
-   return 0;
-   // TODO: What? return (target == 0xffff0000) ? 0xffff0000 : (target + 100);
+   return target;
 }
 
 //-----------------------------------------------------------------------------
