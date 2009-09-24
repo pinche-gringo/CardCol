@@ -147,6 +147,7 @@ void Game::end (bool startNew) {
 
 //-----------------------------------------------------------------------------
 /// Disables the cards the human player can select
+/// This method must not assume that cards are activated
 //-----------------------------------------------------------------------------
 void Game::disableHuman () {
    TRACE2 ("Game::disableHuman () - " << activeCards.size () << " cards");

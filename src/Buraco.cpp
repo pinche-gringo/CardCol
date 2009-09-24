@@ -655,7 +655,8 @@ void Buraco::clean () {
 /// \returns bool False
 //-----------------------------------------------------------------------------
 bool Buraco::enableHuman () {
-   Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
+   Check3 (stapleTop.empty ()); Check3 (dumpedTop.empty ());
+
    if (gameStatus () == PLAYING)
       cleanup ();
 
@@ -702,10 +703,10 @@ void Buraco::enableHumanHand () {
 
 //-----------------------------------------------------------------------------
 /// Disables the cards the human player can select
+/// This method must not assume that cards are activated
 //-----------------------------------------------------------------------------
 void Buraco::disableHuman () {
-   TRACE2 ("Buraco::disableHuman () - DND: " << aDNDHand.size () << "; "
-           << aDNDTable.size ());
+   TRACE2 ("Buraco::disableHuman () - DND: " << aDNDHand.size () << "; " << aDNDTable.size ());
    Game::disableHuman ();
    menuSort->set_sensitive (false);
    menuSort2->set_sensitive (false);
@@ -794,10 +795,6 @@ void Buraco::stapleSelected () {
    TRACE5 ("Buraco::stapleSelected ()");
    Check3 (staple.size ()); Check3 (stapleTop.connected ());
 
-   dumpedTop.disconnect ();
-   stapleTop.disconnect ();
-   Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
-
    // Move top card to human and enable the cards in his hand, when idle
    // (means: *after* this signalhandler terminates)
    Glib::signal_idle ().connect
@@ -811,6 +808,9 @@ void Buraco::doStapleSelected () {
    TRACE5 ("Buraco::doStapleSelected ()");
    Check2 (staple.size ());
    Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
+
+   dumpedTop.disconnect ();
+   stapleTop.disconnect ();
 
    if (gameStatus () != STOPPED) {
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
@@ -856,8 +856,8 @@ void Buraco::dumpedSelected () {
 /// to prevent side-effects caused by timing-issues
 //-----------------------------------------------------------------------------
 void Buraco::doDelayedDumpedSelected () {
-   TRACE4 ("Buraco::doDelayedDumpedSelected ()");
-   Check3 (!stapleTop.connected ()); Check3 (!dumpedTop.connected ());
+   TRACE5 ("Buraco::doDelayedDumpedSelected ()");
+   disableHuman ();
 
    if (gameStatus () != STOPPED) {
       Card::IPile* target (NULL);
@@ -927,7 +927,7 @@ void Buraco::doDelayedDumpedSelected () {
    }
    else {
       staple.append (dumped.removeTopCard ());
-      Glib::signal_idle ().connect (mem_fun (*this, &Buraco::enableHuman));
+      enableHuman ();
    }
 }
 
@@ -1101,7 +1101,7 @@ void Buraco::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
 }
 
 //-----------------------------------------------------------------------------
-/// Checks if the piles on the table are valid (have at least 3 cards)
+/// Prepares the passed region of cards for drag´n´drop
 /// \param except Pile which can be invalid
 /// \returns bool True, if the piles are OK
 //-----------------------------------------------------------------------------
@@ -1311,6 +1311,7 @@ void Buraco::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
 /// Adds the buraco to the human and re-enables his cards
 //-----------------------------------------------------------------------------
 void Buraco::addBuraco4HumanAndEnable () {
+   disableHuman ();
    addBuraco (0);
    enableHumanHand ();
 }

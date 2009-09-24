@@ -7,6 +7,11 @@ Overview of changes in version 0.9.50:
   - Card::Pile doesn't derive from std::vector anymore
 
 
+Overview of changes in version 0.9.41:
+
+  - Buraco: Fixed random traps caused by a timing-problem after disabling cards
+
+
 Overview of changes in version 0.9.40:
 
   - Menu to re-open the score-dialog (Buraco, Hearts, Jabberwocky, Sgt. Mayor)
