@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.52)
 AC_REVISION($Revision$)
-AC_INIT(Cardgames, 0.9.40, [g17m0@users.sourceforge.net], CardCol)
+AC_INIT(Cardgames, 0.9.41, [g17m0@users.sourceforge.net], CardCol)
 
 RELEASE=${PACKAGE_VERSION%.*}
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -34,6 +34,7 @@ ALL_LINGUAS="de en es tr"
 
 AM_INIT_AUTOMAKE(dist-bzip2)
 AM_CONFIG_HEADER(cardgames-cfg.h)
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 dnl Checks for programs.
 AC_PROG_CXX
