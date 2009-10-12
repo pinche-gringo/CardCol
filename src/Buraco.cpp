@@ -674,6 +674,7 @@ bool Buraco::enableHuman () {
 /// Enables the cards in the hand of the human player
 //-----------------------------------------------------------------------------
 void Buraco::enableHumanHand () {
+   TRACE2 ("Buraco::enableHumanHand () - Human has " << hands[0].size () << " cards");
    Check1 (activeCards.empty ());
    Check1 (gameStatus () == PLAYING);
 
@@ -683,9 +684,6 @@ void Buraco::enableHumanHand () {
       enableCard (i);
    }
    Check3 (aDNDHand.size () == hands[0].size ());
-
-   TRACE2 ("Buraco::enableHuman () - Human has " << hands[0].size ()
-           << " cards");
 
    newPile.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    aDNDTable[NULL] = newPile.signal_drag_data_received ().connect
@@ -1732,7 +1730,7 @@ void Buraco::makeTeamNames (std::vector<Card::Player*>& names) const {
 /// Performs the steps to end the game
 //-----------------------------------------------------------------------------
 void Buraco::endGame () {
-   TRACE8 ("Buraco::endGame ()");
+   TRACE8 ("Buraco::endGame () - " << currentPlayer ());
 
    if (!currentPlayer ())
       disableHuman ();
