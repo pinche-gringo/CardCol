@@ -241,6 +241,8 @@ void Game::makeNextMoves () {
       TRACE8 ("Game::makeNextMoves () - " << actPlayer);
       Check3 (actPlayer < static_cast<int> (actPlayers.size ()));
       Check3 (!stati.pendingTurn);
+
+      disableHuman ();
       unsigned int timeout (actPlayers[actPlayer]->timeout ());
       if (timeout) {
          Glib::signal_timeout ().connect
@@ -250,7 +252,6 @@ void Game::makeNextMoves () {
       else
           Glib::signal_idle ().connect
               (bind (mem_fun (*actPlayers[actPlayer], &Player::makeTurn), this));
-      disableHuman ();
    }
 }
 
@@ -275,7 +276,7 @@ bool Game::endRemoteMove (unsigned int player) {
 /// \returns bool False
 //-----------------------------------------------------------------------------
 bool Game::enableHuman () {
-   Check3 (!actPlayer);
+   Check3 (!actPlayer || (actPlayer == -1));
    TRACE8 ("Game::enableHuman () - enabling " << actPlayers[0]->getName ());
    return false;
 }
