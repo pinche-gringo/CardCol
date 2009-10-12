@@ -34,6 +34,7 @@ ALL_LINGUAS="de en es tr"
 
 AM_INIT_AUTOMAKE(dist-bzip2)
 AM_CONFIG_HEADER(cardgames-cfg.h)
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 dnl Checks for programs.
 AC_PROG_CXX
@@ -67,11 +68,9 @@ dnl Checks for library functions.
 
 dnl Enable special features
 AC_ARG_ENABLE(network,
-              AC_HELP_STRING([--disable-network],
-                             [Disables the network capabilities]))
-AC_MSG_NOTICE(Network-games are disabled in this version!)
-enable_network=no
-if test "$enable_network" != "no"; then
+              AC_HELP_STRING([--enable-network],
+                             [Enables the network capabilities]))
+if test "$enable_network" = "yes"; then
    AC_CHECK_LIB(pthread, main)
 
    if test $ac_cv_lib_pthread_main = no; then
@@ -81,7 +80,7 @@ if test "$enable_network" != "no"; then
       AC_DEFINE_UNQUOTED(WITH_NETWORK, 1, [Define if the network capabilities should be included])
    fi
 fi
-AM_CONDITIONAL(HAVE_NETWORK, test "$enable_network" != "no")
+AM_CONDITIONAL(HAVE_NETWORK, test "$enable_network" = "yes")
 
 
 AC_ARG_ENABLE(debug,
