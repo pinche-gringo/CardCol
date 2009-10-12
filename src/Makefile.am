@@ -46,7 +46,7 @@ CardCol_SOURCES=$(USE_BURACO) $(USE_HEARTS) $(USE_JABBERWOCKY)		\
 $(USE_MACHIAVELLI) $(USE_ROVHULT) $(USE_SGTMAYOR) $(USE_TWOPART)	\
 Options.h CardOptions.h CardCol.h GameTypes.cpp GameTypes.h		\
 Settings.cpp Settings.h CardSizes.cpp CardSizes.h CardColAppl.cpp	\
-CardCol.cpp CardColAppl.h $(USE_NETWORK)
+CardCol.cpp CardColAppl.h IconAuthor.h IconProgram.h $(USE_NETWORK)
 
 INCLUDES = @INCLUDES@ -I../Common @DEPENDENCIES_CFLAGS@
 
