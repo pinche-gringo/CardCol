@@ -210,11 +210,6 @@ void Buraco::makeMove (unsigned int player) {
    playCards ();
 }
 
-#include <sys/time.h>
-#include <YGP/ATime.h>
-#include <iomanip>
-#define TIME(x) YGP::ATime ((time_t)x.tv_sec, false).toString ("%X") << ':' << std::setw (6) << std::setfill ('0') << x.tv_usec
-
 //-----------------------------------------------------------------------------
 /// Cleanup of piles after each turn
 /// \returns bool True, if game has been ended
@@ -658,7 +653,7 @@ bool Buraco::enableHuman () {
    if (dumped.size ())
       dumpedTop = dumped.getTopCard ().signal_clicked ().connect
 	 (mem_fun (*this, (&Buraco::dumpedSelected)));
-
+   Check3 (!stapleTop.empty ()); Check3 (!dumpedTop.empty ());
    return false;
 }
 
@@ -666,6 +661,7 @@ bool Buraco::enableHuman () {
 /// Enables the cards in the hand of the human player
 //-----------------------------------------------------------------------------
 void Buraco::enableHumanHand () {
+   TRACE2 ("Buraco::enableHumanHand () - Human has " << hands[0].size () << " cards");
    Check1 (activeCards.empty ());
    Check1 (gameStatus () == PLAYING);
 
@@ -675,9 +671,6 @@ void Buraco::enableHumanHand () {
       enableCard (i);
    }
    Check3 (aDNDHand.size () == hands[0].size ());
-
-   TRACE2 ("Buraco::enableHuman () - Human has " << hands[0].size ()
-           << " cards");
 
    newPile.drag_dest_set (dndType, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
    aDNDTable[NULL] = newPile.signal_drag_data_received ().connect
@@ -1719,7 +1712,7 @@ void Buraco::makeTeamNames (std::vector<Player*>& names) const {
 /// Performs the steps to end the game
 //-----------------------------------------------------------------------------
 void Buraco::endGame () {
-   TRACE8 ("Buraco::endGame ()");
+   TRACE8 ("Buraco::endGame () - " << currentPlayer ());
 
    if (!currentPlayer ())
       disableHuman ();
