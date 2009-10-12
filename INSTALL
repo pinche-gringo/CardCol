@@ -31,10 +31,12 @@ Additional prerequisite software:
   - autoconf
   - automake
 
-The source can be obtained via
+The source can be obtained via (press enter when being asked for a
+password):
 
   cvs -d:pserver:anonymous@cardcol.cvs.sourceforge.net:/cvsroot/cardcol login
   cvs -z3 -d:pserver:anonymous@cardcol.cvs.sourceforge.net:/cvsroot/cardcol co -P CardCol
+
 
 Inside the directory containing the source code type
 
@@ -59,7 +61,8 @@ Common options for configure
   --help=short                  # Reduces the output of configure --help
   --prefix=<path>		# default: /usr/local
   --disable-nls                 # Disable national language support
-  --disable-network		# Disable network capabilities
+  --disable-static		# Don't build static libCard (only shared one)
+  --enable-network		# Enable network capabilities
   --enable-checks[=level]	# Adds asserts and Checks
   --enable-debug[=level]	# Sets tracelevel & generation of debuginfo
   --enable-saving               # Games can be saved and loaded (for testing)
