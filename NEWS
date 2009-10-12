@@ -1,6 +1,7 @@
 Overview of changes in version 0.9.41:
 
-  - Buraco: Fixed random traps caused by a timing-problem after disabling cards
+  - Buraco: Fixed picked-up card in hand causing another card to be picked up
+  - Added forgotten icon-files to the distribution
 
 
 Overview of changes in version 0.9.40:

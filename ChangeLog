@@ -1,3 +1,41 @@
+2009-10-12 18:25:37 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+	* ChangeLog, NEWS: Changes of V0.9.41 documented
+
+        * *.po: Actualised
+
+2009-10-12 18:23:23 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * src/Buraco.cpp: Improved traces; removed debug-code
+
+2009-10-12 18:22:07 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * src/Makefile.am: Adding forgotten Icon*.h to distribution
+
+2009-10-12 18:21:23 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Common/Game.cpp: Disabling human before initiating new turn (timeout-problem?)
+
+2009-09-27 12:30:32 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * configure.ac: Version to 0.9.41; Prettifying output of make
+
+2009-09-24 16:32:11 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Buraco: Disabling human cards before picking up buraco
+
+2009-09-24 13:44:54 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Buraco: Delaying en/disabling cards
+
+2009-08-05 21:08:00 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Buraco: Fixed picked-up card in hand causing another card to be picked up
+
+2009-08-05 20:57:53 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Common/Game.cpp: Improved comments
+
 2009-06-13 19:17:22 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
 
 	* ChangeLog, NEWS: Changes of V0.9.40 documented
