@@ -21,8 +21,9 @@
 
 #include <vector>
 
+#include <boost/scoped_ptr.hpp>
+
 #include <YGP/ANumeric.h>
-#include <YGP/SmartPtr.h>
 
 #include <XGP/XDialog.h>
 #include <XGP/XAttrLabel.h>
@@ -75,9 +76,9 @@ class ScoreDlg : public XGP::XDialog {
 
    virtual void okEvent ();
 
-   typedef YGP::SmartPtr<Gtk::Box>        PBox;
-   typedef YGP::SmartPtr<Gtk::Label>      PLabel;
-   typedef YGP::SmartPtr<Gtk::Separator>  PSeparator;
+   typedef boost::scoped_ptr<Gtk::Box>       PBox;
+   typedef boost::scoped_ptr<Gtk::Label>     PLabel;
+   typedef boost::scoped_ptr<Gtk::Separator> PSeparator;
 
    PBox client;
 
@@ -94,7 +95,7 @@ class ScoreDlg : public XGP::XDialog {
 
     private:
       typedef XGP::XAttributeLabel2<YGP::ANumeric> NumLabel;
-      typedef YGP::SmartPtr<NumLabel>              PNumLabel;
+      typedef boost::scoped_ptr<NumLabel>          PNumLabel;
 
       PBox       pBox;
       PLabel     pTitle;

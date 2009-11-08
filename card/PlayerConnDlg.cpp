@@ -28,6 +28,8 @@
 
 #include <sstream>
 
+#include <boost/tokenizer.hpp>
+
 #include <gtkmm/entry.h>
 #include <gtkmm/label.h>
 #include <gtkmm/table.h>
@@ -202,15 +204,19 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
           delete *i;
       aPlayer.clear ();
 
-      YGP::Tokenize split (names);
+      typedef boost::char_separator<Glib::ustring::value_type> char_separator;
+      typedef boost::tokenizer<char_separator, Glib::ustring::const_iterator, Glib::ustring> tokenizer;
+
+      Glib::ustring::value_type crlf ('\n');
+      tokenizer split (names, char_separator (&crlf));
       unsigned int c (0);
-      while (split.getNextNode ('\n').size ()) {
-         TRACE9 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int)"
-                 "- Setting " << split.getActNode ());
+      for (tokenizer::iterator i (split.begin ());
+	   i != split.end (); ++i) {
+         TRACE9 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - Setting " << *i);
 
          Player* pPlayer ((c == posPlayer)
-                          ? static_cast<Player*> (new Human (split.getActNode ()))
-                          : static_cast<Player*> (new RemotePlayer (cmgr.getSocket (), split.getActNode ())));
+                          ? static_cast<Player*> (new Human (*i))
+                          : static_cast<Player*> (new RemotePlayer (cmgr.getSocket (), *i)));
 
          if (c < posPlayer)
             aPlayer.push_back (pPlayer);

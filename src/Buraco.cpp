@@ -46,7 +46,6 @@
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
 #include <YGP/ANumeric.h>
-#include <YGP/Tokenize.h>
 #include <YGP/AttrParse.h>
 
 #include <card/Human.h>
@@ -2137,10 +2136,11 @@ bool Buraco::handleMessage (unsigned int player, const std::string& message) thr
    TRACE1 ("Buraco::handleMessage (unsigned int player, const std::string&) - "
            << message << " (" << player << ')');
 
+   bool rc (true);
+#if 0
    YGP::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
-   bool rc (true);
    if (cmd == "Undo") {
       // Inform clients about cards to play
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
@@ -2174,6 +2174,7 @@ bool Buraco::handleMessage (unsigned int player, const std::string& message) thr
          setStartPlayer ();
       }
    }
+#endif
    return rc;
 }
 

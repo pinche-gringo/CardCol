@@ -41,7 +41,6 @@
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
-#include <YGP/Tokenize.h>
 
 #include <CardValue.h>
 
@@ -1467,6 +1466,7 @@ Card::IPile* Rovhult::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
 bool Rovhult::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
+#if 0
    if (gameStatus () >= EXCHANGE) {
       TRACE1 ("Rovhult::handleMessage (unsigned int player, const std::string&) - "
               << message << " (" << player << ')');
@@ -1541,6 +1541,7 @@ bool Rovhult::handleMessage (unsigned int player, const std::string& message) th
          }
       }
    }
+#endif
    return Game::handleMessage (player, message);
 }
 

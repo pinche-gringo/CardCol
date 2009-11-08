@@ -39,7 +39,6 @@
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
 #include <YGP/ANumeric.h>
-#include <YGP/Tokenize.h>
 #include <YGP/AttrParse.h>
 #include <YGP/StatusObj.h>
 
@@ -1570,10 +1569,11 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
    TRACE1 ("Machiavelli::handleMessage (unsigned int player, const std::string&) - "
            << message << " (" << player << ')');
 
+   bool rc (true);
+#if 0
    YGP::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
-   bool rc (true);
    if (cmd == "EndTurn") {
       if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::SERVER)
          broadcastMessage (message);
@@ -1710,6 +1710,7 @@ bool Machiavelli::handleMessage (unsigned int player, const std::string& message
          setStartPlayer ();
       }
    }
+#endif
    return rc;
 }
 

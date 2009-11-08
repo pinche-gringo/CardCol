@@ -47,8 +47,6 @@
 #include <YGP/Trace.h>
 #include <YGP/INIFile.h>
 #include <YGP/ANumeric.h>
-#include <YGP/Tokenize.h>
-#include <YGP/PathSrch.h>
 
 #include <XGP/XAbout.h>
 

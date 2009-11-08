@@ -176,7 +176,8 @@ bool Game::randomiseCardsToPile (IPile& pile) const {
       try {
          ap.assignValues (input);
 
-         YGP::Tokenize positions (input);
+	 boost::tokenizer<> positions (input);
+	 boost::tokenizer<>::iterator act (positions.begin ());
          TRACE8 ("Game::randomiseCardsToPile (IPile&) - Cards: " << cards.size ());
          for (unsigned int i (0); i < (cards.size () - 1); ++i) {
             unsigned long pos (0);
@@ -185,8 +186,8 @@ bool Game::randomiseCardsToPile (IPile& pile) const {
             errno = 0;
 
             // Read next token; the value must be a number
-            if ((token = positions.getNextNode (' ')).empty ()
-                || stringToNumber (pos, token.c_str ())
+            if ((act == positions.end ())
+                || stringToNumber (pos, act->c_str ())
                 || (pos >= cards.size ())
                 || (errno || (pTail && *pTail))) {
                std::string error (N_("Invalid card specification!"));
@@ -339,12 +340,12 @@ void Game::flipCards2Play (IPile& pile, const std::string& cards) throw (YGP::Pa
    TRACE2 ("Game::flipCards2Play (IPile&, const std::string&) - Cards " << cards);
    Check1 (cards.size ());
 
-   YGP::Tokenize tokCards (cards);
+   boost::tokenizer<> tokCards (cards);
    unsigned long card (0);
    unsigned int cCards (0);
    bool bFollow (false);
-   while (tokCards.getNextNode (' ').size ()) {
-      if (stringToNumber (card, tokCards.getActNode ().c_str ())) {
+   for (boost::tokenizer<>::iterator act (tokCards.begin ()); act != tokCards.end (); ++act) {
+      if (stringToNumber (card, act->c_str ())) {
          std::string error (N_("Invalid card specification!"));
          throw YGP::ParseError (error);
       }
@@ -367,9 +368,8 @@ void Game::flipCards2Play (IPile& pile, const std::string& cards) throw (YGP::Pa
          bFollow = true;
       }
       else {
-         TRACE1 ("Game::flipCards2Play (IPile&, const std::string&) - "
-                 "Card " << tokCards.getActNode () << " not found in "
-                 << pile.size () << " cards");
+         TRACE1 ("Game::flipCards2Play (IPile&, const std::string&) - Card " << *act
+		 << " not found in " << pile.size () << " cards");
          std::string error ("Card not found!");
          throw YGP::ParseError (error);
       }
@@ -679,6 +679,7 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (Y
            << msg << " (" << player << ')');
    Check1 (msg.size ());
 
+#if 0 // Only needed for network functionality
    YGP::Tokenize command (msg);
    std::string cmd (command.getNextNode ('='));
    TRACE2 ("Game::performCommand (unsigned int player, const std::string&) - " << cmd);
@@ -732,6 +733,7 @@ bool Game::performCommand (unsigned int player, const std::string& msg) throw (Y
    }
    else
       throw YGP::ParseError (N_("Unknown command!"));
+#endif
    return true;
 }
 

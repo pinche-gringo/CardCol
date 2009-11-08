@@ -43,7 +43,6 @@
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
-#include <YGP/Tokenize.h>
 #include <YGP/ANumeric.h>
 
 #include <card/Player.h>
@@ -964,6 +963,7 @@ int Jabberwocky::playCard (unsigned int player) {
 /// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
 bool Jabberwocky::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
+#if 0
    YGP::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
@@ -991,13 +991,15 @@ bool Jabberwocky::handleMessage (unsigned int player, const std::string& message
 	 }
       }
    }
+#endif
    bool rc (Game::handleMessage (player, message));
+#if 0
    if ((cmd == "ActPlayer")
        && (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)) {
       startPlayer = currentPlayer ();
       makeBids ();
    }
-
+#endif
    return rc;
 }
 

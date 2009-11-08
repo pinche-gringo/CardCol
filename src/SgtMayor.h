@@ -30,10 +30,6 @@
 #include <card/Game.h>
 
 
-namespace YGP {
-   class Tokenize;
-}
-
 namespace Card {
    class ScoreDlg;
 }
@@ -58,7 +54,9 @@ class SgtMayor : public Card::Game {
    virtual void changeNames (const std::vector<Card::Player*>& newPlayer);
    virtual void resizeCards ();
 
+#if 0
    virtual bool handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError);
+#endif
 
  protected:
    virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
@@ -104,7 +102,9 @@ class SgtMayor : public Card::Game {
       return (((player + posServer) < NUM_PLAYERS) ? player : player + posServer);
    }
    static std::string formatNumber (int nr);
+#if 0
    static bool readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned long& player);
+#endif
 
    //@Section Computer player
    unsigned int findPos2Play (unsigned int player);

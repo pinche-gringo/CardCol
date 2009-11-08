@@ -43,7 +43,6 @@
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
-#include <YGP/Tokenize.h>
 
 #include <card/Player.h>
 #include <card/Set.h>
@@ -1132,11 +1131,11 @@ Card::IPile* Twopart::getPileOfPlayer (unsigned int player, unsigned int pile) {
 bool Twopart::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
    TRACE1 ("Twopart::handleMessage (unsigned int player, const std::string&) - "
            << message << " (" << player << ')');
-
+   bool rc (Game::handleMessage (player, message));
+#if 0
    YGP::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
-   bool rc (Game::handleMessage (player, message));
    if (cmd == "ActPlayer") {
       TRACE1 ("Twopart::handleMessage (unsigned int player, const std::string&) - "
               "Next player: " << currentPlayer ());
@@ -1144,6 +1143,7 @@ bool Twopart::handleMessage (unsigned int player, const std::string& message) th
       makeNextMoves ();
       return true;
    }
+#endif
    return rc;
 }
 

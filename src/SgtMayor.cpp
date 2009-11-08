@@ -42,7 +42,6 @@
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
 #include <YGP/ANumeric.h>
-#include <YGP/Tokenize.h>
 
 #include <card/Images.h>
 #include <card/Window.h>
@@ -635,6 +634,7 @@ Card::IPile* SgtMayor::getPileOfPlayer (unsigned int player, unsigned int pile) 
    return ((player >= NUM_PLAYERS) || pile) ? NULL : &players[player].hand;
 }
 
+#if 0
 //-----------------------------------------------------------------------------
 /// Reads card- and playernumber from the next tokens
 /// \param src String to analyze
@@ -715,6 +715,7 @@ bool SgtMayor::handleMessage (unsigned int player, const std::string& message) t
    }
    return rc;
 }
+#endif
 
 //----------------------------------------------------------------------------
 /// Shows the special colour on the board (the ace with that colour). Also
