@@ -1,3 +1,121 @@
+2009-11-17 16:42:04 +0100  Markus Schwab  <g17m0@users.sourceforge.net>
+
+	* ChangeLog, NEWS: Changes of V0.9.50 documented
+
+        * po/*.po: Actualised
+
+2009-11-17 16:37:36 +0100  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * src/Buraco.cpp: Disabled checks and traces
+
+2009-11-15 17:10:45 +0100  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * configure.ac: Adapted to libYGP 0.9.30 (using booth)
+
+2009-11-08 19:27:56 +0100  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Adapted to new style of libYGP-0.9.30 (using boost)
+
+2009-10-12 20:37:06 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * src/Buraco.cpp: Improved traces; removed debug-code
+
+2009-10-12 20:34:32 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Buraco: Delaying en/disabling cards
+
+2009-10-12 20:33:19 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Common/Game.cpp: Disabling human before initiating new turn (timeout-problem?)
+
+2009-10-12 20:32:52 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * src/Makefile.am: Adding forgotten Icon*.h to distribution
+
+2009-10-12 18:50:55 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * configure.ac: Prettyfying build-output (if supported); Enabling network
+
+2009-10-12 18:48:17 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * card/Game.h: Spelling in comment
+
+2009-10-12 18:47:36 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * INSTALL: Updated obtaining from CVS; Actualised options for configure
+
+2009-09-24 16:38:44 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Merge commit 'remotes/origin/Cardgames_V0.9.40-Fixes'
+
+2009-09-24 13:57:03 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Buraco: Further work on network-code
+
+2009-09-24 13:55:56 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * NEWS: Updated (re-adding network ability
+
+2009-06-21 12:07:39 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * src/CardColAppl.cpp: Fixed help text; Fixed handling of connect-parameters
+
+2009-06-21 11:28:57 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * src/CardColNet.cpp: Adapted to new design libCard (with namespaces)
+
+2009-06-21 11:28:22 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * src/Buraco.cpp: Removed unneeded inclues
+
+2009-06-18 21:20:18 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * README: Acutalised copyright
+
+2009-06-18 21:19:28 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * src/Makefile.am: Automatically generating *.meta-files
+
+2009-06-16 20:22:51 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Machiavelli: Marking invalid piles for human
+
+2009-06-16 20:22:12 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * MachiPile: Added markValidity(); renamed analyzePile() to analysePile()
+
+2009-06-16 20:02:23 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * MachiPile: Added methos to mark/unmark the whole pile
+
+2009-06-15 22:13:06 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * po/POTFILES.in: Updated reference from CardImgs.cpp to Images.cpp
+
+2009-06-15 22:10:08 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Hearts: Fixed setting score when shooting the moon
+
+2009-06-15 19:13:00 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * .gitignore: Ignoring CVS/
+
+2009-06-15 19:12:28 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Card::Pile does not derive from std::vector anymore
+
+2009-06-14 12:35:09 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Changed references to Common/ to card/
+
+2009-06-14 12:34:08 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * card/Pile.h: Fixed Pile<T>::setTopCard()
+
+2009-06-14 09:06:01 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * Using namespaces in libCard
+
 2009-06-13 19:17:22 +0200  Markus Schwab  <g17m0@users.sourceforge.net>
 
 	* ChangeLog, NEWS: Changes of V0.9.40 documented

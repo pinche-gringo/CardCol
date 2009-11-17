@@ -1,10 +1,10 @@
 Overview of changes in version 0.9.50:
 
-  - Re-enabled network functionality
   - Machiavelli: Mark error piles
   - Hearts: Fixed setting score when shooting the moon
   - libCard uses namespace
   - Card::Pile doesn't derive from std::vector anymore
+  - Adapted to new style of libYGP-0.9.30 (using boost)
 
 
 Overview of changes in version 0.9.41:
