@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.9 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@users.sourceforge.net\n"
-"POT-Creation-Date: 2009-06-13 19:17+0200\n"
-"PO-Revision-Date: 2009-06-13 17:16+0200\n"
+"POT-Creation-Date: 2009-11-17 16:40+0100\n"
+"PO-Revision-Date: 2009-11-17 16:41+0100\n"
 "Last-Translator: Adeviye Yilmaz <adeviyeyilmaz@hotmail.com>\n"
 "Language-Team: ??? <???@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: src/Rovhult.cpp:196 src/Hearts.cpp:383
+#: src/Rovhult.cpp:196 src/Hearts.cpp:382
 msgid "Waiting for other player to exchange their cards ..."
 msgstr "Diðer oyuncularýn kartlarýný deðiþtirmeleri bekleniyor ..."
 
@@ -23,9 +23,9 @@ msgstr "Diðer oyuncularýn kartlarýný deðiþtirmeleri bekleniyor ..."
 msgid "You must first play the visible cards!"
 msgstr "Ýlk önce uygun kartlarý oynamalýsýnýz!"
 
-#: src/Rovhult.cpp:369 src/Rovhult.cpp:482 src/Buraco.cpp:744
-#: src/Buraco.cpp:856 src/Buraco.cpp:1278 src/Machiavelli.cpp:675
-#: src/Machiavelli.cpp:688
+#: src/Rovhult.cpp:369 src/Rovhult.cpp:482 src/Buraco.cpp:747
+#: src/Buraco.cpp:880 src/Buraco.cpp:1301 src/Machiavelli.cpp:674
+#: src/Machiavelli.cpp:687
 msgid "Invalid move"
 msgstr "Geçersiz taþýma"
 
@@ -41,7 +41,7 @@ msgstr "Oynanan kart eþit veya büyük olmalýdýr!"
 msgid "Pile cleared; "
 msgstr "Yýðýn temizlendi"
 
-#: src/Rovhult.cpp:610 src/Twopart.cpp:376 src/Machiavelli.cpp:1533
+#: src/Rovhult.cpp:610 src/Twopart.cpp:375 src/Machiavelli.cpp:1537
 msgid "%1 lost"
 msgstr "%1 yenildi"
 
@@ -61,21 +61,21 @@ msgstr ""
 "elindeki kartlarý masadaki bir cartla deðiþtir(sürükle ve býrakyardýmýyla) - "
 "oyuna baþlamak için bir kartýn üzerine týkla"
 
-#: Common/CardImgs.cpp:126 Common/DeckSelect.cpp:301
+#: card/Images.cpp:128 card/DeckSelect.cpp:303
 msgid "Unknown error"
 msgstr "Bilinmeyen hata"
 
-#: Common/CardPile.h:414
+#: card/Pile.h:436
 msgid "%1 card"
 msgid_plural "%1 cards"
 msgstr[0] "%1 kart"
 msgstr[1] "%1 kartlar"
 
-#: src/Twopart.cpp:230
+#: src/Twopart.cpp:229
 msgid "%1 can't continue -> Picking up last cards; "
 msgstr "%1 devam edemiyor -> son kartlar alýndý"
 
-#: src/Twopart.cpp:290
+#: src/Twopart.cpp:289
 msgid ""
 "The played card must have the same colour and must be bigger (or be a trump)!"
 msgid_plural ""
@@ -87,37 +87,37 @@ msgstr[1] ""
 "Oynanan kartlar ayný renge sahip olmalýdýr ve daha büyük olmalýdýr (veya koz "
 "olmalýlar)!"
 
-#: src/Twopart.cpp:371
+#: src/Twopart.cpp:370
 msgid "First part ended; Part 2 starts %1"
 msgstr "Birinci bölüm bitti; "
 
-#: src/Twopart.cpp:1184 src/CardCol.cpp:435
+#: src/Twopart.cpp:1184 src/CardCol.cpp:433
 msgid "_Twopart"
 msgstr "_Twopart"
 
-#: src/Twopart.cpp:1186 src/Hearts.cpp:1110 src/SgtMayor.cpp:1177
-#: src/Jabberwocky.cpp:342
+#: src/Twopart.cpp:1186 src/Hearts.cpp:1113 src/SgtMayor.cpp:1176
+#: src/Jabberwocky.cpp:341
 msgid "_Sort won cards (by number)"
 msgstr "_Kazanan kartlarý sýrala (sayýya göre)"
 
-#: src/Twopart.cpp:1190 src/Hearts.cpp:1114 src/SgtMayor.cpp:1181
-#: src/Jabberwocky.cpp:346
+#: src/Twopart.cpp:1190 src/Hearts.cpp:1117 src/SgtMayor.cpp:1180
+#: src/Jabberwocky.cpp:345
 msgid "Sort won cards (by _colour)"
 msgstr "Kazanan kartlarý sýrala(_renge göre)"
 
-#: Common/DeckSelect.cpp:54
+#: card/DeckSelect.cpp:56
 msgid "Select carddeck"
 msgstr "Deste seç"
 
-#: Common/DeckSelect.cpp:55
+#: card/DeckSelect.cpp:57
 msgid "Available decks"
 msgstr "Hazýr desteler"
 
-#: Common/DeckSelect.cpp:56
+#: card/DeckSelect.cpp:58
 msgid "Available backgrounds"
 msgstr "Hazýr arkaplanlar"
 
-#: Common/DeckSelect.cpp:304
+#: card/DeckSelect.cpp:306
 msgid ""
 "Error loading image from file `%1'!\n"
 "\n"
@@ -127,11 +127,11 @@ msgstr ""
 "\n"
 "Sebep: %2"
 
-#: Common/Game.cpp:189 Common/Game.cpp:344
+#: card/Game.cpp:193 card/Game.cpp:349
 msgid "Invalid card specification!"
 msgstr "Geçersiz kart özellikleri!"
 
-#: Common/Game.cpp:201
+#: card/Game.cpp:205
 msgid ""
 "Received invalid input from the server!\n"
 "\n"
@@ -141,19 +141,19 @@ msgstr ""
 "\n"
 "Sebep: %1"
 
-#: Common/Game.cpp:303 Common/Game.cpp:314
+#: card/Game.cpp:308 card/Game.cpp:319
 msgid "Turn of %1"
 msgstr "Kapat %1"
 
-#: Common/Game.cpp:472
+#: card/Game.cpp:476
 msgid "Sort by _number"
 msgstr "Sýrala _numaraya göre"
 
-#: Common/Game.cpp:475
+#: card/Game.cpp:479
 msgid "Sort by _colour"
 msgstr "Sýrala _Renge göre"
 
-#: Common/Game.cpp:604
+#: card/Game.cpp:608
 msgid ""
 "Can't write message!\n"
 "\n"
@@ -163,43 +163,43 @@ msgstr ""
 "\n"
 "Reason: %1"
 
-#: Common/Game.cpp:690 Common/Game.cpp:695
+#: card/Game.cpp:695 card/Game.cpp:700
 msgid "Invalid target!"
 msgstr "Geçersiz hedef!"
 
-#: Common/Game.cpp:718
+#: card/Game.cpp:723
 msgid "Invalid number"
 msgstr "Geçersiz sayý"
 
-#: Common/Game.cpp:730
+#: card/Game.cpp:735
 msgid "Unknown command!"
 msgstr "Geçersiz konut!"
 
-#: Common/PlayerDlg.cpp:55
+#: card/PlayerDlg.cpp:57
 msgid "Set the name of the player"
 msgstr "Oyuncunun ismini belirle"
 
-#: Common/PlayerDlg.cpp:57
+#: card/PlayerDlg.cpp:59
 msgid "_Human:"
 msgstr "_Ýnsan:"
 
-#: Common/PlayerDlg.cpp:61
+#: card/PlayerDlg.cpp:63
 msgid "Player _%1:"
 msgstr "Oyuncu _%1:"
 
-#: Common/PlayerConnDlg.cpp:63
+#: card/PlayerConnDlg.cpp:67
 msgid "Connected:"
 msgstr "Baðlandý:"
 
-#: Common/PlayerConnDlg.cpp:195
+#: card/PlayerConnDlg.cpp:199
 msgid "Position of this player is missing!"
 msgstr "Bu oyuncunun konumu eksik!"
 
-#: Common/PlayerConnDlg.cpp:224
+#: card/PlayerConnDlg.cpp:232
 msgid "Wrong number of players!"
 msgstr "Yanlýþ oyuncu numarasý!"
 
-#: Common/PlayerConnDlg.cpp:227
+#: card/PlayerConnDlg.cpp:235
 msgid ""
 "Error sending player name!\n"
 "\n"
@@ -209,7 +209,7 @@ msgstr ""
 "\n"
 "Sebep: %1"
 
-#: Common/PlayerConnDlg.cpp:231
+#: card/PlayerConnDlg.cpp:239
 msgid ""
 "Invalid response from server!\n"
 "\n"
@@ -219,11 +219,11 @@ msgstr ""
 "\n"
 "Sebep: %1"
 
-#: Common/PlayerConnDlg.cpp:265
+#: card/PlayerConnDlg.cpp:273
 msgid "Protocoll version %1 needed!"
 msgstr "Ýletiþim kurallarý sürüm %1 gerekli!"
 
-#: Common/PlayerConnDlg.cpp:270
+#: card/PlayerConnDlg.cpp:278
 msgid ""
 "Protocoll variant not sufficient - Version %1 needed!\n"
 "\n"
@@ -236,7 +236,7 @@ msgstr ""
 "desteklemiyor - Meydana gelebilecek zararýn sorumluluðunu üstlenerek devam "
 "edin !"
 
-#: Common/PlayerConnDlg.cpp:294
+#: card/PlayerConnDlg.cpp:302
 msgid ""
 "Error getting player name!\n"
 "\n"
@@ -246,7 +246,7 @@ msgstr ""
 "\n"
 "Sebep: %1"
 
-#: Common/PlayerConnDlg.cpp:301
+#: card/PlayerConnDlg.cpp:309
 msgid ""
 "Error analyzing input from client!\n"
 "\n"
@@ -256,122 +256,122 @@ msgstr ""
 "\n"
 "Sebep: %1"
 
-#: src/CardCol.cpp:381
+#: src/CardCol.cpp:379
 msgid "_Game"
 msgstr "_Oyun"
 
-#: src/CardCol.cpp:384
+#: src/CardCol.cpp:382
 msgid "_End"
 msgstr "_Bitir"
 
-#: src/CardCol.cpp:388
+#: src/CardCol.cpp:386
 msgid "<shft><ctl>C"
 msgstr "<shft><ctl>C"
 
-#: src/CardCol.cpp:391
+#: src/CardCol.cpp:389
 msgid "_Chat ..."
 msgstr "_Sohbet ..."
 
-#: src/CardCol.cpp:392
+#: src/CardCol.cpp:390
 msgid "<alt><ctl>C"
 msgstr "<alt><ctl>C"
 
-#: src/CardCol.cpp:399
+#: src/CardCol.cpp:397
 msgid "_Options"
 msgstr "_Seçenekler"
 
-#: src/CardCol.cpp:400
+#: src/CardCol.cpp:398
 msgid "_Change game"
 msgstr "_Oyun deðiþtir"
 
-#: src/CardCol.cpp:404 src/Buraco.cpp:2231 src/Settings.cpp:152
+#: src/CardCol.cpp:402 src/Buraco.cpp:2268 src/Settings.cpp:152
 msgid "_Buraco"
 msgstr "_Buraco"
 
-#: src/CardCol.cpp:405
+#: src/CardCol.cpp:403
 msgid "<ctl>B"
 msgstr "<ctl>B"
 
-#: src/CardCol.cpp:409 src/Settings.cpp:162
+#: src/CardCol.cpp:407 src/Settings.cpp:162
 msgid "_Hearts"
 msgstr "_Hearts"
 
-#: src/CardCol.cpp:410
+#: src/CardCol.cpp:408
 msgid "<ctl>H"
 msgstr "<ctl>H"
 
-#: src/CardCol.cpp:414 src/Jabberwocky.cpp:340
+#: src/CardCol.cpp:412 src/Jabberwocky.cpp:339
 msgid "_Jabberwocky"
 msgstr "_Jabberwocky"
 
-#: src/CardCol.cpp:415
+#: src/CardCol.cpp:413
 msgid "<ctl>J"
 msgstr "<ctl>J"
 
-#: src/CardCol.cpp:419 src/Machiavelli.cpp:1739
+#: src/CardCol.cpp:417 src/Machiavelli.cpp:1745
 msgid "_Machiavelli"
 msgstr "_Machiavelli"
 
-#: src/CardCol.cpp:420
+#: src/CardCol.cpp:418
 msgid "<ctl>M"
 msgstr "<ctl>M"
 
-#: src/CardCol.cpp:425 src/Settings.cpp:188
+#: src/CardCol.cpp:423 src/Settings.cpp:188
 msgid "_Rovhult"
 msgstr "_Røvhult"
 
-#: src/CardCol.cpp:426
+#: src/CardCol.cpp:424
 msgid "<ctl>R"
 msgstr "<ctl>R"
 
-#: src/CardCol.cpp:430 src/SgtMayor.cpp:1175
+#: src/CardCol.cpp:428 src/SgtMayor.cpp:1174
 msgid "_Sgt. Mayor"
 msgstr "_Sgt. Mayor"
 
-#: src/CardCol.cpp:431
+#: src/CardCol.cpp:429
 msgid "<ctl>Y"
 msgstr "<ctl>Y"
 
-#: src/CardCol.cpp:436
+#: src/CardCol.cpp:434
 msgid "<ctl>T"
 msgstr "<ctl>T"
 
-#: src/CardCol.cpp:440
+#: src/CardCol.cpp:438
 msgid "Change _decks ..."
 msgstr "Deðiþtir _desteleri ..."
 
-#: src/CardCol.cpp:441
+#: src/CardCol.cpp:439
 msgid "<ctl>D"
 msgstr "<ctl>D"
 
-#: src/CardCol.cpp:443
+#: src/CardCol.cpp:441
 msgid "Change _names ..."
 msgstr "Deðiþtir _isimleri"
 
-#: src/CardCol.cpp:444
+#: src/CardCol.cpp:442
 msgid "<ctl>C"
 msgstr "<ctl>C"
 
-#: src/CardCol.cpp:447
+#: src/CardCol.cpp:445
 msgid "F9"
 msgstr "F9"
 
-#: src/CardCol.cpp:450
+#: src/CardCol.cpp:448
 msgid "_Save preferences"
 msgstr "_Tercihleri kaydet"
 
-#: src/CardCol.cpp:665
+#: src/CardCol.cpp:663
 msgid ""
 "A game is already running. Do you really want to end it and start another?"
 msgstr ""
 "Bir oyun zaten çalýþýyor. Onu sonlandýrýp baþka birini baþlatmak "
 "istediðinizden emin misiniz?"
 
-#: src/CardCol.cpp:688
+#: src/CardCol.cpp:686
 msgid "Do you really want to end the game?"
 msgstr "Oyunu sonlandýrmak istediðinizden emin misiniz?"
 
-#: src/CardCol.cpp:793
+#: src/CardCol.cpp:791
 msgid ""
 "Couldn't save options (to file %1)!\n"
 "\n"
@@ -381,11 +381,11 @@ msgstr ""
 "\n"
 "Sebep: %2."
 
-#: src/CardCol.cpp:805
+#: src/CardCol.cpp:803
 msgid "A game is running. Do you really want to quit?"
 msgstr "Bir oyun çalýþýyor. Çýkmak istediðinizden emin misiniz?"
 
-#: src/CardCol.cpp:885
+#: src/CardCol.cpp:883
 msgid ""
 "Copyright (C) 2002 - 2009 Markus Schwab\n"
 "e-mail: g17m0@users.sourceforge.net\n"
@@ -397,7 +397,7 @@ msgstr ""
 "\n"
 "Compiled on %1 at %2"
 
-#: src/CardCol.cpp:973
+#: src/CardCol.cpp:971
 msgid ""
 "Couldn't load the card images!\n"
 "\n"
@@ -407,19 +407,19 @@ msgstr ""
 "\n"
 "Reason: %1"
 
-#: src/CardCol.cpp:1025
+#: src/CardCol.cpp:1023
 msgid "User canceled"
 msgstr "Kullanýcý iptal etti"
 
-#: src/CardCol.cpp:1053
+#: src/CardCol.cpp:1051
 msgid "Loading cardimages ..."
 msgstr "Kart resimleri yükleniyor ..."
 
-#: src/CardCol.cpp:1072
+#: src/CardCol.cpp:1070
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Ctrl+N (veya Oyun -> Yeni) ile yeni bir oyuna baþla"
 
-#: src/CardCol.cpp:1144
+#: src/CardCol.cpp:1142
 msgid ""
 "Invalid values for Rovhult's special cards!\n"
 "Resetting them to default values."
@@ -515,7 +515,7 @@ msgstr ""
 "\n"
 
 #: src/CardColAppl.cpp:95
-msgid "[GAME] Select game to start (default: Rovhult)\n"
+msgid "GAME Select game to start (default: Rovhult)\n"
 msgstr "[OYUN] Oyuna baþlamak için seç (default: Røvhult)\n"
 
 #: src/CardColAppl.cpp:96
@@ -523,31 +523,31 @@ msgid "List available games\n"
 msgstr "Kullanýlýr oyunlarý listele\n"
 
 #: src/CardColAppl.cpp:97
-msgid "[FILE] Use file as INI file\n"
+msgid "FILE Use file as INI file\n"
 msgstr "[DOSYA] INI dosyalarýný kullan\n"
 
 #: src/CardColAppl.cpp:98
-msgid "[NAME] Browser to use to display the help\n"
+msgid "NAME Browser to use to display the help\n"
 msgstr "[ÝSÝM] Yardým dosyasýna bakmak, kullanmak için gözat\n"
 
 #: src/CardColAppl.cpp:99
-msgid "[DIR] Directory to search for help\n"
+msgid "DIR Directory to search for help\n"
 msgstr "[DIR] Dizin yardým için ara\n"
 
 #: src/CardColAppl.cpp:101
-msgid "[PORT] Awaits connections on port PORT\n"
+msgid "PORT Awaits connections on port PORT\n"
 msgstr "[PORT] Bekleyen baðlantlar portta PORT\n"
 
 #: src/CardColAppl.cpp:102
-msgid "[SERVER[:PORT]] Connects to SERVER:PORT\n"
+msgid "SERVER:PORT Connects to SERVER:PORT\n"
 msgstr "[SUNUCU[:PORT]] Baðlan SUNUCU:PORT\n"
 
 #: src/CardColAppl.cpp:105
-msgid "[FILE] Saves game into FILE\n"
+msgid "FILE Saves game into FILE\n"
 msgstr "[FILE] Oyunu kaydet DOSYA\n"
 
 #: src/CardColAppl.cpp:106
-msgid "[FILE] Load game from FILE\n"
+msgid "FILE Load game from FILE\n"
 msgstr "[DOSYA] Oyun yükle DOSYA\n"
 
 #: src/CardColAppl.cpp:108
@@ -611,14 +611,14 @@ msgid "-warning: No file specified! Ignoring option `f'\n"
 msgstr "-Uyarý: Dosya tanýmlanmamýþ! Seçeneði yoksay `f'\n"
 
 #: src/CardColAppl.cpp:222
-msgid "-warning: No port specified! Ignoring option `l'\n"
+msgid "-warning: No port specified - using %1!\n"
 msgstr "-Uyarý: Port tanýmlanmamýþ! Seçeneði yoksay `l'\n"
 
-#: src/CardColAppl.cpp:239
+#: src/CardColAppl.cpp:242
 msgid "-warning: No target specified! Ignoring option `c'\n"
 msgstr "-Uyarý: Hedef tanýmlanmamýþ! Seçeneði yoksay `c'\n"
 
-#: src/CardColAppl.cpp:254
+#: src/CardColAppl.cpp:257
 msgid ""
 "-warning: Option `%1' has already been specified!\n"
 "Overwriting old setting\n"
@@ -626,35 +626,35 @@ msgstr ""
 "-Uyarý: `%1' seçenek zaten tanýmlanmýþ!\n"
 "Eski ayarlarýn üzerine kaydedilsin\n"
 
-#: src/CardColAppl.cpp:264
+#: src/CardColAppl.cpp:267
 msgid "-warning: No file specified! Ignoring option `%1'\n"
 msgstr "-Uyarý: DOsya tanýmlanmamýþ! Seçeneði yoksay `%1'\n"
 
-#: src/CardColAppl.cpp:314
+#: src/CardColAppl.cpp:317
 msgid "Human"
 msgstr "Ýnsan"
 
-#: src/CardColAppl.cpp:315
+#: src/CardColAppl.cpp:318
 msgid "Player 1"
 msgstr "1 oyuncu"
 
-#: src/CardColAppl.cpp:316
+#: src/CardColAppl.cpp:319
 msgid "Player 2"
 msgstr "2 oyuncu"
 
-#: src/CardColAppl.cpp:317
+#: src/CardColAppl.cpp:320
 msgid "Player 3"
 msgstr "3 oyuncu"
 
-#: src/CardColAppl.cpp:372
+#: src/CardColAppl.cpp:375
 msgid "-warning: Error reading INI-file `%1'! %2\n"
 msgstr "-Uyarý: INI-dosyasý okuma hatasý `%1'! %2\n"
 
-#: src/CardColAppl.cpp:418
+#: src/CardColAppl.cpp:421
 msgid "Compiled on"
 msgstr "Derlendi"
 
-#: src/CardColAppl.cpp:420
+#: src/CardColAppl.cpp:423
 msgid ""
 "Copyright (C) 2002 - 2009 Markus Schwab; e-mail: g17m0@users.sourceforge."
 "net\n"
@@ -664,7 +664,7 @@ msgstr ""
 "net\n"
 "Distributed under the terms of the GNU General Public License"
 
-#: src/CardColAppl.cpp:431
+#: src/CardColAppl.cpp:434
 msgid ""
 "Available games:\n"
 "\n"
@@ -672,11 +672,11 @@ msgstr ""
 "Kullanýlýr oyunlar:\n"
 "\n"
 
-#: src/Hearts.cpp:233
+#: src/Hearts.cpp:232
 msgid "Select 3 cards to exchange with %1"
 msgstr "%1 ile deðiþtirmek için 3 kart seç"
 
-#: src/Hearts.cpp:490 src/Buraco.cpp:1743
+#: src/Hearts.cpp:490 src/Buraco.cpp:1775
 msgid "Round ended"
 msgstr "El bitti"
 
@@ -696,48 +696,48 @@ msgstr "Oyun gruptan iki kiþiyle baþlamalý"
 msgid "You can't start with a heart, if they have not been played before!"
 msgstr "Eðer daha önce oynanmadýysa, kupa ile baþlayamazsýnýz!"
 
-#: src/Hearts.cpp:558
+#: src/Hearts.cpp:559
 msgid "The queen of spades can't be played in the first round!"
 msgstr "Maça kýzýný ilk elde oynayamazsýnýz!"
 
-#: src/Hearts.cpp:562
+#: src/Hearts.cpp:563
 msgid "Hearts can't be played in the first round!"
 msgstr "Kupayý ilk elde oynayamazsýnýz! "
 
-#: src/Hearts.cpp:567 src/GameTypes.cpp:59
+#: src/Hearts.cpp:568 src/GameTypes.cpp:59
 msgid "Hearts"
 msgstr "Kupalar"
 
-#: src/Hearts.cpp:1108
+#: src/Hearts.cpp:1111
 msgid "H_earts"
 msgstr "K_upalar"
 
-#: src/Hearts.cpp:1118 src/Buraco.cpp:2244 src/SgtMayor.cpp:1185
-#: src/Jabberwocky.cpp:350
+#: src/Hearts.cpp:1121 src/Buraco.cpp:2281 src/SgtMayor.cpp:1184
+#: src/Jabberwocky.cpp:349
 msgid "Show score dialog"
 msgstr ""
 
-#: Common/ScoreDlg.cpp:53
+#: card/ScoreDlg.cpp:55
 msgid "Score"
 msgstr "Puan"
 
-#: src/Buraco.cpp:79 src/Machiavelli.cpp:83
+#: src/Buraco.cpp:78 src/Machiavelli.cpp:82
 msgid "New pile"
 msgstr "Yeni yýðýn"
 
-#: src/Buraco.cpp:742
+#: src/Buraco.cpp:745
 msgid "Every pile on the table must have at least 3 cards!"
 msgstr "Masadaki her yýðýnda en az 3 kart olmalýdýr"
 
-#: src/Buraco.cpp:842
+#: src/Buraco.cpp:866
 msgid "You can't pick up monos!"
 msgstr "Tekleri toplayamazsýnýz!"
 
-#: src/Buraco.cpp:845
+#: src/Buraco.cpp:869
 msgid "You need a fitting pair to pick up the pile of dumped cards!"
 msgstr "Yýðýný toplayýp kartlarý bitirmek için uygun eþe ihtiyacýnýz var!"
 
-#: src/Buraco.cpp:851
+#: src/Buraco.cpp:875
 msgid ""
 "Picking up the staple would leave you without cards\n"
 "and you can't end the game now!"
@@ -745,51 +745,51 @@ msgstr ""
 "uygun bir þekilde toplamayý kartlarýnýz olmadan yapamazsýnýz\n"
 "ve oyunu þimdi bitiremezsiniz!"
 
-#: src/Buraco.cpp:1139
+#: src/Buraco.cpp:1163
 msgid "You need to fill up other piles first!"
 msgstr "Ýlk önce diðer yýðýnlarý tamamlamaya ihtiyacýnýz var!"
 
-#: src/Buraco.cpp:1152
+#: src/Buraco.cpp:1176
 msgid "There are no cards to make a valid new pile!"
 msgstr "Geçerli yeni bir yýðýn için kart mevcut deðil!"
 
-#: src/Buraco.cpp:1158 src/Buraco.cpp:1183
+#: src/Buraco.cpp:1182 src/Buraco.cpp:1207
 msgid "You can't end the game (a pile of monos is not finished)!"
 msgstr "Oyunu bitiremezsiniz (tekli yýðýn henüz bitmedi)!"
 
-#: src/Buraco.cpp:1160 src/Buraco.cpp:1184
+#: src/Buraco.cpp:1184 src/Buraco.cpp:1208
 msgid "You can't end the game (there's no \"cerrado\")!"
 msgstr "Oyunu bitiremezsiniz (yok \"cerrado\")!"
 
-#: src/Buraco.cpp:1161
+#: src/Buraco.cpp:1185
 msgid "Not enough cards to make new pile!"
 msgstr "yeni bir yýðýn için kartlar yeterli deðil!"
 
-#: src/Buraco.cpp:1170
+#: src/Buraco.cpp:1194
 msgid "You may not start this new pile with a joker!"
 msgstr ""
 
-#: src/Buraco.cpp:1177 src/Machiavelli.cpp:673
+#: src/Buraco.cpp:1201 src/Machiavelli.cpp:672
 msgid "This card does not fit on that pile!"
 msgstr "Bu kart yýðýnla baðdaþmýyor!"
 
-#: src/Buraco.cpp:1394
+#: src/Buraco.cpp:1426
 msgid "%1 picked up the burraco"
 msgstr "%1 topladý burraco"
 
-#: src/Buraco.cpp:1566
+#: src/Buraco.cpp:1598
 msgid "Points [Buraco]: %1 [%2] / %3 [%4]"
 msgstr "Puanlar [Buraco]: %1 [%2] / %3 [%4]"
 
-#: src/Buraco.cpp:1568 src/Buraco.cpp:1570
+#: src/Buraco.cpp:1600 src/Buraco.cpp:1602
 msgid "N"
 msgstr "N"
 
-#: src/Buraco.cpp:1568 src/Buraco.cpp:1570
+#: src/Buraco.cpp:1600 src/Buraco.cpp:1602
 msgid "Y"
 msgstr "Y"
 
-#: src/Buraco.cpp:1684
+#: src/Buraco.cpp:1716
 msgid ""
 "Team %1\n"
 "%2/%3"
@@ -797,39 +797,39 @@ msgstr ""
 "Takým %1\n"
 "%2/%3"
 
-#: src/Buraco.cpp:1749
+#: src/Buraco.cpp:1781
 msgid "Game ended; Team %1 won"
 msgstr "Oyun bitti; Grup %1 kazandý"
 
-#: src/Buraco.cpp:2126
+#: src/Buraco.cpp:2158
 msgid "Invalid pile!"
 msgstr "Geçersiz yýðýn!"
 
-#: src/Buraco.cpp:2129
+#: src/Buraco.cpp:2161
 msgid "Invalid card!"
 msgstr "Geçersiz kart!"
 
-#: src/Buraco.cpp:2191
+#: src/Buraco.cpp:2223
 msgid "Invalid target specification!"
 msgstr "Geçersiz hedef belirtimi"
 
-#: src/Buraco.cpp:2233
+#: src/Buraco.cpp:2270
 msgid "<ctl>Z"
 msgstr "<ctl>Z"
 
-#: src/Buraco.cpp:2236 src/Machiavelli.cpp:1747
+#: src/Buraco.cpp:2273 src/Machiavelli.cpp:1753
 msgid "_Sort cards (by number)"
 msgstr "_Kartlarý sýrala (numaraya göre)"
 
-#: src/Buraco.cpp:2240 src/Machiavelli.cpp:1751
+#: src/Buraco.cpp:2277 src/Machiavelli.cpp:1757
 msgid "Sort cards (by _colour)"
 msgstr "Kartlarý sýrala (_renge göre)"
 
-#: src/Machiavelli.cpp:85 src/Machiavelli.cpp:1754
+#: src/Machiavelli.cpp:84 src/Machiavelli.cpp:1760
 msgid "_End turn"
 msgstr "_Oyunu durdur"
 
-#: src/Machiavelli.cpp:170
+#: src/Machiavelli.cpp:169
 msgid ""
 "You can sort the cards in your hand with drag and drop or put them on the "
 "table - click the staple to end turn"
@@ -837,55 +837,55 @@ msgstr ""
 "Elinizdeki kartlarý sürükle býrak tekniðiyle sýralayabilirsiniz veya onlarý "
 "masaya  koyabilirsiniz - en baþtakine týkla ve oyunu bitir"
 
-#: src/Machiavelli.cpp:345 src/Machiavelli.cpp:1501
+#: src/Machiavelli.cpp:344 src/Machiavelli.cpp:1505
 msgid "Can't end turn: The piles are not valid!"
 msgstr "Oyunu bitiremezsiniz: Yýðýnlar geçerli deðil!"
 
-#: src/Machiavelli.cpp:352
+#: src/Machiavelli.cpp:351
 msgid "_Undo all"
 msgstr "_Hepsini geri al"
 
-#: src/Machiavelli.cpp:353
+#: src/Machiavelli.cpp:352
 msgid "Undo _last"
 msgstr "_Sonuncuyu geri al"
 
-#: src/Machiavelli.cpp:686
+#: src/Machiavelli.cpp:685
 msgid "Can't move this card - try splitting the origin first!"
 msgstr ""
 
-#: src/Machiavelli.cpp:1392
+#: src/Machiavelli.cpp:1394
 msgid "Taking last card! Solve the game (somehow) ..."
 msgstr ""
 
-#: src/Machiavelli.cpp:1394
+#: src/Machiavelli.cpp:1396
 msgid "Game over"
 msgstr "Oyunu kaybettiniz"
 
-#: src/Machiavelli.cpp:1419
+#: src/Machiavelli.cpp:1424
 msgid "Pile %1: %2\n"
 msgstr "Yýðýn %1: %2\n"
 
-#: src/Machiavelli.cpp:1503
+#: src/Machiavelli.cpp:1507
 msgid "Could end turn: The piles are OK!"
 msgstr "Oyun bitti: yýðýnlar tamam!"
 
-#: src/Machiavelli.cpp:1614 src/Machiavelli.cpp:1676
+#: src/Machiavelli.cpp:1619 src/Machiavelli.cpp:1681
 msgid "Invalid source pile!"
 msgstr "Geçersiz yýðýn kaynaðý!"
 
-#: src/Machiavelli.cpp:1617 src/Machiavelli.cpp:1679
+#: src/Machiavelli.cpp:1622 src/Machiavelli.cpp:1684
 msgid "Invalid cards!"
 msgstr "Geçersiz kartlar!"
 
-#: src/Machiavelli.cpp:1635 src/Machiavelli.cpp:1664
+#: src/Machiavelli.cpp:1640 src/Machiavelli.cpp:1669
 msgid "Invalid destination pile!"
 msgstr "Geçersiz yýðýna eriþim!"
 
-#: src/Machiavelli.cpp:1673
+#: src/Machiavelli.cpp:1678
 msgid "Invalid position in destination pile!"
 msgstr "Geçersiz yýðýna eriþim durumu!"
 
-#: src/Machiavelli.cpp:1743
+#: src/Machiavelli.cpp:1749
 msgid "Undo _all"
 msgstr "_Hepsini geri al"
 
@@ -901,53 +901,53 @@ msgstr "Geçersiz tür! "
 msgid "Card %1 does not fit!"
 msgstr "Kart %1 uygun deðil!"
 
-#: src/SgtMayor.cpp:225
+#: src/SgtMayor.cpp:223
 msgid "(needs %1 tricks)"
 msgstr "(ihtiyaç var %1 ele)"
 
-#: src/SgtMayor.cpp:315
+#: src/SgtMayor.cpp:313
 msgid "Play a card with an equal colour as the first played one!"
 msgstr "Ýlk oyunanan da olduðu gibi ayný renkli bir kart oynayýn!"
 
-#: src/SgtMayor.cpp:387
+#: src/SgtMayor.cpp:385
 msgid "Waiting for %1 to select the special colour ..."
 msgstr "%1 özel bir renk seçmesi bekleniyor ..."
 
-#: src/SgtMayor.cpp:416
+#: src/SgtMayor.cpp:414
 msgid "Select the special colour"
 msgstr "Özel bir renk seçin"
 
-#: src/SgtMayor.cpp:684
+#: src/SgtMayor.cpp:683
 msgid "Card not found!"
 msgstr "Kart bulunamadý!"
 
-#: src/SgtMayor.cpp:826
+#: src/SgtMayor.cpp:825
 msgid "Game ended; %1 has %2 %7, %3 %4 and %5 %6 %8"
 msgstr "Oyun bitti; %1 sahip %2 %7, %3 %4 ve %5 %6 %8"
 
-#: src/SgtMayor.cpp:857 src/Jabberwocky.cpp:947
+#: src/SgtMayor.cpp:856 src/Jabberwocky.cpp:946
 msgid "; %1 won"
 msgstr "; %1 kazandý"
 
-#: src/SgtMayor.cpp:871 src/SgtMayor.cpp:873
+#: src/SgtMayor.cpp:870 src/SgtMayor.cpp:872
 msgid "trick"
 msgid_plural "tricks"
 msgstr[0] "el"
 msgstr[1] "eller"
 
-#: src/SgtMayor.cpp:948
+#: src/SgtMayor.cpp:947
 msgid "Waiting for %1 to exchange cards ..."
 msgstr " %1 kartlarý deðiþtirmek için bekliyor ..."
 
-#: src/SgtMayor.cpp:982
+#: src/SgtMayor.cpp:981
 msgid "You can exchange %1 %2; %4 with %3 (and than %5 with %6)!"
 msgstr "%1 %2; %4 ile %3 (ve sonra %5 ile %6)!"
 
-#: src/SgtMayor.cpp:989
+#: src/SgtMayor.cpp:988
 msgid "You can exchange %1 %2 with %3!"
 msgstr "%1 %2 ile %3 deðiþtirebilirsin!"
 
-#: src/SgtMayor.cpp:994
+#: src/SgtMayor.cpp:993
 msgid "bad card"
 msgid_plural "bad cards"
 msgstr[0] "Kötü kart"
@@ -1009,7 +1009,7 @@ msgstr "Røvhult"
 msgid "Twopart"
 msgstr "Twopart"
 
-#: src/GameTypes.cpp:62 src/Jabberwocky.cpp:415 src/Jabberwocky.cpp:515
+#: src/GameTypes.cpp:62 src/Jabberwocky.cpp:414 src/Jabberwocky.cpp:514
 msgid "Jabberwocky"
 msgstr "Jabberwocky"
 
@@ -1037,11 +1037,11 @@ msgstr "_Gönder"
 msgid ": "
 msgstr ": "
 
-#: src/Jabberwocky.cpp:388
+#: src/Jabberwocky.cpp:387
 msgid "Play first cards with an equal colour as the first played one!"
 msgstr "Birinci oyunda oynandýðý gibi ilk kartlarý ayný renkte oynayýn!"
 
-#: src/Jabberwocky.cpp:397
+#: src/Jabberwocky.cpp:396
 msgid ""
 "You can't start with a trump,\n"
 "if they have not been played before!"
@@ -1049,19 +1049,19 @@ msgstr ""
 "Bir kozla baþlayamazsýnýz,\n"
 "eðer onlar daha önce oynamadýysa!"
 
-#: src/Jabberwocky.cpp:451
+#: src/Jabberwocky.cpp:450
 msgid "Waiting for %1 to bid ..."
 msgstr "Oyun için %1 bekleniyor ..."
 
-#: src/Jabberwocky.cpp:459
+#: src/Jabberwocky.cpp:458
 msgid "Make your bid for the number of tricks you are going to make!"
 msgstr "Oyun için numaraný yap ve öle oyna!"
 
-#: src/Jabberwocky.cpp:461
+#: src/Jabberwocky.cpp:460
 msgid "_Bid"
 msgstr "_Oyun"
 
-#: src/Jabberwocky.cpp:514
+#: src/Jabberwocky.cpp:513
 msgid ""
 "The sum of all bids must be different\n"
 "than the number of possible tricks!"
@@ -1069,11 +1069,11 @@ msgstr ""
 "Tüm oyunlarýn toplamý farklý olmalý\n"
 "sonra elin mümkün numaralarý!"
 
-#: src/Jabberwocky.cpp:542
+#: src/Jabberwocky.cpp:541
 msgid "; bids %1 tricks"
 msgstr "; %1 el oynandý"
 
-#: src/Jabberwocky.cpp:924
+#: src/Jabberwocky.cpp:923
 msgid "Game ended"
 msgstr "Oyun bitti"
 
