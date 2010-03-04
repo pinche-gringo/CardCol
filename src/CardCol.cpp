@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 9.9.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2009
+//COPYRIGHT   : Copyright (C) 2002 - 2010
 
 // This file is part of CardCol.
 //
@@ -957,12 +957,11 @@ void* CardgameCollection::changeCards (void* opt) {
    void* rc (NULL);
    bool enable (false);
    try {
-      if ((unsigned long)opt & 1) {
+      if ((unsigned long)opt & 1)
          cardFaces.loadDecks (options.co.decks);
-	 cards.getCards ().size () ? cards.update () : cards.addPacket (cardFaces);
-      }
       if ((unsigned long)opt & 2)
          cardFaces.loadBack (options.co.back);
+      cards.getCards ().size () ? cards.update () : cards.addPacket (cardFaces);
 
       enable = true;
       rc = this;
