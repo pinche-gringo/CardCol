@@ -8,7 +8,7 @@
 //REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 29.8.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2008
+//COPYRIGHT   : Copyright (C) 2002 - 2008, 2010
 
 // This file is part of CardCol.
 //
@@ -36,6 +36,8 @@
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/scrolledwindow.h>
 
+#define CHECK 9
+#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/DirSrch.h>
@@ -58,7 +60,6 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
      selDeck (), decks (), selBack (), boxBack (), txtBack (_("Available backgrounds")),
      backs () {
    TRACE3 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - " << deck << " - " << back);
-   Check1 (deck[deck.size () - 1] == YGP::File::DIRSEPARATOR);
 
    Gtk::ScrolledWindow* scrl (new Gtk::ScrolledWindow);
    scrl->set_shadow_type (Gtk::SHADOW_ETCHED_IN);
