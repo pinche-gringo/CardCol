@@ -44,7 +44,7 @@ class CardOptions : public YGP::Entity {
    const CardOptions& operator= (const CardOptions& other);
 
    std::string  decks;         // %attrib%; Front;   CARDDECKS_DIR CARDDECKS_FRONT
-   std::string  back;          // %attrib%; Back;    CARDDECKS_DIR
+   std::string  back;          // %attrib%; Back;    CARDDECKS_DIR CARDDECKS_BACK
 };
 
 #endif

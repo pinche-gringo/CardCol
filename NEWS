@@ -1,6 +1,7 @@
 Overview of changes in version 0.9.52:
 
   - card/DeckSelect.cpp: Offer all KDE-4 carddecks; Show queen of hearts
+  - Use Cardpics as default (if available) as they seem to be the most stable
 
 
 Overview of changes in version 0.9.51:

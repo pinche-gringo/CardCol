@@ -84,18 +84,18 @@
 
 #include "Settings.h"
 
-#ifdef KDECARDS_DIR
-#  define CARDDECKS_DIR     KDECARDS_DIR
-#  define CARDDECKS_FRONT   "cards-default/"
-#  define CARDDECKS_BACK    "decks/deck1.png"
-#elif defined CARDPICS_DIR
+#if defined CARDPICS_DIR
 #  define CARDDECKS_DIR     CARDPICS_DIR
 #  define CARDDECKS_FRONT
 #  define CARDDECKS_BACK    "78.png"
 #elif defined GNOMECARDS_DIR
 #  define CARDDECKS_DIR     GNOMECARDS_DIR
-#  define CARDDECKS_FRONT   "bonded.svg"
-#  define CARDDECKS_BACK    "bonded.svg"
+#  define CARDDECKS_FRONT   "gnomangelo_bitmap.svg"
+#  define CARDDECKS_BACK    "gnomangelo_bitmap.svg"
+#elif defined KDECARDS_DIR
+#  define CARDDECKS_DIR     KDECARDS_DIR
+#  define CARDDECKS_FRONT   "cards-default/"
+#  define CARDDECKS_BACK    "decks/deck1.png"
 #else
 #  define CARDDECKS_DIR     ""
 #  define CARDDECKS_FRONT   ""
