@@ -1,3 +1,9 @@
+Overview of changes in version 0.9.51:
+
+  - Fixed not applying the selection of a new card back
+  - Preparing to use KDE4-cards (at the moment not supported by librsvg)
+
+
 Overview of changes in version 0.9.50:
 
   - Machiavelli: Mark error piles

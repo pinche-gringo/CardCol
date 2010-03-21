@@ -4,7 +4,7 @@ lib_LTLIBRARIES=libCard.la
 
 includedir = ${prefix}/include/card
 
-libCard_la_LDFLAGS=@DEPENDENCIES_LIBS@ -release $(LIBRELEASE) -no-undefined @LTLIBINTL@
+libCard_la_LDFLAGS=@DEPENDENCIES_LIBS@ -release $(LIBRELEASE) -no-undefined @LTLIBINTL@ @RSVG_LIBS@
 
 libCard_la_SOURCES=Widget.cpp Images.cpp Pile.cpp Set.cpp Game.cpp	\
 DeckSelect.cpp PlayerDlg.cpp ScoreDlg.cpp PlayerConnDlg.cpp Player.cpp	\
@@ -15,6 +15,6 @@ DeckSelect.h PlayerDlg.h ScoreDlg.h PlayerConnDlg.h Player.h		\
 RemotePlayer.h ComputerPlayer.h
 
 AM_CPPFLAGS = -Wall -Wextra
-AM_CXXFLAGS = -Woverloaded-virtual -Weffc++
-INCLUDES = @INCLUDES@ @DEPENDENCIES_CFLAGS@
-DEFS= @DEFS@ -DPKGDIR=\"$(pkgdatadir)\" -Wall
+AM_CXXFLAGS = -Woverloaded-virtual # -Weffc++
+INCLUDES = @INCLUDES@ @DEPENDENCIES_CFLAGS@ @RSVG_CFLAGS@
+DEFS= @DEFS@ -DPKGDIR=\"$(pkgdatadir)\"

@@ -28,16 +28,19 @@
 
 #include <cardgames-cfg.h>
 
+#ifdef HAVE_RSVG
+#  include <librsvg/rsvg.h>
+#endif
+
 #include <gdkmm/pixbuf.h>
 #include <gdkmm/pixmap.h>
+#include <gdkmm/pixbufloader.h>
 
 #include <gtkmm/stock.h>
 #include <gtkmm/image.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/scrolledwindow.h>
 
-#define CHECK 9
-#define TRACELEVEL 9
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/DirSrch.h>
@@ -92,6 +95,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
    Glib::RefPtr<Gdk::Pixbuf> actImg;
 
 #ifdef KDECARDS_DIR
+   // First try to load cards stored KDE-3 style (as separate PNGs)
    std::string cardDirs (KDECARDS_DIR); Check3 (cardDirs[cardDirs.size () - 1] == YGP::File::DIRSEPARATOR);
    cardDirs += "cards-*";
    YGP::DirectorySearch ds (cardDirs);
@@ -123,6 +127,36 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
 
       dir = ds.next ();
    }
+
+#ifdef HAVE_RSVG
+   // Then try to load them KDE-4 style (as SVGs, with one PNG to use in the select-dialog)
+   // Does not work with librsvg <= 2.26.0
+   try {
+      GError* error (NULL);
+      rsvg_init ();
+      // RsvgHandle* hSVG (rsvg_handle_new_from_file ("/usr/share/kde4/apps/carddecks/svg-jolly-royal/jolly-royal.svgz", &error));
+      RsvgHandle* hSVG (rsvg_handle_new_from_file ("/usr/share/gnome-games-common/cards/gnomangelo_bitmap.svg", &error));
+      if (!hSVG)
+	 throw Glib::Error (error);
+
+      if (!rsvg_handle_close (hSVG, &error) || error)
+	 TRACE1 ("Error");
+
+      actImg = Glib::wrap (rsvg_handle_get_pixbuf_sub (hSVG, "#king_club"));
+      if (actImg) {
+	 Gtk::TreeRow row (*mDecks->append ());
+	 row[cols.path] = "/tmp";
+	 row[cols.name] = "SVG-Image";
+	 row[cols.icon] = actImg->scale_simple (Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);;
+      }
+      else
+	 TRACE1 ("No king of spades!");
+   }
+   catch (Glib::Error& e) {
+      TRACE1 ("Error loading KDE-4 images" << e.what ());
+   }
+#endif
+
 #endif
 #ifdef CARDPICS_DIR
    if ((actImg = getImage (CARDPICS_DIR "24.png"))) {

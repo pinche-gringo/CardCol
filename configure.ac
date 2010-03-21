@@ -51,6 +51,12 @@ AC_CHECK_LIB(stdc++, main)
 
 PKG_CHECK_MODULES(DEPENDENCIES, gtkmm-2.4 >= 2.6.0 gthread-2.0 > 2.2.0
                   YGP >= 0.9.30 XGP >= 0.9.30)
+
+PKG_CHECK_MODULES(RSVG, librsvg-2.0.pc >= 9.99.0,
+                  [AC_DEFINE(HAVE_RSVG, 1, [Define if librsvg is installed (in a fitting version)])],
+                  [AC_MSG_WARN([Can't use images of KDE4])])
+AC_SUBST(RSVG_CFLAGS)
+AC_SUBST(RSVG_LIBS)
 AC_SUBST(DEPENDENCIES_CFLAGS)
 AC_SUBST(DEPENDENCIES_LIBS)
 

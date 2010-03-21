@@ -8,7 +8,7 @@
 //REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 29.03.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2009
+//COPYRIGHT   : Copyright (C) 2002 - 2010
 
 // This file is part of CardCol.
 //
@@ -33,6 +33,10 @@
 #include <sstream>
 
 #include <cardgames-cfg.h>
+
+#ifdef HAVE_RSVG
+#  include <librsvg/rsvg.h>
+#endif
 
 #include <YGP/File.h>
 #include <YGP/Check.h>
@@ -213,6 +217,45 @@ GnomeLoader::~GnomeLoader () {
 void GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
 			      const std::string& path) throw (YGP::FileError) {
    TRACE1 ("GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\t" << path);
+#ifdef HAVE_RSVG
+   // New style of reading Gnome cards: Get sub-images by identification
+   // Does not work with librsvg <= 2.26.0
+   GError* error (NULL);
+   rsvg_init ();
+   RsvgHandle* hSVG (rsvg_handle_new_from_file (path.c_str (), &error));
+   if (!hSVG)
+      throw YGP::FileError (error->message);
+
+   if (!rsvg_handle_close (hSVG, &error) || error)
+      throw YGP::FileError (error->message);
+
+   std::string actCard;
+   Glib::RefPtr<Gdk::Pixbuf> actImg;
+   const char* colours[] = { "club", "spade", "heart", "diamond" };
+   const char* numbers[] = { "10", "jack", "queen", "king" };
+
+   for (unsigned int c (0); c < (sizeof (colours) / sizeof (*colours)); ++c)
+      for (unsigned int n (0); n < 13; ++n) {
+	 actCard = "#";
+	 if (n > 8)
+	    actCard += numbers[n - 9];
+	 else
+	    actCard += char ('1' + n);
+	 actCard += "_";
+	 actCard += colours[c];
+	 TRACE9 ("GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tCard: " << actCard);
+
+	 actImg = Glib::wrap (rsvg_handle_get_pixbuf_sub (hSVG, actCard.c_str ()));
+	 if (actImg)
+	    cards[c * 13 + n] = actImg->scale_simple (Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);
+	 else {
+	    std::string msg (_("Card `%1' not found"));
+	    msg.replace (msg.find ("%1"), 2, actCard);
+	    throw YGP::FileError (msg);
+	 }
+      }
+#else
+   // Old style of reading Gnome cards: Extract cards from certain positions
    Glib::RefPtr<Gdk::Pixbuf> img (loadImage (path));
    unsigned int widthImg (img->get_width () / 13);
    unsigned int heightImg (img->get_height () / 5);
@@ -221,15 +264,16 @@ void GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf> >& cards,
       unsigned int x (((i < 4) ? i : (55 - i)) >> 2);
       unsigned int y (i & 3);
       if (y)
-	 y = 4 - y;
+        y = 4 - y;
       TRACE8 ("GnomeLoader::loadFronts (std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tPosition "
-	      << x << '/' << y);
+             << x << '/' << y);
 
       cards[i] = Gdk::Pixbuf::create_subpixbuf (img, widthImg * x, heightImg * y, widthImg, heightImg);
       if ((cards[i]->get_height () != (int)Images::HEIGHT) || (cards[i]->get_width () != (int)Images::WIDTH))
-	 cards[i] = cards[i]->scale_simple (Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);
+        cards[i] = cards[i]->scale_simple (Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);
       Check3 (cards[i]);
    } // end-for
+#endif
 }
 
 //-----------------------------------------------------------------------------
