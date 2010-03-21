@@ -3,12 +3,12 @@ Prerequisites
 
 The following packages are needed
 
-  - My YGP library; also availabe as a Sourceforge project
-    (http://libymp.sourceforge.net)
-  - Gtkmm-2.6 (which itself needs GTK+-2.6). Available via http://www.gktmm.org
+  - Boost
+  - Gtkmm-2.6 (which itself needs GTK+-2.6). Available at http://www.gktmm.org/
   - Carddecks; e.g. the KDE cardgames provide a huge collection. See also the
     README.
-  - An installed libpthreads enables network ability
+  - My YGP library; also availabe as a Sourceforge project
+    (http://libymp.sourceforge.net)
 
 
 How to build (if extracted from an (tar-)archive)
