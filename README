@@ -1,6 +1,19 @@
                        Cardgames
 
-Various card games; til now they consist of:
+A collection of card games
+Copyright (C) 2002 - 2010 Markus Schwab <g17m0@users.sourceforge.net>
+---------------------------------------------------------------------
+
+The package is distributed under the GNU General Public License; in the hope
+that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+file COPYING for details.
+
+
+Description
+-----------
+
+A collection of various multi-person card games; til now they consist of:
 
   - Røvhult (the danish words for arsehole); obviously I learned it from danes,
     but it is also known internationally (as shithead or asshole).
@@ -22,17 +35,6 @@ Various card games; til now they consist of:
   - Jabberwocky: Bid the tricks you think you are going to win.
 
   - Hearts: A game included in various (?) versions of Windows.
-
-
-The whole thing is:
-
-Copyright (C) 2002 - 2010 Markus Schwab <g17m0@users.sourceforge.net>
----------------------------------------------------------------------
-
-The package is distributed under the GNU General Public License; in the hope
-that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-file COPYING for details.
 
 
 Card decks
