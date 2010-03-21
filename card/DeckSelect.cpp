@@ -28,10 +28,6 @@
 
 #include <cardgames-cfg.h>
 
-#ifdef HAVE_RSVG
-#  include <librsvg/rsvg.h>
-#endif
-
 #include <gdkmm/pixbuf.h>
 #include <gdkmm/pixmap.h>
 #include <gdkmm/pixbufloader.h>
@@ -92,84 +88,23 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
    decks.signal_selection_changed ().connect (mem_fun (*this, &DeckSelectDlg::deckSelected));
    decks.signal_item_activated ().connect (mem_fun (*this, &DeckSelectDlg::deckActivated));
 
-   Glib::RefPtr<Gdk::Pixbuf> actImg;
-
 #ifdef KDECARDS_DIR
    // First try to load cards stored KDE-3 style (as separate PNGs)
    std::string cardDirs (KDECARDS_DIR); Check3 (cardDirs[cardDirs.size () - 1] == YGP::File::DIRSEPARATOR);
    cardDirs += "cards-*";
-   YGP::DirectorySearch ds (cardDirs);
-
-   TRACE8 ("DeckSelectDlg::DeckSelectDlg (const char*) - Searching in path "
-           << cardDirs);
-   const YGP::File* dir (ds.find (YGP::IDirectorySearch::FILE_DIRECTORY
-                                  | YGP::IDirectorySearch::FILE_READONLY));
-   while (dir) {
-      Gtk::TreeRow row (*mDecks->append ());
-      std::string file (dir->path ());
-      file += dir->name ();
-      file += YGP::File::DIRSEPARATOR;
-      row[cols.path] = file;
-      row[cols.name] = dir->name () + 6;
-
-      file += "14.png";
-      actImg = getImage (file);
-      if (actImg) {
-	 row[cols.icon] = actImg;
-
-	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
-		 << (std::string)row[cols.path] << " with " << deck);
-	 if (deck == (std::string)row[cols.path])
-	    decks.select_path (mDecks->get_path (row));
-      }
-      else
-	 mDecks->erase (row);
-
-      dir = ds.next ();
-   }
+   addFileInDirectories (cardDirs, "11.png", deck, 6);
 
 #ifdef HAVE_RSVG
    // Then try to load them KDE-4 style (as SVGs, with one PNG to use in the select-dialog)
    // Does not work with librsvg <= 2.26.0
-   try {
-      GError* error (NULL);
-      rsvg_init ();
-      // RsvgHandle* hSVG (rsvg_handle_new_from_file ("/usr/share/kde4/apps/carddecks/svg-jolly-royal/jolly-royal.svgz", &error));
-      RsvgHandle* hSVG (rsvg_handle_new_from_file ("/usr/share/gnome-games-common/cards/gnomangelo_bitmap.svg", &error));
-      if (!hSVG)
-	 throw Glib::Error (error);
-
-      if (!rsvg_handle_close (hSVG, &error) || error)
-	 TRACE1 ("Error");
-
-      actImg = Glib::wrap (rsvg_handle_get_pixbuf_sub (hSVG, "#king_club"));
-      if (actImg) {
-	 Gtk::TreeRow row (*mDecks->append ());
-	 row[cols.path] = "/tmp";
-	 row[cols.name] = "SVG-Image";
-	 row[cols.icon] = actImg->scale_simple (Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);;
-      }
-      else
-	 TRACE1 ("No king of spades!");
-   }
-   catch (Glib::Error& e) {
-      TRACE1 ("Error loading KDE-4 images" << e.what ());
-   }
+   cardDirs = KDECARDS_DIR; Check3 (cardDirs[cardDirs.size () - 1] == YGP::File::DIRSEPARATOR);
+   cardDirs += "svg-*";
+   addFileInDirectories (cardDirs, "11.png", deck, 4);
 #endif
 
 #endif
 #ifdef CARDPICS_DIR
-   if ((actImg = getImage (CARDPICS_DIR "24.png"))) {
-      Gtk::TreeRow row (*mDecks->append ());
-      row[cols.path] = CARDPICS_DIR;
-      row[cols.name] = "Cardpics";
-      row[cols.icon] = actImg;
-
-      TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
-	      << CARDPICS_DIR << " with " << deck);
-      if (deck == CARDPICS_DIR)
-	 decks.select_path (mDecks->get_path (row));
-   }
+   addFile (CARDPICS_DIR, "40.png", "Cardpics", deck);
 #endif
 
    unsigned int height (132 * ((mDecks->children ().size () >> 2) + 1));
@@ -181,10 +116,12 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
    backs.signal_selection_changed ().connect (mem_fun (*this, &DeckSelectDlg::backSelected));
    backs.signal_item_activated ().connect (mem_fun (*this, &DeckSelectDlg::backActivated));
 
+   Glib::RefPtr<Gdk::Pixbuf> actImg;
 #ifdef KDECARDS_DIR
    std::string pathDecks (KDECARDS_DIR "decks/");
-   dir = ds.find (pathDecks + "deck*.png", YGP::IDirectorySearch::FILE_NORMAL
-                  | YGP::IDirectorySearch::FILE_READONLY);
+   YGP::DirectorySearch ds;
+   const YGP::File* dir (ds.find (pathDecks + "deck*.png", YGP::IDirectorySearch::FILE_NORMAL
+				  | YGP::IDirectorySearch::FILE_READONLY));
    while (dir) {
       if ((actImg = getImage (pathDecks + dir->name ()))) {
 	 Gtk::TreeRow row (*mBacks->append ());
@@ -229,7 +166,7 @@ DeckSelectDlg::DeckSelectDlg (const std::string& deck, const std::string& back)
 
 	 row[cols.path] = file;
 	 row[cols.name] = file.substr (strlen (GNOMECARDS_DIR), strlen (gfile->name ()) - 4);
-	 Glib::RefPtr<Gdk::Pixbuf> dest (Gdk::Pixbuf::create_subpixbuf (actImg, widthImg * 10, heightImg * 3, widthImg, heightImg));
+	 Glib::RefPtr<Gdk::Pixbuf> dest (Gdk::Pixbuf::create_subpixbuf (actImg, widthImg * 11, heightImg * 2, widthImg, heightImg));
 	 row[cols.icon] = dest->scale_simple (Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);
 
 	 TRACE9 ("DeckSelectDlg::DeckSelectDlg (2x const std::string&) - Comparing "
@@ -280,6 +217,57 @@ DeckSelectDlg::~DeckSelectDlg () {
    TRACE9 ("DeckSelectDlg::~DeckSelectDlg ()");
 }
 
+
+//-----------------------------------------------------------------------------
+/// Adds the passed files for all directories found by the DirectorySearch
+/// \param dir File-regular expression where carddecks can be found
+/// \param file File within all the directories
+/// \param defaultDeck Previously selected deck
+/// \param offName Offset where name starts in filename
+//-----------------------------------------------------------------------------
+void DeckSelectDlg::addFileInDirectories (const std::string& dir, const std::string& file,
+					  const std::string& defaultDeck, unsigned int offName) {
+   Check1 (dir.size ()); Check1 (file.size ()); Check1 (defaultDeck.size ());
+   TRACE8 ("DeckSelectDlg::addFileInDirectories (3x const std::string&, unsigned) - Searching in path " << dir);
+
+   std::string path;
+   YGP::DirectorySearch ds (dir.c_str ());
+   const YGP::File* iDir (ds.find (YGP::IDirectorySearch::FILE_DIRECTORY
+				   | YGP::IDirectorySearch::FILE_READONLY));
+   while (iDir) {
+      path = iDir->path ();
+      path += iDir->name ();
+      path += YGP::File::DIRSEPARATOR;
+      addFile (path, file, iDir->name () + offName, defaultDeck);
+
+      iDir = ds.next ();
+   }
+}
+
+//-----------------------------------------------------------------------------
+/// Adds the passed file to the list
+/// \param path Path to file to add
+/// \param name File to add
+/// \param display Name as displayed in the list
+/// \param defaultDeck Previously selected deck
+//-----------------------------------------------------------------------------
+void DeckSelectDlg::addFile (const std::string& path, const std::string& name,
+			     const std::string& display, const std::string& defaultDeck) {
+   TRACE3 ("DeckSelectDlg::addFile (4x const std::string&) - Adding " << path << name << " as " << display);
+   Check1 (path.size ()); Check1 (name.size ()); Check1 (display.size ());
+
+   Glib::RefPtr<Gdk::Pixbuf> actImg (getImage (path + name));
+   if (actImg) {
+      Gtk::TreeRow row (*mDecks->append ());
+      row[cols.icon] = actImg;
+      row[cols.path] = path;
+      row[cols.name] = display;
+
+      TRACE9 ("DeckSelectDlg::addFile (4x const std::string&) - Comparing " << (std::string)row[cols.path] << " with " << defaultDeck);
+      if (defaultDeck == path)
+	 decks.select_path (mDecks->get_path (row));
+   }
+}
 
 //-----------------------------------------------------------------------------
 /// Callback after selecting a button

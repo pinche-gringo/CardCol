@@ -30,6 +30,11 @@
 #include <XGP/XDialog.h>
 
 
+namespace YGP {
+   class DirectorySearch;
+}
+
+
 namespace Card {
 
 // Class to select the card decks to use
@@ -67,6 +72,10 @@ class DeckSelectDlg : public XGP::XDialog {
    virtual void command (int action);
 
    Glib::RefPtr<Gdk::Pixbuf> getImage (const std::string& file, bool scale = true);
+   void addFileInDirectories (const std::string& dir, const std::string& file,
+			      const std::string& defaultDeck, unsigned int offName = 0);
+   void addFile (const std::string& path, const std::string& name, const std::string& display,
+		 const std::string& defaultDeck);
 
  private:
    // Prohibited manager-functions
