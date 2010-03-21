@@ -1,3 +1,25 @@
+2010-03-21 15:42:45 +0100  Markus Schwab  <g17m0@users.sourceforge.net>
+
+	* ChangeLog: Changes of V0.9.51 documented
+
+        * po/*.po: Actualised
+
+2010-03-21 14:13:03 +0100  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * CardCol: Preparing to use KDE4-cards (at the moment not supported by librsvg)
+
+2010-03-04 11:48:50 +0100  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * configure.ac: Version to 0.9.51
+
+2010-03-04 11:48:26 +0100  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * card/DeckSelect.cpp: Removed wrong check
+
+2010-03-04 11:47:28 +0100  Markus Schwab  <g17m0@users.sourceforge.net>
+
+        * src/CardCol.cpp: Change of back-image is applied immediately
+
 2009-11-17 16:42:04 +0100  Markus Schwab  <g17m0@users.sourceforge.net>
 
 	* ChangeLog, NEWS: Changes of V0.9.50 documented
