@@ -1,13 +1,13 @@
 # Turkish translation of the cardgames
-# Copyright (C) 2006 - 2009 Adeviye Yilmaz
+# Copyright (C) 2006 - 2010 Adeviye Yilmaz
 # Adeviye Yilmaz <adeviyeyilmaz@hotmail.com>, 2006.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.9 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@users.sourceforge.net\n"
-"POT-Creation-Date: 2009-11-17 16:40+0100\n"
-"PO-Revision-Date: 2009-11-17 16:41+0100\n"
+"POT-Creation-Date: 2010-03-21 15:38+0100\n"
+"PO-Revision-Date: 2010-03-21 15:39+0100\n"
 "Last-Translator: Adeviye Yilmaz <adeviyeyilmaz@hotmail.com>\n"
 "Language-Team: ??? <???@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -61,9 +61,13 @@ msgstr ""
 "elindeki kartlarý masadaki bir cartla deðiþtir(sürükle ve býrakyardýmýyla) - "
 "oyuna baþlamak için bir kartýn üzerine týkla"
 
-#: card/Images.cpp:128 card/DeckSelect.cpp:303
+#: card/Images.cpp:132 card/DeckSelect.cpp:338
 msgid "Unknown error"
 msgstr "Bilinmeyen hata"
+
+#: card/Images.cpp:252
+msgid "Card `%1' not found"
+msgstr "Kart '%1' bulunamadý!"
 
 #: card/Pile.h:436
 msgid "%1 card"
@@ -105,19 +109,19 @@ msgstr "_Kazanan kartlarý sýrala (sayýya göre)"
 msgid "Sort won cards (by _colour)"
 msgstr "Kazanan kartlarý sýrala(_renge göre)"
 
-#: card/DeckSelect.cpp:56
+#: card/DeckSelect.cpp:61
 msgid "Select carddeck"
 msgstr "Deste seç"
 
-#: card/DeckSelect.cpp:57
+#: card/DeckSelect.cpp:62
 msgid "Available decks"
 msgstr "Hazýr desteler"
 
-#: card/DeckSelect.cpp:58
+#: card/DeckSelect.cpp:63
 msgid "Available backgrounds"
 msgstr "Hazýr arkaplanlar"
 
-#: card/DeckSelect.cpp:306
+#: card/DeckSelect.cpp:341
 msgid ""
 "Error loading image from file `%1'!\n"
 "\n"
@@ -397,7 +401,7 @@ msgstr ""
 "\n"
 "Compiled on %1 at %2"
 
-#: src/CardCol.cpp:971
+#: src/CardCol.cpp:970
 msgid ""
 "Couldn't load the card images!\n"
 "\n"
@@ -407,19 +411,19 @@ msgstr ""
 "\n"
 "Reason: %1"
 
-#: src/CardCol.cpp:1023
+#: src/CardCol.cpp:1022
 msgid "User canceled"
 msgstr "Kullanýcý iptal etti"
 
-#: src/CardCol.cpp:1051
+#: src/CardCol.cpp:1050
 msgid "Loading cardimages ..."
 msgstr "Kart resimleri yükleniyor ..."
 
-#: src/CardCol.cpp:1070
+#: src/CardCol.cpp:1069
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr "Ctrl+N (veya Oyun -> Yeni) ile yeni bir oyuna baþla"
 
-#: src/CardCol.cpp:1142
+#: src/CardCol.cpp:1141
 msgid ""
 "Invalid values for Rovhult's special cards!\n"
 "Resetting them to default values."

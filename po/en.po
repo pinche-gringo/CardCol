@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cardgames V0.9 ($Revision$)\n"
 "Report-Msgid-Bugs-To: g17m0@users.sourceforge.net\n"
-"POT-Creation-Date: 2009-11-17 16:40+0100\n"
+"POT-Creation-Date: 2010-03-21 15:38+0100\n"
 "PO-Revision-Date: 2009-11-17 16:41+0100\n"
 "Last-Translator: Markus Schwab <g17m0@users.sourceforge.net>\n"
 "Language-Team: ??? <???@li.org>\n"
@@ -59,8 +59,12 @@ msgid ""
 "drop) - click on one card to start playing"
 msgstr ""
 
-#: card/Images.cpp:128 card/DeckSelect.cpp:303
+#: card/Images.cpp:132 card/DeckSelect.cpp:338
 msgid "Unknown error"
+msgstr ""
+
+#: card/Images.cpp:252
+msgid "Card `%1' not found"
 msgstr ""
 
 #: card/Pile.h:436
@@ -99,19 +103,19 @@ msgstr ""
 msgid "Sort won cards (by _colour)"
 msgstr ""
 
-#: card/DeckSelect.cpp:56
+#: card/DeckSelect.cpp:61
 msgid "Select carddeck"
 msgstr ""
 
-#: card/DeckSelect.cpp:57
+#: card/DeckSelect.cpp:62
 msgid "Available decks"
 msgstr ""
 
-#: card/DeckSelect.cpp:58
+#: card/DeckSelect.cpp:63
 msgid "Available backgrounds"
 msgstr ""
 
-#: card/DeckSelect.cpp:306
+#: card/DeckSelect.cpp:341
 msgid ""
 "Error loading image from file `%1'!\n"
 "\n"
@@ -360,26 +364,26 @@ msgstr ""
 "\n"
 "Compiled on %1 at %2"
 
-#: src/CardCol.cpp:971
+#: src/CardCol.cpp:970
 msgid ""
 "Couldn't load the card images!\n"
 "\n"
 "Reason: %1!"
 msgstr ""
 
-#: src/CardCol.cpp:1023
+#: src/CardCol.cpp:1022
 msgid "User canceled"
 msgstr ""
 
-#: src/CardCol.cpp:1051
+#: src/CardCol.cpp:1050
 msgid "Loading cardimages ..."
 msgstr ""
 
-#: src/CardCol.cpp:1070
+#: src/CardCol.cpp:1069
 msgid "Start a new game with Ctrl+N (or Game -> New)"
 msgstr ""
 
-#: src/CardCol.cpp:1142
+#: src/CardCol.cpp:1141
 msgid ""
 "Invalid values for Rovhult's special cards!\n"
 "Resetting them to default values."
