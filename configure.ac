@@ -241,7 +241,8 @@ if test "$GNOMECARDS_DIR" != "no"; then
 	         /usr/share/gnome/gnome-games-common/cards \
 	         /usr/share/gnome/cards /usr/share/pixmaps/gnome/cards \
 	         /usr/share/gnome/pixmaps/cards \
-		 /usr/share/gnome-games-common/cards; do
+		 /usr/share/gnome-games-common/cards \
+		 /usr/local/share/gnome-games-common/cards; do
 	 if test -d "$dir/"; then
 	    GNOMECARDS_DIR="$dir/"
 	    break
