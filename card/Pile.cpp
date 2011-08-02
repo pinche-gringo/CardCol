@@ -8,7 +8,7 @@
 //REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 03.04.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2009
+//COPYRIGHT   : Copyright (C) 2002 - 2009, 2011
 
 // This file is part of CardCol.
 //
@@ -760,6 +760,7 @@ unsigned int IPile::getSeries (Widget& card, std::map<unsigned int, unsigned int
       foundCards.push_back (card.id ());
 
    for (const_iterator p (begin ()); ((p = getFittingCard (card, p, cmp)) != end ()); ++p) {
+      // The card itself goes always in the middle (the 3rd position)
       if (*p == &card) {
          aPos[2] = p - begin ();
          aOrder.push_back (2);
@@ -810,7 +811,7 @@ unsigned int IPile::getSeries (Widget& card, std::map<unsigned int, unsigned int
    TRACE1 ("IPile::getSeries (...) - Serie: " << std::hex << bCols << std::dec);
    Check3 (bCols & 0x4);
 
-   // Delete cards having no direct access to the analyzed one
+   // Delete cards having no direct access to the analysed one
    if ((bCols & 0x3) == 0x1) {
       Check3 (aPos.find (1) == aPos.end ());
       deleteElement (0, aPos, aOrder);
@@ -849,7 +850,7 @@ unsigned int IPile::getSeries (Widget& card, std::map<unsigned int, unsigned int
 /// \return unsigned int Position of the lowest card in the pile
 //----------------------------------------------------------------------------
 unsigned int IPile::findLowestCard () const {
-   TRACE9 ("IPile::findLowestCard () const - Analyzing " << size () << " cards");
+   TRACE9 ("IPile::findLowestCard () const - Analysing " << size () << " cards");
    Check3 (size ());
 
    unsigned int pos (0);
@@ -867,7 +868,7 @@ unsigned int IPile::findLowestCard () const {
 /// \return unsigned int Position of the lowest card in the pile
 //----------------------------------------------------------------------------
 unsigned int IPile::findLowestCard (Widget::COLOURS excludeColour) const {
-   TRACE9 ("IPile::findLowestCard (Widget::COLOURS) const - Analyzing "
+   TRACE9 ("IPile::findLowestCard (Widget::COLOURS) const - Analysing "
            << size () << " cards")
    Check3 (size ());
 

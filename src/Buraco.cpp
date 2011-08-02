@@ -273,7 +273,7 @@ void Buraco::playCards () {
              && pileHasFittingPair (playerPile, dumpedCard)
              && ((points[player & 1] > 100)
                  || reserve[player & 1].size ()
-                 || (dumped.size () + playerPile.size ()) > 4))) {
+                 || ((dumped.size () + playerPile.size ()) > 4)))) {
          if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
             // Send played card to all clients (if any)
             std::ostringstream msg;
@@ -296,8 +296,14 @@ void Buraco::playCards () {
             TRACE8 ("Buraco::playCards () - Sizes: " << nrs << "<->" << aPos.size ());
             Check3 ((nrs >= 3) || (aPos.size () >= 3));
 
+	    // Sanity checks: Don't dump more than 7 cards
             if (nrs > 7)
                nrs = 7;
+
+	    // Don't dump all cards, if this would result in finishing the game
+	    // This can only be a numbered pile; as coloured piles return only 3 cards
+	    if ((points[player & 1] < 101) && ((dumped.size () + playerPile.size ()) < 5))
+	       --nrs;
 
 	    unsigned int pos1Play, pos2Play;
 	    unsigned int posTarget;
