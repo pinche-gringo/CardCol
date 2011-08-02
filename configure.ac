@@ -49,8 +49,8 @@ AM_GNU_GETTEXT
 dnl Checks for libraries.
 AC_CHECK_LIB(stdc++, main)
 
-PKG_CHECK_MODULES(DEPENDENCIES, gtkmm-2.4 >= 2.6.0 gthread-2.0 > 2.2.0
-                  YGP >= 0.9.30 XGP >= 0.9.30)
+PKG_CHECK_MODULES(DEPENDENCIES, gtkmm-3.0 >= 3.0.0 gthread-2.0 > 2.2.0
+                  YGP >= 0.9.30 XGP >= 0.9.50)
 
 PKG_CHECK_MODULES(RSVG, librsvg-2.0.pc >= 9.99.0,
                   [AC_DEFINE(HAVE_RSVG, 1, [Define if librsvg is installed (in a fitting version)])],
@@ -59,12 +59,6 @@ AC_SUBST(RSVG_CFLAGS)
 AC_SUBST(RSVG_LIBS)
 AC_SUBST(DEPENDENCIES_CFLAGS)
 AC_SUBST(DEPENDENCIES_LIBS)
-
-if $PKG_CONFIG --exists "gtkmm-2.4 >= 2.12.0" ; then
-   GTKMM_VERSION=`$PKG_CONFIG --modversion gtkmm-2.4`
-   AC_DEFINE_UNQUOTED([HAVE_GTKMM2_12], $GTKMM_VERSION,
-                      [Set to version if GTKMM is version 2.12 or above])
-fi
 
 dnl Checks for header files.
 AC_CHECK_HEADERS(boost/tokenizer.hpp boost/scoped_ptr.hpp,, AC_MSG_ERROR([Required headers not found]))

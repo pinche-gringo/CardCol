@@ -234,7 +234,7 @@ void ScoreDlg::display (ScoreDlg** dlg) {
 /// \pre widget must not be NULL
 //-----------------------------------------------------------------------------
 void ScoreDlg::display () {
-   if (!is_visible ()) {
+   if (!get_visible ()) {
       TRACE1 ("ScoreDlg::display () - Position: " << LASTX << '/' << LASTY);
       show ();
       move (LASTX, LASTY);

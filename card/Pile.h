@@ -28,17 +28,10 @@
 #include <gtkmm/box.h>
 #include <gtkmm/image.h>
 #include <gtkmm/button.h>
-#ifdef HAVE_GTKMM2_12
-#  include <gtk/gtkeventbox.h>
+#include <gtk/gtk.h>
 
-#  define SET_TIP(widget, text)      (widget).set_tooltip_text (text)
-#  define UNSET_TIP(widget)          (widget).set_has_tooltip (false)
-#else
-#  include <gtkmm/tooltips.h>
-
-#  define SET_TIP(widget, text)      tt.set_tip ((card), (text))
-#  define UNSET_TIP(widget)          tt.unset_tip (widget)
-#endif
+#define SET_TIP(widget, text)      (widget).set_tooltip_text (text)
+#define UNSET_TIP(widget)          (widget).set_has_tooltip (false)
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -445,11 +438,6 @@ template <class T> class InfoPile : public Pile<T> {
       UNSET_TIP (card);
       return card;
    }
-
- private:
-#ifndef HAVE_GTKMM2_12
-    Gtk::Tooltips tt;
-#endif
 };
 
 typedef InfoPile<Gtk::VBox>  VInfoPile;

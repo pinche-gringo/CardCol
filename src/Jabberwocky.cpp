@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 09.08.2006
-//COPYRIGHT   : Copyright (C) 2006 - 2009
+//COPYRIGHT   : Copyright (C) 2006 - 2009, 2011
 
 // This file is part of CardCol.
 //
@@ -190,8 +190,8 @@ void Jabberwocky::clean () {
    }
    played.clear ();
 
-   while (status.children ().size () > 1)
-      status.children ().remove (status.children ()[1]);
+   while (status.get_children ().size () > 1)
+      status.get_children ().erase (status.get_children ().end ());
 
    if (pTrump) {
       remove (*pTrump);
@@ -458,8 +458,7 @@ void Jabberwocky::makeBids (unsigned int start) {
 	 status.push (_("Make your bid for the number of tricks you are going to make!"));
 
 	 Gtk::Button* bid (new Gtk::Button (_("_Bid"), true));
-	 Gtk::Adjustment* adj (new Gtk::Adjustment (0, 0.0, getTricks (turn), 1, 2));
-	 Gtk::SpinButton* value (new Gtk::SpinButton (*manage (adj), 1, 0));
+	 Gtk::SpinButton* value (new Gtk::SpinButton (Gtk::Adjustment::create (0, 0.0, getTricks (turn), 1, 2), 1, 0));
 	 bid->show ();
 	 value->show ();
 

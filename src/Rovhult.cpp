@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 28.3.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2009
+//COPYRIGHT   : Copyright (C) 2002 - 2009, 2011
 
 // This file is part of CardCol.
 //
@@ -30,7 +30,7 @@
 
 #include <sstream>
 
-#include <gtk/gtkdnd.h>
+#include <gtk/gtk.h>
 
 #include <glibmm/main.h>
 

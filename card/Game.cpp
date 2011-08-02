@@ -8,7 +8,7 @@
 //REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 10.9.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2009
+//COPYRIGHT   : Copyright (C) 2002 - 2009, 2011
 
 // This file is part of CardCol.
 //
@@ -472,12 +472,13 @@ bool Game::wonCardsSelected (GdkEvent* event) {
          if (!pMenuPopSort) {
             TRACE9 ("Game::wonCardsSelected (GdkEvent*) - Creating menu");
             pMenuPopSort = new Gtk::Menu;
-            pMenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem
-                                              (_("Sort by _number"),
-                                               mem_fun (*this, &Game::sortWonByNumber)));
-            pMenuPopSort->items ().push_back (Gtk::Menu_Helpers::MenuElem
-                                              (_("Sort by _colour"),
-                                               mem_fun (*this, &Game::sortWonByColour)));
+	    Gtk::MenuItem* item (new Gtk::MenuItem (_("Sort by _number")));
+	    item->signal_activate().connect (mem_fun (*this, &Game::sortWonByNumber));
+            pMenuPopSort->append (*Gtk::manage(item));
+
+	    item = new Gtk::MenuItem (_("Sort by _colour"));
+	    item->signal_activate().connect (mem_fun (*this, &Game::sortWonByColour));
+            pMenuPopSort->append (*Gtk::manage(item));
          }
          pMenuPopSort->popup (bev->button, bev->time);
          break; }

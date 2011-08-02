@@ -62,18 +62,14 @@ class Settings : public XGP::XDialog {
 
    virtual void okEvent ();
 
-   Gtk::Adjustment adjTimeout;
-
    XGP::EnumEntry gameType;
    XGP::XAttributeSpinEntry<unsigned int> timeout;
    XGP::EnumEntry cardSize;
 #ifdef WITH_BURACO
-   Gtk::Adjustment adjBPoints;
    XGP::XAttributeSpinEntry<unsigned int> maxBuracoPoints;
    XGP::EnumEntry numBuracoCards;
 #endif
 #ifdef WITH_HEARTS
-   Gtk::Adjustment adjHPoints;
    XGP::XAttributeSpinEntry<unsigned int> maxHeartsPoints;
 #endif
 #ifdef WITH_ROVHULT
@@ -84,7 +80,6 @@ class Settings : public XGP::XDialog {
    void chgValueRovhult (unsigned int which);
 #endif
 #ifdef WITH_SGTMAYOR
-   Gtk::Adjustment adjTricks;
    XGP::XAttributeSpinEntry<unsigned int> tricksSgtMayor;
 #endif
 

@@ -8,7 +8,7 @@
 //REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 29.8.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2008, 2010
+//COPYRIGHT   : Copyright (C) 2002 - 2008, 2010, 2011
 
 // This file is part of CardCol.
 //
@@ -29,8 +29,6 @@
 #include <cardgames-cfg.h>
 
 #include <gdkmm/pixbuf.h>
-#include <gdkmm/pixmap.h>
-#include <gdkmm/pixbufloader.h>
 
 #include <gtkmm/stock.h>
 #include <gtkmm/image.h>

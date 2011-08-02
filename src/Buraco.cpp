@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.02.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2009
+//COPYRIGHT   : Copyright (C) 2003 - 2009, 2011
 
 // This file is part of CardCol.
 //
@@ -33,7 +33,7 @@
 #include <bitset>
 #include <sstream>
 
-#include <gtk/gtkdnd.h>
+#include <gtk/gtk.h>
 
 #include <gtkmm/stock.h>
 #include <gtkmm/statusbar.h>
@@ -173,7 +173,7 @@ void Buraco::cleanCerrado (unsigned int player) {
    for (std::vector<BuracoPile*>::iterator p (tablePiles[player & 1].begin ());
         p != tablePiles[player & 1].end (); ++p) {
       Check3 (*p); Check3 ((*p)->size () <= 7);
-      if (((*p)->size () == 7) && (*p)->is_visible ()) {
+      if (((*p)->size () == 7) && (*p)->get_visible ()) {
          removeCerrado (player, **p);
          return;
       }
@@ -1121,7 +1121,7 @@ bool Buraco::doRegisterHand (unsigned int first, unsigned int last) {
 bool Buraco::humanPilesOK (unsigned int except) const {
    for (std::vector<BuracoPile*>::const_iterator p (tablePiles[0].begin ());
         p != tablePiles[0].end (); ++p) {
-      Check3 (*p); Check3 (((*p)->size () < 7) || !(*p)->is_visible ());
+      Check3 (*p); Check3 (((*p)->size () < 7) || !(*p)->get_visible ());
       if ((p - tablePiles[0].begin ()) == static_cast<int> (except))
          continue;
 
@@ -1499,7 +1499,7 @@ unsigned int Buraco::cardFitsOnPlayedPile (unsigned int player, unsigned int iCa
               "Checking pile " << (int)(p - tablePiles[player & 1].begin ()));
       Check3 (*p);
       if ((*p)->size () == 7) {                         // Skip finished piles
-         Check3 (!(*p)->is_visible ());
+         Check3 (!(*p)->get_visible ());
          continue;
       }
       Check3 ((*p)->size () >= 3);

@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 28.4.2005
-//COPYRIGHT   : Copyright (C) 2005 - 2009
+//COPYRIGHT   : Copyright (C) 2005 - 2009, 2011
 
 // This file is part of CardCol.
 //
@@ -85,18 +85,15 @@ Settings* Settings::instance (NULL);
 Settings::Settings (Options& options)
    : XGP::XDialog (OKCANCEL),
      sigCommit (), sigCardResize (),
-     adjTimeout (0, 100.0, 10000.0, 1, 100),
      gameType (GameTypes::get ()),
-     timeout (Card::ComputerPlayer::TIMEOUT, adjTimeout),
+     timeout (Card::ComputerPlayer::TIMEOUT, Gtk::Adjustment::create (0, 100.0, 10000.0, 1, 100)),
      cardSize (CardSizes::get ()),
 #ifdef WITH_BURACO
-     adjBPoints (0, 0, 100000.0, 1, 100),
-     maxBuracoPoints (Buraco::ENDPOINTS, adjBPoints),
+     maxBuracoPoints (Buraco::ENDPOINTS, Gtk::Adjustment::create (0, 0, 100000.0, 1, 100)),
      numBuracoCards (BuracoCards::get ()),
 #endif
 #ifdef WITH_HEARTS
-     adjHPoints (0, 0, 100000.0, 1, 100),
-     maxHeartsPoints (Hearts::ENDPOINTS, adjHPoints),
+     maxHeartsPoints (Hearts::ENDPOINTS, Gtk::Adjustment::create (0, 0, 100000.0, 1, 100)),
 #endif
 #ifdef WITH_ROVHULT
      cardNuke (CardValue::get ()),
@@ -104,8 +101,7 @@ Settings::Settings (Options& options)
      cardSkip (CardValue::get ()),
 #endif
 #ifdef WITH_SGTMAYOR
-     adjTricks (0, 3, 100000.0, 1, 3),
-     tricksSgtMayor (SgtMayor::ENDTRICKS, adjTricks),
+     tricksSgtMayor (SgtMayor::ENDTRICKS, Gtk::Adjustment::create (0, 3, 100000.0, 1, 3)),
 #endif
      startGame (options.type) {
    Check3 (instance == NULL);
@@ -116,12 +112,12 @@ Settings::Settings (Options& options)
    Gtk::Notebook& nb (*manage (new Gtk::Notebook));
    Gtk::Table& pagGeneral (*manage (new Gtk::Table (3, 2)));
 
-   Gtk::Label* lbl (manage (new Gtk::Label (_("_Delay of computer player (ms):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true)));
+   Gtk::Label* lbl (manage (new Gtk::Label (_("_Delay of computer player (ms):"), true)));
    lbl->set_mnemonic_widget (timeout);
    pagGeneral.attach (*lbl,    0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5, 3);
    pagGeneral.attach (timeout, 1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
 
-   lbl = manage (new Gtk::Label (_("D_efault game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl = manage (new Gtk::Label (_("D_efault game:"), true));
    lbl->set_mnemonic_widget (gameType);
    pagGeneral.attach (*lbl,     0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5, 3);
    pagGeneral.attach (gameType, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
@@ -129,7 +125,7 @@ Settings::Settings (Options& options)
    gameType.set_active_text (GameTypes::get ()[options.type]);
    nb.append_page (pagGeneral, _("_General"), true);
 
-   lbl = manage (new Gtk::Label (_("C_ard size:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl = manage (new Gtk::Label (_("C_ard size:"), true));
    lbl->set_mnemonic_widget (cardSize);
    pagGeneral.attach (*lbl,     0, 1, 2, 3, Gtk::FILL, Gtk::FILL, 5, 3);
    pagGeneral.attach (cardSize, 1, 2, 2, 3, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
@@ -138,12 +134,12 @@ Settings::Settings (Options& options)
 
 #ifdef WITH_BURACO
    Gtk::Table& pagBuraco (*manage (new Gtk::Table (2, 2)));
-   lbl = manage (new Gtk::Label (_("_Points to end game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl = manage (new Gtk::Label (_("_Points to end game:"), true));
    lbl->set_mnemonic_widget (maxBuracoPoints);
    pagBuraco.attach (*lbl,            0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5, 3);
    pagBuraco.attach (maxBuracoPoints, 1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
 
-   lbl = manage (new Gtk::Label (_("_Number of cards:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl = manage (new Gtk::Label (_("_Number of cards:"), true));
    lbl->set_mnemonic_widget (cardNuke);
    pagBuraco.attach (*lbl,           0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5, 3);
    pagBuraco.attach (numBuracoCards, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
@@ -154,7 +150,7 @@ Settings::Settings (Options& options)
 
 #ifdef WITH_HEARTS
    Gtk::Box& pagHearts (*manage (new Gtk::HBox));
-   lbl = manage (new Gtk::Label (_("_Points to end game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl = manage (new Gtk::Label (_("_Points to end game:"), true));
    lbl->set_mnemonic_widget (maxHeartsPoints);
    pagHearts.pack_start (*lbl, Gtk::PACK_SHRINK, 5);
    pagHearts.pack_start (maxHeartsPoints, Gtk::PACK_EXPAND_WIDGET, 5);
@@ -164,21 +160,21 @@ Settings::Settings (Options& options)
 
 #ifdef WITH_ROVHULT
    Gtk::Table& pagRovhult (*manage (new Gtk::Table (3, 2)));
-   lbl = manage (new Gtk::Label (_("_Nuke card (default 10):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl = manage (new Gtk::Label (_("_Nuke card (default 10):"), true));
    lbl->set_mnemonic_widget (cardNuke);
    pagRovhult.attach (*lbl,        0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5, 3);
    pagRovhult.attach (cardNuke,    1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
    cardNuke.set_active_text (CardValue::get ()[Rovhult::cardNuke]);
    cardNuke.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 0));
 
-   lbl = manage (new Gtk::Label (_("Re_verse card (default 7):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl = manage (new Gtk::Label (_("Re_verse card (default 7):"), true));
    lbl->set_mnemonic_widget (cardReverse);
    pagRovhult.attach (*lbl,        0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5, 3);
    pagRovhult.attach (cardReverse, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
    cardReverse.set_active_text (CardValue::get ()[Rovhult::cardReverse]);
    cardReverse.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 1));
 
-   lbl = manage (new Gtk::Label (_("_Skip card (default 8):"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl = manage (new Gtk::Label (_("_Skip card (default 8):"), true));
    lbl->set_mnemonic_widget (cardSkip);
    pagRovhult.attach (*lbl,        0, 1, 2, 3, Gtk::FILL, Gtk::FILL, 5, 3);
    pagRovhult.attach (cardSkip,    1, 2, 2, 3, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
@@ -190,7 +186,7 @@ Settings::Settings (Options& options)
 
 #ifdef WITH_SGTMAYOR
    Gtk::Box& pagSgtMayor (*manage (new Gtk::HBox));
-   lbl = manage (new Gtk::Label (_("_Tricks to win game:"), Gtk::ALIGN_LEFT, Gtk::ALIGN_CENTER, true));
+   lbl = manage (new Gtk::Label (_("_Tricks to win game:"), true));
    lbl->set_mnemonic_widget (tricksSgtMayor);
    pagSgtMayor.pack_start (*lbl, Gtk::PACK_SHRINK, 5);
    pagSgtMayor.pack_start (tricksSgtMayor, Gtk::PACK_EXPAND_WIDGET, 5);

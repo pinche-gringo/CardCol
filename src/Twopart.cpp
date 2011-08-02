@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 20.7.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2009
+//COPYRIGHT   : Copyright (C) 2002 - 2009, 2011
 
 // This file is part of CardCol.
 //
@@ -351,7 +351,7 @@ void Twopart::endTurn (unsigned int player) {
       newPlayer = (unsigned int)findNextPlayer (player);
    else {
       // Show trump if not already visible
-      if (pTrump && !pTrump->is_visible ()) {
+      if (pTrump && !pTrump->get_visible ()) {
          pTrump->showFace ();
          pTrump->show ();
          attach (*pTrump, 2, 3, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);

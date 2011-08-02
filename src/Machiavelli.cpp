@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2009
+//COPYRIGHT   : Copyright (C) 2003 - 2009, 2011
 
 // This file is part of CardCol.
 //
@@ -30,7 +30,7 @@
 
 #include <sstream>
 
-#include <gtk/gtkdnd.h>
+#include <gtk/gtk.h>
 
 #include <gtkmm/stock.h>
 #include <gtkmm/statusbar.h>
@@ -126,7 +126,7 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
       dndTypeBoth.push_back (dndTypeTable.front ());
    }
 
-   nextTurn.set_flags (Gtk::CAN_DEFAULT);
+   nextTurn.set_can_default ();
    nextTurn.grab_default ();
    nextTurn.set_sensitive (false);
    nextTurn.signal_clicked ().connect (mem_fun (*this, (&Machiavelli::endTurn)));
