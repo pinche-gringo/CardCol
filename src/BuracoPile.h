@@ -56,7 +56,7 @@ class BuracoPile : public Card::VPile {
    bool isValid (const Card::Widget& card) const {
       unsigned int pos, move;
       return getPosition4Card (card, pos, move); }
-   void analyzePile ();
+   void analysePile ();
 
  private:
    BuracoPile (const BuracoPile& other);

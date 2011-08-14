@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 27.09.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2005, 2007, 2008
+//COPYRIGHT   : Copyright (C) 2003 - 2005, 2007, 2008, 2010
 
 // This file is part of CardCol.
 //
@@ -59,7 +59,7 @@ BuracoPile::~BuracoPile () {
 void BuracoPile::setTopCard (Card::Widget& newCard) {
    TRACE9 ("BuracoPile::setTopCard (Card::Widget&) - " << newCard);
    Card::VPile::setTopCard (newCard);
-   analyzePile ();
+   analysePile ();
 }
 
 //----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ unsigned int BuracoPile::insert (Card::Widget& card, unsigned int pos) {
    TRACE9 ("BuracoPile::insert (Card::Widget&, unsigned int) - " << card
            << " to " << pos);
    unsigned int rc (Card::VPile::insert (card, pos));
-   analyzePile ();
+   analysePile ();
    return rc;
 }
 
@@ -85,7 +85,7 @@ unsigned int BuracoPile::insert (Card::Widget& card, unsigned int pos) {
 //----------------------------------------------------------------------------
 Card::Widget& BuracoPile::remove (Card::Widget& card) {
    Card::Widget& rcard (Card::VPile::remove (card));
-   analyzePile ();
+   analysePile ();
    return rcard;
 }
 
@@ -97,7 +97,7 @@ Card::Widget& BuracoPile::remove (Card::Widget& card) {
 //----------------------------------------------------------------------------
 Card::Widget& BuracoPile::remove (Card::Widget& card, bool visible) {
    Card::Widget& rcard (Card::VPile::remove (card, visible));
-   analyzePile ();
+   analysePile ();
    return rcard;
 }
 
@@ -109,7 +109,7 @@ Card::Widget& BuracoPile::remove (Card::Widget& card, bool visible) {
 Card::Widget& BuracoPile::remove (unsigned int pos) {
    TRACE9 ("BuracoPile::remove (unsigned int) - " << pos);
    Card::Widget& card (Card::VPile::remove (pos));
-   analyzePile ();
+   analysePile ();
    return card;
 }
 
@@ -121,7 +121,7 @@ Card::Widget& BuracoPile::remove (unsigned int pos) {
 //----------------------------------------------------------------------------
 Card::Widget& BuracoPile::remove (unsigned int pos, bool visible) {
    Card::Widget& card (Card::VPile::remove (pos, visible));
-   analyzePile ();
+   analysePile ();
    return card;
 }
 
@@ -252,9 +252,9 @@ bool BuracoPile::getPosition4Card (const Card::Widget& card, unsigned int& pos,
 }
 
 //----------------------------------------------------------------------------
-/// Analyzes the pile and stores its characteristics.
+/// Analyses the pile and stores its characteristics.
 //----------------------------------------------------------------------------
-void BuracoPile::analyzePile () {
+void BuracoPile::analysePile () {
    status.posFirst = status.posLast = status.posJoker = 7;
    if (size ()) {
       for (const_iterator i (begin ()); i != end (); ++i)
@@ -275,7 +275,7 @@ void BuracoPile::analyzePile () {
                      ? NUMBER : COLOUR)
 		  : UNDEFINED);
 
-   TRACE9 ("BuracoPile::analyzePile () - " << status.posJoker << '/'
+   TRACE9 ("BuracoPile::analysePile () - " << status.posJoker << '/'
            << status.posFirst << '/' << status.posLast << ' '
            << status.type);
 
@@ -301,9 +301,9 @@ void BuracoPile::analyzePile () {
          status.points += 200;
    }
 
-   TRACE8 ("BuracoPile::analyzePile () - " << status.posFirst << '/'
+   TRACE8 ("BuracoPile::analysePile () - " << status.posFirst << '/'
 	   << status.posLast << '/' << status.posJoker);
-   TRACE9 ("BuracoPile::analyzePile () - Points: " << status.points
+   TRACE9 ("BuracoPile::analysePile () - Points: " << status.points
 	   << ((status.type == NUMBER) ? " (NUMBER)" : " (COLOUR)"));
 }
 
