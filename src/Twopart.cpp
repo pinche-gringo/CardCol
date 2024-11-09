@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 20.7.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2009, 2011
+//COPYRIGHT   : Copyright (C) 2002 - 2009, 2011, 2024
 
 // This file is part of CardCol.
 //
@@ -1126,9 +1126,8 @@ Card::IPile* Twopart::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// \param player ID of player sending the message
 /// \param message Message received from the server
 /// \returns bool True, if message has been completey processed
-/// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Twopart::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
+bool Twopart::handleMessage (unsigned int player, const std::string& message) {
    TRACE1 ("Twopart::handleMessage (unsigned int player, const std::string&) - "
            << message << " (" << player << ')');
    bool rc (Game::handleMessage (player, message));
@@ -1152,9 +1151,8 @@ bool Twopart::handleMessage (unsigned int player, const std::string& message) th
 /// \param pile Pile to move to/from
 /// \param target ID of target as send by the partner
 /// \pre Expects \c pos1Play and \c pos2Play to be set to the positions to play
-/// \throw YGP::ParseError In case of an error
 //----------------------------------------------------------------------------
-bool Twopart::executeRemoteMove (Card::IPile& pile, unsigned int target) throw (YGP::ParseError) {
+bool Twopart::executeRemoteMove (Card::IPile& pile, unsigned int target) {
    Check2 (pos1Play != -1U);
    Check2 (pos2Play != -1U);
    if (target) {

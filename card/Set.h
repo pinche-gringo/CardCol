@@ -1,8 +1,6 @@
 #ifndef CARDSET_H
 #define CARDSET_H
 
-//$Id: Set.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -33,20 +31,20 @@ class Images;
 */
 class Set {
  public:
-   Set () : cards_ () { }
-   Set (const Images& decks)  : cards_ () { addPacket (decks); }
-   ~Set ();
+   Set() : cards_() { }
+   Set(const Images& decks): cards_() { addPacket(decks); }
+   ~Set();
 
-   Widget& getCard (unsigned int nrCard) const;
-   const std::vector<Widget*>& getCards () const { return cards_; }
-   unsigned int size () const { return cards_.size (); }
+   Widget& getCard(unsigned int nrCard) const;
+   const std::vector<Widget*>& getCards() const { return cards_; }
+   unsigned int size() const { return cards_.size(); }
 
-   void shuffle ();
-   void set (unsigned int pos, unsigned int nrCard);
+   void shuffle();
+   void set(unsigned int pos, unsigned int nrCard);
 
-   void clear ();
-   void addPacket (const Images& decks);
-   void update () const;
+   void clear();
+   void addPacket(const Images& decks);
+   void update() const;
 
  private:
    std::vector<Widget*> cards_;

@@ -46,11 +46,11 @@ class Twopart : public Card::Game {
    virtual void changeNames (const std::vector<Card::Player*>& newPlayer);
    virtual void resizeCards ();
 
-   virtual bool handleMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError, YGP::CommError);
+   virtual bool handleMessage (unsigned int player, const std::string& msg);
 
  protected:
    virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
-   virtual bool executeRemoteMove (Card::IPile& pile, unsigned int target) throw (YGP::ParseError);
+   virtual bool executeRemoteMove (Card::IPile& pile, unsigned int target);
 
  private:
    // Status of game

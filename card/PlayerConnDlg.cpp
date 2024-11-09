@@ -8,7 +8,7 @@
 //REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 24.07.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2006, 2008, 2009
+//COPYRIGHT   : Copyright (C) 2003 - 2006, 2008, 2009, 2024
 
 // This file is part of CardCol.
 //
@@ -164,10 +164,8 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
 /// Connects this application to a server
 /// \param target Name or IP address of the server
 /// \param port Port the server is listening at
-/// \throw YGP::CommError Does not throw
 //----------------------------------------------------------------------------
-void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port)
-    throw (YGP::CommError) {
+void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) {
    TRACE3 ("PlayerConnectDlg::connect (const Glib::ustring&, unsigned int) - "
            << target << ':' << port);
    Glib::ustring error;

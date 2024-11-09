@@ -1,8 +1,6 @@
 #ifndef CARDCOL_H
 #define CARDCOL_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -53,24 +51,24 @@ class ChatDlg;
 
 /**Class to handle the cardgame collection
  */
-class CardgameCollection : public XGP::XApplication {
+class CardgameCollection: public XGP::XApplication {
    friend class CardgameAppl;
 
  public:
    // Manager functions
-   CardgameCollection (Options& opts);
-   ~CardgameCollection ();
+   CardgameCollection(Options& opts);
+   ~CardgameCollection();
 
-   Gtk::Box& getClient () { return *XGP::XApplication::getClient (); }
-   Gtk::Statusbar& getStatusbar () { return status; }
-   Card::Set& getCards () { return cards; }
-   const std::vector<Card::Player*>& getPlayer () const { return aPlayer; }
-   YGP::ConnectionMgr& getConnectionMgr () { return cmgr; };
-   YGP::Mutex& getClientMutex () { return mxThreadCmd; }
-   unsigned int getPlayerPosition () const { return playerPos; }
+   Gtk::Box& getClient() { return *XGP::XApplication::getClient(); }
+   Gtk::Statusbar& getStatusbar() { return status; }
+   Card::Set& getCards() { return cards; }
+   const std::vector<Card::Player*>& getPlayer() const { return aPlayer; }
+   YGP::ConnectionMgr& getConnectionMgr() { return cmgr; };
+   YGP::Mutex& getClientMutex() { return mxThreadCmd; }
+   unsigned int getPlayerPosition() const { return playerPos; }
 
 #ifdef WITH_ROVHULT
-   static void checkRovhultSpecialCards ();
+   static void checkRovhultSpecialCards();
 #endif
 
  private:
@@ -105,57 +103,57 @@ class CardgameCollection : public XGP::XApplication {
    Glib::RefPtr<Gtk::Action> apMenus[LAST];
 
    // Protected manager functions
-   CardgameCollection (const CardgameCollection&);
-   const CardgameCollection& operator= (const CardgameCollection&);
+   CardgameCollection(const CardgameCollection&);
+   const CardgameCollection& operator=(const CardgameCollection&);
 
    // Event-handling
-   void newGame ();
-   void endGame ();
+   void newGame();
+   void endGame();
 #ifdef WITH_NETWORK
-   void autoConnect (const Options& options);
-   void connect ();
-   void showChatDlg ();
-   void closeChat (int);
-   bool stopClientWaiting ();
-   void removeCommThreads ();
-   void initCommunication ();
-   void* waitForMessages (void*);
-   int handleGlobalMessage (unsigned int player, const std::string& msg) throw (YGP::ParseError);
-   bool handleMessage (unsigned int player, const std::string msg);
-   void sendMessage (const Glib::ustring& msg);
-   void broadcastMsg (const std::string& msg, unsigned int exclude = -1U);
-   void broadcastNames ();
-   void sendSettings ();
+   void autoConnect(const Options& options);
+   void connect();
+   void showChatDlg();
+   void closeChat(int);
+   bool stopClientWaiting();
+   void removeCommThreads();
+   void initCommunication();
+   void* waitForMessages(void*);
+   int handleGlobalMessage(unsigned int player, const std::string& msg) throw (YGP::ParseError);
+   bool handleMessage(unsigned int player, const std::string msg);
+   void sendMessage(const Glib::ustring& msg);
+   void broadcastMsg(const std::string& msg, unsigned int exclude=-1U);
+   void broadcastNames();
+   void sendSettings();
 #endif
-   void exit ();
-   void changeGame (int game);
-   void showChangeDeckDlg ();
-   void changeNames ();
-   void editPreferences ();
-   void savePreferences ();
+   void exit();
+   void changeGame(int game);
+   void showChangeDeckDlg();
+   void changeNames();
+   void editPreferences();
+   void savePreferences();
 #if TRACELEVEL >= 0
-   void toggleDebug ();
+   void toggleDebug();
 #endif
 
-   bool showMessage (const std::string msg);
-   static void closeDialog (int, const Gtk::Dialog* dlg);
-   virtual void gameEvents (unsigned int status);
-   virtual void showAboutbox ();
-   virtual const char* getHelpfile ();
+   bool showMessage(const std::string msg);
+   static void closeDialog(int, const Gtk::Dialog* dlg);
+   virtual void gameEvents(unsigned int status);
+   virtual void showAboutbox();
+   virtual const char* getHelpfile();
 
-   void* changeCards (void* opt);
-   void loadCards ();
-   void resizeCards ();
-   bool restartGame ();
-   void startGame ();
-   void doStartGame ();
+   void* changeCards(void* opt);
+   void loadCards();
+   void resizeCards();
+   bool restartGame();
+   void startGame();
+   void doStartGame();
 
-   bool terminateGameAndExit ();
-   bool wait4EndGameAndExit ();
+   bool terminateGameAndExit();
+   bool wait4EndGameAndExit();
 
-   void changeDecks (const std::string& deck, const std::string& back);
-   void changePlayernames ();
-   void makePlayer ();
+   void changeDecks(const std::string& deck, const std::string& back);
+   void changePlayernames();
+   void makePlayer();
 
    static const char* xpmGame[];
    static const char* xpmAuthor[];

@@ -1,14 +1,11 @@
-//$Id: Widget.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
 //PROJECT     : Cardgames
 //SUBSYSTEM   : libCard
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision: 1.1 $
 //AUTHOR      : Markus Schwab
 //CREATED     : 27.03.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2009
+//COPYRIGHT   : Copyright (C) 2002 - 2018
 
 // This file is part of CardCol.
 //
@@ -30,6 +27,7 @@
 
 #include <cardgames-cfg.h>
 
+#define TRACELEVEL 1
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
@@ -39,7 +37,7 @@
 namespace Card {
 
 
-const Images* Widget::deck (NULL);
+const Images* Widget::deck(NULL);
 Widget::COLOURS Widget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
 
 
@@ -48,62 +46,62 @@ Widget::COLOURS Widget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
 /// \param card Number of image inside the set to display
 /// \param visible Flag, if card should be displayed visible
 //-----------------------------------------------------------------------------
-Widget::Widget (const unsigned int card, bool visible)
-   : clicked_ (), img (), isVisible (visible), nrCard (card) {
-   TRACE3 ("Widget::Widget (const Images&, unsinged int, bool) - "
-           << card << " (" << visible << ')');
-   Check1 (deck);
+Widget::Widget(const unsigned int card, bool visible)
+   : clicked_(), img(), isVisible(visible), nrCard(card) {
+   TRACE3("Widget::Widget(const Images&, unsinged int, bool) - "
+          << card << " (" << visible << ')');
+   Check1(deck);
 
-   img.set (isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground ());
-   img.set_alignment (0.0, 0.0);
-   img.show ();
+   img.set(isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground());
+   img.set_alignment(0.0, 0.0);
+   img.show();
 
-   add (img);
-   add_events (Gdk::EXPOSURE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK
-               | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
+   add(img);
+   add_events(Gdk::EXPOSURE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK
+              | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
 }
 
 //-----------------------------------------------------------------------------
 /// Copyconstructor; copies the image for the passed cardwidget
 /// \param other Card to copy
 //-----------------------------------------------------------------------------
-Widget::Widget (const Widget& other)
-   : Gtk::EventBox (), clicked_ (), img (), isVisible (other.isVisible), nrCard (other.nrCard) {
-   TRACE3 ("Widget::Widget (const Widget&) - " << nrCard << " (" << isVisible << ')');
-   Check1 (deck);
+Widget::Widget(const Widget& other)
+   : Gtk::EventBox(), clicked_(), img(), isVisible(other.isVisible), nrCard(other.nrCard) {
+   TRACE3("Widget::Widget(const Widget&) - " << nrCard << "(" << isVisible << ')');
+   Check1(deck);
 
-   img.set (isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground ());
-   img.set_alignment (0.0, 0.0);
-   img.set_padding (0, 0);
-   img.show ();
+   img.set(isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground());
+   img.set_alignment(0.0, 0.0);
+   img.set_padding(0, 0);
+   img.show();
 
-   add (img);
-   add_events (Gdk::EXPOSURE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK
-               | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
+   add(img);
+   add_events(Gdk::EXPOSURE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK
+              | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-Widget::~Widget () {
-   TRACE9 ("Widget::~Widget () - " << *this);
+Widget::~Widget() {
+   TRACE9("Widget::~Widget() - " << *this);
 }
 
 
 //-----------------------------------------------------------------------------
 /// Shows either the cardimage or the image of the deck
 //-----------------------------------------------------------------------------
-void Widget::showFace (bool visible) {
+void Widget::showFace(bool visible) {
    isVisible = visible;
-   update ();
+   update();
 }
 
 //-----------------------------------------------------------------------------
 /// Returns the number of the card as character
 /// \returns char Character describing number of card
 //-----------------------------------------------------------------------------
-char Widget::strNumber (Widget::NUMBERS nr) {
-   static Glib::ustring specialCards (_("TJQKA"));
+char Widget::strNumber(Widget::NUMBERS nr) {
+   static Glib::ustring specialCards(_("TJQKA"));
    return ((nr >= Widget::TEN) ? specialCards[nr  - Widget::TEN] : nr + '2');
 }
 
@@ -111,42 +109,49 @@ char Widget::strNumber (Widget::NUMBERS nr) {
 /// Returns the colour of the card as character
 /// \returns char Character describing colour of card
 //-----------------------------------------------------------------------------
-char Widget::strColour (Widget::COLOURS col) {
-   // Letters describing the colours (clubs, spades, hearts, diamonds)
-   static Glib::ustring colours (_("CDSH"));
+char Widget::strColour(Widget::COLOURS col) {
+   // Letters describing the colours(clubs, spades, hearts, diamonds)
+   static Glib::ustring colours(_("CDSH"));
    return colours[col];
 }
 
 //-----------------------------------------------------------------------------
 /// Updates the widget; i.e. shows its image according to the status
 //-----------------------------------------------------------------------------
-void Widget::update () {
-   TRACE3 ("Widget::update () - Card " << nrCard);
+void Widget::update() {
+   TRACE3("Widget::update() - Card " << nrCard);
 
    img.set (isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground ());
+   // Glib::RefPtr<Gdk::Pixbuf> current(getShownImage());
+   // Glib::RefPtr<Gdk::Pixbuf> pic(isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground());
+   // TRACE1("Update" << (pic != current));
+   // if (pic != current) {
+   //     TRACE1("Update sizes " << pic->get_width() << '/' << current->get_width() << '/' << pic->get_height() << '/' << current->get_height());
+   //     if ((pic->get_width() != current->get_width()) || (pic->get_height() != current->get_height()))
+   //        pic = Gdk::Pixbuf::create_subpixbuf(current, 0, 0, pic->get_width(), pic->get_height());
+   //     img.set(pic);
+   // }
 }
 
 //-----------------------------------------------------------------------------
 /// Callback after clicking a Widget
 //-----------------------------------------------------------------------------
-void Widget::on_clicked () {
-   TRACE9 ("Widget::on_clicked () - " << *this);
+void Widget::on_clicked() {
+   TRACE9("Widget::on_clicked() - " << *this);
 }
 
 //-----------------------------------------------------------------------------
 /// Callback after releasing the button on a Widget
 //-----------------------------------------------------------------------------
-bool Widget::on_button_release_event (GdkEventButton* ev) {
-   Check1 (ev);
-   TRACE9 ("Widget::on_button_release_event (GdkEventButton*) - "
-           << ev->button << "; X: " << ev->x << "; Y: " << ev->y
-           << "; W: " << get_width () << "; H: " << get_height ());
+bool Widget::on_button_release_event(GdkEventButton* ev) {
+   Check1(ev);
+   TRACE9("Widget::on_button_release_event(GdkEventButton*) - " << ev->button << "; X: "
+          << ev->x << "; Y: " << ev->y << "; W: " << get_width() << "; H: " << get_height());
 
    // It button 1 is released within the image: Generate a clicked signal
-   if ((ev->button == 1) && (ev->x || ev->y)
-       && (ev->x < get_width ()) && (ev->y < get_height ())) {
-      clicked_.emit ();
-      on_clicked ();
+   if ((ev->button == 1) && (ev->x || ev->y) && (ev->x < get_width()) && (ev->y < get_height())) {
+      clicked_.emit();
+      on_clicked();
    }
    return false;
 }
@@ -154,30 +159,30 @@ bool Widget::on_button_release_event (GdkEventButton* ev) {
 //-----------------------------------------------------------------------------
 /// Output operator; Writes number and colour of the card
 //-----------------------------------------------------------------------------
-std::ostream& operator<< (std::ostream& out, const Widget& card) {
+std::ostream& operator<<(std::ostream& out, const Widget& card) {
    if (card.nrCard >= 52)
       out << "Joker";
    else
-      out << card.colourStr () << card.numberStr ();
+      out << card.colourStr() << card.numberStr();
    return out;
 }
 
 //-----------------------------------------------------------------------------
 /// Marks the card; this is done by changing the saturation
 //-----------------------------------------------------------------------------
-void Widget::mark () {
-   Glib::RefPtr<Gdk::Pixbuf> pic (getShownImage ());
-   Glib::RefPtr<Gdk::Pixbuf> dest (pic->copy ());
+void Widget::mark() {
+   Glib::RefPtr<Gdk::Pixbuf> pic(getShownImage());
+   Glib::RefPtr<Gdk::Pixbuf> dest(pic->copy());
 
-   pic->saturate_and_pixelate (dest, 0.5, true);
-   img.set (dest);
+   pic->saturate_and_pixelate(dest, 0.5, true);
+   img.set(dest);
 }
 
 //-----------------------------------------------------------------------------
 /// Unmarks the card; this is done by changing the saturation back
 //-----------------------------------------------------------------------------
-void Widget::unmark () {
-   update ();
+void Widget::unmark() {
+   update();
 }
 
 //-----------------------------------------------------------------------------
@@ -185,8 +190,22 @@ void Widget::unmark () {
 /// \returns CardWidget* Empty card
 /// \remarks Don't use; but if you do, you are responsible of deleting it
 //-----------------------------------------------------------------------------
-Widget* Widget::getEmpty () {
+Widget* Widget::getEmpty() {
    return new Widget;
+}
+
+//-----------------------------------------------------------------------------
+/// Sets the minimum size of a widget; that is, the widget’s size request will
+/// be at least width by height.
+//-----------------------------------------------------------------------------
+void Widget::set_size_request(int width, int height) {
+   Glib::RefPtr<Gdk::Pixbuf> pic(getShownImage());
+   Glib::RefPtr<Gdk::Pixbuf> dest(Gdk::Pixbuf::create_subpixbuf(pic, 0, 0,
+                                                                width < 0 ? pic->get_width() : width,
+                                                                height < 0 ? pic->get_height() : height));
+
+   img.set(dest);
+   Gtk::EventBox::set_size_request(width, height);
 }
 
 }

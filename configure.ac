@@ -1,8 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.52)
+AC_PREREQ([2.72])
 AC_REVISION($Revision: 1.7 $)
-AC_INIT(Cardgames, 0.9.52, [g17m0@users.sourceforge.net], CardCol)
+AC_INIT([Cardgames],[0.9.52],[g17m0@users.sourceforge.net],[CardCol])
 
 RELEASE=${PACKAGE_VERSION%.*}
 AC_DEFINE_UNQUOTED(PRG_RELEASE, "$RELEASE",
@@ -24,9 +24,9 @@ AC_SUBST(LIBRELEASE)
 INCLUDES="-I. -I\$(top_srcdir) -DLOCALEDIR=\\\"\$(datadir)/locale\\\" -DDOCUDIR=\\\"\$(datadir)/doc/\$(PACKAGE)/\\\""
 AC_SUBST(INCLUDES)
 
-dnl AC_CANONICAL_SYSTEM
+dnl AC_CANONICAL_TARGET
 
-AC_LANG_CPLUSPLUS
+AC_LANG([C++])
 
 AC_C_BIGENDIAN
 
@@ -38,12 +38,12 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 dnl Checks for programs.
 AC_PROG_CXX
-AC_LANG_CPLUSPLUS
-AM_PROG_LIBTOOL
+AC_LANG([C++])
+LT_INIT
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
-AC_GNU_SOURCE
+AC_USE_SYSTEM_EXTENSIONS
 AM_GNU_GETTEXT
 
 dnl Checks for libraries.
@@ -69,8 +69,7 @@ dnl Checks for library functions.
 
 dnl Enable special features
 AC_ARG_ENABLE(network,
-              AC_HELP_STRING([--enable-network],
-                             [Enables the network capabilities]))
+              AS_HELP_STRING([--enable-network],[Enables the network capabilities]))
 if test "$enable_network" = "yes"; then
    AC_CHECK_LIB(pthread, main)
 
@@ -85,80 +84,70 @@ AM_CONDITIONAL(HAVE_NETWORK, test "$enable_network" = "yes")
 
 
 AC_ARG_ENABLE(debug,
-              AC_HELP_STRING([[[[[--enable-debug[=LEVEL]]]]]],
-                             [Enables additional traces]),
+              AS_HELP_STRING([[[[[--enable-debug[=LEVEL]]]]]],[Enables additional traces]),
               if test "$enableval" != "no"; then
                   test "$enableval" = "yes" && enableval=0
                   CXXFLAGS="-g -DTRACELEVEL=$enableval $CXXFLAGS";
               else
                   CXXFLAGS="-UTRACELEVEL $CXXFLAGS"; fi)
 AC_ARG_ENABLE(checks,
-              AC_HELP_STRING([[[[[--enable-checks[=LEVEL]]]]]],
-                             [Enables additional (internal) checks]),
+              AS_HELP_STRING([[[[[--enable-checks[=LEVEL]]]]]],[Enables additional (internal) checks]),
               if test "$enableval" != "no"; then
                   test "$enableval" = "yes" && enableval=0
                   CXXFLAGS="$CXXFLAGS -DCHECK=$enableval";
               else
                   CXXFLAGS="$CXXFLAGS -DNDEBUG -UCHECK"; fi)
 AC_ARG_ENABLE(saving,
-              AC_HELP_STRING([--enable-saving],
-                             [Enables saving and loading games (for testing)]),
+              AS_HELP_STRING([--enable-saving],[Enables saving and loading games (for testing)]),
               if test "$enableval" != "no"; then
                   test "$enableval" = "yes" && enableval=0
                   CXXFLAGS="$CXXFLAGS -DSAVE_GAME";
               fi)
 
 AC_ARG_ENABLE(rovhult,
-              AC_HELP_STRING([--disable-rovhult],
-                             [Disables the Røvhult cardgame]))
+              AS_HELP_STRING([--disable-rovhult],[Disables the Røvhult cardgame]))
 if test "$enable_rovhult" != "no"; then
    AC_DEFINE_UNQUOTED(WITH_ROVHULT, 1, [Define if the Røvhult cardgame shall be included])
 fi
 AM_CONDITIONAL(SUPPORT_ROVHULT, test "$enable_rovhult" != "no")
 
 AC_ARG_ENABLE(twopart,
-              AC_HELP_STRING([--disable-twopart],
-                             [Disables the Twopart cardgame]))
+              AS_HELP_STRING([--disable-twopart],[Disables the Twopart cardgame]))
 if test "$enable_twopart" != "no"; then
    AC_DEFINE_UNQUOTED(WITH_TWOPART, 1, [Define if the Twopart cardgame shall be included])
 fi
 AM_CONDITIONAL(SUPPORT_TWOPART, test "$enable_twopart" != "no")
 
 AC_ARG_ENABLE(hearts,
-              AC_HELP_STRING([--disable-hearts],
-                             [Disables the Hearts cardgame]))
+              AS_HELP_STRING([--disable-hearts],[Disables the Hearts cardgame]))
 if test "$enable_hearts" != "no"; then
    AC_DEFINE_UNQUOTED(WITH_HEARTS, 1, [Define if the Hearts cardgame shall be included])
 fi
 AM_CONDITIONAL(SUPPORT_HEARTS, test "$enable_hearts" != "no")
 
 AC_ARG_ENABLE(buraco,
-              AC_HELP_STRING([--disable-buraco],
-                             [Disables the Buraco cardgame]))
+              AS_HELP_STRING([--disable-buraco],[Disables the Buraco cardgame]))
 if test "$enable_buraco" != "no"; then
    AC_DEFINE_UNQUOTED(WITH_BURACO, 1, [Define if the Buraco cardgame shall be included])
 fi
 AM_CONDITIONAL(SUPPORT_BURACO, test "$enable_buraco" != "no")
 
 AC_ARG_ENABLE(machiavelli,
-              AC_HELP_STRING([--disable-machiavelli],
-                             [Disables the Machiavelli cardgame]))
+              AS_HELP_STRING([--disable-machiavelli],[Disables the Machiavelli cardgame]))
 if test "$enable_machiavelli" != "no"; then
    AC_DEFINE_UNQUOTED(WITH_MACHIAVELLI, 1, [Define if the Machiavelli cardgame shall be included])
 fi
 AM_CONDITIONAL(SUPPORT_MACHIAVELLI, test "$enable_machiavelli" != "no")
 
 AC_ARG_ENABLE(sgtmayor,
-              AC_HELP_STRING([--disable-sgtmayor],
-                             [Disables the Sgt. Mayor cardgame]))
+              AS_HELP_STRING([--disable-sgtmayor],[Disables the Sgt. Mayor cardgame]))
 if test "$enable_sgtmayor" != "no"; then
    AC_DEFINE_UNQUOTED(WITH_SGTMAYOR, 1, [Define if the Sgt. Mayor cardgame shall be included])
 fi
 AM_CONDITIONAL(SUPPORT_SGTMAYOR, test "$enable_sgtmayor" != "no")
 
 AC_ARG_ENABLE(jabberwocky,
-              AC_HELP_STRING([--disable-jabberwocky],
-                             [Disables the Jabberwocky cardgame]))
+              AS_HELP_STRING([--disable-jabberwocky],[Disables the Jabberwocky cardgame]))
 if test "$enable_jabberwocky" != "no"; then
    AC_DEFINE_UNQUOTED(WITH_JABBERWOCKY, 1, [Define if the Jabberwocky cardgame shall be included])
 fi
@@ -174,7 +163,7 @@ fi
 
 HAVE_CARDS=0
 AC_ARG_WITH(kde-carddir,
-            AC_HELP_STRING([--with-kde-carddir=DIR], [Path to the KDE carddecks]),
+            AS_HELP_STRING([--with-kde-carddir=DIR],[Path to the KDE carddecks]),
             [test -n "$withval" && KDECARDS_DIR=$withval])
 
 if test "$KDECARDS_DIR" != "no"; then
@@ -223,7 +212,7 @@ if test "$KDECARDS_DIR" != "no"; then
 fi
 
 AC_ARG_WITH(gnome-carddir,
-            AC_HELP_STRING([--with-gnome-carddir=DIR], [Path to the GNOME carddecks]),
+            AS_HELP_STRING([--with-gnome-carddir=DIR],[Path to the GNOME carddecks]),
             [test -n "$withval" && GNOMECARDS_DIR=$withval])
 
 if test "$GNOMECARDS_DIR" != "no"; then
@@ -236,6 +225,7 @@ if test "$GNOMECARDS_DIR" != "no"; then
 	         /usr/share/gnome/cards /usr/share/pixmaps/gnome/cards \
 	         /usr/share/gnome/pixmaps/cards \
 		 /usr/share/gnome-games-common/cards \
+		 /usr/share/aisleriot/cards/ \
 		 /usr/local/share/gnome-games-common/cards; do
 	 if test -d "$dir/"; then
 	    GNOMECARDS_DIR="$dir/"
@@ -255,6 +245,7 @@ if test "$GNOMECARDS_DIR" != "no"; then
    if test -d "$GNOMECARDS_DIR"; then
       if test -f "$GNOMECARDS_DIR/bonded.png" \
               -o -f "$GNOMECARDS_DIR/bonded.svg" \
+              -o -f "$GNOMECARDS_DIR/bonded.svgz" \
               -o -f "$GNOMECARDS_DIR/gnomangelo_bitmap.svg" \
               -o -f "$GNOMECARDS_DIR/paris.svg"; then
 	 HAVE_CARDS=1
@@ -269,7 +260,7 @@ if test "$GNOMECARDS_DIR" != "no"; then
 fi
 
 AC_ARG_WITH(cardpics-dir,
-            AC_HELP_STRING([--with-cardpics-dir=DIR], [Path to cardpics]),
+            AS_HELP_STRING([--with-cardpics-dir=DIR],[Path to cardpics]),
             [test -n "$withval" && CARDPICS_DIR=$withval])
 
 if test "$CARDPICS_DIR" != "no"; then
@@ -310,8 +301,9 @@ if test $HAVE_CARDS -eq 0; then
    AC_MSG_ERROR("Didn't find any carddecks!")
 fi
 
-AC_OUTPUT([Makefile card/Makefile src/Makefile intl/Makefile po/Makefile.in doc/Makefile\
+AC_CONFIG_FILES([Makefile card/Makefile src/Makefile intl/Makefile po/Makefile.in doc/Makefile\
 	   data/Makefile])
+AC_OUTPUT
 
 dnl Settings for autoheader
 AH_TOP([#ifndef CARDGAMES_CFG_H

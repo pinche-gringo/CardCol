@@ -1,14 +1,11 @@
-//$Id$
-
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Application
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 9.9.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2010
+//COPYRIGHT   : Copyright (C) 2002 - 2018
 
 // This file is part of CardCol.
 //
@@ -28,7 +25,7 @@
 
 #include <cardgames-cfg.h>
 
-#if !(defined (WITH_HEARTS) || defined (WITH_BURACO) || defined (WITH_TWOPART) || defined (WITH_ROVHULT) || defined (WITH_SGTMAYOR) || defined (WITH_JABBERWOCKY) || defined (WITH_MACHIAVELLI))
+#if !(defined(WITH_HEARTS) || defined(WITH_BURACO) || defined(WITH_TWOPART) || defined(WITH_ROVHULT) || defined(WITH_SGTMAYOR) || defined(WITH_JABBERWOCKY) || defined(WITH_MACHIAVELLI))
 #  error All games are disabled!
 #endif
 
@@ -112,10 +109,10 @@
 #include "CardCol.h"
 
 
-int CardgameCollection::POSX (-1);
-int CardgameCollection::POSY (-1);
-unsigned int CardgameCollection::WIDTH (760);
-unsigned int CardgameCollection::HEIGHT (700);
+int CardgameCollection::POSX(-1);
+int CardgameCollection::POSY(-1);
+unsigned int CardgameCollection::WIDTH(760);
+unsigned int CardgameCollection::HEIGHT(700);
 
 
 namespace YGP {
@@ -126,10 +123,10 @@ namespace YGP {
 /// \param section Name of section to write
 /// \param values Values to write
 template <>
-void INIList<Glib::ustring>::write (std::ostream& stream, const char* section, const std::vector<Glib::ustring>& values) {
-   writeHeader (stream, section);
-   for (unsigned int i (0); i < values.size (); ++i)
-     stream << i << '=' << values[i].c_str () << '\n';
+void INIList<Glib::ustring>::write(std::ostream& stream, const char* section, const std::vector<Glib::ustring>& values) {
+   writeHeader(stream, section);
+   for (unsigned int i(0); i < values.size(); ++i)
+     stream << i << '=' << values[i].c_str() << '\n';
    stream << '\n';
 }
 
@@ -310,179 +307,163 @@ static const char* xpmJoker[] = {
 /// Defaultconstructor; all widget are created
 /// \param opts Options for the program
 //-----------------------------------------------------------------------------
-CardgameCollection::CardgameCollection (Options& opts)
-   : XApplication (PACKAGE " V" PRG_RELEASE), status (), cardFaces (), cards (),
+CardgameCollection::CardgameCollection(Options& opts)
+   : XApplication(PACKAGE " V" PRG_RELEASE), status(), cardFaces(), cards(),
 #ifdef WITH_NETWORK
-     aCommThreads (), mxGuiCmd (), dlgChat (NULL),
+     aCommThreads(), mxGuiCmd(), dlgChat(NULL),
 #endif
-     mxThreadCmd (),  cmgr (), playerPos (0), options (opts), aPlayer (),
-     oldGame (GameTypes::NONE), actGame (opts.type),
-     restart (false), game (NULL) {
-   TRACE9 ("CardGameCollection::CardGameCollection (Options&) - Game: " << actGame);
+     mxThreadCmd(),  cmgr(), playerPos(0), options(opts), aPlayer(),
+     oldGame(GameTypes::NONE), actGame(opts.type),
+     restart(false), game(NULL) {
+   TRACE9("CardGameCollection::CardGameCollection(Options&) - Game: " << actGame);
 
-   setIconProgram (picGame, sizeof (picGame));
+   setIconProgram(picGame, sizeof(picGame));
    if (POSX != -1)
-      move (POSX, POSY);
-   set_default_size (WIDTH, HEIGHT);
+      move(POSX, POSY);
+   set_default_size(WIDTH, HEIGHT);
 
    helpBrowser = options.browser;
 
    // Create controls
-   Glib::ustring ui ("<ui><menubar name='Menu'>"
-		     "  <menu action='Game'>"
-		     "    <menuitem action='New'/>"
-		     "    <menuitem action='End'/>"
+   Glib::ustring ui("<ui><menubar name='Menu'>"
+                    "  <menu action='Game'>"
+                    "    <menuitem action='New'/>"
+                    "    <menuitem action='End'/>"
 #ifdef WITH_NETWORK
-		     "    <separator/>"
-		     "    <menuitem action='Connect'/>"
-		     "    <menuitem action='Chat'/>"
+                    "    <separator/>"
+                    "    <menuitem action='Connect'/>"
+                    "    <menuitem action='Chat'/>"
 #endif
-		     "    <separator/>"
-		     "    <menuitem action='Quit'/>"
-		     "  </menu>"
-		     "  <menu action='Options'>"
-		     "    <menu action='ChgGame'>"
+                    "    <separator/>"
+                    "    <menuitem action='Quit'/>"
+                    "  </menu>"
+                    "  <menu action='Options'>"
+                    "    <menu action='ChgGame'>"
 #ifdef WITH_BURACO
-		     "      <menuitem action='Buraco'/>"
+                    "      <menuitem action='Buraco'/>"
 #endif
 #ifdef WITH_HEARTS
-		     "      <menuitem action='Hearts'/>"
+                    "      <menuitem action='Hearts'/>"
 #endif
 #ifdef WITH_JABBERWOCKY
-		     "      <menuitem action='Jabberwocky'/>"
+                    "      <menuitem action='Jabberwocky'/>"
 #endif
 #ifdef WITH_MACHIAVELLI
-		     "      <menuitem action='Machiavelli'/>"
+                    "      <menuitem action='Machiavelli'/>"
 #endif
 #ifdef WITH_ROVHULT
-		     "      <menuitem action='Rovhult'/>"
+                    "      <menuitem action='Rovhult'/>"
 #endif
 #ifdef WITH_SGTMAYOR
-		     "      <menuitem action='SgtMayor'/>"
+                    "      <menuitem action='SgtMayor'/>"
 #endif
 #ifdef WITH_TWOPART
-		     "      <menuitem action='Twopart'/>"
+                    "      <menuitem action='Twopart'/>"
 #endif
-		     "    </menu>"
-		     "    <menuitem action='ChgDecks'/>"
-		     "    <menuitem action='ChgNames'/>"
-		     "    <menuitem action='Prefs'/>"
-		     "    <separator/>"
-		     "    <menuitem action='SavePrefs'/>"
+                    "    </menu>"
+                    "    <menuitem action='ChgDecks'/>"
+                    "    <menuitem action='ChgNames'/>"
+                    "    <menuitem action='Prefs'/>"
+                    "    <separator/>"
+                    "    <menuitem action='SavePrefs'/>"
 #if TRACELEVEL >= 1
-		     "    <separator/>"
-		     "    <menuitem action='Debug'/>"
+                    "    <separator/>"
+                    "    <menuitem action='Debug'/>"
 #endif
-		     "  </menu>"
-		     "  <placeholder name='GameMenu'/>");
+                    "  </menu>"
+                    "  <placeholder name='GameMenu'/>");
 
-   grpAction->add (Gtk::Action::create ("Game", _("_Game")));
-   grpAction->add (apMenus[NEW] = Gtk::Action::create ("New", Gtk::Stock::NEW),
-		   mem_fun (*this, &CardgameCollection::newGame));
-   grpAction->add (apMenus[END] = Gtk::Action::create ("End", Gtk::Stock::CLOSE, _("_End")),
-		   mem_fun (*this, &CardgameCollection::endGame));
+   grpAction->add(Gtk::Action::create("Game", _("_Game")));
+   grpAction->add(apMenus[NEW] = Gtk::Action::create("New", Gtk::Stock::NEW),
+                  mem_fun(*this, &CardgameCollection::newGame));
+   grpAction->add(apMenus[END] = Gtk::Action::create ("End", Gtk::Stock::CLOSE, _("_End")),
+                  mem_fun(*this, &CardgameCollection::endGame));
 #ifdef WITH_NETWORK
-   grpAction->add (apMenus[CONNECT] = Gtk::Action::create ("Connect", Gtk::Stock::CONNECT),
-		   Gtk::AccelKey (_("<shft><ctl>C")),
-		   mem_fun (*this, &CardgameCollection::connect));
-   apMenus[CONNECT]->set_sensitive (false);
-   grpAction->add (apMenus[CHAT] = Gtk::Action::create ("Chat", _("_Chat ...")),
-		   Gtk::AccelKey (_("<alt><ctl>C")),
-		   mem_fun (*this, &CardgameCollection::showChatDlg));
-   apMenus[CHAT]->set_sensitive (false);
+   grpAction->add(apMenus[CONNECT] = Gtk::Action::create ("Connect", Gtk::Stock::CONNECT),
+                  Gtk::AccelKey(_("<shft><ctl>C")), mem_fun(*this, &CardgameCollection::connect));
+   apMenus[CONNECT]->set_sensitive(false);
+   grpAction->add(apMenus[CHAT] = Gtk::Action::create ("Chat", _("_Chat ...")),
+                  Gtk::AccelKey (_("<alt><ctl>C")), mem_fun (*this, &CardgameCollection::showChatDlg));
+   apMenus[CHAT]->set_sensitive(false);
 #endif
-   grpAction->add (Gtk::Action::create ("Quit", Gtk::Stock::QUIT),
-		   mem_fun (*this, &CardgameCollection::exit));
+   grpAction->add(Gtk::Action::create ("Quit", Gtk::Stock::QUIT), mem_fun(*this, &CardgameCollection::exit));
 
-   grpAction->add (Gtk::Action::create ("Options", _("_Options")));
-   grpAction->add (Gtk::Action::create ("ChgGame", _("_Change game")));
+   grpAction->add (Gtk::Action::create("Options", _("_Options")));
+   grpAction->add (Gtk::Action::create("ChgGame", _("_Change game")));
 
    Gtk::RadioButtonGroup grpGames;
 #ifdef WITH_BURACO
-   grpAction->add (apMenus[BURACO] = Gtk::RadioAction::create (grpGames, "Buraco", _("_Buraco")),
-		   Gtk::AccelKey (_("<ctl>B")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::BURACO));
+   grpAction->add(apMenus[BURACO] = Gtk::RadioAction::create(grpGames, "Buraco", _("_Buraco")),
+		  Gtk::AccelKey(_("<ctl>B")), bind(mem_fun(*this, &CardgameCollection::changeGame), (int)GameTypes::BURACO));
 #endif
 #ifdef WITH_HEARTS
-   grpAction->add (apMenus[HEARTS] = Gtk::RadioAction::create (grpGames, "Hearts", _("_Hearts")),
-		   Gtk::AccelKey (_("<ctl>H")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::HEARTS));
+   grpAction->add(apMenus[HEARTS] = Gtk::RadioAction::create(grpGames, "Hearts", _("_Hearts")),
+                  Gtk::AccelKey(_("<ctl>H")), bind(mem_fun(*this, &CardgameCollection::changeGame), (int)GameTypes::HEARTS));
 #endif
 #ifdef WITH_HEARTS
-   grpAction->add (apMenus[JABBERWOCKY] = Gtk::RadioAction::create (grpGames, "Jabberwocky", _("_Jabberwocky")),
-		   Gtk::AccelKey (_("<ctl>J")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::JABBERWOCKY));
+   grpAction->add(apMenus[JABBERWOCKY] = Gtk::RadioAction::create(grpGames, "Jabberwocky", _("_Jabberwocky")),
+                  Gtk::AccelKey(_("<ctl>J")), bind(mem_fun(*this, &CardgameCollection::changeGame), (int)GameTypes::JABBERWOCKY));
 #endif
 #ifdef WITH_MACHIAVELLI
-   grpAction->add (apMenus[MACHIAVELLI] = Gtk::RadioAction::create (grpGames, "Machiavelli", _("_Machiavelli")),
-		   Gtk::AccelKey (_("<ctl>M")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::MACHIAVELLI));
+   grpAction->add(apMenus[MACHIAVELLI] = Gtk::RadioAction::create(grpGames, "Machiavelli", _("_Machiavelli")),
+                  Gtk::AccelKey(_("<ctl>M")), bind(mem_fun(*this, &CardgameCollection::changeGame), (int)GameTypes::MACHIAVELLI));
 #endif
 #ifdef WITH_ROVHULT
    // xgettext: For translations: Write the Rovhult as o-slash
-   grpAction->add (apMenus[ROVHULT] = Gtk::RadioAction::create (grpGames, "Rovhult", _("_Rovhult")),
-		   Gtk::AccelKey (_("<ctl>R")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::ROVHULT));
+   grpAction->add(apMenus[ROVHULT] = Gtk::RadioAction::create(grpGames, "Rovhult", _("_Rovhult")),
+                  Gtk::AccelKey(_("<ctl>R")), bind(mem_fun(*this, &CardgameCollection::changeGame), (int)GameTypes::ROVHULT));
 #endif
 #ifdef WITH_SGTMAYOR
-   grpAction->add (apMenus[SGTMAYOR] = Gtk::RadioAction::create (grpGames, "SgtMayor", _("_Sgt. Mayor")),
-		   Gtk::AccelKey (_("<ctl>Y")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::SGTMAYOR));
+   grpAction->add(apMenus[SGTMAYOR] = Gtk::RadioAction::create(grpGames, "SgtMayor", _("_Sgt. Mayor")),
+                  Gtk::AccelKey(_("<ctl>Y")), bind(mem_fun(*this, &CardgameCollection::changeGame), (int)GameTypes::SGTMAYOR));
 #endif
 #ifdef WITH_TWOPART
-   grpAction->add (apMenus[TWOPART] = Gtk::RadioAction::create (grpGames, "Twopart", _("_Twopart")),
-		   Gtk::AccelKey (_("<ctl>T")),
-		   bind (mem_fun (*this, &CardgameCollection::changeGame), (int)GameTypes::TWOPART));
+   grpAction->add(apMenus[TWOPART] = Gtk::RadioAction::create(grpGames, "Twopart", _("_Twopart")),
+                  Gtk::AccelKey(_("<ctl>T")), bind(mem_fun(*this, &CardgameCollection::changeGame), (int)GameTypes::TWOPART));
 #endif
 
-   grpAction->add (Gtk::Action::create ("ChgDecks", _("Change _decks ...")),
-		   Gtk::AccelKey (_("<ctl>D")),
-		   mem_fun (*this, &CardgameCollection::showChangeDeckDlg));
-   grpAction->add (Gtk::Action::create ("ChgNames", _("Change _names ...")),
-		   Gtk::AccelKey (_("<ctl>C")),
-		   mem_fun (*this, &CardgameCollection::changeNames));
-   grpAction->add (Gtk::Action::create ("Prefs", Gtk::Stock::PREFERENCES),
-		   Gtk::AccelKey (_("F9")),
-		   mem_fun (*this, &CardgameCollection::editPreferences));
-   grpAction->add (Gtk::Action::create ("SavePrefs", Gtk::Stock::SAVE,
-					_("_Save preferences")),
-		   mem_fun (*this, &CardgameCollection::savePreferences));
+   grpAction->add(Gtk::Action::create("ChgDecks", _("Change _decks ...")),
+                  Gtk::AccelKey(_("<ctl>D")), mem_fun(*this, &CardgameCollection::showChangeDeckDlg));
+   grpAction->add(Gtk::Action::create("ChgNames", _("Change _names ...")),
+                  Gtk::AccelKey(_("<ctl>C")), mem_fun(*this, &CardgameCollection::changeNames));
+   grpAction->add(Gtk::Action::create("Prefs", Gtk::Stock::PREFERENCES),
+                  Gtk::AccelKey(_("F9")), mem_fun(*this, &CardgameCollection::editPreferences));
+   grpAction->add(Gtk::Action::create("SavePrefs", Gtk::Stock::SAVE, _("_Save preferences")),
+                  mem_fun(*this, &CardgameCollection::savePreferences));
 #if TRACELEVEL >= 1
-   grpAction->add (Gtk::Action::create ("Debug", "_Debug"),
-		   Gtk::AccelKey ("<ctl>G"),
-		   mem_fun (*this, &CardgameCollection::toggleDebug));
+   grpAction->add(Gtk::Action::create("Debug", "_Debug"), Gtk::AccelKey("<ctl>G"),
+                  mem_fun(*this, &CardgameCollection::toggleDebug));
 #endif
 
-   addHelpMenu (ui);
+   addHelpMenu(ui);
    ui += "</menubar></ui>";
-   mgrUI->insert_action_group (grpAction);
-   add_accel_group (mgrUI->get_accel_group ());
-   mgrUI->add_ui_from_string (ui);
+   mgrUI->insert_action_group(grpAction);
+   add_accel_group(mgrUI->get_accel_group());
+   mgrUI->add_ui_from_string(ui);
 
-   getClient ().pack_start (*mgrUI->get_widget("/Menu"), Gtk::PACK_SHRINK);
+   getClient().pack_start(*mgrUI->get_widget("/Menu"), Gtk::PACK_SHRINK);
 
-   ((Gtk::MenuItem*)(mgrUI->get_widget("/Menu/Help")))->set_right_justified ();
+   ((Gtk::MenuItem*)(mgrUI->get_widget("/Menu/Help")))->set_right_justified();
 
-   Check3 (apMenus[NEW]); Check3 (apMenus[END]);
-   apMenus[NEW]->set_sensitive (false);
-   apMenus[END]->set_sensitive (false);
+   Check3(apMenus[NEW]); Check3(apMenus[END]);
+   apMenus[NEW]->set_sensitive(false);
+   apMenus[END]->set_sensitive(false);
 
-   status.show ();
-   getClient ().pack_end (status, Gtk::PACK_SHRINK);
+   status.show();
+   getClient().pack_end(status, Gtk::PACK_SHRINK);
 
-   show ();
+   show();
    if (POSX != -1)
-      move (POSX, POSY);
+      move(POSX, POSY);
 #ifdef WITH_NETWORK
-   mxGuiCmd.lock ();
+   mxGuiCmd.lock();
 #endif
 
-   Glib::signal_idle ().connect
-       (bind_return (mem_fun (*this, &CardgameCollection::loadCards), false));
-   makePlayer ();
+   Glib::signal_idle().connect(bind_return(mem_fun(*this, &CardgameCollection::loadCards), false));
+   makePlayer();
 
 #ifdef WITH_NETWORK
-   autoConnect (options);
+   autoConnect(options);
 #endif
 }
 
@@ -490,54 +471,53 @@ CardgameCollection::CardgameCollection (Options& opts)
 /// Creates the default player in the game; basing on the names read from the
 /// INI file
 //----------------------------------------------------------------------------
-void CardgameCollection::makePlayer () {
-   Check3 (options.names.size ());
-   std::vector<Glib::ustring>::iterator i (options.names.begin ());
-   aPlayer.push_back (new Card::Human (*i));
-   while (++i != options.names.end ())
-       aPlayer.push_back (new Card::ComputerPlayer (*i));
+void CardgameCollection::makePlayer() {
+   Check3(options.names.size());
+   std::vector<Glib::ustring>::iterator i(options.names.begin());
+   aPlayer.push_back(new Card::Human(*i));
+   while (++i != options.names.end())
+       aPlayer.push_back(new Card::ComputerPlayer(*i));
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-CardgameCollection::~CardgameCollection () {
-   TRACE9 ("CardgameCollection::~CardgameCollection ()");
+CardgameCollection::~CardgameCollection() {
+   TRACE9("CardgameCollection::~CardgameCollection()");
    if (game) {
-      game->clean ();
+      game->clean();
       delete game;
    }
 
-   for (std::vector<Card::Player*>::iterator i (aPlayer.begin ());
-        i != aPlayer.end (); ++i)
+   for (std::vector<Card::Player*>::iterator i(aPlayer.begin());
+        i != aPlayer.end(); ++i)
       delete *i;
 
 #ifdef WITH_NETWORK
-   removeCommThreads ();
+   removeCommThreads();
 #endif
 }
 
 //-----------------------------------------------------------------------------
 /// Starts a game; if the type has changed also deleting the old one
 //-----------------------------------------------------------------------------
-void CardgameCollection::startGame () {
-   TRACE6 ("CardgameCollection::startGame () - Old game type " << oldGame
-           << " -> New: " << actGame);
+void CardgameCollection::startGame() {
+   TRACE6("CardgameCollection::startGame() - Old game type " << oldGame << " -> New: " << actGame);
 
    // Check if the game has been changed; if so destroy the old one
-   unsigned int oldDecks (0), oldJoker (0);
+   unsigned int oldDecks(0), oldJoker(0);
 
    if (game) {
-      oldDecks = game->numberOfDecks ();
-      oldJoker = game->numberOfJokers ();
+      oldDecks = game->numberOfDecks();
+      oldJoker = game->numberOfJokers();
 
       if (oldGame != actGame) {
 	 // Remove menubar and update GUI to not interfere with new game
-	 game->removeMenus (mgrUI);
-	 Glib::RefPtr<Glib::MainContext> ctx (Glib::MainContext::get_default ());
-	 while (ctx->iteration (false)) ;
+	 game->removeMenus(mgrUI);
+	 Glib::RefPtr<Glib::MainContext> ctx(Glib::MainContext::get_default());
+	 while (ctx->iteration(false)) ;
 
-         getClient ().remove (*game);
+         getClient().remove(*game);
          delete game;
       }
    }
@@ -547,148 +527,134 @@ void CardgameCollection::startGame () {
       switch (oldGame) {
 #ifdef WITH_ROVHULT
       case GameTypes::ROVHULT:
-         game = new Card::TGame<Rovhult, CardgameCollection>
-            (*this, &CardgameCollection::gameEvents);
+         game = new Card::TGame<Rovhult, CardgameCollection>(*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_TWOPART
       case GameTypes::TWOPART:
-         game = new Card::TGame<Twopart, CardgameCollection>
-            (*this, &CardgameCollection::gameEvents);
+         game = new Card::TGame<Twopart, CardgameCollection>(*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_HEARTS
       case GameTypes::HEARTS:
-         game = new Card::TGame<Hearts, CardgameCollection>
-            (*this, &CardgameCollection::gameEvents);
+         game = new Card::TGame<Hearts, CardgameCollection>(*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_BURACO
       case GameTypes::BURACO:
-         game = new Card::TGame<Buraco, CardgameCollection>
-            (*this, &CardgameCollection::gameEvents);
+         game = new Card::TGame<Buraco, CardgameCollection>(*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_MACHIAVELLI
       case GameTypes::MACHIAVELLI:
-         game = new Card::TGame<Machiavelli, CardgameCollection>
-            (*this, &CardgameCollection::gameEvents);
+         game = new Card::TGame<Machiavelli, CardgameCollection>(*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_SGTMAYOR
       case GameTypes::SGTMAYOR:
-         game = new Card::TGame<SgtMayor, CardgameCollection>
-            (*this, &CardgameCollection::gameEvents);
+         game = new Card::TGame<SgtMayor, CardgameCollection>(*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
 #ifdef WITH_JABBERWOCKY
       case GameTypes::JABBERWOCKY:
-         game = new Card::TGame<Jabberwocky, CardgameCollection>
-            (*this, &CardgameCollection::gameEvents);
+         game = new Card::TGame<Jabberwocky, CardgameCollection>(*this, &CardgameCollection::gameEvents);
          break;
 #endif
 
       default:
-         Check (0);
+         Check(0);
       }
-      game->addMenus (mgrUI);
+      game->addMenus(mgrUI);
    }
 
    // Change number of jokers if necessary
-   if (oldJoker != game->numberOfJokers ()) {
-      TRACE5 ("CardgameCollection::startGame () - Re-adding jokers "
-              << oldJoker << "->" << game->numberOfJokers ());
-      for (unsigned int i (0); i < oldJoker; ++i)
-         cardFaces.delImage (cardFaces.size () - 1);
+   if (oldJoker != game->numberOfJokers()) {
+      TRACE5("CardgameCollection::startGame() - Re-adding jokers " << oldJoker << "->" << game->numberOfJokers());
+      for (unsigned int i(0); i < oldJoker; ++i)
+         cardFaces.delImage(cardFaces.size() - 1);
 
-      for (unsigned int i (0); i < game->numberOfJokers (); ++i)
-         cardFaces.addImage (xpmJoker);
+      for (unsigned int i(0); i < game->numberOfJokers(); ++i)
+         cardFaces.addImage(xpmJoker);
    }
 
    // Change number of decks if necessary
-   if ((oldDecks != game->numberOfDecks ())
-       || (oldJoker != game->numberOfJokers ())) {
-      TRACE5 ("CardgameCollection::startGame () - Changing carddecks "
-              << oldDecks << "->" << game->numberOfDecks ());
+   if ((oldDecks != game->numberOfDecks()) || (oldJoker != game->numberOfJokers())) {
+      TRACE5("CardgameCollection::startGame() - Changing carddecks " << oldDecks << "->" << game->numberOfDecks());
 
-      cards.clear ();
-      for (unsigned int i (0); i < game->numberOfDecks (); ++i)
-         cards.addPacket (cardFaces);
+      cards.clear();
+      for (unsigned int i(0); i < game->numberOfDecks(); ++i)
+         cards.addPacket(cardFaces);
    }
 
-   Check3 (game);
-   Glib::ustring name (GameTypes::get ()[actGame]);
+   Check3(game);
+   Glib::ustring name(GameTypes::get()[actGame]);
    name += " - " PACKAGE " V" PRG_RELEASE;
-   set_title (name);
+   set_title(name);
 
 #ifdef SAVE_GAME
-   if (options.gameFile.size () && options.load) {
-      std::ifstream input (options.gameFile.c_str ());
+   if (options.gameFile.size() && options.load) {
+      std::ifstream input(options.gameFile.c_str());
       char buffer[1024];
 
-      input.getline (buffer, sizeof (buffer));
-      game->setCardOrder (buffer);
+      input.getline(buffer, sizeof(buffer));
+      game->setCardOrder(buffer);
    }
 #endif
 
-   if (cmgr.getMode () != YGP::ConnectionMgr::CLIENT) {
-      game->start ();
+   if (cmgr.getMode() != YGP::ConnectionMgr::CLIENT) {
+      game->start();
 
 #ifdef SAVE_GAME
-      if (options.gameFile.size () && !options.load) {
-         std::ofstream output (options.gameFile.c_str ());
-         output << game->getCardOrder ();
+      if (options.gameFile.size() && !options.load) {
+         std::ofstream output(options.gameFile.c_str());
+         output << game->getCardOrder();
       }
 #endif
 
-      game->clearCardOrder ();
+      game->clearCardOrder();
    }
    else
-      game->setGameStatus (Card::Game::NONE);
+      game->setGameStatus(Card::Game::NONE);
 }
 
 //-----------------------------------------------------------------------------
 /// Starts a new game; running games are ended
 //-----------------------------------------------------------------------------
-void CardgameCollection::newGame () {
-   TRACE7 ("CardgameCollection::newGame () - New; Game running: "
-	   << (game && game->isRunning () ? "Yes" : "No"));
-   if (game && game->isRunning ()) {
-      Gtk::MessageDialog dlg (_("A game is already running. Do you really"
-				" want to end it and start another?"), false,
-			      Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-      dlg.set_title (PACKAGE);
-      if (dlg.run () == Gtk::RESPONSE_YES) {
+void CardgameCollection::newGame() {
+   TRACE7("CardgameCollection::newGame() - New; Game running: " << (game && game->isRunning() ? "Yes" : "No"));
+   if (game && game->isRunning()) {
+      Gtk::MessageDialog dlg(_("A game is already running. Do you really want to end it and start another?"), false,
+                             Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+      dlg.set_title(PACKAGE);
+      if (dlg.run() == Gtk::RESPONSE_YES) {
 	 restart = true;
-	 Glib::signal_idle ().connect
-	    (bind_return (mem_fun (*this, &CardgameCollection::restartGame), false));
+	 Glib::signal_idle().connect(bind_return(mem_fun(*this, &CardgameCollection::restartGame), false));
       }
    }
    else {
 #ifdef WITH_NETWORK
-      if (stopClientWaiting ())
+      if (stopClientWaiting())
 #endif
-	 startGame ();
+	 startGame();
    }
 }
 
 //-----------------------------------------------------------------------------
 /// Ends a running game
 //-----------------------------------------------------------------------------
-void CardgameCollection::endGame () {
-   Check3 (game && game->isRunning ());
-   Gtk::MessageDialog dlg (_("Do you really want to end the game?"),
-			   false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-   dlg.set_title (PACKAGE);
-   if (dlg.run () == Gtk::RESPONSE_YES) {
+void CardgameCollection::endGame() {
+   Check3(game && game->isRunning());
+   Gtk::MessageDialog dlg(_("Do you really want to end the game?"), false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+   dlg.set_title(PACKAGE);
+   if (dlg.run() == Gtk::RESPONSE_YES) {
       restart = false;
-      restartGame ();
+      restartGame();
    }
 }
 
@@ -696,9 +662,9 @@ void CardgameCollection::endGame () {
 /// Changes the type of the next game
 /// \param game Type of the next game
 //-----------------------------------------------------------------------------
-void CardgameCollection::changeGame (int game) {
-   TRACE9 ("CardgameCollection::changeGame (games) - " << game);
-   Check3 ((unsigned int)game < GameTypes::LAST);
+void CardgameCollection::changeGame(int game) {
+   TRACE9("CardgameCollection::changeGame(games) - " << game);
+   Check3((unsigned int)game < GameTypes::LAST);
 
    actGame = game;
 }
@@ -706,110 +672,107 @@ void CardgameCollection::changeGame (int game) {
 //-----------------------------------------------------------------------------
 /// Opens a dialog allowing to change the card decks
 //-----------------------------------------------------------------------------
-void CardgameCollection::showChangeDeckDlg () {
-   Card::DeckSelectDlg& dlg (*Card::DeckSelectDlg::create (options.co.decks, options.co.back));
-   dlg.get_window ()->set_transient_for (get_window ());
-   dlg.setDecks.connect (mem_fun (this, &CardgameCollection::changeDecks));
+void CardgameCollection::showChangeDeckDlg() {
+   Card::DeckSelectDlg& dlg(*Card::DeckSelectDlg::create(options.co.decks, options.co.back));
+   dlg.get_window()->set_transient_for(get_window());
+   dlg.setDecks.connect(mem_fun(this, &CardgameCollection::changeDecks));
 }
 
 //-----------------------------------------------------------------------------
 /// Opens a dialog allowing to change the names of the players
 //-----------------------------------------------------------------------------
-void CardgameCollection::changeNames () {
-   Card::PlayerDlg* dlg (Card::PlayerDlg::create (aPlayer));
-   dlg->sigCommit.connect (mem_fun (*this, &CardgameCollection::changePlayernames));
-   dlg->get_window ()->set_transient_for (get_window ());
+void CardgameCollection::changeNames() {
+   Card::PlayerDlg* dlg(Card::PlayerDlg::create(aPlayer));
+   dlg->sigCommit.connect(mem_fun(*this, &CardgameCollection::changePlayernames));
+   dlg->get_window()->set_transient_for(get_window());
 }
 
 //-----------------------------------------------------------------------------
 /// Edits the preferences
 //-----------------------------------------------------------------------------
-void CardgameCollection::editPreferences () {
-   Settings* settings (Settings::create (get_window (), options));
-   settings->sigCardResize.connect (mem_fun (*this, &CardgameCollection::resizeCards));
+void CardgameCollection::editPreferences() {
+   Settings* settings(Settings::create(get_window(), options));
+   settings->sigCardResize.connect(mem_fun(*this, &CardgameCollection::resizeCards));
 #ifdef WITH_NETWORK
-   settings->sigCommit.connect (mem_fun (*this, &CardgameCollection::sendSettings));
+   settings->sigCommit.connect(mem_fun(*this, &CardgameCollection::sendSettings));
 #endif
 }
 
 //-----------------------------------------------------------------------------
 /// Saves the settings
 //-----------------------------------------------------------------------------
-void CardgameCollection::savePreferences () {
-   TRACE2 ("CardgameCollection::savePreferences () - Save file " << options.pNameINIFile);
-   std::ofstream inifile (options.pNameINIFile);
+void CardgameCollection::savePreferences() {
+   TRACE2("CardgameCollection::savePreferences() - Save file " << options.pNameINIFile);
+   std::ofstream inifile(options.pNameINIFile);
    if (inifile) {
-      options.strType = GameTypes::get ()[options.type];
-      YGP::INIFile::write (inifile, "Game", options);
+      options.strType = GameTypes::get()[options.type];
+      YGP::INIFile::write(inifile, "Game", options);
 
       int x, y, width, height;
-      get_size (width, height);
-      get_position (x, y);
+      get_size(width, height);
+      get_position(x, y);
       inifile << "Delay=" << Card::ComputerPlayer::TIMEOUT << "\nWindowPosX=" << x
 	      << "\nWindowPosY=" << y << "\nWindowWidth=" << width
 	      << "\nWindowHeight=" << height << "\nScoreDlgPosX=" << Card::ScoreDlg::LASTX
 	      << "\nScoreDlgPosY=" << Card::ScoreDlg::LASTY << "\n\n";
 
-      YGP::INIFile::write (inifile, "Cards", options.co);
+      YGP::INIFile::write(inifile, "Cards", options.co);
       inifile << "Width=" << Card::Images::WIDTH << "\nHeight=" << Card::Images::HEIGHT << "\n\n";
 
-      for (unsigned int i (0); i < aPlayer.size (); ++i)
-	 options.names[i] = aPlayer[i]->getName ();
-      YGP::INIList<Glib::ustring>::write (inifile, "Player", options.names);
+      for (unsigned int i(0); i < aPlayer.size(); ++i)
+	 options.names[i] = aPlayer[i]->getName();
+      YGP::INIList<Glib::ustring>::write(inifile, "Player", options.names);
 
 #ifdef WITH_BURACO
-      YGP::INIFile::writeSectionHeader (inifile, "Buraco");
-      inifile << "Cards=" << BuracoCards::get ()[Buraco::CARDS2DEAL]
-	      << "\nEndPoints=" << Buraco::ENDPOINTS << '\n';
+      YGP::INIFile::writeSectionHeader(inifile, "Buraco");
+      inifile << "Cards=" << BuracoCards::get()[Buraco::CARDS2DEAL] << "\nEndPoints=" << Buraco::ENDPOINTS << '\n';
 #endif
 
 #ifdef WITH_HEARTS
       inifile << '\n';
-      YGP::INIFile::writeSectionHeader (inifile, "Hearts");
+      YGP::INIFile::writeSectionHeader(inifile, "Hearts");
       inifile << "EndPoints=" << Hearts::ENDPOINTS << '\n';
 #endif
 
 #ifdef WITH_ROVHULT
       inifile << '\n';
-      YGP::INIFile::writeSectionHeader (inifile, "Rovhult");
-      inifile << "CardNuke=" << CardValue::get ()[Rovhult::cardNuke]
-	      << "\nCardReverse=" << CardValue::get ()[Rovhult::cardReverse]
-	      << "\nCardSkip=" << CardValue::get ()[Rovhult::cardSkip] << '\n';
+      YGP::INIFile::writeSectionHeader(inifile, "Rovhult");
+      inifile << "CardNuke=" << CardValue::get()[Rovhult::cardNuke]
+	      << "\nCardReverse=" << CardValue::get()[Rovhult::cardReverse]
+	      << "\nCardSkip=" << CardValue::get()[Rovhult::cardSkip] << '\n';
 #endif
 #ifdef WITH_SGTMAYOR
       inifile << '\n';
-      YGP::INIFile::writeSectionHeader (inifile, "SgtMayor");
+      YGP::INIFile::writeSectionHeader(inifile, "SgtMayor");
       inifile << "Tricks=" << SgtMayor::ENDTRICKS << '\n';
 #endif
       inifile << '\n';
 
-      inifile.flush ();
+      inifile.flush();
       if (inifile)
 	 return;
    }
 
-   Glib::ustring msg (_("Couldn't save options (to file %1)!\n\nReason: %2."));
-   msg.replace (msg.find ("%1"), 2, options.pNameINIFile);
-   msg.replace (msg.find ("%2"), 2, strerror (errno));
-   Gtk::MessageDialog (msg, false, Gtk::MESSAGE_ERROR).run ();
+   Glib::ustring msg(_("Couldn't save options (to file %1)!\n\nReason: %2."));
+   msg.replace(msg.find("%1"), 2, options.pNameINIFile);
+   msg.replace(msg.find("%2"), 2, strerror(errno));
+   Gtk::MessageDialog(msg, false, Gtk::MESSAGE_ERROR).run();
 }
 
 //-----------------------------------------------------------------------------
 /// Saves the settings
 //-----------------------------------------------------------------------------
-void CardgameCollection::exit () {
+void CardgameCollection::exit() {
    if (game) {
-      if (game->isRunning ()) {
-	 Gtk::MessageDialog dlg (_("A game is running. Do you really want to quit?"),
-				 false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-	 dlg.set_title (PACKAGE);
-	 if (dlg.run () == Gtk::RESPONSE_YES) {
-	    if (game->canBeStopped ())
-	       Glib::signal_idle ().connect
-		  (mem_fun (*this, &CardgameCollection::terminateGameAndExit));
+      if (game->isRunning()) {
+	 Gtk::MessageDialog dlg(_("A game is running. Do you really want to quit?"),
+                                false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+	 dlg.set_title(PACKAGE);
+	 if (dlg.run() == Gtk::RESPONSE_YES) {
+	    if (game->canBeStopped())
+	       Glib::signal_idle().connect(mem_fun(*this, &CardgameCollection::terminateGameAndExit));
 	    else {
-	       Glib::signal_idle ().connect
-		  (mem_fun (*this, &CardgameCollection::wait4EndGameAndExit));
+	       Glib::signal_idle().connect(mem_fun(*this, &CardgameCollection::wait4EndGameAndExit));
 	       return;
 	    }
 	 }
@@ -817,16 +780,16 @@ void CardgameCollection::exit () {
 	    return;
       }
    }
-   hide ();
+   hide();
 }
 
 //-----------------------------------------------------------------------------
 /// Stops the game and quits application
 /// \returns bool Always false
 //-----------------------------------------------------------------------------
-bool CardgameCollection::terminateGameAndExit () {
-   Check2 (game);
-   game->stop ();
+bool CardgameCollection::terminateGameAndExit() {
+   Check2(game);
+   game->stop();
    return false;
 }
 
@@ -834,10 +797,10 @@ bool CardgameCollection::terminateGameAndExit () {
 /// Waits til the game can be ended; stops it and quits application
 /// \returns bool Always false
 //-----------------------------------------------------------------------------
-bool CardgameCollection::wait4EndGameAndExit () {
-   Check2 (game);
+bool CardgameCollection::wait4EndGameAndExit() {
+   Check2(game);
    restart = -1U;
-   game->end (false);
+   game->end(false);
    return false;
 }
 
@@ -845,11 +808,11 @@ bool CardgameCollection::wait4EndGameAndExit () {
 //-----------------------------------------------------------------------------
 /// Toggles showing/hiding the cards
 //-----------------------------------------------------------------------------
-void CardgameCollection::toggleDebug () {
+void CardgameCollection::toggleDebug() {
    static bool open = false;
    open = !open;
    if (game)
-      game->playOpen (open);
+      game->playOpen(open);
 }
 #endif
 
@@ -857,52 +820,51 @@ void CardgameCollection::toggleDebug () {
 /// Returns the name of the file to display in the help
 /// \returns \c Name of file to display
 //-----------------------------------------------------------------------------
-const char* CardgameCollection::getHelpfile () {
-   std::string file (options.helpPath);
-   if (file[file.size () - 1] != YGP::File::DIRSEPARATOR)
+const char* CardgameCollection::getHelpfile() {
+   std::string file(options.helpPath);
+   if (file[file.size() - 1] != YGP::File::DIRSEPARATOR)
       file += YGP::File::DIRSEPARATOR;
 
    if (game) {
-      std::string name (game->name ());
+      std::string name(game->name());
       size_t pos;
-      while ((pos = name.find (" ")) != std::string::npos)
-         name.replace (pos, 1, 0, '\0');
+      while ((pos = name.find(" ")) != std::string::npos)
+         name.replace(pos, 1, 0, '\0');
 
       file += name;
       file += ".html";
    }
    else
       file += "CardCol.html";
-   return file.c_str ();
+   return file.c_str();
 }
 
 //-----------------------------------------------------------------------------
 /// Shows the about box for the program
 //-----------------------------------------------------------------------------
-void CardgameCollection::showAboutbox () {
-   std::string ver (_("Copyright (C) 2002 - 2009 Markus Schwab"
-                      "\ne-mail: g17m0@users.sourceforge.net\n\nCompiled on %1 at %2"));
-   ver.replace (ver.find ("%1"), 2, __DATE__);
-   ver.replace (ver.find ("%2"), 2, __TIME__);
+void CardgameCollection::showAboutbox() {
+   std::string ver(_("Copyright(C) 2002 - 2018 Markus Schwab\ne-mail: g17m0@users.sourceforge.net\n\nCompiled on %1 at %2"));
+   ver.replace(ver.find("%1"), 2, __DATE__);
+   ver.replace(ver.find("%2"), 2, __TIME__);
 
-   XGP::XAbout* about (XGP::XAbout::create (ver, PACKAGE " V" VERSION));
-   about->setIconProgram (picGame, sizeof (picGame));
-   about->setIconAuthor (picAuthor, sizeof (picAuthor));
-   about->get_window ()->set_transient_for (get_window ());
+   XGP::XAbout* about(XGP::XAbout::create(ver, PACKAGE " V" VERSION));
+   about->setIconProgram(picGame, sizeof(picGame));
+   about->setIconAuthor(picAuthor, sizeof(picAuthor));
+   about->get_window()->set_transient_for(get_window());
 }
 
 //-----------------------------------------------------------------------------
 /// Callback to change the names of the playing people
 //-----------------------------------------------------------------------------
-void CardgameCollection::changePlayernames () {
-   TRACE2 ("CardgameCollection::changePlayernames");
+void CardgameCollection::changePlayernames() {
+   TRACE2("CardgameCollection::changePlayernames");
 #ifdef WITH_NETWORK
-   if (cmgr.getMode () != YGP::ConnectionMgr::NONE)
-      broadcastNames ();
+   if (cmgr.getMode() != YGP::ConnectionMgr::NONE)
+      broadcastNames();
 #endif
 
    if (game)
-      game->changeNames (aPlayer);
+      game->changeNames(aPlayer);
 }
 
 //-----------------------------------------------------------------------------
@@ -910,32 +872,32 @@ void CardgameCollection::changePlayernames () {
 /// \param deck Deck to set
 /// \param back Back of cards to set
 //-----------------------------------------------------------------------------
-void CardgameCollection::changeDecks (const std::string& deck, const std::string& back) {
-   TRACE2 ("CardgameCollection::changeDecks (2x const std::string&)");
+void CardgameCollection::changeDecks(const std::string& deck, const std::string& back) {
+   TRACE2("CardgameCollection::changeDecks(2x const std::string&)");
 
-   unsigned int option (0);
-   if ((deck.size () && (deck != options.co.decks)) || !cardFaces.size ()) {
+   unsigned int option(0);
+   if ((deck.size() && (deck != options.co.decks)) || !cardFaces.size()) {
       option = 1;
       options.co.decks = deck;
    }
-   if ((back.size () && (back != options.co.back)) || !cardFaces.hasBack ()) {
+   if ((back.size() && (back != options.co.back)) || !cardFaces.hasBack()) {
       option |= 2;
       options.co.back = back;
    }
 
-   changeCards ((void*)option);
+   changeCards((void*)option);
 }
 
 //-----------------------------------------------------------------------------
 /// Resizes the cards
 /// \pre CardImages::HEIGHT/WIDTH must already contain the new sizes
 //-----------------------------------------------------------------------------
-void CardgameCollection::resizeCards () {
-   cardFaces.resizeAll ();
-   cards.update ();
+void CardgameCollection::resizeCards() {
+   cardFaces.resizeAll();
+   cards.update();
 
    if (game)
-      game->resizeCards ();
+      game->resizeCards();
 }
 
 //-----------------------------------------------------------------------------
@@ -943,42 +905,40 @@ void CardgameCollection::resizeCards () {
 /// \param opt Actually a bit field! Option indicationg what to load
 /// \returns void* Status; Not NULL when loading was OK, NULL otherwise
 //-----------------------------------------------------------------------------
-void* CardgameCollection::changeCards (void* opt) {
-   TRACE2 ("CardgameCollection::changeCards (void*) - Option: " << opt);
+void* CardgameCollection::changeCards(void* opt) {
+   TRACE2("CardgameCollection::changeCards(void*) - Option: " << opt);
    if (!opt)
       return this;
 
    // Cards need an realized (!) parent, so ensure that the window is already
    // shown
-   Check3 (this->is_realized ());
-   TRACE3 ("CardgameCollection::changeCards (void*) - Use " << options.co.decks
-           << " and " << options.co.back);
+   Check3(this->is_realized());
+   TRACE3("CardgameCollection::changeCards(void*) - Use " << options.co.decks << " and " << options.co.back);
 
-   void* rc (NULL);
-   bool enable (false);
+   void* rc(NULL);
+   bool enable(false);
    try {
       if ((unsigned long)opt & 1)
-         cardFaces.loadDecks (options.co.decks);
+         cardFaces.loadDecks(options.co.decks);
       if ((unsigned long)opt & 2)
-         cardFaces.loadBack (options.co.back);
-      cards.getCards ().size () ? cards.update () : cards.addPacket (cardFaces);
+         cardFaces.loadBack(options.co.back);
+      cards.getCards().size() ? cards.update() : cards.addPacket(cardFaces);
 
       enable = true;
       rc = this;
    }
    catch (std::exception& e) {
-      Glib::ustring msg (_("Couldn't load the card images!\n\n"
-                           "Reason: %1!"));
-      msg.replace (msg.find ("%1"), 2, e.what ());
-      showMessage (msg);
+      Glib::ustring msg(_("Couldn't load the card images!\n\nReason: %1!"));
+      msg.replace(msg.find("%1"), 2, e.what());
+      showMessage(msg);
    }
 
-   Check3 (apMenus[NEW]);
-   apMenus[NEW]->set_sensitive (enable);
+   Check3(apMenus[NEW]);
+   apMenus[NEW]->set_sensitive(enable);
 
 #ifdef WITH_NETWORK
-   Check3 (apMenus[CONNECT]);
-   apMenus[CONNECT]->set_sensitive (enable);
+   Check3(apMenus[CONNECT]);
+   apMenus[CONNECT]->set_sensitive(enable);
 #endif
    return rc;
 }
@@ -989,12 +949,11 @@ void* CardgameCollection::changeCards (void* opt) {
 /// \returns bool False
 /// \remarks msg wil be deleted at the end
 //----------------------------------------------------------------------------
-bool CardgameCollection::showMessage (const std::string msg) {
-   Gtk::MessageDialog* dlg (new Gtk::MessageDialog (msg, false, Gtk::MESSAGE_ERROR));
-   dlg->set_title (PACKAGE);
-   dlg->signal_response ().connect
-       (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
-   dlg->show ();
+bool CardgameCollection::showMessage(const std::string msg) {
+   Gtk::MessageDialog* dlg(new Gtk::MessageDialog(msg, false, Gtk::MESSAGE_ERROR));
+   dlg->set_title(PACKAGE);
+   dlg->signal_response().connect(bind(ptr_fun(&CardgameCollection::closeDialog), dlg));
+   dlg->show();
    return false;
 }
 
@@ -1003,8 +962,8 @@ bool CardgameCollection::showMessage (const std::string msg) {
 /// \param int Response of dialog (ignored)
 /// \param dlg Dialog to close additionally
 //-----------------------------------------------------------------------------
-void CardgameCollection::closeDialog (int, const Gtk::Dialog* dlg) {
-   Check1 (dlg);
+void CardgameCollection::closeDialog(int, const Gtk::Dialog* dlg) {
+   Check1(dlg);
    delete dlg;
 }
 
@@ -1013,29 +972,29 @@ void CardgameCollection::closeDialog (int, const Gtk::Dialog* dlg) {
 /// on the answer either stops or continues
 /// \returns bool Flag, if the game has already been started
 //-----------------------------------------------------------------------------
-bool CardgameCollection::restartGame () {
-   TRACE8 ("CardgameCollection::restartGame () - Restart: " << restart);
-   Check1 (game);
+bool CardgameCollection::restartGame() {
+   TRACE8("CardgameCollection::restartGame() - Restart: " << restart);
+   Check1(game);
 
-   if (game->isRunning ()) {
-      status.pop ();
-      status.push (_("User canceled"));
+   if (game->isRunning()) {
+      status.pop();
+      status.push(_("User canceled"));
 
-      if (game->canBeStopped ()) {
-         TRACE9 ("CardgameCollection::restartGame () - Game can be stopped");
-         game->stop ();
+      if (game->canBeStopped()) {
+         TRACE9("CardgameCollection::restartGame() - Game can be stopped");
+         game->stop();
          if (restart)
-            startGame ();
+            startGame();
       }
       else {
-         TRACE9 ("CardgameCollection::restartGame () - Delaying stop of game");
-         game->end ((actGame == oldGame) ? restart : false);
+         TRACE9("CardgameCollection::restartGame() - Delaying stop of game");
+         game->end((actGame == oldGame) ? restart : false);
          return false;
       }
    }
    else {
       restart = false;
-      startGame ();
+      startGame();
    }
    return true;
 }
@@ -1045,69 +1004,66 @@ bool CardgameCollection::restartGame () {
 /// \remarks Cards need an realized (!) parent, so make somehow sure, that the
 ///      window already exists
 //-----------------------------------------------------------------------------
-void CardgameCollection::loadCards () {
-   Check3 (is_realized ());
-   status.push (_("Loading cardimages ..."));
+void CardgameCollection::loadCards() {
+   Check3(is_realized());
+   status.push(_("Loading cardimages ..."));
 
    // This code needs the game-IDs in a sequence starting with 0!
    if (options.type >= GameTypes::LAST)
       options.type = 0;
-   Glib::RefPtr<Gtk::ToggleAction>::cast_dynamic (apMenus[STARTGAMES_MENU + options.type + 1])->set_active ();
+   Glib::RefPtr<Gtk::ToggleAction>::cast_dynamic(apMenus[STARTGAMES_MENU + options.type + 1])->set_active();
 
-   void* rc (changeCards ((void*)-1));
+   void* rc(changeCards((void*)-1));
    if (rc) {
-      Check3 (apMenus[NEW]);
-      apMenus[NEW]->set_sensitive (true);
+      Check3(apMenus[NEW]);
+      apMenus[NEW]->set_sensitive(true);
 
 #ifdef WITH_NETWORK
-      Check3 (apMenus[CONNECT]);
-      apMenus[CONNECT]->set_sensitive (true);
+      Check3(apMenus[CONNECT]);
+      apMenus[CONNECT]->set_sensitive(true);
 #endif
 
-      status.pop ();
-      if (cmgr.getMode () != YGP::ConnectionMgr::CLIENT) {
-         status.push (_("Start a new game with Ctrl+N (or Game -> New)"));
+      status.pop();
+      if (cmgr.getMode() != YGP::ConnectionMgr::CLIENT) {
+         status.push(_("Start a new game with Ctrl+N (or Game -> New)"));
       }
    }
 
-   Check3 (cardFaces.size ());
+   Check3(cardFaces.size());
 }
 
 //-----------------------------------------------------------------------------
 /// Handling of game-events
 /// \param status New status of game
 //-----------------------------------------------------------------------------
-void CardgameCollection::gameEvents (unsigned int status) {
-   TRACE8 ("CardgameCollection::gameEvents (unsigned int) const - New status: "
-           << status << "; Restart: " << restart);
+void CardgameCollection::gameEvents(unsigned int status) {
+   TRACE8("CardgameCollection::gameEvents(unsigned int) const - New status: " << status << "; Restart: " << restart);
 
    switch (status) {
    case Card::Game::PLAYING:
-      Check3 (apMenus[END]);
-      apMenus[END]->set_sensitive (true);
+      Check3(apMenus[END]);
+      apMenus[END]->set_sensitive(true);
 #ifdef WITH_NETWORK
-      Check3 (apMenus[CONNECT]);
-      apMenus[CONNECT]->set_sensitive (false);
+      Check3(apMenus[CONNECT]);
+      apMenus[CONNECT]->set_sensitive(false);
 #endif
       break;
 
    case Card::Game::STOPPED:
-      Check3 (apMenus[END]);
-      apMenus[END]->set_sensitive (false);
+      Check3(apMenus[END]);
+      apMenus[END]->set_sensitive(false);
 #ifdef WITH_NETWORK
-      Check3 (apMenus[CONNECT]);
-      apMenus[CONNECT]->set_sensitive (true);
+      Check3(apMenus[CONNECT]);
+      apMenus[CONNECT]->set_sensitive(true);
 #endif
 
       if (restart == 1) {
          // (Re)start the (new) game, when the event queue is empty (and
          // therefore the old game has ended).
-         Glib::signal_idle ().connect
-             (bind_return (mem_fun (*this, &CardgameCollection::doStartGame), false));
+         Glib::signal_idle ().connect(bind_return(mem_fun(*this, &CardgameCollection::doStartGame), false));
       }
       else if (restart == -1U)
-         Glib::signal_idle ().connect
-             (bind_return (mem_fun (*this, &CardgameCollection::hide), false));
+         Glib::signal_idle().connect(bind_return(mem_fun(*this, &CardgameCollection::hide), false));
 
       restart = false;
       break;
@@ -1117,10 +1073,10 @@ void CardgameCollection::gameEvents (unsigned int status) {
 //----------------------------------------------------------------------------
 /// Starts the game and unlocks a (locked) msg-handling mutex
 //----------------------------------------------------------------------------
-void CardgameCollection::doStartGame () {
-   startGame ();
+void CardgameCollection::doStartGame() {
+   startGame();
 #ifdef WITH_NETWORK
-   mxThreadCmd.unlock ();
+   mxThreadCmd.unlock();
 #endif
 }
 
@@ -1128,22 +1084,21 @@ void CardgameCollection::doStartGame () {
 //-----------------------------------------------------------------------------
 /// Checks if Røvhult's special cards are valid; reset them if not
 //-----------------------------------------------------------------------------
-void CardgameCollection::checkRovhultSpecialCards () {
+void CardgameCollection::checkRovhultSpecialCards() {
    Card::Widget::NUMBERS* cards[] = { &Rovhult::cardNuke, &Rovhult::cardReverse, &Rovhult::cardSkip };
 
-   for (unsigned int i (0); i < (sizeof (cards) / sizeof (*cards) - 1); ++i)
-      for (unsigned int j (i + 1); j < (sizeof (cards) / sizeof (*cards)); ++j)
+   for (unsigned int i(0); i < (sizeof(cards) / sizeof(*cards) - 1); ++i)
+      for (unsigned int j(i + 1); j < (sizeof(cards) / sizeof(*cards)); ++j)
 	 if (*cards[i] == *cards[j]) {
 	    Rovhult::cardNuke = Card::Widget::TEN;
 	    Rovhult::cardReverse = Card::Widget::SEVEN;
 	    Rovhult::cardSkip = Card::Widget::EIGHT;
 
-	    Gtk::MessageDialog* dlg (new Gtk::MessageDialog (_("Invalid values for Rovhult's special cards!\n"
-							       "Resetting them to default values."), false, Gtk::MESSAGE_ERROR));
-	    dlg->set_title (PACKAGE);
-	    dlg->signal_response ().connect
-	       (bind (ptr_fun (&CardgameCollection::closeDialog), dlg));
-	    dlg->show ();
+	    Gtk::MessageDialog* dlg(new Gtk::MessageDialog(_("Invalid values for Rovhult's special cards!\n"
+                                                             "Resetting them to default values."), false, Gtk::MESSAGE_ERROR));
+	    dlg->set_title(PACKAGE);
+	    dlg->signal_response().connect(bind(ptr_fun(&CardgameCollection::closeDialog), dlg));
+	    dlg->show();
 	    return;
 	 }
 }

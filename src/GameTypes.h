@@ -1,8 +1,6 @@
 #ifndef GAMETYPES_H
 #define GAMETYPES_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -27,7 +25,7 @@
 /**Class to store the different game-types; both as string and as (unique)
    numeric representation
 */
-class GameTypes : public YGP::MetaEnum {
+class GameTypes: public YGP::MetaEnum {
  public:
    enum {
 #ifdef WITH_BURACO
@@ -52,23 +50,23 @@ class GameTypes : public YGP::MetaEnum {
 	  TWOPART,
 #endif
 	  LAST,
-	  NONE = -1 };
+	  NONE=-1 };
 
    /// Creates a meta-enum of type GameTypes
    /// \returns GamesTypes& Instance of GameTypes
-   static const GameTypes& get () {
+   static const GameTypes& get() {
       if (!instance)
 	 instance = new GameTypes;
       return *instance;
    }
 
-   ~GameTypes ();
+   ~GameTypes();
 
  private:
-   GameTypes ();
-   GameTypes (const GameTypes& other);
+   GameTypes();
+   GameTypes(const GameTypes& other);
 
-   const GameTypes& operator= (const GameTypes& other);
+   const GameTypes& operator=(const GameTypes& other);
 
    static GameTypes* instance;
 };

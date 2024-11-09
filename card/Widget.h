@@ -1,8 +1,6 @@
 #ifndef CARDWIDGET_H
 #define CARDWIDGET_H
 
-//$Id: Widget.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -36,60 +34,62 @@ namespace Card {
   This is actually an event-box and not a button, to avoid
   side-effects caused by the theme.
  */
-class Widget : public Gtk::EventBox {
+class Widget: public Gtk::EventBox {
  public:
-   Widget (unsigned int card, bool showFace = true);
-   Widget (const Widget&);
-   ~Widget ();
+   Widget(unsigned int card, bool showFace=true);
+   Widget(const Widget&);
+   ~Widget();
 
    /// Sets the card deck to use
    /// \param carddeck Deck to use
-   static void setDeck (const Images& carddeck) { deck = &carddeck; }
+   static void setDeck(const Images& carddeck) { deck = &carddeck; }
 
    // Methods to show card. Note that just the image is changed
-   void flip () { showFace (!isVisible); }
-   void showFace (bool visible = true);
-   void showBack ()  { showFace (false); }
-   bool showsFace () const { return isVisible; }
+   void flip() { showFace(!isVisible); }
+   void showFace(bool visible=true);
+   void showBack()  { showFace(false); }
+   bool showsFace() const { return isVisible; }
 
-   typedef enum { CLUBS = 0, DIAMONDS, SPADES, HEARTS } COLOURS;
-   typedef enum { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
+   typedef enum { CLUBS=0, DIAMONDS, SPADES, HEARTS } COLOURS;
+   typedef enum { TWO=0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
                   JACK, QUEEN, KING, ACE, UNREACHABLE } NUMBERS;
 
-   unsigned int id () const { return nrCard; }
-   COLOURS colour () const { return transColour[nrCard & 0x3]; }
-   NUMBERS number () const {
-      return  (nrCard > 51) ? UNREACHABLE : static_cast<NUMBERS> ((51 - nrCard) >> 2); }
-   char numberStr () const { return strNumber (number ()); }
-   char colourStr () const { return strColour (colour ()); }
+   unsigned int id() const { return nrCard; }
+   COLOURS colour() const { return transColour[nrCard & 0x3]; }
+   NUMBERS number() const {
+      return  (nrCard > 51) ? UNREACHABLE : static_cast<NUMBERS>((51 - nrCard) >> 2); }
+   char numberStr() const { return strNumber(number()); }
+   char colourStr() const { return strColour(colour()); }
 
-   const Glib::RefPtr<Gdk::Pixbuf> getShownImage () const {
-      return isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground (); }
-   const Glib::RefPtr<Gdk::Pixbuf> getImage () const { return deck->getCardImage (nrCard); }
-   unsigned int getImageWidth () const { return deck->getCardImage (nrCard)->get_width (); }
-   unsigned int getImageHeight () const { return deck->getCardImage (nrCard)->get_height (); }
+   const Glib::RefPtr<Gdk::Pixbuf> getShownImage() const {
+      return isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground(); }
+   const Glib::RefPtr<Gdk::Pixbuf> getImage() const { return deck->getCardImage(nrCard); }
+   unsigned int getImageWidth() const { return deck->getCardImage(nrCard)->get_width(); }
+   unsigned int getImageHeight() const { return deck->getCardImage(nrCard)->get_height(); }
 
-   int compareNumber (Widget& other) const { return number () - other.number (); }
+   int compareNumber(Widget& other) const { return number() - other.number(); }
 
-   friend std::ostream& operator<< (std::ostream& out, const Widget& card);
+   friend std::ostream& operator<<(std::ostream& out, const Widget& card);
    void update ();
 
-   sigc::signal<void> signal_clicked () { return clicked_; }
+   sigc::signal<void> signal_clicked() { return clicked_; }
 
-   void mark ();
-   void unmark ();
+    void mark();
+    void unmark();
 
-   static Widget* getEmpty ();
+    void set_size_request(int width= -1, int height= -1);
 
-   static char strNumber (Widget::NUMBERS nr);
-   static char strColour (Widget::COLOURS col);
+   static Widget* getEmpty();
+
+   static char strNumber(Widget::NUMBERS nr);
+   static char strColour(Widget::COLOURS col);
 
  protected:
-   virtual void on_clicked ();
-   virtual bool on_button_release_event (GdkEventButton* ev);
+   virtual void on_clicked();
+   virtual bool on_button_release_event(GdkEventButton* ev);
 
  private:
-   Widget () : clicked_ (), img (), isVisible (false), nrCard (0) { }
+   Widget(): clicked_(), img(), isVisible(false), nrCard(0) { }
 
    sigc::signal<void> clicked_;
    Gtk::Image img;

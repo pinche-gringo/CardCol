@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2006, 2008, 2009
+//COPYRIGHT   : Copyright (C) 2003 - 2006, 2008, 2009, 2024
 
 // This file is part of CardCol.
 //
@@ -217,9 +217,8 @@ void MachiPile::analysePile () {
 
 //----------------------------------------------------------------------------
 /// Checks the integrity of the object
-/// \throw PileError describing the error
 //----------------------------------------------------------------------------
-void MachiPile::checkIntegrity () const throw (PileError) {
+void MachiPile::checkIntegrity () const {
    if (size () < 3)
       throw PileError (_("Not enough cards (must be at least 3)!"));
 

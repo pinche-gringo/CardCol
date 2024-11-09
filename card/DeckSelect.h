@@ -44,7 +44,7 @@ class DeckSelectDlg : public XGP::XDialog {
     */
    class DeckColumns : public Gtk::TreeModel::ColumnRecord {
     public:
-      DeckColumns () : path (), name (), icon () { add (path); add (name); add (icon); }
+      DeckColumns(): path(), name(), icon() { add(path); add(name); add(icon); }
 
       Gtk::TreeModelColumn<std::string> path;
       Gtk::TreeModelColumn<Glib::ustring> name;
@@ -52,43 +52,43 @@ class DeckSelectDlg : public XGP::XDialog {
    };
 
  public:
-   DeckSelectDlg (const std::string& deck, const std::string& back);
-   virtual ~DeckSelectDlg ();
+   DeckSelectDlg(const std::string& deck, const std::string& back);
+   virtual ~DeckSelectDlg();
 
    /// Creates a DeckSelect-dialog on the heap
    /// \param deck Pre-selected deck
    /// \param back Pre-selected back
    /// \returns DeckSelectDlg* Created dialog
-   static DeckSelectDlg* create (const std::string& deck, const std::string& back) {
-      DeckSelectDlg* dlg (new DeckSelectDlg (deck, back));
-      dlg->signal_response ().connect (mem_fun (*dlg, &DeckSelectDlg::free));
+   static DeckSelectDlg* create(const std::string& deck, const std::string& back) {
+      DeckSelectDlg* dlg(new DeckSelectDlg(deck, back));
+      dlg->signal_response().connect(mem_fun(*dlg, &DeckSelectDlg::free));
       return dlg; }
 
    /// Signal emitted, when changing deck/back is confirmed
    sigc::signal<void, const std::string&, const std::string&> setDecks;
 
  protected:
-   virtual void okEvent ();
-   virtual void command (int action);
+   virtual void okEvent();
+   virtual void command(int action);
 
-   Glib::RefPtr<Gdk::Pixbuf> getImage (const std::string& file, bool scale = true);
-   void addFileInDirectories (const std::string& dir, const std::string& file,
-			      const std::string& defaultDeck, unsigned int offName = 0);
-   void addFile (const std::string& path, const std::string& name, const std::string& display,
-		 const std::string& defaultDeck);
+   Glib::RefPtr<Gdk::Pixbuf> getImage(const std::string& file, bool scale = true);
+   void addFileInDirectories(const std::string& dir, const std::string& file,
+                             const std::string& defaultDeck, unsigned int offName = 0);
+   void addFile(const std::string& path, const std::string& name, const std::string& display,
+                const std::string& defaultDeck);
 
  private:
    // Prohibited manager-functions
-   DeckSelectDlg ();
-   DeckSelectDlg (const DeckSelectDlg&);
+   DeckSelectDlg();
+   DeckSelectDlg(const DeckSelectDlg&);
 
-   void deckSelected ();
-   void backSelected ();
+   void deckSelected();
+   void backSelected();
 
-   void deckActivated (const Gtk::TreeModel::Path& deck);
-   void backActivated (const Gtk::TreeModel::Path& back);
+   void deckActivated(const Gtk::TreeModel::Path& deck);
+   void backActivated(const Gtk::TreeModel::Path& back);
 
-   const DeckSelectDlg& operator= (const DeckSelectDlg&);
+   const DeckSelectDlg& operator=(const DeckSelectDlg&);
 
    DeckColumns cols;
    Glib::RefPtr<Gtk::ListStore> mDecks;

@@ -1,8 +1,6 @@
 #ifndef HEARTS_H
 #define HEARTS_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -35,68 +33,67 @@ namespace Card {
 
 
 // Class to handle the Hearts cardgame
-class Hearts : public Card::Game {
+class Hearts: public Card::Game {
    friend class Settings;
    friend class CardgameAppl;
    friend class CardgameCollection;
 
  public:
-   Hearts (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
-           const std::vector<Card::Player*>& player, unsigned int posPlayer,
-           YGP::Mutex& mxSerialize);
-   virtual ~Hearts ();
+   Hearts(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
+          const std::vector<Card::Player*>& player, unsigned int posPlayer, YGP::Mutex& mxSerialize);
+   virtual ~Hearts();
 
-   virtual void start ();
-   virtual void clean ();
-   virtual void playOpen (bool open);
-   virtual const char* name () { return "Hearts"; }
-   virtual void changeNames (const std::vector<Card::Player*>& newPlayer);
-   virtual void resizeCards ();
+   virtual void start();
+   virtual void clean();
+   virtual void playOpen(bool open);
+   virtual const char* name() { return "Hearts"; }
+   virtual void changeNames(const std::vector<Card::Player*>& newPlayer);
+   virtual void resizeCards();
 
-   virtual bool handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError);
+   virtual bool handleMessage(unsigned int player, const std::string& message);
 
  protected:
-   virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
+   virtual Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile);
 
  private:
-   enum Status { EXCHANGE = Game::LAST };
+   enum Status { EXCHANGE=Game::LAST };
 
-   static void getPositionOfColours (Card::IPile& pile, int result[4]);
+   static void getPositionOfColours(Card::IPile& pile, int result[4]);
 
    // Protected manager functions
-   Hearts (const Hearts& other);
-   const Hearts& operator= (const Hearts& other);
+   Hearts(const Hearts& other);
+   const Hearts& operator=(const Hearts& other);
 
    //@Section Event handling
-   void cardSelected (unsigned int iCard);
-   void takeCard (unsigned int iCard);
-   void cardTaken ();
+   void cardSelected(unsigned int iCard);
+   void takeCard(unsigned int iCard);
+   void cardTaken();
 
    //@Section Virtual methods
-   virtual void makeMove (unsigned int player);
-   virtual bool enableHuman ();
+   virtual void makeMove(unsigned int player);
+   virtual bool enableHuman();
 
    //@Section Helper methods
-   bool moveSelectedCardToPlayed (unsigned int player, unsigned int card);
-   unsigned int  calcNextPlayer (unsigned int player);
-   unsigned int  check4Winner () const;
-   void exchangeCards ();
-   void finishExchangeCards ();
-   void finishMove ();
-   void takeWonCards (unsigned int player);
-   bool cardsExchanged (unsigned int cards);
-   static unsigned int numberOfCards (const int aPositions[4], Card::Widget::COLOURS colour);
-   static unsigned int pointsOfPile (const Card::IPile& pile);
+   bool moveSelectedCardToPlayed(unsigned int player, unsigned int card);
+   unsigned int  calcNextPlayer(unsigned int player);
+   unsigned int  check4Winner() const;
+   void exchangeCards();
+   void finishExchangeCards();
+   void finishMove();
+   void takeWonCards(unsigned int player);
+   bool cardsExchanged(unsigned int cards);
+   static unsigned int numberOfCards(const int aPositions[4], Card::Widget::COLOURS colour);
+   static unsigned int pointsOfPile(const Card::IPile& pile);
 
    //@Section Computer player
-   unsigned int findPos2Play (unsigned int player);
-   unsigned int findWorstCard (const Card::IPile& pile, const int aPositions[4]) const;
-   unsigned int findLowerCard (const Card::IPile& pile, const int aPositions[4]) const;
+   unsigned int findPos2Play(unsigned int player);
+   unsigned int findWorstCard(const Card::IPile& pile, const int aPositions[4]) const;
+   unsigned int findLowerCard(const Card::IPile& pile, const int aPositions[4]) const;
 
-   void startPlaying ();
+   void startPlaying();
 
-   virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
-   virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void addMenus(Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void removeMenus(Glib::RefPtr<Gtk::UIManager> mgrUI);
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
@@ -111,11 +108,11 @@ class Hearts : public Card::Game {
       Card::IPile*  won;                                           // Won cards
       Gtk::Label name;
 
-      playerCards () : hand (NULL), won (NULL), name () { }
+      playerCards(): hand(NULL), won(NULL), name() { }
 
     private:
-      playerCards (const playerCards&);
-      playerCards& operator= (const playerCards&);
+      playerCards(const playerCards&);
+      playerCards& operator=(const playerCards&);
    } players[NUM_PLAYERS];
    Card::HPile played;
 

@@ -8,7 +8,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2009, 2011
+//COPYRIGHT   : Copyright (C) 2003 - 2009, 2011, 2012, 2024
 
 // This file is part of CardCol.
 //
@@ -31,6 +31,8 @@
 #include <sstream>
 
 #include <gtk/gtk.h>
+
+#include <glibmm/main.h>
 
 #include <gtkmm/stock.h>
 #include <gtkmm/statusbar.h>
@@ -1563,9 +1565,8 @@ Card::IPile* Machiavelli::getPileOfPlayer (unsigned int player, unsigned int pil
 /// \param player ID of the player sending the message
 /// \param message Message received from the server
 /// \returns bool True, if message has been processed completey
-/// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Machiavelli::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
+bool Machiavelli::handleMessage (unsigned int player, const std::string& message) {
    TRACE1 ("Machiavelli::handleMessage (unsigned int player, const std::string&) - "
            << message << " (" << player << ')');
 

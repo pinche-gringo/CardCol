@@ -1,14 +1,12 @@
-//$Id$
 
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Jabberwocky
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 09.08.2006
-//COPYRIGHT   : Copyright (C) 2006 - 2009, 2011
+//COPYRIGHT   : Copyright (C) 2006 - 2018, 2024
 
 // This file is part of CardCol.
 //
@@ -31,6 +29,8 @@
 #include <cstring>
 
 #include <sstream>
+
+#include <glibmm/main.h>
 
 #include <gtkmm/box.h>
 #include <gtkmm/stock.h>
@@ -959,9 +959,8 @@ int Jabberwocky::playCard (unsigned int player) {
 /// \param player ID of player sending the message
 /// \param message Message received from the server
 /// \returns bool True, if message has been completey processed
-/// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Jabberwocky::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
+bool Jabberwocky::handleMessage (unsigned int player, const std::string& message) {
 #if 0
    YGP::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));

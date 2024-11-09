@@ -66,7 +66,7 @@ class MachiPile : public Card::HPile {
    static int cardDistance (const Card::Widget& a, const Card::Widget& b,
                             ACEFLAG aceIsOne);
 
-   void checkIntegrity () const throw (PileError);
+   void checkIntegrity () const;
    void mark () const;
    void unmark () const;
    void markValidity () const;

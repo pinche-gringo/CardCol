@@ -1,14 +1,11 @@
-//$Id$
-
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Console-Application
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 7.7.2005
-//COPYRIGHT   : Copyright (C) 2005 - 2009
+//COPYRIGHT   : Copyright (C) 2005 - 2018
 
 // This file is part of CardCol.
 //
@@ -110,10 +107,9 @@ void CardgameAppl::showHelp () const {
 
       /* For translations: Write one of the Rovhults as an O with slash */
              << _("Valid values for GAME are - unless disabled while configuring - Buraco, Hearts,\n"
-		  "Machiavelli, Rovhult, SgtMayor, Twopart and the numbers 0 - 5 (corresponding\n"
-		  "to the games in the above order) or the translation of the name (as displayed\n"
-		  "below).\n\n");
-   showGames ();
+		  "Jabberwocky, Machiavelli, Rovhult, SgtMayor, Twopart or the corresponding numbers\n"
+		  "to the games or the translation of the name (as displayed below).\n\n");
+   showGames();
 
    std::cout << _("\nThe INI file can have the following entries:\n\n")
              <<  "  [Game]\n"

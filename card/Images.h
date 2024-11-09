@@ -32,46 +32,44 @@ namespace Card {
 */
 class Images {
  public:
-   Images () : cards_ (52), back_ () { }
-   ~Images ();
+   Images() : cards_(52), back_() { }
+   ~Images();
 
-   unsigned int addImage (const char* const* data) {
-      Glib::RefPtr<Gdk::Pixbuf> card (Gdk::Pixbuf::create_from_xpm_data (data));
-      card = card->scale_simple (WIDTH, HEIGHT, Gdk::INTERP_BILINEAR);
-      cards_.push_back (card);
-      return cards_.size () - 1; }
-   void delImage (unsigned int pos) {
-      cards_.erase (cards_.begin () + pos); }
+   unsigned int addImage(const char* const* data) {
+      Glib::RefPtr<Gdk::Pixbuf> card(Gdk::Pixbuf::create_from_xpm_data(data));
+      card = card->scale_simple(WIDTH, HEIGHT, Gdk::INTERP_BILINEAR);
+      cards_.push_back(card);
+      return cards_.size() - 1; }
+   void delImage(unsigned int pos) {
+      cards_.erase(cards_.begin() + pos); }
 
-   const Glib::RefPtr<Gdk::Pixbuf> getCardImage (unsigned int nr) const;
+   const Glib::RefPtr<Gdk::Pixbuf> getCardImage(unsigned int nr) const;
 
-   const Glib::RefPtr<Gdk::Pixbuf> getCardBackground () const { return back_; }
-   void setCardBackground (const Glib::RefPtr<Gdk::Pixbuf> back) { back_ = back; }
+   const Glib::RefPtr<Gdk::Pixbuf> getCardBackground() const { return back_->copy(); }
+   void setCardBackground(const Glib::RefPtr<Gdk::Pixbuf> back) { back_ = back; }
 
-   void loadDecks (const std::string& path) throw (YGP::FileError);
-   void loadBack (const std::string& file) throw (YGP::FileError);
+   void loadDecks(const std::string& path);
+   void loadBack(const std::string& file);
 
-   /// Loads the cards (faces and background)
+   /// Loads the cards(faces and background)
    /// \param path Path to files
    /// \param back File containing background picture
-   /// \throw YGP::FileError An describing text in case of error
-   void load (const std::string& path, const std::string& back) throw (YGP::FileError) {
-      loadDecks (path);
-      loadBack (back);
+   void load(const std::string& path, const std::string& back) {
+      loadDecks(path);
+      loadBack(back);
    }
-   /// Loads the cards (faces and background)
+   /// Loads the cards(faces and background)
    /// \param cards Number of cards expected
    /// \param path Path to files
    /// \param back File containing background picture
-   /// \throw YGP::FileError An describing text in case of error
-   void load (unsigned int cards, const std::string& path, const std::string& back) throw (YGP::FileError) {
-      cards_.reserve (cards);
-      load (path, back); }
+   void load(unsigned int cards, const std::string& path, const std::string& back) {
+      cards_.reserve(cards);
+      load(path, back); }
 
-   unsigned int size () const { return cards_.size (); }
-   bool hasBack () const { return back_; }
+   unsigned int size() const { return cards_.size(); }
+   bool hasBack() const { return bool(back_); }
 
-   void resizeAll ();
+   void resizeAll();
 
    static unsigned int HEIGHT;
    static unsigned int WIDTH;
@@ -80,7 +78,7 @@ class Images {
    std::vector<Glib::RefPtr<Gdk::Pixbuf> > cards_;
    Glib::RefPtr<Gdk::Pixbuf> back_;
 
-   void unload ();
+   void unload();
 };
 
 }

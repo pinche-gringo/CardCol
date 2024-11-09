@@ -54,7 +54,7 @@ class Jabberwocky : public Card::Game {
    virtual void changeNames (const std::vector<Card::Player*>& newPlayer);
    virtual void resizeCards ();
 
-   virtual bool handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError);
+   virtual bool handleMessage (unsigned int player, const std::string& message);
 
  protected:
    virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);

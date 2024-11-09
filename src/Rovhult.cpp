@@ -1,5 +1,3 @@
-//$Id$
-
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Rovhult
 //REFERENCES  :
@@ -8,7 +6,7 @@
 //REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 28.3.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2009, 2011
+//COPYRIGHT   : Copyright (C) 2002 - 2018, 2024
 
 // This file is part of CardCol.
 //
@@ -59,9 +57,9 @@ const unsigned int Rovhult::COLS_PLAYER[NUM_PLAYERS] = { 7, 13, 7, 1 };
 const unsigned int Rovhult::ROWS_PLAYER[NUM_PLAYERS] = { 13, 7, 4, 7 };
 
 
-Card::Widget::NUMBERS Rovhult::cardNuke (Card::Widget::TEN);
-Card::Widget::NUMBERS Rovhult::cardSkip (Card::Widget::EIGHT);
-Card::Widget::NUMBERS Rovhult::cardReverse (Card::Widget::SEVEN);
+Card::Widget::NUMBERS Rovhult::cardNuke(Card::Widget::TEN);
+Card::Widget::NUMBERS Rovhult::cardSkip(Card::Widget::EIGHT);
+Card::Widget::NUMBERS Rovhult::cardReverse(Card::Widget::SEVEN);
 
 
 //-----------------------------------------------------------------------------
@@ -73,91 +71,86 @@ Card::Widget::NUMBERS Rovhult::cardReverse (Card::Widget::SEVEN);
 /// \param posPlayer Position of player for the server
 /// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
-Rovhult::Rovhult (Gtk::Box& parent, Gtk::Statusbar& statusbar,
-                  Card::Set& cardset, const std::vector<Card::Player*>& player,
-                  unsigned int posPlayer, YGP::Mutex& mxSerialize)
-   : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 16, 20),
-     played (Card::IPile::VERY_COMPRESSED, Card::IPile::SHOWFACE),
-     staple (Card::IPile::VERY_COMPRESSED), aExchanged (0), cEndgame (0),
-     aTableDND (), aHandDND (), aHandData (), aTableData () {
-    TRACE9 ("Rovhult::Rovhult (Gtk::Box& Gtk::Statusbar&, CardSet&,"
-            " const std::vector<Glib::ustring>&)");
+Rovhult::Rovhult(Gtk::Box& parent, Gtk::Statusbar& statusbar,
+                 Card::Set& cardset, const std::vector<Card::Player*>& player,
+                 unsigned int posPlayer, YGP::Mutex& mxSerialize)
+   : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 16, 20),
+     played(Card::IPile::VERY_COMPRESSED, Card::IPile::SHOWFACE),
+     staple(Card::IPile::VERY_COMPRESSED), aExchanged(0), cEndgame(0),
+     aTableDND(), aHandDND(), aHandData(), aTableData() {
+    TRACE9("Rovhult::Rovhult(Gtk::Box& Gtk::Statusbar&, CardSet&, const std::vector<Glib::ustring>&)");
 
-   staple.show ();
-   attach (staple, 3, 4, 2, 7);
-   Check3 (cards.size ());
+   staple.show();
+   attach(staple, 3, 4, 2, 7);
+   Check3(cards.size());
 
    // Show and attach card-piles
-   changeNames (player);
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      for (int j (0); j < 3; ++j) {
-         players[i].reserve[j].setStyle (Card::IPile::QUITE_COMPRESSED);
-         players[i].reserve[j].show ();
-         attach (players[i].reserve[j], COLS_PLAYER[i] + (j << 1),
-                 COLS_PLAYER[i] + 1 + (j << 1), ROWS_PLAYER[i],
-                 ROWS_PLAYER[i] + 2, Gtk::SHRINK, Gtk::SHRINK, 0);
-         TRACE9 ("Rovhult::Rovhult () - Set at: "
-                 << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
+   changeNames(player);
+   for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
+      for (int j(0); j < 3; ++j) {
+         players[i].reserve[j].setStyle(Card::IPile::QUITE_COMPRESSED);
+         players[i].reserve[j].show();
+         attach(players[i].reserve[j], COLS_PLAYER[i] + (j << 1), COLS_PLAYER[i] + 1 + (j << 1),
+                ROWS_PLAYER[i], ROWS_PLAYER[i] + 2, Gtk::SHRINK, Gtk::SHRINK, 0);
+         TRACE9("Rovhult::Rovhult() - Set at: " << COLS_PLAYER[i]  + (j << 1) << '/' << ROWS_PLAYER[i]);
       }
 
-      players[i].name.show ();
-      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 5,
-              ROWS_PLAYER[i] + ((i == 2) ? 2 : 5),
-              ROWS_PLAYER[i] + ((i == 2) ? 3 : 6),
-              Gtk::EXPAND, Gtk::EXPAND, 1);
+      players[i].name.show();
+      attach(players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 5,
+             ROWS_PLAYER[i] + ((i == 2) ? 2 : 5), ROWS_PLAYER[i] + ((i == 2) ? 3 : 6),
+             Gtk::EXPAND, Gtk::EXPAND, 1);
 
-      players[i].hand.setStyle (i ? Card::IPile::QUITE_COMPRESSED : Card::IPile::NORMAL);
-      players[i].hand.setShowOption (i ? Card::IPile::SHOWBACK : Card::IPile::SHOWFACE);
-      players[i].hand.show ();
-      attach (players[i].hand, COLS_PLAYER[i],
-              COLS_PLAYER[i] + 5,
-              ROWS_PLAYER[i] + ((i == 2) ? -3 : 3),
-              ROWS_PLAYER[i] + ((i == 2) ? -3 : 3) + 2,
-              Gtk::FILL | Gtk::EXPAND, Gtk::FILL | Gtk::EXPAND, 0);
-      TRACE9 ("Rovhult::Rovhult () - 2nd set at: "
-              << COLS_PLAYER[i] << '/'
-              << ROWS_PLAYER[i] + ((i == 2) ? -3 : 3));
+      players[i].hand.setStyle(i ? Card::IPile::QUITE_COMPRESSED : Card::IPile::NORMAL);
+      players[i].hand.setShowOption(i ? Card::IPile::SHOWBACK : Card::IPile::SHOWFACE);
+      players[i].hand.show();
+      attach(players[i].hand, COLS_PLAYER[i], COLS_PLAYER[i] + 5,
+             ROWS_PLAYER[i] + ((i == 2) ? -3 : 3), ROWS_PLAYER[i] + ((i == 2) ? -3 : 3) + 2,
+             Gtk::FILL | Gtk::EXPAND, Gtk::FILL | Gtk::EXPAND, 0);
+      TRACE9("Rovhult::Rovhult() - 2nd set at: " << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i] + ((i == 2) ? -3 : 3));
    }
 
-   resizeCards ();
-   played.show ();
-   staple.setShowOption (Card::IPile::SHOWBACK);
+   resizeCards();
+   played.show();
+   staple.setShowOption(Card::IPile::SHOWBACK);
 
-   attach (played, 7, 11, 5, 14, Gtk::SHRINK, Gtk::SHRINK, 1);
+   attach(played, 7, 11, 5, 14, Gtk::SHRINK, Gtk::SHRINK, 1);
 
-   if (dndTypeHand.empty ()) {
-      Check3 (dndTypeTable.empty ());
+   if (dndTypeHand.empty()) {
+      Check3(dndTypeTable.empty());
       dndTypeHand.push_back
-         (Gtk::TargetEntry ("icon/card/hand", Gtk::TARGET_SAME_APP, HAND));
+         (Gtk::TargetEntry("icon/card/hand", Gtk::TARGET_SAME_APP, HAND));
       dndTypeTable.push_back
-         (Gtk::TargetEntry ("icon/card/table", Gtk::TARGET_SAME_APP, TABLE));
+         (Gtk::TargetEntry("icon/card/table", Gtk::TARGET_SAME_APP, TABLE));
    }
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-Rovhult::~Rovhult () {
-   TRACE8 ("Rovhult::~Rovhult ()");
-   clean ();
+Rovhult::~Rovhult() {
+   TRACE8("Rovhult::~Rovhult()");
+   clean();
 }
 
 
 //-----------------------------------------------------------------------------
 /// Starts the game
 //-----------------------------------------------------------------------------
-void Rovhult::start () {
-   Game::start ();
+void Rovhult::start() {
+   Game::start();
 
-   setGameStatus (EXCHANGE);
-   if (randomiseCardsToPile (staple)) {
-      dealCards ();
+   setGameStatus(EXCHANGE);
+   TRACE1("Rovhult::start() - randomiseCards");
+   if (randomiseCardsToPile(staple)) {
+      TRACE1("Rovhult::start() - randomiseCards finished");
+      dealCards();
+      TRACE1("Rovhult::start() - cards dealt");
 
       aExchanged = 0;
 
-      if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::CLIENT) {
-         setNextPlayer (rand () & 0x3);
-	 broadcastStartPlayer (currentPlayer ());
+      if (getConnectionMgr().getMode() != YGP::ConnectionMgr::CLIENT) {
+         setNextPlayer(rand() & 0x3);
+	 broadcastStartPlayer(currentPlayer());
       }
 
       cEndgame = 0;
@@ -168,32 +161,31 @@ void Rovhult::start () {
 /// Callback after finishing card-exchange
 /// \param iCard Offset of card in hand
 //-----------------------------------------------------------------------------
-void Rovhult::finishedExchange (unsigned int iCard) {
-   unregisterDND ();
-   disableHuman ();
-   setGameStatus (EXCHANGED);
+void Rovhult::finishedExchange(unsigned int iCard) {
+   unregisterDND();
+   disableHuman();
+   setGameStatus(EXCHANGED);
 
-   sortReserve (0);
-   players[0].hand.setStyle (Card::IPile::COMPRESSED);
+   sortReserve(0);
+   players[0].hand.setStyle(Card::IPile::COMPRESSED);
 
-   sendExchangedCards (0);
+   sendExchangedCards(0);
 
-   exchangeAutoplayerCards ();
+   exchangeAutoplayerCards();
 
-   players[0].hand.sortByNumber ();
-   sortReserve (0);
-   players[0].hand.setStyle (Card::IPile::COMPRESSED);
+   players[0].hand.sortByNumber();
+   sortReserve(0);
+   players[0].hand.setStyle(Card::IPile::COMPRESSED);
 
-   status.pop ();
-   displayTurn (currentPlayer ());
+   status.pop();
+   displayTurn(currentPlayer());
 
-   if ((getConnectionMgr ().getMode () == YGP::ConnectionMgr::NONE)
-       || (aExchanged == 0xf)) {
-      setGameStatus (PLAYING);
-      makeNextMoves ();
+   if ((getConnectionMgr().getMode() == YGP::ConnectionMgr::NONE) || (aExchanged == 0xf)) {
+      setGameStatus(PLAYING);
+      makeNextMoves();
    }
    else
-      status.push (_("Waiting for other player to exchange their cards ..."));
+      status.push(_("Waiting for other player to exchange their cards ..."));
 }
 
 //-----------------------------------------------------------------------------
@@ -201,10 +193,10 @@ void Rovhult::finishedExchange (unsigned int iCard) {
 /// \param card Card to value
 /// \returns unsigned int Value representing the card
 //-----------------------------------------------------------------------------
-unsigned int Rovhult::getCardValue (const Card::Widget& card) {
+unsigned int Rovhult::getCardValue(const Card::Widget& card) {
    return ((card.number () == Card::Widget::TWO)
 	   ? Card::Widget::ACE + 1
-	   : (card.number () == cardNuke) ? Card::Widget::ACE + 2 : card.number ());
+	   : (card.number () == cardNuke) ? Card::Widget::ACE + 2 : card.number());
 }
 
 //-----------------------------------------------------------------------------
@@ -213,8 +205,8 @@ unsigned int Rovhult::getCardValue (const Card::Widget& card) {
 /// \returns int >0, if number of lhs is smaller; 0 if equal or >0 if
 ///     bigger
 //-----------------------------------------------------------------------------
-int Rovhult::compareCards (const Card::Widget& lhs, const Card::Widget& rhs) {
-   return getCardValue (lhs) - getCardValue (rhs);
+int Rovhult::compareCards(const Card::Widget& lhs, const Card::Widget& rhs) {
+   return getCardValue(lhs) - getCardValue(rhs);
 }
 
 //-----------------------------------------------------------------------------
@@ -1463,9 +1455,8 @@ Card::IPile* Rovhult::getPileOfPlayer (unsigned int player, unsigned int pile) {
 /// \param player ID of player sending the message
 /// \param message Message received from the server
 /// \returns bool True, if message has been completey processed
-/// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
-bool Rovhult::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
+bool Rovhult::handleMessage (unsigned int player, const std::string& message) {
 #if 0
    if (gameStatus () >= EXCHANGE) {
       TRACE1 ("Rovhult::handleMessage (unsigned int player, const std::string&) - "
@@ -1550,9 +1541,8 @@ bool Rovhult::handleMessage (unsigned int player, const std::string& message) th
 /// \param pile Pile to move to/from
 /// \param target ID of target as send by the partner
 /// \returns bool True, if the timer to execute the move should be set
-/// \throw YGP::ParseError In case of an error
 //----------------------------------------------------------------------------
-bool Rovhult::executeRemoteMove (Card::IPile& pile, unsigned int target) throw (YGP::ParseError) {
+bool Rovhult::executeRemoteMove (Card::IPile& pile, unsigned int target) {
    if (target) {
       Check3 (gameStatus () == PLAYING);
       TRACE7 ("Rovhult::executeRemoteMove (Card::IPile&, unsigned int) - Target " << target);
@@ -1597,28 +1587,28 @@ bool Rovhult::executeRemoteMove (Card::IPile& pile, unsigned int target) throw (
 /// Actions to take when the cards are resized
 /// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
 //-----------------------------------------------------------------------------
-void Rovhult::resizeCards () {
-   for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      for (int j (0); j < 3; ++j)
-         players[i].reserve[j].set_size_request (Card::Images::WIDTH, Card::Images::HEIGHT + 7);
-      players[i].hand.set_size_request (Card::Images::WIDTH * 3, Card::Images::HEIGHT);
+void Rovhult::resizeCards() {
+   for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
+      for (int j(0); j < 3; ++j)
+         players[i].reserve[j].set_size_request(Card::Images::WIDTH, Card::Images::HEIGHT + 7);
+      players[i].hand.set_size_request(Card::Images::WIDTH * 3, Card::Images::HEIGHT);
    }
 
-   played.set_size_request (Card::Images::WIDTH, Card::Images::HEIGHT);
-   staple.set_size_request (Card::Images::WIDTH, Card::Images::HEIGHT + 50);
+   played.set_size_request(Card::Images::WIDTH, Card::Images::HEIGHT);
+   staple.set_size_request(Card::Images::WIDTH, Card::Images::HEIGHT + 50);
 }
 
 //-----------------------------------------------------------------------------
 /// Checks if there are only computer-player with cards left
 /// \returns bool True, if only computer-players are left
 //-----------------------------------------------------------------------------
-bool Rovhult::noMoreHumans () const {
-   int first (nextAvailablePlayer (0));
-   int i (first);
+bool Rovhult::noMoreHumans() const {
+   int first(nextAvailablePlayer(0));
+   int i(first);
    do {
-      if (typeid (*actPlayers[i]) != typeid (Card::ComputerPlayer))
+      if (typeid(*actPlayers[i]) != typeid(Card::ComputerPlayer))
 	 return false;
-      i = nextAvailablePlayer (i);
+      i = nextAvailablePlayer(i);
    } while (first < i);
    return true;
 }
@@ -1628,8 +1618,8 @@ bool Rovhult::noMoreHumans () const {
 /// \param player Player to analyse
 /// \returns unsigned int Card to play
 //-----------------------------------------------------------------------------
-unsigned int Rovhult::selectRandomCard (unsigned int player) {
-   Check3 (players[player].hand.size ());
-   unsigned int pos2Play (rand () % players[player].hand.size ());
-   return cardValid (players[player].hand[pos2Play]->number (), true) ? pos2Play : -1U;
+unsigned int Rovhult::selectRandomCard(unsigned int player) {
+   Check3(players[player].hand.size());
+   unsigned int pos2Play(rand() % players[player].hand.size());
+   return cardValid(players[player].hand[pos2Play]->number(), true) ? pos2Play : -1U;
 }
