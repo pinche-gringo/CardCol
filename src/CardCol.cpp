@@ -315,7 +315,7 @@ static const char* xpmJoker[] = {
 /// \param opts Options for the program
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection(Options& opts)
-   : XApplication(PACKAGE " V" PRG_RELEASE), status(), cardFaces(), cards(),
+   : XApplication(PACKAGE " V" PRG_RELEASE), status(), filler(), cardFaces(), cards(),
 #ifdef WITH_NETWORK
      aCommThreads(), mxGuiCmd(), dlgChat(NULL),
 #endif
@@ -418,6 +418,12 @@ CardgameCollection::CardgameCollection(Options& opts)
    Check3(apMenus[NEW]); Check3(apMenus[END]);
    apMenus[NEW]->set_enabled(false);
    apMenus[END]->set_enabled(false);
+
+   // Remark: Until a game is started, there's no widget expanding to fill the
+   // client area, so filler pushes the statusbar to the bottom of the window
+   filler.set_vexpand();
+   filler.show();
+   getClient ().append (filler);
 
    status.show();
    getClient ().append (status);
@@ -540,6 +546,7 @@ void CardgameCollection::startGame() {
          Check(0);
       }
       game->addMenus(menuGameSection, actionsGame);
+      filler.hide();
    }
 
    // Change number of jokers if necessary

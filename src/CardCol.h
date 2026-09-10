@@ -147,6 +147,7 @@ class CardgameCollection: public XGP::XApplication {
    static const char* xpmAuthor[];
 
    Gtk::Statusbar status;
+   Gtk::Box filler;         ///< Placeholder pushing the statusbar to the bottom until a game exists
 
    Card::Images cardFaces;
    Card::Set cards;
