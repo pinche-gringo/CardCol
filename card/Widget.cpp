@@ -50,7 +50,8 @@ Widget::Widget(const unsigned int card, bool visible)
           << card << " (" << visible << ')');
    Check1(deck);
 
-   img.set(isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground());
+   img.set_can_shrink(false);
+   img.set_pixbuf(isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground());
    img.set_halign(Gtk::Align::START);
    img.set_valign(Gtk::Align::START);
    img.show();
@@ -68,7 +69,8 @@ Widget::Widget(const Widget& other)
    TRACE3("Widget::Widget(const Widget&) - " << nrCard << "(" << isVisible << ')');
    Check1(deck);
 
-   img.set(isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground());
+   img.set_can_shrink(false);
+   img.set_pixbuf(isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground());
    img.set_halign(Gtk::Align::START);
    img.set_valign(Gtk::Align::START);
    img.show();
@@ -135,7 +137,7 @@ char Widget::strColour(Widget::COLOURS col) {
 void Widget::update() {
    TRACE3("Widget::update() - Card " << nrCard);
 
-   img.set (isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground ());
+   img.set_pixbuf (isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground ());
    // Glib::RefPtr<Gdk::Pixbuf> current(getShownImage());
    // Glib::RefPtr<Gdk::Pixbuf> pic(isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground());
    // TRACE1("Update" << (pic != current));
@@ -198,7 +200,7 @@ void Widget::mark() {
    Glib::RefPtr<Gdk::Pixbuf> dest(pic->copy());
 
    pic->saturate_and_pixelate(dest, 0.5, true);
-   img.set(dest);
+   img.set_pixbuf(dest);
 }
 
 //-----------------------------------------------------------------------------
@@ -227,7 +229,7 @@ void Widget::set_size_request(int width, int height) {
                                                                 width < 0 ? pic->get_width() : width,
                                                                 height < 0 ? pic->get_height() : height));
 
-   img.set(dest);
+   img.set_pixbuf(dest);
    Gtk::Box::set_size_request(width, height);
 }
 

@@ -92,7 +92,7 @@ Game::Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset,
 
    set_hexpand(); set_vexpand();
    set_margin(5);
-   parent.append(*this);
+   insert_before(parent, statusbar);
 
    stati.pendingTurn = stati.restart = 0;
 }

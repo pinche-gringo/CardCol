@@ -22,7 +22,7 @@
 #include <gdkmm/pixbuf.h>
 
 #include <gtkmm/box.h>
-#include <gtkmm/image.h>
+#include <gtkmm/picture.h>
 #include <gtkmm/gestureclick.h>
 
 #include <card/Images.h>
@@ -98,7 +98,7 @@ class Widget: public Gtk::Box {
 
    sigc::signal<void()> clicked_;
    sigc::signal<void(double, double)> rightClicked_;
-   Gtk::Image img;
+   Gtk::Picture img;
 
    Glib::RefPtr<Gtk::GestureClick> leftClick;
    Glib::RefPtr<Gtk::GestureClick> rightClick;

@@ -21,11 +21,14 @@
 
 #include <string>
 
+#include <gdkmm/texture.h>
+
 #include <gtkmm/box.h>
 #include <gtkmm/label.h>
-#include <gtkmm/image.h>
+#include <gtkmm/picture.h>
 #include <gtkmm/iconview.h>
 #include <gtkmm/liststore.h>
+#include <gtkmm/cellrendererpixbuf.h>
 
 #include <XGP/XDialog.h>
 
@@ -46,11 +49,13 @@ class DeckSelectDlg : public XGP::XDialog {
     */
    class DeckColumns : public Gtk::TreeModel::ColumnRecord {
     public:
-      DeckColumns(): path(), name(), icon() { add(path); add(name); add(icon); }
+      DeckColumns(): path(), name(), icon(), texture() {
+         add(path); add(name); add(icon); add(texture); }
 
       Gtk::TreeModelColumn<std::string> path;
       Gtk::TreeModelColumn<Glib::ustring> name;
       Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > icon;
+      Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Texture> > texture;
    };
 
  public:
@@ -98,13 +103,15 @@ class DeckSelectDlg : public XGP::XDialog {
 
    Card::HBox    boxDecks;
    Gtk::Label    txtDecks;
-   Gtk::Image    selDeck;
+   Gtk::Picture  selDeck;
    Gtk::IconView decks;
+   Gtk::CellRendererPixbuf rendererDecks;
 
-   Gtk::Image    selBack;
+   Gtk::Picture  selBack;
    Card::HBox    boxBack;
    Gtk::Label    txtBack;
    Gtk::IconView backs;
+   Gtk::CellRendererPixbuf rendererBacks;
 };
 
 }

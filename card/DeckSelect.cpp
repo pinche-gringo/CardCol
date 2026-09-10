@@ -26,9 +26,11 @@
 #include <cardgames-cfg.h>
 
 #include <glibmm/fileutils.h>
+#include <glibmm/main.h>
 
 #include <gdkmm/pixbuf.h>
 
+#include <gtkmm/cssprovider.h>
 #include <gtkmm/image.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/scrolledwindow.h>
@@ -53,8 +55,8 @@ namespace Card {
 DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
    : XGP::XDialog(_("Select carddeck"), OKCANCEL),
      setDecks(), cols(), mDecks(), mBacks(), boxDecks(), txtDecks(_("Available decks")),
-     selDeck(), decks(), selBack(), boxBack(), txtBack(_("Available backgrounds")),
-     backs() {
+     selDeck(), decks(), rendererDecks(), selBack(), boxBack(), txtBack(_("Available backgrounds")),
+     backs(), rendererBacks() {
    TRACE3("DeckSelectDlg::DeckSelectDlg(2x const std::string&) - " << deck << " - " << back);
 
    Gtk::ScrolledWindow* scrl(Gtk::make_managed<Gtk::ScrolledWindow>());
@@ -65,6 +67,9 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
    scrl->set_margin(50);
 
    boxDecks.append(*scrl);
+   selDeck.set_size_request(Images::WIDTH, Images::HEIGHT);
+   selDeck.set_halign(Gtk::Align::CENTER);
+   selDeck.set_valign(Gtk::Align::CENTER);
    selDeck.set_margin(5);
    boxDecks.append(selDeck);
 
@@ -76,6 +81,9 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
    scrl->set_margin(50);
 
    boxBack.append(*scrl);
+   selBack.set_size_request(Images::WIDTH, Images::HEIGHT);
+   selBack.set_halign(Gtk::Align::CENTER);
+   selBack.set_valign(Gtk::Align::CENTER);
    selBack.set_margin(5);
    boxBack.append(selBack);
 
@@ -137,6 +145,7 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
 	 Gtk::TreeRow row(*iRow);
 	 row[cols.path] = pathDecks + dir->name();
 	 row[cols.icon] = actImg;
+	 row[cols.texture] = Gdk::Texture::create_for_pixbuf(actImg);
 
 	 TRACE9("DeckSelectDlg::DeckSelectDlg(2x const std::string&) - Comparing "
 		 << (pathDecks + dir->name()) << " with " << back);
@@ -154,6 +163,7 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
       Gtk::TreeRow row(*iRow);
       row[cols.path] = CARDPICS_DIR "78.png";
       row[cols.icon] = actImg;
+      row[cols.texture] = Gdk::Texture::create_for_pixbuf(actImg);
 
       TRACE9("DeckSelectDlg::DeckSelectDlg(2x const std::string&) - Comparing "
              << CARDPICS_DIR "78.png" << " with " << deck);
@@ -179,6 +189,7 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
 	 row[cols.name] = file.substr(strlen(GNOMECARDS_DIR), file.rfind('.') - strlen(GNOMECARDS_DIR));
 	 Glib::RefPtr<Gdk::Pixbuf> dest(Gdk::Pixbuf::create_subpixbuf(actImg, widthImg * 11, heightImg * 2, widthImg, heightImg));
 	 row[cols.icon] = dest->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
+	 row[cols.texture] = Gdk::Texture::create_for_pixbuf(row[cols.icon]);
 
 	 TRACE9("DeckSelectDlg::DeckSelectDlg(2x const std::string&) - Comparing "
                 << (std::string(GNOMECARDS_DIR) + gfile->name()) << " with " << deck);
@@ -190,6 +201,7 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
 	 row[cols.path] = file;
 	 dest = Gdk::Pixbuf::create_subpixbuf(actImg, widthImg << 1, heightImg << 2, widthImg, heightImg);
 	 row[cols.icon] = dest->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
+	 row[cols.texture] = Gdk::Texture::create_for_pixbuf(row[cols.icon]);
 
 	 TRACE9("DeckSelectDlg::DeckSelectDlg(2x const std::string&) - Comparing "
 		 << (std::string(GNOMECARDS_DIR) + gfile->name()) << " with " << back);
@@ -210,9 +222,22 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
    else
       ok->set_sensitive(false);
 
-   decks.set_pixbuf_column(cols.icon);
+   // Remark: Not using set_pixbuf_column(), as GtkCellRendererPixbuf only
+   // sizes correctly by the image's real dimensions when bound to a texture
+   decks.pack_start(rendererDecks);
+   decks.add_attribute(rendererDecks, "texture", cols.texture);
    decks.set_text_column(cols.name);
-   backs.set_pixbuf_column(cols.icon);
+
+   backs.pack_start(rendererBacks);
+   backs.add_attribute(rendererBacks, "texture", cols.texture);
+
+   // Remark: GtkCellRendererPixbuf measures a cell using the image's real
+   // size, but *draws* it clamped to the CSS -gtk-icon-size (16px default);
+   // raise that ceiling so the actual image fills the (correctly-sized) cell
+   Glib::RefPtr<Gtk::CssProvider> cssIconSize(Gtk::CssProvider::create());
+   cssIconSize->load_from_string("iconview { -gtk-icon-size: 999px; }");
+   decks.get_style_context()->add_provider(cssIconSize, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+   backs.get_style_context()->add_provider(cssIconSize, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
    show();
 }
@@ -268,6 +293,7 @@ void DeckSelectDlg::addFile(const std::string& path, const std::string& name,
       Gtk::TreeModel::iterator iRow(mDecks->append());
       Gtk::TreeRow row(*iRow);
       row[cols.icon] = actImg;
+      row[cols.texture] = Gdk::Texture::create_for_pixbuf(actImg);
       row[cols.path] = path;
       row[cols.name] = display;
 
@@ -355,7 +381,7 @@ void DeckSelectDlg::deckSelected() {
       Gtk::TreeRow row(*mDecks->get_iter(path));
       Glib::RefPtr<Gdk::Pixbuf> img(row[cols.icon]);
 
-      selDeck.set(img);
+      selDeck.set_pixbuf(img);
    }
 }
 
@@ -370,7 +396,7 @@ void DeckSelectDlg::backSelected() {
       Gtk::TreeRow row(*mBacks->get_iter(path));
       Glib::RefPtr<Gdk::Pixbuf> img(row[cols.icon]);
 
-      selBack.set(img);
+      selBack.set_pixbuf(img);
    }
 }
 
