@@ -29,14 +29,15 @@
 #include <cardgames-cfg.h>
 
 #include <gtkmm/box.h>
+#include <gtkmm/grid.h>
 #include <gtkmm/label.h>
-#include <gtkmm/table.h>
 #include <gtkmm/notebook.h>
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/MetaEnum.h>
 
+#include <card/Pile.h>
 #include <card/Images.h>
 #include <card/ComputerPlayer.h>
 
@@ -109,75 +110,88 @@ Settings::Settings (Options& options)
 
    set_title (_("Preferences"));
 
-   Gtk::Notebook& nb (*manage (new Gtk::Notebook));
-   Gtk::Table& pagGeneral (*manage (new Gtk::Table (3, 2)));
+   Gtk::Notebook& nb (*Gtk::make_managed<Gtk::Notebook> ());
+   Gtk::Grid& pagGeneral (*Gtk::make_managed<Gtk::Grid> ());
+   pagGeneral.set_row_spacing (3); pagGeneral.set_column_spacing (5);
 
-   Gtk::Label* lbl (manage (new Gtk::Label (_("_Delay of computer player (ms):"), true)));
+   Gtk::Label* lbl (Gtk::make_managed<Gtk::Label> (_("_Delay of computer player (ms):"), true));
    lbl->set_mnemonic_widget (timeout);
-   pagGeneral.attach (*lbl,    0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5, 3);
-   pagGeneral.attach (timeout, 1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
+   pagGeneral.attach (*lbl,    0, 0);
+   timeout.set_hexpand ();
+   pagGeneral.attach (timeout, 1, 0);
 
-   lbl = manage (new Gtk::Label (_("D_efault game:"), true));
+   lbl = Gtk::make_managed<Gtk::Label> (_("D_efault game:"), true);
    lbl->set_mnemonic_widget (gameType);
-   pagGeneral.attach (*lbl,     0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5, 3);
-   pagGeneral.attach (gameType, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
+   pagGeneral.attach (*lbl,     0, 1);
+   gameType.set_hexpand ();
+   pagGeneral.attach (gameType, 1, 1);
 
    gameType.set_active_text (GameTypes::get ()[options.type]);
    nb.append_page (pagGeneral, _("_General"), true);
 
-   lbl = manage (new Gtk::Label (_("C_ard size:"), true));
+   lbl = Gtk::make_managed<Gtk::Label> (_("C_ard size:"), true);
    lbl->set_mnemonic_widget (cardSize);
-   pagGeneral.attach (*lbl,     0, 1, 2, 3, Gtk::FILL, Gtk::FILL, 5, 3);
-   pagGeneral.attach (cardSize, 1, 2, 2, 3, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
+   pagGeneral.attach (*lbl,     0, 2);
+   cardSize.set_hexpand ();
+   pagGeneral.attach (cardSize, 1, 2);
 
    cardSize.set_active_text (CardSizes::get ()[CardSizes::getSize (Card::Images::WIDTH, Card::Images::HEIGHT)]);
 
 #ifdef WITH_BURACO
-   Gtk::Table& pagBuraco (*manage (new Gtk::Table (2, 2)));
-   lbl = manage (new Gtk::Label (_("_Points to end game:"), true));
+   Gtk::Grid& pagBuraco (*Gtk::make_managed<Gtk::Grid> ());
+   pagBuraco.set_row_spacing (3); pagBuraco.set_column_spacing (5);
+   lbl = Gtk::make_managed<Gtk::Label> (_("_Points to end game:"), true);
    lbl->set_mnemonic_widget (maxBuracoPoints);
-   pagBuraco.attach (*lbl,            0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5, 3);
-   pagBuraco.attach (maxBuracoPoints, 1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
+   pagBuraco.attach (*lbl,            0, 0);
+   maxBuracoPoints.set_hexpand ();
+   pagBuraco.attach (maxBuracoPoints, 1, 0);
 
-   lbl = manage (new Gtk::Label (_("_Number of cards:"), true));
+   lbl = Gtk::make_managed<Gtk::Label> (_("_Number of cards:"), true);
    lbl->set_mnemonic_widget (cardNuke);
-   pagBuraco.attach (*lbl,           0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5, 3);
-   pagBuraco.attach (numBuracoCards, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
+   pagBuraco.attach (*lbl,           0, 1);
+   numBuracoCards.set_hexpand ();
+   pagBuraco.attach (numBuracoCards, 1, 1);
    numBuracoCards.set_active_text (BuracoCards::get ()[Buraco::CARDS2DEAL]);
 
    nb.append_page (pagBuraco, _("_Buraco"), true);
 #endif
 
 #ifdef WITH_HEARTS
-   Gtk::Box& pagHearts (*manage (new Gtk::HBox));
-   lbl = manage (new Gtk::Label (_("_Points to end game:"), true));
+   Gtk::Box& pagHearts (*Gtk::make_managed<Card::HBox> ());
+   lbl = Gtk::make_managed<Gtk::Label> (_("_Points to end game:"), true);
    lbl->set_mnemonic_widget (maxHeartsPoints);
-   pagHearts.pack_start (*lbl, Gtk::PACK_SHRINK, 5);
-   pagHearts.pack_start (maxHeartsPoints, Gtk::PACK_EXPAND_WIDGET, 5);
+   lbl->set_margin (5);
+   pagHearts.append (*lbl);
+   maxHeartsPoints.set_hexpand (); maxHeartsPoints.set_margin (5);
+   pagHearts.append (maxHeartsPoints);
 
    nb.append_page (pagHearts, _("_Hearts"), true);
 #endif
 
 #ifdef WITH_ROVHULT
-   Gtk::Table& pagRovhult (*manage (new Gtk::Table (3, 2)));
-   lbl = manage (new Gtk::Label (_("_Nuke card (default 10):"), true));
+   Gtk::Grid& pagRovhult (*Gtk::make_managed<Gtk::Grid> ());
+   pagRovhult.set_row_spacing (3); pagRovhult.set_column_spacing (5);
+   lbl = Gtk::make_managed<Gtk::Label> (_("_Nuke card (default 10):"), true);
    lbl->set_mnemonic_widget (cardNuke);
-   pagRovhult.attach (*lbl,        0, 1, 0, 1, Gtk::FILL, Gtk::FILL, 5, 3);
-   pagRovhult.attach (cardNuke,    1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
+   pagRovhult.attach (*lbl,        0, 0);
+   cardNuke.set_hexpand ();
+   pagRovhult.attach (cardNuke,    1, 0);
    cardNuke.set_active_text (CardValue::get ()[Rovhult::cardNuke]);
    cardNuke.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 0));
 
-   lbl = manage (new Gtk::Label (_("Re_verse card (default 7):"), true));
+   lbl = Gtk::make_managed<Gtk::Label> (_("Re_verse card (default 7):"), true);
    lbl->set_mnemonic_widget (cardReverse);
-   pagRovhult.attach (*lbl,        0, 1, 1, 2, Gtk::FILL, Gtk::FILL, 5, 3);
-   pagRovhult.attach (cardReverse, 1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
+   pagRovhult.attach (*lbl,        0, 1);
+   cardReverse.set_hexpand ();
+   pagRovhult.attach (cardReverse, 1, 1);
    cardReverse.set_active_text (CardValue::get ()[Rovhult::cardReverse]);
    cardReverse.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 1));
 
-   lbl = manage (new Gtk::Label (_("_Skip card (default 8):"), true));
+   lbl = Gtk::make_managed<Gtk::Label> (_("_Skip card (default 8):"), true);
    lbl->set_mnemonic_widget (cardSkip);
-   pagRovhult.attach (*lbl,        0, 1, 2, 3, Gtk::FILL, Gtk::FILL, 5, 3);
-   pagRovhult.attach (cardSkip,    1, 2, 2, 3, Gtk::FILL | Gtk::EXPAND, Gtk::FILL, 5, 3);
+   pagRovhult.attach (*lbl,        0, 2);
+   cardSkip.set_hexpand ();
+   pagRovhult.attach (cardSkip,    1, 2);
    cardSkip.set_active_text (CardValue::get ()[Rovhult::cardSkip]);
    cardSkip.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 2));
 
@@ -185,11 +199,13 @@ Settings::Settings (Options& options)
 #endif
 
 #ifdef WITH_SGTMAYOR
-   Gtk::Box& pagSgtMayor (*manage (new Gtk::HBox));
-   lbl = manage (new Gtk::Label (_("_Tricks to win game:"), true));
+   Gtk::Box& pagSgtMayor (*Gtk::make_managed<Card::HBox> ());
+   lbl = Gtk::make_managed<Gtk::Label> (_("_Tricks to win game:"), true);
    lbl->set_mnemonic_widget (tricksSgtMayor);
-   pagSgtMayor.pack_start (*lbl, Gtk::PACK_SHRINK, 5);
-   pagSgtMayor.pack_start (tricksSgtMayor, Gtk::PACK_EXPAND_WIDGET, 5);
+   lbl->set_margin (5);
+   pagSgtMayor.append (*lbl);
+   tricksSgtMayor.set_hexpand (); tricksSgtMayor.set_margin (5);
+   pagSgtMayor.append (tricksSgtMayor);
 
    nb.append_page (pagSgtMayor, _("Sgt. _Mayor"), true);
 #endif
@@ -198,8 +214,8 @@ Settings::Settings (Options& options)
    nb.set_show_tabs (0);
 #endif
 
-   get_vbox ()->pack_start (nb, true, true, 5);
-   show_all_children ();
+   nb.set_hexpand (); nb.set_vexpand (); nb.set_margin (5);
+   get_content_area ()->append (nb);
    show ();
 }
 
@@ -248,11 +264,10 @@ void Settings::okEvent () {
 /// \param parent Parent window
 /// \returns Settings* Pointer to the created window
 //-----------------------------------------------------------------------------
-Settings* Settings::create (const Glib::RefPtr<Gdk::Window>& parent,
-			    Options& options) {
+Settings* Settings::create (Gtk::Window& parent, Options& options) {
    if (instance == NULL) {
       instance = new Settings (options); Check3 (instance);
-      instance->get_window ()->set_transient_for (parent);
+      instance->set_transient_for (parent);
       instance->signal_response ().connect (mem_fun (*instance, &Settings::free));
    }
    else
@@ -262,7 +277,7 @@ Settings* Settings::create (const Glib::RefPtr<Gdk::Window>& parent,
 
 #ifdef WITH_ROVHULT
 //-----------------------------------------------------------------------------
-/// Callback when a value of the Røvhult-settings have been changed
+/// Callback when a value of the Rï¿½vhult-settings have been changed
 /// \param which ID of changed control
 //-----------------------------------------------------------------------------
 void Settings::chgValueRovhult (unsigned int which) {

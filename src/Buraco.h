@@ -35,6 +35,17 @@
 
 namespace Gtk {
    class ScrolledWindow;
+   class DragSource;
+   class DropTarget;
+}
+namespace Gdk {
+   class ContentProvider;
+}
+namespace Gio {
+   class SimpleAction;
+}
+namespace Glib {
+   class ValueBase;
 }
 
 namespace Card {
@@ -58,8 +69,10 @@ class Buraco: public Card::Game {
    virtual void clean();
    virtual const char* name() { return "Buraco"; }
    virtual void playOpen(bool);
-   virtual void addMenus(Glib::RefPtr<Gtk::UIManager> mgrUI);
-   virtual void removeMenus(Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu,
+                         const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+   virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu,
+                            const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
 
    virtual void changeNames(const std::vector<Card::Player*>& newPlayer);
    virtual void resizeCards();
@@ -144,12 +157,9 @@ class Buraco: public Card::Game {
    void registerHandDND(unsigned int start, unsigned int end);
    void registerHandDND(unsigned int iCard);
    void unregisterHandDND(Card::Widget& card);
-   void getDropData(const Glib::RefPtr<Gdk::DragContext>& pContext, Gtk::SelectionData& data, guint info,
-                    guint32 time, unsigned int cardPos);
-   void cardDropped(const Glib::RefPtr<Gdk::DragContext>& pContext, gint, gint,
-                    const Gtk::SelectionData& data, guint info, guint32 time, unsigned int card);
-   void cardDroppedOnTable(const Glib::RefPtr<Gdk::DragContext>& pContext, gint, gint,
-                           const Gtk::SelectionData& pData, guint, guint32 time, unsigned int cardPile);
+   Glib::RefPtr<Gdk::ContentProvider> prepareHandDrag(double x, double y, unsigned int cardPos);
+   bool cardDropped(const Glib::ValueBase& value, double x, double y, unsigned int card);
+   bool cardDroppedOnTable(const Glib::ValueBase& value, double x, double y, unsigned int cardPile);
 
    Gtk::Label names[NUM_PLAYERS];                        // Names of the player
    Card::HPile hands[NUM_PLAYERS];            // For all players: Cards in hand
@@ -164,7 +174,7 @@ class Buraco: public Card::Game {
    unsigned int startPlayer;
 
    Gtk::Label info;
-   Gtk::HBox  boxTeam[NUM_PLAYERS >> 1];
+   Card::HBox boxTeam[NUM_PLAYERS >> 1];
 
    Gtk::Label       newPile;
    Card::VInfoPile  staple;
@@ -173,13 +183,11 @@ class Buraco: public Card::Game {
    sigc::connection stapleTop;
 
    typedef struct {
-      sigc::connection connReceive;
-      sigc::connection connGet;
+      Glib::RefPtr<Gtk::DragSource> drag;
+      Glib::RefPtr<Gtk::DropTarget> drop;
    } CONNECTIONS;
    std::map<Card::Widget*, CONNECTIONS> aDNDHand;
-   std::map<Card::Widget*, sigc::connection> aDNDTable;
-
-   static std::vector<Gtk::TargetEntry> dndType;
+   std::map<Card::Widget*, Glib::RefPtr<Gtk::DropTarget> > aDNDTable;
 
    struct {
       unsigned int startGame : 1;
@@ -207,11 +215,11 @@ class Buraco: public Card::Game {
 
    Card::ScoreDlg* pScoreDlg;
 
-   Gtk::UIManager::ui_merge_id idMrg;
-   Glib::RefPtr<Gtk::Action> menuUndo;
-   Glib::RefPtr<Gtk::Action> menuSort;
-   Glib::RefPtr<Gtk::Action> menuSort2;
-   Glib::RefPtr<Gtk::Action> menuShowScoreDlg;
+   int idxMenu;
+   Glib::RefPtr<Gio::SimpleAction> menuUndo;
+   Glib::RefPtr<Gio::SimpleAction> menuSort;
+   Glib::RefPtr<Gio::SimpleAction> menuSort2;
+   Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
    unsigned int target;               ///< Id identifying the target to play to
 

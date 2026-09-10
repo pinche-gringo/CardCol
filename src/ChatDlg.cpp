@@ -44,41 +44,41 @@
 /// Constructor
 //-----------------------------------------------------------------------------
 ChatDlg::ChatDlg ()
-   : XGP::XDialog (CANCEL), txtMsg (new Gtk::Entry), tvMsgs (new Gtk::TextView),
+   : XGP::XDialog (CANCEL), txtMsg (Gtk::make_managed<Gtk::Entry> ()),
+     tvMsgs (Gtk::make_managed<Gtk::TextView> ()),
      msgs (Gtk::TextBuffer::create ()) {
    TRACE9 ("ChatDlg::ChatDlg ()");
    set_title (_("Chat"));
 
-   Gtk::ScrolledWindow& scrlMsgs (*new Gtk::ScrolledWindow);
-   scrlMsgs.set_shadow_type (Gtk::SHADOW_ETCHED_IN);
-   scrlMsgs.add (*manage (tvMsgs));
-   scrlMsgs.set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+   Gtk::ScrolledWindow& scrlMsgs (*Gtk::make_managed<Gtk::ScrolledWindow> ());
+   scrlMsgs.set_has_frame (true);
+   scrlMsgs.set_child (*tvMsgs);
+   scrlMsgs.set_policy (Gtk::PolicyType::AUTOMATIC, Gtk::PolicyType::AUTOMATIC);
 
    tvMsgs->set_editable (false);
-   tvMsgs->set_wrap_mode (Gtk::WRAP_WORD);
+   tvMsgs->set_wrap_mode (Gtk::WrapMode::WORD);
    tvMsgs->set_buffer (msgs);
 
    txtMsg->set_activates_default ();
 
-   Check2 (get_vbox ());
-   get_vbox ()->pack_start (*manage (&scrlMsgs), Gtk::PACK_EXPAND_WIDGET, 5);
-   get_vbox ()->pack_start (*manage (txtMsg), Gtk::PACK_SHRINK, 5);
+   Check2 (get_content_area ());
+   scrlMsgs.set_hexpand (); scrlMsgs.set_vexpand (); scrlMsgs.set_margin (5);
+   get_content_area ()->append (scrlMsgs);
+   txtMsg->set_margin (5);
+   get_content_area ()->append (*txtMsg);
 
-   Check2 (get_action_area ());
-   Gtk::Button& send (*manage (new Gtk::Button (_("_Send"), true)));
-   get_action_area ()->pack_start (send, Gtk::PACK_SHRINK, 5);
-   send.set_flags (Gtk::CAN_DEFAULT);
-   send.grab_default ();
+   Gtk::Button& send (*Gtk::make_managed<Gtk::Button> (_("_Send"), true));
+   send.set_margin (5);
+   get_content_area ()->append (send);
    send.signal_clicked ().connect (mem_fun (*this, &ChatDlg::sendMessage));
 
+   set_default_widget (send);
    txtMsg->grab_focus ();
-   send.grab_default ();
 
    tagSender = msgs->create_tag ("Sender");
    tagSender->property_foreground () = "blue";
 
    set_default_size (300, 150);
-   show_all_children ();
    show ();
 }
 

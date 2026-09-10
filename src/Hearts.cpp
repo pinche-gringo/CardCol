@@ -32,10 +32,13 @@
 
 #include <glibmm/main.h>
 
-#include <gtkmm/menu.h>
-#include <gtkmm/stock.h>
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
+
+#include <giomm/menu.h>
+#include <giomm/simpleactiongroup.h>
+
+#include <XGP/XDialog.h>
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -71,7 +74,7 @@ Hearts::Hearts(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
    : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 18, 12),
      playedSQ(false), player2Exchange(3),
      played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE),
-     pScoreDlg(NULL), idMrg(), menuSort(), menuSort2(), menuShowScoreDlg()
+     pScoreDlg(NULL), menuSort(), menuSort2(), menuShowScoreDlg()
  {
    TRACE9("Hearts::Hearts(Box&, Statusbar&, Card::Set&, ...");
    Card::HPile* hand0(new Card::HPile); players[0].hand = hand0;
@@ -84,23 +87,23 @@ Hearts::Hearts(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
    Card::VPile* hand3(new Card::VPile); players[3].hand = hand3;
    Card::VPile* won3(new Card::VPile); players[3].won = won3;
 
-   attach(*won0, COLS_PLAYER[0], COLS_PLAYER[0] + 3, ROWS_PLAYER[0] + 4, ROWS_PLAYER[0] + 5, Gtk::EXPAND);
-   attach(*hand0, COLS_PLAYER[0], COLS_PLAYER[0] + 3, ROWS_PLAYER[0], ROWS_PLAYER[0] + 1, Gtk::EXPAND);
+   attach(*won0, COLS_PLAYER[0], ROWS_PLAYER[0] + 4, 3, 1);
+   attach(*hand0, COLS_PLAYER[0], ROWS_PLAYER[0], 3, 1);
 
-   attach(*won1, COLS_PLAYER[1] + 2, COLS_PLAYER[1] + 3, ROWS_PLAYER[1], ROWS_PLAYER[1] + 1, Gtk::EXPAND);
-   attach(*hand1, COLS_PLAYER[1], COLS_PLAYER[1] + 1, ROWS_PLAYER[1], ROWS_PLAYER[1] + 1, Gtk::EXPAND);
+   attach(*won1, COLS_PLAYER[1] + 2, ROWS_PLAYER[1], 1, 1);
+   attach(*hand1, COLS_PLAYER[1], ROWS_PLAYER[1], 1, 1);
 
-   attach(*won2, COLS_PLAYER[2], COLS_PLAYER[2] + 3, ROWS_PLAYER[2] - 2, ROWS_PLAYER[2] - 1, Gtk::EXPAND);
-   attach(*hand2, COLS_PLAYER[2], COLS_PLAYER[2] + 3, ROWS_PLAYER[2], ROWS_PLAYER[2] + 1, Gtk::EXPAND);
+   attach(*won2, COLS_PLAYER[2], ROWS_PLAYER[2] - 2, 3, 1);
+   attach(*hand2, COLS_PLAYER[2], ROWS_PLAYER[2], 3, 1);
 
-   attach(*won3, COLS_PLAYER[3] - 2, COLS_PLAYER[3] - 1, ROWS_PLAYER[3], ROWS_PLAYER[3] + 1, Gtk::EXPAND);
-   attach(*hand3, COLS_PLAYER[3], COLS_PLAYER[3] + 1, ROWS_PLAYER[3], ROWS_PLAYER[3] + 1, Gtk::EXPAND);
+   attach(*won3, COLS_PLAYER[3] - 2, ROWS_PLAYER[3], 1, 1);
+   attach(*hand3, COLS_PLAYER[3], ROWS_PLAYER[3], 1, 1);
 
    // Show and attach card-piles
    changeNames(player);
    for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
-      attach(players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] +((i & 1) ? 1 : 3),
-             ROWS_PLAYER[i] + 2, ROWS_PLAYER[i] + 3, Gtk::EXPAND, Gtk::EXPAND, 1);
+      players[i].name.set_margin(1);
+      attach(players[i].name, COLS_PLAYER[i], ROWS_PLAYER[i] + 2, (i & 1) ? 1 : 3, 1);
 
       players[i].won->setShowOption(Card::IPile::SHOWBACK);
       players[i].hand->setShowOption(i ? Card::IPile::SHOWBACK : Card::IPile::SHOWFACE);
@@ -111,10 +114,10 @@ Hearts::Hearts(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
 
    // Show played area
    played.setStyle(Card::IPile::COMPRESSED);
-   attach(played, 6, 7, 7, 8, Gtk::SHRINK, Gtk::SHRINK, 5);
+   played.set_margin(5);
+   attach(played, 6, 7, 1, 1);
 
    resizeCards();
-   show_all();
 }
 
 //-----------------------------------------------------------------------------
@@ -178,8 +181,8 @@ void Hearts::takeWonCards(unsigned int player) {
 
       if (!player) {
 	 enableWonCards(*players[0].won);
-	 menuSort->set_sensitive();
-	 menuSort2->set_sensitive();
+	 menuSort->set_enabled();
+	 menuSort2->set_enabled();
       }
    }
 }
@@ -211,7 +214,7 @@ void Hearts::start() {
          int points;
          pScoreDlg->getMaxPoints(points, player);
          if ((unsigned int)points >= ENDPOINTS) {
-	    menuShowScoreDlg->set_sensitive(false);
+	    menuShowScoreDlg->set_enabled(false);
 	    delete pScoreDlg;
 	    pScoreDlg = NULL;
          }
@@ -246,8 +249,8 @@ void Hearts::clean() {
    played.clear();
    Game::clean();
 
-   menuSort->set_sensitive(false);
-   menuSort2->set_sensitive(false);
+   menuSort->set_enabled(false);
+   menuSort2->set_enabled(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -448,8 +451,10 @@ unsigned int Hearts::calcNextPlayer(unsigned int player) {
       setGameStatus(STOPPED);
       if (!pScoreDlg) {
          pScoreDlg = Card::ScoreDlg::create(actPlayers);
-         pScoreDlg->get_window()->set_transient_for(get_window());
-	 menuShowScoreDlg->set_sensitive();
+         Gtk::Window* win(dynamic_cast<Gtk::Window*>(get_root()));
+         if (win)
+            pScoreDlg->set_transient_for(*win);
+	 menuShowScoreDlg->set_enabled();
       }
 
       int aScore[NUM_PLAYERS];
@@ -540,9 +545,9 @@ bool Hearts::moveSelectedCardToPlayed(unsigned int player, unsigned int card) {
 	 }
       }
       catch (Glib::ustring& error) {
-	 Gtk::MessageDialog dlg(error, Gtk::MESSAGE_ERROR);
+	 Gtk::MessageDialog dlg(error, false, Gtk::MessageType::ERROR);
 	 dlg.set_title(_("Hearts"));
-	 dlg.run();
+	 XGP::runModal(dlg);
 	 return false;
       }
 
@@ -1033,44 +1038,44 @@ bool Hearts::cardsExchanged(unsigned int cards) {
 
 //-----------------------------------------------------------------------------
 /// Adds game-specific menus
-/// \param mgrUI UIManager to add to
+/// \param menu Menu to add game-specific entries to
+/// \param actions Action group to add game-specific actions to
 //-----------------------------------------------------------------------------
-void Hearts::addMenus(Glib::RefPtr<Gtk::UIManager> mgrUI) {
-   Check1(mgrUI);
-   Glib::ustring ui("<menubar name='Menu'>"
-                    "  <placeholder name='GameMenu'>"
-                    "    <menu action='MB'>"
-                    "      <menuitem action='HeartSort'/>"
-                    "      <menuitem action='HeartSortCol'/>"
-                    "      <separator/>"
-                    "      <menuitem action='showScoreDlg'/>"
-                    "    </menu></placeholder></menubar>");
+void Hearts::addMenus(const Glib::RefPtr<Gio::Menu>& menu,
+                      const Glib::RefPtr<Gio::SimpleActionGroup>& actions) {
+   Check1(menu); Check1(actions);
 
-   Glib::RefPtr<Gtk::ActionGroup> grpAction(Gtk::ActionGroup::create());
-   grpAction->add(Gtk::Action::create("MB", _("H_earts")));
-   grpAction->add(menuSort=Gtk::Action::create("HeartSort", Gtk::Stock::SORT_ASCENDING,
-                                               _("_Sort won cards (by number)")),
-                  Gtk::AccelKey("<shft>S"), mem_fun(*this, &Hearts::sortWonByNumber));
-   grpAction->add(menuSort2=Gtk::Action::create("HeartSortCol", Gtk::Stock::SORT_ASCENDING,
-                                                _("Sort won cards (by _colour)")),
-                  Gtk::AccelKey("S"), mem_fun(*this, &Hearts::sortWonByColour));
-   grpAction->add(menuShowScoreDlg=Gtk::Action::create("showScoreDlg", Gtk::Stock::EDIT,
-                                                       _("Show score dialog")),
-                  Gtk::AccelKey("<shft><ctl>S"), bind(ptr_fun(&Card::ScoreDlg::display), &pScoreDlg));
+   Glib::RefPtr<Gio::Menu> sub(Gio::Menu::create());
 
-   mgrUI->insert_action_group(grpAction);
-   idMrg = mgrUI->add_ui_from_string(ui);
+   menuSort = actions->add_action("HeartSort", mem_fun(*this, &Hearts::sortWonByNumber));
+   sub->append(_("_Sort won cards (by number)"), "game.HeartSort");
 
-   menuShowScoreDlg->set_sensitive(false);
+   menuSort2 = actions->add_action("HeartSortCol", mem_fun(*this, &Hearts::sortWonByColour));
+   sub->append(_("Sort won cards (by _colour)"), "game.HeartSortCol");
+
+   Glib::RefPtr<Gio::Menu> sec(Gio::Menu::create());
+   menuShowScoreDlg = actions->add_action("showScoreDlg", bind(ptr_fun(&Card::ScoreDlg::display), &pScoreDlg));
+   sec->append(_("Show score dialog"), "game.showScoreDlg");
+   sub->append_section(sec);
+
+   menu->append_submenu(_("H_earts"), sub);
+
+   menuShowScoreDlg->set_enabled(false);
 }
 
 //-----------------------------------------------------------------------------
 /// Removes the game-specific menus
-/// \param mgrUI UIManager to remove from
+/// \param menu Menu to remove game-specific entries from
+/// \param actions Action group to remove game-specific actions from
 //-----------------------------------------------------------------------------
-void Hearts::removeMenus(Glib::RefPtr<Gtk::UIManager> mgrUI) {
-   Check1(mgrUI);
-   mgrUI->remove_ui(idMrg);
+void Hearts::removeMenus(const Glib::RefPtr<Gio::Menu>& menu,
+                         const Glib::RefPtr<Gio::SimpleActionGroup>& actions) {
+   Check1(menu); Check1(actions);
+
+   menu->remove(menu->get_n_items() - 1);
+   actions->remove_action("HeartSort");
+   actions->remove_action("HeartSortCol");
+   actions->remove_action("showScoreDlg");
 }
 
 //-----------------------------------------------------------------------------

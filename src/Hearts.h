@@ -30,6 +30,9 @@
 namespace Card {
    class ScoreDlg;
 }
+namespace Gio {
+   class SimpleAction;
+}
 
 
 // Class to handle the Hearts cardgame
@@ -92,8 +95,10 @@ class Hearts: public Card::Game {
 
    void startPlaying();
 
-   virtual void addMenus(Glib::RefPtr<Gtk::UIManager> mgrUI);
-   virtual void removeMenus(Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu,
+                         const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+   virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu,
+                            const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
 
    static const unsigned int NUM_PLAYERS = 4;              // Number of players
 
@@ -118,10 +123,9 @@ class Hearts: public Card::Game {
 
    Card::ScoreDlg* pScoreDlg;
 
-   Gtk::UIManager::ui_merge_id idMrg;
-   Glib::RefPtr<Gtk::Action> menuSort;
-   Glib::RefPtr<Gtk::Action> menuSort2;
-   Glib::RefPtr<Gtk::Action> menuShowScoreDlg;
+   Glib::RefPtr<Gio::SimpleAction> menuSort;
+   Glib::RefPtr<Gio::SimpleAction> menuSort2;
+   Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];

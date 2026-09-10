@@ -938,14 +938,14 @@ void IPile::getCards(unsigned int posDest, IPile& src, unsigned int start, int e
    insert(src.remove(start), posDest);
 }
 
-/// Implementation of the getCompressedSize() method for Gtk::VBox
-template <> unsigned int Pile<Gtk::VBox>::getCompressedSize(PileStyle s) {
+/// Implementation of the getCompressedSize() method for Card::VBox
+template <> unsigned int Pile<Card::VBox>::getCompressedSize(PileStyle s) {
    int height[(int)LAST] = { (int)Images::HEIGHT, 15, 7, 1 };
    return height[s];
 }
 
-/// Implementation of the getSize() method for Gtk::VBox
-template <> void Pile<Gtk::VBox>::getSize(int& width, int& height) {
+/// Implementation of the getSize() method for Card::VBox
+template <> void Pile<Card::VBox>::getSize(int& width, int& height) {
    if (size()) {
       height = Images::HEIGHT;
       width = Images::WIDTH;
@@ -956,10 +956,10 @@ template <> void Pile<Gtk::VBox>::getSize(int& width, int& height) {
       IPile::getSize(width, height);
 }
 
-/// Implementation of the resize() methods for Gtk::VBox
-template <> void Pile<Gtk::VBox>::resize(unsigned int pos, PileStyle s) {
+/// Implementation of the resize() methods for Card::VBox
+template <> void Pile<Card::VBox>::resize(unsigned int pos, PileStyle s) {
    IPile::resize(pos, s); }
-template <> void Pile<Gtk::VBox>::resize(Card::Widget& card, PileStyle s) {
+template <> void Pile<Card::VBox>::resize(Card::Widget& card, PileStyle s) {
    if (s == TOTALLY_COMPRESSED)
       card.hide();
    else {
@@ -970,13 +970,13 @@ template <> void Pile<Gtk::VBox>::resize(Card::Widget& card, PileStyle s) {
    }
 }
 
-/// Implementation of the getCompressionRate() method for Gtk::HBox
+/// Implementation of the getCompressionRate() method for Card::HBox
 template <> unsigned int HPile::getCompressedSize(PileStyle s) {
     int width[(int)LAST] = { (int)Images::WIDTH, 18, 7, 1 };
    return width[s];
 }
 
-/// Implementation of the getSize() method for Gtk::HBox
+/// Implementation of the getSize() method for Card::HBox
 template <> void HPile::getSize(int& width, int& height) {
    if (size()) {
       height = Images::HEIGHT;
@@ -988,7 +988,7 @@ template <> void HPile::getSize(int& width, int& height) {
       IPile::getSize(width, height);
 }
 
-///Implementation of the resize() methods for Gtk::HBox
+///Implementation of the resize() methods for Card::HBox
 template <> void HPile::resize(unsigned int pos, PileStyle s) {
    IPile::resize(pos, s); }
 template <> void HPile::resize(Card::Widget& card, PileStyle s) {

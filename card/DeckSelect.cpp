@@ -29,7 +29,6 @@
 
 #include <gdkmm/pixbuf.h>
 
-#include <gtkmm/stock.h>
 #include <gtkmm/image.h>
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/scrolledwindow.h>
@@ -58,27 +57,39 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
      backs() {
    TRACE3("DeckSelectDlg::DeckSelectDlg(2x const std::string&) - " << deck << " - " << back);
 
-   Gtk::ScrolledWindow* scrl(new Gtk::ScrolledWindow);
-   scrl->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
-   scrl->add(decks);
-   scrl->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+   Gtk::ScrolledWindow* scrl(Gtk::make_managed<Gtk::ScrolledWindow>());
+   scrl->set_has_frame(true);
+   scrl->set_child(decks);
+   scrl->set_policy(Gtk::PolicyType::NEVER, Gtk::PolicyType::AUTOMATIC);
+   scrl->set_hexpand(); scrl->set_vexpand();
+   scrl->set_margin(50);
 
-   boxDecks.pack_start(*manage(scrl), true, true, 50);
-   boxDecks.pack_start(selDeck, false, 5);
+   boxDecks.append(*scrl);
+   selDeck.set_margin(5);
+   boxDecks.append(selDeck);
 
-   scrl = new Gtk::ScrolledWindow;
-   scrl->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
-   scrl->add(backs);
-   scrl->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+   scrl = Gtk::make_managed<Gtk::ScrolledWindow>();
+   scrl->set_has_frame(true);
+   scrl->set_child(backs);
+   scrl->set_policy(Gtk::PolicyType::NEVER, Gtk::PolicyType::AUTOMATIC);
+   scrl->set_hexpand(); scrl->set_vexpand();
+   scrl->set_margin(50);
 
-   boxBack.pack_start(*manage(scrl), true, true, 50);
-   boxBack.pack_start(selBack, false, 5);
+   boxBack.append(*scrl);
+   selBack.set_margin(5);
+   boxBack.append(selBack);
 
-   Check3(get_vbox());
-   get_vbox()->pack_start(txtDecks, false, false, 5);
-   get_vbox()->pack_start(boxDecks, true, true, 5);
-   get_vbox()->pack_start(txtBack, false, false, 5);
-   get_vbox()->pack_start(boxBack, true, true, 5);
+   Check3(get_content_area());
+   txtDecks.set_margin(5);
+   get_content_area()->append(txtDecks);
+   boxDecks.set_hexpand(); boxDecks.set_vexpand();
+   boxDecks.set_margin(5);
+   get_content_area()->append(boxDecks);
+   txtBack.set_margin(5);
+   get_content_area()->append(txtBack);
+   boxBack.set_hexpand(); boxBack.set_vexpand();
+   boxBack.set_margin(5);
+   get_content_area()->append(boxBack);
 
    mDecks = Gtk::ListStore::create(cols);
    decks.set_model(mDecks);
@@ -122,14 +133,15 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
 				  | YGP::IDirectorySearch::FILE_READONLY));
    while (dir) {
       if ((actImg = getImage(pathDecks + dir->name()))) {
-	 Gtk::TreeRow row(*mBacks->append());
+	 Gtk::TreeModel::iterator iRow(mBacks->append());
+	 Gtk::TreeRow row(*iRow);
 	 row[cols.path] = pathDecks + dir->name();
 	 row[cols.icon] = actImg;
 
 	 TRACE9("DeckSelectDlg::DeckSelectDlg(2x const std::string&) - Comparing "
 		 << (pathDecks + dir->name()) << " with " << back);
 	 if ((pathDecks + dir->name()) == back)
-	    backs.select_path(mBacks->get_path(row));
+	    backs.select_path(mBacks->get_path(iRow));
       }
 
       dir = ds.next();
@@ -138,14 +150,15 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
 
 #ifdef CARDPICS_DIR
    if ((actImg = getImage(CARDPICS_DIR "78.png"))) {
-      Gtk::TreeRow row(*mBacks->append());
+      Gtk::TreeModel::iterator iRow(mBacks->append());
+      Gtk::TreeRow row(*iRow);
       row[cols.path] = CARDPICS_DIR "78.png";
       row[cols.icon] = actImg;
 
       TRACE9("DeckSelectDlg::DeckSelectDlg(2x const std::string&) - Comparing "
              << CARDPICS_DIR "78.png" << " with " << deck);
       if (back == CARDPICS_DIR "78.png")
-	 backs.select_path(mBacks->get_path(row));
+	 backs.select_path(mBacks->get_path(iRow));
    }
 #endif
 
@@ -153,7 +166,8 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
    YGP::DirectorySearch gs(GNOMECARDS_DIR "*");
    const YGP::File* gfile(gs.find(YGP::IDirectorySearch::FILE_NORMAL | YGP::IDirectorySearch::FILE_READONLY));
    while (gfile) {
-      Gtk::TreeRow row(*mDecks->append());
+      Gtk::TreeModel::iterator iRow(mDecks->append());
+      Gtk::TreeRow row(*iRow);
       std::string file(GNOMECARDS_DIR);
       file += gfile->name();
       actImg = getImage(file, false);
@@ -164,22 +178,23 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
 	 row[cols.path] = file;
 	 row[cols.name] = file.substr(strlen(GNOMECARDS_DIR), file.rfind('.') - strlen(GNOMECARDS_DIR));
 	 Glib::RefPtr<Gdk::Pixbuf> dest(Gdk::Pixbuf::create_subpixbuf(actImg, widthImg * 11, heightImg * 2, widthImg, heightImg));
-	 row[cols.icon] = dest->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);
+	 row[cols.icon] = dest->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
 
 	 TRACE9("DeckSelectDlg::DeckSelectDlg(2x const std::string&) - Comparing "
                 << (std::string(GNOMECARDS_DIR) + gfile->name()) << " with " << deck);
 	 if (deck == (std::string(GNOMECARDS_DIR) + gfile->name()))
-	    decks.select_path(mDecks->get_path(row));
+	    decks.select_path(mDecks->get_path(iRow));
 
-	 row = (*mBacks->append());
+	 iRow = mBacks->append();
+	 row = *iRow;
 	 row[cols.path] = file;
 	 dest = Gdk::Pixbuf::create_subpixbuf(actImg, widthImg << 1, heightImg << 2, widthImg, heightImg);
-	 row[cols.icon] = dest->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);
+	 row[cols.icon] = dest->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
 
 	 TRACE9("DeckSelectDlg::DeckSelectDlg(2x const std::string&) - Comparing "
 		 << (std::string(GNOMECARDS_DIR) + gfile->name()) << " with " << back);
 	 if (back == (std::string(GNOMECARDS_DIR) + gfile->name()))
-	    backs.select_path(mBacks->get_path(row));
+	    backs.select_path(mBacks->get_path(iRow));
       }
 
       gfile = gs.next();
@@ -190,13 +205,8 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
    backs.set_size_request((mBacks->children().size() > 3) ? 20 +(88 << 2) : 20 + 88 * mBacks->children().size(),
 			   height < 270 ? height : 270);
 
-   if (mDecks->children().size() || mBacks->children().size()) {
-      Gtk::Button& apply(*manage(new Gtk::Button(Gtk::Stock::APPLY)));
-      apply.signal_clicked().connect
-	(bind(mem_fun(*this, &DeckSelectDlg::command), Gtk::RESPONSE_APPLY));
-      get_action_area()->pack_end(apply, false, false, 5);
-      apply.show();
-   }
+   if (mDecks->children().size() || mBacks->children().size())
+      add_button(_("_Apply"), static_cast<int>(Gtk::ResponseType::APPLY));
    else
       ok->set_sensitive(false);
 
@@ -204,7 +214,7 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
    decks.set_text_column(cols.name);
    backs.set_pixbuf_column(cols.icon);
 
-   show_all();
+   show();
 }
 
 //-----------------------------------------------------------------------------
@@ -255,14 +265,15 @@ void DeckSelectDlg::addFile(const std::string& path, const std::string& name,
 
    Glib::RefPtr<Gdk::Pixbuf> actImg(getImage(path + name));
    if (actImg) {
-      Gtk::TreeRow row(*mDecks->append());
+      Gtk::TreeModel::iterator iRow(mDecks->append());
+      Gtk::TreeRow row(*iRow);
       row[cols.icon] = actImg;
       row[cols.path] = path;
       row[cols.name] = display;
 
       TRACE9("DeckSelectDlg::addFile(4x const std::string&) - Comparing " << (std::string)row[cols.path] << " with " << defaultDeck);
       if (defaultDeck == path)
-	 decks.select_path(mDecks->get_path(row));
+	 decks.select_path(mDecks->get_path(iRow));
    }
 }
 
@@ -272,7 +283,7 @@ void DeckSelectDlg::addFile(const std::string& path, const std::string& name,
 //-----------------------------------------------------------------------------
 void DeckSelectDlg::command(int action) {
    TRACE9("DeckSelectDlg::command(int) - Command: " << action);
-   if (action == Gtk::RESPONSE_APPLY) {
+   if (action == static_cast<int>(Gtk::ResponseType::APPLY)) {
       std::string deck, back;
       if (decks.get_selected_items().size()) {
 	 Gtk::TreePath path(*(decks.get_selected_items().begin()));
@@ -293,7 +304,7 @@ void DeckSelectDlg::command(int action) {
 /// Callback after selecting the OK button
 //-----------------------------------------------------------------------------
 void DeckSelectDlg::okEvent() {
-   command(Gtk::RESPONSE_APPLY);
+   command(static_cast<int>(Gtk::ResponseType::APPLY));
    XGP::XDialog::okEvent();
 }
 
@@ -311,7 +322,7 @@ Glib::RefPtr<Gdk::Pixbuf> DeckSelectDlg::getImage(const std::string& file, bool 
    try {
       imgBuf = Gdk::Pixbuf::create_from_file(file.c_str());
       if (scale &&((imgBuf->get_height() != (int)Images::WIDTH) ||(imgBuf->get_width() != (int)Images::HEIGHT)))
-	 imgBuf = imgBuf->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::INTERP_BILINEAR);
+	 imgBuf = imgBuf->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
    }
    catch(Gdk::PixbufError& e) {
       err = e.what();
@@ -326,8 +337,8 @@ Glib::RefPtr<Gdk::Pixbuf> DeckSelectDlg::getImage(const std::string& file, bool 
       std::string msg(_("Error loading image from file `%1'!\n\nReason: %2"));
       msg.replace(msg.find("%1"), 2, file);
       msg.replace(msg.find("%2"), 2, err);
-      Gtk::MessageDialog dlg(msg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dlg.run();
+      Gtk::MessageDialog dlg(msg, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
+      XGP::runModal(dlg);
    }
 
    return imgBuf;

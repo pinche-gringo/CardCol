@@ -27,7 +27,7 @@
 namespace Gtk {
    class Label;
    class Entry;
-   class Table;
+   class Grid;
 }
 
 namespace Card {
@@ -54,7 +54,7 @@ class PlayerDlg : public XGP::XDialog {
    }
 
    /// Signal emitted, when OK clicked
-   sigc::signal<void> sigCommit;
+   sigc::signal<void()> sigCommit;
 
  protected:
    virtual void okEvent ();                     ///< Callback after clicking OK
@@ -66,7 +66,7 @@ class PlayerDlg : public XGP::XDialog {
    const PlayerDlg& operator= (const PlayerDlg& other);
    //@}
 
-   Gtk::Table* pClient;
+   Gtk::Grid* pClient;
 
    typedef struct line {
       Gtk::Label* label;
@@ -75,7 +75,7 @@ class PlayerDlg : public XGP::XDialog {
       line (const Glib::ustring& label, const Glib::ustring& attribute);
       ~line ();
 
-      void attach (Gtk::Table& table, unsigned int line);
+      void attach (Gtk::Grid& table, unsigned int line);
 
     private:
       line (const line&);

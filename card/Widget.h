@@ -21,8 +21,9 @@
 
 #include <gdkmm/pixbuf.h>
 
+#include <gtkmm/box.h>
 #include <gtkmm/image.h>
-#include <gtkmm/eventbox.h>
+#include <gtkmm/gestureclick.h>
 
 #include <card/Images.h>
 
@@ -31,10 +32,10 @@ namespace Card {
 
 /**Class to display a card on the screen.
 
-  This is actually an event-box and not a button, to avoid
+  This is actually a plain box and not a button, to avoid
   side-effects caused by the theme.
  */
-class Widget: public Gtk::EventBox {
+class Widget: public Gtk::Box {
  public:
    Widget(unsigned int card, bool showFace=true);
    Widget(const Widget&);
@@ -72,7 +73,8 @@ class Widget: public Gtk::EventBox {
    friend std::ostream& operator<<(std::ostream& out, const Widget& card);
    void update ();
 
-   sigc::signal<void> signal_clicked() { return clicked_; }
+   sigc::signal<void()> signal_clicked() { return clicked_; }
+   sigc::signal<void(double, double)> signal_right_clicked() { return rightClicked_; }
 
     void mark();
     void unmark();
@@ -86,13 +88,20 @@ class Widget: public Gtk::EventBox {
 
  protected:
    virtual void on_clicked();
-   virtual bool on_button_release_event(GdkEventButton* ev);
+   virtual void on_left_released(int nPress, double x, double y);
+   virtual void on_right_released(int nPress, double x, double y);
 
  private:
-   Widget(): clicked_(), img(), isVisible(false), nrCard(0) { }
+   Widget(): clicked_(), rightClicked_(), img(), isVisible(false), nrCard(0) { initGestures(); }
 
-   sigc::signal<void> clicked_;
+   void initGestures();
+
+   sigc::signal<void()> clicked_;
+   sigc::signal<void(double, double)> rightClicked_;
    Gtk::Image img;
+
+   Glib::RefPtr<Gtk::GestureClick> leftClick;
+   Glib::RefPtr<Gtk::GestureClick> rightClick;
 
    bool isVisible;
    unsigned int nrCard;

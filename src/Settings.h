@@ -38,7 +38,7 @@
 class Options;
 
 namespace Gtk {
-   class Table;
+   class Grid;
 }
 
 
@@ -46,11 +46,11 @@ class Settings : public XGP::XDialog {
  public:
    virtual ~Settings ();
 
-   static Settings* create (const Glib::RefPtr<Gdk::Window>& parent, Options& options);
+   static Settings* create (Gtk::Window& parent, Options& options);
 
    /// Signal emitted, when OK clicked
-   sigc::signal<void> sigCommit;
-   sigc::signal<void> sigCardResize;
+   sigc::signal<void()> sigCommit;
+   sigc::signal<void()> sigCardResize;
 
  protected:
    Settings (Options& options);

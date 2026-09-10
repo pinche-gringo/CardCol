@@ -23,8 +23,6 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <gtkmm/misc.h>
-
 #include <cardgames-cfg.h>
 
 #define TRACELEVEL 1
@@ -47,18 +45,18 @@ Widget::COLOURS Widget::transColour[4] = { CLUBS, SPADES, HEARTS, DIAMONDS };
 /// \param visible Flag, if card should be displayed visible
 //-----------------------------------------------------------------------------
 Widget::Widget(const unsigned int card, bool visible)
-   : clicked_(), img(), isVisible(visible), nrCard(card) {
+   : clicked_(), rightClicked_(), img(), isVisible(visible), nrCard(card) {
    TRACE3("Widget::Widget(const Images&, unsinged int, bool) - "
           << card << " (" << visible << ')');
    Check1(deck);
 
    img.set(isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground());
-   img.set_alignment(0.0, 0.0);
+   img.set_halign(Gtk::Align::START);
+   img.set_valign(Gtk::Align::START);
    img.show();
 
-   add(img);
-   add_events(Gdk::EXPOSURE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK
-              | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
+   append(img);
+   initGestures();
 }
 
 //-----------------------------------------------------------------------------
@@ -66,18 +64,17 @@ Widget::Widget(const unsigned int card, bool visible)
 /// \param other Card to copy
 //-----------------------------------------------------------------------------
 Widget::Widget(const Widget& other)
-   : Gtk::EventBox(), clicked_(), img(), isVisible(other.isVisible), nrCard(other.nrCard) {
+   : Gtk::Box(), clicked_(), rightClicked_(), img(), isVisible(other.isVisible), nrCard(other.nrCard) {
    TRACE3("Widget::Widget(const Widget&) - " << nrCard << "(" << isVisible << ')');
    Check1(deck);
 
    img.set(isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground());
-   img.set_alignment(0.0, 0.0);
-   img.set_padding(0, 0);
+   img.set_halign(Gtk::Align::START);
+   img.set_valign(Gtk::Align::START);
    img.show();
 
-   add(img);
-   add_events(Gdk::EXPOSURE_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK
-              | Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK);
+   append(img);
+   initGestures();
 }
 
 //-----------------------------------------------------------------------------
@@ -85,6 +82,23 @@ Widget::Widget(const Widget& other)
 //-----------------------------------------------------------------------------
 Widget::~Widget() {
    TRACE9("Widget::~Widget() - " << *this);
+}
+
+//-----------------------------------------------------------------------------
+/// Installs the gesture-controllers used to detect clicks on the card
+//-----------------------------------------------------------------------------
+void Widget::initGestures() {
+   leftClick = Gtk::GestureClick::create();
+   leftClick->set_button(GDK_BUTTON_PRIMARY);
+   leftClick->signal_released().connect
+      (sigc::mem_fun(*this, &Widget::on_left_released));
+   add_controller(leftClick);
+
+   rightClick = Gtk::GestureClick::create();
+   rightClick->set_button(GDK_BUTTON_SECONDARY);
+   rightClick->signal_released().connect
+      (sigc::mem_fun(*this, &Widget::on_right_released));
+   add_controller(rightClick);
 }
 
 
@@ -141,19 +155,28 @@ void Widget::on_clicked() {
 }
 
 //-----------------------------------------------------------------------------
-/// Callback after releasing the button on a Widget
+/// Callback after releasing the left mouse button on a Widget
 //-----------------------------------------------------------------------------
-bool Widget::on_button_release_event(GdkEventButton* ev) {
-   Check1(ev);
-   TRACE9("Widget::on_button_release_event(GdkEventButton*) - " << ev->button << "; X: "
-          << ev->x << "; Y: " << ev->y << "; W: " << get_width() << "; H: " << get_height());
+void Widget::on_left_released(int, double x, double y) {
+   TRACE9("Widget::on_left_released(int, double, double) - X: " << x << "; Y: " << y
+          << "; W: " << get_width() << "; H: " << get_height());
 
-   // It button 1 is released within the image: Generate a clicked signal
-   if ((ev->button == 1) && (ev->x || ev->y) && (ev->x < get_width()) && (ev->y < get_height())) {
+   // If released within the image: Generate a clicked signal
+   if ((x || y) && (x < get_width()) && (y < get_height())) {
       clicked_.emit();
       on_clicked();
    }
-   return false;
+}
+
+//-----------------------------------------------------------------------------
+/// Callback after releasing the right mouse button on a Widget
+//-----------------------------------------------------------------------------
+void Widget::on_right_released(int, double x, double y) {
+   TRACE9("Widget::on_right_released(int, double, double) - X: " << x << "; Y: " << y
+          << "; W: " << get_width() << "; H: " << get_height());
+
+   if ((x || y) && (x < get_width()) && (y < get_height()))
+      rightClicked_.emit(x, y);
 }
 
 //-----------------------------------------------------------------------------
@@ -205,7 +228,7 @@ void Widget::set_size_request(int width, int height) {
                                                                 height < 0 ? pic->get_height() : height));
 
    img.set(dest);
-   Gtk::EventBox::set_size_request(width, height);
+   Gtk::Box::set_size_request(width, height);
 }
 
 }

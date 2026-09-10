@@ -33,17 +33,23 @@
 #include <glibmm/main.h>
 
 #include <gtkmm/box.h>
-#include <gtkmm/stock.h>
+#include <gtkmm/window.h>
 #include <gtkmm/button.h>
 #include <gtkmm/statusbar.h>
 #include <gtkmm/adjustment.h>
 #include <gtkmm/spinbutton.h>
 #include <gtkmm/messagedialog.h>
 
+#include <giomm/menu.h>
+#include <giomm/simpleaction.h>
+#include <giomm/simpleactiongroup.h>
+
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
 #include <YGP/ANumeric.h>
+
+#include <XGP/XDialog.h>
 
 #include <card/Player.h>
 #include <card/Images.h>
@@ -76,31 +82,28 @@ Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 15, 15),
      played (Card::IPile::COMPRESSED, Card::IPile::SHOWFACE),
      pTrump (NULL), startPlayer (rand () % NUM_PLAYERS), turn (0),
-     idMrg (), pScoreDlg (NULL), menuSort (), menuSort2 (), menuShowScoreDlg ()
+     idxMenu (-1), pBidValue (NULL), pBidCommit (NULL),
+     pScoreDlg (NULL), menuSort (), menuSort2 (), menuShowScoreDlg ()
  {
    TRACE9 ("Jabberwocky::Jabberwocky (Box&, Statusbar&, CardSet&, ...)");
 
    // Show and attach card-piles
    changeNames (player);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
-      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + 3,
-              ROWS_PLAYER[i] + (i ? 1 : 3),
-              ROWS_PLAYER[i] + (i ? 2 : 4),
-              Gtk::EXPAND, Gtk::EXPAND, 1);
+      players[i].name.set_hexpand (); players[i].name.set_vexpand ();
+      players[i].name.set_margin_start (1); players[i].name.set_margin_end (1);
+      attach (players[i].name, COLS_PLAYER[i], ROWS_PLAYER[i] + (i ? 1 : 3), 3, 1);
 
       TRACE9 ("Jabberwocky::Jabberwocky () - Name at: " << COLS_PLAYER[i] << '/'
               << ROWS_PLAYER[i] + ((i == 2) ? 3 : 1));
 
-      attach (players[i].won, COLS_PLAYER[i], COLS_PLAYER[i] + 2,
-              ROWS_PLAYER[i] + (i ? -2 : 2),
-              ROWS_PLAYER[i] + (i ? -1 : 3),
-              Gtk::SHRINK, Gtk::SHRINK, 1);
+      players[i].won.set_margin_start (1); players[i].won.set_margin_end (1);
+      attach (players[i].won, COLS_PLAYER[i], ROWS_PLAYER[i] + (i ? -2 : 2), 2, 1);
       TRACE9 ("Jabberwocky::Jabberwocky () - Won pile at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i] + ((i == 2) ? 2 : -2));
 
-      attach (players[i].hand, COLS_PLAYER[i],
-              COLS_PLAYER[i] + 3, ROWS_PLAYER[i],
-              ROWS_PLAYER[i] + 1, Gtk::SHRINK, Gtk::SHRINK, 1);
+      players[i].hand.set_margin_start (1); players[i].hand.set_margin_end (1);
+      attach (players[i].hand, COLS_PLAYER[i], ROWS_PLAYER[i], 3, 1);
       TRACE9 ("Jabberwocky::Jabberwocky () - Hand at: " << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
 
       players[i].won.setShowOption (Card::IPile::SHOWBACK);
@@ -108,10 +111,10 @@ Jabberwocky::Jabberwocky (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set
       players[i].hand.setStyle (i ? Card::IPile::QUITE_COMPRESSED : Card::IPile::COMPRESSED);
       players[i].won.setStyle (Card::IPile::QUITE_COMPRESSED);
    }
-   attach (played, 3, 11, 6, 9, Gtk::SHRINK, Gtk::SHRINK, 0, 5);
+   played.set_margin_top (5); played.set_margin_bottom (5);
+   attach (played, 3, 6, 8, 3);
 
    resizeCards ();
-   show_all_children ();
 }
 
 //-----------------------------------------------------------------------------
@@ -143,7 +146,8 @@ void Jabberwocky::start () {
       pos1Play = pos2Play = -1U;
 
       pTrump = &pile.removeShownTopCard ();
-      attach (*pTrump, 1, 2, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
+      pTrump->set_margin (5);
+      attach (*pTrump, 1, 2, 1, 1);
       pTrump->show ();
       TRACE8 ("Jabberwocky::start () - Trump: " << *pTrump);
 
@@ -162,7 +166,7 @@ void Jabberwocky::start () {
       memset (outOfColour, 0, sizeof (outOfColour));
 
       if (!turn && pScoreDlg) {
-	 menuShowScoreDlg->set_sensitive (false);
+	 menuShowScoreDlg->set_enabled (false);
 	 delete pScoreDlg;
 	 pScoreDlg = NULL;
       }
@@ -174,8 +178,8 @@ void Jabberwocky::start () {
       }
       pile.clear ();
 
-      menuSort->set_sensitive (false);
-      menuSort2->set_sensitive (false);
+      menuSort->set_enabled (false);
+      menuSort2->set_enabled (false);
    }
 }
 
@@ -190,16 +194,24 @@ void Jabberwocky::clean () {
    }
    played.clear ();
 
-   while (status.get_children ().size () > 1)
-      status.get_children ().erase (status.get_children ().end ());
+   // If a bid is still pending (game ended before the human committed it),
+   // remove the leftover entry widgets from the grid
+   if (pBidCommit) {
+      remove (*pBidValue);
+      remove (*pBidCommit);
+      delete pBidValue;
+      delete pBidCommit;
+      pBidValue = NULL;
+      pBidCommit = NULL;
+   }
 
    if (pTrump) {
       remove (*pTrump);
       pTrump = NULL;
    }
 
-   menuSort->set_sensitive (false);
-   menuSort2->set_sensitive (false);
+   menuSort->set_enabled (false);
+   menuSort2->set_enabled (false);
 
    Game::clean ();
 }
@@ -266,8 +278,8 @@ void Jabberwocky::takeWonCards (unsigned int player) {
 
       if (!player) {
 	 enableWonCards (players[0].won);
-	 menuSort->set_sensitive ();
-	 menuSort2->set_sensitive ();
+	 menuSort->set_enabled ();
+	 menuSort2->set_enabled ();
       }
    }
 }
@@ -322,47 +334,47 @@ Card::IPile* Jabberwocky::getPileOfPlayer (unsigned int player, unsigned int pil
 
 //-----------------------------------------------------------------------------
 /// Adds game-specific menus
-/// \param mgrUI UIManager to add to
+/// \param menu Top-level menu to add the game's submenu to
+/// \param actions Action-group ("win"-scoped) to add the game's actions to
 //-----------------------------------------------------------------------------
-void Jabberwocky::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
-   Check1 (mgrUI);
-   Glib::ustring ui ("<menubar name='Menu'>"
-		     "  <placeholder name='GameMenu'>"
-		     "    <menu action='MB'>"
-		     "      <menuitem action='JabberwockySort'/>"
-		     "      <menuitem action='JabberwockySortCol'/>"
-		     "      <separator/>"
-		     "      <menuitem action='showScoreDlg'/>"
-		     "    </menu></placeholder></menubar>");
+void Jabberwocky::addMenus (const Glib::RefPtr<Gio::Menu>& menu,
+			    const Glib::RefPtr<Gio::SimpleActionGroup>& actions) {
+   Check1 (menu); Check1 (actions);
 
-   Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
-   grpAction->add (Gtk::Action::create ("MB", _("_Jabberwocky")));
-   grpAction->add (menuSort = Gtk::Action::create ("JabberwockySort", Gtk::Stock::SORT_ASCENDING,
-						   _("_Sort won cards (by number)")),
-		   Gtk::AccelKey ("<shft>S"),
-		   mem_fun (*this, &Jabberwocky::sortWonByNumber));
-   grpAction->add (menuSort2 = Gtk::Action::create ("JabberwockySortCol", Gtk::Stock::SORT_ASCENDING,
-						    _("Sort won cards (by _colour)")),
-		   Gtk::AccelKey ("S"),
-		   mem_fun (*this, &Jabberwocky::sortWonByColour));
-   grpAction->add (menuShowScoreDlg = Gtk::Action::create ("showScoreDlg", Gtk::Stock::EDIT,
-							   _("Show score dialog")),
-		   Gtk::AccelKey ("<shft><ctl>S"),
-		   bind (ptr_fun (&Card::ScoreDlg::display), &pScoreDlg));
+   Glib::RefPtr<Gio::Menu> sub (Gio::Menu::create ());
+   Glib::RefPtr<Gio::Menu> secSort (Gio::Menu::create ());
+   menuSort = actions->add_action ("JabberwockySort", mem_fun (*this, &Jabberwocky::sortWonByNumber));
+   secSort->append (_("_Sort won cards (by number)"), "game.JabberwockySort");
+   menuSort2 = actions->add_action ("JabberwockySortCol", mem_fun (*this, &Jabberwocky::sortWonByColour));
+   secSort->append (_("Sort won cards (by _colour)"), "game.JabberwockySortCol");
+   sub->append_section (secSort);
 
-   mgrUI->insert_action_group (grpAction);
-   idMrg = mgrUI->add_ui_from_string (ui);
+   Glib::RefPtr<Gio::Menu> secScore (Gio::Menu::create ());
+   menuShowScoreDlg = actions->add_action ("showScoreDlg", bind (ptr_fun (&Card::ScoreDlg::display), &pScoreDlg));
+   secScore->append (_("Show score dialog"), "game.showScoreDlg");
+   sub->append_section (secScore);
 
-   menuShowScoreDlg->set_sensitive (false);
+   idxMenu = menu->get_n_items ();
+   menu->append_submenu (_("_Jabberwocky"), sub);
+
+   menuShowScoreDlg->set_enabled (false);
 }
 
 //-----------------------------------------------------------------------------
 /// Removes the game-specific menus
-/// \param mgrUI UIManager to remove from
+/// \param menu Top-level menu to remove the game's submenu from
+/// \param actions Action-group to remove the game's actions from
 //-----------------------------------------------------------------------------
-void Jabberwocky::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
-   Check1 (mgrUI);
-   mgrUI->remove_ui (idMrg);
+void Jabberwocky::removeMenus (const Glib::RefPtr<Gio::Menu>& menu,
+			       const Glib::RefPtr<Gio::SimpleActionGroup>& actions) {
+   Check1 (menu); Check1 (actions);
+   if (idxMenu != -1) {
+      menu->remove (idxMenu);
+      idxMenu = -1;
+   }
+   actions->remove_action ("JabberwockySort");
+   actions->remove_action ("JabberwockySortCol");
+   actions->remove_action ("showScoreDlg");
 }
 
 //-----------------------------------------------------------------------------
@@ -410,9 +422,9 @@ void Jabberwocky::cardSelected (unsigned int pos) {
 	 .sigAnimation.connect (mem_fun (*this, &Jabberwocky::finishMove));
    }
    catch (Glib::ustring& error) {
-      Gtk::MessageDialog dlg (error, Gtk::MESSAGE_ERROR);
+      Gtk::MessageDialog dlg (error, false, Gtk::MessageType::ERROR);
       dlg.set_title (_("Jabberwocky"));
-      dlg.run ();
+      XGP::runModal (dlg);
    }
 }
 
@@ -457,13 +469,21 @@ void Jabberwocky::makeBids (unsigned int start) {
 	 status.pop ();
 	 status.push (_("Make your bid for the number of tricks you are going to make!"));
 
+	 // Remark: Gtk::Statusbar can no longer host arbitrary child widgets
+	 // under GTK4 (it derives from Gtk::Widget, not Gtk::Box, and offers
+	 // no packing API), so the bid-entry widgets are attached to this
+	 // game's own grid instead.
 	 Gtk::Button* bid (new Gtk::Button (_("_Bid"), true));
 	 Gtk::SpinButton* value (new Gtk::SpinButton (Gtk::Adjustment::create (0, 0.0, getTricks (turn), 1, 2), 1, 0));
 	 bid->show ();
 	 value->show ();
 
-	 status.pack_start (*value, Gtk::PACK_SHRINK, 5);
-	 status.pack_start (*bid, Gtk::PACK_SHRINK, 5);
+	 value->set_margin (5);
+	 bid->set_margin (5);
+	 attach (*value, 0, 0);
+	 attach (*bid,   1, 0);
+	 pBidValue = value;
+	 pBidCommit = bid;
 
 	 bid->signal_clicked ().connect (bind (mem_fun (*this, &Jabberwocky::placedBid), value, bid,  start + 1));
 	 return;
@@ -509,9 +529,9 @@ void Jabberwocky::placedBid (Gtk::SpinButton* value, Gtk::Button* commit, unsign
    commit->grab_focus ();
    players[0].bid = YGP::ANumeric (value->get_text ());
    if ((start >= NUM_PLAYERS) && (sumBids () == getTricks (turn))) {
-      Gtk::MessageDialog dlg (_("The sum of all bids must be different\nthan the number of possible tricks!"), Gtk::MESSAGE_ERROR);
+      Gtk::MessageDialog dlg (_("The sum of all bids must be different\nthan the number of possible tricks!"), false, Gtk::MessageType::ERROR);
       dlg.set_title (_("Jabberwocky"));
-      dlg.run ();
+      XGP::runModal (dlg);
    }
    else {
       if (getConnectionMgr ().getMode () != YGP::ConnectionMgr::NONE) {
@@ -520,10 +540,12 @@ void Jabberwocky::placedBid (Gtk::SpinButton* value, Gtk::Button* commit, unsign
 	 broadcastMessage (msg.str ());
       }
 
-      status.remove (*value);
-      status.remove (*commit);
+      remove (*value);
+      remove (*commit);
       delete value;
       delete commit;
+      pBidValue = NULL;
+      pBidCommit = NULL;
 
       status.pop ();
       showBid (0);
@@ -922,9 +944,10 @@ int Jabberwocky::playCard (unsigned int player) {
       Glib::ustring stat (_("Game ended"));
       // Create score-dialog
       if (!pScoreDlg) {
-	 menuShowScoreDlg->set_sensitive ();
+	 menuShowScoreDlg->set_enabled ();
 	 pScoreDlg = Card::ScoreDlg::create (actPlayers);
-	 pScoreDlg->get_window ()->set_transient_for (get_window ());
+	 if (Gtk::Window* win = dynamic_cast<Gtk::Window*> (get_root ()))
+	    pScoreDlg->set_transient_for (*win);
       }
       // Add points, if bid has been met; take care of the cards won in the
       // last round

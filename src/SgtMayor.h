@@ -33,6 +33,9 @@
 namespace Card {
    class ScoreDlg;
 }
+namespace Gio {
+   class SimpleAction;
+}
 
 
 // Class to handle the Hearts cardgame
@@ -111,8 +114,10 @@ class SgtMayor : public Card::Game {
    bool isHighest (const Card::Widget& card) const;
    unsigned int tryToGetTrickWithTrump (const Card::IPile& pile) const;
 
-   virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
-   virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void addMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                          const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+   virtual void removeMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                             const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
    virtual void showWonCards (bool show = true, unsigned int style = -1U);
 
    static const unsigned int NUM_PLAYERS = 3;              // Number of players
@@ -138,10 +143,9 @@ class SgtMayor : public Card::Game {
    std::bitset<13> playedCards[4];
    int diffTricks[NUM_PLAYERS];
 
-   Gtk::UIManager::ui_merge_id idMrg;
-   Glib::RefPtr<Gtk::Action> menuSort;
-   Glib::RefPtr<Gtk::Action> menuSort2;
-   Glib::RefPtr<Gtk::Action> menuShowScoreDlg;
+   Glib::RefPtr<Gio::SimpleAction> menuSort;
+   Glib::RefPtr<Gio::SimpleAction> menuSort2;
+   Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
    Card::ScoreDlg* pScoreDlg;
 

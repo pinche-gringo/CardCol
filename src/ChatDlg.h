@@ -43,15 +43,15 @@ class ChatDlg : public XGP::XDialog {
 
    /// Creates the dialog
    /// \param parent Parent window
-   static ChatDlg* create (const Glib::RefPtr<Gdk::Window>& parent) {
+   static ChatDlg* create (Gtk::Window& parent) {
       ChatDlg* dlg (new ChatDlg);
-      dlg->get_window ()->set_transient_for (parent);
+      dlg->set_transient_for (parent);
       dlg->signal_response ().connect (mem_fun (*dlg, &ChatDlg::free));
       return dlg;
    }
 
    /// Signal emitted, when OK is selected
-   sigc::signal<void, const Glib::ustring&> signalSend;
+   sigc::signal<void(const Glib::ustring&)> signalSend;
 
    void addMessage (const Glib::ustring& sender, const Glib::ustring& msg);
 

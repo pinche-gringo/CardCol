@@ -36,6 +36,11 @@ namespace Gtk {
    class Button;
    class SpinButton;
 }
+namespace Gio {
+   class Menu;
+   class SimpleAction;
+   class SimpleActionGroup;
+}
 
 
 /**Class to handle the Jabberwocky card game
@@ -68,8 +73,10 @@ class Jabberwocky : public Card::Game {
    //@Section Virtual methods
    virtual void makeMove (unsigned int player);
    virtual bool enableHuman ();
-   virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
-   virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void addMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                          const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+   virtual void removeMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                             const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
 
    //@Section helper methods
    static unsigned int getTricks (unsigned int round) { return (round < 7) ? (round + 3) : (15 - round); }
@@ -115,7 +122,10 @@ class Jabberwocky : public Card::Game {
 
    unsigned int startPlayer;
    unsigned int turn;
-   Gtk::UIManager::ui_merge_id idMrg;
+   int idxMenu;                    ///< Index of this game's submenu-item within the passed Gio::Menu
+
+   Gtk::SpinButton* pBidValue;     ///< Widget to enter the human's bid (while active); else NULL
+   Gtk::Button*     pBidCommit;    ///< Button to commit the human's bid (while active); else NULL
 
    // Variables needed by computer player
    std::bitset<13> playedCards[4];
@@ -123,9 +133,9 @@ class Jabberwocky : public Card::Game {
 
    Card::ScoreDlg*   pScoreDlg;
 
-   Glib::RefPtr<Gtk::Action> menuSort;
-   Glib::RefPtr<Gtk::Action> menuSort2;
-   Glib::RefPtr<Gtk::Action> menuShowScoreDlg;
+   Glib::RefPtr<Gio::SimpleAction> menuSort;
+   Glib::RefPtr<Gio::SimpleAction> menuSort2;
+   Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];

@@ -33,10 +33,13 @@
 
 #include <cardgames-cfg.h>
 
-#include <gtkmm/menu.h>
-#include <gtkmm/stock.h>
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
+
+#include <giomm/menu.h>
+#include <giomm/simpleactiongroup.h>
+
+#include <XGP/XDialog.h>
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -73,7 +76,7 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& card
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 10, 8),
      played (Card::IPile::COMPRESSED, Card::IPile::SHOWFACE),
      pTrump (NULL), bfColours (0), startPlayer (rand () % NUM_PLAYERS),
-     idMrg (), menuSort (), menuSort2 (), menuShowScoreDlg (), pScoreDlg (NULL)
+     menuSort (), menuSort2 (), menuShowScoreDlg (), pScoreDlg (NULL)
  {
    TRACE9 ("SgtMayor::SgtMayor (Box&, Statusbar&, Card::Set&, ...)");
 
@@ -81,20 +84,21 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& card
    changeNames (player);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].name.show ();
-      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 3 : 5),
-              ROWS_PLAYER[i] + (i ? 1 : 2), ROWS_PLAYER[i] + (i ? 2 : 3), Gtk::EXPAND,
-              Gtk::SHRINK, 1, 2);
+      players[i].name.set_margin_start (1); players[i].name.set_margin_end (1);
+      players[i].name.set_margin_top (2); players[i].name.set_margin_bottom (2);
+      attach (players[i].name, COLS_PLAYER[i], ROWS_PLAYER[i] + (i ? 1 : 2), (i ? 3 : 5), 1);
 
+      players[i].neededTricks.set_margin_top (5); players[i].neededTricks.set_margin_bottom (5);
       attach (players[i].neededTricks, COLS_PLAYER[i],
-              COLS_PLAYER[i] + (i ? 3 : 5), ROWS_PLAYER[i] + (i ? 2 : 3),
-              ROWS_PLAYER[i] + (i ? 3 : 4), Gtk::EXPAND, Gtk::SHRINK, 1 - 1, 5);
+              ROWS_PLAYER[i] + (i ? 2 : 3), (i ? 3 : 5), 1);
 
-      attach (players[i].won, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 3 : 5),
-              ROWS_PLAYER[i] + (i ? -1 : +1), ROWS_PLAYER[i] + (i ? 0 : 2), Gtk::EXPAND,
-              Gtk::SHRINK, 1, 5);
+      players[i].won.set_margin_start (1); players[i].won.set_margin_end (1);
+      players[i].won.set_margin_top (5); players[i].won.set_margin_bottom (5);
+      attach (players[i].won, COLS_PLAYER[i],
+              ROWS_PLAYER[i] + (i ? -1 : +1), (i ? 3 : 5), 1);
 
-      attach (players[i].hand, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 3 : 5),
-              ROWS_PLAYER[i], ROWS_PLAYER[i] + 1, Gtk::EXPAND, Gtk::EXPAND, 5);
+      players[i].hand.set_margin_start (5); players[i].hand.set_margin_end (5);
+      attach (players[i].hand, COLS_PLAYER[i], ROWS_PLAYER[i], (i ? 3 : 5), 1);
       TRACE9 ("SgtMayor::SgtMayor () - Attach at: " << COLS_PLAYER[i] << '/'
               << COLS_PLAYER[i] + (i ? 3 : 5) << " - " << ROWS_PLAYER[i] << '/'
               << ROWS_PLAYER[i] + 1);
@@ -107,10 +111,10 @@ SgtMayor::SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& card
 
    // Show played area
    played.setStyle (Card::IPile::COMPRESSED);
-   attach (played, 2, 5, 4, 5, Gtk::SHRINK, Gtk::SHRINK, 5);
+   played.set_margin_start (5); played.set_margin_end (5);
+   attach (played, 2, 4, 3, 1);
 
    resizeCards ();
-   show_all_children ();
 
    memset (diffTricks, '\0', sizeof (diffTricks));
 }
@@ -175,7 +179,7 @@ void SgtMayor::start () {
          int points;
          pScoreDlg->getMaxPoints (points, player); Check3 (points >= 0);
          if ((unsigned int)points >= ENDTRICKS) {
-	    menuShowScoreDlg->set_sensitive (false);
+	    menuShowScoreDlg->set_enabled (false);
 	    delete pScoreDlg;
 	    pScoreDlg = NULL;
 
@@ -246,8 +250,8 @@ void SgtMayor::clean () {
       pTrump = NULL;
    }
 
-   menuSort->set_sensitive (false);
-   menuSort2->set_sensitive (false);
+   menuSort->set_enabled (false);
+   menuSort2->set_enabled (false);
 
    played.clear ();
    Game::clean ();
@@ -311,9 +315,9 @@ void SgtMayor::cardSelected (unsigned int iCard) {
       if (playColour != colour) {
 	 if (pile.exists (colour)) {
 	    Gtk::MessageDialog dlg (_("Play a card with an equal colour as "
-				      "the first played one!"), Gtk::MESSAGE_ERROR);
+				      "the first played one!"), false, Gtk::MessageType::ERROR);
 	    dlg.set_title (PACKAGE " - SgtMayor");
-	    dlg.run ();
+	    XGP::runModal (dlg);
 	    return;
 	 }
 	 bfColours |= (1 << played[0]->colour ());
@@ -749,7 +753,9 @@ void SgtMayor::doShowTrump (Card::Widget::COLOURS colour) {
          pTrump = new Card::Widget (*cards.getCards ()[i]);
          pTrump->show ();
          pTrump->showFace ();
-         attach (*pTrump, 0, 1, 7, 8, Gtk::SHRINK, Gtk::SHRINK, 5, 1);
+         pTrump->set_margin_start (5); pTrump->set_margin_end (5);
+         pTrump->set_margin_top (1); pTrump->set_margin_bottom (1);
+         attach (*pTrump, 0, 7, 1, 1);
 	 displayTurn (convertPlayer (startPlayer));
          return;
       }
@@ -802,15 +808,15 @@ unsigned int SgtMayor::playCard (unsigned int player) {
       while (played.size () > 1) {
          Card::Widget& card (played.remove (0));
          card.hide ();
-         players[player].won.append (card);
+         players[player].won.Card::IPile::append (card);
       }
-      players[player].won.append (played.removeTopCard ());
+      players[player].won.Card::IPile::append (played.removeTopCard ());
       Check3 (played.empty ());
 
       if (!player) {
 	 enableWonCards (players[0].won);
-	 menuSort->set_sensitive ();
-	 menuSort2->set_sensitive ();
+	 menuSort->set_enabled ();
+	 menuSort2->set_enabled ();
       }
    }
    else
@@ -843,8 +849,10 @@ unsigned int SgtMayor::playCard (unsigned int player) {
 	 player.push_back (actPlayers[i]);
 
       pScoreDlg = Card::ScoreDlg::create (player);
-      pScoreDlg->get_window ()->set_transient_for (get_window ());
-      menuShowScoreDlg->set_sensitive ();
+      Gtk::Window* win (dynamic_cast<Gtk::Window*> (get_root ()));
+      if (win)
+         pScoreDlg->set_transient_for (*win);
+      menuShowScoreDlg->set_enabled ();
    }
 
    pScoreDlg->addPoints (diffTricks);
@@ -1157,47 +1165,44 @@ void SgtMayor::doExchangeCards (unsigned int playerBad, unsigned int posBad,
 
 //-----------------------------------------------------------------------------
 /// Adds game-specific menus
-/// \param mgrUI UIManager to add to
+/// \param menu Menu to add game-specific entries to
+/// \param actions Action group to add game-specific actions to
 //-----------------------------------------------------------------------------
-void SgtMayor::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
-   Check1 (mgrUI);
-   Glib::ustring ui ("<menubar name='Menu'>"
-		     "  <placeholder name='GameMenu'>"
-		     "    <menu action='MB'>"
-		     "      <menuitem action='SgMayorSort'/>"
-		     "      <menuitem action='SgMayorSortCol'/>"
-		     "      <separator/>"
-		     "      <menuitem action='showScoreDlg'/>"
-		     "    </menu></placeholder></menubar>");
+void SgtMayor::addMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                         const Glib::RefPtr<Gio::SimpleActionGroup>& actions) {
+   Check1 (menu); Check1 (actions);
 
-   Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
-   grpAction->add (Gtk::Action::create ("MB", _("_Sgt. Mayor")));
-   grpAction->add (menuSort = Gtk::Action::create ("SgMayorSort", Gtk::Stock::SORT_ASCENDING,
-						   _("_Sort won cards (by number)")),
-		   Gtk::AccelKey ("<shft>S"),
-		   mem_fun (*this, &SgtMayor::sortWonByNumber));
-   grpAction->add (menuSort2 = Gtk::Action::create ("SgMayorSortCol", Gtk::Stock::SORT_ASCENDING,
-						   _("Sort won cards (by _colour)")),
-		   Gtk::AccelKey ("S"),
-		   mem_fun (*this, &SgtMayor::sortWonByColour));
-   grpAction->add (menuShowScoreDlg = Gtk::Action::create ("showScoreDlg", Gtk::Stock::EDIT,
-							   _("Show score dialog")),
-		   Gtk::AccelKey ("<shft><ctl>S"),
-		   bind (ptr_fun (&Card::ScoreDlg::display), &pScoreDlg));
+   Glib::RefPtr<Gio::Menu> sub (Gio::Menu::create ());
 
-   mgrUI->insert_action_group (grpAction);
-   idMrg = mgrUI->add_ui_from_string (ui);
+   menuSort = actions->add_action ("SgMayorSort", mem_fun (*this, &SgtMayor::sortWonByNumber));
+   sub->append (_("_Sort won cards (by number)"), "game.SgMayorSort");
 
-   menuShowScoreDlg->set_sensitive (false);
+   menuSort2 = actions->add_action ("SgMayorSortCol", mem_fun (*this, &SgtMayor::sortWonByColour));
+   sub->append (_("Sort won cards (by _colour)"), "game.SgMayorSortCol");
+
+   Glib::RefPtr<Gio::Menu> sec (Gio::Menu::create ());
+   menuShowScoreDlg = actions->add_action ("showScoreDlg", bind (ptr_fun (&Card::ScoreDlg::display), &pScoreDlg));
+   sec->append (_("Show score dialog"), "game.showScoreDlg");
+   sub->append_section (sec);
+
+   menu->append_submenu (_("_Sgt. Mayor"), sub);
+
+   menuShowScoreDlg->set_enabled (false);
 }
 
 //-----------------------------------------------------------------------------
 /// Removes the game-specific menus
-/// \param mgrUI UIManager to remove from
+/// \param menu Menu to remove game-specific entries from
+/// \param actions Action group to remove game-specific actions from
 //-----------------------------------------------------------------------------
-void SgtMayor::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
-   Check1 (mgrUI);
-   mgrUI->remove_ui (idMrg);
+void SgtMayor::removeMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                            const Glib::RefPtr<Gio::SimpleActionGroup>& actions) {
+   Check1 (menu); Check1 (actions);
+
+   menu->remove (menu->get_n_items () - 1);
+   actions->remove_action ("SgMayorSort");
+   actions->remove_action ("SgMayorSortCol");
+   actions->remove_action ("showScoreDlg");
 }
 
 //-----------------------------------------------------------------------------

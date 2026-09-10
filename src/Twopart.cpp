@@ -36,13 +36,18 @@
 #include <glibmm/main.h>
 
 #include <gtkmm/box.h>
-#include <gtkmm/stock.h>
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
+
+#include <giomm/menu.h>
+#include <giomm/simpleaction.h>
+#include <giomm/simpleactiongroup.h>
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 #include <YGP/ConnMgr.h>
+
+#include <XGP/XDialog.h>
 
 #include <card/Player.h>
 #include <card/Set.h>
@@ -76,34 +81,33 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
      bfPlayers ((1 << NUM_PLAYERS) - 1), offPos (0), startPlayer (0),
      bfOldPlayers (bfPlayers), pTrump (NULL),
      played (Card::IPile::COMPRESSED, Card::IPile::SHOWFACE),
-     staple (Card::IPile::VERY_COMPRESSED, Card::IPile::SHOWBACK), idMrg () {
+     staple (Card::IPile::VERY_COMPRESSED, Card::IPile::SHOWBACK), idxMenu (-1) {
    staple.show ();
-   attach (staple, 2, 3, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
+   staple.set_margin (5);
+   attach (staple, 2, 2, 1, 1);
 
    // Show and attach card-piles
    changeNames (player);
    for (unsigned int i (0); i < NUM_PLAYERS; ++i) {
       players[i].name.show ();
-      attach (players[i].name, COLS_PLAYER[i], COLS_PLAYER[i] + (i ? 3 : 15),
-              ROWS_PLAYER[i] + (i ? 1 : 3),
-              ROWS_PLAYER[i] + (i ? 2 : 4),
-              Gtk::EXPAND, Gtk::EXPAND, 1);
+      players[i].name.set_hexpand (); players[i].name.set_vexpand ();
+      players[i].name.set_margin_start (1); players[i].name.set_margin_end (1);
+      attach (players[i].name, COLS_PLAYER[i], ROWS_PLAYER[i] + (i ? 1 : 3),
+              i ? 3 : 15, 1);
       TRACE9 ("Twopart::Twopart () - Name at: " << COLS_PLAYER[i] << '/'
               << ROWS_PLAYER[i] + (i ? 1 : 3));
 
       players[i].won.show ();
+      players[i].won.set_margin_start (1); players[i].won.set_margin_end (1);
       attach (players[i].won, COLS_PLAYER[i] + (i ? 1 : 3),
-              COLS_PLAYER[i] + (i ? 3 : 15),
               ROWS_PLAYER[i] + (i ? -2 : 2),
-              ROWS_PLAYER[i] + (i ? -1 : 3),
-              Gtk::SHRINK, Gtk::SHRINK, 1);
+              (i ? 3 : 15) - (i ? 1 : 3), 1);
       TRACE9 ("Twopart::Twopart () - Won pile at: "
               << COLS_PLAYER[i] + 1 << '/' << ROWS_PLAYER[i] + (i ? -2 : 2));
 
       players[i].hand.show ();
-      attach (players[i].hand, COLS_PLAYER[i],
-              COLS_PLAYER[i] + (i ? 3 : 15), ROWS_PLAYER[i],
-              ROWS_PLAYER[i] + 1, Gtk::SHRINK, Gtk::SHRINK, 1);
+      players[i].hand.set_margin_start (1); players[i].hand.set_margin_end (1);
+      attach (players[i].hand, COLS_PLAYER[i], ROWS_PLAYER[i], i ? 3 : 15, 1);
       TRACE9 ("Twopart::Twopart () - Hand at: "
               << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
 
@@ -112,7 +116,8 @@ Twopart::Twopart (Gtk::Box& parent, Gtk::Statusbar& statusbar,
    }
 
    played.show ();
-   attach (played, 3, 11, 6, 9, Gtk::SHRINK, Gtk::SHRINK, 0, 5);
+   played.set_margin_top (5); played.set_margin_bottom (5);
+   attach (played, 3, 6, 8, 3);
    resizeCards ();
 }
 
@@ -289,9 +294,9 @@ void Twopart::cardSelected (unsigned int pos) {
 	       (ngettext ("The played card must have the same colour and must be bigger (or be a trump)!",
 			  "The played cards must have the same colour and must be bigger (or be trumps)!",
 			  pos - start + 1),
-		Gtk::MESSAGE_ERROR);
+		false, Gtk::MessageType::ERROR);
             dlg.set_title (PACKAGE " - Twopart");
-            dlg.run ();
+            XGP::runModal (dlg);
             return;
          }
       }
@@ -354,7 +359,8 @@ void Twopart::endTurn (unsigned int player) {
       if (pTrump && !pTrump->get_visible ()) {
          pTrump->showFace ();
          pTrump->show ();
-         attach (*pTrump, 2, 3, 2, 3, Gtk::SHRINK, Gtk::SHRINK, 5, 5);
+         pTrump->set_margin (5);
+         attach (*pTrump, 2, 2, 1, 1);
       }
       newPlayer = player;
       isAnimated = endRound (newPlayer);
@@ -1013,11 +1019,11 @@ bool Twopart::startPartTwo (unsigned int player) {
          TRACE8 ("Twopart::startPartTwo (unsigned int) - Moving cards "
                  << card << " for player " << i);
          if (bfPlayers && (card.number () <= Card::Widget::FIVE)) {
-            players[pos2Player (++victim)].hand.append (card);
+            players[pos2Player (++victim)].hand.Card::IPile::append (card);
             victim %= nrPlayers;
          }
          else
-            players[i].hand.append (card);
+            players[i].hand.Card::IPile::append (card);
       }
    }
 
@@ -1167,39 +1173,37 @@ bool Twopart::executeRemoteMove (Card::IPile& pile, unsigned int target) {
 
 //-----------------------------------------------------------------------------
 /// Adds game-specific menus
-/// \param mgrUI UIManager to add to
+/// \param menu Top-level menu to add the game's submenu to
+/// \param actions Action-group ("win"-scoped) to add the game's actions to
 //-----------------------------------------------------------------------------
-void Twopart::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
-   Check1 (mgrUI);
-   Glib::ustring ui ("<menubar name='Menu'>"
-		     "  <placeholder name='GameMenu'>"
-		     "    <menu action='MB'>"
-		     "      <menuitem action='TwopartSort'/>"
-		     "      <menuitem action='TwopartSortCol'/>"
-		     "    </menu></placeholder></menubar>");
+void Twopart::addMenus (const Glib::RefPtr<Gio::Menu>& menu,
+			const Glib::RefPtr<Gio::SimpleActionGroup>& actions) {
+   Check1 (menu); Check1 (actions);
 
-   Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
-   grpAction->add (Gtk::Action::create ("MB", _("_Twopart")));
-   grpAction->add (Gtk::Action::create ("TwopartSort", Gtk::Stock::SORT_ASCENDING,
-					_("_Sort won cards (by number)")),
-		   Gtk::AccelKey ("<shft>S"),
-		   mem_fun (*this, &Twopart::sortWonByNumber));
-   grpAction->add (Gtk::Action::create ("TwopartSortCol", Gtk::Stock::SORT_ASCENDING,
-					_("Sort won cards (by _colour)")),
-		   Gtk::AccelKey ("S"),
-		   mem_fun (*this, &Twopart::sortWonByColour));
+   Glib::RefPtr<Gio::Menu> sub (Gio::Menu::create ());
+   actions->add_action ("TwopartSort", mem_fun (*this, &Twopart::sortWonByNumber));
+   sub->append (_("_Sort won cards (by number)"), "game.TwopartSort");
+   actions->add_action ("TwopartSortCol", mem_fun (*this, &Twopart::sortWonByColour));
+   sub->append (_("Sort won cards (by _colour)"), "game.TwopartSortCol");
 
-   mgrUI->insert_action_group (grpAction);
-   idMrg = mgrUI->add_ui_from_string (ui);
+   idxMenu = menu->get_n_items ();
+   menu->append_submenu (_("_Twopart"), sub);
 }
 
 //-----------------------------------------------------------------------------
 /// Removes the game-specific menus
-/// \param mgrUI UIManager to remove from
+/// \param menu Top-level menu to remove the game's submenu from
+/// \param actions Action-group to remove the game's actions from
 //-----------------------------------------------------------------------------
-void Twopart::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
-   Check1 (mgrUI);
-   mgrUI->remove_ui (idMrg);
+void Twopart::removeMenus (const Glib::RefPtr<Gio::Menu>& menu,
+			   const Glib::RefPtr<Gio::SimpleActionGroup>& actions) {
+   Check1 (menu); Check1 (actions);
+   if (idxMenu != -1) {
+      menu->remove (idxMenu);
+      idxMenu = -1;
+   }
+   actions->remove_action ("TwopartSort");
+   actions->remove_action ("TwopartSortCol");
 }
 
 //-----------------------------------------------------------------------------

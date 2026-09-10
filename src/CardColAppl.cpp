@@ -27,6 +27,8 @@
 
 #include <cstdio>
 
+#include <gtkmm/application.h>
+
 #include <YGP/File.h>
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -158,7 +160,7 @@ void CardgameAppl::showHelp () const {
 /// Checks the validity of the passed option
 /// \param option Actual option
 /// \returns bool Status; false: Invalid option/option-value Require :
-///     option not '\0´'
+///     option not '\0ï¿½'
 //-----------------------------------------------------------------------------
 bool CardgameAppl::handleOption (const char option) {
    Check3 (option != '\0');
@@ -403,9 +405,49 @@ int CardgameAppl::perform (int, const char**) {
    TRACE5 ("CardgameAppl::perform (int, const char**) - Params: " << args);
    srand (time (NULL));              // Initialize the random number generator
 
-   CardgameCollection win (options);
-   Gtk::Main::run (win);
-   return 0;
+   Glib::RefPtr<Gtk::Application> gtkapp (Gtk::Application::create ("org.g17m0.cardcol"));
+
+   // Keyboard accelerators (replacing the per-Gtk::Action Gtk::AccelKey of GTK3)
+   gtkapp->set_accel_for_action ("win.ChgDecks", "<Control>d");
+   gtkapp->set_accel_for_action ("win.ChgNames", "<Control>c");
+   gtkapp->set_accel_for_action ("win.Prefs", "F9");
+#if TRACELEVEL >= 1
+   gtkapp->set_accel_for_action ("win.Debug", "<Control>g");
+#endif
+#ifdef WITH_NETWORK
+   gtkapp->set_accel_for_action ("win.Connect", "<Shift><Control>c");
+   gtkapp->set_accel_for_action ("win.Chat", "<Alt><Control>c");
+#endif
+#ifdef WITH_BURACO
+   gtkapp->set_accel_for_action
+      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::BURACO), "<Control>b");
+#endif
+#ifdef WITH_HEARTS
+   gtkapp->set_accel_for_action
+      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::HEARTS), "<Control>h");
+#endif
+#ifdef WITH_JABBERWOCKY
+   gtkapp->set_accel_for_action
+      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::JABBERWOCKY), "<Control>j");
+#endif
+#ifdef WITH_MACHIAVELLI
+   gtkapp->set_accel_for_action
+      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::MACHIAVELLI), "<Control>m");
+#endif
+#ifdef WITH_ROVHULT
+   gtkapp->set_accel_for_action
+      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::ROVHULT), "<Control>r");
+#endif
+#ifdef WITH_SGTMAYOR
+   gtkapp->set_accel_for_action
+      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::SGTMAYOR), "<Control>y");
+#endif
+#ifdef WITH_TWOPART
+   gtkapp->set_accel_for_action
+      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::TWOPART), "<Control>t");
+#endif
+
+   return gtkapp->make_window_and_run<CardgameCollection> (0, NULL, options);
 }
 
 //-----------------------------------------------------------------------------
@@ -441,11 +483,9 @@ void CardgameAppl::showGames () const {
 //-----------------------------------------------------------------------------
 int main (int argc, const char* argv[]) {
    YGP::IVIOApplication::initI18n (PACKAGE, LOCALEDIR);
-#ifdef WITH_NETWORK
-   Glib::thread_init ();
-#endif
+   // Remark: Glib::thread_init() no longer exists/is needed - GLib threading is
+   // initialized automatically since glib 2.32
 
-   Gtk::Main gtk (&argc, const_cast<char***> (&argv));
    CardgameAppl appl (argc, argv);
    return appl.run ();
 }

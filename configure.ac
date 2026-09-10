@@ -49,7 +49,7 @@ AM_GNU_GETTEXT
 dnl Checks for libraries.
 AC_CHECK_LIB(stdc++, main)
 
-PKG_CHECK_MODULES(DEPENDENCIES, gtkmm-3.0 >= 3.0.0 gthread-2.0 > 2.2.0
+PKG_CHECK_MODULES(DEPENDENCIES, gtkmm-4.0 >= 4.0.0 gthread-2.0 > 2.2.0
                   YGP >= 0.9.30 XGP >= 0.9.50)
 
 PKG_CHECK_MODULES(RSVG, librsvg-2.0.pc >= 9.99.0,
@@ -225,7 +225,7 @@ if test "$GNOMECARDS_DIR" != "no"; then
 	         /usr/share/gnome/cards /usr/share/pixmaps/gnome/cards \
 	         /usr/share/gnome/pixmaps/cards \
 		 /usr/share/gnome-games-common/cards \
-		 /usr/share/aisleriot/cards/ \
+		 /usr/share/aisleriot/cards \
 		 /usr/local/share/gnome-games-common/cards; do
 	 if test -d "$dir/"; then
 	    GNOMECARDS_DIR="$dir/"
@@ -246,6 +246,7 @@ if test "$GNOMECARDS_DIR" != "no"; then
       if test -f "$GNOMECARDS_DIR/bonded.png" \
               -o -f "$GNOMECARDS_DIR/bonded.svg" \
               -o -f "$GNOMECARDS_DIR/bonded.svgz" \
+              -o -f "$GNOMECARDS_DIR/anglo.svgz" \
               -o -f "$GNOMECARDS_DIR/gnomangelo_bitmap.svg" \
               -o -f "$GNOMECARDS_DIR/paris.svg"; then
 	 HAVE_CARDS=1

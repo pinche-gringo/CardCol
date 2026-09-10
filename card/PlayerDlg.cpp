@@ -31,7 +31,7 @@
 #include <gtkmm/box.h>
 #include <gtkmm/label.h>
 #include <gtkmm/entry.h>
-#include <gtkmm/table.h>
+#include <gtkmm/grid.h>
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -47,7 +47,7 @@ namespace Card {
 /// \param player Vector containing the players
 //-----------------------------------------------------------------------------
 PlayerDlg::PlayerDlg (std::vector<Player*>& player)
-   : XDialog (OKCANCEL), sigCommit (), pClient (new Gtk::Table (player.size () + 1, 3)),
+   : XDialog (OKCANCEL), sigCommit (), pClient (new Gtk::Grid ()),
      aPlayers (), values (player) {
    TRACE2 ("PlayerDlg::PlayerDlg (std::vector<Player*>&) - Players: "
            << player.size ());
@@ -67,8 +67,9 @@ PlayerDlg::PlayerDlg (std::vector<Player*>& player)
       aPlayers.back ()->attach (*pClient, i);
    }
 
-   get_vbox ()->pack_start (*pClient, false, false, 5);
-   show_all ();
+   pClient->set_margin (5);
+   get_content_area ()->append (*pClient);
+   show ();
 }
 
 //-----------------------------------------------------------------------------
@@ -102,9 +103,10 @@ void PlayerDlg::okEvent () {
 /// \param attribute Value for entryfield (to be updated)
 //-----------------------------------------------------------------------------
 PlayerDlg::line::line (const Glib::ustring& labelVal, const Glib::ustring& attribute)
-    : label (manage (new Gtk::Label (labelVal, 0, 0.5, true)))
-      , value (manage (new Gtk::Entry ())) {
+    : label (Gtk::make_managed<Gtk::Label> (labelVal, true))
+      , value (Gtk::make_managed<Gtk::Entry> ()) {
    TRACE9 ("PlayerDlg::line::line (const Glib::ustring&, Glib::ustring&)");
+   label->set_xalign (0); label->set_yalign (0.5);
    value->set_text (attribute);
    label->set_mnemonic_widget (*value);
 }
@@ -122,11 +124,14 @@ PlayerDlg::line::~line () {
 /// \param table Table where to attach the values to
 /// \param line Line in which to attach
 //-----------------------------------------------------------------------------
-void PlayerDlg::line::attach (Gtk::Table& table, unsigned int line) {
+void PlayerDlg::line::attach (Gtk::Grid& table, unsigned int line) {
    Check3 (label); Check3 (value);
-   table.attach (*label, 1, 2, line + 1, line + 2, Gtk::FILL, Gtk::FILL, 5, 3);
-   table.attach (*value, 2, 3, line + 1, line + 2, Gtk::FILL | Gtk::EXPAND,
-                 Gtk::FILL | Gtk::EXPAND, 5, 3);
+   label->set_margin (3); label->set_margin_start (5); label->set_margin_end (5);
+   table.attach (*label, 1, line + 1);
+
+   value->set_hexpand (); value->set_vexpand ();
+   value->set_margin (3); value->set_margin_start (5); value->set_margin_end (5);
+   table.attach (*value, 2, line + 1);
 }
 
 }

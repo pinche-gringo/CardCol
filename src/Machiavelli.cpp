@@ -33,9 +33,15 @@
 #include <gtk/gtk.h>
 
 #include <glibmm/main.h>
+#include <glibmm/value.h>
 
-#include <gtkmm/stock.h>
 #include <gtkmm/statusbar.h>
+#include <gtkmm/messagedialog.h>
+
+#include <giomm/menu.h>
+#include <giomm/simpleactiongroup.h>
+
+#include <gdkmm/contentprovider.h>
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -44,6 +50,7 @@
 #include <YGP/AttrParse.h>
 #include <YGP/StatusObj.h>
 
+#include <XGP/XDialog.h>
 #include <XGP/MessageDlg.h>
 
 #include <card/Set.h>
@@ -62,10 +69,20 @@
 #endif
 
 
+// Discriminant encoded into the high byte of the drag-and-drop payload (see
+// registerHandDND()/registerTableDND()) to tell apart cards dragged from the
+// hand from cards dragged from a pile on the table - GTK4 no longer provides
+// a separate "info" alongside the dropped data, so both must travel together
+// in a single int.
 enum { HAND, TABLE };
-static std::vector<Gtk::TargetEntry> dndTypeHand;
-static std::vector<Gtk::TargetEntry> dndTypeTable;
-static std::vector<Gtk::TargetEntry> dndTypeBoth;
+
+namespace {
+   int makeDNDPayload (unsigned int info, unsigned int pos) {
+      return static_cast<int> ((info << 24) | (pos & 0xffffffU));
+   }
+   unsigned int dndInfo (int payload) { return static_cast<unsigned int> (payload) >> 24; }
+   unsigned int dndPos (int payload) { return static_cast<unsigned int> (payload) & 0xffffffU; }
+}
 
 
 //-----------------------------------------------------------------------------
@@ -81,20 +98,22 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 			  Card::Set& cardset, const std::vector<Card::Player*>& player,
 			  unsigned int posPlayer, YGP::Mutex& mxSerialize)
    : Game (parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10),
-     piles (), tablePiles (), startPlayer (-1U), newPile (_("New pile")),
+     piles (), tablePiles (), startPlayer (-1U), newPile (_("New pile")), dstNewPile (),
      staple (Card::IPile::TOTALLY_COMPRESSED, Card::IPile::SHOWBACK),
      nextTurn (_("_End turn"), true), aDNDHand (), aDNDTable (), target (-1U),
-     undo (), missing (), undoDlg (NULL), undo1 (), undoAll (), nxtTurn (), idMrg () {
+     undo (), missing (), undoDlg (NULL), undo1 (), undoAll (), nxtTurn () {
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&)");
 
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Init common staples");
    for (unsigned int i (1); i < NUM_PLAYERS; ++i) {
-      attach (hands[i], ((NUM_PLAYERS - i) << 2) - 4, ((NUM_PLAYERS - i) << 2),
-	      0, 1, Gtk::EXPAND, Gtk::SHRINK, 5, 5);
-      attach (names[i], ((NUM_PLAYERS - i) << 2) - 4, ((NUM_PLAYERS - i) << 2),
-	      1, 2, Gtk::EXPAND, Gtk::SHRINK, 0);
+      hands[i].set_hexpand ();
+      hands[i].set_margin_start (5); hands[i].set_margin_end (5);
+      hands[i].set_margin_top (5); hands[i].set_margin_bottom (5);
+      attach (hands[i], ((NUM_PLAYERS - i) << 2) - 4, 0, 4, 1);
+      names[i].set_hexpand ();
+      attach (names[i], ((NUM_PLAYERS - i) << 2) - 4, 1, 4, 1);
       hands[i].setStyle (Card::IPile::QUITE_COMPRESSED);
       hands[i].setShowOption (Card::IPile::SHOWBACK);
    }
@@ -103,38 +122,39 @@ Machiavelli::Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar,
 
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Attach widgets");
-   attach (hands[0], 3, 12, 4, 5, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
-   attach (names[0], 3, 12, 5, 6, Gtk::EXPAND, Gtk::SHRINK, 1, 5);
-   attach (staple,   0, 1,  4, 5, Gtk::SHRINK, Gtk::SHRINK, 5);
-   attach (nextTurn, 0, 1,  5, 6, Gtk::FILL, Gtk::SHRINK, 5);
-   attach (newPile,  0, 12, 3, 4, Gtk::EXPAND | Gtk::FILL, Gtk::FILL, 0, 5);
-   attach (piles,    0, 12, 2, 3, Gtk::EXPAND | Gtk::FILL,
-           Gtk::EXPAND | Gtk::FILL, 0, 5);
+   hands[0].set_hexpand ();
+   hands[0].set_margin_start (1); hands[0].set_margin_end (1);
+   hands[0].set_margin_top (5); hands[0].set_margin_bottom (5);
+   attach (hands[0], 3, 4, 9, 1);
+   names[0].set_hexpand ();
+   names[0].set_margin_start (1); names[0].set_margin_end (1);
+   names[0].set_margin_top (5); names[0].set_margin_bottom (5);
+   attach (names[0], 3, 5, 9, 1);
+   staple.set_margin_start (5); staple.set_margin_end (5);
+   attach (staple,   0, 4, 1, 1);
+   nextTurn.set_margin_start (5); nextTurn.set_margin_end (5);
+   attach (nextTurn, 0, 5, 1, 1);
+   newPile.set_hexpand ();
+   newPile.set_margin_top (5); newPile.set_margin_bottom (5);
+   attach (newPile,  0, 3, 12, 1);
+   piles.set_hexpand (); piles.set_vexpand ();
+   piles.set_margin_top (5); piles.set_margin_bottom (5);
+   attach (piles,    0, 2, 12, 1);
 
    TRACE9 ("Machiavelli::Machiavelli (Box&, Statusbar&, CardSet&, const "
            "std::vector<Glib::ustring>&) - Show widgets");
 
    changeNames (player);
 
-   if (dndTypeHand.empty ()) {
-      Check3 (dndTypeTable.empty ());
-      Check3 (dndTypeBoth.empty ());
-      dndTypeHand.push_back
-         (Gtk::TargetEntry ("icon/card/hand", Gtk::TARGET_SAME_APP, HAND));
-      dndTypeTable.push_back
-         (Gtk::TargetEntry ("icon/card/table", Gtk::TARGET_SAME_APP, TABLE));
-
-      dndTypeBoth.push_back (dndTypeHand.front ());
-      dndTypeBoth.push_back (dndTypeTable.front ());
-   }
-
-   nextTurn.set_can_default ();
-   nextTurn.grab_default ();
+   // Simplification vs. GTK3: no set_can_default()/grab_default() equivalent
+   // is wired up here anymore, since that requires the top-level Gtk::Window,
+   // which isn't reliably reachable via get_root() until this widget has been
+   // added to the widget tree by the caller.
+   nextTurn.set_receives_default ();
    nextTurn.set_sensitive (false);
    nextTurn.signal_clicked ().connect (mem_fun (*this, (&Machiavelli::endTurn)));
 
    resizeCards ();
-   show_all_children ();
 }
 
 //-----------------------------------------------------------------------------
@@ -260,9 +280,11 @@ bool Machiavelli::enableHuman () {
       registerHandDND (i);
    Check3 (aDNDHand.size () == hands[0].size ());
 
-   newPile.drag_dest_set (dndTypeBoth, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
-   aDNDTable[NULL].connReceive = newPile.signal_drag_data_received ().connect
-       (bind (mem_fun (*this, &Machiavelli::cardDroppedOnTable), -1U));
+   dstNewPile = Gtk::DropTarget::create (G_TYPE_INT, Gdk::DragAction::MOVE);
+   dstNewPile->signal_drop ().connect
+      ([this] (const Glib::ValueBase& value, double, double) -> bool {
+          return cardDroppedOnTable (value, -1U); }, false);
+   newPile.add_controller (dstNewPile);
 
    for (unsigned int i (0); i < tablePiles.size (); ++i) {
       MachiPile& pile (*tablePiles[i]);
@@ -271,7 +293,7 @@ bool Machiavelli::enableHuman () {
          registerTableDND (*pile[j], value++);
    }
 
-   nxtTurn->set_sensitive ();
+   nxtTurn->set_enabled ();
    nextTurn.set_sensitive ();
 
    return Game::enableHuman ();
@@ -285,7 +307,10 @@ void Machiavelli::disableHuman () {
            << aDNDTable.size ());
    Game::disableHuman ();
 
-   newPile.drag_dest_unset ();
+   if (dstNewPile) {
+      newPile.remove_controller (dstNewPile);
+      dstNewPile.reset ();
+   }
 
    if (aDNDHand.size ())
       for (unsigned int i (0); i < hands[0].size (); ++i)
@@ -295,11 +320,11 @@ void Machiavelli::disableHuman () {
 
    unregisterTableDND ();
    nextTurn.set_sensitive (false);
-   nxtTurn->set_sensitive (false);
+   nxtTurn->set_enabled (false);
 
    if (undo.empty ()) {
-      undo1->set_sensitive (false);
-      undoAll->set_sensitive (false);
+      undo1->set_enabled (false);
+      undoAll->set_enabled (false);
    }
 }
 
@@ -346,17 +371,17 @@ void Machiavelli::endTurn () {
       obj.generalize (_("Can't end turn: The piles are not valid!"));
       undoDlg = new XGP::MessageDlg (obj);
       undoDlg->set_title (PACKAGE);
-      undoDlg->get_window ()->set_transient_for (this->get_window ());
+      if (Gtk::Root* root = get_root ())
+         if (Gtk::Window* win = dynamic_cast<Gtk::Window*> (root))
+            undoDlg->set_transient_for (*win);
       undoDlg->signal_response ().connect (mem_fun (*this, &Machiavelli::removeUndoDlg));
 
       // Add undo-buttons
-      Gtk::Button* undoAll (manage (new Gtk::Button (_("_Undo all"), true)));
-      Gtk::Button* undoLast (manage (new Gtk::Button (_("Undo _last"), true)));
+      Gtk::Button* undoAll (Gtk::make_managed<Gtk::Button> (_("_Undo all"), true));
+      Gtk::Button* undoLast (Gtk::make_managed<Gtk::Button> (_("Undo _last"), true));
 
-      undoAll->show ();
-      undoLast->show ();
-      undoDlg->get_action_area ()->pack_end (*undoAll, Gtk::PACK_SHRINK, 5);
-      undoDlg->get_action_area ()->pack_end (*undoLast, Gtk::PACK_SHRINK, 5);
+      undoDlg->add_action_widget (*undoLast, 0);
+      undoDlg->add_action_widget (*undoAll, 0);
 
       undoAll->signal_clicked ().connect
 	 (bind (mem_fun (*this, &Machiavelli::undoMove), -1U));
@@ -426,17 +451,26 @@ void Machiavelli::registerHandDND (unsigned int iCard) {
    Card::Widget& card (*hands[0][iCard]);
    Check3 (aDNDHand.find (&card) == aDNDHand.end ());
 
-   // Card accepts drops from hand and drags from table
-   card.drag_dest_set (dndTypeHand, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
-   card.drag_source_set
-      (dndTypeHand, Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
-       Gdk::ACTION_MOVE);
+   CONNECTIONS conn;
 
-   card.drag_source_set_icon (card.getImage ());
-   aDNDHand[&card].connReceive = card.signal_drag_data_received ().connect
-      (bind (mem_fun (*this, &Machiavelli::cardDropped), iCard));
-   aDNDHand[&card].connGet = card.signal_drag_data_get ().connect
-      (bind (mem_fun (*this, &Machiavelli::getDropData), iCard));
+   // Card accepts drops from hand (re-ordering within the hand) ...
+   conn.dst = Gtk::DropTarget::create (G_TYPE_INT, Gdk::DragAction::MOVE);
+   conn.dst->signal_drop ().connect
+      ([this, iCard] (const Glib::ValueBase& value, double, double) -> bool {
+          return cardDropped (value, iCard); }, false);
+   card.add_controller (conn.dst);
+
+   // ... and can be dragged (within the hand)
+   conn.src = Gtk::DragSource::create ();
+   conn.src->set_actions (Gdk::DragAction::MOVE);
+   conn.src->signal_prepare ().connect
+      ([iCard] (double, double) -> Glib::RefPtr<Gdk::ContentProvider> {
+          Glib::Value<int> v; v.init (Glib::Value<int>::value_type ());
+          v.set (makeDNDPayload (HAND, iCard));
+          return Gdk::ContentProvider::create (v); }, false);
+   card.add_controller (conn.src);
+
+   aDNDHand[&card] = conn;
 }
 
 //-----------------------------------------------------------------------------
@@ -450,10 +484,8 @@ void Machiavelli::unregisterHandDND (Card::Widget& card) {
    std::map<Card::Widget*, CONNECTIONS>::iterator i (aDNDHand.find (&card));
    Check1 (i != aDNDHand.end ());
 
-   card.drag_dest_unset ();
-   card.drag_source_unset ();
-   i->second.connReceive.disconnect ();
-   i->second.connGet.disconnect ();
+   card.remove_controller (i->second.dst);
+   card.remove_controller (i->second.src);
    aDNDHand.erase (i);
 }
 
@@ -491,17 +523,26 @@ void Machiavelli::registerTableDND (Card::Widget& card, unsigned int nr) {
    TRACE9 ("Machiavelli::registerTableDND (Card::Widget&, unsigned int) - " << card
            << " = " << std::hex << nr << std::dec);
 
-   // Card accepts drops from hand and drags from table
-   card.drag_dest_set (dndTypeBoth, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_MOVE);
-   card.drag_source_set
-       (dndTypeTable, Gdk::ModifierType (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK),
-        Gdk::ACTION_MOVE);
-   card.drag_source_set_icon (card.getImage ());
+   CONNECTIONS conn;
 
-   aDNDTable[&card].connReceive = card.signal_drag_data_received ().connect
-      (bind (mem_fun (*this, &Machiavelli::cardDroppedOnTable), nr));
-   aDNDTable[&card].connGet = card.signal_drag_data_get ().connect
-      (bind (mem_fun (*this, &Machiavelli::getDropData), nr));
+   // Card accepts drops from hand and from the table ...
+   conn.dst = Gtk::DropTarget::create (G_TYPE_INT, Gdk::DragAction::MOVE);
+   conn.dst->signal_drop ().connect
+      ([this, nr] (const Glib::ValueBase& value, double, double) -> bool {
+          return cardDroppedOnTable (value, nr); }, false);
+   card.add_controller (conn.dst);
+
+   // ... and can be dragged from the table
+   conn.src = Gtk::DragSource::create ();
+   conn.src->set_actions (Gdk::DragAction::MOVE);
+   conn.src->signal_prepare ().connect
+      ([nr] (double, double) -> Glib::RefPtr<Gdk::ContentProvider> {
+          Glib::Value<int> v; v.init (Glib::Value<int>::value_type ());
+          v.set (makeDNDPayload (TABLE, nr));
+          return Gdk::ContentProvider::create (v); }, false);
+   card.add_controller (conn.src);
+
+   aDNDTable[&card] = conn;
 }
 
 //-----------------------------------------------------------------------------
@@ -511,14 +552,13 @@ void Machiavelli::registerTableDND (Card::Widget& card, unsigned int nr) {
 void Machiavelli::unregisterTableDND (Card::Widget& card) {
    TRACE9 ("Machiavelli::unregisterTableDND (unsigned int) - Card: " << card
            << " - " << &card );
-   Check1 (aDNDTable.size () > 1);
+   Check1 (aDNDTable.size ());
 
    std::map<Card::Widget*, CONNECTIONS>::iterator i (aDNDTable.find (&card));
    Check1 (i != aDNDTable.end ());
 
-   card.drag_dest_unset ();
-   i->second.connGet.disconnect ();
-   i->second.connReceive.disconnect ();
+   card.remove_controller (i->second.dst);
+   card.remove_controller (i->second.src);
    aDNDTable.erase (i);
 }
 
@@ -528,8 +568,8 @@ void Machiavelli::unregisterTableDND (Card::Widget& card) {
 void Machiavelli::unregisterTableDND () {
    for (std::map<Card::Widget*, CONNECTIONS>::iterator i (aDNDTable.begin ());
         i != aDNDTable.end (); ++i) {
-      i->second.connGet.disconnect ();
-      i->second.connReceive.disconnect ();
+      i->first->remove_controller (i->second.dst);
+      i->first->remove_controller (i->second.src);
    }
 
    aDNDTable.clear ();
@@ -537,42 +577,33 @@ void Machiavelli::unregisterTableDND () {
 
 //-----------------------------------------------------------------------------
 /// Callback after dropping a card (within the hand)
-/// \param pContext Context of the drag (contains things like source,
-///     target, action, ...)
-/// \param data Describes the thing which was dropped
-/// \param time Timestamp of the drag
+/// \param value Drag payload (see makeDNDPayload())
 /// \param card Number of card where something was dropped at
-/// \pre \c pContext not NULL; Expects \c info to be 0
+/// \returns bool True, if the drop was handled
 //-----------------------------------------------------------------------------
-void Machiavelli::cardDropped (const Glib::RefPtr<Gdk::DragContext>& context,
-                               gint, gint, const Gtk::SelectionData& data, guint,
-                               guint32 time, unsigned int card) {
-   Check3 (!context->get_is_source ());
-   Check3 (data.get_length () == sizeof (int));
-   Check3 (data.get_format () == 8);
+bool Machiavelli::cardDropped (const Glib::ValueBase& value, unsigned int card) {
    Check3 (card < hands[0].size ());
 
-   unsigned int* pValue (reinterpret_cast <unsigned int*>
-                         (const_cast<guint8*> (data.get_data ())));
-   Check3 (pValue);
-   Check3 (*pValue < hands[0].size ());
-   TRACE1 ("Machiavelli::cardDropped (...) - Inserting card " << *pValue
+   Glib::Value<int> v; v.init (value.gobj ());
+   Check3 (dndInfo (v.get ()) == HAND);
+   unsigned int srcPos (dndPos (v.get ()));
+   Check3 (srcPos < hands[0].size ());
+   TRACE1 ("Machiavelli::cardDropped (...) - Inserting card " << srcPos
            << " at pos " << card);
 
-   context->drag_finish (true, false, time);                     // End old DND
-
-   Card::Widget& cardMoved (hands[0].remove (*pValue));
+   Card::Widget& cardMoved (hands[0].remove (srcPos));
    hands[0].insert (cardMoved, card);                     // Insert moved card
 
-   // Adapt dnd-settigns
-   if (*pValue < card) {
+   // Adapt dnd-settings
+   if (srcPos < card) {
       unsigned int temp (card);
-      card = *pValue;
-      *pValue = temp;
+      card = srcPos;
+      srcPos = temp;
    }
 
    Glib::signal_idle ().connect
-       (bind (mem_fun (*this, &Machiavelli::doRegisterHand), card, *pValue));
+       (bind (mem_fun (*this, &Machiavelli::doRegisterHand), card, srcPos));
+   return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -591,51 +622,22 @@ bool Machiavelli::doRegisterHand (unsigned int first, unsigned int last) {
 }
 
 //-----------------------------------------------------------------------------
-/// Callback to query the data to drop
-/// \param pContext Context of the drag (contains things like source,
-///   target, action, ...)
-/// \param data Describes the thing which was dropped
-/// \param time Timestamp of the drag
-/// \param cardPos Position of card (either in hand or pile on table)
-/// \pre \c pContext not NULL; Expects \c info to be 0
-//-----------------------------------------------------------------------------
-void Machiavelli::getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
-                               Gtk::SelectionData& data, guint, guint32 time,
-                               unsigned int cardPos) {
-   Check1 (pContext->get_is_source ());
-
-   data.set (data.get_target (), 8, reinterpret_cast <guchar*> (&cardPos),
-             sizeof (cardPos));
-}
-
-//-----------------------------------------------------------------------------
 /// Callback after dropping a card on the table
-/// \param pContext Context of the drag (contains things like source,
-///   target, action, ...)
-/// \param data Describes the thing which was dropped
-/// \param info Describes the type of data (should be HAND or TABLE)
-/// \param time Timestamp of the drag
+/// \param value Drag payload (see makeDNDPayload())
 /// \param iCard Combination of card and pile on which card was dropped
-/// \pre \c pContext not NULL;
+///     (or -1U if dropped on the "new pile" label)
+/// \returns bool True, if the drop was handled
 //-----------------------------------------------------------------------------
-void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
-                                      gint, gint, const Gtk::SelectionData& data,
-                                      guint info, guint32 time, unsigned int iCard) {
+bool Machiavelli::cardDroppedOnTable (const Glib::ValueBase& value, unsigned int iCard) {
+   Glib::Value<int> v; v.init (value.gobj ());
+   unsigned int info (dndInfo (v.get ()));
+   unsigned int pos (dndPos (v.get ()));
    TRACE1 ("Machiavelli::cardDroppedOnTable (...) - Card dropped on " << std::hex
            << (int)iCard << std::dec << "; " << info);
-   Check1 (!context->get_is_source ());
-   Check1 (data.get_length () == sizeof (int));
-   Check1 (data.get_format () == 8);
    Check1 ((info == HAND) || (info == TABLE));
 
-   unsigned int* pValue (reinterpret_cast <unsigned int*>
-                         (const_cast<guint8*> (data.get_data ())));
-   TRACE1 ("Machiavelli::cardDroppedOnTable (...) - Inserting card " << std::hex
-           << *pValue << std::hex << " in pile");
-   Check2 (pValue);
-
-   unsigned int nrpile (*pValue >> 8);
-   unsigned int off (*pValue & 0xff);
+   unsigned int nrpile (pos >> 8);
+   unsigned int off (pos & 0xff);
    Check2 ((info == HAND)
            ? (off < hands[0].size ())
            : (nrpile < tablePiles.size () && (off < tablePiles[nrpile]->size ())));
@@ -660,22 +662,19 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       iPile = iCard >> 8;
 
       // Ignore dnd from a pile to itself
-      if ((info == TABLE) && (iPile == nrpile)) {
-         context->drag_finish (true, false, time);
-         return;
-      }
+      if ((info == TABLE) && (iPile == nrpile))
+         return true;
 
       Check1 (iPile < tablePiles.size ());
       pile = tablePiles[iPile];
 
       iCard = pile->getPosition4Card (*moved);
       if (iCard == -1U) {
-         context->drag_finish (true, false, time);
-         Gtk::MessageDialog dlg (_("This card does not fit on that pile!"),
-                                 Gtk::MESSAGE_ERROR);
+         Gtk::MessageDialog dlg (_("This card does not fit on that pile!"), false,
+                                 Gtk::MessageType::ERROR);
          dlg.set_title (_("Invalid move"));
-         dlg.run ();
-         return;
+         XGP::runModal (dlg);
+         return false;
       }
 
       // Check if only cards from an edge are moved to a numbered pile
@@ -683,12 +682,11 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
 	  && ((off != (tablePiles[nrpile]->size () - 1)) && off)
 	  && (info == TABLE)
 	  && (moved->number () == (*pile)[0]->number ())) {
-	 context->drag_finish (true, false, time);
-	 Gtk::MessageDialog dlg (_("Can't move this card - try splitting the origin first!"),
-				 Gtk::MESSAGE_ERROR);
+	 Gtk::MessageDialog dlg (_("Can't move this card - try splitting the origin first!"), false,
+				 Gtk::MessageType::ERROR);
 	 dlg.set_title (_("Invalid move"));
-	 dlg.run ();
-	 return;
+	 XGP::runModal (dlg);
+	 return false;
       }
 
       if (info == TABLE) {
@@ -712,9 +710,6 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       }
    }
    Check3 (pile);
-
-   // End old drag
-   context->drag_finish (true, false, time);
 
    // Store undo-info 4 Bytes: Target-pile, target-card, source-pile,
    // source-card; if played from hand, set source-pile to 0xff
@@ -764,7 +759,7 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
       checkPiles (obj, true);
       if (obj.getType () == YGP::StatusObject::UNDEFINED) {
 	 doEndTurn ();
-	 return;
+	 return true;
       }
    }
 
@@ -796,15 +791,16 @@ void Machiavelli::cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& cont
    }
 
    // Re-register the cards in the hand of the human for DND
-   if ((info ==HAND) && *pValue < hands[0].size ())
-      registerHandDND (*pValue, hands[0].size () - 1);
+   if ((info ==HAND) && pos < hands[0].size ())
+      registerHandDND (pos, hands[0].size () - 1);
    Check3 (aDNDHand.size () == hands[0].size ());
 
    pile->markValidity ();
 
    undo.push (val);
-   undo1->set_sensitive (true);
-   undoAll->set_sensitive (true);
+   undo1->set_enabled (true);
+   undoAll->set_enabled (true);
+   return true;
 }
 
 //----------------------------------------------------------------------------
@@ -1393,10 +1389,10 @@ bool Machiavelli::reorderTableToFit4 () {
 void Machiavelli::dealCard (unsigned int player) {
    TRACE5 ("Machiavelli::dealCard (unsigned int) - " << player);
    if (staple.size () == 1) {
-      Gtk::MessageDialog dlg (_("Taking last card! Solve the game (somehow) ..."),
-                              Gtk::MESSAGE_ERROR);
+      Gtk::MessageDialog dlg (_("Taking last card! Solve the game (somehow) ..."), false,
+                              Gtk::MessageType::ERROR);
       dlg.set_title (_("Game over"));
-      dlg.run ();
+      XGP::runModal (dlg);
    }
 
    if (staple.size ()) {
@@ -1404,7 +1400,7 @@ void Machiavelli::dealCard (unsigned int player) {
       if (pos == -1U)
 	 pos = hands[player].size ();
       animateCard (hands[player], pos, staple, staple.size () - 1)
-	 .sigAnimation.connect (mem_fun (this, &Machiavelli::endComputerMove));
+	 .sigAnimation.connect (mem_fun (*this, &Machiavelli::endComputerMove));
    }
 }
 
@@ -1496,8 +1492,8 @@ void Machiavelli::undoMove (unsigned int number) {
 	 undoDlg = NULL;
       }
 
-      undo1->set_sensitive (false);
-      undoAll->set_sensitive (false);
+      undo1->set_enabled (false);
+      undoAll->set_enabled (false);
    }
    else
       if (undoDlg) {
@@ -1726,56 +1722,58 @@ unsigned int Machiavelli::getActTarget () const {
 
 //-----------------------------------------------------------------------------
 /// Adds machiavelli-specific menus
-/// \param mgrUI UIManager to add to
+/// \param menu Menu (placeholder for the game's own entries) to add to
+/// \param actions Action group the game's actions get registered into
+/// \remarks GTK4 moved keyboard accelerators to the Gtk::Application level
+///     (Gtk::Application::set_accel_for_action); registering them for these
+///     actions ("game.MachiUndo" etc.) is left to the caller.
 //-----------------------------------------------------------------------------
-void Machiavelli::addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
-   Check1 (mgrUI);
-   Glib::ustring ui ("<menubar name='Menu'>"
-		     "  <placeholder name='GameMenu'>"
-		     "    <menu action='MB'>"
-		     "      <menuitem action='MachiUndo'/>"
-		     "      <menuitem action='MachiUndoAll'/>"
-		     "      <separator/>"
-		     "      <menuitem action='MachiSort'/>"
-		     "      <menuitem action='MachiSortCol'/>"
-		     "      <separator/>"
-		     "      <menuitem action='MachiEndTurn'/>"
-		     "    </menu></placeholder></menubar>");
+void Machiavelli::addMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                            const Glib::RefPtr<Gio::SimpleActionGroup>& actions) {
+   Check1 (menu); Check1 (actions);
 
-   Glib::RefPtr<Gtk::ActionGroup> grpAction (Gtk::ActionGroup::create ());
-   grpAction->add (Gtk::Action::create ("MB", _("_Machiavelli")));
-   grpAction->add (undo1 = Gtk::Action::create ("MachiUndo", Gtk::Stock::UNDO),
-		   Gtk::AccelKey ("<ctl>Z"),
-		   bind (mem_fun (*this, &Machiavelli::undoMove), 1));
-   grpAction->add (undoAll = Gtk::Action::create ("MachiUndoAll", _("Undo _all")),
-		   Gtk::AccelKey ("<ctl><alt>Z"),
-		   bind (mem_fun (*this, &Machiavelli::undoMove), -1U));
-   grpAction->add (Gtk::Action::create ("MachiSort", Gtk::Stock::SORT_ASCENDING,
-					_("_Sort cards (by number)")),
-		   Gtk::AccelKey ("<shft>S"),
-		   mem_fun (*this, &Machiavelli::sortHand));
-   grpAction->add (Gtk::Action::create ("MachiSortCol", Gtk::Stock::SORT_ASCENDING,
-					_("Sort cards (by _colour)")),
-		   Gtk::AccelKey ("S"),
-		   mem_fun (*this, &Machiavelli::sortHandByColour));
-   grpAction->add (nxtTurn = Gtk::Action::create ("MachiEndTurn", _("_End turn")),
-		   mem_fun (*this, (&Machiavelli::endTurn)));
+   Glib::RefPtr<Gio::Menu> menuMachi (Gio::Menu::create ());
 
+   Glib::RefPtr<Gio::Menu> secUndo (Gio::Menu::create ());
+   undo1 = actions->add_action ("MachiUndo", bind (mem_fun (*this, &Machiavelli::undoMove), 1));
+   secUndo->append (_("_Undo"), "game.MachiUndo");
+   undoAll = actions->add_action ("MachiUndoAll", bind (mem_fun (*this, &Machiavelli::undoMove), -1U));
+   secUndo->append (_("Undo _all"), "game.MachiUndoAll");
+   menuMachi->append_section (secUndo);
 
-   mgrUI->insert_action_group (grpAction);
-   idMrg = mgrUI->add_ui_from_string (ui);
+   Glib::RefPtr<Gio::Menu> secSort (Gio::Menu::create ());
+   actions->add_action ("MachiSort", mem_fun (*this, &Machiavelli::sortHand));
+   secSort->append (_("_Sort cards (by number)"), "game.MachiSort");
+   actions->add_action ("MachiSortCol", mem_fun (*this, &Machiavelli::sortHandByColour));
+   secSort->append (_("Sort cards (by _colour)"), "game.MachiSortCol");
+   menuMachi->append_section (secSort);
 
-   undo1->set_sensitive (false);
-   undoAll->set_sensitive (false);
+   Glib::RefPtr<Gio::Menu> secEnd (Gio::Menu::create ());
+   nxtTurn = actions->add_action ("MachiEndTurn", mem_fun (*this, (&Machiavelli::endTurn)));
+   secEnd->append (_("_End turn"), "game.MachiEndTurn");
+   menuMachi->append_section (secEnd);
+
+   menu->append_submenu (_("_Machiavelli"), menuMachi);
+
+   undo1->set_enabled (false);
+   undoAll->set_enabled (false);
 }
 
 //-----------------------------------------------------------------------------
 /// Removes the machiavelli-specific menus
-/// \param mgrUI UIManager to remove from
+/// \param menu Menu to remove the game's entries from
+/// \param actions Action group to remove the game's actions from
 //-----------------------------------------------------------------------------
-void Machiavelli::removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI) {
-   Check1 (mgrUI);
-   mgrUI->remove_ui (idMrg);
+void Machiavelli::removeMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                               const Glib::RefPtr<Gio::SimpleActionGroup>& actions) {
+   Check1 (menu); Check1 (actions);
+
+   menu->remove_all ();
+   actions->remove_action ("MachiUndo");
+   actions->remove_action ("MachiUndoAll");
+   actions->remove_action ("MachiSort");
+   actions->remove_action ("MachiSortCol");
+   actions->remove_action ("MachiEndTurn");
 }
 
 //-----------------------------------------------------------------------------

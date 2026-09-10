@@ -35,9 +35,16 @@
 #include <glibmm/main.h>
 
 #include <gtkmm/box.h>
-#include <gtkmm/menu.h>
 #include <gtkmm/statusbar.h>
 #include <gtkmm/messagedialog.h>
+#include <gtkmm/popovermenu.h>
+
+#include <giomm/menu.h>
+#include <giomm/simpleactiongroup.h>
+
+#include <gdkmm/rectangle.h>
+
+#include <XGP/XDialog.h>
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -69,8 +76,8 @@ namespace Card {
 //-----------------------------------------------------------------------------
 Game::Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset,
            const std::vector<Player*>& player, unsigned int posPlayer,
-           YGP::Mutex& mxSerialize, unsigned int rows, unsigned int columns)
-   : Gtk::Table(rows, columns), status(statusbar) , cards(cardset),
+           YGP::Mutex& mxSerialize, unsigned int, unsigned int)
+   : Gtk::Grid(), status(statusbar) , cards(cardset),
      activeCards(), actPlayers(player), mxSerializeMsgs(mxSerialize),
      posServer(posPlayer), pos2Play(-1U) , pos1Play(-1U), ignoreNextMsg(false),
      data(NULL), statGame(NONE) , actPlayer(0), stati(), wonCards(),
@@ -80,10 +87,12 @@ Game::Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset,
    Check3(cardset.size());
 
    show();
-   set_col_spacings(2);
-   set_row_spacings(2);
+   set_column_spacing(2);
+   set_row_spacing(2);
 
-   parent.pack_start(*this, true, true, 5);
+   set_hexpand(); set_vexpand();
+   set_margin(5);
+   parent.append(*this);
 
    stati.pendingTurn = stati.restart = 0;
 }
@@ -94,7 +103,10 @@ Game::Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset,
 Game::~Game() {
    TRACE9("Game::~Game()");
    clean();
-   delete pMenuPopSort;
+   if (pMenuPopSort) {
+      pMenuPopSort->unparent();
+      delete pMenuPopSort;
+   }
 }
 
 
@@ -203,9 +215,9 @@ bool Game::randomiseCardsToPile(IPile& pile) const {
          writeError(*cmgr.getSocket(), 99, error.what());
          Glib::ustring err(_("Received invalid input from the server!\n\nReason: %1"));
          err.replace(err.find("%1"), 2, _(error.what()));
-         Gtk::MessageDialog dlg(err, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+         Gtk::MessageDialog dlg(err, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
          dlg.set_title(PACKAGE);
-         dlg.run();
+         XGP::runModal (dlg);
          return false;
       }
    }
@@ -450,39 +462,50 @@ void Game::showWonCards(bool show, unsigned int style) {
 }
 
 //-----------------------------------------------------------------------------
-/// Callback for any event for the top of the won cards
-/// \param event Caused event
+/// Callback for a left click onto the top of the won cards
 //-----------------------------------------------------------------------------
-bool Game::wonCardsSelected(GdkEvent* event) {
-   TRACE9("Game::wonCardsSelected(GdkEvent*) - " << event->type);
+void Game::wonCardsSelectedLeft() {
+   TRACE9("Game::wonCardsSelectedLeft()");
+   Check3(pWonPile);
+   showWonCards(pWonPile->getShowOption() == IPile::SHOWBACK);
+}
 
-   if (event->type == GDK_BUTTON_PRESS) {
-      GdkEventButton* bev((GdkEventButton*)(event));
-      switch (bev->button) {
-      case 1:
-         Check3(pWonPile);
-         showWonCards(pWonPile->getShowOption() == IPile::SHOWBACK);
-         break;
+//-----------------------------------------------------------------------------
+/// Callback for a right click onto the top of the won cards; shows a popup
+/// menu to sort the won cards
+/// \param x X-coordinate (card-relative) of the click
+/// \param y Y-coordinate (card-relative) of the click
+/// \param card Card which was clicked
+//-----------------------------------------------------------------------------
+void Game::wonCardsSelectedRight(double x, double y, Card::Widget& card) {
+   TRACE9("Game::wonCardsSelectedRight(2x double, Widget&) - " << x << '/' << y);
 
-      case 3: {
-         if (!pMenuPopSort) {
-            TRACE9("Game::wonCardsSelected(GdkEvent*) - Creating menu");
-            pMenuPopSort = new Gtk::Menu;
-	    Gtk::MenuItem* item(new Gtk::MenuItem(_("Sort by _number")));
-	    item->signal_activate().connect(mem_fun(*this, &Game::sortWonByNumber));
-            pMenuPopSort->append(*Gtk::manage(item));
-
-	    item = new Gtk::MenuItem(_("Sort by _colour"));
-	    item->signal_activate().connect(mem_fun(*this, &Game::sortWonByColour));
-            pMenuPopSort->append(*Gtk::manage(item));
-         }
-         pMenuPopSort->popup(bev->button, bev->time);
-         break; }
-      }
-      return true;
+   if (pMenuPopSort) {
+      pMenuPopSort->unparent();
+      delete pMenuPopSort;
+      pMenuPopSort = NULL;
    }
 
-   return false;
+   Glib::RefPtr<Gio::SimpleActionGroup> actions(Gio::SimpleActionGroup::create());
+   Glib::RefPtr<Gio::Menu> menu(Gio::Menu::create());
+
+   actions->add_action("sortnumber", mem_fun(*this, &Game::sortWonByNumber));
+   menu->append(_("Sort by _number"), "wonsort.sortnumber");
+
+   actions->add_action("sortcolour", mem_fun(*this, &Game::sortWonByColour));
+   menu->append(_("Sort by _colour"), "wonsort.sortcolour");
+
+   insert_action_group("wonsort", actions);
+
+   pMenuPopSort = new Gtk::PopoverMenu(menu);
+   pMenuPopSort->set_parent(*this);
+   pMenuPopSort->set_has_arrow(false);
+
+   double gx(x), gy(y);
+   card.translate_coordinates(*this, x, y, gx, gy);
+   Gdk::Rectangle rect(static_cast<int>(gx), static_cast<int>(gy), 1, 1);
+   pMenuPopSort->set_pointing_to(rect);
+   pMenuPopSort->popup();
 }
 
 //-----------------------------------------------------------------------------
@@ -519,8 +542,12 @@ bool Game::enableActWonCards() {
 
    Check3(pWonPile);
    TRACE9("Game::enableActWonCards() - Enabling " << pWonPile->size() << " cards");
-   for (int i(pWonPile->size()); i;)
-      wonCards.push_back((*pWonPile)[--i]->signal_event ().connect (mem_fun (*this, (&Game::wonCardsSelected))));
+   for (int i(pWonPile->size()); i;) {
+      Card::Widget& card(*(*pWonPile)[--i]);
+      wonCards.push_back(card.signal_clicked().connect(mem_fun(*this, &Game::wonCardsSelectedLeft)));
+      wonCards.push_back(card.signal_right_clicked().connect
+                         (sigc::bind(mem_fun(*this, &Game::wonCardsSelectedRight), std::ref(card))));
+   }
    return false;
 }
 
@@ -600,9 +627,9 @@ void Game::writeMessage(YGP::Socket& socket, const std::string& msg) {
    catch (YGP::CommError& error) {
       std::string err(_("Can't write message!\n\nReason: %1"));
       err.replace(err.find("%1"), 2, error.what());
-      Gtk::MessageDialog dlg(msg, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      Gtk::MessageDialog dlg(msg, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
       dlg.set_title(PACKAGE);
-      dlg.run();
+      XGP::runModal (dlg);
    }
 }
 
@@ -773,16 +800,18 @@ bool Game::ignoreMessage() {
 
 //-----------------------------------------------------------------------------
 /// Adds game-specific menus
-/// \param mgrUI UIManager to add to
+/// \param menu Menu to add game-specific entries to
+/// \param actions Action group to add game-specific actions to
 //-----------------------------------------------------------------------------
-void Game::addMenus(Glib::RefPtr<Gtk::UIManager> mgrUI) {
+void Game::addMenus(const Glib::RefPtr<Gio::Menu>&, const Glib::RefPtr<Gio::SimpleActionGroup>&) {
 }
 
 //-----------------------------------------------------------------------------
 /// Removes the game-specific menus
-/// \param mgrUI UIManager to add to
+/// \param menu Menu to remove game-specific entries from
+/// \param actions Action group to remove game-specific actions from
 //-----------------------------------------------------------------------------
-void Game::removeMenus(Glib::RefPtr<Gtk::UIManager> mgrUI) {
+void Game::removeMenus(const Glib::RefPtr<Gio::Menu>&, const Glib::RefPtr<Gio::SimpleActionGroup>&) {
 }
 
 //-----------------------------------------------------------------------------

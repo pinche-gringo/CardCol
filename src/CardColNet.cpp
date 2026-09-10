@@ -76,16 +76,16 @@
 bool CardgameCollection::stopClientWaiting () {
    if (cmgr.getMode () == YGP::ConnectionMgr::CLIENT) {
       Gtk::MessageDialog dlg (_("Stop waiting for the server to start the game and start a local one?"),
-			      false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+			      false, Gtk::MessageType::QUESTION, Gtk::ButtonsType::YES_NO);
       dlg.set_title (PACKAGE);
-      if (dlg.run () == Gtk::RESPONSE_YES) {
+      if (XGP::runModal (dlg) == static_cast<int> (Gtk::ResponseType::YES)) {
 	 Check3 (aCommThreads.size () == 1);
 	 cmgr.changeMode (YGP::ConnectionMgr::NONE);
 	 aCommThreads[0]->cancel ();
 	 delete aCommThreads[0];
 	 aCommThreads.clear ();
 
-	 apMenus[CHAT]->set_sensitive (false);
+	 apMenus[CHAT]->set_enabled (false);
       }
       else
 	 return false;
@@ -130,7 +130,7 @@ void CardgameCollection::initCommunication () {
       }
    }
 
-   apMenus[CHAT]->set_sensitive ();
+   apMenus[CHAT]->set_enabled (true);
 }
 
 //----------------------------------------------------------------------------
@@ -216,7 +216,7 @@ void* CardgameCollection::waitForMessages (void* thread) {
 
    aCommThreads.erase (find (aCommThreads.begin (), aCommThreads.end (), thread));
    if (aCommThreads.empty ()) {
-      apMenus[CHAT]->set_sensitive (false);
+      apMenus[CHAT]->set_enabled (false);
       cmgr.changeMode (YGP::ConnectionMgr::NONE);
    }
 
@@ -433,7 +433,7 @@ void CardgameCollection::showChatDlg () {
    if (dlgChat)
       dlgChat->present ();
    else {
-      dlgChat = ChatDlg::create (get_window ());
+      dlgChat = ChatDlg::create (*this);
       dlgChat->signal_response ().connect (mem_fun (*this, &CardgameCollection::closeChat));
       dlgChat->signalSend.connect (mem_fun (*this, &CardgameCollection::sendMessage));
    }

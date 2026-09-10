@@ -42,7 +42,7 @@ class AnimatedCard : public XGP::AnimatedWindow {
    ~AnimatedCard ();
 
    /// Signal emitted, when the animation is finished
-   sigc::signal<void> sigAnimation;
+   sigc::signal<void()> sigAnimation;
 
    void getEndPos (int& x, int& y);
    void start ();

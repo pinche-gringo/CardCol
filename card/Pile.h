@@ -44,6 +44,19 @@
 namespace Card {
 
 
+/// Gtk::Box with a fixed vertical orientation, replacing the removed Gtk::VBox
+class VBox : public Gtk::Box {
+ public:
+   VBox() : Gtk::Box(Gtk::Orientation::VERTICAL) { }
+};
+
+/// Gtk::Box with a fixed horizontal orientation, replacing the removed Gtk::HBox
+class HBox : public Gtk::Box {
+ public:
+   HBox() : Gtk::Box(Gtk::Orientation::HORIZONTAL) { }
+};
+
+
 /**Class to display a pile of cards on the screen
  */
 class IPile {
@@ -225,11 +238,12 @@ class IPile {
 /**Specializations of IPile to display. The template must support the
  * following methods:
  *
- *   - pack_start()
+ *   - append()
  *   - remove()
- *   - reorder_child()
+ *   - insert_child_at_start() / insert_child_after()
+ *   - reorder_child_at_start() / reorder_child_after()
  *
- * Designed to be used with the Gtk::?Box-classes
+ * Designed to be used with the Card::VBox/Card::HBox-classes
  */
 template <class T> class Pile : public T, public IPile {
  public:
@@ -238,7 +252,7 @@ template <class T> class Pile : public T, public IPile {
 
    virtual void setTopCard(Widget& newCard) {
       IPile::setTopCard(newCard);
-      T::pack_start(newCard, Gtk::PACK_SHRINK); }
+      T::append(newCard); }
    void setTopCard(Widget& newCard, bool visible) {
       IPile::setTopCard(newCard, visible); }
 
@@ -248,8 +262,10 @@ template <class T> class Pile : public T, public IPile {
       return card; }
 
    virtual unsigned int insert(Widget& card, unsigned int pos) {
-      T::pack_start(card, Gtk::PACK_SHRINK);
-      T::reorder_child(card, pos);
+      if (pos)
+         T::insert_child_after(card, *IPile::operator[](pos - 1));
+      else
+         T::insert_child_at_start(card);
       return IPile::insert(card, pos);
    }
 
@@ -282,16 +298,22 @@ template <class T> class Pile : public T, public IPile {
 
  protected:
    virtual void resortGUI() {
-      for (unsigned int i(0); i < size(); ++i)
-         Gtk::Box::reorder_child(*operator[](i), i);
+      for (unsigned int i(0); i < size(); ++i) {
+         if (i)
+            T::reorder_child_after(*operator[](i), *operator[](i - 1));
+         else
+            T::reorder_child_at_start(*operator[](i));
+      }
       if (size())
          resize(size() - 1, NORMAL);
    }
 
    virtual void insertCardFast(Widget& card, unsigned int offset) {
       IPile::insertCardFast(card, offset);
-      T::pack_start(card, Gtk::PACK_SHRINK);
-      T::reorder_child(card, offset);
+      if (offset)
+         T::insert_child_after(card, *IPile::operator[](offset - 1));
+      else
+         T::insert_child_at_start(card);
    }
 
    virtual Widget& removeCardFast(unsigned int offset) {
@@ -305,23 +327,23 @@ template <class T> class Pile : public T, public IPile {
 };
 
 
-typedef Pile<Gtk::VBox>  VPile;
-typedef Pile<Gtk::HBox>  HPile;
+typedef Pile<Card::VBox>  VPile;
+typedef Pile<Card::HBox>  HPile;
 
 
-/// Implementation of the getCompressedSize() method for Gtk::VBox
-template <> unsigned int Pile<Gtk::VBox>::getCompressedSize(PileStyle s);
-/// Implementation of the getSize() method for Gtk::VBox
-template <> void Pile<Gtk::VBox>::getSize(int& width, int& height);
-/// Implementation of the resize() methods for Gtk::VBox
-template <> void Pile<Gtk::VBox>::resize(unsigned int pos, PileStyle s);
-template <> void Pile<Gtk::VBox>::resize(Card::Widget& card, PileStyle s);
+/// Implementation of the getCompressedSize() method for Card::VBox
+template <> unsigned int Pile<Card::VBox>::getCompressedSize(PileStyle s);
+/// Implementation of the getSize() method for Card::VBox
+template <> void Pile<Card::VBox>::getSize(int& width, int& height);
+/// Implementation of the resize() methods for Card::VBox
+template <> void Pile<Card::VBox>::resize(unsigned int pos, PileStyle s);
+template <> void Pile<Card::VBox>::resize(Card::Widget& card, PileStyle s);
 
-/// Implementation of the getCompressionRate() method for Gtk::HBox
+/// Implementation of the getCompressionRate() method for Card::HBox
 template <> unsigned int HPile::getCompressedSize(PileStyle s);
-/// Implementation of the getSize() method for Gtk::HBox
+/// Implementation of the getSize() method for Card::HBox
 template <> void HPile::getSize(int& width, int& height);
-///Implementation of the resize() methods for Gtk::HBox
+///Implementation of the resize() methods for Card::HBox
 template <> void HPile::resize(unsigned int pos, PileStyle s);
 template <> void HPile::resize(Card::Widget& card, PileStyle s);
 
@@ -392,8 +414,8 @@ template <class T> class InfoPile: public Pile<T> {
    }
 };
 
-typedef InfoPile<Gtk::VBox>  VInfoPile;
-typedef InfoPile<Gtk::HBox>  HInfoPile;
+typedef InfoPile<Card::VBox>  VInfoPile;
+typedef InfoPile<Card::HBox>  HInfoPile;
 
 }
 

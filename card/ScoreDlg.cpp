@@ -36,6 +36,7 @@
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
+#include "Pile.h"
 #include "Player.h"
 #include "ScoreDlg.h"
 
@@ -50,18 +51,22 @@ int ScoreDlg::LASTY (-1);
 /// \param player Vector with player
 //-----------------------------------------------------------------------------
 ScoreDlg::ScoreDlg (const std::vector<Player*>& player)
-   : XDialog (OK), client (new Gtk::HBox), aColumns () {
+   : XDialog (OK), client (new Card::HBox), aColumns () {
    TRACE9 ("ScoreDlg::ScoreDlg ()");
    set_title (_("Score"));
 
    for (unsigned int i (0); i < player.size (); ++i) {
       aColumns.push_back (new column ());
-      client->pack_start (aColumns.back ()->getBox (), true, true, 15);
+      Gtk::Box& box (aColumns.back ()->getBox ());
+      box.set_hexpand (); box.set_vexpand ();
+      box.set_margin_start (15); box.set_margin_end (15);
+      client->append (box);
    }
    update (player);
 
    client->show ();
-   get_vbox ()->pack_start (*client, Gtk::SHRINK, 5);
+   client->set_margin (5);
+   get_content_area ()->append (*client);
    display ();
 }
 
@@ -74,7 +79,8 @@ ScoreDlg::~ScoreDlg () {
         i != aColumns.end (); ++i)
       delete *i;
 
-   get_position (LASTX, LASTY);
+   // Remark: Under GTK4 a client can no longer query a window's position
+   // (see AnimWindow.h); LASTX/LASTY are kept only for source compatibility.
 }
 
 
@@ -111,8 +117,7 @@ void ScoreDlg::addPoints (const std::vector<int>& aPoints) {
 //-----------------------------------------------------------------------------
 void ScoreDlg::okEvent () {
    TRACE9 ("ScoreDlg::okEvent ()");
-   get_position (LASTX, LASTY);
-   TRACE1 ("ScoreDlg::okEvent () - Position: " << LASTX << '/' << LASTY);
+   // Remark: Under GTK4 a client can no longer query a window's position (see AnimWindow.h)
    hide ();
 }
 
@@ -170,20 +175,27 @@ void ScoreDlg::update (const std::vector<Player*>& player) {
 /// Constructor
 //-----------------------------------------------------------------------------
 ScoreDlg::column::column ()
-   : pBox (new Gtk::VBox ()) , pTitle (new Gtk::Label ())
-     , pSum (new NumLabel (0)) , pSep (new Gtk::HSeparator ()) {
+   : pBox (new Card::VBox ()) , pTitle (new Gtk::Label ())
+     , pSum (new NumLabel (0)) , pSep (new Gtk::Separator (Gtk::Orientation::HORIZONTAL))
+     , pLastEntry (NULL) {
    pBox->show ();
    pTitle->show ();
    pSum->show ();
    pSep->show ();
 
-   pTitle->set_justify (Gtk::JUSTIFY_CENTER);
-   pTitle->set_alignment (0.5, 0);
-   pSum->set_alignment (1.0, 0);
+   pTitle->set_justify (Gtk::Justification::CENTER);
+   pTitle->set_xalign (0.5); pTitle->set_yalign (0);
+   pSum->set_xalign (1.0); pSum->set_yalign (0);
 
-   pBox->pack_start (*pTitle, Gtk::PACK_EXPAND_PADDING, 5);
-   pBox->pack_end (*pSum, false, false, 3);
-   pBox->pack_end (*pSep, false, false, 0);
+   pTitle->set_vexpand ();
+   pTitle->set_margin_top (5); pTitle->set_margin_bottom (5);
+   pBox->append (*pTitle);
+   pLastEntry = pTitle.get ();
+
+   pBox->append (*pSep);
+
+   pSum->set_margin_top (3); pSum->set_margin_bottom (3);
+   pBox->append (*pSum);
 }
 
 //-----------------------------------------------------------------------------
@@ -198,11 +210,12 @@ ScoreDlg::column::~column () {
 /// \param points Number to add to column
 //-----------------------------------------------------------------------------
 void ScoreDlg::column::addEntry (int points) {
-   Check3 (pBox);
-   NumLabel* label (Gtk::manage (new NumLabel (points)));
-   label->set_alignment (1.0, 0);
+   Check3 (pBox); Check3 (pLastEntry);
+   NumLabel* label (Gtk::make_managed<NumLabel> (points));
+   label->set_xalign (1.0); label->set_yalign (0);
    label->show ();
-   pBox->pack_start (*label, false, false, 0);
+   pBox->insert_child_after (*label, *pLastEntry);
+   pLastEntry = label;
 
    pSum->getAttribute () += points;
    pSum->update ();
@@ -235,9 +248,8 @@ void ScoreDlg::display (ScoreDlg** dlg) {
 //-----------------------------------------------------------------------------
 void ScoreDlg::display () {
    if (!get_visible ()) {
-      TRACE1 ("ScoreDlg::display () - Position: " << LASTX << '/' << LASTY);
+      // Remark: Under GTK4 a client can no longer set a window's position (see AnimWindow.h)
       show ();
-      move (LASTX, LASTY);
    }
 }
 

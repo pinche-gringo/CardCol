@@ -30,7 +30,7 @@
 
 
 namespace Gtk {
-   class HBox;
+   class Box;
    class Label;
    class Widget;
    class Separator;
@@ -101,6 +101,7 @@ class ScoreDlg : public XGP::XDialog {
       PLabel     pTitle;
       PNumLabel  pSum;
       PSeparator pSep;
+      Gtk::Widget* pLastEntry;      ///< Last entry-widget added, to insert the next one after it
    };
 
    std::vector<column*> aColumns;

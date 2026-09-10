@@ -29,6 +29,8 @@
 
 #include <XGP/XDialog.h>
 
+#include <card/Pile.h>
+
 
 namespace YGP {
    class DirectorySearch;
@@ -65,7 +67,7 @@ class DeckSelectDlg : public XGP::XDialog {
       return dlg; }
 
    /// Signal emitted, when changing deck/back is confirmed
-   sigc::signal<void, const std::string&, const std::string&> setDecks;
+   sigc::signal<void(const std::string&, const std::string&)> setDecks;
 
  protected:
    virtual void okEvent();
@@ -94,13 +96,13 @@ class DeckSelectDlg : public XGP::XDialog {
    Glib::RefPtr<Gtk::ListStore> mDecks;
    Glib::RefPtr<Gtk::ListStore> mBacks;
 
-   Gtk::HBox     boxDecks;
+   Card::HBox    boxDecks;
    Gtk::Label    txtDecks;
    Gtk::Image    selDeck;
    Gtk::IconView decks;
 
    Gtk::Image    selBack;
-   Gtk::HBox     boxBack;
+   Card::HBox    boxBack;
    Gtk::Label    txtBack;
    Gtk::IconView backs;
 };

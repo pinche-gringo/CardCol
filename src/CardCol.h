@@ -39,6 +39,11 @@
 namespace Gtk {
    class Dialog;
 }
+namespace Gio {
+   class Menu;
+   class SimpleAction;
+   class SimpleActionGroup;
+}
 
 namespace Card {
    class Game;
@@ -77,30 +82,13 @@ class CardgameCollection: public XGP::XApplication {
 #ifdef WITH_NETWORK
 	  CONNECT, CHAT,
 #endif
-	  END, STARTGAMES_MENU = END,
-#ifdef WITH_BURACO
-	  BURACO,
-#endif
-#ifdef WITH_HEARTS
-	  HEARTS,
-#endif
-#ifdef WITH_JABBERWOCKY
-	  JABBERWOCKY,
-#endif
-#ifdef WITH_MACHIAVELLI
-	  MACHIAVELLI,
-#endif
-#ifdef WITH_ROVHULT
-	  ROVHULT,
-#endif
-#ifdef WITH_SGTMAYOR
-	  SGTMAYOR,
-#endif
-#ifdef WITH_TWOPART
-	  TWOPART,
-#endif
+	  END,
 	  LAST };
-   Glib::RefPtr<Gtk::Action> apMenus[LAST];
+   Glib::RefPtr<Gio::SimpleAction> apMenus[LAST];
+   Glib::RefPtr<Gio::SimpleAction> actChgGame;   ///< Radio-action selecting the active game
+
+   Glib::RefPtr<Gio::Menu> menuGameSection;              ///< Section filled by the active game's addMenus()
+   Glib::RefPtr<Gio::SimpleActionGroup> actionsGame;      ///< Actions used by the active game's menu
 
    // Protected manager functions
    CardgameCollection(const CardgameCollection&);

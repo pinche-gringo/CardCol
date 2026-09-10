@@ -28,6 +28,8 @@
 
 #include <YGP/Trace.h>
 
+#include <gtkmm/native.h>
+
 #include "Pile.h"
 #include "Widget.h"
 
@@ -36,6 +38,16 @@
 
 namespace Card {
 
+namespace {
+   /// Returns the surface a widget is (indirectly) shown on
+   /// \remarks Replaces the GTK3 Gtk::Widget::get_window(); under GTK4 a
+   ///     widget no longer owns its own Gdk::Window, only its toplevel does
+   Glib::RefPtr<Gdk::Surface> surfaceOf (Gtk::Widget& w) {
+      Gtk::Native* native (w.get_native ());
+      return native ? native->get_surface () : Glib::RefPtr<Gdk::Surface> ();
+   }
+}
+
 //-----------------------------------------------------------------------------
 /// Constructor
 /// \param dest Destination pile
@@ -43,7 +55,7 @@ namespace Card {
 /// \param src Source card
 //-----------------------------------------------------------------------------
 AnimatedCard::AnimatedCard (IPile& dest, unsigned int posDest, Gtk::Widget& src)
-   : XGP::AnimatedWindow (src.get_window ()), sigAnimation (), dest (dest), posDest (posDest) {
+   : XGP::AnimatedWindow (surfaceOf (src)), sigAnimation (), dest (dest), posDest (posDest) {
    TRACE9 ("AnimatedCard::AnimatedCard (IPile&, unsigned int, Gtk::Widget&) - " << posDest);
 }
 
@@ -99,9 +111,12 @@ void AnimatedCard::getEndPos (int& x, int& y) {
    Check2 (dest.size ());
    Widget* widget ((posDest == -1U) ? dest[0]
 		   : dest[(posDest >= dest.size ()) ? posDest - 1 : posDest]);
-   Check2 (widget); Check2 (widget->get_window ()); Check2 (win);
+   Check2 (widget);
 
-   widget->get_window ()->get_origin (x, y);
+   // Remark: Under GTK4 there is no way to query a widget's on-screen
+   // position anymore (see AnimWindow.h); animateTo() is a no-op, so the
+   // actual coordinates returned here are inconsequential.
+   x = y = 0;
    TRACE9 ("AnimatedCard::getEndPos (2x int&) - " << (int)posDest << " Dest: " << x << '/' << y);
 }
 
@@ -144,7 +159,7 @@ Window* Window::create (IPile& dest, unsigned int posDest, IPile& src, unsigned 
 void Window::start () {
    TRACE8 ("Window::start ()");
    AnimatedCard::start ();
-   win->raise ();
+   // Remark: win->raise() is not possible anymore under GTK4 (see AnimWindow.h)
    src.resize (posSrc, IPile::NORMAL);
 }
 
@@ -196,10 +211,9 @@ void PileWindow::getEndPos (int& x, int& y) {
    Window::getEndPos (x, y);
 
    // Also move the remaining cards
-   Glib::RefPtr<Gdk::Window> oldWin (win);
+   Glib::RefPtr<Gdk::Surface> oldWin (win);
    for (unsigned int i (posSrc + 1); i <= last; ++i) {
-      Check3 (src[i]->get_window ());
-      win = src[i]->get_window (); Check3 (win);
+      win = surfaceOf (*src[i]); Check3 (win);
       animateTo (x, y);
    }
    win = oldWin;
@@ -211,10 +225,7 @@ void PileWindow::getEndPos (int& x, int& y) {
 void PileWindow::start () {
    TRACE8 ("PileWindow::start ()");
    Window::start ();
-   for (unsigned int i (posSrc + 1); i <= last; ++i) {
-      Check3 (src[i]->get_window ());
-      src[i]->get_window ()->raise ();
-   }
+   // Remark: raising the remaining cards is not possible anymore under GTK4 (see AnimWindow.h)
 }
 
 //-----------------------------------------------------------------------------
@@ -363,7 +374,7 @@ void PileWindows::addWindow (IPile& src, unsigned int start, unsigned int end) {
 /// \param end Last card of source to animate
 //-----------------------------------------------------------------------------
 PileWindows::AnimatedPile::AnimatedPile (IPile& src, unsigned int start, unsigned int end)
-   : XGP::AnimatedWindow (src[start]->get_window ()),
+   : XGP::AnimatedWindow (surfaceOf (*src[start])),
      source (src), first (start), last (end), posDest (0) {
    TRACE9 ("PileWindows::AnimatedPile::AnimatedPile (IPile&, 2x unsigned int)");
 }
@@ -384,10 +395,7 @@ void PileWindows::AnimatedPile::getEndPos (int& x, int& y) {
 //-----------------------------------------------------------------------------
 void PileWindows::AnimatedPile::start () {
    TRACE1 ("PileWindows::AnimatedPile::start ()");
-   for (unsigned int i (first); i <= last; ++i) {
-      Check3 (source[i]->get_window ());
-      source[i]->get_window ()->raise ();
-   }
+   // Remark: raising the cards is not possible anymore under GTK4 (see AnimWindow.h)
 }
 
 //-----------------------------------------------------------------------------
@@ -401,12 +409,11 @@ void PileWindows::AnimatedPile::animateTo (int x, int y) {
    XGP::AnimatedWindow::animateTo (x, y);
 
    // Also move the remaining cards
-   Glib::RefPtr<Gdk::Window> oldWin (win);
+   Glib::RefPtr<Gdk::Surface> oldWin (win);
    for (unsigned int i (first + 1); i <= last; ++i) {
-      Check3 (source[i]->get_window ());
-      win = source[i]->get_window (); Check3 (win);
-      TRACE9 ("PileWindows::AnimatedPile::animateTo (2x int) - Visible " << win->is_visible ());
-      if (win->is_visible ())
+      win = surfaceOf (*source[i]); Check3 (win);
+      TRACE9 ("PileWindows::AnimatedPile::animateTo (2x int) - Mapped " << win->get_mapped ());
+      if (win->get_mapped ())
 	 XGP::AnimatedWindow::animateTo (x, y);
    }
    win = oldWin;

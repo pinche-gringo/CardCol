@@ -22,8 +22,7 @@
 #include <string>
 #include <vector>
 
-#include <gtkmm/table.h>
-#include <gtkmm/uimanager.h>
+#include <gtkmm/grid.h>
 
 #include <YGP/Mutex.h>
 #include <YGP/Exception.h>
@@ -34,10 +33,13 @@
 // Forward declarations
 namespace Gtk {
    class Box;
-   class Menu;
    class Dialog;
-   class MenuShell;
    class Statusbar;
+   class PopoverMenu;
+}
+namespace Gio {
+   class Menu;
+   class SimpleActionGroup;
 }
 namespace YGP {
    class Socket;
@@ -57,7 +59,7 @@ namespace Card {
 
 /**Abstract base class providing usefull methods for card games.
 */
-class Game: public Gtk::Table {
+class Game: public Gtk::Grid {
  public:
    /// Stati of the game
    enum {NONE=0,                           ///< Class created; game not started
@@ -84,8 +86,10 @@ class Game: public Gtk::Table {
    virtual void clean();
    virtual const char* name() = 0;
    virtual void changeNames(const std::vector<Player*>& newPlayer);
-   virtual void addMenus(Glib::RefPtr<Gtk::UIManager> mgrUI);
-   virtual void removeMenus(Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu,
+                         const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+   virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu,
+                            const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
    virtual void resizeCards();
    //@}
 
@@ -185,7 +189,8 @@ class Game: public Gtk::Table {
    static bool stringToNumber(unsigned long& number, const char* text);
 
    // Handling of won cards (if any)
-   bool wonCardsSelected(GdkEvent *event);
+   void wonCardsSelectedLeft();
+   void wonCardsSelectedRight(double x, double y, Card::Widget& card);
    virtual void showWonCards(bool show=true, unsigned int style=-1U);
    int  enableWonCards(IPile& pile) {
       pWonPile = &pile;
@@ -230,7 +235,7 @@ class Game: public Gtk::Table {
 
    std::vector<sigc::connection> wonCards;     // Connections to show won cards
    IPile*                        pWonPile;
-   Gtk::Menu*                    pMenuPopSort;
+   Gtk::PopoverMenu*             pMenuPopSort;
 
    std::string cardOrder;
 };

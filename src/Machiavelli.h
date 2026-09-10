@@ -26,7 +26,11 @@
 
 #include <gtkmm/label.h>
 #include <gtkmm/button.h>
+#include <gtkmm/dragsource.h>
+#include <gtkmm/droptarget.h>
 #include <gtkmm/scrolledwindow.h>
+
+#include <giomm/simpleaction.h>
 
 #include <XGP/AutoContainer.h>
 
@@ -65,8 +69,10 @@ class Machiavelli : public Card::Game {
    virtual const char* name () { return "Machiavelli"; }
    virtual void playOpen (bool);
 
-   virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
-   virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void addMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                          const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+   virtual void removeMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                             const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
 
    virtual unsigned int numberOfDecks () const { return 4; }
    virtual void resizeCards ();
@@ -120,15 +126,9 @@ class Machiavelli : public Card::Game {
    void registerHandDND (unsigned int start, unsigned int end);
    void registerHandDND (unsigned int iCard);
    void unregisterHandDND (Card::Widget& card);
-   void getDropData (const Glib::RefPtr<Gdk::DragContext>& pContext,
-                     Gtk::SelectionData& data, guint, guint32 time,
-                     unsigned int cardPos);
-   void cardDropped (const Glib::RefPtr<Gdk::DragContext>& pContext, gint, gint,
-                     const Gtk::SelectionData& pData, guint info, guint32 time,
-                     unsigned int card);
-   void cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& pContext, gint,
-                            gint, const Gtk::SelectionData& data, guint info, guint32 time,
-                            unsigned int cardPile);
+
+   bool cardDropped (const Glib::ValueBase& value, unsigned int card);
+   bool cardDroppedOnTable (const Glib::ValueBase& value, unsigned int cardPile);
 
    bool doRegisterHand (unsigned int first, unsigned int last);
    //@}
@@ -155,12 +155,13 @@ class Machiavelli : public Card::Game {
    unsigned int startPlayer;
 
    Gtk::Label       newPile;
+   Glib::RefPtr<Gtk::DropTarget> dstNewPile;
    Card::VInfoPile    staple;
    Gtk::Button      nextTurn;
 
    typedef struct {
-      sigc::connection connReceive;
-      sigc::connection connGet;
+      Glib::RefPtr<Gtk::DragSource> src;
+      Glib::RefPtr<Gtk::DropTarget> dst;
    } CONNECTIONS;
    std::map<Card::Widget*, CONNECTIONS> aDNDHand;
    std::map<Card::Widget*, CONNECTIONS> aDNDTable;
@@ -203,10 +204,9 @@ class Machiavelli : public Card::Game {
 
    XGP::MessageDlg* undoDlg;
 
-   Glib::RefPtr<Gtk::Action> undo1;
-   Glib::RefPtr<Gtk::Action> undoAll;
-   Glib::RefPtr<Gtk::Action> nxtTurn;
-   Gtk::UIManager::ui_merge_id idMrg;
+   Glib::RefPtr<Gio::SimpleAction> undo1;
+   Glib::RefPtr<Gio::SimpleAction> undoAll;
+   Glib::RefPtr<Gio::SimpleAction> nxtTurn;
 };
 
 #endif

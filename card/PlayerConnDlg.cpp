@@ -32,7 +32,7 @@
 
 #include <gtkmm/entry.h>
 #include <gtkmm/label.h>
-#include <gtkmm/table.h>
+#include <gtkmm/grid.h>
 #include <gtkmm/messagedialog.h>
 
 #include <cardgames-cfg.h>
@@ -69,13 +69,17 @@ PlayerConnectDlg::PlayerConnectDlg (std::vector<Player*>& player,
    TRACE8 ("PlayerConnectDlg::PlayerConnectDlg (std::vector<Player*>&, "
            "const Glib::ustring&, ConnectionMgr&");
 
-   pClient->resize (3, 4);
-   pClient->attach (*lblConnected, 0, 1, 3, 4, Gtk::SHRINK, Gtk::FILL, 5, 3);
-   pClient->attach (*connected, 1, 2, 3, 4, Gtk::FILL | Gtk::EXPAND,
-                    Gtk::SHRINK, 5, 3);
+   lblConnected->set_margin_start (5); lblConnected->set_margin_end (5);
+   lblConnected->set_margin_top (3); lblConnected->set_margin_bottom (3);
+   pClient->attach (*lblConnected, 0, 3);
 
-   lblConnected->set_alignment (0, 0);
-   connected->set_alignment (0, 0);
+   connected->set_hexpand ();
+   connected->set_margin_start (5); connected->set_margin_end (5);
+   connected->set_margin_top (3); connected->set_margin_bottom (3);
+   pClient->attach (*connected, 1, 3);
+
+   lblConnected->set_xalign (0); lblConnected->set_yalign (0);
+   connected->set_xalign (0); connected->set_yalign (0);
    lblConnected->show ();
    connected->show ();
 }
@@ -112,7 +116,7 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player, const Glib
                                         YGP::ConnectionMgr& connMgr) {
    unsigned int pos (0);
    PlayerConnectDlg* dlg (new PlayerConnectDlg (player, defPort, connMgr));
-   dlg->run ();
+   XGP::runModal (*dlg);
    pos = dlg->posPlayer;
    delete dlg;
    return pos;
@@ -131,8 +135,8 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
    PlayerConnectDlg* dlg (new PlayerConnectDlg (player, "0", cmgr));
    Check3 (dlg->pPort); Check3 (dlg->pWait);
    dlg->pPort->set_text (listenAt);
-   dlg->pWait->clicked ();
-   dlg->run ();
+   dlg->pWait->activate ();
+   XGP::runModal (*dlg);
    pos = dlg->posPlayer;
    delete dlg;
    return pos;
@@ -154,7 +158,7 @@ unsigned int PlayerConnectDlg::perform (std::vector<Player*>& player,
    Check3 (dlg->pPort); Check3 (dlg->pConnect); Check3 (dlg->pTarget);
    dlg->pTarget->set_text (host);
    dlg->pPort->set_text (hostPort);
-   dlg->pConnect->clicked ();
+   dlg->pConnect->activate ();
    pos = dlg->posPlayer;
    delete dlg;
    return pos;
@@ -238,9 +242,9 @@ void PlayerConnectDlg::connect (const Glib::ustring& target, unsigned int port) 
       error.replace (error.find ("%1"), 2, err);
    }
    if (error.size ()) {
-      Gtk::MessageDialog dlg (error, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      Gtk::MessageDialog dlg (error, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
       dlg.set_title (PACKAGE);
-      dlg.run ();
+      XGP::runModal (dlg);
    }
 }
 
@@ -308,9 +312,9 @@ YGP::Socket* PlayerConnectDlg::addClient (int socket) {
       error.replace (error.find ("%1"), 2, err);
    }
    if (error.size ()) {
-      Gtk::MessageDialog dlg (error, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      Gtk::MessageDialog dlg (error, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
       dlg.set_title (PACKAGE);
-      dlg.run ();
+      XGP::runModal (dlg);
    }
    return sock;
 }

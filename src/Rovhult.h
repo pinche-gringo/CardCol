@@ -30,6 +30,12 @@
 #include <card/Game.h>
 
 
+namespace Gtk {
+   class DragSource;
+   class DropTarget;
+}
+
+
 /**Class to handle the Rovhult-cardgame
  */
 class Rovhult : public Card::Game {
@@ -60,22 +66,14 @@ class Rovhult : public Card::Game {
 
  private:
    enum { EXCHANGE = Game::LAST, EXCHANGED };
-   enum { HAND = 0, TABLE = 1 };
 
    // Protected manager functions
    Rovhult (const Rovhult&);
    const Rovhult& operator= (const Rovhult&);
 
    // Drag and drop handling
-   void getDropData (const Glib::RefPtr<Gdk::DragContext>& context,
-                     Gtk::SelectionData& data, guint info, guint32 time,
-                     unsigned int cardPos);
-   void cardDroppedOnTable (const Glib::RefPtr<Gdk::DragContext>& context,
-                            int, int, const Gtk::SelectionData& selection_data,
-                            guint, guint time, unsigned int pile);
-   void cardDroppedOnHand (const Glib::RefPtr<Gdk::DragContext>& context,
-                           int, int, const Gtk::SelectionData& selection_data, guint,
-                           guint time, unsigned int card);
+   bool cardDroppedOnTable (unsigned int handCard, unsigned int pile);
+   bool cardDroppedOnHand (unsigned int tablePile, unsigned int card);
 
    void registerHandDND (Card::Widget& card, unsigned int iCard);
    void registerTableDND (Card::Widget& card, unsigned int pile);
@@ -161,17 +159,17 @@ class Rovhult : public Card::Game {
    unsigned int cEndgame;
    bool noMoreHumans () const;
 
-   static std::vector<Gtk::TargetEntry> dndTypeHand;
-   static std::vector<Gtk::TargetEntry> dndTypeTable;
-
    void disconnectCard (const Card::Widget& card);
    void disconnectCardInHand (const Card::Widget& card);
    void disconnectCardOnTable (const Card::Widget& card);
 
-   std::map <const Card::Widget*, sigc::connection> aTableDND;
-   std::map <const Card::Widget*, sigc::connection> aHandDND;
-   std::map <const Card::Widget*, sigc::connection> aHandData;
-   std::map <const Card::Widget*, sigc::connection> aTableData;
+   // Drop targets (accepting drops onto a card) and drag sources (dragging
+   // from a card); GTK4 replaces the whole GTK3 DND API with per-widget
+   // event controllers which must be kept alive/removable.
+   std::map <const Card::Widget*, Glib::RefPtr<Gtk::DropTarget> > aTableDND;
+   std::map <const Card::Widget*, Glib::RefPtr<Gtk::DropTarget> > aHandDND;
+   std::map <const Card::Widget*, Glib::RefPtr<Gtk::DragSource> > aHandData;
+   std::map <const Card::Widget*, Glib::RefPtr<Gtk::DragSource> > aTableData;
 
    static Card::Widget::NUMBERS cardNuke;
    static Card::Widget::NUMBERS cardSkip;

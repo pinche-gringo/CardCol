@@ -29,6 +29,12 @@
 #include <card/Game.h>
 
 
+namespace Gio {
+   class Menu;
+   class SimpleActionGroup;
+}
+
+
 /**Class to handle the Twopart-cardgame
  */
 class Twopart : public Card::Game {
@@ -99,8 +105,10 @@ class Twopart : public Card::Game {
    void makeMove (unsigned int player);
    bool endRound (unsigned int& player);
 
-   virtual void addMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
-   virtual void removeMenus (Glib::RefPtr<Gtk::UIManager> mgrUI);
+   virtual void addMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                          const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+   virtual void removeMenus (const Glib::RefPtr<Gio::Menu>& menu,
+                             const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
 
    static char sortOrder[4];
    static bool compByColourAccTrumps (const Card::Widget* a, const Card::Widget* b);
@@ -135,7 +143,7 @@ class Twopart : public Card::Game {
       playerCards& operator= (const playerCards&);
    } players[NUM_PLAYERS];
 
-   Gtk::UIManager::ui_merge_id idMrg;
+   int idxMenu;                    ///< Index of this game's submenu-item within the passed Gio::Menu
 };
 
 #endif
