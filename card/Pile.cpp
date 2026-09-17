@@ -934,7 +934,6 @@ void IPile::getCards(unsigned int posDest, IPile& src, unsigned int start, int e
       }
       insertCardFast(card, posDest++);
    }
-   return;
    insert(src.remove(start), posDest);
 }
 
