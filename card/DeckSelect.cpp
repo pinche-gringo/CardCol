@@ -5,7 +5,7 @@
 //BUGS        :
 //AUTHOR      : Markus Schwab
 //CREATED     : 29.8.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2018
+//COPYRIGHT   : Copyright (C) 2002 - 2018, 2026
 
 // This file is part of CardCol.
 //
@@ -59,12 +59,18 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
      backs(), rendererBacks() {
    TRACE3("DeckSelectDlg::DeckSelectDlg(2x const std::string&) - " << deck << " - " << back);
 
+   // Remark: Without an explicit default size, the window would grow to the
+   //     natural (unconstrained) size of the icon-views, easily filling the screen
+   set_default_size(800, 600);
+
    Gtk::ScrolledWindow* scrl(Gtk::make_managed<Gtk::ScrolledWindow>());
    scrl->set_has_frame(true);
    scrl->set_child(decks);
    scrl->set_policy(Gtk::PolicyType::NEVER, Gtk::PolicyType::AUTOMATIC);
+   scrl->set_propagate_natural_width(true); scrl->set_propagate_natural_height(true);
+   scrl->set_max_content_width(600); scrl->set_max_content_height(250);
    scrl->set_hexpand(); scrl->set_vexpand();
-   scrl->set_margin(50);
+   scrl->set_margin(5);
 
    boxDecks.append(*scrl);
    selDeck.set_size_request(Images::WIDTH, Images::HEIGHT);
@@ -77,8 +83,10 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
    scrl->set_has_frame(true);
    scrl->set_child(backs);
    scrl->set_policy(Gtk::PolicyType::NEVER, Gtk::PolicyType::AUTOMATIC);
+   scrl->set_propagate_natural_width(true); scrl->set_propagate_natural_height(true);
+   scrl->set_max_content_width(600); scrl->set_max_content_height(250);
    scrl->set_hexpand(); scrl->set_vexpand();
-   scrl->set_margin(50);
+   scrl->set_margin(5);
 
    boxBack.append(*scrl);
    selBack.set_size_request(Images::WIDTH, Images::HEIGHT);
