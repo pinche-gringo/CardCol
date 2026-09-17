@@ -34,6 +34,7 @@
 
 #include <string>
 #include <fstream>
+#include <locale>
 
 #include <gtkmm/popovermenubar.h>
 #include <gtkmm/messagedialog.h>
@@ -680,6 +681,7 @@ void CardgameCollection::editPreferences() {
 void CardgameCollection::savePreferences() {
    TRACE2("CardgameCollection::savePreferences() - Save file " << options.pNameINIFile);
    std::ofstream inifile(options.pNameINIFile);
+   inifile.imbue(std::locale::classic());   // Avoid locale-dependent thousands separators
    if (inifile) {
       options.strType = GameTypes::get()[options.type];
       YGP::INIFile::write(inifile, "Game", options);
