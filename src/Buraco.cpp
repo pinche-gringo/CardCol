@@ -100,6 +100,8 @@ Buraco::Buraco(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
 
    TRACE9("Buraco::Buraco(Box&, Statusbar&, Card::Set&, const std::vector<Glib::ustring>&) - Init common staples");
 
+   newPile.set_margin(5);
+   newPile.set_hexpand(); newPile.set_vexpand();
    boxTeam[0].append(newPile);
 
    for (unsigned int i(1); i < NUM_PLAYERS; ++i) {
@@ -2324,6 +2326,7 @@ void Buraco::sortHandByColour() {
 void Buraco::resizeCards() {
    staple.set_size_request(Card::Images::WIDTH, Card::Images::HEIGHT);
    dumped.set_size_request(Card::Images::WIDTH, Card::Images::HEIGHT);
+   newPile.set_size_request(Card::Images::WIDTH, Card::Images::HEIGHT);
    for (unsigned int i(0); i < NUM_PLAYERS; ++i)
       hands[i].set_size_request(-1, Card::Images::HEIGHT);
 
