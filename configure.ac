@@ -179,7 +179,52 @@ if test "$KDECARDS_DIR" != "no"; then
    AC_MSG_CHECKING(for KDE carddecks)
    dnl Try to find the KDE carddecks (if not specified)
    if test -z "$KDECARDS_DIR"; then
-      for version in 4.2 4.1 4.0 4 3.5 3.4 3.3 3.2 3.1 3.0 3; do
+      dnl Instead of a fixed (and ever-aging) list of version numbers,
+      dnl discover every <major>.<minor> version actually installed (by
+      dnl looking at the version-specific directories distributions use)
+      dnl and probe them from newest to oldest.
+      kde_versions=
+      for cardsdir in /opt/kde*/share/apps/carddecks \
+                       /usr/share/kde*/share/apps/carddecks \
+                       /usr/share/kde*/apps/carddecks \
+                       /usr/kde/*/share/apps/carddecks \
+                       /usr/kde*/share/apps/carddecks; do
+	 test -d "$cardsdir" || continue
+	 case $cardsdir in
+	    /opt/kde*)       v=${cardsdir#/opt/kde} ;;
+	    /usr/share/kde*) v=${cardsdir#/usr/share/kde} ;;
+	    /usr/kde/*)      v=${cardsdir#/usr/kde/} ;;
+	    /usr/kde*)       v=${cardsdir#/usr/kde} ;;
+	 esac
+	 v=${v%%/*}
+
+	 dnl keep only genuine <major>.<minor>, i.e. two dot-separated
+	 dnl integers - discard anything else (a bare "4", "4.2.1", "4.2-beta", ...)
+	 case $v in
+	    *.*.*) continue ;;
+	    *.*) ;;
+	    *) continue ;;
+	 esac
+	 kde_major=${v%%.*}
+	 kde_minor=${v#*.}
+	 case $kde_major in
+	    ''|*@<:@!0-9@:>@*) continue ;;
+	 esac
+	 case $kde_minor in
+	    ''|*@<:@!0-9@:>@*) continue ;;
+	 esac
+
+	 case " $kde_versions " in
+	    *" $v "*) ;;
+	    *) kde_versions="$kde_versions $v" ;;
+	 esac
+      done
+
+      dnl Sort descending, numerically on major and minor (not lexically -
+      dnl so e.g. 4.10 sorts above 4.9)
+      kde_versions=`for v in $kde_versions; do echo "$v"; done | sort -t. -k1,1nr -k2,2nr`
+
+      for version in $kde_versions; do
       	 for dir in /opt/kde$version/share/apps/carddecks \
                     /usr/share/kde$version/share/apps/carddecks \
                     /usr/share/kde$version/apps/carddecks \
