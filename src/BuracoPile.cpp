@@ -1,14 +1,11 @@
-//$Id$
-
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Buraco
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 27.09.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2005, 2007, 2008, 2010
+//COPYRIGHT   : Copyright (C) 2003 - 2005, 2007, 2008, 2010, 2026
 
 // This file is part of CardCol.
 //

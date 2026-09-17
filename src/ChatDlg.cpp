@@ -1,14 +1,11 @@
-//$Id$
-
 //PROJECT     : Cardgames
 //SUBSYSTEM   : ChatDlg
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 2005-06-29
-//COPYRIGHT   : Copyright (C) 2005, 2008
+//COPYRIGHT   : Copyright (C) 2005, 2008, 2026
 
 // This file is part of CardCol.
 //

@@ -3,10 +3,9 @@
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 03.08.2006
-//COPYRIGHT   : Copyright (C) 2006, 2008
+//COPYRIGHT   : Copyright (C) 2006, 2008, 2026
 
 // This file is part of CardCol.
 //

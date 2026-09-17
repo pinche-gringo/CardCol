@@ -5,7 +5,7 @@
 //BUGS        :
 //AUTHOR      : Markus Schwab
 //CREATED     : 9.9.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2018
+//COPYRIGHT   : Copyright (C) 2002 - 2018, 2026
 
 // This file is part of CardCol.
 //

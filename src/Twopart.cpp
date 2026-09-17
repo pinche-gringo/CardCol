@@ -1,14 +1,11 @@
-//$Id$
-
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Twopart
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 20.7.2002
-//COPYRIGHT   : Copyright (C) 2002 - 2009, 2011, 2024
+//COPYRIGHT   : Copyright (C) 2002 - 2009, 2011, 2024, 2026
 
 // This file is part of CardCol.
 //

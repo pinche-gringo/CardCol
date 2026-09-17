@@ -1,14 +1,11 @@
-//$Id$
-
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Machiavelli
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 05.11.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2006, 2008, 2009, 2024
+//COPYRIGHT   : Copyright (C) 2003 - 2006, 2008, 2009, 2024, 2026
 
 // This file is part of CardCol.
 //

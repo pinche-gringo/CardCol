@@ -1,14 +1,11 @@
-//$Id$
-
 //PROJECT     : Cardgames
 //SUBSYSTEM   : libCard
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 02.08.2006
-//COPYRIGHT   : Copyright (C) 2006, 2007
+//COPYRIGHT   : Copyright (C) 2006, 2007, 2026
 
 // This file is part of CardCol.
 //

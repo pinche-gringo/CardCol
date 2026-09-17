@@ -1,14 +1,11 @@
-//$Id$
-
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Sgt. Mayor
 //REFERENCES  :
 //TODO        :
 //BUGS        :
-//REVISION    : $Revision$
 //AUTHOR      : Markus Schwab
 //CREATED     : 11.4.2004
-//COPYRIGHT   : Copyright (C) 2004 - 2009
+//COPYRIGHT   : Copyright (C) 2004 - 2009, 2026
 
 // This file is part of CardCol.
 //

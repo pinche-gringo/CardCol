@@ -1,4 +1,3 @@
-
 //PROJECT     : Cardgames
 //SUBSYSTEM   : Jabberwocky
 //REFERENCES  :
@@ -6,7 +5,7 @@
 //BUGS        :
 //AUTHOR      : Markus Schwab
 //CREATED     : 09.08.2006
-//COPYRIGHT   : Copyright (C) 2006 - 2018, 2024
+//COPYRIGHT   : Copyright (C) 2006 - 2018, 2024, 2026
 
 // This file is part of CardCol.
 //
