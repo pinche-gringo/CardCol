@@ -114,6 +114,8 @@ Hearts::Hearts(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
    // Show played area
    played.setStyle(Card::IPile::COMPRESSED);
    played.set_margin(5);
+   played.set_halign(Gtk::Align::START);
+   played.set_valign(Gtk::Align::START);
    attach(played, 6, 7, 1, 1);
 
    resizeCards();
@@ -1095,5 +1097,6 @@ void Hearts::resizeCards() {
 	 won->set_size_request(Card::Images::WIDTH + 12 * 7, Card::Images::HEIGHT + 5);
       }
    }
-   played.set_size_request(Card::Images::WIDTH + 150, Card::Images::HEIGHT);
+   // played holds at most NUM_PLAYERS cards at COMPRESSED pitch (18px)
+   played.set_size_request(Card::Images::WIDTH + (NUM_PLAYERS - 1) * 18, Card::Images::HEIGHT);
 }
