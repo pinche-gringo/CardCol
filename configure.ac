@@ -43,6 +43,15 @@ LT_INIT
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
+dnl ImageMagick, used to (re)generate data/icons/hicolor/*/apps/CardCol.png
+dnl from data/CardCol.png; the icons are shipped pre-generated, so this is
+dnl only needed when data/CardCol.png itself is changed.
+AC_CHECK_PROGS(CONVERT, [magick convert], [])
+if test -z "$CONVERT"; then
+   AC_MSG_WARN([ImageMagick (magick or convert) not found - data/icons/hicolor/*/apps/CardCol.png can't be regenerated if data/CardCol.png is edited; the icons already checked in will be used as-is])
+fi
+AC_SUBST(CONVERT)
+
 AC_USE_SYSTEM_EXTENSIONS
 AM_GNU_GETTEXT
 
@@ -105,9 +114,9 @@ AC_ARG_ENABLE(saving,
               fi)
 
 AC_ARG_ENABLE(rovhult,
-              AS_HELP_STRING([--disable-rovhult],[Disables the Røvhult cardgame]))
+              AS_HELP_STRING([--disable-rovhult],[Disables the RÃ¸vhult cardgame]))
 if test "$enable_rovhult" != "no"; then
-   AC_DEFINE_UNQUOTED(WITH_ROVHULT, 1, [Define if the Røvhult cardgame shall be included])
+   AC_DEFINE_UNQUOTED(WITH_ROVHULT, 1, [Define if the RÃ¸vhult cardgame shall be included])
 fi
 AM_CONDITIONAL(SUPPORT_ROVHULT, test "$enable_rovhult" != "no")
 

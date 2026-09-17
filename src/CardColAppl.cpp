@@ -405,7 +405,7 @@ int CardgameAppl::perform (int, const char**) {
    TRACE5 ("CardgameAppl::perform (int, const char**) - Params: " << args);
    srand (time (NULL));              // Initialize the random number generator
 
-   Glib::RefPtr<Gtk::Application> gtkapp (Gtk::Application::create ("org.g17m0.cardcol"));
+   Glib::RefPtr<Gtk::Application> gtkapp(Gtk::Application::create("CardCol"));
 
    // Keyboard accelerators (replacing the per-Gtk::Action Gtk::AccelKey of GTK3;
    // the keys of New, End, Quit and SavePrefs were provided by Gtk::Stock)
