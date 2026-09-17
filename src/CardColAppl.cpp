@@ -407,7 +407,12 @@ int CardgameAppl::perform (int, const char**) {
 
    Glib::RefPtr<Gtk::Application> gtkapp (Gtk::Application::create ("org.g17m0.cardcol"));
 
-   // Keyboard accelerators (replacing the per-Gtk::Action Gtk::AccelKey of GTK3)
+   // Keyboard accelerators (replacing the per-Gtk::Action Gtk::AccelKey of GTK3;
+   // the keys of New, End, Quit and SavePrefs were provided by Gtk::Stock)
+   gtkapp->set_accel_for_action ("win.New", "<Control>n");
+   gtkapp->set_accel_for_action ("win.End", "<Control>w");
+   gtkapp->set_accel_for_action ("win.Quit", "<Control>q");
+   gtkapp->set_accel_for_action ("win.SavePrefs", "<Control>s");
    gtkapp->set_accel_for_action ("win.ChgDecks", "<Control>d");
    gtkapp->set_accel_for_action ("win.ChgNames", "<Control>c");
    gtkapp->set_accel_for_action ("win.Prefs", "F9");
