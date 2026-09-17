@@ -137,16 +137,12 @@ char Widget::strColour(Widget::COLOURS col) {
 void Widget::update() {
    TRACE3("Widget::update() - Card " << nrCard);
 
-   img.set_pixbuf (isVisible ? deck->getCardImage (nrCard) : deck->getCardBackground ());
-   // Glib::RefPtr<Gdk::Pixbuf> current(getShownImage());
-   // Glib::RefPtr<Gdk::Pixbuf> pic(isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground());
-   // TRACE1("Update" << (pic != current));
-   // if (pic != current) {
-   //     TRACE1("Update sizes " << pic->get_width() << '/' << current->get_width() << '/' << pic->get_height() << '/' << current->get_height());
-   //     if ((pic->get_width() != current->get_width()) || (pic->get_height() != current->get_height()))
-   //        pic = Gdk::Pixbuf::create_subpixbuf(current, 0, 0, pic->get_width(), pic->get_height());
-   //     img.set(pic);
-   // }
+   // Remark: Re-apply the current (possibly compressed) size-request, as it
+   //     crops the shown image to match; a plain img.set_pixbuf() would show
+   //     the full-sized image again, undoing any compression of the pile
+   int width, height;
+   get_size_request(width, height);
+   set_size_request(width, height);
 }
 
 //-----------------------------------------------------------------------------
