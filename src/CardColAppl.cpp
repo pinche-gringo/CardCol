@@ -426,18 +426,29 @@ int CardgameAppl::perform (int, const char**) {
 #ifdef WITH_BURACO
    gtkapp->set_accel_for_action
       (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::BURACO), "<Control>b");
+   gtkapp->set_accel_for_action ("game.BuracoUndo", "<Control>z");
+   gtkapp->set_accel_for_action ("game.BuracoSort", "S");
+   gtkapp->set_accel_for_action ("game.BuracoSortCol", "<Shift>S");
 #endif
 #ifdef WITH_HEARTS
    gtkapp->set_accel_for_action
       (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::HEARTS), "<Control>h");
+   gtkapp->set_accel_for_action ("game.HeartSort", "<Shift>S");
+   gtkapp->set_accel_for_action ("game.HeartSortCol", "S");
 #endif
 #ifdef WITH_JABBERWOCKY
    gtkapp->set_accel_for_action
       (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::JABBERWOCKY), "<Control>j");
+   gtkapp->set_accel_for_action ("game.JabberwockySort", "<Shift>S");
+   gtkapp->set_accel_for_action ("game.JabberwockySortCol", "S");
 #endif
 #ifdef WITH_MACHIAVELLI
    gtkapp->set_accel_for_action
       (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::MACHIAVELLI), "<Control>m");
+   gtkapp->set_accel_for_action ("game.MachiUndo", "<Control>z");
+   gtkapp->set_accel_for_action ("game.MachiUndoAll", "<Control><Alt>z");
+   gtkapp->set_accel_for_action ("game.MachiSort", "<Shift>S");
+   gtkapp->set_accel_for_action ("game.MachiSortCol", "S");
 #endif
 #ifdef WITH_ROVHULT
    gtkapp->set_accel_for_action
@@ -446,10 +457,18 @@ int CardgameAppl::perform (int, const char**) {
 #ifdef WITH_SGTMAYOR
    gtkapp->set_accel_for_action
       (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::SGTMAYOR), "<Control>y");
+   gtkapp->set_accel_for_action ("game.SgMayorSort", "<Shift>S");
+   gtkapp->set_accel_for_action ("game.SgMayorSortCol", "S");
 #endif
 #ifdef WITH_TWOPART
    gtkapp->set_accel_for_action
       (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::TWOPART), "<Control>t");
+   gtkapp->set_accel_for_action ("game.TwopartSort", "<Shift>S");
+   gtkapp->set_accel_for_action ("game.TwopartSortCol", "S");
+#endif
+#if defined(WITH_BURACO) || defined(WITH_HEARTS) || defined(WITH_JABBERWOCKY) \
+   || defined(WITH_SGTMAYOR)
+   gtkapp->set_accel_for_action ("game.showScoreDlg", "<Shift><Control>s");
 #endif
 
    return gtkapp->make_window_and_run<CardgameCollection> (0, NULL, options);
