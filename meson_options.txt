@@ -1,0 +1,35 @@
+option('nls', type: 'feature', value: 'auto',
+       description: 'National language support')
+option('network', type: 'boolean', value: false,
+       description: 'Enables the network capabilities')
+option('rsvg', type: 'feature', value: 'auto',
+       description: 'Use librsvg to load SVG carddecks (e.g. of KDE4)')
+
+option('debug-level', type: 'integer', min: -1, value: -1,
+       description: 'Enables additional traces with the passed level (-1: disabled)')
+option('checks', type: 'integer', min: -1, value: -1,
+       description: 'Enables additional (internal) checks with the passed level (-1: disabled)')
+option('saving', type: 'boolean', value: false,
+       description: 'Enables saving and loading games (for testing)')
+
+option('rovhult', type: 'boolean', value: true,
+       description: 'Include the Røvhult cardgame')
+option('twopart', type: 'boolean', value: true,
+       description: 'Include the Twopart cardgame')
+option('hearts', type: 'boolean', value: true,
+       description: 'Include the Hearts cardgame')
+option('buraco', type: 'boolean', value: true,
+       description: 'Include the Buraco cardgame')
+option('machiavelli', type: 'boolean', value: true,
+       description: 'Include the Machiavelli cardgame')
+option('sgtmayor', type: 'boolean', value: true,
+       description: 'Include the Sgt. Mayor cardgame')
+option('jabberwocky', type: 'boolean', value: true,
+       description: 'Include the Jabberwocky cardgame')
+
+option('kde-carddir', type: 'string', value: '',
+       description: 'Path to the KDE carddecks (empty: autodetect, "no": don\'t use)')
+option('gnome-carddir', type: 'string', value: '',
+       description: 'Path to the GNOME carddecks (empty: autodetect, "no": don\'t use)')
+option('cardpics-dir', type: 'string', value: '',
+       description: 'Path to the cardpics (empty: autodetect, "no": don\'t use)')
