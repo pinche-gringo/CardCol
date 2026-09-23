@@ -1,0 +1,20 @@
+---
+# Checks used to modernise the code base; run with e.g.
+#   run-clang-tidy -p <builddir> -header-filter='CardCol/(card|src)/'
+Checks: >
+  -*,
+  modernize-*,
+  -modernize-avoid-c-arrays,
+  -modernize-avoid-c-style-cast,
+  -modernize-macro-to-enum,
+  -modernize-return-braced-init-list,
+  -modernize-use-auto,
+  -modernize-use-default-member-init,
+  -modernize-use-designated-initializers,
+  -modernize-use-integer-sign-comparison,
+  -modernize-use-nodiscard,
+  -modernize-use-std-print,
+  -modernize-use-trailing-return-type
+HeaderFilterRegex: 'CardCol/(card|src)/'
+FormatStyle: file
+...

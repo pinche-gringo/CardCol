@@ -24,9 +24,9 @@
 
 #include <cardgames-cfg.h>
 
-#include <cstdlib>
-#include <ctime>
-
+#include <algorithm>
+#include <array>
+#include <memory>
 #include <sstream>
 
 #include <glibmm/main.h>
@@ -48,16 +48,15 @@
 #include <card/ComputerPlayer.h>
 #include <card/Images.h>
 #include <card/Player.h>
+#include <card/Random.h>
 #include <card/Set.h>
+#include <card/Tokenize.h>
 #include <card/Widget.h>
 #include <card/Window.h>
 
 #include "Twopart.h"
 
-const unsigned int Twopart::COLS_PLAYER[NUM_PLAYERS] = {1, 13, 7, 1};
-const unsigned int Twopart::ROWS_PLAYER[NUM_PLAYERS] = {10, 8, 4, 8};
-
-char Twopart::sortOrder[4];
+std::array<char, 4> Twopart::sortOrder{};
 
 //-----------------------------------------------------------------------------
 /// Defaultconstructor; all widget are created
@@ -71,7 +70,7 @@ char Twopart::sortOrder[4];
 Twopart::Twopart(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
                  unsigned int posPlayer, YGP::Mutex& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 12, 15), bfPlayers((1 << NUM_PLAYERS) - 1), offPos(0),
-      startPlayer(0), bfOldPlayers(bfPlayers), pTrump(NULL), played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE),
+      startPlayer(0), bfOldPlayers(bfPlayers), pTrump(nullptr), played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE),
       staple(Card::IPile::VERY_COMPRESSED, Card::IPile::SHOWBACK), idxMenu(-1) {
     staple.show();
     staple.set_margin(5);
@@ -131,8 +130,7 @@ void Twopart::start() {
             for (unsigned int j(0); j < 3; ++j)
                 players[(i - posServer) % NUM_PLAYERS].hand.insertSorted(staple.removeTopCard());
 
-        for (unsigned int i(0); i < (NUM_PLAYERS - 1); ++i)
-            startPos[i] = 0;
+        std::ranges::fill(startPos, 0U);
         offPos = 0;
 
         bfPlayers = bfOldPlayers = (1 << NUM_PLAYERS) - 1;
@@ -145,7 +143,7 @@ void Twopart::start() {
         players[0].won.setStyle(Card::IPile::QUITE_COMPRESSED);
 
         if (getConnectionMgr().getMode() != YGP::ConnectionMgr::CLIENT) {
-            setNextPlayer(startPlayer = rand() % NUM_PLAYERS);
+            setNextPlayer(startPlayer = Card::randomNumber(NUM_PLAYERS));
             broadcastStartPlayer(startPlayer);
             displayTurn(currentPlayer());
             makeNextMoves();
@@ -184,7 +182,7 @@ unsigned int Twopart::pickUpPlayedPile(unsigned int player) {
     Check2(offPos > 0);
     Check3(offPos <= NUM_PLAYERS);
     TRACE3("Twopart::pickUpPlayedPile(unsigned int) - Player " << player << " picks up played pile at " << offPos << '('
-	   << startPos[offPos - 1] << ')');
+                                                               << startPos[offPos - 1] << ')');
     Check3(bfPlayers);
     Check3(gameStatus() == PLAYING2);
 
@@ -197,8 +195,8 @@ unsigned int Twopart::pickUpPlayedPile(unsigned int player) {
     // Calculate players to re-enable: They are the number of players still
     // in game (with cards) minus the players still in round; but maximal 2
     unsigned int num(0);
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i)
-        if (players[i].hand.size())
+    for (auto& player : players)
+        if (player.hand.size())
             ++num;
     num -= playersInBitfield(bfPlayers);
     if (num > 2)
@@ -320,7 +318,7 @@ void Twopart::endTurn(unsigned int player) {
 
         if (!staple.size()) {
             Check3(!pTrump);
-            pTrump = new Card::Widget(card);
+            pTrump = std::make_unique<Card::Widget>(card);
             Check3(pTrump);
             staple.hide();
         }
@@ -333,7 +331,7 @@ void Twopart::endTurn(unsigned int player) {
     removePlayer(player);
     unsigned int newPlayer(player);
     if (bfPlayers)
-        newPlayer = (unsigned int)findNextPlayer(player);
+        newPlayer = static_cast<unsigned int>(findNextPlayer(player));
     else {
         // Show trump if not already visible
         if (pTrump && !pTrump->get_visible()) {
@@ -347,7 +345,8 @@ void Twopart::endTurn(unsigned int player) {
     }
 
     // Check if the current part is terminated
-    if ((gameStatus() == PLAYING) ? ((int)newPlayer < 0) : (newPlayer == (unsigned int)findNextPlayerWithCards(newPlayer))) {
+    if ((gameStatus() == PLAYING) ? (static_cast<int>(newPlayer) < 0)
+                                  : (newPlayer == static_cast<unsigned int>(findNextPlayerWithCards(newPlayer)))) {
         Glib::ustring str;
         if (gameStatus() == PLAYING) {
             player = ~newPlayer;
@@ -423,15 +422,15 @@ int Twopart::findPos2Play(unsigned int player, unsigned int& start, unsigned int
         unsigned int cHigh(0);
 
         // Analyze played staple
-        for (unsigned int i(0); i < played.size(); ++i) {
-            Card::Widget::NUMBERS nr(played[i]->number());
+        for (auto i : played) {
+            Card::Widget::NUMBERS nr(i->number());
             points += nr;
             if (nr >= Card::Widget::TEN)
                 ++cHigh;
         }
 
-        TRACE2("Twopart::findPos2Play(unsigned int) - Points: " << points << "; Avg: " << (played.size() ? (points / played.size()) : 0)
-	       << "; High: " << cHigh);
+        TRACE2("Twopart::findPos2Play(unsigned int) - Points: "
+               << points << "; Avg: " << (played.size() ? (points / played.size()) : 0) << "; High: " << cHigh);
         if (played.size())
             points /= played.size();
 
@@ -440,7 +439,7 @@ int Twopart::findPos2Play(unsigned int player, unsigned int& start, unsigned int
         int posMax(-1);
         int posMaxEqual(-1);
         int trumps(0);
-        analyzeLastPlayed(*startPos, played.size() - *startPos, maxNr, posMax, maxEqualNr, posMaxEqual, trumps);
+        analyzeLastPlayed(startPos[0], played.size() - startPos[0], maxNr, posMax, maxEqualNr, posMaxEqual, trumps);
 
         start = -1U;
         // Try to get the cards if there are loads of high cards (a third or more)
@@ -449,7 +448,7 @@ int Twopart::findPos2Play(unsigned int player, unsigned int& start, unsigned int
             end = -1U;
             // Search for card whose number you own
             for (start = 0; start < players[player].hand.size(); ++start)
-                if ((played.exists(players[player].hand[start]->number(), *startPos)) &&
+                if ((played.exists(players[player].hand[start]->number(), startPos[0])) &&
                     ((posMaxEqual == -1) || (played[start]->number() >= maxEqualNr))) {
                     TRACE2("Twopart::findPos2Play(unsigned int) - Having equal card at " << start);
 
@@ -471,10 +470,10 @@ int Twopart::findPos2Play(unsigned int player, unsigned int& start, unsigned int
                  ((!(bfPlayers & ~(1 << player))) && trumps &&
                   ((end = (findBigger(players[player].hand, static_cast<Card::Widget::NUMBERS>(maxNr)))) != -1U)))
                 // ... the staple is being fighted for and player has high cards
-                || (*startPos && ((end = players[player].hand.size() - 1),
-                                  ((players[player].hand[end]->number() == Card::Widget::ACE)) ||
-                                      ((playersInBitfield(bfOldPlayers) < *startPos) &&
-                                       (players[player].hand[end]->number() >= maxNr) && (posMaxEqual == -1))))) {
+                || (startPos[0] && ((end = players[player].hand.size() - 1),
+                                    ((players[player].hand[end]->number() == Card::Widget::ACE)) ||
+                                        ((playersInBitfield(bfOldPlayers) < startPos[0]) &&
+                                         (players[player].hand[end]->number() >= maxNr) && (posMaxEqual == -1))))) {
                 TRACE2("Twopart::findPos2Play(unsigned int) - Playing highest card at " << start);
                 start = end;
             }
@@ -496,8 +495,8 @@ int Twopart::findPos2Play(unsigned int player, unsigned int& start, unsigned int
         // the second not (though the second card must also small).
         // An exception is also for the last player
         TRACE5("Twopart::findPos2Play(unsigned int) - Avoiding pile");
-        start = ((players[player].hand.size() > 1) && played.exists(players[player].hand[0]->number(), *startPos) &&
-                 !played.exists(players[player].hand[1]->number(), *startPos) &&
+        start = ((players[player].hand.size() > 1) && played.exists(players[player].hand[0]->number(), startPos[0]) &&
+                 !played.exists(players[player].hand[1]->number(), startPos[0]) &&
                  (((!(bfPlayers & ~(1 << player))) && (players[player].hand[1]->number() < maxNr)) ||
                   (players[player].hand[1]->number() <= Card::Widget::SEVEN)));
         TRACE5("Twopart::findPos2Play(unsigned int) - Avoiding returns " << start);
@@ -663,19 +662,19 @@ bool Twopart::endRound(unsigned int& player) {
         bfPlayers = bfOldPlayers;
         unsigned int cPlayers(playersInBitfield(bfPlayers));
 
-        TRACE8("Twopart::endRound(unsigned int&) - Round has " << cPlayers << " players; Start = " << *startPos << " of "
-	       << played.size() << " cards");
-        Check3((*startPos + cPlayers) <= played.size());
+        TRACE8("Twopart::endRound(unsigned int&) - Round has " << cPlayers << " players; Start = " << startPos[0] << " of "
+                                                               << played.size() << " cards");
+        Check3((startPos[0] + cPlayers) <= played.size());
 
         int maxNr(-1);
         int maxEqualNr(-1);
         int posMax(-1);
         int posMaxEqual(-1);
         int trumps(-1);
-        analyzeLastPlayed(*startPos, cPlayers, maxNr, posMax, maxEqualNr, posMaxEqual, trumps);
+        analyzeLastPlayed(startPos[0], cPlayers, maxNr, posMax, maxEqualNr, posMaxEqual, trumps);
 
         TRACE4("Twopart::endRound(unsigned int&) - Player starting round: " << startPlayer << "; players: " << cPlayers);
-        Check3((*startPos + cPlayers) == played.size());
+        Check3((startPos[0] + cPlayers) == played.size());
 
         // Equal cards found
         if (posMaxEqual >= 0) {
@@ -683,25 +682,25 @@ bool Twopart::endRound(unsigned int& player) {
             cPlayers = 0;
 
             // Add players having equal cards and having still cards left
-            nextPlayer = pos2Player(posMaxEqual - *startPos);
-            for (unsigned int i(*startPos); i < played.size(); ++i) {
-                if ((played[i]->number() == maxEqualNr) && players[pos2Player(i - *startPos)].hand.size()) {
-                    TRACE5("Twopart::endRound(unsigned int&) - Found equal cards; Player " << pos2Player(i - *startPos)
-			   << (cPlayers ? " still in round" : " is winner"));
+            nextPlayer = pos2Player(posMaxEqual - startPos[0]);
+            for (unsigned int i(startPos[0]); i < played.size(); ++i) {
+                if ((played[i]->number() == maxEqualNr) && players[pos2Player(i - startPos[0])].hand.size()) {
+                    TRACE5("Twopart::endRound(unsigned int&) - Found equal cards; Player "
+                           << pos2Player(i - startPos[0]) << (cPlayers ? " still in round" : " is winner"));
                     ++cPlayers;
                 }
                 else
-                    bfPlayersOut |= (1 << pos2Player(i - *startPos));
+                    bfPlayersOut |= (1 << pos2Player(i - startPos[0]));
             } // endfor check for equal cards
             bfPlayers &= ~bfPlayersOut;
             TRACE5("Twopart::endRound(unsigned int&)- Found equal cards; " << cPlayers << " player(s) still in round ("
-		   << std::hex << bfPlayers << std::dec << ')');
+                                                                           << std::hex << bfPlayers << std::dec << ')');
 
             TRACE6("Twopart::endRound(unsigned int&) - Try to continue with player " << nextPlayer);
             if (players[nextPlayer].hand.empty() && cPlayers)
                 nextPlayer = findNextPlayer(nextPlayer);
             TRACE8("Twopart::endRound(unsigned int&) - Remaining (" << cPlayers << ") " << std::hex << bfPlayers << std::dec
-		   << "; Next: " << nextPlayer);
+                                                                    << "; Next: " << nextPlayer);
 
             if (cPlayers < 2) { // Less than two players found:
                 bfPlayers = (1 << NUM_PLAYERS) - 1;
@@ -720,7 +719,7 @@ bool Twopart::endRound(unsigned int& player) {
         // All played cards are differnt: Winner is the one with highest card
         else {
             setNextPlayer(NUM_PLAYERS - 1);
-            startPlayer = nextPlayer = pos2Player(posMax - *startPos);
+            startPlayer = nextPlayer = pos2Player(posMax - startPos[0]);
             animateCards(players[nextPlayer].won, played, 0, played.size() - 1)
                 .sigAnimation.connect(bind(mem_fun(*this, &Twopart::endPickup), nextPlayer));
             rc = true;
@@ -735,7 +734,7 @@ bool Twopart::endRound(unsigned int& player) {
             if (nextPlayer == -1U)
                 nextPlayer = ~startPlayer;
         }
-        *startPos = played.size();
+        startPos[0] = played.size();
     }
 
     bfOldPlayers = bfPlayers;
@@ -757,18 +756,18 @@ bool Twopart::endRound(unsigned int& player) {
 void Twopart::analyzeLastPlayed(unsigned int startPos, unsigned int cards, int& max, int& maxPos, int& maxEqual, int& maxEqualPos,
                                 int& trumps) const {
     TRACE3("TwoPart::analyzeLastPlayed(...) - Analyzing cards [" << startPos << " to " << (cards + startPos) << ") of "
-	   << played.size());
+                                                                 << played.size());
     cards += startPos;
     Check3(cards <= played.size());
 
     // Check if card is bigger then all previous
     for (; startPos < cards; ++startPos) {
-        if ((int)(played[startPos]->number()) > max) {
+        if (static_cast<int>(played[startPos]->number()) > max) {
             TRACE3("TwoPart::analyzeLastPlayed(...) - New highest card " << *played[startPos] << " at position " << startPos);
-            max = (int)played[startPos]->number();
+            max = static_cast<int>(played[startPos]->number());
             maxPos = startPos;
         }
-        Check3(maxPos < (int)played.size());
+        Check3(maxPos < static_cast<int>(played.size()));
         Check3(max == played[maxPos]->number());
 
         // Add trumps
@@ -778,10 +777,10 @@ void Twopart::analyzeLastPlayed(unsigned int startPos, unsigned int cards, int& 
         // Check if card has equal cards
         for (unsigned int j(startPos + 1); j < cards; ++j)
             if (played[startPos]->number() == played[j]->number())
-                if ((int)(played[startPos]->number()) > maxEqual) {
+                if (static_cast<int>(played[startPos]->number()) > maxEqual) {
                     TRACE3("TwoPart::analyzeLastPlayed(...) - Found equal " << played[startPos]->numberStr() << " at positions "
-			   << startPos << " and " << j);
-                    maxEqual = (int)played[startPos]->number();
+                                                                            << startPos << " and " << j);
+                    maxEqual = static_cast<int>(played[startPos]->number());
                     maxEqualPos = startPos;
                     break;
                 } // endif equal card found
@@ -874,7 +873,7 @@ void Twopart::endPickup(unsigned int receiver) {
     if (gameStatus() == PLAYING2)
         players[receiver].hand.sort(compByColourAccTrumps);
     else {
-        *startPos = 0;
+        startPos[0] = 0;
 
         if (findNextPlayer(receiver) < 0) {
             TRACE8("Twopart::endPickup() - Starting part 2");
@@ -890,18 +889,17 @@ void Twopart::endPickup(unsigned int receiver) {
 /// Remove cards from everything which can hold them
 //-----------------------------------------------------------------------------
 void Twopart::clean() {
-    staple.clear();                                 // Clear staple
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i) { // Clear cards of players
-        players[i].hand.clear();
-        players[i].won.clear();
+    staple.clear();                // Clear staple
+    for (auto& player : players) { // Clear cards of players
+        player.hand.clear();
+        player.won.clear();
     }
     played.clear();
 
     staple.show();
     if (pTrump) {
         remove(*pTrump);
-        delete pTrump;
-        pTrump = NULL;
+        pTrump.reset();
     }
     Game::clean();
 }
@@ -938,16 +936,16 @@ bool Twopart::startPartTwo(unsigned int player) {
     // Now move the cards from the played pile to the hand; if there are
     // players without cards give them the cards up to 5
     unsigned int victim(player);
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
-        for (unsigned int j(players[i].won.size()); j; --j) {
-            Card::Widget& card(players[i].won.removeTopCard());
-            TRACE8("Twopart::startPartTwo(unsigned int) - Moving cards " << card << " for player " << i);
+    for (auto& player : players) {
+        for (unsigned int j(player.won.size()); j; --j) {
+            Card::Widget& card(player.won.removeTopCard());
+            TRACE8("Twopart::startPartTwo(unsigned int) - Moving cards " << card << " for player " << (&player - players.data()));
             if (bfPlayers && (card.number() <= Card::Widget::FIVE)) {
                 players[pos2Player(++victim)].hand.Card::IPile::append(card);
                 victim %= nrPlayers;
             }
             else
-                players[i].hand.Card::IPile::append(card);
+                player.hand.Card::IPile::append(card);
         }
     }
 
@@ -1041,7 +1039,7 @@ void Twopart::changeNames(const std::vector<Card::Player*>& newPlayer) {
 Card::IPile* Twopart::getPileOfPlayer(unsigned int player, unsigned int pile) {
     TRACE8("Twopart::getPileOfPlayer(unsigned int, unsigned int) - Player " << player << "; Pile " << pile);
     if ((player >= NUM_PLAYERS) || (pile > 1))
-        return NULL;
+        return nullptr;
 
     return &(pile ? played : players[player].hand);
 }
@@ -1056,7 +1054,7 @@ bool Twopart::handleMessage(unsigned int player, const std::string& message) {
     TRACE1("Twopart::handleMessage(unsigned int player, const std::string&) - " << message << " (" << player << ')');
     bool rc(Game::handleMessage(player, message));
 #if 0
-   YGP::Tokenize command (message);
+   Card::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
    if (cmd == "ActPlayer") {

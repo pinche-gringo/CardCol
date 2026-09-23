@@ -1,13 +1,7 @@
 // Logo of the author
 /* GdkPixbuf RGBA C-Source image dump */
-#ifdef __SUNPRO_C
-#    pragma align 4(picAuthor)
-#endif
-#ifdef __GNUC__
-static const guint8 picAuthor[] __attribute__((__aligned__(4))) =
-#else
-static const guint8 picAuthor[] =
-#endif
+// clang-format off
+alignas(4) static constexpr guint8 picAuthor[] =
     {""
      /* Pixbuf magic (0x47646b50) */
      "GdkP"
@@ -186,3 +180,4 @@ static const guint8 picAuthor[] =
      "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
      "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
      "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"};
+// clang-format on

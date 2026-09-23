@@ -16,9 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <memory>
 #include <vector>
-
-#include <boost/scoped_ptr.hpp>
 
 #include <YGP/ANumeric.h>
 
@@ -41,8 +40,8 @@ namespace Card {
 // Class to display the score of the cardgames
 class ScoreDlg : public XGP::XDialog {
   public:
-    ScoreDlg(const std::vector<Player*>& player);
-    virtual ~ScoreDlg();
+    explicit ScoreDlg(const std::vector<Player*>& player);
+    ~ScoreDlg() override;
 
     /// Creates a new score-dialogue; showing the passed players
     /// \param player Vector holding name of all players
@@ -65,14 +64,14 @@ class ScoreDlg : public XGP::XDialog {
 
   private:
     // Prohibited manager functions
-    ScoreDlg(const ScoreDlg& other);
-    const ScoreDlg& operator=(const ScoreDlg& other);
+    ScoreDlg(const ScoreDlg& other) = delete;
+    const ScoreDlg& operator=(const ScoreDlg& other) = delete;
 
-    virtual void okEvent();
+    void okEvent() override;
 
-    typedef boost::scoped_ptr<Gtk::Box> PBox;
-    typedef boost::scoped_ptr<Gtk::Label> PLabel;
-    typedef boost::scoped_ptr<Gtk::Separator> PSeparator;
+    using PBox = std::unique_ptr<Gtk::Box>;
+    using PLabel = std::unique_ptr<Gtk::Label>;
+    using PSeparator = std::unique_ptr<Gtk::Separator>;
 
     PBox client;
 
@@ -88,8 +87,8 @@ class ScoreDlg : public XGP::XDialog {
         Gtk::Box& getBox() const { return *pBox; }
 
       private:
-        typedef XGP::XAttributeLabel2<YGP::ANumeric> NumLabel;
-        typedef boost::scoped_ptr<NumLabel> PNumLabel;
+        using NumLabel = XGP::XAttributeLabel2<YGP::ANumeric>;
+        using PNumLabel = std::unique_ptr<NumLabel>;
 
         PBox pBox;
         PLabel pTitle;
@@ -99,7 +98,7 @@ class ScoreDlg : public XGP::XDialog {
                                  ///< one after it
     };
 
-    std::vector<column*> aColumns;
+    std::vector<std::unique_ptr<column>> aColumns;
 };
 
 } // namespace Card

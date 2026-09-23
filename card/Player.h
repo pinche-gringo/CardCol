@@ -31,7 +31,7 @@ namespace Card {
 */
 class Player : public sigc::trackable {
   public:
-    Player(const Glib::ustring& playerName);
+    explicit Player(Glib::ustring playerName);
     virtual ~Player();
 
     /// Returns the name of the player
@@ -52,8 +52,8 @@ class Player : public sigc::trackable {
     Glib::ustring name;
 
   private:
-    Player(const Player& other);
-    const Player& operator=(const Player& other);
+    Player(const Player& other) = delete;
+    const Player& operator=(const Player& other) = delete;
 };
 
 } // namespace Card

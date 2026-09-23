@@ -16,7 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <array>
 #include <bitset>
+#include <memory>
 #include <vector>
 
 #include <gtkmm/label.h>
@@ -28,6 +30,9 @@
 
 #include <card/Game.h>
 
+namespace Card {
+class ScoreDlg;
+}
 namespace Gtk {
 class Button;
 class SpinButton;
@@ -44,31 +49,31 @@ class Jabberwocky : public Card::Game {
   public:
     Jabberwocky(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
                 unsigned int posPlayer, YGP::Mutex& mxSerialize);
-    virtual ~Jabberwocky();
+    ~Jabberwocky() override;
 
-    virtual void start();
-    virtual void clean();
-    virtual void playOpen(bool open);
-    virtual const char* name() { return "Jabberwocky"; }
-    virtual void changeNames(const std::vector<Card::Player*>& newPlayer);
-    virtual void resizeCards();
+    void start() override;
+    void clean() override;
+    void playOpen(bool open) override;
+    const char* name() override { return "Jabberwocky"; }
+    void changeNames(const std::vector<Card::Player*>& newPlayer) override;
+    void resizeCards() override;
 
-    virtual bool handleMessage(unsigned int player, const std::string& message);
+    bool handleMessage(unsigned int player, const std::string& message) override;
 
   protected:
-    virtual Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile);
+    Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;
 
   private:
-    Jabberwocky();
-    Jabberwocky(const Jabberwocky& other);
+    Jabberwocky() = delete;
+    Jabberwocky(const Jabberwocky& other) = delete;
 
-    const Jabberwocky& operator=(const Jabberwocky& other);
+    Jabberwocky& operator=(const Jabberwocky& other) = delete;
 
     //@Section Virtual methods
-    virtual void makeMove(unsigned int player);
-    virtual bool enableHuman();
-    virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
-    virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+    void makeMove(unsigned int player) override;
+    bool enableHuman() override;
+    void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
+    void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
 
     //@Section helper methods
     static unsigned int getTricks(unsigned int round) { return (round < 7) ? (round + 3) : (15 - round); }
@@ -82,20 +87,23 @@ class Jabberwocky : public Card::Game {
     void showCards2Play(unsigned int player);
     int playCard(unsigned int player);
     void finishMove();
-    void getPositionOfColours(const Card::IPile& pile, int result[4]);
+    /// Array holding the position of the last card of each colour (or -1)
+    using ColourPositions = std::array<int, 4>;
+
+    static void getPositionOfColours(const Card::IPile& pile, ColourPositions& result);
     bool isHighest(const Card::Widget& card) const;
     bool isHighEnough(const Card::Widget& card) const;
     unsigned int findHigherCard(const Card::Widget& cardCmp, const Card::IPile& pile, unsigned int aPosColour) const;
     unsigned int findLowerCard(const Card::Widget& cardCmp, const Card::IPile& pile, int aPosColour) const;
-    unsigned int findWorstCard(const Card::IPile& card, const int aPositions[4]) const;
+    unsigned int findWorstCard(const Card::IPile& card, const ColourPositions& aPositions) const;
     unsigned int check4Winner() const;
     unsigned int sumBids() const;
     void takeWonCards(unsigned int player);
 
-    static char sortOrder[4];
+    static std::array<char, 4> sortOrder;
     static bool compByColourAccTrumps(const Card::Widget* a, const Card::Widget* b);
 
-    static const unsigned int NUM_PLAYERS = 4; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = 4; // Number of players
 
     struct playerCards {
         Card::HPile hand; // For players: Cards in the hand
@@ -106,9 +114,10 @@ class Jabberwocky : public Card::Game {
         playerCards() : hand(), won(), name(), bid() {}
 
       private:
-        playerCards(const playerCards&);
-        playerCards& operator=(const playerCards&);
-    } players[NUM_PLAYERS];
+        playerCards(const playerCards&) = delete;
+        playerCards& operator=(const playerCards&) = delete;
+    };
+    std::array<playerCards, NUM_PLAYERS> players;
     Card::HPile played;
     Card::Widget* pTrump;
 
@@ -116,21 +125,21 @@ class Jabberwocky : public Card::Game {
     unsigned int turn;
     int idxMenu; ///< Index of this game's submenu-item within the passed Gio::Menu
 
-    Gtk::SpinButton* pBidValue; ///< Widget to enter the human's bid (while active); else NULL
-    Gtk::Button* pBidCommit;    ///< Button to commit the human's bid (while active); else NULL
+    std::unique_ptr<Gtk::SpinButton> pBidValue; ///< Widget to enter the human's bid (while active); else NULL
+    std::unique_ptr<Gtk::Button> pBidCommit;    ///< Button to commit the human's bid (while active); else NULL
 
     // Variables needed by computer player
-    std::bitset<13> playedCards[4];
-    bool outOfColour[NUM_PLAYERS][4];
+    std::array<std::bitset<13>, 4> playedCards;
+    std::array<std::array<bool, 4>, NUM_PLAYERS> outOfColour;
 
-    Card::ScoreDlg* pScoreDlg;
+    std::unique_ptr<Card::ScoreDlg> pScoreDlg;
 
     Glib::RefPtr<Gio::SimpleAction> menuSort;
     Glib::RefPtr<Gio::SimpleAction> menuSort2;
     Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
-    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
-    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
+    static constexpr std::array<unsigned int, NUM_PLAYERS> COLS_PLAYER{7, 13, 7, 1};
+    static constexpr std::array<unsigned int, NUM_PLAYERS> ROWS_PLAYER{10, 8, 4, 8};
 };
 
 #endif

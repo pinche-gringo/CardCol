@@ -34,7 +34,7 @@ class TextBuffer;
  */
 class ChatDlg : public XGP::XDialog {
   public:
-    virtual ~ChatDlg();
+    ~ChatDlg() override;
 
     /// Creates the dialog
     /// \param parent Parent window
@@ -56,11 +56,11 @@ class ChatDlg : public XGP::XDialog {
 
   private:
     // Prohibited manager functions
-    ChatDlg(const ChatDlg& other);
-    const ChatDlg& operator=(const ChatDlg& other);
+    ChatDlg(const ChatDlg& other) = delete;
+    const ChatDlg& operator=(const ChatDlg& other) = delete;
 
-    Gtk::Entry* txtMsg;
-    Gtk::TextView* tvMsgs;
+    Gtk::Entry* const txtMsg;
+    Gtk::TextView* const tvMsgs;
 
     Glib::RefPtr<Gtk::TextTag> tagSender;
     Glib::RefPtr<Gtk::TextBuffer> msgs;

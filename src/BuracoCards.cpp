@@ -26,8 +26,6 @@
 
 #include "BuracoCards.h"
 
-BuracoCards* BuracoCards::instance(NULL);
-
 //-----------------------------------------------------------------------------
 /// Default constructor; Fills the values
 //-----------------------------------------------------------------------------
@@ -40,4 +38,4 @@ BuracoCards::BuracoCards() {
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-BuracoCards::~BuracoCards() {}
+BuracoCards::~BuracoCards() = default;

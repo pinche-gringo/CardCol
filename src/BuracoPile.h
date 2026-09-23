@@ -23,16 +23,16 @@
 class BuracoPile : public Card::VPile {
   public:
     BuracoPile();
-    virtual ~BuracoPile();
+    ~BuracoPile() override;
 
-    virtual void setTopCard(Card::Widget& newCard);
+    void setTopCard(Card::Widget& newCard) override;
     void setTopCard(Card::Widget& newCard, bool visible) { Card::VPile::setTopCard(newCard, visible); }
 
-    virtual unsigned int insert(Card::Widget& card, unsigned int pos);
+    unsigned int insert(Card::Widget& card, unsigned int pos) override;
 
-    virtual Card::Widget& remove(Card::Widget& card);
+    Card::Widget& remove(Card::Widget& card) override;
     Card::Widget& remove(Card::Widget& card, bool visible);
-    virtual Card::Widget& remove(unsigned int pos);
+    Card::Widget& remove(unsigned int pos) override;
     Card::Widget& remove(unsigned int pos, bool visible);
 
     unsigned int getCardPoints() const;
@@ -53,8 +53,8 @@ class BuracoPile : public Card::VPile {
     void analysePile();
 
   private:
-    BuracoPile(const BuracoPile& other);
-    const BuracoPile& operator=(const BuracoPile& other);
+    BuracoPile(const BuracoPile& other) = delete;
+    const BuracoPile& operator=(const BuracoPile& other) = delete;
 
     enum { UNDEFINED, NUMBER, COLOUR };
 

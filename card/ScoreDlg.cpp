@@ -23,6 +23,7 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <climits>
+#include <memory>
 
 #include <cardgames-cfg.h>
 
@@ -45,12 +46,12 @@ int ScoreDlg::LASTY(-1);
 /// (Default-)Constructor; Shows the dialog
 /// \param player Vector with player
 //-----------------------------------------------------------------------------
-ScoreDlg::ScoreDlg(const std::vector<Player*>& player) : XDialog(OK), client(new Card::HBox), aColumns() {
+ScoreDlg::ScoreDlg(const std::vector<Player*>& player) : XDialog(OK), client(std::make_unique<Card::HBox>()), aColumns() {
     TRACE9("ScoreDlg::ScoreDlg()");
     set_title(_("Score"));
 
     for (unsigned int i(0); i < player.size(); ++i) {
-        aColumns.push_back(new column());
+        aColumns.push_back(std::make_unique<column>());
         Gtk::Box& box(aColumns.back()->getBox());
         box.set_hexpand();
         box.set_vexpand();
@@ -71,8 +72,7 @@ ScoreDlg::ScoreDlg(const std::vector<Player*>& player) : XDialog(OK), client(new
 //-----------------------------------------------------------------------------
 ScoreDlg::~ScoreDlg() {
     TRACE9("ScoreDlg::~ScoreDlg()");
-    for (std::vector<column*>::iterator i(aColumns.begin()); i != aColumns.end(); ++i)
-        delete *i;
+    aColumns.clear();
 
     // Remark: Under GTK4 a client can no longer query a window's position
     // (see AnimWindow.h); LASTX/LASTY are kept only for source compatibility.
@@ -83,9 +83,9 @@ ScoreDlg::~ScoreDlg() {
 /// \param aPoints Array of points
 //-----------------------------------------------------------------------------
 void ScoreDlg::addPoints(int aPoints[]) {
-    for (std::vector<column*>::iterator i(aColumns.begin()); i != aColumns.end(); ++i) {
+    for (auto& aColumn : aColumns) {
         TRACE5("ScoreDlg::addPoints(unsinged int[]) - " << *aPoints);
-        (*i)->addEntry(*aPoints++);
+        aColumn->addEntry(*aPoints++);
     }
 }
 
@@ -97,9 +97,9 @@ void ScoreDlg::addPoints(const std::vector<int>& aPoints) {
     Check1(aPoints.size() <= aColumns.size());
 
     std::vector<int>::const_iterator p(aPoints.begin());
-    for (std::vector<column*>::iterator i(aColumns.begin()); i != aColumns.end(); ++i) {
+    for (auto& aColumn : aColumns) {
         TRACE5("ScoreDlg::addPoints(std::vector<int>&) - " << *p);
-        (*i)->addEntry(*p);
+        aColumn->addEntry(*p);
         ++p;
     }
 }
@@ -121,9 +121,9 @@ void ScoreDlg::okEvent() {
 //-----------------------------------------------------------------------------
 void ScoreDlg::getMaxPoints(int& points, unsigned int& player) {
     points = INT_MIN;
-    for (std::vector<column*>::iterator i(aColumns.begin()); i != aColumns.end(); ++i) {
+    for (auto i(aColumns.begin()); i != aColumns.end(); ++i) {
         TRACE9("ScoreDlg::getMaxPoints(int&, unsigned int&) - " << points << '/' << (*i)->getPoints() << ": "
-	       << (((*i)->getPoints() > points) ? '>' : '<'));
+                                                                << (((*i)->getPoints() > points) ? '>' : '<'));
         if ((*i)->getPoints() > points) {
             player = i - aColumns.begin();
             points = (*i)->getPoints();
@@ -138,7 +138,7 @@ void ScoreDlg::getMaxPoints(int& points, unsigned int& player) {
 //-----------------------------------------------------------------------------
 void ScoreDlg::getMinPoints(int& points, unsigned int& player) {
     points = INT_MAX;
-    for (std::vector<column*>::iterator i(aColumns.begin()); i != aColumns.end(); ++i)
+    for (auto i(aColumns.begin()); i != aColumns.end(); ++i)
         if ((*i)->getPoints() < points) {
             player = i - aColumns.begin();
             points = (*i)->getPoints();
@@ -153,8 +153,8 @@ void ScoreDlg::update(const std::vector<Player*>& player) {
     Check1(player.size() <= aColumns.size());
 
     std::vector<Player*>::const_iterator p(player.begin());
-    for (std::vector<column*>::iterator i(aColumns.begin()); i != aColumns.end(); ++i) {
-        (*i)->setTitle((*p)->getName());
+    for (auto& aColumn : aColumns) {
+        aColumn->setTitle((*p)->getName());
         ++p;
     }
 }
@@ -163,8 +163,8 @@ void ScoreDlg::update(const std::vector<Player*>& player) {
 /// Constructor
 //-----------------------------------------------------------------------------
 ScoreDlg::column::column()
-    : pBox(new Card::VBox()), pTitle(new Gtk::Label()), pSum(new NumLabel(0)),
-      pSep(new Gtk::Separator(Gtk::Orientation::HORIZONTAL)), pLastEntry(NULL) {
+    : pBox(std::make_unique<Card::VBox>()), pTitle(std::make_unique<Gtk::Label>()), pSum(std::make_unique<NumLabel>(0)),
+      pSep(std::make_unique<Gtk::Separator>(Gtk::Orientation::HORIZONTAL)), pLastEntry(nullptr) {
     pBox->show();
     pTitle->show();
     pSum->show();
@@ -192,7 +192,7 @@ ScoreDlg::column::column()
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-ScoreDlg::column::~column() {}
+ScoreDlg::column::~column() = default;
 
 //-----------------------------------------------------------------------------
 /// Adds a value to the column

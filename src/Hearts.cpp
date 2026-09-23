@@ -22,8 +22,9 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <cstring>
-
+#include <algorithm>
+#include <iterator>
+#include <memory>
 #include <sstream>
 
 #include <cardgames-cfg.h>
@@ -45,14 +46,28 @@
 #include <card/ComputerPlayer.h>
 #include <card/Images.h>
 #include <card/ScoreDlg.h>
+#include <card/Tokenize.h>
 #include <card/Window.h>
 
 #include "Hearts.h"
 
-const unsigned int Hearts::COLS_PLAYER[NUM_PLAYERS] = {5, 9, 5, 3};
-const unsigned int Hearts::ROWS_PLAYER[NUM_PLAYERS] = {10, 7, 3, 7};
-
 unsigned int Hearts::ENDPOINTS(100);
+
+namespace {
+
+//-----------------------------------------------------------------------------
+/// Creates a pile of the passed type and stores it in the passed owner
+/// \param owner Smart pointer taking over the ownership of the created pile
+/// \returns T& Reference to the created pile
+//-----------------------------------------------------------------------------
+template <class T> T& createPile(std::unique_ptr<Card::IPile>& owner) {
+    auto pile(std::make_unique<T>());
+    T& result(*pile);
+    owner = std::move(pile);
+    return result;
+}
+
+} // namespace
 
 //-----------------------------------------------------------------------------
 /// Constructor
@@ -66,37 +81,29 @@ unsigned int Hearts::ENDPOINTS(100);
 Hearts::Hearts(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
                unsigned int posPlayer, YGP::Mutex& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 18, 12), playedSQ(false), player2Exchange(3),
-      played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pScoreDlg(NULL), menuSort(), menuSort2(), menuShowScoreDlg() {
+      played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pScoreDlg(nullptr), menuSort(), menuSort2(), menuShowScoreDlg() {
     TRACE9("Hearts::Hearts(Box&, Statusbar&, Card::Set&, ...");
-    Card::HPile* hand0(new Card::HPile);
-    players[0].hand = hand0;
-    Card::HPile* won0(new Card::HPile);
-    players[0].won = won0;
-    Card::HPile* hand2(new Card::HPile);
-    players[2].hand = hand2;
-    Card::HPile* won2(new Card::HPile);
-    players[2].won = won2;
+    Card::HPile& hand0(createPile<Card::HPile>(players[0].hand));
+    Card::HPile& won0(createPile<Card::HPile>(players[0].won));
+    Card::HPile& hand2(createPile<Card::HPile>(players[2].hand));
+    Card::HPile& won2(createPile<Card::HPile>(players[2].won));
 
-    Card::VPile* hand1(new Card::VPile);
-    players[1].hand = hand1;
-    Card::VPile* won1(new Card::VPile);
-    players[1].won = won1;
-    Card::VPile* hand3(new Card::VPile);
-    players[3].hand = hand3;
-    Card::VPile* won3(new Card::VPile);
-    players[3].won = won3;
+    Card::VPile& hand1(createPile<Card::VPile>(players[1].hand));
+    Card::VPile& won1(createPile<Card::VPile>(players[1].won));
+    Card::VPile& hand3(createPile<Card::VPile>(players[3].hand));
+    Card::VPile& won3(createPile<Card::VPile>(players[3].won));
 
-    attach(*won0, COLS_PLAYER[0], ROWS_PLAYER[0] + 4, 3, 1);
-    attach(*hand0, COLS_PLAYER[0], ROWS_PLAYER[0], 3, 1);
+    attach(won0, COLS_PLAYER[0], ROWS_PLAYER[0] + 4, 3, 1);
+    attach(hand0, COLS_PLAYER[0], ROWS_PLAYER[0], 3, 1);
 
-    attach(*won1, COLS_PLAYER[1] + 2, ROWS_PLAYER[1], 1, 1);
-    attach(*hand1, COLS_PLAYER[1], ROWS_PLAYER[1], 1, 1);
+    attach(won1, COLS_PLAYER[1] + 2, ROWS_PLAYER[1], 1, 1);
+    attach(hand1, COLS_PLAYER[1], ROWS_PLAYER[1], 1, 1);
 
-    attach(*won2, COLS_PLAYER[2], ROWS_PLAYER[2] - 2, 3, 1);
-    attach(*hand2, COLS_PLAYER[2], ROWS_PLAYER[2], 3, 1);
+    attach(won2, COLS_PLAYER[2], ROWS_PLAYER[2] - 2, 3, 1);
+    attach(hand2, COLS_PLAYER[2], ROWS_PLAYER[2], 3, 1);
 
-    attach(*won3, COLS_PLAYER[3] - 2, ROWS_PLAYER[3], 1, 1);
-    attach(*hand3, COLS_PLAYER[3], ROWS_PLAYER[3], 1, 1);
+    attach(won3, COLS_PLAYER[3] - 2, ROWS_PLAYER[3], 1, 1);
+    attach(hand3, COLS_PLAYER[3], ROWS_PLAYER[3], 1, 1);
 
     // Show and attach card-piles
     changeNames(player);
@@ -126,7 +133,7 @@ Hearts::Hearts(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, 
 //-----------------------------------------------------------------------------
 Hearts::~Hearts() {
     TRACE9("Hearts::~Hearts()");
-    delete pScoreDlg;
+    pScoreDlg.reset();
     clean();
 }
 
@@ -203,7 +210,7 @@ void Hearts::start() {
     Card::IPile pile;
     if (randomiseCardsToPile(pile)) {
         for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
-            Card::IPile* actPile(players[(i - posServer) & 0x3].hand);
+            Card::IPile* actPile(players[(i - posServer) & 0x3].hand.get());
             actPile->getCards(pile, 0, cards.size() / NUM_PLAYERS - 1);
             actPile->sortByColour();
         }
@@ -212,10 +219,9 @@ void Hearts::start() {
             unsigned int player;
             int points;
             pScoreDlg->getMaxPoints(points, player);
-            if ((unsigned int)points >= ENDPOINTS) {
+            if (static_cast<unsigned int>(points) >= ENDPOINTS) {
                 menuShowScoreDlg->set_enabled(false);
-                delete pScoreDlg;
-                pScoreDlg = NULL;
+                pScoreDlg.reset();
             }
         }
 
@@ -240,9 +246,9 @@ void Hearts::start() {
 //-----------------------------------------------------------------------------
 void Hearts::clean() {
     TRACE9("Hearts::clean()");
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
-        players[i].hand->clear();
-        players[i].won->clear();
+    for (auto& player : players) {
+        player.hand->clear();
+        player.won->clear();
     }
 
     played.clear();
@@ -380,7 +386,7 @@ void Hearts::startPlaying() {
     TRACE7("Hearts::startPlaying()");
 
     // Clear variables for a new game
-    memset(aPlayed, 0, sizeof(aPlayed));
+    aPlayed.fill(0);
     playedSQ = false;
     setGameStatus(PLAYING);
 
@@ -446,15 +452,14 @@ unsigned int Hearts::calcNextPlayer(unsigned int player) {
     if (!players[player].hand->size()) {
         setGameStatus(STOPPED);
         if (!pScoreDlg) {
-            pScoreDlg = Card::ScoreDlg::create(actPlayers);
+            pScoreDlg.reset(Card::ScoreDlg::create(actPlayers));
             Gtk::Window* win(dynamic_cast<Gtk::Window*>(get_root()));
             if (win)
                 pScoreDlg->set_transient_for(*win);
             menuShowScoreDlg->set_enabled();
         }
 
-        int aScore[NUM_PLAYERS];
-        memset(aScore, 0, sizeof(aScore));
+        std::array<int, NUM_PLAYERS> aScore{};
         aScore[player] = pointsOfPile(played); // Adds points still on table
         for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
             aScore[i] += pointsOfPile(*players[i].won);
@@ -465,14 +470,14 @@ unsigned int Hearts::calcNextPlayer(unsigned int player) {
             }
         }
 
-        pScoreDlg->addPoints(aScore);
+        pScoreDlg->addPoints(aScore.data());
         pScoreDlg->display();
 
         Glib::ustring stat(_("Round ended"));
         unsigned int player;
         int points;
         pScoreDlg->getMaxPoints(points, player);
-        if ((unsigned int)points >= ENDPOINTS) {
+        if (static_cast<unsigned int>(points) >= ENDPOINTS) {
             stat = _("Game ended; %1 won");
             pScoreDlg->getMinPoints(points, player);
 
@@ -507,8 +512,8 @@ bool Hearts::moveSelectedCardToPlayed(unsigned int player, unsigned int card) {
         Card::Widget& actCard(*(*players[player].hand)[card]);
         Card::Widget::COLOURS playColour(actCard.colour());
         unsigned int cardsPlayed(0);
-        for (unsigned int i(0); i < NUM_PLAYERS; ++i)
-            cardsPlayed += players[i].won->size();
+        for (auto& player : players)
+            cardsPlayed += player.won->size();
 
         try {
             if (played.size()) {
@@ -547,7 +552,7 @@ bool Hearts::moveSelectedCardToPlayed(unsigned int player, unsigned int card) {
             return false;
         }
 
-        Check3((unsigned)playColour < (unsigned)(sizeof(aPlayed) / sizeof(aPlayed[0])));
+        Check3(static_cast<unsigned int>(playColour) < aPlayed.size());
         aPlayed[playColour]++;
 
         Card::Window& win(animateCard(played, *players[player].hand, card));
@@ -584,7 +589,7 @@ void Hearts::exchangeCards() {
         for (unsigned int i(getConnectionMgr().getClients().size() + 1); i < NUM_PLAYERS; ++i) {
             TRACE8("Hearts::exchangeCards() - Player " << i);
 
-            int posColours[4];
+            ColourPositions posColours;
             Card::IPile& source(*players[i].hand);
             getPositionOfColours(source, posColours);
 
@@ -640,7 +645,7 @@ void Hearts::exchangeCards() {
             for (unsigned int nr(Card::Widget::ACE); moved < 3; --nr) {
                 Check3(nr > Card::Widget::TWO);
                 TRACE8("Hearts::exchangeCards() - Getting rid of high cards - " << nr);
-                if ((cardPos = source.find(Card::Widget::NUMBERS(nr))) != -1) {
+                if ((cardPos = source.find(static_cast<Card::Widget::NUMBERS>(nr))) != -1) {
                     TRACE3("Hearts::exchangeCards() - Getting rid of high card at " << cardPos);
                     aExchange[i].getCards(source, cardPos, cardPos);
                     moved++;
@@ -689,8 +694,8 @@ void Hearts::finishExchangeCards() {
 /// \param pile Pile to inspect
 /// \param result Array of position of last cards of earch colour
 //-----------------------------------------------------------------------------
-void Hearts::getPositionOfColours(Card::IPile& pile, int result[4]) {
-    memset(result, (char)-1, sizeof(int[4]));
+void Hearts::getPositionOfColours(const Card::IPile& pile, ColourPositions& result) {
+    result.fill(-1);
     for (unsigned int i(0); i < (pile.size() - 1); ++i)
         if (pile[i]->colour() != pile[i + 1]->colour())
             result[pile[i]->colour()] = i;
@@ -706,9 +711,9 @@ void Hearts::getPositionOfColours(Card::IPile& pile, int result[4]) {
 /// \param colour Colour whose number should be calculated
 /// \returns unsigned int Number of cards for colour
 //-----------------------------------------------------------------------------
-unsigned int Hearts::numberOfCards(const int aPositions[4], Card::Widget::COLOURS colour) {
+unsigned int Hearts::numberOfCards(const ColourPositions& aPositions, Card::Widget::COLOURS colour) {
     Check1(colour <= Card::Widget::HEARTS);
-    unsigned int nr(0), col((unsigned int)colour);
+    unsigned int nr(0), col(static_cast<unsigned int>(colour));
     if (aPositions[colour] != -1) {
         nr = aPositions[colour] + 1;
         while (col)
@@ -731,7 +736,7 @@ unsigned int Hearts::findPos2Play(unsigned int player) {
     TRACE8("Hearts::findPos2Play(unsigned int)");
 
     Card::IPile& pile(*players[player].hand);
-    int aPos[4];
+    ColourPositions aPos;
     getPositionOfColours(pile, aPos);
 
     if (played.size()) {
@@ -756,7 +761,7 @@ unsigned int Hearts::findPos2Play(unsigned int player) {
         int pos(0);
         for (unsigned int card(Card::Widget::TWO); card <= Card::Widget::ACE; ++card) {
             pos = 0;
-            while ((pos = pile.find(Card::Widget::NUMBERS(card), pos)) != -1) {
+            while ((pos = pile.find(static_cast<Card::Widget::NUMBERS>(card), pos)) != -1) {
                 Card::Widget::COLOURS colour(pile[pos]->colour());
                 // Play the lowest card, if there are still cards of that colour
                 // owned by other players and - if it is a heart - there are
@@ -786,7 +791,7 @@ unsigned int Hearts::findPos2Play(unsigned int player) {
 /// \param aPositions Array with positions of cards
 /// \returns unsigned int Position of card to play
 //-----------------------------------------------------------------------------
-unsigned int Hearts::findLowerCard(const Card::IPile& pile, const int aPositions[4]) const {
+unsigned int Hearts::findLowerCard(const Card::IPile& pile, const ColourPositions& aPositions) const {
     TRACE9("Hearts::findLowerCard(const Card::IPile&, const int[4]");
     Card::Widget::COLOURS colour(played[0]->colour());
     unsigned int posWinner(check4Winner());
@@ -856,13 +861,13 @@ unsigned int Hearts::findLowerCard(const Card::IPile& pile, const int aPositions
 /// \param aPositions Array with positions of cards
 /// \returns unsigned int Position of card to play or -1
 //-----------------------------------------------------------------------------
-unsigned int Hearts::findWorstCard(const Card::IPile& pile, const int aPositions[4]) const {
+unsigned int Hearts::findWorstCard(const Card::IPile& pile, const ColourPositions& aPositions) const {
     TRACE9("Hearts::findWorstCard(const Card::IPile&, const int[4]");
 
     // Search for queen of spades or any heart or a high card
     unsigned int cardsPlayed(0);
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i)
-        cardsPlayed += players[i].won->size();
+    for (const auto& player : players)
+        cardsPlayed += player.won->size();
 
     // If there are already some tricks won
     if (cardsPlayed) {
@@ -887,7 +892,7 @@ unsigned int Hearts::findWorstCard(const Card::IPile& pile, const int aPositions
     int pos(0);
     for (int card(Card::Widget::ACE); card >= Card::Widget::TWO; --card) {
         pos = 0;
-        while ((pos = pile.find(Card::Widget::NUMBERS(card), pos)) != -1) {
+        while ((pos = pile.find(static_cast<Card::Widget::NUMBERS>(card), pos)) != -1) {
             Card::Widget::COLOURS colour(pile[pos]->colour());
             TRACE2("Hearts::findWorstCard(const Card::IPile&, unsigned int[4]) - Checking card "
                    << *pile[pos] << " at pos " << pos << " against " << aPlayed[colour] << " cards");
@@ -909,11 +914,11 @@ unsigned int Hearts::findWorstCard(const Card::IPile& pile, const int aPositions
 //-----------------------------------------------------------------------------
 unsigned int Hearts::pointsOfPile(const Card::IPile& pile) {
     unsigned int points(0);
-    for (unsigned int i(0); i < pile.size(); ++i) {
-        Card::Widget::COLOURS colour(pile[i]->colour());
+    for (auto i : pile) {
+        Card::Widget::COLOURS colour(i->colour());
         if (colour == Card::Widget::HEARTS)
             ++points;
-        else if ((colour == Card::Widget::SPADES) && pile[i]->number() == Card::Widget::QUEEN)
+        else if ((colour == Card::Widget::SPADES) && i->number() == Card::Widget::QUEEN)
             points += 13;
     }
     TRACE7("Hearts::pointsOfPile(Card::IPile&) - Number of points: " << points);
@@ -944,7 +949,7 @@ void Hearts::changeNames(const std::vector<Card::Player*>& newPlayer) {
 /// \returns Card::IPile* Pointer to pile to use or NULL
 //----------------------------------------------------------------------------
 Card::IPile* Hearts::getPileOfPlayer(unsigned int player, unsigned int pile) {
-    return ((player >= NUM_PLAYERS) || pile) ? NULL : players[player].hand;
+    return ((player >= NUM_PLAYERS) || pile) ? nullptr : players[player].hand.get();
 }
 
 //----------------------------------------------------------------------------
@@ -958,7 +963,7 @@ bool Hearts::handleMessage(unsigned int player, const std::string& message) {
    if (gameStatus() == EXCHANGE) {
       TRACE1("Hearts::handleMessage(unsigned int player, const std::string&) - " << message << " (" << player << ')');
 
-      YGP::Tokenize command(message);
+      Card::Tokenize command(message);
       std::string cmd(command.getNextNode('='));
 
       if (cmd == "Exchange") {
@@ -970,7 +975,7 @@ bool Hearts::handleMessage(unsigned int player, const std::string& message) {
              && (lPlayer < NUM_PLAYERS)) {
             Check3(player ? (lPlayer == player) : true);
 
-            register unsigned int save(lPlayer);
+            const unsigned int save(lPlayer);
             lPlayer = (lPlayer - posServer) & 0x3;
 
             // Don't exchange already exchanged cards
@@ -1018,8 +1023,8 @@ bool Hearts::handleMessage(unsigned int player, const std::string& message) {
 bool Hearts::cardsExchanged(unsigned int cards) {
     Check1(gameStatus() == EXCHANGE);
 
-    for (unsigned i(0); i < NUM_PLAYERS; ++i)
-        cards -= aExchange[i].size();
+    for (const auto& i : aExchange)
+        cards -= i.size();
 
     TRACE9("Hearts::cardsExchanged(unsigned int) - Remaining: " << cards);
     return !(cards - played.size());
@@ -1043,7 +1048,10 @@ void Hearts::addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gi
     sub->append(_("Sort won cards (by _colour)"), "game.HeartSortCol");
 
     Glib::RefPtr<Gio::Menu> sec(Gio::Menu::create());
-    menuShowScoreDlg = actions->add_action("showScoreDlg", bind(ptr_fun(&Card::ScoreDlg::display), &pScoreDlg));
+    menuShowScoreDlg = actions->add_action("showScoreDlg", [this]() {
+        if (pScoreDlg)
+            pScoreDlg->display();
+    });
     sec->append(_("Show score dialog"), "game.showScoreDlg");
     sub->append_section(sec);
 
@@ -1073,9 +1081,9 @@ void Hearts::removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr
 //-----------------------------------------------------------------------------
 void Hearts::resizeCards() {
     for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
-        Gtk::Box* hand(dynamic_cast<Gtk::Box*>(players[i].hand));
+        Gtk::Box* hand(dynamic_cast<Gtk::Box*>(players[i].hand.get()));
         Check3(hand);
-        Gtk::Box* won(dynamic_cast<Gtk::Box*>(players[i].won));
+        Gtk::Box* won(dynamic_cast<Gtk::Box*>(players[i].won.get()));
         Check3(won);
 
         if (i & 1) {

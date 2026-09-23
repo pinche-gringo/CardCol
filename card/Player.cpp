@@ -24,18 +24,20 @@
 
 #include "Player.h"
 
+#include <utility>
+
 namespace Card {
 
 //-----------------------------------------------------------------------------
 /// Constructor; from a name
 /// \param playerName Name of the player
 //-----------------------------------------------------------------------------
-Player::Player(const Glib::ustring& playerName) : name(playerName) {}
+Player::Player(Glib::ustring playerName) : name(std::move(playerName)) {}
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-Player::~Player() {}
+Player::~Player() = default;
 
 //----------------------------------------------------------------------------
 /// Time in between two turns of the player.

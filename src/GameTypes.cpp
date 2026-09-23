@@ -29,8 +29,6 @@
 
 #include "GameTypes.h"
 
-GameTypes* GameTypes::instance(NULL);
-
 //-----------------------------------------------------------------------------
 /// Default constructor
 //-----------------------------------------------------------------------------
@@ -45,29 +43,29 @@ GameTypes::GameTypes() {
         }
     }
 
-    insert(std::make_pair((int)ROVHULT, rovhult));
+    insert(std::make_pair(static_cast<int>(ROVHULT), rovhult));
 #endif
 #ifdef WITH_TWOPART
-    insert(std::make_pair((int)TWOPART, _("Twopart")));
+    insert(std::make_pair(static_cast<int>(TWOPART), _("Twopart")));
 #endif
 #ifdef WITH_HEARTS
-    insert(std::make_pair((int)HEARTS, _("Hearts")));
+    insert(std::make_pair(static_cast<int>(HEARTS), _("Hearts")));
 #endif
 #ifdef WITH_JABBERWOCKY
-    insert(std::make_pair((int)JABBERWOCKY, _("Jabberwocky")));
+    insert(std::make_pair(static_cast<int>(JABBERWOCKY), _("Jabberwocky")));
 #endif
 #ifdef WITH_BURACO
-    insert(std::make_pair((int)BURACO, _("Buraco")));
+    insert(std::make_pair(static_cast<int>(BURACO), _("Buraco")));
 #endif
 #ifdef WITH_MACHIAVELLI
-    insert(std::make_pair((int)MACHIAVELLI, _("Machiavelli")));
+    insert(std::make_pair(static_cast<int>(MACHIAVELLI), _("Machiavelli")));
 #endif
 #ifdef WITH_SGTMAYOR
-    insert(std::make_pair((int)SGTMAYOR, _("SgtMayor")));
+    insert(std::make_pair(static_cast<int>(SGTMAYOR), _("SgtMayor")));
 #endif
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-GameTypes::~GameTypes() {}
+GameTypes::~GameTypes() = default;

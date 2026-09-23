@@ -26,15 +26,15 @@ class Human : public Player {
   public:
     /// Constructor from a name
     /// \param name Name of the human player
-    Human(const Glib::ustring& name) : Player(name) {}
-    virtual ~Human();
+    explicit Human(const Glib::ustring& name) : Player(name) {}
+    ~Human() override;
 
-    virtual bool makeTurn(Game* game);
+    bool makeTurn(Game* game) override;
 
   private:
-    Human();
-    Human(const Human& other);
-    const Human& operator=(const Human& other);
+    Human() = delete;
+    Human(const Human& other) = delete;
+    const Human& operator=(const Human& other) = delete;
 };
 
 } // namespace Card

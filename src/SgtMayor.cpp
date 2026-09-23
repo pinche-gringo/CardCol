@@ -22,8 +22,7 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <cstring>
-
+#include <array>
 #include <iomanip>
 #include <sstream>
 
@@ -44,14 +43,13 @@
 
 #include <card/ComputerPlayer.h>
 #include <card/Images.h>
+#include <card/Random.h>
 #include <card/RemotePlayer.h>
 #include <card/ScoreDlg.h>
+#include <card/Tokenize.h>
 #include <card/Window.h>
 
 #include "SgtMayor.h"
-
-const unsigned int SgtMayor::COLS_PLAYER[NUM_PLAYERS] = {1, 4, 0};
-const unsigned int SgtMayor::ROWS_PLAYER[NUM_PLAYERS] = {6, 1, 1};
 
 unsigned int SgtMayor::ENDTRICKS(10);
 
@@ -67,8 +65,8 @@ unsigned int SgtMayor::ENDTRICKS(10);
 SgtMayor::SgtMayor(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
                    unsigned int posPlayer, YGP::Mutex& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 10, 8),
-      played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pTrump(NULL), bfColours(0), startPlayer(rand() % NUM_PLAYERS),
-      menuSort(), menuSort2(), menuShowScoreDlg(), pScoreDlg(NULL) {
+      played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pTrump(nullptr), bfColours(0),
+      startPlayer(Card::randomNumber(NUM_PLAYERS)), menuSort(), menuSort2(), menuShowScoreDlg(), pScoreDlg(nullptr) {
     TRACE9("SgtMayor::SgtMayor(Box&, Statusbar&, Card::Set&, ...)");
 
     // Show and attach card-piles
@@ -95,7 +93,7 @@ SgtMayor::SgtMayor(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cards
         players[i].hand.set_margin_end(5);
         attach(players[i].hand, COLS_PLAYER[i], ROWS_PLAYER[i], (i ? 3 : 5), 1);
         TRACE9("SgtMayor::SgtMayor() - Attach at: " << COLS_PLAYER[i] << '/' << COLS_PLAYER[i] + (i ? 3 : 5) << " - "
-	       << ROWS_PLAYER[i] << '/' << ROWS_PLAYER[i] + 1);
+                                                    << ROWS_PLAYER[i] << '/' << ROWS_PLAYER[i] + 1);
 
         players[i].hand.setStyle(i ? Card::IPile::QUITE_COMPRESSED : Card::IPile::COMPRESSED);
         players[i].hand.setShowOption(i ? Card::IPile::SHOWBACK : Card::IPile::SHOWFACE);
@@ -111,7 +109,7 @@ SgtMayor::SgtMayor(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cards
 
     resizeCards();
 
-    memset(diffTricks, '\0', sizeof(diffTricks));
+    diffTricks.fill(0);
 }
 
 //-----------------------------------------------------------------------------
@@ -119,7 +117,7 @@ SgtMayor::SgtMayor(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cards
 //-----------------------------------------------------------------------------
 SgtMayor::~SgtMayor() {
     TRACE9("SgtMayor::~SgtMayor()");
-    delete pScoreDlg;
+    pScoreDlg.reset();
     clean();
 }
 
@@ -172,12 +170,11 @@ void SgtMayor::start() {
             int points;
             pScoreDlg->getMaxPoints(points, player);
             Check3(points >= 0);
-            if ((unsigned int)points >= ENDTRICKS) {
+            if (static_cast<unsigned int>(points) >= ENDTRICKS) {
                 menuShowScoreDlg->set_enabled(false);
-                delete pScoreDlg;
-                pScoreDlg = NULL;
+                pScoreDlg.reset();
 
-                memset(diffTricks, '\0', sizeof(diffTricks));
+                diffTricks.fill(0);
             }
         }
 
@@ -197,8 +194,8 @@ void SgtMayor::start() {
                     pile.removeTopCard();
         Check3(pile.empty());
 
-        for (unsigned int i(0); i < (sizeof(playedCards) / sizeof(playedCards[0])); ++i)
-            playedCards[i].reset();
+        for (auto& playedCard : playedCards)
+            playedCard.reset();
         bfColours = 0;
 
         if (getConnectionMgr().getMode() != YGP::ConnectionMgr::CLIENT) {
@@ -215,8 +212,8 @@ void SgtMayor::showNeededTricks() {
     TRACE9("SgtMayor::showNeededTricks() - Startplayer " << startPlayer);
     // Separate this from dealing the cards, to give the client a chance to
     // receive and perform the ActPlayer-message (to set the start-player)
+    static constexpr std::array<char, NUM_PLAYERS> neededTricks{'6', '3', '8'};
     for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
-        char neededTricks[NUM_PLAYERS] = {'6', '3', '8'};
         Glib::ustring needed(_("(needs %1 tricks)"));
         needed.replace(needed.find("%1"), 2, 1, neededTricks[i]);
         players[(i + startPlayer) % NUM_PLAYERS].neededTricks.set_text(needed);
@@ -228,18 +225,17 @@ void SgtMayor::showNeededTricks() {
 //-----------------------------------------------------------------------------
 void SgtMayor::clean() {
     TRACE9("SgtMayor::clean()");
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
-        players[i].hand.clear();
+    for (auto& player : players) {
+        player.hand.clear();
 
-        for (Card::IPile::iterator c(players[i].won.begin()); c != players[i].won.end(); ++c)
-            (*c)->show();
-        players[i].won.clear();
+        for (auto* card : player.won)
+            card->show();
+        player.won.clear();
     }
 
     if (pTrump) {
         remove(*pTrump);
-        delete pTrump;
-        pTrump = NULL;
+        pTrump.reset();
     }
 
     menuSort->set_enabled(false);
@@ -259,12 +255,12 @@ void SgtMayor::playOpen(bool open) {
         players[i].hand.setStyle(open ? Card::IPile::COMPRESSED : Card::IPile::QUITE_COMPRESSED);
     }
 
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
-        players[i].won.setShowOption(open ? Card::IPile::SHOWFACE : Card::IPile::SHOWBACK);
-        players[i].won.setStyle(open ? Card::IPile::COMPRESSED : Card::IPile::QUITE_COMPRESSED);
+    for (auto& player : players) {
+        player.won.setShowOption(open ? Card::IPile::SHOWFACE : Card::IPile::SHOWBACK);
+        player.won.setStyle(open ? Card::IPile::COMPRESSED : Card::IPile::QUITE_COMPRESSED);
 
-        for (Card::VPile::iterator c(players[i].won.begin()); c != players[i].won.end(); ++c)
-            if (((c - players[i].won.begin()) % 3) != 2)
+        for (auto c(player.won.begin()); c != player.won.end(); ++c)
+            if (((c - player.won.begin()) % 3) != 2)
                 open ? (*c)->show() : (*c)->hide();
     }
 }
@@ -381,11 +377,11 @@ bool SgtMayor::selectTrump() {
             status.push(stat);
         }
         else {
-            Check3(typeid(*actPlayers[trumpPlayer]) == typeid(ComputerPlayer));
+            Check3(typeid(*actPlayers[trumpPlayer]) == typeid(Card::ComputerPlayer));
             // Find special colour
             Card::IPile& pile(players[trumpPlayer].hand);
-            int number[] = {0, 0, 0, 0};
-            int points[] = {0, 0, 0, 0};
+            std::array<int, 4> number{};
+            std::array<int, 4> points{};
 
             for (unsigned int i(0); i < (pile.size() - 1); ++i) {
                 ++number[pile[i]->colour()];
@@ -397,7 +393,7 @@ bool SgtMayor::selectTrump() {
                 if ((number[i] > number[i - 1]) || ((number[i] == number[i - 1]) && (points[i] > points[i - 1])))
                     trumpColour = i;
             }
-            showTrump((Card::Widget::COLOURS)trumpColour);
+            showTrump(static_cast<Card::Widget::COLOURS>(trumpColour));
             displayTurn(displayPlayer, stat);
         }
     }
@@ -442,8 +438,8 @@ unsigned int SgtMayor::findPos2Play(unsigned int player) {
     unsigned int pos(0);
     Card::IPile& pile(players[player].hand);
     // Get the number of cards of each colour
-    unsigned int cColours[] = {0, 0, 0, 0};
-    unsigned int posColours[] = {-1U, -1U, -1U, -1U};
+    std::array<unsigned int, 4> cColours{};
+    std::array<unsigned int, 4> posColours{-1U, -1U, -1U, -1U};
     for (unsigned int i(0); i < (pile.size() - 1); ++i) {
         ++cColours[pile[i]->colour()];
         if (pile[i]->colour() != pile[i + 1]->colour())
@@ -452,10 +448,11 @@ unsigned int SgtMayor::findPos2Play(unsigned int player) {
     posColours[pile[pile.size() - 1]->colour()] = pile.size() - 1;
     ++cColours[pile[pile.size() - 1]->colour()];
     TRACE8("SgtMayor::findPos2Play(unsigned int) - Nr: " << cColours[0] << '/' << cColours[1] << '/' << cColours[2] << '/'
-	   << cColours[3]);
-    TRACE9("SgtMayor::findPos2Play(unsigned int) - Pos: " << (int)posColours[0] << '/' << (int)posColours[1] << '/'
-	   << (int)posColours[2] << '/' << (int)posColours[3]);
-    TRACE9("SgtMayor::findPos2Play(unsigned int) - Out: " << std::hex << (int)bfColours << std::dec);
+                                                         << cColours[3]);
+    TRACE9("SgtMayor::findPos2Play(unsigned int) - Pos: "
+           << static_cast<int>(posColours[0]) << '/' << static_cast<int>(posColours[1]) << '/' << static_cast<int>(posColours[2])
+           << '/' << static_cast<int>(posColours[3]));
+    TRACE9("SgtMayor::findPos2Play(unsigned int) - Out: " << std::hex << bfColours << std::dec);
 
     switch (played.size()) {
     case 0: {
@@ -479,14 +476,14 @@ unsigned int SgtMayor::findPos2Play(unsigned int player) {
         // - Have dead cards?
         int maxDiff(0);
         Card::Widget::COLOURS maxColour(Card::Widget::HEARTS);
-        for (unsigned int i(0); i < (sizeof(cColours) / sizeof(*cColours)); ++i) {
+        for (unsigned int i(0); i < cColours.size(); ++i) {
             int diff(cColours[i] - (13 - playedCards[i].count()) / 3);
-            if ((diff > maxDiff) && ((int)i != pTrump->colour())) {
+            if ((diff > maxDiff) && (static_cast<int>(i) != pTrump->colour())) {
                 maxDiff = diff;
-                maxColour = (Card::Widget::COLOURS)i;
+                maxColour = static_cast<Card::Widget::COLOURS>(i);
             }
         }
-        TRACE8("SgtMayor::findPos2Play(unsigned int) - Dead cards: " << maxDiff << ": " << (int)maxColour);
+        TRACE8("SgtMayor::findPos2Play(unsigned int) - Dead cards: " << maxDiff << ": " << static_cast<int>(maxColour));
         if (maxDiff) {
             Check2(pTrump);
             Check3(posColours[maxColour] != -1U);
@@ -520,7 +517,7 @@ unsigned int SgtMayor::findPos2Play(unsigned int player) {
         bool nextHasntColour((bfColours & ((1 << played[0]->colour()) << (calcNextPlayer(player) << 2))) ||
                              ((playedCards[played[0]->colour()].count() + cColours[played[0]->colour()]) > 12));
         pos = posColours[played[0]->colour()];
-        TRACE9("SgtMayor::findPos2Play(unsigned int) - Play: " << (int)pos << "; Next: " << nextHasntColour);
+        TRACE9("SgtMayor::findPos2Play(unsigned int) - Play: " << static_cast<int>(pos) << "; Next: " << nextHasntColour);
 
         if (pos == -1U) {
             Check3((playedCards[pTrump->colour()].count() + cColours[pTrump->colour()]) <= 13);
@@ -607,7 +604,7 @@ Card::IPile* SgtMayor::getPileOfPlayer(unsigned int player, unsigned int pile) {
         player -= posServer;
     Check3(player < NUM_PLAYERS);
     Check3(!pile);
-    return ((player >= NUM_PLAYERS) || pile) ? NULL : &players[player].hand;
+    return ((player >= NUM_PLAYERS) || pile) ? nullptr : &players[player].hand;
 }
 
 #if 0
@@ -618,7 +615,7 @@ Card::IPile* SgtMayor::getPileOfPlayer(unsigned int player, unsigned int pile) {
 /// \param player Filled with player number
 /// \returns bool True, if parsing was successfull
 //-----------------------------------------------------------------------------
-bool SgtMayor::readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned long& player) {
+bool SgtMayor::readCardInfo (Card::Tokenize& src, unsigned long& card, unsigned long& player) {
    std::string strCard (src.getNextNode (';'));
    std::string from (src.getNextNode ('='));
    std::string strPlayer (src.getNextNode (';'));
@@ -638,10 +635,10 @@ bool SgtMayor::readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned l
 /// \returns bool True, if message has been completey processed
 /// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
 //----------------------------------------------------------------------------
-bool SgtMayor::handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError) {
+bool SgtMayor::handleMessage (unsigned int player, const std::string& message) {
    TRACE1 ("SgtMayor::handleMessage (unsigned int player, const std::string&) - "
 	   << message << " (" << player << ')');
-   YGP::Tokenize command (message);
+   Card::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
    if (cmd == "Exchange") {
@@ -721,7 +718,7 @@ void SgtMayor::doShowTrump(Card::Widget::COLOURS colour) {
     for (unsigned int i(0); i < cards.size(); ++i) {
         if ((cards.getCards()[i]->number() == Card::Widget::ACE) && (cards.getCards()[i]->colour() == colour)) {
             Check3(!pTrump);
-            pTrump = new Card::Widget(*cards.getCards()[i]);
+            pTrump = std::make_unique<Card::Widget>(*cards.getCards()[i]);
             pTrump->show();
             pTrump->showFace();
             pTrump->set_margin_start(5);
@@ -747,7 +744,7 @@ unsigned int SgtMayor::playCard(unsigned int player) {
 
     if (played.size() == NUM_PLAYERS) {
         // Find the winner
-        Card::VPile::const_iterator i(played.begin());
+        auto i(played.begin());
         Card::Widget::NUMBERS nr((*i)->number());
         Card::Widget::COLOURS col((*i)->colour());
         unsigned int bestPlayer(0);
@@ -799,13 +796,12 @@ unsigned int SgtMayor::playCard(unsigned int player) {
     }
 
     Glib::ustring stat(_("Game ended; %1 has %2 %7, %3 %4 and %5 %6 %8"));
-    unsigned int neededTricks[NUM_PLAYERS] = {6, 3, 8};
+    static constexpr std::array<unsigned int, NUM_PLAYERS> neededTricks{6, 3, 8};
     player = startPlayer;
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
+    for (unsigned int neededTrick : neededTricks) {
         int madeTricks(players[player].won.size() / NUM_PLAYERS);
-        diffTricks[player] = madeTricks - neededTricks[i];
-        TRACE9("SgtMayor::playCard(unsigned int) - Player " << player << " made " << madeTricks << " = "
-	       << (int)diffTricks[player]);
+        diffTricks[player] = madeTricks - neededTrick;
+        TRACE9("SgtMayor::playCard(unsigned int) - Player " << player << " made " << madeTricks << " = " << diffTricks[player]);
 
         player = calcNextPlayer(player);
     }
@@ -818,20 +814,20 @@ unsigned int SgtMayor::playCard(unsigned int player) {
         for (unsigned int i(0); i < NUM_PLAYERS; ++i)
             player.push_back(actPlayers[i]);
 
-        pScoreDlg = Card::ScoreDlg::create(player);
+        pScoreDlg.reset(Card::ScoreDlg::create(player));
         Gtk::Window* win(dynamic_cast<Gtk::Window*>(get_root()));
         if (win)
             pScoreDlg->set_transient_for(*win);
         menuShowScoreDlg->set_enabled();
     }
 
-    pScoreDlg->addPoints(diffTricks);
+    pScoreDlg->addPoints(diffTricks.data());
     pScoreDlg->display();
 
     int points;
     pScoreDlg->getMaxPoints(points, player);
     Check3(points >= 0);
-    if (points >= (int)ENDTRICKS) {
+    if (points >= static_cast<int>(ENDTRICKS)) {
         Glib::ustring won(_("; %1 won"));
         won.replace(won.find("%1"), 2, actPlayers[convertPlayer(player)]->getName());
         stat += won;
@@ -841,11 +837,11 @@ unsigned int SgtMayor::playCard(unsigned int player) {
     stat.replace(stat.find("%3"), 2, actPlayers[convertPlayer(1)]->getName());
     stat.replace(stat.find("%5"), 2, actPlayers[convertPlayer(2)]->getName());
 
-    stat.replace(stat.find("%2"), 2, formatNumber(*diffTricks));
+    stat.replace(stat.find("%2"), 2, formatNumber(diffTricks[0]));
     stat.replace(stat.find("%4"), 2, formatNumber(diffTricks[1]));
     stat.replace(stat.find("%6"), 2, formatNumber(diffTricks[2]));
 
-    stat.replace(stat.find("%7"), 2, (ngettext("trick", "tricks", (*diffTricks < 0) ? -*diffTricks : *diffTricks)));
+    stat.replace(stat.find("%7"), 2, (ngettext("trick", "tricks", (diffTricks[0] < 0) ? -diffTricks[0] : diffTricks[0])));
     stat.replace(stat.find("%8"), 2, (ngettext("trick", "tricks", (diffTricks[2] < 0) ? -diffTricks[2] : diffTricks[2])));
 
     status.pop();
@@ -904,19 +900,20 @@ unsigned int SgtMayor::tryToGetTrickWithTrump(const Card::IPile& pile) const {
 /// round.
 //----------------------------------------------------------------------------
 void SgtMayor::makeExchange() {
-    TRACE5("SgtMayor::makeExchange() - Exchanging cards: " << (*diffTricks > 0 ? (int)*diffTricks : 0) +
-	   (diffTricks[1] > 0 ? (int)diffTricks[1] : 0) + (diffTricks[2] > 0 ? (int)diffTricks[2] : 0));
-    Check3((*diffTricks + diffTricks[1]) == -diffTricks[2]);
+    TRACE5("SgtMayor::makeExchange() - Exchanging cards: " << (diffTricks[0] > 0 ? diffTricks[0] : 0) +
+                                                                  (diffTricks[1] > 0 ? diffTricks[1] : 0) +
+                                                                  (diffTricks[2] > 0 ? diffTricks[2] : 0));
+    Check3((diffTricks[0] + diffTricks[1]) == -diffTricks[2]);
 
     for (unsigned int i(startPlayer); (i - startPlayer) < NUM_PLAYERS; ++i) {
-        TRACE9("SgtMayor::makeExchange() - " << i % NUM_PLAYERS << "'s tricks: " << (int)diffTricks[i % NUM_PLAYERS]);
+        TRACE9("SgtMayor::makeExchange() - " << i % NUM_PLAYERS << "'s tricks: " << diffTricks[i % NUM_PLAYERS]);
 
         if (diffTricks[i % NUM_PLAYERS] > 0) {
             Check3((diffTricks[(i + 1) % NUM_PLAYERS] < 0) || (diffTricks[(i + 2) % NUM_PLAYERS] < 0));
 
             for (unsigned int j(1); j < NUM_PLAYERS; ++j) {
-                TRACE9("SgtMayor::makeExchange() - With " << (i + j) % NUM_PLAYERS << "'s tricks: "
-		       << (int)diffTricks[(i + j) % NUM_PLAYERS]);
+                TRACE9("SgtMayor::makeExchange() - With " << (i + j) % NUM_PLAYERS
+                                                          << "'s tricks: " << diffTricks[(i + j) % NUM_PLAYERS]);
                 if (diffTricks[(j + i) % NUM_PLAYERS] < 0) {
                     if (i % NUM_PLAYERS) {
                         if ((getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT) ||
@@ -956,8 +953,8 @@ void SgtMayor::displayExchangeStatus() {
     if ((diffTricks[1] < 0) && (diffTricks[2] < 0)) {
         msg = _("You can exchange %1 %2; %4 with %3 (and than %5 with %6)!");
 
-        msg.replace(msg.find("%4"), 2, 1, (char)((diffTricks[1] < 0) ? ('0' - diffTricks[1]) : ('0' + diffTricks[1])));
-        msg.replace(msg.find("%5"), 2, 1, (char)((diffTricks[2] < 0) ? ('0' - diffTricks[2]) : ('0' + diffTricks[2])));
+        msg.replace(msg.find("%4"), 2, 1, static_cast<char>((diffTricks[1] < 0) ? ('0' - diffTricks[1]) : ('0' + diffTricks[1])));
+        msg.replace(msg.find("%5"), 2, 1, static_cast<char>((diffTricks[2] < 0) ? ('0' - diffTricks[2]) : ('0' + diffTricks[2])));
         msg.replace(msg.find("%6"), 2, actPlayers[convertPlayer(2)]->getName());
     }
     else {
@@ -965,7 +962,7 @@ void SgtMayor::displayExchangeStatus() {
         if (diffTricks[2] < 0)
             exchg = 2;
     }
-    msg.replace(msg.find("%1"), 2, 1, (char)((diffTricks[0] < 0) ? ('0' - diffTricks[0]) : ('0' + diffTricks[0])));
+    msg.replace(msg.find("%1"), 2, 1, static_cast<char>((diffTricks[0] < 0) ? ('0' - diffTricks[0]) : ('0' + diffTricks[0])));
     msg.replace(msg.find("%2"), 2, (ngettext("bad card", "bad cards", (diffTricks[0] < 0) ? -diffTricks[0] : diffTricks[0])));
     msg.replace(msg.find("%3"), 2, actPlayers[convertPlayer(exchg)]->getName());
 
@@ -1005,7 +1002,7 @@ void SgtMayor::exchange(unsigned int playerBad, unsigned int posBad, unsigned in
     Card::HPile& pileBad(players[playerBad].hand);
     Card::HPile& pileGood(players[playerGood].hand);
     TRACE9("SgtMayor::exchange(4x unsigned int ) - Player " << playerBad << " and " << playerGood << " exchange "
-	   << *pileBad.at(posBad) << " and " << *pileGood.at(posGood));
+                                                            << *pileBad[posBad] << " and " << *pileGood[posGood]);
 
     if (!playerGood)
         flipCards2Play(pileBad, posBad, posBad);
@@ -1057,7 +1054,7 @@ void SgtMayor::exchangeCards(unsigned int playerBad, unsigned int posBad, unsign
     if (posGood == -1U)
         posGood = players[playerGood].hand.findLowestCard();
     TRACE9("SgtMayor::exchangeCards(3x unsigned int) - Player " << playerBad << ", card " << posBad << " with " << playerGood
-	   << "'s " << posGood);
+                                                                << "'s " << posGood);
     Check3(posGood < players[playerGood].hand.size());
 
     exchangeCards(playerBad, posBad, playerGood, posGood);
@@ -1104,7 +1101,8 @@ void SgtMayor::doExchangeCards(unsigned int playerBad, unsigned int posBad, unsi
     Check1(posBad < players[playerBad].hand.size());
     Check1(posGood < players[playerGood].hand.size());
     TRACE9("SgtMayor::doExchangeCards(4x unsigned int ) - Player " << playerBad << " and " << playerGood << " exchange "
-	   << *players[playerBad].hand[posBad] << " and " << *players[playerGood].hand[posGood]);
+                                                                   << *players[playerBad].hand[posBad] << " and "
+                                                                   << *players[playerGood].hand[posGood]);
     Check2((players[playerGood].hand[posGood]->colour() == players[playerBad].hand[posBad]->colour()) ||
            (!players[playerGood].hand.exists(players[playerBad].hand[posBad]->colour())));
 
@@ -1132,7 +1130,10 @@ void SgtMayor::addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<
     sub->append(_("Sort won cards (by _colour)"), "game.SgMayorSortCol");
 
     Glib::RefPtr<Gio::Menu> sec(Gio::Menu::create());
-    menuShowScoreDlg = actions->add_action("showScoreDlg", bind(ptr_fun(&Card::ScoreDlg::display), &pScoreDlg));
+    menuShowScoreDlg = actions->add_action("showScoreDlg", [this]() {
+        if (pScoreDlg)
+            pScoreDlg->display();
+    });
     sec->append(_("Show score dialog"), "game.showScoreDlg");
     sub->append_section(sec);
 
@@ -1159,11 +1160,12 @@ void SgtMayor::removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefP
 //-----------------------------------------------------------------------------
 /// Shows or hides the won cards
 /// \param show Flag if to show or to hide the cards
+/// \param style Style of the won pile (ignored; only traced)
 //-----------------------------------------------------------------------------
-void SgtMayor::showWonCards(bool show, unsigned int style) {
+void SgtMayor::showWonCards(bool show, [[maybe_unused]] unsigned int style) {
     TRACE9("SgtMayor::showWonCards(bool, unsigned int) - " << show << '/' << style);
 
-    for (Card::VPile::iterator c(players[0].won.begin()); c != players[0].won.end(); ++c)
+    for (auto c(players[0].won.begin()); c != players[0].won.end(); ++c)
         if (show)
             (*c)->show();
         else if (((c - players[0].won.begin()) % 3) != 2)

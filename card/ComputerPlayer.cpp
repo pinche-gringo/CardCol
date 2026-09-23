@@ -35,7 +35,7 @@ unsigned int ComputerPlayer::TIMEOUT(700);
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-ComputerPlayer::~ComputerPlayer() {}
+ComputerPlayer::~ComputerPlayer() = default;
 
 //----------------------------------------------------------------------------
 /// Executes the turn of a computer player

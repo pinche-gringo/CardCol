@@ -16,8 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <deque>
+#include <array>
 #include <map>
+#include <memory>
 #include <stack>
 #include <vector>
 
@@ -56,37 +57,37 @@ class Machiavelli : public Card::Game {
   public:
     Machiavelli(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
                 unsigned int posPlayer, YGP::Mutex& mxSerialize);
-    virtual ~Machiavelli();
+    ~Machiavelli() override;
 
-    virtual void start();
-    virtual void clean();
-    virtual const char* name() { return "Machiavelli"; }
-    virtual void playOpen(bool);
+    void start() override;
+    void clean() override;
+    const char* name() override { return "Machiavelli"; }
+    void playOpen(bool) override;
 
-    virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
-    virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+    void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
+    void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
 
-    virtual unsigned int numberOfDecks() const { return 4; }
-    virtual void resizeCards();
+    unsigned int numberOfDecks() const override { return 4; }
+    void resizeCards() override;
 
-    virtual bool handleMessage(unsigned int player, const std::string& msg);
+    bool handleMessage(unsigned int player, const std::string& msg) override;
 
   private:
-    Machiavelli();
-    Machiavelli(const Machiavelli& other);
-    const Machiavelli& operator=(const Machiavelli& other);
+    Machiavelli() = delete;
+    Machiavelli(const Machiavelli& other) = delete;
+    const Machiavelli& operator=(const Machiavelli& other) = delete;
 
-    static const unsigned int NUM_PLAYERS = 4; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = 4; // Number of players
 
     /// \name Virtual methods
     //@{
-    virtual void makeMove(unsigned int player);
-    virtual bool enableHuman();
-    virtual void disableHuman();
-    void changeNames(const std::vector<Card::Player*>& newPlayer);
+    void makeMove(unsigned int player) override;
+    bool enableHuman() override;
+    void disableHuman() override;
+    void changeNames(const std::vector<Card::Player*>& newPlayer) override;
 
-    virtual Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile);
-    virtual unsigned int getActTarget() const;
+    Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;
+    unsigned int getActTarget() const override;
     //@}
 
     /// \name Helper methods
@@ -138,11 +139,11 @@ class Machiavelli : public Card::Game {
 
     void endComputerMove();
 
-    Gtk::Label names[NUM_PLAYERS];  // Names of the player
-    Card::HPile hands[NUM_PLAYERS]; // For all players: Cards in hand
+    std::array<Gtk::Label, NUM_PLAYERS> names;  // Names of the player
+    std::array<Card::HPile, NUM_PLAYERS> hands; // For all players: Cards in hand
 
-    XGP::AutoContainer piles;           // Piles on the table
-    std::vector<MachiPile*> tablePiles; // Piles on table; for faster access
+    XGP::AutoContainer piles;                           // Piles on the table
+    std::vector<std::unique_ptr<MachiPile>> tablePiles; // Piles on table (owned); for faster access
 
     unsigned int startPlayer;
 
@@ -151,17 +152,17 @@ class Machiavelli : public Card::Game {
     Card::VInfoPile staple;
     Gtk::Button nextTurn;
 
-    typedef struct {
+    struct CONNECTIONS {
         Glib::RefPtr<Gtk::DragSource> src;
         Glib::RefPtr<Gtk::DropTarget> dst;
-    } CONNECTIONS;
+    };
     std::map<Card::Widget*, CONNECTIONS> aDNDHand;
     std::map<Card::Widget*, CONNECTIONS> aDNDTable;
 
     unsigned int target; // Target of the last move of the computer player
 
     // Structure holding undo-information
-    typedef struct undoValue {
+    struct undoValue {
         unsigned int destPos : 4;
         unsigned int srcPos : 4;
         unsigned int destPile : 8;
@@ -174,23 +175,23 @@ class Machiavelli : public Card::Game {
         undoValue(unsigned int targetPile, unsigned int targetPos, unsigned int pile, unsigned int pos, unsigned int nr,
                   bool createPile)
             : destPos(targetPos), srcPos(pos), destPile(targetPile), srcPile(pile), number(nr), create(createPile) {}
-    } undoValue;
+    };
 
     std::stack<undoValue> undo;
 
     // Structure to store which cards are missing on a pile, to be able to add from hand
-    typedef struct missingCards {
+    struct missingCards {
         unsigned int pile;
         Card::Widget::NUMBERS nr;
         Card::Widget::COLOURS colour;
 
         missingCards(unsigned int pile, Card::Widget::NUMBERS nr, Card::Widget::COLOURS colour)
             : pile(pile), nr(nr), colour(colour) {}
-        missingCards(unsigned int pile) : pile(pile), nr(Card::Widget::UNREACHABLE), colour() {}
-    } missingCards;
+        explicit missingCards(unsigned int pile) : pile(pile), nr(Card::Widget::UNREACHABLE), colour() {}
+    };
     std::vector<missingCards> missing;
 
-    XGP::MessageDlg* undoDlg;
+    std::unique_ptr<XGP::MessageDlg> undoDlg;
 
     Glib::RefPtr<Gio::SimpleAction> undo1;
     Glib::RefPtr<Gio::SimpleAction> undoAll;

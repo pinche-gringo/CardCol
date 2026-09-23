@@ -24,7 +24,10 @@
 
 #include <cardgames-cfg.h>
 
-#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <string>
 
 #include <gtkmm/application.h>
 
@@ -57,26 +60,16 @@
 
 #include "CardColAppl.h"
 
-const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {{IVIOAPPL_HELP_OPTION},
-                                                              {"game", 'g'},
-                                                              {"browser", 'b'},
-                                                              {"dir-help", 'd'},
-                                                              {"file", 'f'},
-                                                              {"list-games", 'G'},
+const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {{IVIOAPPL_HELP_OPTION}, {"game", 'g'},       {"browser", 'b'},
+                                                              {"dir-help", 'd'},      {"file", 'f'},       {"list-games", 'G'},
 #ifdef WITH_NETWORK
-                                                              {"listen-at", 'l'},
-                                                              {"connect-to", 'c'},
+                                                              {"listen-at", 'l'},     {"connect-to", 'c'},
 #endif
                                                               {"version", 'V'},
 #ifdef SAVE_GAME
-                                                              {"save-game", 'S'},
-                                                              {"load-game", 'L'},
+                                                              {"save-game", 'S'},     {"load-game", 'L'},
 #endif
-                                                              {NULL, '\0'}};
-
-#ifdef WITH_NETWORK
-const unsigned int CardgameAppl::PORT(DEFPORT);
-#endif
+                                                              {nullptr, '\0'}};
 
 //-----------------------------------------------------------------------------
 /// Displays the help
@@ -205,7 +198,7 @@ bool CardgameAppl::handleOption(const char option) {
 
     case 'G':
         showGames();
-        exit(0);
+        std::exit(0);
         break;
 
 #ifdef WITH_NETWORK
@@ -215,7 +208,7 @@ bool CardgameAppl::handleOption(const char option) {
             options.port = port;
         else {
             std::string e(_("-warning: No port specified - using %1!\n"));
-            e.replace(e.find("%1"), 2, options.port = STRING(DEFPORT));
+            e.replace(e.find("%1"), 2, options.port = std::to_string(PORT));
             std::cerr << PACKAGE << e;
         }
         break;
@@ -224,14 +217,14 @@ bool CardgameAppl::handleOption(const char option) {
     case 'c': {
         const char* target(getOptionValue());
         if (target) {
-            char* port(strchr(target, ':'));
+            const char* port(std::strchr(target, ':'));
             if (port) {
                 options.target.assign(target, port - target);
                 options.port = port + 1;
             }
             else {
                 options.target = target;
-                options.port = STRING(DEFPORT);
+                options.port = std::to_string(PORT);
             }
         }
         else
@@ -242,12 +235,12 @@ bool CardgameAppl::handleOption(const char option) {
 
     case 'V':
         std::cout << description() << '\n';
-        exit(0);
+        std::exit(0);
         break;
 
 #ifdef SAVE_GAME
     case 'L':
-    case 'S':
+    case 'S': {
         const char* file(getOptionValue());
         if (file) {
             if (options.gameFile.size()) {
@@ -266,6 +259,7 @@ bool CardgameAppl::handleOption(const char option) {
             std::cerr << PACKAGE << info;
         }
         break;
+    }
 #endif
 
     default:
@@ -283,7 +277,7 @@ bool CardgameAppl::handleOption(const char option) {
 int CardgameAppl::convertToGameType(const char* pText) {
     TRACE9("CardgameAppl::convertToGameType(const char*) - " << pText);
 
-    if (!strcmp(pText, "Rovhult"))
+    if (!std::strcmp(pText, "Rovhult"))
         return GameTypes::ROVHULT;
 
     try {
@@ -353,10 +347,12 @@ void CardgameAppl::readINIFile(const char* pFile) {
 
 #ifdef WITH_ROVHULT
         TRACE9("Nuke: " << Rovhult::cardNuke << "; Reverse: " << Rovhult::cardReverse << "; Skip: " << Rovhult::cardSkip);
+        // The values are written back to Rovhult when leaving the scope (after reading)
+        EnumAsUInt nuke(Rovhult::cardNuke), reverse(Rovhult::cardReverse), skip(Rovhult::cardSkip);
         INISECTION(Rovhult);
-        INIATTR4(Rovhult, CardValue::get(), (unsigned int&)Rovhult::cardNuke, CardNuke);
-        INIATTR4(Rovhult, CardValue::get(), (unsigned int&)Rovhult::cardReverse, CardReverse);
-        INIATTR4(Rovhult, CardValue::get(), (unsigned int&)Rovhult::cardSkip, CardSkip);
+        INIATTR4(Rovhult, CardValue::get(), nuke, CardNuke);
+        INIATTR4(Rovhult, CardValue::get(), reverse, CardReverse);
+        INIATTR4(Rovhult, CardValue::get(), skip, CardSkip);
 #endif
 
 #ifdef WITH_SGTMAYOR
@@ -364,7 +360,6 @@ void CardgameAppl::readINIFile(const char* pFile) {
         INIATTR2(SgtMayor, unsigned int, SgtMayor::ENDTRICKS, Tricks);
 #endif
         INIFILE_READ();
-        TRACE9("Nuke: " << Rovhult::cardNuke << "; Reverse: " << Rovhult::cardReverse << "; Skip: " << Rovhult::cardSkip);
     }
     catch (YGP::FileError&) {
     }
@@ -374,6 +369,9 @@ void CardgameAppl::readINIFile(const char* pFile) {
         err.replace(err.find("%2"), 2, error.what());
         std::cerr << name() << err;
     }
+#ifdef WITH_ROVHULT
+    TRACE9("Nuke: " << Rovhult::cardNuke << "; Reverse: " << Rovhult::cardReverse << "; Skip: " << Rovhult::cardSkip);
+#endif
 
     int type(convertToGameType(options.strType.c_str()));
     if (type != GameTypes::NONE)
@@ -402,7 +400,6 @@ void CardgameAppl::readINIFile(const char* pFile) {
 //-----------------------------------------------------------------------------
 int CardgameAppl::perform(int, const char**) {
     TRACE5("CardgameAppl::perform(int, const char**) - Params: " << args);
-    srand(time(NULL)); // Initialize the random number generator
 
     Glib::RefPtr<Gtk::Application> gtkapp(Gtk::Application::create("CardCol"));
 
@@ -423,38 +420,40 @@ int CardgameAppl::perform(int, const char**) {
     gtkapp->set_accel_for_action("win.Chat", "<Alt><Control>c");
 #endif
 #ifdef WITH_BURACO
-    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::BURACO), "<Control>b");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", static_cast<int>(GameTypes::BURACO)), "<Control>b");
     gtkapp->set_accel_for_action("game.BuracoUndo", "<Control>z");
     gtkapp->set_accel_for_action("game.BuracoSort", "S");
     gtkapp->set_accel_for_action("game.BuracoSortCol", "<Shift>S");
 #endif
 #ifdef WITH_HEARTS
-    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::HEARTS), "<Control>h");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", static_cast<int>(GameTypes::HEARTS)), "<Control>h");
     gtkapp->set_accel_for_action("game.HeartSort", "<Shift>S");
     gtkapp->set_accel_for_action("game.HeartSortCol", "S");
 #endif
 #ifdef WITH_JABBERWOCKY
-    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::JABBERWOCKY), "<Control>j");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", static_cast<int>(GameTypes::JABBERWOCKY)),
+                                 "<Control>j");
     gtkapp->set_accel_for_action("game.JabberwockySort", "<Shift>S");
     gtkapp->set_accel_for_action("game.JabberwockySortCol", "S");
 #endif
 #ifdef WITH_MACHIAVELLI
-    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::MACHIAVELLI), "<Control>m");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", static_cast<int>(GameTypes::MACHIAVELLI)),
+                                 "<Control>m");
     gtkapp->set_accel_for_action("game.MachiUndo", "<Control>z");
     gtkapp->set_accel_for_action("game.MachiUndoAll", "<Control><Alt>z");
     gtkapp->set_accel_for_action("game.MachiSort", "<Shift>S");
     gtkapp->set_accel_for_action("game.MachiSortCol", "S");
 #endif
 #ifdef WITH_ROVHULT
-    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::ROVHULT), "<Control>r");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", static_cast<int>(GameTypes::ROVHULT)), "<Control>r");
 #endif
 #ifdef WITH_SGTMAYOR
-    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::SGTMAYOR), "<Control>y");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", static_cast<int>(GameTypes::SGTMAYOR)), "<Control>y");
     gtkapp->set_accel_for_action("game.SgMayorSort", "<Shift>S");
     gtkapp->set_accel_for_action("game.SgMayorSortCol", "S");
 #endif
 #ifdef WITH_TWOPART
-    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::TWOPART), "<Control>t");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", static_cast<int>(GameTypes::TWOPART)), "<Control>t");
     gtkapp->set_accel_for_action("game.TwopartSort", "<Shift>S");
     gtkapp->set_accel_for_action("game.TwopartSortCol", "S");
 #endif
@@ -462,7 +461,7 @@ int CardgameAppl::perform(int, const char**) {
     gtkapp->set_accel_for_action("game.showScoreDlg", "<Shift><Control>s");
 #endif
 
-    return gtkapp->make_window_and_run<CardgameCollection>(0, NULL, options);
+    return gtkapp->make_window_and_run<CardgameCollection>(0, nullptr, options);
 }
 
 //-----------------------------------------------------------------------------
@@ -483,8 +482,8 @@ const char* CardgameAppl::description() const {
 void CardgameAppl::showGames() const {
     const GameTypes& types(GameTypes::get());
     std::cout << _("Available games:\n\n");
-    for (GameTypes::const_iterator i(types.begin()); i != types.end(); ++i)
-        std::cout << "  " << i->first << ": " << i->second << '\n';
+    for (const auto& type : types)
+        std::cout << "  " << type.first << ": " << type.second << '\n';
 }
 
 //-----------------------------------------------------------------------------

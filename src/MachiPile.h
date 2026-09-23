@@ -28,22 +28,22 @@ class MachiPile : public Card::HPile {
      */
     class PileError : public std::runtime_error {
       public:
-        PileError(const std::string& what) : std::runtime_error(what) {}
+        explicit PileError(const std::string& what) : std::runtime_error(what) {}
     };
 
-    typedef enum { UNDEFINED, NUMBER, COLOUR } TYPE;
+    enum TYPE { UNDEFINED, NUMBER, COLOUR };
 
     MachiPile();
-    virtual ~MachiPile();
+    ~MachiPile() override;
 
-    virtual void setTopCard(Card::Widget& newCard);
+    void setTopCard(Card::Widget& newCard) override;
     void setTopCard(Card::Widget& newCard, bool visible) { Card::HPile::setTopCard(newCard, visible); }
 
-    virtual unsigned int insert(Card::Widget& card, unsigned int pos);
+    unsigned int insert(Card::Widget& card, unsigned int pos) override;
 
-    virtual Card::Widget& remove(Card::Widget& card);
+    Card::Widget& remove(Card::Widget& card) override;
     Card::Widget& remove(Card::Widget& card, bool visible);
-    virtual Card::Widget& remove(unsigned int pos);
+    Card::Widget& remove(unsigned int pos) override;
     Card::Widget& remove(unsigned int pos, bool visible);
 
     unsigned int getPosition4Card(const Card::Widget& card) const;
@@ -53,7 +53,7 @@ class MachiPile : public Card::HPile {
 
     int getPosOfColour(Card::Widget::COLOURS colour) const;
 
-    typedef enum { ACE, BOTH, ONE } ACEFLAG;
+    enum ACEFLAG { ACE, BOTH, ONE };
     static int cardDistance(const Card::Widget& a, const Card::Widget& b) { return cardDistance(a, b, BOTH); }
     static int cardDistance(const Card::Widget& a, const Card::Widget& b, ACEFLAG aceIsOne);
 
@@ -63,8 +63,8 @@ class MachiPile : public Card::HPile {
     void markValidity() const;
 
   private:
-    MachiPile(const MachiPile& other);
-    const MachiPile& operator=(const MachiPile& other);
+    MachiPile(const MachiPile& other) = delete;
+    const MachiPile& operator=(const MachiPile& other) = delete;
 
     void analysePile();
 

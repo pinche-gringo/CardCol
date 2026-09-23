@@ -39,7 +39,7 @@ class Grid;
 
 class Settings : public XGP::XDialog {
   public:
-    virtual ~Settings();
+    ~Settings() override;
 
     static Settings* create(Gtk::Window& parent, Options& options);
 
@@ -48,14 +48,14 @@ class Settings : public XGP::XDialog {
     sigc::signal<void()> sigCardResize;
 
   protected:
-    Settings(Options& options);
+    explicit Settings(Options& options);
 
   private:
     // Prohibited manager functions
-    Settings(const Settings& other);
-    const Settings& operator=(const Settings& other);
+    Settings(const Settings& other) = delete;
+    const Settings& operator=(const Settings& other) = delete;
 
-    virtual void okEvent();
+    void okEvent() override;
 
     XGP::EnumEntry gameType;
     XGP::XAttributeSpinEntry<unsigned int> timeout;
@@ -78,7 +78,7 @@ class Settings : public XGP::XDialog {
     XGP::XAttributeSpinEntry<unsigned int> tricksSgtMayor;
 #endif
 
-    static XGP::XAttributeSpinEntry<unsigned int> Settings::* intFields[];
+    static XGP::XAttributeSpinEntry<unsigned int> Settings::* const intFields[];
     static Settings* instance;
 
     unsigned int& startGame;

@@ -54,20 +54,17 @@ class GameTypes : public YGP::MetaEnum {
     /// Creates a meta-enum of type GameTypes
     /// \returns GamesTypes& Instance of GameTypes
     static const GameTypes& get() {
-        if (!instance)
-            instance = new GameTypes;
-        return *instance;
+        static const GameTypes instance;
+        return instance;
     }
 
-    ~GameTypes();
+    ~GameTypes() override;
 
   private:
     GameTypes();
-    GameTypes(const GameTypes& other);
+    GameTypes(const GameTypes& other) = delete;
 
-    const GameTypes& operator=(const GameTypes& other);
-
-    static GameTypes* instance;
+    const GameTypes& operator=(const GameTypes& other) = delete;
 };
 
 #endif

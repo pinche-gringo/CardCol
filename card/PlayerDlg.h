@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <memory>
 #include <vector>
 
 #include <XGP/XDialog.h>
@@ -35,8 +36,8 @@ namespace Card {
 // Class to enter the names of the players
 class PlayerDlg : public XGP::XDialog {
   public:
-    PlayerDlg(std::vector<Player*>& player);
-    virtual ~PlayerDlg();
+    explicit PlayerDlg(std::vector<Player*>& player);
+    ~PlayerDlg() override;
 
     /// Creates a new player-dialogue; showing the passed players. Any
     /// changes to the names are also reflected into the passed names
@@ -52,18 +53,18 @@ class PlayerDlg : public XGP::XDialog {
     sigc::signal<void()> sigCommit;
 
   protected:
-    virtual void okEvent(); ///< Callback after clicking OK
+    void okEvent() override; ///< Callback after clicking OK
 
   private:
     /// \name Prohibited manager functions
     //@{
-    PlayerDlg(const PlayerDlg& other);
-    const PlayerDlg& operator=(const PlayerDlg& other);
+    PlayerDlg(const PlayerDlg& other) = delete;
+    const PlayerDlg& operator=(const PlayerDlg& other) = delete;
     //@}
 
-    Gtk::Grid* pClient;
+    std::unique_ptr<Gtk::Grid> pClient;
 
-    typedef struct line {
+    struct line {
         Gtk::Label* label;
         Gtk::Entry* value;
 
@@ -73,11 +74,11 @@ class PlayerDlg : public XGP::XDialog {
         void attach(Gtk::Grid& table, unsigned int line);
 
       private:
-        line(const line&);
-        line& operator=(const line&);
-    } line;
+        line(const line&) = delete;
+        line& operator=(const line&) = delete;
+    };
 
-    std::vector<line*> aPlayers;
+    std::vector<std::unique_ptr<line>> aPlayers;
     std::vector<Player*>& values;
 };
 

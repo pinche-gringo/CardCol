@@ -65,7 +65,7 @@ class Images {
     }
 
     unsigned int size() const { return cards_.size(); }
-    bool hasBack() const { return bool(back_); }
+    bool hasBack() const { return static_cast<bool>(back_); }
 
     void resizeAll();
 

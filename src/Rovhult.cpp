@@ -47,13 +47,12 @@
 #include <CardValue.h>
 
 #include <card/ComputerPlayer.h>
+#include <card/Random.h>
+#include <card/Tokenize.h>
 #include <card/Widget.h>
 #include <card/Window.h>
 
 #include "Rovhult.h"
-
-const unsigned int Rovhult::COLS_PLAYER[NUM_PLAYERS] = {7, 13, 7, 1};
-const unsigned int Rovhult::ROWS_PLAYER[NUM_PLAYERS] = {13, 7, 4, 7};
 
 Card::Widget::NUMBERS Rovhult::cardNuke(Card::Widget::TEN);
 Card::Widget::NUMBERS Rovhult::cardSkip(Card::Widget::EIGHT);
@@ -136,7 +135,7 @@ void Rovhult::start() {
         aExchanged = 0;
 
         if (getConnectionMgr().getMode() != YGP::ConnectionMgr::CLIENT) {
-            setNextPlayer(rand() & 0x3);
+            setNextPlayer(Card::randomNumber(4));
             broadcastStartPlayer(currentPlayer());
         }
 
@@ -146,9 +145,9 @@ void Rovhult::start() {
 
 //-----------------------------------------------------------------------------
 /// Callback after finishing card-exchange
-/// \param iCard Offset of card in hand
+/// \param iCard Offset of card in hand (unused)
 //-----------------------------------------------------------------------------
-void Rovhult::finishedExchange(unsigned int iCard) {
+void Rovhult::finishedExchange(unsigned int /*iCard*/) {
     unregisterDND();
     disableHuman();
     setGameStatus(EXCHANGED);
@@ -219,8 +218,9 @@ void Rovhult::exchangeAutoplayerCards() {
                     Card::Widget& cardPile(players[i].reserve[posPile].removeTopCard());
                     Card::Widget& cardHand(players[i].hand.remove(posHand, true));
 
-                    TRACE3("Rovhult::exchangeAutoplayerCards() - exchanging card " << cardHand << " in hand (" << posHand
-			   << ") with card on pile " << posPile << " (" << cardPile << ')');
+                    TRACE3("Rovhult::exchangeAutoplayerCards() - exchanging card "
+                           << cardHand << " in hand (" << posHand << ") with card on pile " << posPile << " (" << cardPile
+                           << ')');
                     // Swap cards
                     players[i].reserve[posPile].setTopCard(cardHand);
                     players[i].hand.insert(cardPile, posHand);
@@ -271,7 +271,7 @@ void Rovhult::sortReserve(unsigned int player) {
                 Card::Widget& high(players[player].reserve[k].removeTopCard());
 
                 TRACE3("Rovhult::exchangeAutoplayerCards() - exchanging card " << low << " on pile " << (k + 1) << " with card "
-		       << high << " on pile " << k);
+                                                                               << high << " on pile " << k);
 
                 players[player].reserve[k + 1].setTopCard(high);
                 players[player].reserve[k].setTopCard(low);
@@ -323,8 +323,8 @@ void Rovhult::pileSelected(unsigned int pile) {
 
     // If played from bottom of pile (with invisible cards): Flip card first
     if (!showsFace) {
-        for (unsigned int i(0); i < 3; ++i)
-            if (players[0].reserve[i].size() && players[0].reserve[i].getTopCard().showsFace()) {
+        for (auto& i : players[0].reserve)
+            if (i.size() && i.getTopCard().showsFace()) {
                 Gtk::MessageDialog dlg(_("You must first play the visible cards!"), false, Gtk::MessageType::ERROR);
                 dlg.set_title(_("Invalid move"));
                 XGP::runModal(dlg);
@@ -710,12 +710,12 @@ void Rovhult::clean() {
     if (gameStatus() == EXCHANGE)
         unregisterDND();
 
-    staple.clear();                                 // Clear staple
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i) { // Clear cards of players
-        for (unsigned int j(0); j < 3; ++j)
-            players[i].reserve[j].clear();
+    staple.clear();                // Clear staple
+    for (auto& player : players) { // Clear cards of players
+        for (auto& reserve : player.reserve)
+            reserve.clear();
 
-        players[i].hand.clear();
+        player.hand.clear();
     }
     played.clear();
     players[0].hand.setStyle(Card::IPile::NORMAL);
@@ -803,7 +803,7 @@ void Rovhult::registerHandDND(Card::Widget& card, unsigned int iCard) {
     aHandData[&card] = src;
 
     TRACE9("Rovhult::registerHandDND(Card::Widget&, unsigned int) - Activate: " << activeCards.size() << '/'
-                                                                                 << activeCards.capacity());
+                                                                                << activeCards.capacity());
     Check3(activeCards.size() >= iCard);
     sigc::connection conn(card.signal_clicked().connect(bind(mem_fun(*this, &Rovhult::finishedExchange), iCard)));
     if (activeCards.size() > iCard)
@@ -818,17 +818,15 @@ void Rovhult::registerHandDND(Card::Widget& card, unsigned int iCard) {
 /// \param card Card to unregister of dnd
 //-----------------------------------------------------------------------------
 void Rovhult::unregisterDND(Card::Widget& card) const {
-    std::map<const Card::Widget*, Glib::RefPtr<Gtk::DropTarget>>::const_iterator iDst;
-    if ((iDst = aHandDND.find(&card)) != aHandDND.end())
+    if (const auto iDst(aHandDND.find(&card)); iDst != aHandDND.end())
         card.remove_controller(iDst->second);
-    else if ((iDst = aTableDND.find(&card)) != aTableDND.end())
-        card.remove_controller(iDst->second);
+    else if (const auto iTableDst(aTableDND.find(&card)); iTableDst != aTableDND.end())
+        card.remove_controller(iTableDst->second);
 
-    std::map<const Card::Widget*, Glib::RefPtr<Gtk::DragSource>>::const_iterator iSrc;
-    if ((iSrc = aHandData.find(&card)) != aHandData.end())
+    if (const auto iSrc(aHandData.find(&card)); iSrc != aHandData.end())
         card.remove_controller(iSrc->second);
-    else if ((iSrc = aTableData.find(&card)) != aTableData.end())
-        card.remove_controller(iSrc->second);
+    else if (const auto iTableSrc(aTableData.find(&card)); iTableSrc != aTableData.end())
+        card.remove_controller(iTableSrc->second);
 }
 
 //-----------------------------------------------------------------------------
@@ -849,9 +847,9 @@ void Rovhult::unregisterDND() {
         disconnectCardInHand(card);
     }
 
-    for (unsigned int i(0); i < (sizeof(players[0].reserve) / sizeof(players[0].reserve[0])); ++i) {
-        unregisterDND(players[0].reserve[i].getTopCard());
-        disconnectCardOnTable(players[0].reserve[i].getTopCard());
+    for (auto& i : players[0].reserve) {
+        unregisterDND(i.getTopCard());
+        disconnectCardOnTable(i.getTopCard());
     }
 
     Check3(aHandDND.empty());
@@ -895,10 +893,10 @@ void Rovhult::dealCards() {
     // Show cards on table: For all players put 6 cards on table (only the
     // (upper visible) and 3 (visible ones) in hand
     for (unsigned int i(0); i < NUM_PLAYERS; ++i)
-        for (unsigned int j(0); j < 3; ++j) {
+        for (auto& j : players[(i - posServer) & 0x3].reserve) {
             for (unsigned int k(0); k < 2; ++k) { // Set cards on table
                 Card::Widget& card(staple.removeTopCard());
-                players[(i - posServer) & 0x3].reserve[j].setTopCard(card, k);
+                j.setTopCard(card, k);
             } // end-for two cards pro pile (in reserve)
 
             // Put card into hand
@@ -906,7 +904,7 @@ void Rovhult::dealCards() {
         }
 
     // Enable drag-and-drop for cards in the hand (of human player)
-    for (unsigned int i(0); i < players[i].hand.size(); ++i) {
+    for (unsigned int i(0); i < players[0].hand.size(); ++i) {
         registerHandDND(*players[0].hand[i], i);
         registerTableDND(players[0].reserve[i].getTopCard(), i);
     }
@@ -1009,11 +1007,11 @@ void Rovhult::showCards2Play(unsigned int player, unsigned int start, unsigned i
             .sigAnimation.connect(bind(mem_fun(*this, &Rovhult::executeMove), player));
     }
     else {
-        Check1(end < (sizeof(players[player].reserve) / sizeof(players[player].reserve[0])));
+        Check1(end < players[player].reserve.size());
         Card::IPile& pile(players[player].reserve[start]);
         unsigned int target(end + 1);
 
-        Card::PileWindows* animPiles(NULL);
+        Card::PileWindows* animPiles(nullptr);
         if (cardValid(pile.getTopCard().number(), true)) {
             animPiles = &animateCards2(played, pile, pile.size() - 1, pile.size() - 1);
             animPiles->sigAnimation.connect(bind(mem_fun(*this, &Rovhult::unmarkAndExecuteMove), player, end - start + 1));
@@ -1120,10 +1118,11 @@ void Rovhult::findCard2Play(unsigned int player, unsigned int& start, unsigned i
         int hpPos(-1);
         start = (played.size() && getPileLimits(nextAvailablePlayer(player), nextMin, nextMax) &&
                  (((nextMin > cardReverse) && ((hpPos = players[player].hand.find(cardReverse)) = !-1)) ||
-                  (((hpPos = (players[player].hand.findFirstEqualOrBigger(Card::Widget::NUMBERS(nextMax + 1)))) != -1) &&
-                   ((hpPos = skip(cardReverse, players[player].hand, hpPos)) != -1) &&
-                   ((hpPos = skip(cardNuke, players[player].hand, hpPos)) != -1)) &&
-                      cardValid(players[player].hand[hpPos]->number(), true)))
+                  ((((hpPos = (players[player].hand.findFirstEqualOrBigger(static_cast<Card::Widget::NUMBERS>(nextMax + 1)))) !=
+                     -1) &&
+                    ((hpPos = skip(cardReverse, players[player].hand, hpPos)) != -1) &&
+                    ((hpPos = skip(cardNuke, players[player].hand, hpPos)) != -1)) &&
+                   cardValid(players[player].hand[hpPos]->number(), true))))
                     ? hpPos
                     : players[player].hand.findFirstEqualOrBigger(cardMin);
         TRACE6("Rovhult::findCard2Play(unsigned int) - First matching card"
@@ -1147,7 +1146,7 @@ void Rovhult::findCard2Play(unsigned int player, unsigned int& start, unsigned i
                     return;
                 }
                 TRACE7("Rovhult::findCard2Play(unsigned int) - Using special card " << *players[player].hand[start] << " at pos "
-		       << start);
+                                                                                    << start);
             }
         }
         else {
@@ -1160,7 +1159,7 @@ void Rovhult::findCard2Play(unsigned int player, unsigned int& start, unsigned i
             if (players[player].hand[start]->number() == (cardReverse - 1)) {
                 if ((end = players[player].hand.find(cardReverse, start)) != -1U) {
                     TRACE8("Rovhult::findCard2Play(unsigned int) - Exchanging " << *players[player].hand[start] << " with "
-			   << *players[player].hand[end]);
+                                                                                << *players[player].hand[end]);
                     start = end;
                 }
             }
@@ -1188,7 +1187,7 @@ void Rovhult::findCard2Play(unsigned int player, unsigned int& start, unsigned i
         //     * it's a not that high card (up to 9)
         unsigned int last(players[player].hand.findLastEqual(start));
         TRACE8("Rovhult::findCard2Play(unsigned int) - Last equal at pos " << last << " (of " << players[player].hand.size()
-	       << " cards)");
+                                                                           << " cards)");
         Check3(last < players[player].hand.size());
         end = (((numberOfEqualTopCards() + last - start) == 3) ||
                ((start ? existOnlySpecialCards(players[player].hand, 0, start - 1) : 1) &&
@@ -1248,7 +1247,7 @@ void Rovhult::findCard2Play(unsigned int player, unsigned int& start, unsigned i
             }
             end = start;
             TRACE7("Rovhult::findCard2Play(unsigned int) - Playing invisible card " << players[player].reserve[end].getTopCard()
-		   << " at pos " << end);
+                                                                                    << " at pos " << end);
         }
     }
 }
@@ -1269,8 +1268,8 @@ bool Rovhult::getPileLimits(unsigned int player, Card::Widget::NUMBERS& min, Car
            << player);
 
     bool cardFound(false);
-    for (unsigned int i(0); i < 3; ++i) {
-        const Card::IPile* pPile(&players[player].reserve[i]);
+    for (const auto& i : players[player].reserve) {
+        const Card::IPile* pPile(&i);
         if (pPile->size()) {
             Card::Widget& card(pPile->getTopCard());
             if (card.showsFace()) {
@@ -1287,8 +1286,8 @@ bool Rovhult::getPileLimits(unsigned int player, Card::Widget::NUMBERS& min, Car
         }
     }
 
-    TRACE5("Rovhult::getPileInfo(unsigned int, unsigned int&, unsigned int&) - Limits found: " << int(cardFound ? min : -1)
-	   << '/' << int(cardFound ? max : -1));
+    TRACE5("Rovhult::getPileInfo(unsigned int, unsigned int&, unsigned int&) - Limits found: "
+           << static_cast<int>(cardFound ? min : -1) << '/' << static_cast<int>(cardFound ? max : -1));
     return cardFound;
 }
 
@@ -1338,7 +1337,7 @@ void Rovhult::changeNames(const std::vector<Card::Player*>& newPlayer) {
 //----------------------------------------------------------------------------
 Card::IPile* Rovhult::getPileOfPlayer(unsigned int player, unsigned int pile) {
     if ((player >= NUM_PLAYERS) || (pile > 7))
-        return NULL;
+        return nullptr;
 
     TRACE8("Rovhult::getPileOfPlayer(unsigned int, unsigned int) - Player " << player << "; Pile " << pile);
 
@@ -1370,7 +1369,7 @@ bool Rovhult::handleMessage(unsigned int player, const std::string& message) {
       TRACE1 ("Rovhult::handleMessage (unsigned int player, const std::string&) - "
               << message << " (" << player << ')');
 
-      YGP::Tokenize command (message);
+      Card::Tokenize command (message);
       std::string cmd (command.getNextNode ('='));
 
       if (cmd == "Exchange") {
@@ -1482,7 +1481,7 @@ bool Rovhult::executeRemoteMove(Card::IPile& pile, unsigned int target) {
             }
         }
 
-        if ((nextAvailablePlayer((player - 1) & 0x3) != (int)player) && noMoreHumans())
+        if ((nextAvailablePlayer((player - 1) & 0x3) != static_cast<int>(player)) && noMoreHumans())
             cEndgame = 1;
         return true;
     }
@@ -1495,10 +1494,10 @@ bool Rovhult::executeRemoteMove(Card::IPile& pile, unsigned int target) {
 /// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
 //-----------------------------------------------------------------------------
 void Rovhult::resizeCards() {
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
-        for (int j(0); j < 3; ++j)
-            players[i].reserve[j].set_size_request(Card::Images::WIDTH, Card::Images::HEIGHT + 7);
-        players[i].hand.set_size_request(Card::Images::WIDTH * 3, Card::Images::HEIGHT);
+    for (auto& player : players) {
+        for (auto& reserve : player.reserve)
+            reserve.set_size_request(Card::Images::WIDTH, Card::Images::HEIGHT + 7);
+        player.hand.set_size_request(Card::Images::WIDTH * 3, Card::Images::HEIGHT);
     }
 
     played.set_size_request(Card::Images::WIDTH, Card::Images::HEIGHT);
@@ -1528,6 +1527,6 @@ bool Rovhult::noMoreHumans() const {
 //-----------------------------------------------------------------------------
 unsigned int Rovhult::selectRandomCard(unsigned int player) {
     Check3(players[player].hand.size());
-    unsigned int pos2Play(rand() % players[player].hand.size());
+    unsigned int pos2Play(Card::randomNumber(players[player].hand.size()));
     return cardValid(players[player].hand[pos2Play]->number(), true) ? pos2Play : -1U;
 }

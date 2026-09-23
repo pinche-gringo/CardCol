@@ -1,5 +1,5 @@
-#ifndef CARDSET_H
-#define CARDSET_H
+#ifndef CARD_RANDOM_H
+#define CARD_RANDOM_H
 
 // This file is part of CardCol.
 //
@@ -16,36 +16,21 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <string>
-#include <vector>
+#include <random>
 
 namespace Card {
 
-class Widget;
-class Images;
+/// Returns the (per thread) random number engine, seeded non-deterministically
+inline std::mt19937& randomEngine() {
+    thread_local std::mt19937 engine{std::random_device{}()};
+    return engine;
+}
 
-/**Class to hold the cards used in a game
- */
-class Set {
-  public:
-    Set() : cards_() {}
-    explicit Set(const Images& decks) : cards_() { addPacket(decks); }
-    ~Set();
-
-    Widget& getCard(unsigned int nrCard) const;
-    const std::vector<Widget*>& getCards() const { return cards_; }
-    unsigned int size() const { return cards_.size(); }
-
-    void shuffle();
-    void set(unsigned int pos, unsigned int nrCard);
-
-    void clear();
-    void addPacket(const Images& decks);
-    void update() const;
-
-  private:
-    std::vector<Widget*> cards_;
-};
+/// Returns a uniformly distributed random number in the range [0, upper)
+/// \param upper Upper (exclusive) border of the random number; must not be 0
+inline unsigned int randomNumber(unsigned int upper) {
+    return std::uniform_int_distribution<unsigned int>(0, upper - 1)(randomEngine());
+}
 
 } // namespace Card
 

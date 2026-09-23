@@ -33,11 +33,11 @@ class CardOptions : public YGP::Entity {
 
   public:
     CardOptions();
-    virtual ~CardOptions();
+    ~CardOptions() override;
 
   private:
-    CardOptions(const CardOptions& other);
-    const CardOptions& operator=(const CardOptions& other);
+    CardOptions(const CardOptions& other) = delete;
+    const CardOptions& operator=(const CardOptions& other) = delete;
 
     std::string decks; // %attrib%; Front;   CARDDECKS_DIR CARDDECKS_FRONT
     std::string back;  // %attrib%; Back;    CARDDECKS_DIR CARDDECKS_BACK

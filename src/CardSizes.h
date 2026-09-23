@@ -22,37 +22,65 @@
  */
 class CardSizes : public YGP::MetaEnum {
   public:
-    typedef enum { TINY = 0, SMALL, NORMAL, BIG } SIZES;
+    enum SIZES { TINY = 0, SMALL, NORMAL, BIG };
 
     /// Creates a meta-enum of type CardSizes
     /// \returns CardSizes& Instance of CardSizes
     static const CardSizes& get() {
-        if (!instance)
-            instance = new CardSizes;
-        return *instance;
-    };
-    ~CardSizes();
+        static const CardSizes instance;
+        return instance;
+    }
+    ~CardSizes() override;
 
-    static SIZES getSize(unsigned int width, unsigned int height);
-    static unsigned int getWidth(SIZES size);
-    static unsigned int getHeight(SIZES size);
+    static constexpr SIZES getSize(unsigned int width, unsigned int height);
+    static constexpr unsigned int getWidth(SIZES size);
+    static constexpr unsigned int getHeight(SIZES size);
 
-    static const unsigned int WIDTH_TINY;
-    static const unsigned int HEIGHT_TINY;
-    static const unsigned int WIDTH_SMALL;
-    static const unsigned int HEIGHT_SMALL;
-    static const unsigned int WIDTH_NORMAL;
-    static const unsigned int HEIGHT_NORMAL;
-    static const unsigned int WIDTH_BIG;
-    static const unsigned int HEIGHT_BIG;
+    static constexpr unsigned int WIDTH_TINY{66};
+    static constexpr unsigned int HEIGHT_TINY{88};
+    static constexpr unsigned int WIDTH_SMALL{69};
+    static constexpr unsigned int HEIGHT_SMALL{92};
+    static constexpr unsigned int WIDTH_NORMAL{72};
+    static constexpr unsigned int HEIGHT_NORMAL{96};
+    static constexpr unsigned int WIDTH_BIG{75};
+    static constexpr unsigned int HEIGHT_BIG{100};
 
   private:
     CardSizes();
-    CardSizes(const CardSizes& other);
+    CardSizes(const CardSizes& other) = delete;
 
-    const CardSizes& operator=(const CardSizes& other);
-
-    static CardSizes* instance;
+    const CardSizes& operator=(const CardSizes& other) = delete;
 };
+
+//-----------------------------------------------------------------------------
+/// Returns the size (as enum-value) which corresponds to the passes values
+/// \param width Width to check
+/// \param height Height to check
+/// \returns CardSizes::SIZES Corresponding size
+//-----------------------------------------------------------------------------
+constexpr CardSizes::SIZES CardSizes::getSize(unsigned int width, unsigned int height) {
+    width += height;
+    if (width <= (WIDTH_TINY + HEIGHT_TINY))
+        return TINY;
+    else if (width <= (WIDTH_SMALL + HEIGHT_SMALL))
+        return SMALL;
+    else if (width <= (WIDTH_NORMAL + HEIGHT_NORMAL))
+        return NORMAL;
+    return BIG;
+}
+
+//-----------------------------------------------------------------------------
+/// Returns the width corresponding to the passed size
+/// \param size Size
+/// \returns unsigned int Width corresponding to size
+//-----------------------------------------------------------------------------
+constexpr unsigned int CardSizes::getWidth(SIZES size) { return WIDTH_TINY + size * 3; }
+
+//-----------------------------------------------------------------------------
+/// Returns the height corresponding to the passed size
+/// \param size Size
+/// \returns unsigned int Height corresponding to size
+//-----------------------------------------------------------------------------
+constexpr unsigned int CardSizes::getHeight(SIZES size) { return HEIGHT_TINY + (size << 2); }
 
 #endif

@@ -18,6 +18,9 @@
 
 #include <cardgames-cfg.h>
 
+#include <array>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include <gtkmm/button.h>
@@ -34,9 +37,6 @@
 
 #include <XGP/XApplication.h>
 
-namespace Gtk {
-class Dialog;
-}
 namespace Gio {
 class Menu;
 class SimpleAction;
@@ -58,8 +58,8 @@ class CardgameCollection : public XGP::XApplication {
 
   public:
     // Manager functions
-    CardgameCollection(Options& opts);
-    ~CardgameCollection();
+    explicit CardgameCollection(Options& opts);
+    ~CardgameCollection() override;
 
     Gtk::Box& getClient() { return *XGP::XApplication::getClient(); }
     Gtk::Statusbar& getStatusbar() { return status; }
@@ -84,15 +84,15 @@ class CardgameCollection : public XGP::XApplication {
         END,
         LAST
     };
-    Glib::RefPtr<Gio::SimpleAction> apMenus[LAST];
+    std::array<Glib::RefPtr<Gio::SimpleAction>, LAST> apMenus;
     Glib::RefPtr<Gio::SimpleAction> actChgGame; ///< Radio-action selecting the active game
 
     Glib::RefPtr<Gio::Menu> menuGameSection;          ///< Section filled by the active game's addMenus()
     Glib::RefPtr<Gio::SimpleActionGroup> actionsGame; ///< Actions used by the active game's menu
 
-    // Protected manager functions
-    CardgameCollection(const CardgameCollection&);
-    const CardgameCollection& operator=(const CardgameCollection&);
+    // Prohibited manager functions
+    CardgameCollection(const CardgameCollection&) = delete;
+    const CardgameCollection& operator=(const CardgameCollection&) = delete;
 
     // Event-handling
     void newGame();
@@ -106,8 +106,8 @@ class CardgameCollection : public XGP::XApplication {
     void removeCommThreads();
     void initCommunication();
     void* waitForMessages(void*);
-    int handleGlobalMessage(unsigned int player, const std::string& msg) throw(YGP::ParseError);
-    bool handleMessage(unsigned int player, const std::string msg);
+    int handleGlobalMessage(unsigned int player, const std::string& msg);
+    bool handleMessage(unsigned int player, const std::string& msg);
     void sendMessage(const Glib::ustring& msg);
     void broadcastMsg(const std::string& msg, unsigned int exclude = -1U);
     void broadcastNames();
@@ -123,13 +123,12 @@ class CardgameCollection : public XGP::XApplication {
     void toggleDebug();
 #endif
 
-    bool showMessage(const std::string msg);
-    static void closeDialog(int, const Gtk::Dialog* dlg);
+    static bool showMessage(const std::string& msg);
     virtual void gameEvents(unsigned int status);
-    virtual void showAboutbox();
-    virtual const char* getHelpfile();
+    void showAboutbox() override;
+    const char* getHelpfile() override;
 
-    void* changeCards(void* opt);
+    bool changeCards(unsigned int what);
     void loadCards();
     void resizeCards();
     bool restartGame();
@@ -143,9 +142,6 @@ class CardgameCollection : public XGP::XApplication {
     void changePlayernames();
     void makePlayer();
 
-    static const char* xpmGame[];
-    static const char* xpmAuthor[];
-
     Gtk::Statusbar status;
     Gtk::Box filler; ///< Placeholder pushing the statusbar to the bottom until a game exists
 
@@ -153,7 +149,7 @@ class CardgameCollection : public XGP::XApplication {
     Card::Set cards;
 
 #ifdef WITH_NETWORK
-    typedef YGP::OThread<CardgameCollection> THRDAPPL;
+    using THRDAPPL = YGP::OThread<CardgameCollection>;
     std::vector<THRDAPPL*> aCommThreads;
     YGP::Mutex mxGuiCmd;
 
@@ -169,7 +165,8 @@ class CardgameCollection : public XGP::XApplication {
     int oldGame, actGame;
     unsigned int restart;
 
-    Card::Game* game;
+    std::unique_ptr<Card::Game> game;
+    std::string helpFile; ///< Name of the helpfile (returned by getHelpfile())
 
     static int POSX;
     static int POSY;

@@ -42,20 +42,20 @@ namespace Card {
 /// \param player Vector containing the players
 //-----------------------------------------------------------------------------
 PlayerDlg::PlayerDlg(std::vector<Player*>& player)
-    : XDialog(OKCANCEL), sigCommit(), pClient(new Gtk::Grid()), aPlayers(), values(player) {
+    : XDialog(OKCANCEL), sigCommit(), pClient(std::make_unique<Gtk::Grid>()), aPlayers(), values(player) {
     TRACE2("PlayerDlg::PlayerDlg(std::vector<Player*>&) - Players: " << player.size());
     Check1(player.size() > 1);
     Check1(player.size() < 10);
 
     set_title(_("Set the name of the player"));
 
-    aPlayers.push_back(new line(_("_Human:"), player[0]->getName()));
+    aPlayers.push_back(std::make_unique<line>(_("_Human:"), player[0]->getName()));
     aPlayers.back()->attach(*pClient, 0);
 
     for (unsigned int i(1); i < player.size(); ++i) {
         Glib::ustring label(_("Player _%1:"));
-        label.replace(label.find("%1"), 2, 1, (char)('0' + i));
-        aPlayers.push_back(new line(label, player[i]->getName()));
+        label.replace(label.find("%1"), 2, 1, static_cast<char>('0' + i));
+        aPlayers.push_back(std::make_unique<line>(label, player[i]->getName()));
 
         aPlayers.back()->attach(*pClient, i);
     }
@@ -69,10 +69,8 @@ PlayerDlg::PlayerDlg(std::vector<Player*>& player)
 /// Destructor
 //-----------------------------------------------------------------------------
 PlayerDlg::~PlayerDlg() {
-    delete pClient;
-
-    for (unsigned int i(0); i < aPlayers.size(); ++i)
-        delete aPlayers[i];
+    // Remark: Keep the order of destruction: first the client, then the lines
+    pClient.reset();
     aPlayers.clear();
 }
 

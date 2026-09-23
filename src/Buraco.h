@@ -16,12 +16,15 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <array>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include <gtkmm/frame.h>
 #include <gtkmm/label.h>
+#include <gtkmm/scrolledwindow.h>
 
 #include <card/Pile.h>
 #include <card/Set.h>
@@ -32,7 +35,6 @@
 #include <card/Game.h>
 
 namespace Gtk {
-class ScrolledWindow;
 class DragSource;
 class DropTarget;
 } // namespace Gtk
@@ -60,22 +62,22 @@ class Buraco : public Card::Game {
   public:
     Buraco(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
            unsigned int posPlayer, YGP::Mutex& mxSerialize);
-    virtual ~Buraco();
+    ~Buraco() override;
 
-    virtual void start();
-    virtual void clean();
-    virtual const char* name() { return "Buraco"; }
-    virtual void playOpen(bool);
-    virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
-    virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+    void start() override;
+    void clean() override;
+    const char* name() override { return "Buraco"; }
+    void playOpen(bool) override;
+    void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
+    void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
 
-    virtual void changeNames(const std::vector<Card::Player*>& newPlayer);
-    virtual void resizeCards();
+    void changeNames(const std::vector<Card::Player*>& newPlayer) override;
+    void resizeCards() override;
 
-    virtual unsigned int numberOfDecks() const { return 4; }
-    virtual unsigned int numberOfJokers() const { return 3; }
+    unsigned int numberOfDecks() const override { return 4; }
+    unsigned int numberOfJokers() const override { return 3; }
 
-    virtual bool handleMessage(unsigned int player, const std::string& msg);
+    bool handleMessage(unsigned int player, const std::string& msg) override;
 
     static unsigned int getPoints(const Card::Widget& card);
     static bool isJoker(const Card::Widget& card);
@@ -83,20 +85,21 @@ class Buraco : public Card::Game {
     static int cardDistance(const Card::Widget& a, const Card::Widget& b, bool aceIsOne);
 
   private:
-    Buraco(const Buraco& other);
-    const Buraco& operator=(const Buraco& other);
+    Buraco(const Buraco& other) = delete;
+    const Buraco& operator=(const Buraco& other) = delete;
 
-    static const unsigned int NUM_PLAYERS = 4; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = 4;              // Number of players
+    static constexpr unsigned int NUM_TEAMS = NUM_PLAYERS >> 1; // Number of teams
 
     //@Section Virtual methods
-    virtual void makeMove(unsigned int player);
-    virtual bool enableHuman();
-    virtual void disableHuman();
+    void makeMove(unsigned int player) override;
+    bool enableHuman() override;
+    void disableHuman() override;
 
-    virtual Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile);
-    virtual bool executeRemoteMove(Card::IPile& pile, unsigned int target);
-    virtual unsigned int getActTarget() const;
-    void endTurn(unsigned int player, int card2Dump);
+    Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;
+    bool executeRemoteMove(Card::IPile& pile, unsigned int target) override;
+    unsigned int getActTarget() const override;
+    void endTurn(unsigned int player, unsigned int card2Dump);
 
     //@Section Event handling
     void cardSelected(unsigned int iCard);
@@ -129,7 +132,7 @@ class Buraco : public Card::Game {
 
     void sendMoveCard(unsigned int pile, unsigned int from, unsigned int to) const;
     static bool pileHasFittingPair(const Card::IPile& pile, const Card::Widget& card, bool withJokers = false);
-    static bool pileHasFittingPair(const Card::IPile& pile, const Card::Widget* exclude = NULL);
+    static bool pileHasFittingPair(const Card::IPile& pile, const Card::Widget* exclude = nullptr);
     static bool compByNumberWithJokers(const Card::Widget* a, const Card::Widget* b);
     static bool compByColourWithJokers(const Card::Widget* a, const Card::Widget* b);
     void makeTeamNames(std::vector<Card::Player*>& names) const;
@@ -156,20 +159,18 @@ class Buraco : public Card::Game {
     bool cardDropped(const Glib::ValueBase& value, double x, double y, unsigned int card);
     bool cardDroppedOnTable(const Glib::ValueBase& value, double x, double y, unsigned int cardPile);
 
-    Gtk::Label names[NUM_PLAYERS];                         // Names of the player
-    Card::HPile hands[NUM_PLAYERS];                        // For all players: Cards in hand
-    std::vector<BuracoPile*> tablePiles[NUM_PLAYERS >> 1]; // Piles on table
-    std::vector<Card::Widget*> reserve[NUM_PLAYERS >> 1];  // New staple 4 teams
-    int points[NUM_PLAYERS >> 1];                          // Number of points/team
-    unsigned int unfinishedMonoPiles[NUM_PLAYERS >> 1];
-
-    Gtk::ScrolledWindow* scrlTable[NUM_PLAYERS >> 1]; // Scroll-ctrls for table
+    std::array<Gtk::Label, NUM_PLAYERS> names;                                  // Names of the player
+    std::array<Card::HPile, NUM_PLAYERS> hands;                                 // For all players: Cards in hand
+    std::array<std::vector<std::unique_ptr<BuracoPile>>, NUM_TEAMS> tablePiles; // Piles on table
+    std::array<std::vector<Card::Widget*>, NUM_TEAMS> reserve;                  // New staple 4 teams
+    std::array<int, NUM_TEAMS> points;                                          // Number of points/team
+    std::array<unsigned int, NUM_TEAMS> unfinishedMonoPiles;
 
     std::vector<Card::Player*> nameTeams;
     unsigned int startPlayer;
 
     Gtk::Label info;
-    Card::HBox boxTeam[NUM_PLAYERS >> 1];
+    std::array<Card::HBox, NUM_TEAMS> boxTeam;
 
     Gtk::Label newPile;
     Card::VInfoPile staple;
@@ -177,10 +178,10 @@ class Buraco : public Card::Game {
     sigc::connection dumpedTop;
     sigc::connection stapleTop;
 
-    typedef struct {
+    struct CONNECTIONS {
         Glib::RefPtr<Gtk::DragSource> drag;
         Glib::RefPtr<Gtk::DropTarget> drop;
-    } CONNECTIONS;
+    };
     std::map<Card::Widget*, CONNECTIONS> aDNDHand;
     std::map<Card::Widget*, Glib::RefPtr<Gtk::DropTarget>> aDNDTable;
 
@@ -192,7 +193,7 @@ class Buraco : public Card::Game {
         unsigned int pickUpPlayed : 1;
     } gStatus;
 
-    typedef struct undoValue {
+    struct undoValue {
         unsigned int destPile : 8;
         unsigned int destPos : 3;
         unsigned int srcPos : 7;
@@ -206,7 +207,7 @@ class Buraco : public Card::Game {
             monoPos = 7;
             pickUp = 0;
         }
-    } undoValue;
+    };
     undoValue undo;
 
     Card::ScoreDlg* pScoreDlg;
@@ -218,6 +219,10 @@ class Buraco : public Card::Game {
     Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
     unsigned int target; ///< Id identifying the target to play to
+
+    // Scroll-ctrls for table (holding boxTeam). Declared last, so they are
+    // destroyed first (before the widgets they contain)
+    std::array<Gtk::ScrolledWindow, NUM_TEAMS> scrlTable;
 
     static unsigned int ENDPOINTS;
     static unsigned int CARDS2DEAL;

@@ -34,7 +34,7 @@ namespace Card {
 class PlayerConnectDlg : public XGP::ConnectDlg {
   public:
     PlayerConnectDlg(std::vector<Player*>& player, const Glib::ustring& port, YGP::ConnectionMgr& cmgr);
-    virtual ~PlayerConnectDlg();
+    ~PlayerConnectDlg() override;
 
     static unsigned int perform(std::vector<Player*>& player, const Glib::ustring& port, YGP::ConnectionMgr& cmgr);
     static unsigned int perform(std::vector<Player*>& player, unsigned int port, YGP::ConnectionMgr& cmgr);
@@ -44,8 +44,8 @@ class PlayerConnectDlg : public XGP::ConnectDlg {
 
   protected:
     /// \name Connection management
-    virtual void connect(const Glib::ustring& target, unsigned int port);
-    virtual YGP::Socket* addClient(int socket);
+    void connect(const Glib::ustring& target, unsigned int port) override;
+    YGP::Socket* addClient(int socket) override;
 
     Gtk::Label* connected;
     Gtk::Label* lblConnected;
@@ -54,8 +54,8 @@ class PlayerConnectDlg : public XGP::ConnectDlg {
     std::vector<Player*>& aPlayer;
     unsigned int posPlayer;
 
-    PlayerConnectDlg(const PlayerConnectDlg& other);
-    const PlayerConnectDlg& operator=(const PlayerConnectDlg& other);
+    PlayerConnectDlg(const PlayerConnectDlg& other) = delete;
+    const PlayerConnectDlg& operator=(const PlayerConnectDlg& other) = delete;
 };
 
 } // namespace Card

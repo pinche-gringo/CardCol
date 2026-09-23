@@ -24,6 +24,9 @@
 
 #include "Pile.h"
 
+#include <algorithm>
+#include <array>
+
 namespace Card {
 
 //-----------------------------------------------------------------------------
@@ -32,7 +35,7 @@ namespace Card {
 /// \param show Flag, if cards show their faces
 //-----------------------------------------------------------------------------
 IPile::IPile(PileStyle s, ShowOpt show) : style(s), showOpt(show), cards() {
-    TRACE3("IPile::IPile(PileStyle) - " << (int)style);
+    TRACE3("IPile::IPile(PileStyle) - " << static_cast<int>(style));
     Check3(s < LAST);
 }
 
@@ -54,7 +57,7 @@ void IPile::setTopCard(Widget& card) {
     }
 
     if (showOpt < DONT_CHANGE)
-        card.showFace((bool)showOpt);
+        card.showFace(showOpt == SHOWFACE);
 
     cards.push_back(&card);
     resize(size() - 1, NORMAL);
@@ -110,7 +113,7 @@ void IPile::insertCardFast(Widget& card, unsigned int offset) {
     Check3(operator[](size() - 1));
 
     if (showOpt < DONT_CHANGE)
-        card.showFace((bool)showOpt);
+        card.showFace(showOpt == SHOWFACE);
     resize(size() - 1, style);
 }
 
@@ -133,11 +136,9 @@ Widget& IPile::removeCardFast(unsigned int offset) {
 /// \param visible Flag if cardface should be shown or back
 //-----------------------------------------------------------------------------
 void IPile::setTopCards(const std::vector<Widget*>& staple) {
-    std::vector<Widget*>::const_iterator i;
-
-    for (i = staple.begin(); i != staple.end(); ++i) {
-        Check3(*i);
-        insertCardFast(**i, size());
+    for (auto* card : staple) {
+        Check3(card);
+        insertCardFast(*card, size());
     }
     resize(size() - 1, NORMAL);
 }
@@ -147,12 +148,10 @@ void IPile::setTopCards(const std::vector<Widget*>& staple) {
 /// \param visible Flag if cardface should be shown or back
 //-----------------------------------------------------------------------------
 void IPile::setTopCards(const std::vector<Widget*>& staple, bool visible) {
-    std::vector<Widget*>::const_iterator i;
-
-    for (i = staple.begin(); i != staple.end(); ++i) {
-        Check3(*i);
-        (*i)->showFace(visible);
-        insertCardFast(**i, size());
+    for (auto* card : staple) {
+        Check3(card);
+        card->showFace(visible);
+        insertCardFast(*card, size());
     }
     resize(size() - 1, NORMAL);
 }
@@ -171,14 +170,12 @@ void IPile::clear() {
 /// \returns Widget* Pointer to card with passed ID (or NULL)
 //-----------------------------------------------------------------------------
 Widget* IPile::get(unsigned int id) const {
-    std::vector<Widget*>::const_iterator i;
-
-    for (i = begin(); i != end(); ++i) {
-        Check3(*i);
-        if ((*i)->id() == id)
-            return *i;
+    for (auto* card : cards) {
+        Check3(card);
+        if (card->id() == id)
+            return card;
     }
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -192,7 +189,7 @@ unsigned int IPile::insert(Widget& card, unsigned int pos) {
     Check3(pos <= size());
 
     if (showOpt < DONT_CHANGE)
-        card.showFace((bool)showOpt);
+        card.showFace(showOpt == SHOWFACE);
 
     std::vector<Widget*>::iterator i(cards.insert(begin() + pos, &card));
 
@@ -210,7 +207,7 @@ unsigned int IPile::insert(Widget& card, unsigned int pos) {
 //-----------------------------------------------------------------------------
 unsigned int IPile::insertSorted(Widget& card, CMPFUNC fnSort) {
     TRACE5("IPile::insertSorted(Widget&, CMPFUNC) - Card " << card);
-    return insert(card, (upper_bound(begin(), end(), &card, fnSort) - begin()));
+    return insert(card, (std::ranges::upper_bound(cards, &card, fnSort) - begin()));
 }
 
 //-----------------------------------------------------------------------------
@@ -222,7 +219,7 @@ Widget& IPile::remove(Widget& card) {
     Check3(size() > 0);
 
     // Search for card and remove it
-    std::vector<Widget*>::iterator i(std::find(begin(), end(), &card));
+    auto i(std::ranges::find(cards, &card));
     Check3(i != end());
     i = cards.erase(i);
 
@@ -284,7 +281,8 @@ void IPile::setStyle(PileStyle s) {
 bool IPile::compCards(const Widget* a, const Widget* b) {
     Check3(a);
     Check3(b);
-    TRACE9("IPile::compCards(const Widget*, const Widget*) - " << *a << " < " << *b << " = "
+    TRACE9("IPile::compCards(const Widget*, const Widget*) - "
+           << *a << " < " << *b << " = "
            << ((a->colour() == b->colour()) ? a->number() < b->number() : a->colour() < b->colour()));
     return ((a->colour() == b->colour()) ? a->number() < b->number() : a->colour() < b->colour());
 }
@@ -299,7 +297,7 @@ bool IPile::compCardsByNr(const Widget* a, const Widget* b) {
     Check3(a);
     Check3(b);
     TRACE9("IPile::compCardsByNr(const Widget*, const Widget*) - " << a->number() << " < " << b->number()
-	   << " == " << (a->number() < b->number()));
+                                                                   << " == " << (a->number() < b->number()));
     return a->number() < b->number();
 }
 
@@ -318,7 +316,7 @@ bool IPile::compCardsByID(const Widget* a, const Widget* b) {
 //-----------------------------------------------------------------------------
 /// Sorts the cards in the pile according the past function
 //-----------------------------------------------------------------------------
-void IPile::sort(CMPFUNC fnSort) { std::sort(begin(), end(), fnSort); }
+void IPile::sort(CMPFUNC fnSort) { std::ranges::sort(cards, fnSort); }
 
 //-----------------------------------------------------------------------------
 /// Finds the first card being equal or bigger than the past one
@@ -336,7 +334,7 @@ int IPile::findFirstEqualOrBigger(Widget::NUMBERS nr) const {
         middle = first + ((last - first) >> 1);
 
         TRACE5("IPile::findFirstEqualOrBigger(Widget::NUMBERS) - Data = [" << first << "-(" << middle << ")-" << last
-	       << ") = " << *operator[](middle));
+                                                                           << ") = " << *operator[](middle));
 
         Check3(operator[](first));
         Check3(operator[](middle));
@@ -381,7 +379,7 @@ int IPile::findFirstEqualOrBiggerColour(Widget::COLOURS col) const {
         middle = first + ((last - first) >> 1);
 
         TRACE5("IPile::findFirstEqualOrBiggerColour(Widget::COLOURS) - Data = [" << first << "-(" << middle << ")-" << last
-	       << ") = " << *operator[](middle));
+                                                                                 << ") = " << *operator[](middle));
 
         Check3(operator[](first));
         Check3(operator[](middle));
@@ -498,11 +496,9 @@ void IPile::setShowOption(ShowOpt show) {
     showOpt = show;
 
     if (showOpt < DONT_CHANGE) {
-        std::vector<Widget*>::iterator i;
-
-        for (i = begin(); i != end(); ++i) {
-            Check3(*i);
-            (*i)->showFace(showOpt);
+        for (auto* card : cards) {
+            Check3(card);
+            card->showFace(showOpt == SHOWFACE);
         }
     }
 }
@@ -630,7 +626,7 @@ bool IPile::hasFittingPair(const Widget& card, CMPFUNC2 cmp, bool doubles) const
         }
     }
     TRACE7("Pile::pileHasFittingPair(const Widget*, CMPFUNC2, bool) - " << card << " matches " << nrs << '/' << std::hex << bCols
-	   << std::dec);
+                                                                        << std::dec);
     return false;
 }
 
@@ -664,7 +660,7 @@ IPile::iterator IPile::getFittingCard(const Widget& card, const_iterator start, 
               << **start);
     }
 #endif
-    return (const_cast<IPile*>(this)->begin() + (start - (const_iterator)begin()));
+    return (const_cast<IPile*>(this)->begin() + (start - begin()));
 }
 
 //----------------------------------------------------------------------------
@@ -700,7 +696,7 @@ unsigned int IPile::sortColourSerie(std::map<unsigned int, unsigned int>& aPos, 
 void IPile::deleteElement(unsigned int elem, std::map<unsigned int, unsigned int>& aPos, std::vector<unsigned int>& aOrder) {
     Check3(aPos.find(elem) != aPos.end());
     Check3(std::find(aOrder.begin(), aOrder.end(), elem) != aOrder.end());
-    aOrder.erase(std::find(aOrder.begin(), aOrder.end(), elem));
+    aOrder.erase(std::ranges::find(aOrder, elem));
     aPos.erase(aPos.find(elem));
 }
 
@@ -892,7 +888,7 @@ void IPile::getCards(unsigned int posDest, IPile& src, unsigned int start, int e
         resize(size() - 1, style);
     }
 
-    while ((unsigned int)end-- > start) {
+    while (static_cast<unsigned int>(end--) > start) {
         Widget& card(src.removeCardFast(start));
         if (style != src.style) {
             if (style == TOTALLY_COMPRESSED)
@@ -907,7 +903,7 @@ void IPile::getCards(unsigned int posDest, IPile& src, unsigned int start, int e
 
 /// Implementation of the getCompressedSize() method for Card::VBox
 template <> unsigned int Pile<Card::VBox>::getCompressedSize(PileStyle s) {
-    int height[(int)LAST] = {(int)Images::HEIGHT, 15, 7, 1};
+    const std::array<unsigned int, LAST> height{Images::HEIGHT, 15, 7, 1};
     return height[s];
 }
 
@@ -938,7 +934,7 @@ template <> void Pile<Card::VBox>::resize(Card::Widget& card, PileStyle s) {
 
 /// Implementation of the getCompressionRate() method for Card::HBox
 template <> unsigned int HPile::getCompressedSize(PileStyle s) {
-    int width[(int)LAST] = {(int)Images::WIDTH, 18, 7, 1};
+    const std::array<unsigned int, LAST> width{Images::WIDTH, 18, 7, 1};
     return width[s];
 }
 

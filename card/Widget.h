@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with libYGP.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <array>
 #include <string>
 
 #include <gdkmm/pixbuf.h>
@@ -35,9 +36,9 @@ namespace Card {
  */
 class Widget : public Gtk::Box {
   public:
-    Widget(unsigned int card, bool showFace = true);
+    explicit Widget(unsigned int card, bool showFace = true);
     Widget(const Widget&);
-    ~Widget();
+    ~Widget() override;
 
     /// Sets the card deck to use
     /// \param carddeck Deck to use
@@ -49,8 +50,8 @@ class Widget : public Gtk::Box {
     void showBack() { showFace(false); }
     bool showsFace() const { return isVisible; }
 
-    typedef enum { CLUBS = 0, DIAMONDS, SPADES, HEARTS } COLOURS;
-    typedef enum { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE, UNREACHABLE } NUMBERS;
+    enum COLOURS { CLUBS = 0, DIAMONDS, SPADES, HEARTS };
+    enum NUMBERS { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE, UNREACHABLE };
 
     unsigned int id() const { return nrCard; }
     COLOURS colour() const { return transColour[nrCard & 0x3]; }
@@ -104,7 +105,7 @@ class Widget : public Gtk::Box {
     unsigned int nrCard;
 
     static const Images* deck;
-    static COLOURS transColour[4];
+    static constexpr std::array<COLOURS, 4> transColour{CLUBS, SPADES, HEARTS, DIAMONDS};
 };
 
 } // namespace Card

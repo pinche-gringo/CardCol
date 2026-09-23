@@ -18,6 +18,7 @@
 
 #include <cardgames-cfg.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -70,7 +71,7 @@ class Game : public Gtk::Grid {
 
     Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset, const std::vector<Player*>& player, unsigned int posPlayer,
          YGP::Mutex& mxSerialize, unsigned int rows, unsigned int columns);
-    virtual ~Game();
+    ~Game() override;
 
     /// \name Managing
     //@{
@@ -140,7 +141,7 @@ class Game : public Gtk::Grid {
     const char* getCardOrder() const { return cardOrder.data(); }
     void clearCardOrder() {
         cardOrder.clear();
-        data = NULL;
+        data = nullptr;
     }
     //@}
 
@@ -219,8 +220,8 @@ class Game : public Gtk::Grid {
     unsigned int ignoreNextMsg; ///< Number of received messages to ignore
 
   private:
-    Game(const Game&);
-    Game& operator=(const Game&);
+    Game(const Game&) = delete;
+    Game& operator=(const Game&) = delete;
 
     bool endGame(bool startNew);
 
@@ -232,13 +233,13 @@ class Game : public Gtk::Grid {
 
     int actPlayer; // Player who is in turn (needed for timer)
     struct {
-        int restart : 1;
-        int pendingTurn : 1;
+        unsigned int restart : 1;
+        unsigned int pendingTurn : 1;
     } stati;
 
     std::vector<sigc::connection> wonCards; // Connections to show won cards
     IPile* pWonPile;
-    Gtk::PopoverMenu* pMenuPopSort;
+    std::unique_ptr<Gtk::PopoverMenu> pMenuPopSort;
 
     std::string cardOrder;
 };
@@ -254,7 +255,7 @@ class Game : public Gtk::Grid {
 */
 template <class Parent, class Controller> class TGame : public Parent {
   public:
-    typedef void (Controller::*PCALLBACK)(unsigned int);
+    using PCALLBACK = void (Controller::*)(unsigned int);
 
     /// Constructor
     /// \param controller Object controlling the game
@@ -264,14 +265,14 @@ template <class Parent, class Controller> class TGame : public Parent {
                  controller.getPlayerPosition(), controller.getClientMutex()),
           obj(controller), pCallback(callback) {}
     /// Destructor
-    virtual ~TGame() {}
+    ~TGame() override = default;
 
     /// Callback to inform a controller about status changes
     /// \param status New status of the game
-    virtual void control(unsigned int status) const { (obj.*pCallback)(status); }
+    void control(unsigned int status) const override { (obj.*pCallback)(status); }
 
     /// Returns the connection-manager
-    virtual YGP::ConnectionMgr& getConnectionMgr() const { return obj.getConnectionMgr(); }
+    YGP::ConnectionMgr& getConnectionMgr() const override { return obj.getConnectionMgr(); }
 
   private:
     Controller& obj;

@@ -22,12 +22,13 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <cstdlib>
+#include <algorithm>
 
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
 #include "Images.h"
+#include "Random.h"
 #include "Widget.h"
 
 #include "Set.h"
@@ -64,12 +65,7 @@ void Set::addPacket(const Images& decks) {
 void Set::shuffle() {
     TRACE2("Set::shuffle()");
 
-    unsigned int nr;
-    for (int i(size()); i > 0;) {
-        nr = rand() % i--;
-        TRACE2("Set::shuffle() - " << i << " = " << nr);
-        std::swap(cards_[i], cards_[nr]);
-    }
+    std::ranges::shuffle(cards_, randomEngine());
 }
 
 //-----------------------------------------------------------------------------
@@ -82,10 +78,9 @@ void Set::set(unsigned int pos, unsigned int card) {
     TRACE2("Set::set(unsigned int, unsigned int) - [" << pos << "] = " << card);
     Check1(card < cards_.size());
 
-    for (std::vector<Widget*>::iterator i(cards_.begin() + pos); i != cards_.end(); ++i)
+    for (auto i(cards_.begin() + pos); i != cards_.end(); ++i)
         if ((*i)->id() == card) {
-            std::vector<Widget*>::iterator t(cards_.begin() + pos);
-            std::swap(*t, *i);
+            std::iter_swap(cards_.begin() + pos, i);
             return;
         }
     Check3(0);
@@ -109,16 +104,16 @@ Widget& Set::getCard(unsigned int nr) const {
 void Set::update() const {
     TRACE3("Set::update() const");
 
-    for (std::vector<Widget*>::const_iterator i(cards_.begin()); i != cards_.end(); ++i)
-        (*i)->update();
+    for (auto card : cards_)
+        card->update();
 }
 
 //-----------------------------------------------------------------------------
 /// Removes all cards from the set
 //-----------------------------------------------------------------------------
 void Set::clear() {
-    for (std::vector<Widget*>::iterator i(cards_.begin()); i != cards_.end(); ++i)
-        delete *i;
+    for (auto& card : cards_)
+        delete card;
     cards_.clear();
 }
 

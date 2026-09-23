@@ -24,6 +24,9 @@
 
 #include <cardgames-cfg.h>
 
+#include <algorithm>
+#include <cstring>
+
 #include <glibmm/fileutils.h>
 #include <glibmm/main.h>
 
@@ -34,10 +37,12 @@
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/scrolledwindow.h>
 
+// YGP/DirSrch.h evaluates HAVE_DIRENT_H before including ygp-cfg.h itself
+#include <ygp-cfg.h>
+
 #include <YGP/Check.h>
 #include <YGP/DirSrch.h>
 #include <YGP/Trace.h>
-#include <ygp-cfg.h>
 
 #include "Images.h"
 
@@ -142,7 +147,7 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
 
     unsigned int height(132 * ((mDecks->children().size() >> 2) + 1));
     decks.set_size_request((mDecks->children().size() > 3) ? 20 + (88 << 2) : 20 + 88 * mDecks->children().size(),
-                           height < 270 ? height : 270);
+                           std::min(height, 270U));
 
     mBacks = Gtk::ListStore::create(cols);
     backs.set_model(mBacks);
@@ -201,7 +206,7 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
             unsigned int heightImg(actImg->get_height() / 5);
 
             row[cols.path] = file;
-            row[cols.name] = file.substr(strlen(GNOMECARDS_DIR), file.rfind('.') - strlen(GNOMECARDS_DIR));
+            row[cols.name] = file.substr(std::strlen(GNOMECARDS_DIR), file.rfind('.') - std::strlen(GNOMECARDS_DIR));
             Glib::RefPtr<Gdk::Pixbuf> dest(
                 Gdk::Pixbuf::create_subpixbuf(actImg, widthImg * 11, heightImg * 2, widthImg, heightImg));
             row[cols.icon] = dest->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
@@ -231,7 +236,7 @@ DeckSelectDlg::DeckSelectDlg(const std::string& deck, const std::string& back)
 
     height = 132 * ((mBacks->children().size() >> 2) + 1);
     backs.set_size_request((mBacks->children().size() > 3) ? 20 + (88 << 2) : 20 + 88 * mBacks->children().size(),
-                           height < 270 ? height : 270);
+                           std::min(height, 270U));
 
     if (mDecks->children().size() || mBacks->children().size())
         add_button(_("_Apply"), static_cast<int>(Gtk::ResponseType::APPLY));
@@ -315,8 +320,8 @@ void DeckSelectDlg::addFile(const std::string& path, const std::string& name, co
         row[cols.path] = path;
         row[cols.name] = display;
 
-        TRACE9("DeckSelectDlg::addFile(4x const std::string&) - Comparing " << (std::string)row[cols.path] << " with "
-                                                                            << defaultDeck);
+        TRACE9("DeckSelectDlg::addFile(4x const std::string&) - Comparing " << static_cast<std::string>(row[cols.path])
+                                                                            << " with " << defaultDeck);
         if (defaultDeck == path)
             decks.select_path(mDecks->get_path(iRow));
     }
@@ -366,7 +371,8 @@ Glib::RefPtr<Gdk::Pixbuf> DeckSelectDlg::getImage(const std::string& file, bool 
 
     try {
         imgBuf = Gdk::Pixbuf::create_from_file(file.c_str());
-        if (scale && ((imgBuf->get_height() != (int)Images::WIDTH) || (imgBuf->get_width() != (int)Images::HEIGHT)))
+        if (scale && ((imgBuf->get_height() != static_cast<int>(Images::HEIGHT)) ||
+                      (imgBuf->get_width() != static_cast<int>(Images::WIDTH))))
             imgBuf = imgBuf->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
     }
     catch (Gdk::PixbufError& e) {
@@ -431,9 +437,9 @@ void DeckSelectDlg::deckActivated(const Gtk::TreeModel::Path& path) {
     deck = row[cols.path];
 
     if (backs.get_selected_items().size()) {
-        Gtk::TreePath path(*(backs.get_selected_items().begin()));
-        Gtk::TreeRow row(*mBacks->get_iter(path));
-        back = row[cols.path];
+        Gtk::TreePath pathBack(*(backs.get_selected_items().begin()));
+        Gtk::TreeRow rowBack(*mBacks->get_iter(pathBack));
+        back = rowBack[cols.path];
     }
     setDecks.emit(deck, back);
 }
@@ -450,9 +456,9 @@ void DeckSelectDlg::backActivated(const Gtk::TreeModel::Path& path) {
     back = row[cols.path];
 
     if (decks.get_selected_items().size()) {
-        Gtk::TreePath path(*(decks.get_selected_items().begin()));
-        Gtk::TreeRow row(*mDecks->get_iter(path));
-        deck = row[cols.path];
+        Gtk::TreePath pathDeck(*(decks.get_selected_items().begin()));
+        Gtk::TreeRow rowDeck(*mDecks->get_iter(pathDeck));
+        deck = rowDeck[cols.path];
     }
     setDecks.emit(deck, back);
 }

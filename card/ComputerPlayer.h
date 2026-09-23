@@ -26,18 +26,18 @@ class ComputerPlayer : public Player {
   public:
     /// Constructor from a name
     /// \param name Name of the computer player
-    ComputerPlayer(const Glib::ustring& name) : Player(name) {}
-    virtual ~ComputerPlayer();
+    explicit ComputerPlayer(const Glib::ustring& name) : Player(name) {}
+    ~ComputerPlayer() override;
 
-    virtual bool makeTurn(Game* game);
-    virtual unsigned int timeout() const;
+    bool makeTurn(Game* game) override;
+    unsigned int timeout() const override;
 
     static unsigned int TIMEOUT;
 
   private:
-    ComputerPlayer();
-    ComputerPlayer(const ComputerPlayer& other);
-    const ComputerPlayer& operator=(const ComputerPlayer& other);
+    ComputerPlayer() = delete;
+    ComputerPlayer(const ComputerPlayer& other) = delete;
+    const ComputerPlayer& operator=(const ComputerPlayer& other) = delete;
 };
 
 } // namespace Card

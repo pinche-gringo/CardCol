@@ -24,6 +24,8 @@
 
 #include <cardgames-cfg.h>
 
+#include <algorithm>
+
 #include <YGP/ANumeric.h>
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -38,7 +40,7 @@ MachiPile::MachiPile() : Card::HPile(COMPRESSED, SHOWFACE), type(UNDEFINED) {}
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-MachiPile::~MachiPile() {}
+MachiPile::~MachiPile() = default;
 
 //----------------------------------------------------------------------------
 /// Sets a new top card of the pile.
@@ -221,10 +223,8 @@ int MachiPile::getPosOfColour(Card::Widget::COLOURS colour) const {
     Check3(size());
 
     if (type == NUMBER) {
-        for (const_iterator i(begin()); i != end(); ++i)
-            if ((*i)->colour() == colour)
-                return i - begin();
-        return -1;
+        auto i(std::ranges::find(*this, colour, &Card::Widget::colour));
+        return (i != end()) ? static_cast<int>(i - begin()) : -1;
     }
     else
         return (operator[](0)->colour() == colour) ? 0 : -1;
@@ -273,11 +273,12 @@ bool MachiPile::hasMatching3rd(std::vector<Card::Widget*>& pair, MachiPile::cons
     switch (diff) {
     case 0: // Equal numbers
         if (diffTable) {
-            if ((diffTable > 2) && (type == COLOUR) && (((int)(size() - 4) > diffTable) || ((int)(size() - 1) == diffTable)) &&
+            if ((diffTable > 2) && (type == COLOUR) &&
+                ((static_cast<int>(size() - 4) > diffTable) || (static_cast<int>(size() - 1) == diffTable)) &&
                 (pair[0]->id() != operator[](diffTable)->id()) && (pair[1]->id() != operator[](diffTable)->id())) {
                 match = begin() + diffTable;
                 nr = end() - match;
-                if (((int)(size() - 4) > diffTable) && ((int)(size() - 1) != diffTable))
+                if ((static_cast<int>(size() - 4) > diffTable) && (static_cast<int>(size() - 1) != diffTable))
                     pair.clear();
             }
         }
@@ -301,12 +302,12 @@ bool MachiPile::hasMatching3rd(std::vector<Card::Widget*>& pair, MachiPile::cons
             Check3(pair[1]->colour() == card->colour());
             if ((diffTable == -2) || (diffTable == 1))
                 match = begin();
-            else if (((size() - diffTable) == 3) || (diffTable == (int)size()))
+            else if (((size() - diffTable) == 3) || (diffTable == static_cast<int>(size())))
                 match = end() - 1;
             else {
                 bool bot(diffTable > 3);
-                bool top(diffTable < (int)(size() - 7));
-                if ((size() > 6) && bot & top) {
+                bool top(diffTable < static_cast<int>(size() - 7));
+                if ((size() > 6) && bot && top) {
                     pair.clear();
                     match = begin() + (bot ? diffTable : (diffTable + 3));
                     nr = end() - match;
@@ -318,12 +319,12 @@ bool MachiPile::hasMatching3rd(std::vector<Card::Widget*>& pair, MachiPile::cons
     case 2:
         if ((pair[0]->colour() == card->colour()) && (diffTable < 0) && (getType() == COLOUR)) {
             Check3(pair[1]->colour() == card->colour());
-            if ((diffTable == 1) || ((size() - 1) == (unsigned int)diffTable))
+            if ((diffTable == 1) || ((size() - 1) == static_cast<unsigned int>(diffTable)))
                 match = begin() + diffTable - 1;
             else {
                 bool bot(diffTable > 3);
-                bool top(diffTable < (int)(size() - 7));
-                if ((size() > 6) && bot & top) {
+                bool top(diffTable < static_cast<int>(size() - 7));
+                if ((size() > 6) && bot && top) {
                     pair.clear();
                     match = begin() + (bot ? diffTable : (diffTable + 3));
                     nr = end() - match;
@@ -344,16 +345,16 @@ bool MachiPile::hasMatching3rd(std::vector<Card::Widget*>& pair, MachiPile::cons
 /// Marks all cards in the pile
 //----------------------------------------------------------------------------
 void MachiPile::mark() const {
-    for (MachiPile::const_iterator i(begin()); i != end(); ++i)
-        (*i)->mark();
+    for (auto i : *this)
+        i->mark();
 }
 
 //----------------------------------------------------------------------------
 /// Unmarks all cards in the pile
 //----------------------------------------------------------------------------
 void MachiPile::unmark() const {
-    for (MachiPile::const_iterator i(begin()); i != end(); ++i)
-        (*i)->unmark();
+    for (auto i : *this)
+        i->unmark();
 }
 
 //----------------------------------------------------------------------------

@@ -59,7 +59,7 @@ class DeckSelectDlg : public XGP::XDialog {
 
   public:
     DeckSelectDlg(const std::string& deck, const std::string& back);
-    virtual ~DeckSelectDlg();
+    ~DeckSelectDlg() override;
 
     /// Creates a DeckSelect-dialog on the heap
     /// \param deck Pre-selected deck
@@ -75,8 +75,8 @@ class DeckSelectDlg : public XGP::XDialog {
     sigc::signal<void(const std::string&, const std::string&)> setDecks;
 
   protected:
-    virtual void okEvent();
-    virtual void command(int action);
+    void okEvent() override;
+    void command(int action) override;
 
     Glib::RefPtr<Gdk::Pixbuf> getImage(const std::string& file, bool scale = true);
     void addFileInDirectories(const std::string& dir, const std::string& file, const std::string& defaultDeck,
@@ -85,8 +85,8 @@ class DeckSelectDlg : public XGP::XDialog {
 
   private:
     // Prohibited manager-functions
-    DeckSelectDlg();
-    DeckSelectDlg(const DeckSelectDlg&);
+    DeckSelectDlg() = delete;
+    DeckSelectDlg(const DeckSelectDlg&) = delete;
 
     void deckSelected();
     void backSelected();
@@ -94,7 +94,7 @@ class DeckSelectDlg : public XGP::XDialog {
     void deckActivated(const Gtk::TreeModel::Path& deck);
     void backActivated(const Gtk::TreeModel::Path& back);
 
-    const DeckSelectDlg& operator=(const DeckSelectDlg&);
+    const DeckSelectDlg& operator=(const DeckSelectDlg&) = delete;
 
     DeckColumns cols;
     Glib::RefPtr<Gtk::ListStore> mDecks;

@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <array>
+#include <memory>
 #include <vector>
 
 #include <gtkmm/label.h>
@@ -41,28 +43,31 @@ class Hearts : public Card::Game {
   public:
     Hearts(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
            unsigned int posPlayer, YGP::Mutex& mxSerialize);
-    virtual ~Hearts();
+    ~Hearts() override;
 
-    virtual void start();
-    virtual void clean();
-    virtual void playOpen(bool open);
-    virtual const char* name() { return "Hearts"; }
-    virtual void changeNames(const std::vector<Card::Player*>& newPlayer);
-    virtual void resizeCards();
+    void start() override;
+    void clean() override;
+    void playOpen(bool open) override;
+    const char* name() override { return "Hearts"; }
+    void changeNames(const std::vector<Card::Player*>& newPlayer) override;
+    void resizeCards() override;
 
-    virtual bool handleMessage(unsigned int player, const std::string& message);
+    bool handleMessage(unsigned int player, const std::string& message) override;
 
   protected:
-    virtual Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile);
+    Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;
 
   private:
     enum Status { EXCHANGE = Game::LAST };
 
-    static void getPositionOfColours(Card::IPile& pile, int result[4]);
+    /// Array holding the position of the last card of each colour (or -1)
+    using ColourPositions = std::array<int, 4>;
+
+    static void getPositionOfColours(const Card::IPile& pile, ColourPositions& result);
 
     // Protected manager functions
-    Hearts(const Hearts& other);
-    const Hearts& operator=(const Hearts& other);
+    Hearts(const Hearts& other) = delete;
+    Hearts& operator=(const Hearts& other) = delete;
 
     //@Section Event handling
     void cardSelected(unsigned int iCard);
@@ -70,8 +75,8 @@ class Hearts : public Card::Game {
     void cardTaken();
 
     //@Section Virtual methods
-    virtual void makeMove(unsigned int player);
-    virtual bool enableHuman();
+    void makeMove(unsigned int player) override;
+    bool enableHuman() override;
 
     //@Section Helper methods
     bool moveSelectedCardToPlayed(unsigned int player, unsigned int card);
@@ -82,48 +87,49 @@ class Hearts : public Card::Game {
     void finishMove();
     void takeWonCards(unsigned int player);
     bool cardsExchanged(unsigned int cards);
-    static unsigned int numberOfCards(const int aPositions[4], Card::Widget::COLOURS colour);
+    static unsigned int numberOfCards(const ColourPositions& aPositions, Card::Widget::COLOURS colour);
     static unsigned int pointsOfPile(const Card::IPile& pile);
 
     //@Section Computer player
     unsigned int findPos2Play(unsigned int player);
-    unsigned int findWorstCard(const Card::IPile& pile, const int aPositions[4]) const;
-    unsigned int findLowerCard(const Card::IPile& pile, const int aPositions[4]) const;
+    unsigned int findWorstCard(const Card::IPile& pile, const ColourPositions& aPositions) const;
+    unsigned int findLowerCard(const Card::IPile& pile, const ColourPositions& aPositions) const;
 
     void startPlaying();
 
-    virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
-    virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+    void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
+    void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
 
-    static const unsigned int NUM_PLAYERS = 4; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = 4; // Number of players
 
-    bool playedSQ;           // Flag, if the queen of spades has been played
-    unsigned int aPlayed[4]; // Array holding played cars for each colour
+    bool playedSQ;                       // Flag, if the queen of spades has been played
+    std::array<unsigned int, 4> aPlayed; // Array holding played cars for each colour
 
-    unsigned int player2Exchange;       // ID of (next) player to exchange cards with
-    Card::IPile aExchange[NUM_PLAYERS]; // Cards the players are exchanging
+    unsigned int player2Exchange;                   // ID of (next) player to exchange cards with
+    std::array<Card::IPile, NUM_PLAYERS> aExchange; // Cards the players are exchanging
 
     struct playerCards {
-        Card::IPile* hand; // For players: Cards in the hand
-        Card::IPile* won;  // Won cards
+        std::unique_ptr<Card::IPile> hand; // For players: Cards in the hand
+        std::unique_ptr<Card::IPile> won;  // Won cards
         Gtk::Label name;
 
-        playerCards() : hand(NULL), won(NULL), name() {}
+        playerCards() : hand(), won(), name() {}
 
       private:
-        playerCards(const playerCards&);
-        playerCards& operator=(const playerCards&);
-    } players[NUM_PLAYERS];
+        playerCards(const playerCards&) = delete;
+        playerCards& operator=(const playerCards&) = delete;
+    };
+    std::array<playerCards, NUM_PLAYERS> players;
     Card::HPile played;
 
-    Card::ScoreDlg* pScoreDlg;
+    std::unique_ptr<Card::ScoreDlg> pScoreDlg;
 
     Glib::RefPtr<Gio::SimpleAction> menuSort;
     Glib::RefPtr<Gio::SimpleAction> menuSort2;
     Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
-    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
-    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
+    static constexpr std::array<unsigned int, NUM_PLAYERS> COLS_PLAYER{5, 9, 5, 3};
+    static constexpr std::array<unsigned int, NUM_PLAYERS> ROWS_PLAYER{10, 7, 3, 7};
 
     static unsigned int ENDPOINTS;
 };

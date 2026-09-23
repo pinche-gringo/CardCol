@@ -22,9 +22,8 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <memory>
 #include <sstream>
-
-#include <boost/tokenizer.hpp>
 
 #include <gtkmm/entry.h>
 #include <gtkmm/grid.h>
@@ -43,6 +42,7 @@
 
 #include "Human.h"
 #include "RemotePlayer.h"
+#include "Tokenize.h"
 
 #include "PlayerConnDlg.h"
 
@@ -55,8 +55,8 @@ namespace Card {
 /// \param connMgr Connection manager; holding the connections to use
 //-----------------------------------------------------------------------------
 PlayerConnectDlg::PlayerConnectDlg(std::vector<Player*>& player, const Glib::ustring& port, YGP::ConnectionMgr& cmgr)
-    : XGP::ConnectDlg(player.size(), port, cmgr), connected(new Gtk::Label()), lblConnected(new Gtk::Label(_("Connected:"))),
-      aPlayer(player), posPlayer(0) {
+    : XGP::ConnectDlg(player.size(), port, cmgr), connected(Gtk::make_managed<Gtk::Label>()),
+      lblConnected(Gtk::make_managed<Gtk::Label>(_("Connected:"))), aPlayer(player), posPlayer(0) {
     TRACE8("PlayerConnectDlg::PlayerConnectDlg(std::vector<Player*>&, const Glib::ustring&, ConnectionMgr&");
 
     lblConnected->set_margin_start(5);
@@ -83,7 +83,7 @@ PlayerConnectDlg::PlayerConnectDlg(std::vector<Player*>& player, const Glib::ust
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-PlayerConnectDlg::~PlayerConnectDlg() {}
+PlayerConnectDlg::~PlayerConnectDlg() = default;
 
 //----------------------------------------------------------------------------
 /// Performs the dialog (modal)
@@ -106,12 +106,9 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, unsigned in
 /// \returns unsigned int Number player has for the server
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, const Glib::ustring& defPort, YGP::ConnectionMgr& connMgr) {
-    unsigned int pos(0);
-    PlayerConnectDlg* dlg(new PlayerConnectDlg(player, defPort, connMgr));
+    std::unique_ptr<PlayerConnectDlg> dlg(std::make_unique<PlayerConnectDlg>(player, defPort, connMgr));
     XGP::runModal(*dlg);
-    pos = dlg->posPlayer;
-    delete dlg;
-    return pos;
+    return dlg->posPlayer;
 }
 
 //----------------------------------------------------------------------------
@@ -122,16 +119,13 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, const Glib:
 /// \returns unsigned int The number the player has for the server
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::ConnectionMgr& cmgr, const Glib::ustring& listenAt) {
-    unsigned int pos(0);
-    PlayerConnectDlg* dlg(new PlayerConnectDlg(player, "0", cmgr));
+    std::unique_ptr<PlayerConnectDlg> dlg(std::make_unique<PlayerConnectDlg>(player, "0", cmgr));
     Check3(dlg->pPort);
     Check3(dlg->pWait);
     dlg->pPort->set_text(listenAt);
     dlg->pWait->activate();
     XGP::runModal(*dlg);
-    pos = dlg->posPlayer;
-    delete dlg;
-    return pos;
+    return dlg->posPlayer;
 }
 
 //----------------------------------------------------------------------------
@@ -144,17 +138,14 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::Connec
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::ConnectionMgr& cmgr, const Glib::ustring& host,
                                        const Glib::ustring& hostPort) {
-    unsigned int pos(0);
-    PlayerConnectDlg* dlg(new PlayerConnectDlg(player, "0", cmgr));
+    std::unique_ptr<PlayerConnectDlg> dlg(std::make_unique<PlayerConnectDlg>(player, "0", cmgr));
     Check3(dlg->pPort);
     Check3(dlg->pConnect);
     Check3(dlg->pTarget);
     dlg->pTarget->set_text(host);
     dlg->pPort->set_text(hostPort);
     dlg->pConnect->activate();
-    pos = dlg->posPlayer;
-    delete dlg;
-    return pos;
+    return dlg->posPlayer;
 }
 
 //----------------------------------------------------------------------------
@@ -186,26 +177,22 @@ void PlayerConnectDlg::connect(const Glib::ustring& target, unsigned int port) {
         ap.assignValues(input);
 
         if (rc)
-            throw error;
+            throw error.raw();
         if (!posPlayer)
             throw std::string(_("Position of this player is missing!"));
 
         // Clear the old players
-        for (std::vector<Player*>::iterator i(aPlayer.begin()); i != aPlayer.end(); ++i)
-            delete *i;
+        for (auto& i : aPlayer)
+            delete i;
         aPlayer.clear();
 
-        typedef boost::char_separator<Glib::ustring::value_type> char_separator;
-        typedef boost::tokenizer<char_separator, Glib::ustring::const_iterator, Glib::ustring> tokenizer;
-
-        Glib::ustring::value_type crlf('\n');
-        tokenizer split(names, char_separator(&crlf));
+        Tokenize split(names.raw());
         unsigned int c(0);
-        for (tokenizer::iterator i(split.begin()); i != split.end(); ++i) {
-            TRACE9("PlayerConnectDlg::connect(const Glib::ustring&, unsigned int) - Setting " << *i);
+        for (Glib::ustring name; !(name = split.getNextNode('\n')).empty();) {
+            TRACE9("PlayerConnectDlg::connect(const Glib::ustring&, unsigned int) - Setting " << name);
 
-            Player* pPlayer((c == posPlayer) ? static_cast<Player*>(new Human(*i))
-                                             : static_cast<Player*>(new RemotePlayer(cmgr.getSocket(), *i)));
+            Player* pPlayer((c == posPlayer) ? static_cast<Player*>(new Human(name))
+                                             : static_cast<Player*>(new RemotePlayer(cmgr.getSocket(), name)));
 
             if (c < posPlayer)
                 aPlayer.push_back(pPlayer);
@@ -215,8 +202,7 @@ void PlayerConnectDlg::connect(const Glib::ustring& target, unsigned int port) {
             }
             c++;
         }
-        TRACE9("PlayerConnectDlg::connect(const Glib::ustring&, unsigned int) - Players: "
-               << c << "<->" << aPlayer.size());
+        TRACE9("PlayerConnectDlg::connect(const Glib::ustring&, unsigned int) - Players: " << c << "<->" << aPlayer.size());
         if ((c != aPlayer.size()) || (posPlayer >= aPlayer.size()))
             throw std::string(_("Wrong number of players!"));
     }
@@ -261,7 +247,7 @@ YGP::Socket* PlayerConnectDlg::addClient(int socket) {
         if (protocoll < PROTOCOLL) {
             error = _("Protocoll version %1 needed!");
             error.replace(error.find("%1"), 2, STRPROTOCOLL);
-            throw error;
+            throw error.raw();
         }
         else if ((protocoll == PROTOCOLL) && (variant < PROT_VARIANT)) {
             error = _("Protocoll variant not sufficient - Version %1 needed!\n\n"
@@ -278,10 +264,10 @@ YGP::Socket* PlayerConnectDlg::addClient(int socket) {
 
         Check3(aPlayer.size() < 10);
         input = "Self=";
-        input += ('0' + cmgr.getClients().size());
+        input += static_cast<char>('0' + cmgr.getClients().size());
         input += ";Names=";
-        for (std::vector<Player*>::iterator i(aPlayer.begin()); i != aPlayer.end(); ++i)
-            input += (*i)->getName() + std::string(1, '\n');
+        for (auto& i : aPlayer)
+            input += i->getName() + std::string(1, '\n');
 
         TRACE8("PlayerConnectDlg::addClient(int) - Sending players: " << input);
         sock->write(input);

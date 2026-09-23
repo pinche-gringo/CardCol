@@ -22,10 +22,10 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <cerrno>
-#include <cstdlib>
-
+#include <array>
+#include <cstring>
 #include <iomanip>
+#include <memory>
 #include <sstream>
 
 #include <cardgames-cfg.h>
@@ -67,7 +67,7 @@ class ImageLoader {
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-ImageLoader::~ImageLoader() {}
+ImageLoader::~ImageLoader() = default;
 
 //-----------------------------------------------------------------------------
 /// Loads the cards(faces)
@@ -87,7 +87,8 @@ void ImageLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, cons
         TRACE8("Images::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tFile: " << actFile);
 
         cards[i] = loadImage(actFile);
-        if ((cards[i]->get_height() != (int)Images::HEIGHT) || (cards[i]->get_width() != (int)Images::WIDTH))
+        if ((cards[i]->get_height() != static_cast<int>(Images::HEIGHT)) ||
+            (cards[i]->get_width() != static_cast<int>(Images::WIDTH)))
             cards[i] = cards[i]->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
         Check3(cards[i]);
     } // end-for
@@ -100,7 +101,7 @@ void ImageLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, cons
 //-----------------------------------------------------------------------------
 void ImageLoader::loadBack(Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& file) {
     back = loadImage(file);
-    if ((back->get_height() != (int)Images::HEIGHT) || (back->get_width() != (int)Images::WIDTH))
+    if ((back->get_height() != static_cast<int>(Images::HEIGHT)) || (back->get_width() != static_cast<int>(Images::WIDTH)))
         back = back->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
 }
 
@@ -142,15 +143,15 @@ std::string ImageLoader::convert2File(unsigned int nrImage) {
 class CardpicsLoader : public ImageLoader {
   public:
     CardpicsLoader() { TRACE1("CardpicsLoader::CardpicsLoader()"); }
-    virtual ~CardpicsLoader();
+    ~CardpicsLoader() override;
 
-    virtual std::string convert2File(unsigned int nrImage);
+    std::string convert2File(unsigned int nrImage) override;
 };
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-CardpicsLoader::~CardpicsLoader() {}
+CardpicsLoader::~CardpicsLoader() = default;
 
 //-----------------------------------------------------------------------------
 /// Converts an image-number to a file-name(Cardpics-style)
@@ -180,16 +181,16 @@ std::string CardpicsLoader::convert2File(unsigned int nrImage) {
 class GnomeLoader : public ImageLoader {
   public:
     GnomeLoader() { TRACE1("GnomeLoader::GnomeLoader()"); }
-    virtual ~GnomeLoader();
+    ~GnomeLoader() override;
 
-    virtual void loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, const std::string& path);
-    virtual void loadBack(Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& path);
+    void loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, const std::string& path) override;
+    void loadBack(Glib::RefPtr<Gdk::Pixbuf>& back, const std::string& path) override;
 };
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-GnomeLoader::~GnomeLoader() {}
+GnomeLoader::~GnomeLoader() = default;
 
 //-----------------------------------------------------------------------------
 /// Loads the cards(faces)
@@ -203,7 +204,7 @@ void GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, cons
 #    ifdef HAVE_RSVG
     // New style of reading Gnome cards: Get sub-images by identification
     // Does not work with librsvg <= 2.26.0
-    GError* error(NULL);
+    GError* error(nullptr);
     rsvg_init();
     RsvgHandle* hSVG(rsvg_handle_new_from_file(path.c_str(), &error));
     if (!hSVG)
@@ -214,16 +215,16 @@ void GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, cons
 
     std::string actCard;
     Glib::RefPtr<Gdk::Pixbuf> actImg;
-    const char* colours[] = {"club", "spade", "heart", "diamond"};
-    const char* numbers[] = {"10", "jack", "queen", "king"};
+    static constexpr std::array<const char*, 4> colours{"club", "spade", "heart", "diamond"};
+    static constexpr std::array<const char*, 4> numbers{"10", "jack", "queen", "king"};
 
-    for (unsigned int c(0); c < (sizeof(colours) / sizeof(*colours)); ++c)
+    for (unsigned int c(0); c < colours.size(); ++c)
         for (unsigned int n(0); n < 13; ++n) {
             actCard = "#";
             if (n > 8)
                 actCard += numbers[n - 9];
             else
-                actCard += char('1' + n);
+                actCard += static_cast<char>('1' + n);
             actCard += "_";
             actCard += colours[c];
             TRACE9("GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, "
@@ -255,7 +256,8 @@ void GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, cons
                << x << '/' << y);
 
         cards[i] = Gdk::Pixbuf::create_subpixbuf(img, widthImg * x, heightImg * y, widthImg, heightImg);
-        if ((cards[i]->get_height() != (int)Images::HEIGHT) || (cards[i]->get_width() != (int)Images::WIDTH))
+        if ((cards[i]->get_height() != static_cast<int>(Images::HEIGHT)) ||
+            (cards[i]->get_width() != static_cast<int>(Images::WIDTH)))
             cards[i] = cards[i]->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
         Check3(cards[i]);
     } // end-for
@@ -300,18 +302,18 @@ const Glib::RefPtr<Gdk::Pixbuf> Images::getCardImage(unsigned int nr) const {
 void Images::loadDecks(const std::string& path) {
     TRACE1("Images::loadDecks(const std::string&) - " << path);
 
-    ImageLoader* ldr(NULL);
+    std::unique_ptr<ImageLoader> ldr;
 #ifdef GNOMECARDS_DIR
-    if (!path.compare(0, strlen(GNOMECARDS_DIR), GNOMECARDS_DIR))
-        ldr = new GnomeLoader;
+    if (!path.compare(0, std::strlen(GNOMECARDS_DIR), GNOMECARDS_DIR))
+        ldr = std::make_unique<GnomeLoader>();
     else
 #endif
 #ifdef CARDPICS_DIR
         if (path == CARDPICS_DIR)
-        ldr = new CardpicsLoader;
+        ldr = std::make_unique<CardpicsLoader>();
     else
 #endif
-        ldr = new ImageLoader;
+        ldr = std::make_unique<ImageLoader>();
 
     ldr->loadFronts(cards_, path);
 }
@@ -321,13 +323,13 @@ void Images::loadDecks(const std::string& path) {
 /// \param back File containing background picture
 //-----------------------------------------------------------------------------
 void Images::loadBack(const std::string& back) {
-    ImageLoader* ldr(NULL);
+    std::unique_ptr<ImageLoader> ldr;
 #ifdef GNOMECARDS_DIR
-    if (!back.compare(0, strlen(GNOMECARDS_DIR), GNOMECARDS_DIR))
-        ldr = new GnomeLoader;
+    if (!back.compare(0, std::strlen(GNOMECARDS_DIR), GNOMECARDS_DIR))
+        ldr = std::make_unique<GnomeLoader>();
     else
 #endif
-        ldr = new ImageLoader;
+        ldr = std::make_unique<ImageLoader>();
 
     ldr->loadBack(back_, back);
 }
@@ -337,8 +339,8 @@ void Images::loadBack(const std::string& back) {
 //-----------------------------------------------------------------------------
 void Images::resizeAll() {
     back_ = back_->scale_simple(WIDTH, HEIGHT, Gdk::InterpType::BILINEAR);
-    for (std::vector<Glib::RefPtr<Gdk::Pixbuf>>::iterator i(cards_.begin()); i != cards_.end(); ++i)
-        *i = (*i)->scale_simple(WIDTH, HEIGHT, Gdk::InterpType::BILINEAR);
+    for (auto& card : cards_)
+        card = card->scale_simple(WIDTH, HEIGHT, Gdk::InterpType::BILINEAR);
 }
 
 } // namespace Card

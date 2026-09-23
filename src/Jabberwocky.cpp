@@ -24,8 +24,7 @@
 
 #include <cardgames-cfg.h>
 
-#include <cstring>
-
+#include <memory>
 #include <sstream>
 
 #include <glibmm/main.h>
@@ -52,16 +51,15 @@
 #include <card/ComputerPlayer.h>
 #include <card/Images.h>
 #include <card/Player.h>
+#include <card/Random.h>
 #include <card/RemotePlayer.h>
 #include <card/ScoreDlg.h>
+#include <card/Tokenize.h>
 #include <card/Window.h>
 
 #include "Jabberwocky.h"
 
-const unsigned int Jabberwocky::COLS_PLAYER[NUM_PLAYERS] = {7, 13, 7, 1};
-const unsigned int Jabberwocky::ROWS_PLAYER[NUM_PLAYERS] = {10, 8, 4, 8};
-
-char Jabberwocky::sortOrder[4];
+std::array<char, 4> Jabberwocky::sortOrder{};
 
 //-----------------------------------------------------------------------------
 /// Constructor
@@ -75,8 +73,8 @@ char Jabberwocky::sortOrder[4];
 Jabberwocky::Jabberwocky(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
                          const std::vector<Card::Player*>& player, unsigned int posPlayer, YGP::Mutex& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 15, 15),
-      played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pTrump(NULL), startPlayer(rand() % NUM_PLAYERS), turn(0),
-      idxMenu(-1), pBidValue(NULL), pBidCommit(NULL), pScoreDlg(NULL), menuSort(), menuSort2(), menuShowScoreDlg() {
+      played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pTrump(nullptr), startPlayer(Card::randomNumber(NUM_PLAYERS)),
+      turn(0), idxMenu(-1), pBidValue(), pBidCommit(), pScoreDlg(), menuSort(), menuSort2(), menuShowScoreDlg() {
     TRACE9("Jabberwocky::Jabberwocky(Box&, Statusbar&, CardSet&, ...)");
 
     // Show and attach card-piles
@@ -115,7 +113,7 @@ Jabberwocky::Jabberwocky(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set&
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-Jabberwocky::~Jabberwocky() { delete pScoreDlg; }
+Jabberwocky::~Jabberwocky() { pScoreDlg.reset(); }
 
 //-----------------------------------------------------------------------------
 /// Starts the game
@@ -152,15 +150,14 @@ void Jabberwocky::start() {
             players[(i - posServer) % NUM_PLAYERS].hand.sort(compByColourAccTrumps);
 
         // Resetting all status-information
-        for (unsigned int i(0); i < (sizeof(playedCards) / sizeof(playedCards[0])); ++i)
-            playedCards[i].reset();
+        for (auto& playedCard : playedCards)
+            playedCard.reset();
         playedCards[pTrump->colour()].set(pTrump->number());
-        memset(outOfColour, 0, sizeof(outOfColour));
+        outOfColour = {};
 
         if (!turn && pScoreDlg) {
             menuShowScoreDlg->set_enabled(false);
-            delete pScoreDlg;
-            pScoreDlg = NULL;
+            pScoreDlg.reset();
         }
 
         if (getConnectionMgr().getMode() != YGP::ConnectionMgr::CLIENT) {
@@ -180,9 +177,9 @@ void Jabberwocky::start() {
 //-----------------------------------------------------------------------------
 void Jabberwocky::clean() {
     TRACE9("Jabberwocky::clean()");
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i) { // Clear cards of players
-        players[i].hand.clear();
-        players[i].won.clear();
+    for (auto& player : players) { // Clear cards of players
+        player.hand.clear();
+        player.won.clear();
     }
     played.clear();
 
@@ -191,15 +188,13 @@ void Jabberwocky::clean() {
     if (pBidCommit) {
         remove(*pBidValue);
         remove(*pBidCommit);
-        delete pBidValue;
-        delete pBidCommit;
-        pBidValue = NULL;
-        pBidCommit = NULL;
+        pBidValue.reset();
+        pBidCommit.reset();
     }
 
     if (pTrump) {
         remove(*pTrump);
-        pTrump = NULL;
+        pTrump = nullptr;
     }
 
     menuSort->set_enabled(false);
@@ -315,7 +310,7 @@ void Jabberwocky::changeNames(const std::vector<Card::Player*>& newPlayer) {
 Card::IPile* Jabberwocky::getPileOfPlayer(unsigned int player, unsigned int pile) {
     TRACE8("Jabberwocky::getPileOfPlayer(unsigned int, unsigned int) - Player " << player << "; Pile " << pile);
     if ((player >= NUM_PLAYERS) || pile)
-        return NULL;
+        return nullptr;
 
     return &players[player].hand;
 }
@@ -338,7 +333,10 @@ void Jabberwocky::addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefP
     sub->append_section(secSort);
 
     Glib::RefPtr<Gio::Menu> secScore(Gio::Menu::create());
-    menuShowScoreDlg = actions->add_action("showScoreDlg", bind(ptr_fun(&Card::ScoreDlg::display), &pScoreDlg));
+    menuShowScoreDlg = actions->add_action("showScoreDlg", [this]() {
+        if (pScoreDlg)
+            pScoreDlg->display();
+    });
     secScore->append(_("Show score dialog"), "game.showScoreDlg");
     sub->append_section(secScore);
 
@@ -432,7 +430,7 @@ void Jabberwocky::makeBids(unsigned int start) {
                 // does not place a bid which sums all bids up to the number of players
                 players[actPlayer].bid = calcTricks(actPlayer);
                 if ((start == NUM_PLAYERS) && (sumBids() == getTricks(turn)))
-                    players[actPlayer].bid += (rand() & 1) ? 1 : -1;
+                    players[actPlayer].bid += Card::randomNumber(2) ? 1 : -1;
                 showBid(actPlayer);
 
                 if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
@@ -444,7 +442,7 @@ void Jabberwocky::makeBids(unsigned int start) {
                 }
             }
             else {
-                Check3(typeid(*actPlayers[actPlayer]) == typeid(RemotePlayer));
+                Check3(typeid(*actPlayers[actPlayer]) == typeid(Card::RemotePlayer));
                 Glib::ustring msg(_("Waiting for %1 to bid ..."));
                 msg.replace(msg.find("%1"), 2, actPlayers[actPlayer]->getName());
                 status.push(msg);
@@ -459,8 +457,10 @@ void Jabberwocky::makeBids(unsigned int start) {
             // under GTK4 (it derives from Gtk::Widget, not Gtk::Box, and offers
             // no packing API), so the bid-entry widgets are attached to this
             // game's own grid instead.
-            Gtk::Button* bid(new Gtk::Button(_("_Bid"), true));
-            Gtk::SpinButton* value(new Gtk::SpinButton(Gtk::Adjustment::create(0, 0.0, getTricks(turn), 1, 2), 1, 0));
+            pBidCommit = std::make_unique<Gtk::Button>(_("_Bid"), true);
+            pBidValue = std::make_unique<Gtk::SpinButton>(Gtk::Adjustment::create(0, 0.0, getTricks(turn), 1, 2), 1, 0);
+            Gtk::Button* bid(pBidCommit.get());
+            Gtk::SpinButton* value(pBidValue.get());
             bid->show();
             value->show();
 
@@ -468,8 +468,6 @@ void Jabberwocky::makeBids(unsigned int start) {
             bid->set_margin(5);
             attach(*value, 0, 0);
             attach(*bid, 1, 0);
-            pBidValue = value;
-            pBidCommit = bid;
 
             bid->signal_clicked().connect(bind(mem_fun(*this, &Jabberwocky::placedBid), value, bid, start + 1));
             return;
@@ -490,8 +488,8 @@ void Jabberwocky::makeBids(unsigned int start) {
 //-----------------------------------------------------------------------------
 unsigned int Jabberwocky::sumBids() const {
     unsigned int sum(0);
-    for (unsigned int i(0); i < NUM_PLAYERS; ++i)
-        sum += (unsigned int)players[i].bid;
+    for (const auto& player : players)
+        sum += static_cast<unsigned int>(player.bid);
     return sum;
 }
 
@@ -530,12 +528,12 @@ void Jabberwocky::placedBid(Gtk::SpinButton* value, Gtk::Button* commit, unsigne
             broadcastMessage(msg.str());
         }
 
+        Check3(value == pBidValue.get());
+        Check3(commit == pBidCommit.get());
         remove(*value);
         remove(*commit);
-        delete value;
-        delete commit;
-        pBidValue = NULL;
-        pBidCommit = NULL;
+        pBidValue.reset();
+        pBidCommit.reset();
 
         status.pop();
         showBid(0);
@@ -569,13 +567,13 @@ unsigned int Jabberwocky::calcTricks(unsigned int player) const {
     unsigned int tricks(0);
     unsigned int left(cards.size() - 1 - NUM_PLAYERS * getTricks(turn));
 
-    for (Card::IPile::const_iterator i(players[player].hand.begin()); i != players[player].hand.end(); ++i) {
-        if ((*i)->colour() == pTrump->colour()) {
-            if (((*i)->number() > Card::Widget::EIGHT) || (left > 19))
+    for (auto i : players[player].hand) {
+        if (i->colour() == pTrump->colour()) {
+            if ((i->number() > Card::Widget::EIGHT) || (left > 19))
                 ++tricks;
             ++tricks;
         }
-        else if (isHighEnough(**i))
+        else if (isHighEnough(*i))
             tricks += 2;
     }
 
@@ -606,10 +604,10 @@ void Jabberwocky::showCards2Play(unsigned int player) {
     unsigned int pos2Play(-1U);
 
     Card::IPile& hand(players[player].hand);
-    int aPosColours[4];
+    ColourPositions aPosColours;
     getPositionOfColours(hand, aPosColours);
     TRACE3("Jabberwocky::showCards2Play(unsigned int) - Missing tricks: "
-           << ((int)players[player].bid - (players[player].won.size() / NUM_PLAYERS)));
+           << (static_cast<int>(players[player].bid) - (players[player].won.size() / NUM_PLAYERS)));
 
     // Already cards played?
     if (played.size()) {
@@ -617,7 +615,7 @@ void Jabberwocky::showCards2Play(unsigned int player) {
         TRACE4("Jabberwocky::showCards2Play(unsigned int) - Winning card: " << posWinner << " (" << *played[posWinner] << ')');
 
         // If the player still has bids to fullfill
-        if ((unsigned int)players[player].bid > (players[player].won.size() / NUM_PLAYERS)) {
+        if (static_cast<unsigned int>(players[player].bid) > (players[player].won.size() / NUM_PLAYERS)) {
             // Can follow suit?
             if (aPosColours[played[0]->colour()] == -1) {
                 TRACE7("Jabberwocky::showCards2Play(unsigned int) - Can't follow suit");
@@ -679,9 +677,9 @@ void Jabberwocky::showCards2Play(unsigned int player) {
             pos2Play = findLowerCard(*played[posWinner], hand, aPosColours[played[posWinner]->colour()]);
         else {
             unsigned int offset(0);
-            for (unsigned int i(1); i < (sizeof(aPosColours) / sizeof(aPosColours[0])); ++i) {
+            for (unsigned int i(1); i < aPosColours.size(); ++i) {
                 TRACE5("Jabberwocky::showCards2Play(unsigned int) - No more tricks; Colour: " << i);
-                if ((Card::Widget::COLOURS(i) != pTrump->colour()) && (aPosColours[i] != -1) &&
+                if ((static_cast<Card::Widget::COLOURS>(i) != pTrump->colour()) && (aPosColours[i] != -1) &&
                     ((aPosColours[offset] == -1) || ((hand[aPosColours[i]]->number() > hand[offset]->number()) ||
                                                      ((hand[aPosColours[i]]->number() == hand[offset]->number()) &&
                                                       (playedCards[hand[aPosColours[i]]->colour()].count() <
@@ -694,18 +692,18 @@ void Jabberwocky::showCards2Play(unsigned int player) {
     // First card to play
     else {
         // If the player still has bids to fullfill
-        if ((unsigned int)players[player].bid < (players[player].won.size() / NUM_PLAYERS)) {
+        if (static_cast<unsigned int>(players[player].bid) < (players[player].won.size() / NUM_PLAYERS)) {
             // Try to eliminate trumps
             if (playedCards[pTrump->colour()].count() && (aPosColours[pTrump->colour()] != -1) &&
                 (isHighest(*hand[aPosColours[pTrump->colour()]]) || isHighEnough(*hand[aPosColours[pTrump->colour()]])))
                 pos2Play = aPosColours[pTrump->colour()];
             else
                 for (unsigned int i(0); i < 4; ++i)
-                    if (Card::Widget::COLOURS(i) != pTrump->colour())
-                        if ((aPosColours[Card::Widget::COLOURS(i)] != -1) &&
-                            (isHighest(*hand[aPosColours[Card::Widget::COLOURS(i)]]) ||
-                             isHighEnough(*hand[aPosColours[Card::Widget::COLOURS(i)]])))
-                            pos2Play = aPosColours[Card::Widget::COLOURS(i)];
+                    if (static_cast<Card::Widget::COLOURS>(i) != pTrump->colour())
+                        if ((aPosColours[static_cast<Card::Widget::COLOURS>(i)] != -1) &&
+                            (isHighest(*hand[aPosColours[static_cast<Card::Widget::COLOURS>(i)]]) ||
+                             isHighEnough(*hand[aPosColours[static_cast<Card::Widget::COLOURS>(i)]])))
+                            pos2Play = aPosColours[static_cast<Card::Widget::COLOURS>(i)];
         }
 
         if (pos2Play == -1U)
@@ -731,7 +729,7 @@ void Jabberwocky::showCards2Play(unsigned int player) {
 //-----------------------------------------------------------------------------
 unsigned int Jabberwocky::findLowerCard(const Card::Widget& cardCmp, const Card::IPile& pile, int aPosColour) const {
     TRACE9("Jabberwocky::findLowerCard(const Card::Widget&, const Card::IPile&, int) - " << aPosColour);
-    Check1((unsigned int)aPosColour < pile.size());
+    Check1(static_cast<unsigned int>(aPosColour) < pile.size());
     Check2(pile[aPosColour]->colour() == cardCmp.colour());
     Check3(played.size());
 
@@ -798,7 +796,7 @@ unsigned int Jabberwocky::check4Winner() const {
                 pos = i;
                 highest = played[i]->number();
                 colour = pTrump->colour();
-                TRACE9("Jabberwocky::check4Winner(unsinged int, unsinged int) - Trump wins at " < i);
+                TRACE9("Jabberwocky::check4Winner(unsinged int, unsinged int) - Trump wins at " << i);
             }
         }
 
@@ -811,7 +809,7 @@ unsigned int Jabberwocky::check4Winner() const {
 /// \param aPositions Array with positions of cards
 /// \returns unsigned int Position of card to play or -1
 //-----------------------------------------------------------------------------
-unsigned int Jabberwocky::findWorstCard(const Card::IPile& pile, const int aPositions[4]) const {
+unsigned int Jabberwocky::findWorstCard(const Card::IPile& pile, const ColourPositions& aPositions) const {
     TRACE9("Jabberwocky::findWorstCard(const Card::IPile&, const int[4])");
     Check1(pile.size());
 
@@ -822,7 +820,7 @@ unsigned int Jabberwocky::findWorstCard(const Card::IPile& pile, const int aPosi
     // Find lowest card (ignoring trumps)
     unsigned int pos(0);
     for (unsigned i(0); i < 4; ++i)
-        if ((aPositions[i] != -1) && ((unsigned int)aPositions[i] < (pile.size() - 1)) &&
+        if ((aPositions[i] != -1) && (static_cast<unsigned int>(aPositions[i]) < (pile.size() - 1)) &&
             pile[aPositions[i] + 1]->colour() != pTrump->colour())
             if ((pile[aPositions[i] + 1]->number() < pile[pos]->number()) ||
                 ((pile[aPositions[i] + 1]->number() == pile[pos]->number()) &&
@@ -841,7 +839,7 @@ unsigned int Jabberwocky::findWorstCard(const Card::IPile& pile, const int aPosi
 //----------------------------------------------------------------------------
 bool Jabberwocky::isHighEnough(const Card::Widget& card) const {
     TRACE8("Jabberwocky::isHighEnough(const Card::Widget&) - " << card);
-    return (card.number() >= Card::Widget::NUMBERS(Card::Widget::TEN + ((getTricks(turn) - 3) >> 1)));
+    return (card.number() >= static_cast<Card::Widget::NUMBERS>(Card::Widget::TEN + ((getTricks(turn) - 3) >> 1)));
 }
 
 //----------------------------------------------------------------------------
@@ -865,8 +863,8 @@ bool Jabberwocky::isHighest(const Card::Widget& card) const {
 /// \param pile Pile to inspect
 /// \param result Array of position of last cards of earch colour
 //-----------------------------------------------------------------------------
-void Jabberwocky::getPositionOfColours(const Card::IPile& pile, int result[4]) {
-    memset(result, (char)-1, sizeof(int[4]));
+void Jabberwocky::getPositionOfColours(const Card::IPile& pile, ColourPositions& result) {
+    result.fill(-1);
     for (unsigned int i(0); i < (pile.size() - 1); ++i)
         if (pile[i]->colour() != pile[i + 1]->colour())
             result[pile[i]->colour()] = i;
@@ -889,7 +887,7 @@ int Jabberwocky::playCard(unsigned int player) {
     // All players have placed their cards
     if (played.size() == NUM_PLAYERS) {
         // Find the winner
-        Card::IPile::const_iterator i(played.begin());
+        auto i(played.begin());
         Card::Widget::NUMBERS nr((*i)->number());
         Card::Widget::COLOURS col((*i)->colour());
         unsigned int bestPlayer(0);
@@ -926,16 +924,16 @@ int Jabberwocky::playCard(unsigned int player) {
         // Create score-dialog
         if (!pScoreDlg) {
             menuShowScoreDlg->set_enabled();
-            pScoreDlg = Card::ScoreDlg::create(actPlayers);
+            pScoreDlg.reset(Card::ScoreDlg::create(actPlayers));
             if (Gtk::Window* win = dynamic_cast<Gtk::Window*>(get_root()))
                 pScoreDlg->set_transient_for(*win);
         }
         // Add points, if bid has been met; take care of the cards won in the
         // last round
-        int points[NUM_PLAYERS];
+        std::array<int, NUM_PLAYERS> points;
         for (unsigned int i(0); i < NUM_PLAYERS; ++i)
-            points[i] = ((unsigned int)players[i].bid == ((players[i].won.size() / NUM_PLAYERS) + (player == i)));
-        pScoreDlg->addPoints(points);
+            points[i] = (static_cast<unsigned int>(players[i].bid) == ((players[i].won.size() / NUM_PLAYERS) + (player == i)));
+        pScoreDlg->addPoints(points.data());
         pScoreDlg->display();
 
         // Stop after 13 rounds
@@ -965,7 +963,7 @@ int Jabberwocky::playCard(unsigned int player) {
 //----------------------------------------------------------------------------
 bool Jabberwocky::handleMessage(unsigned int player, const std::string& message) {
 #if 0
-   YGP::Tokenize command (message);
+   Card::Tokenize command (message);
    std::string cmd (command.getNextNode ('='));
 
    if (cmd == "Bid") {

@@ -27,9 +27,8 @@
 #include <cerrno>
 #include <cstdlib>
 
+#include <ranges>
 #include <sstream>
-
-#include <boost/tokenizer.hpp>
 
 #include <glibmm/main.h>
 
@@ -56,6 +55,7 @@
 #include "Pile.h"
 #include "Player.h"
 #include "Set.h"
+#include "Tokenize.h"
 #include "Window.h"
 
 #include "Game.h"
@@ -75,8 +75,8 @@ namespace Card {
 Game::Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset, const std::vector<Player*>& player, unsigned int posPlayer,
            YGP::Mutex& mxSerialize, unsigned int, unsigned int)
     : Gtk::Grid(), status(statusbar), cards(cardset), activeCards(), actPlayers(player), mxSerializeMsgs(mxSerialize),
-      posServer(posPlayer), pos2Play(-1U), pos1Play(-1U), ignoreNextMsg(false), data(NULL), statGame(NONE), actPlayer(0), stati(),
-      wonCards(), pWonPile(NULL), pMenuPopSort(NULL), cardOrder() {
+      posServer(posPlayer), pos2Play(-1U), pos1Play(-1U), ignoreNextMsg(0), data(nullptr), statGame(NONE), actPlayer(0), stati(),
+      wonCards(), pWonPile(nullptr), pMenuPopSort(nullptr), cardOrder() {
     TRACE3("Game::Game(Gtk::Box&, Gtk::Statusbar&, set&, std::vector<Player*>,"
            "unsinged int, unsigned int)");
     Check3(cardset.size());
@@ -99,10 +99,8 @@ Game::Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset, const std:
 Game::~Game() {
     TRACE9("Game::~Game()");
     clean();
-    if (pMenuPopSort) {
+    if (pMenuPopSort)
         pMenuPopSort->unparent();
-        delete pMenuPopSort;
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -158,8 +156,8 @@ void Game::end(bool startNew) {
 void Game::disableHuman() {
     TRACE2("Game::disableHuman() - " << activeCards.size() << " cards");
 
-    for (int i(activeCards.size()); i > 0;)
-        activeCards[--i].disconnect();
+    for (auto& connection : std::views::reverse(activeCards))
+        connection.disconnect();
 
     activeCards.clear();
 }
@@ -183,18 +181,14 @@ bool Game::randomiseCardsToPile(IPile& pile) const {
         try {
             ap.assignValues(input);
 
-            boost::tokenizer<> positions(input);
-            boost::tokenizer<>::iterator act(positions.begin());
+            const auto positions(splitWords(input));
+            auto act(positions.begin());
             TRACE8("Game::randomiseCardsToPile(IPile&) - Cards: " << cards.size());
-            for (unsigned int i(0); i < (cards.size() - 1); ++i) {
+            for (unsigned int i(0); i < (cards.size() - 1); ++i, ++act) {
                 unsigned long pos(0);
-                std::string token;
-                char* pTail(NULL);
-                errno = 0;
 
                 // Read next token; the value must be a number
-                if ((act == positions.end()) || stringToNumber(pos, act->c_str()) || (pos >= cards.size()) ||
-                    (errno || (pTail && *pTail))) {
+                if ((act == positions.end()) || stringToNumber(pos, act->c_str()) || (pos >= cards.size())) {
                     std::string error(N_("Invalid card specification!"));
                     throw YGP::CommError(error);
                 }
@@ -344,12 +338,11 @@ void Game::flipCards2Play(IPile& pile, const std::string& cards) {
     TRACE2("Game::flipCards2Play(IPile&, const std::string&) - Cards " << cards);
     Check1(cards.size());
 
-    boost::tokenizer<> tokCards(cards);
     unsigned long card(0);
     unsigned int cCards(0);
     bool bFollow(false);
-    for (boost::tokenizer<>::iterator act(tokCards.begin()); act != tokCards.end(); ++act) {
-        if (stringToNumber(card, act->c_str())) {
+    for (const auto& act : splitWords(cards)) {
+        if (stringToNumber(card, act.c_str())) {
             std::string error(N_("Invalid card specification!"));
             throw YGP::ParseError(error);
         }
@@ -371,7 +364,7 @@ void Game::flipCards2Play(IPile& pile, const std::string& cards) {
             bFollow = true;
         }
         else {
-            TRACE1("Game::flipCards2Play(IPile&, const std::string&) - Card " << *act << " not found in " << pile.size()
+            TRACE1("Game::flipCards2Play(IPile&, const std::string&) - Card " << act << " not found in " << pile.size()
                                                                               << " cards");
             std::string error("Card not found!");
             throw YGP::ParseError(error);
@@ -448,7 +441,7 @@ void Game::showWonCards(bool show, unsigned int style) {
         Check3(style < IPile::LAST);
 
         pWonPile->setShowOption(show ? IPile::SHOWFACE : IPile::SHOWBACK);
-        pWonPile->setStyle((IPile::PileStyle)style);
+        pWonPile->setStyle(static_cast<IPile::PileStyle>(style));
         Glib::signal_idle().connect(mem_fun(*this, &Game::enableActWonCards));
         disableWonCards();
     }
@@ -475,8 +468,7 @@ void Game::wonCardsSelectedRight(double x, double y, Card::Widget& card) {
 
     if (pMenuPopSort) {
         pMenuPopSort->unparent();
-        delete pMenuPopSort;
-        pMenuPopSort = NULL;
+        pMenuPopSort.reset();
     }
 
     Glib::RefPtr<Gio::SimpleActionGroup> actions(Gio::SimpleActionGroup::create());
@@ -490,7 +482,7 @@ void Game::wonCardsSelectedRight(double x, double y, Card::Widget& card) {
 
     insert_action_group("wonsort", actions);
 
-    pMenuPopSort = new Gtk::PopoverMenu(menu);
+    pMenuPopSort = std::make_unique<Gtk::PopoverMenu>(menu);
     pMenuPopSort->set_parent(*this);
     pMenuPopSort->set_has_arrow(false);
 
@@ -549,8 +541,8 @@ bool Game::enableActWonCards() {
 //-----------------------------------------------------------------------------
 void Game::disableWonCards() {
     TRACE8("Game::disableWonCards() - Disabling " << wonCards.size() << " cards");
-    for (int i(wonCards.size()); i > 0;)
-        wonCards[--i].disconnect();
+    for (auto& connection : std::views::reverse(wonCards))
+        connection.disconnect();
 
     wonCards.clear();
 }
@@ -565,7 +557,7 @@ void Game::changeNames(const std::vector<Player*>& newPlayer) { const_cast<std::
 /// Callback to inform a controller about status changes
 /// \param status New status of the game
 //----------------------------------------------------------------------------
-void Game::control(unsigned int status) const {}
+void Game::control(unsigned int /*status*/) const {}
 
 //----------------------------------------------------------------------------
 /// Writes a message to all partners
@@ -576,8 +568,8 @@ void Game::broadcastMessage(const std::string& msg) const {
 
     const YGP::ConnectionMgr& cmgr(getConnectionMgr());
     if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
-        for (std::vector<YGP::Socket*>::const_iterator i(cmgr.getClients().begin()); i != cmgr.getClients().end(); ++i)
-            writeMessage(**i, msg);
+        for (auto i : cmgr.getClients())
+            writeMessage(*i, msg);
     else
         writeMessage(*cmgr.getSocket(), msg);
 }
@@ -594,10 +586,10 @@ void Game::broadcastStartPlayer(unsigned int startplayer) {
 
         const std::vector<YGP::Socket*>& clients(cmgr.getClients());
         unsigned int player((startplayer - 1) & 0x3);
-        for (std::vector<YGP::Socket*>::const_iterator i(clients.begin()); i != clients.end(); ++i) {
+        for (auto client : clients) {
             std::ostringstream msg;
             msg << "ActPlayer=" << player;
-            writeMessage(**i, msg.str());
+            writeMessage(*client, msg.str());
             player = (player - 1) & 0x3;
         }
     }
@@ -616,7 +608,7 @@ void Game::writeMessage(YGP::Socket& socket, const std::string& msg) {
     catch (YGP::CommError& error) {
         std::string err(_("Can't write message!\n\nReason: %1"));
         err.replace(err.find("%1"), 2, error.what());
-        Gtk::MessageDialog dlg(msg, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
+        Gtk::MessageDialog dlg(err, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
         dlg.set_title(PACKAGE);
         XGP::runModal(dlg);
     }
@@ -653,7 +645,7 @@ bool Game::handleMessage(unsigned int player, const std::string& msg) {
         statGame = INITIALIZING;
         data = msg.c_str();
         start();
-        data = NULL;
+        data = nullptr;
         break;
 
     case INITIALIZING:
@@ -680,12 +672,12 @@ void Game::setNextPlayer(unsigned int player) {
 /// \param msg Command to perform
 /// \returns bool Flag, if command has been performed completely
 //----------------------------------------------------------------------------
-bool Game::performCommand(unsigned int player, const std::string& msg) {
+bool Game::performCommand([[maybe_unused]] unsigned int player, [[maybe_unused]] const std::string& msg) {
     TRACE8("Game::performCommand(unsigned int player, const std::string&) - " << msg << " (" << player << ')');
     Check1(msg.size());
 
 #if 0 // Only needed for network functionality
-   YGP::Tokenize command(msg);
+   Tokenize command(msg);
    std::string cmd(command.getNextNode('='));
    TRACE2("Game::performCommand(unsigned int player, const std::string&) - " << cmd);
 
@@ -747,9 +739,9 @@ bool Game::performCommand(unsigned int player, const std::string& msg) {
 //----------------------------------------------------------------------------
 bool Game::stringToNumber(unsigned long& number, const char* text) {
     Check1(text);
-    char* pTail = NULL;
+    char* pTail = nullptr;
     errno = 0;
-    number = strtoul(text, &pTail, 0);
+    number = std::strtoul(text, &pTail, 0);
     return (errno || (pTail && *pTail));
 }
 
@@ -759,7 +751,7 @@ bool Game::stringToNumber(unsigned long& number, const char* text) {
 /// \param card ID of target, where to play the card
 /// \returns bool True, if the timer to execute the move should be set
 //----------------------------------------------------------------------------
-bool Game::executeRemoteMove(IPile& pile, unsigned int card) {
+bool Game::executeRemoteMove(IPile& /*pile*/, unsigned int /*card*/) {
     TRACE8("Game::executeRemoteMove(IPile&, unsigned int) - " << pos2Play);
     return true;
 }

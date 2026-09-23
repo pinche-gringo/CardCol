@@ -42,7 +42,7 @@ BuracoPile::BuracoPile() : Card::VPile(COMPRESSED, SHOWFACE), status() {
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-BuracoPile::~BuracoPile() {}
+BuracoPile::~BuracoPile() = default;
 
 //----------------------------------------------------------------------------
 /// Sets a new top card of the pile.
@@ -157,7 +157,7 @@ bool BuracoPile::getPosition4Card(const Card::Widget& card, unsigned int& pos, u
     // Else check if the pile is a numberd or a coloured one
     TRACE5("BuracoPile::getPosition4Card(const Card::Widget&, 2x unsigned int&) "
            "- Cards: "
-           << *at(status.posFirst) << " and " << *at(status.posLast));
+           << *operator[](status.posFirst) << " and " << *operator[](status.posLast));
     if (operator[](status.posFirst)->number() == card.number()) {
         if (status.type != COLOUR) {
             pos = status.posJoker ? size() : 0;
@@ -211,8 +211,8 @@ bool BuracoPile::getPosition4Card(const Card::Widget& card, unsigned int& pos, u
 
         // Test if card fits at other end
         unsigned int diff(Buraco::cardDistance(card, *operator[](status.posLast), status.posFirst == status.posLast));
-        TRACE9("BuracoPile::getPosition4Card(const Card::Widget&, 2x unsigned int&) - Diff (end): " << diff << "; max: "
-	       << maxDiff);
+        TRACE9("BuracoPile::getPosition4Card(const Card::Widget&, 2x unsigned int&) - Diff (end): " << diff
+                                                                                                    << "; max: " << maxDiff);
         if (diff && (diff <= maxDiff)) {
             pos = status.posLast + diff;
             if ((diff == 2) && (status.posJoker < status.posLast)) {
@@ -249,7 +249,7 @@ void BuracoPile::analysePile() {
                        : UNDEFINED);
 
     TRACE9("BuracoPile::analysePile() - " << status.posJoker << '/' << status.posFirst << '/' << status.posLast << ' '
-	   << status.type);
+                                          << status.type);
 
     // If there is no first "normal" card, it must be a pile of monos
     if (status.posFirst > 6) {
@@ -259,8 +259,8 @@ void BuracoPile::analysePile() {
         status.points = 2000;
 
         // Correct points if it is "sucio"
-        for (const_iterator i(begin()); i != end(); ++i)
-            if ((*i)->number() == Card::Widget::UNREACHABLE) {
+        for (auto i : *this)
+            if (i->number() == Card::Widget::UNREACHABLE) {
                 status.points = 1000;
                 break;
             }
@@ -281,8 +281,8 @@ void BuracoPile::analysePile() {
 //----------------------------------------------------------------------------
 unsigned int BuracoPile::getCardPoints() const {
     unsigned int sum(0);
-    for (const_iterator c(begin()); c != end(); ++c)
-        sum += Buraco::getPoints(**c);
+    for (auto c : *this)
+        sum += Buraco::getPoints(*c);
 
     TRACE9("BuracoPile::getCardPoints() const - " << sum);
     return sum;

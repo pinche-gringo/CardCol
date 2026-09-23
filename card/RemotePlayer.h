@@ -35,17 +35,17 @@ class RemotePlayer : public Player {
     /// \param socket Socket used for the communication
     /// \param name Name of the (remote) player
     RemotePlayer(YGP::Socket* socket, const Glib::ustring& name) : Player(name), sock(socket) {}
-    virtual ~RemotePlayer();
+    ~RemotePlayer() override;
 
-    virtual bool makeTurn(Game* game);
+    bool makeTurn(Game* game) override;
 
   protected:
     YGP::Socket* sock;
 
   private:
-    RemotePlayer();
-    RemotePlayer(const RemotePlayer& other);
-    const RemotePlayer& operator=(const RemotePlayer& other);
+    RemotePlayer() = delete;
+    RemotePlayer(const RemotePlayer& other) = delete;
+    const RemotePlayer& operator=(const RemotePlayer& other) = delete;
 };
 
 } // namespace Card

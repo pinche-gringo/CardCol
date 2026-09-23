@@ -24,6 +24,8 @@
 
 #include <cardgames-cfg.h>
 
+#include <array>
+
 #include <gtkmm/box.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
@@ -57,7 +59,7 @@
 
 #include "Settings.h"
 
-XGP::XAttributeSpinEntry<unsigned int> Settings::* Settings::intFields[] = {
+XGP::XAttributeSpinEntry<unsigned int> Settings::* const Settings::intFields[] = {
 #ifdef WITH_BURACO
     &Settings::maxBuracoPoints,
 #endif
@@ -69,7 +71,7 @@ XGP::XAttributeSpinEntry<unsigned int> Settings::* Settings::intFields[] = {
 #endif
     &Settings::timeout};
 
-Settings* Settings::instance(NULL);
+Settings* Settings::instance(nullptr);
 
 //-----------------------------------------------------------------------------
 /// Constructor
@@ -91,7 +93,7 @@ Settings::Settings(Options& options)
       tricksSgtMayor(SgtMayor::ENDTRICKS, Gtk::Adjustment::create(0, 3, 100000.0, 1, 3)),
 #endif
       startGame(options.type) {
-    Check3(instance == NULL);
+    Check3(instance == nullptr);
     instance = this;
 
     set_title(_("Preferences"));
@@ -215,7 +217,7 @@ Settings::Settings(Options& options)
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-Settings::~Settings() { instance = NULL; }
+Settings::~Settings() { instance = nullptr; }
 
 //-----------------------------------------------------------------------------
 /// Handling of the OK button; closes the dialog with commiting data
@@ -223,13 +225,14 @@ Settings::~Settings() { instance = NULL; }
 void Settings::okEvent() {
     ok->grab_focus();
 
-    for (unsigned int i(0); i < (sizeof(intFields) / sizeof(*intFields)); ++i)
-        (this->*intFields[i]).commit();
+    for (const auto& intField : intFields)
+        (this->*intField).commit();
 
     startGame = GameTypes::get()[gameType.get_active_text()];
 
-    unsigned int width(CardSizes::getWidth((CardSizes::SIZES)CardSizes::get()[cardSize.get_active_text()]));
-    unsigned int height(CardSizes::getHeight((CardSizes::SIZES)CardSizes::get()[cardSize.get_active_text()]));
+    const auto size(static_cast<CardSizes::SIZES>(CardSizes::get()[cardSize.get_active_text()]));
+    unsigned int width(CardSizes::getWidth(size));
+    unsigned int height(CardSizes::getHeight(size));
     if ((width != Card::Images::WIDTH) || (height != Card::Images::HEIGHT)) {
         Card::Images::WIDTH = width;
         Card::Images::HEIGHT = height;
@@ -256,7 +259,7 @@ void Settings::okEvent() {
 /// \returns Settings* Pointer to the created window
 //-----------------------------------------------------------------------------
 Settings* Settings::create(Gtk::Window& parent, Options& options) {
-    if (instance == NULL) {
+    if (instance == nullptr) {
         instance = new Settings(options);
         Check3(instance);
         instance->set_transient_for(parent);
@@ -276,9 +279,9 @@ void Settings::chgValueRovhult(unsigned int which) {
     TRACE8("Settings::chgValueRovhult(unsigned int) - " << which);
     Check1(which < 3);
 
-    XGP::EnumEntry* fields[] = {&cardNuke, &cardReverse, &cardSkip};
+    const std::array<const XGP::EnumEntry*, 3> fields{&cardNuke, &cardReverse, &cardSkip};
     bool valuesOK(true);
-    for (unsigned int i(0); i < (sizeof(fields) / sizeof(*fields)); ++i) {
+    for (unsigned int i(0); i < fields.size(); ++i) {
         Check3(fields[i]);
         if ((i != which) && (fields[i]->get_active_text() == fields[which]->get_active_text())) {
             valuesOK = false;

@@ -16,7 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <array>
 #include <bitset>
+#include <memory>
 #include <vector>
 
 #include <gtkmm/label.h>
@@ -25,6 +27,7 @@
 #include <card/Set.h>
 
 #include <card/Game.h>
+#include <card/Tokenize.h>
 
 namespace Card {
 class ScoreDlg;
@@ -42,26 +45,26 @@ class SgtMayor : public Card::Game {
   public:
     SgtMayor(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
              unsigned int posPlayer, YGP::Mutex& mxSerialize);
-    virtual ~SgtMayor();
+    ~SgtMayor() override;
 
-    virtual void start();
-    virtual void clean();
-    virtual void playOpen(bool open);
-    virtual const char* name() { return "Sgt. Mayor"; }
-    virtual void changeNames(const std::vector<Card::Player*>& newPlayer);
-    virtual void resizeCards();
+    void start() override;
+    void clean() override;
+    void playOpen(bool open) override;
+    const char* name() override { return "Sgt. Mayor"; }
+    void changeNames(const std::vector<Card::Player*>& newPlayer) override;
+    void resizeCards() override;
 
 #if 0
-   virtual bool handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError);
+   virtual bool handleMessage (unsigned int player, const std::string& message);
 #endif
 
   protected:
-    virtual Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile);
+    Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;
 
   private:
     // Protected manager functions
-    SgtMayor(const SgtMayor& other);
-    const SgtMayor& operator=(const SgtMayor& other);
+    SgtMayor(const SgtMayor& other) = delete;
+    SgtMayor& operator=(const SgtMayor& other) = delete;
 
     //@Section Event handling
     void cardSelected(unsigned int iCard);
@@ -69,8 +72,8 @@ class SgtMayor : public Card::Game {
     void cardColourSelect(unsigned int iCard);
 
     //@Section Virtual methods
-    virtual void makeMove(unsigned int player);
-    virtual bool enableHuman();
+    void makeMove(unsigned int player) override;
+    bool enableHuman() override;
 
     //@Section Helper methods
     bool selectTrump();
@@ -90,12 +93,12 @@ class SgtMayor : public Card::Game {
     void playCardDelayed(unsigned int player);
     unsigned int playCard(unsigned int player);
     static unsigned int calcNextPlayer(unsigned int player) { return (++player >= NUM_PLAYERS) ? 0 : player; }
-    unsigned int convertPlayer(unsigned int player) {
+    unsigned int convertPlayer(unsigned int player) const {
         return (((player + posServer) < NUM_PLAYERS) ? player : player + posServer);
     }
     static std::string formatNumber(int nr);
 #if 0
-   static bool readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned long& player);
+   static bool readCardInfo (Card::Tokenize& src, unsigned long& card, unsigned long& player);
 #endif
 
     //@Section Computer player
@@ -103,11 +106,11 @@ class SgtMayor : public Card::Game {
     bool isHighest(const Card::Widget& card) const;
     unsigned int tryToGetTrickWithTrump(const Card::IPile& pile) const;
 
-    virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
-    virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
-    virtual void showWonCards(bool show = true, unsigned int style = -1U);
+    void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
+    void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
+    void showWonCards(bool show = true, unsigned int style = -1U) override;
 
-    static const unsigned int NUM_PLAYERS = 3; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = 3; // Number of players
 
     struct playerCards {
         Card::HPile hand; // For players: Cards in the hand
@@ -118,26 +121,27 @@ class SgtMayor : public Card::Game {
         playerCards() : hand(), won(), name(), neededTricks() {}
 
       private:
-        playerCards(const playerCards&);
-        playerCards& operator=(const playerCards&);
-    } players[NUM_PLAYERS];
+        playerCards(const playerCards&) = delete;
+        playerCards& operator=(const playerCards&) = delete;
+    };
+    std::array<playerCards, NUM_PLAYERS> players;
     Card::HPile played;
-    Card::Widget* pTrump;
+    std::unique_ptr<Card::Widget> pTrump;
 
     unsigned int bfColours;
 
     unsigned int startPlayer;
-    std::bitset<13> playedCards[4];
-    int diffTricks[NUM_PLAYERS];
+    std::array<std::bitset<13>, 4> playedCards;
+    std::array<int, NUM_PLAYERS> diffTricks;
 
     Glib::RefPtr<Gio::SimpleAction> menuSort;
     Glib::RefPtr<Gio::SimpleAction> menuSort2;
     Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
-    Card::ScoreDlg* pScoreDlg;
+    std::unique_ptr<Card::ScoreDlg> pScoreDlg;
 
-    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
-    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
+    static constexpr std::array<unsigned int, NUM_PLAYERS> COLS_PLAYER{1, 4, 0};
+    static constexpr std::array<unsigned int, NUM_PLAYERS> ROWS_PLAYER{6, 1, 1};
 
     static unsigned int ENDTRICKS;
 };

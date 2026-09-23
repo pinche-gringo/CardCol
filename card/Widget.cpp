@@ -24,6 +24,8 @@
 
 #include <cardgames-cfg.h>
 
+// Remark: Deliberately restrict tracing of this file to level 1
+#undef TRACELEVEL
 #define TRACELEVEL 1
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
@@ -32,8 +34,7 @@
 
 namespace Card {
 
-const Images* Widget::deck(NULL);
-Widget::COLOURS Widget::transColour[4] = {CLUBS, SPADES, HEARTS, DIAMONDS};
+const Images* Widget::deck(nullptr);
 
 //-----------------------------------------------------------------------------
 /// Constructor; creates a cardwidget with the passed index of a pixmap
@@ -59,7 +60,8 @@ Widget::Widget(const unsigned int card, bool visible) : clicked_(), rightClicked
 /// \param other Card to copy
 //-----------------------------------------------------------------------------
 Widget::Widget(const Widget& other)
-    : Gtk::Box(), clicked_(), rightClicked_(), img(), isVisible(other.isVisible), nrCard(other.nrCard) {
+    : sigc::trackable(), Glib::ObjectBase(), Gtk::Box(), clicked_(), rightClicked_(), img(), isVisible(other.isVisible),
+      nrCard(other.nrCard) {
     TRACE3("Widget::Widget(const Widget&) - " << nrCard << "(" << isVisible << ')');
     Check1(deck);
 
@@ -107,7 +109,7 @@ void Widget::showFace(bool visible) {
 //-----------------------------------------------------------------------------
 char Widget::strNumber(Widget::NUMBERS nr) {
     static Glib::ustring specialCards(_("TJQKA"));
-    return ((nr >= Widget::TEN) ? specialCards[nr - Widget::TEN] : nr + '2');
+    return static_cast<char>((nr >= Widget::TEN) ? specialCards[nr - Widget::TEN] : nr + '2');
 }
 
 //-----------------------------------------------------------------------------
@@ -117,7 +119,7 @@ char Widget::strNumber(Widget::NUMBERS nr) {
 char Widget::strColour(Widget::COLOURS col) {
     // Letters describing the colours(clubs, spades, hearts, diamonds)
     static Glib::ustring colours(_("CDSH"));
-    return colours[col];
+    return static_cast<char>(colours[col]);
 }
 
 //-----------------------------------------------------------------------------
@@ -129,7 +131,7 @@ void Widget::update() {
     // Remark: Re-apply the current (possibly compressed) size-request, as it
     //     crops the shown image to match; a plain img.set_pixbuf() would show
     //     the full-sized image again, undoing any compression of the pile
-    int width, height;
+    int width(-1), height(-1);
     get_size_request(width, height);
     set_size_request(width, height);
 }
@@ -144,7 +146,7 @@ void Widget::on_clicked() { TRACE9("Widget::on_clicked() - " << *this); }
 //-----------------------------------------------------------------------------
 void Widget::on_left_released(int, double x, double y) {
     TRACE9("Widget::on_left_released(int, double, double) - X: " << x << "; Y: " << y << "; W: " << get_width()
-	   << "; H: " << get_height());
+                                                                 << "; H: " << get_height());
 
     // If released within the image: Generate a clicked signal
     if ((x || y) && (x < get_width()) && (y < get_height())) {
@@ -158,7 +160,7 @@ void Widget::on_left_released(int, double x, double y) {
 //-----------------------------------------------------------------------------
 void Widget::on_right_released(int, double x, double y) {
     TRACE9("Widget::on_right_released(int, double, double) - X: " << x << "; Y: " << y << "; W: " << get_width()
-	   << "; H: " << get_height());
+                                                                  << "; H: " << get_height());
 
     if ((x || y) && (x < get_width()) && (y < get_height()))
         rightClicked_.emit(x, y);

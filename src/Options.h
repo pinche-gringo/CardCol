@@ -19,6 +19,8 @@
 #include <string>
 #include <vector>
 
+#include <glibmm/ustring.h>
+
 #include "CardOptions.h"
 
 #include <YGP/Entity.h>
@@ -32,14 +34,14 @@ class Options : public YGP::Entity {
 
   public:
     Options();
-    virtual ~Options();
+    ~Options() override;
 
   private:
-    Options(const Options& other);
-    const Options& operator=(const Options& other);
+    Options(const Options& other) = delete;
+    const Options& operator=(const Options& other) = delete;
 
     std::string strType; // %attrib%; Type;        "Rovhult"
-    unsigned int type;
+    unsigned int type{0};
     std::string browser;  // %attrib%; Helpbrowser; "galeon"
     std::string helpPath; // %attrib%; Helpdir;     DOCUDIR
     std::string target;
@@ -48,12 +50,12 @@ class Options : public YGP::Entity {
     CardOptions co;
 
 #ifdef SAVE_GAME
-    bool load;
+    bool load{false};
     std::string gameFile;
 #endif
 
     std::vector<Glib::ustring> names;
-    const char* pNameINIFile;
+    const char* pNameINIFile{nullptr};
 };
 
 #endif

@@ -30,6 +30,5 @@ endforeach
 
 executable('CardCol', cardcol_sources,
            dependencies: card_dep,
-           cpp_args: ['-Weffc++'],
            install_rpath: prefix / get_option('libdir'),
            install: true)

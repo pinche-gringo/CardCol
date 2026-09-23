@@ -19,6 +19,7 @@
 #include <cardgames-cfg.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <map>
 #include <string>
 #include <vector>
@@ -27,9 +28,6 @@
 #include <gtkmm/box.h>
 #include <gtkmm/button.h>
 #include <gtkmm/image.h>
-
-#define SET_TIP(widget, text) (widget).set_tooltip_text(text)
-#define UNSET_TIP(widget) (widget).set_has_tooltip(false)
 
 #include <YGP/ANumeric.h>
 #include <YGP/Check.h>
@@ -56,18 +54,18 @@ class HBox : public Gtk::Box {
  */
 class IPile {
   public:
-    typedef enum { NORMAL = 0, COMPRESSED, QUITE_COMPRESSED, VERY_COMPRESSED, TOTALLY_COMPRESSED, LAST } PileStyle;
-    typedef enum { SHOWBACK = 0, SHOWFACE, DONT_CHANGE } ShowOpt;
+    enum PileStyle { NORMAL = 0, COMPRESSED, QUITE_COMPRESSED, VERY_COMPRESSED, TOTALLY_COMPRESSED, LAST };
+    enum ShowOpt { SHOWBACK = 0, SHOWFACE, DONT_CHANGE };
 
-    typedef bool (*CMPFUNC)(const Widget*, const Widget*);
-    typedef int (*CMPFUNC2)(const Widget&, const Widget&);
+    using CMPFUNC = bool (*)(const Widget*, const Widget*);
+    using CMPFUNC2 = int (*)(const Widget&, const Widget&);
 
-    typedef std::vector<Widget*>::reference reference;
-    typedef std::vector<Widget*>::const_reference const_reference;
-    typedef std::vector<Widget*>::iterator iterator;
-    typedef std::vector<Widget*>::const_iterator const_iterator;
+    using reference = std::vector<Widget*>::reference;
+    using const_reference = std::vector<Widget*>::const_reference;
+    using iterator = std::vector<Widget*>::iterator;
+    using const_iterator = std::vector<Widget*>::const_iterator;
 
-    IPile(PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE);
+    explicit IPile(PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE);
     virtual ~IPile();
 
     /// \name Methods to access pile first-in-last-out
@@ -120,8 +118,8 @@ class IPile {
     unsigned int size() const { return cards.size(); }
     bool empty() const { return cards.empty(); }
 
-    reference operator[](size_t __n) { return cards[__n]; }
-    const_reference operator[](size_t __n) const { return cards[__n]; }
+    reference operator[](std::size_t n) { return cards[n]; }
+    const_reference operator[](std::size_t n) const { return cards[n]; }
     iterator begin() { return cards.begin(); }
     const_iterator begin() const { return cards.begin(); }
     iterator end() { return cards.end(); }
@@ -138,7 +136,7 @@ class IPile {
     int findByColour(const Widget& card) const { return find(card, compCards); }
     int findByID(const Widget& card) const { return find(card, compCardsByID); }
     int find1EqualOrBigger(const Widget& card, CMPFUNC fnComp) const {
-        std::vector<Widget*>::const_iterator i(std::lower_bound(begin(), end(), &card, fnComp));
+        auto i(std::ranges::lower_bound(cards, &card, fnComp));
         return ((i != end() && !fnComp(*i, &card)) ? (i - begin()) : -1);
     }
     int find1EqualOrBiggerByNr(const Widget& card) const { return find1EqualOrBigger(card, compCardsByNr); }
@@ -167,7 +165,7 @@ class IPile {
     bool exists(Widget::NUMBERS nr, unsigned int start = 0) const { return find(nr, start) != -1; }
     bool exists(Widget::COLOURS colour, unsigned int start = 0) const { return find(colour, start) != -1; }
     bool exists(const Widget& card) const { return exists(&card); }
-    bool exists(const Widget* card) const { return std::find(begin(), end(), card) != end(); }
+    bool exists(const Widget* card) const { return std::ranges::find(cards, card) != end(); }
     //@}
 
     /// \name General management-functions
@@ -195,7 +193,7 @@ class IPile {
     unsigned int getSeries(Widget& card, std::map<unsigned int, unsigned int>& aPos, std::vector<unsigned int>& aOrder,
                            CMPFUNC2 cmp, bool doubles = true);
 
-    virtual Gtk::Box* getWidget() const { return NULL; }
+    virtual Gtk::Box* getWidget() const { return nullptr; }
     //@}
 
     /// \name Sorting
@@ -236,22 +234,22 @@ class IPile {
  */
 template <class T> class Pile : public T, public IPile {
   public:
-    Pile(PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE) : IPile(style, show) {}
-    virtual ~Pile() {}
+    explicit Pile(PileStyle style = NORMAL, ShowOpt show = DONT_CHANGE) : IPile(style, show) {}
+    ~Pile() override = default;
 
-    virtual void setTopCard(Widget& newCard) {
+    void setTopCard(Widget& newCard) override {
         IPile::setTopCard(newCard);
         T::append(newCard);
     }
     void setTopCard(Widget& newCard, bool visible) { IPile::setTopCard(newCard, visible); }
 
-    virtual Widget& removeTopCard() {
+    Widget& removeTopCard() override {
         Widget& card(IPile::removeTopCard());
         T::remove(card);
         return card;
     }
 
-    virtual unsigned int insert(Widget& card, unsigned int pos) {
+    unsigned int insert(Widget& card, unsigned int pos) override {
         if (pos)
             T::insert_child_after(card, *IPile::operator[](pos - 1));
         else
@@ -259,7 +257,7 @@ template <class T> class Pile : public T, public IPile {
         return IPile::insert(card, pos);
     }
 
-    virtual Widget& remove(Widget& card) {
+    Widget& remove(Widget& card) override {
         T::remove(card);
         return IPile::remove(card);
     }
@@ -267,7 +265,7 @@ template <class T> class Pile : public T, public IPile {
         card.showFace(visible);
         return remove(card);
     }
-    virtual Widget& remove(unsigned int pos) {
+    Widget& remove(unsigned int pos) override {
         T::remove(*operator[](pos));
         return IPile::remove(pos);
     }
@@ -277,23 +275,23 @@ template <class T> class Pile : public T, public IPile {
         return card;
     }
 
-    virtual void resize(unsigned int pos, PileStyle s) {
+    void resize(unsigned int pos, PileStyle s) override {
         Check(0);
         IPile::resize(pos, s);
     }
-    virtual void resize(Widget& card, PileStyle s) { Check(0); }
-    virtual void sort(CMPFUNC fnSort) {
+    void resize(Widget& /*card*/, PileStyle /*s*/) override { Check(0); }
+    void sort(CMPFUNC fnSort) override {
         if (size()) {
             resize(size() - 1, style);
             IPile::sort(fnSort);
             resortGUI();
         }
     }
-    static unsigned int getCompressedSize(PileStyle s) { return 0; }
+    static unsigned int getCompressedSize(PileStyle /*s*/) { return 0; }
     unsigned int getCompressedSize() { return getCompressedSize(style); }
-    virtual void getSize(int& width, int& height) { IPile::getSize(width, height); }
+    void getSize(int& width, int& height) override { IPile::getSize(width, height); }
 
-    virtual Gtk::Box* getWidget() const { return static_cast<T*>(const_cast<Pile*>(this)); }
+    Gtk::Box* getWidget() const override { return static_cast<T*>(const_cast<Pile*>(this)); }
 
   protected:
     virtual void resortGUI() {
@@ -307,7 +305,7 @@ template <class T> class Pile : public T, public IPile {
             resize(size() - 1, NORMAL);
     }
 
-    virtual void insertCardFast(Widget& card, unsigned int offset) {
+    void insertCardFast(Widget& card, unsigned int offset) override {
         IPile::insertCardFast(card, offset);
         if (offset)
             T::insert_child_after(card, *IPile::operator[](offset - 1));
@@ -315,18 +313,18 @@ template <class T> class Pile : public T, public IPile {
             T::insert_child_at_start(card);
     }
 
-    virtual Widget& removeCardFast(unsigned int offset) {
+    Widget& removeCardFast(unsigned int offset) override {
         T::remove(**(begin() + offset));
         return IPile::removeCardFast(offset);
     }
 
   private:
-    Pile(const Pile<T>& other);
-    Pile<T>& operator=(const Pile<T>& other);
+    Pile(const Pile<T>& other) = delete;
+    Pile<T>& operator=(const Pile<T>& other) = delete;
 };
 
-typedef Pile<Card::VBox> VPile;
-typedef Pile<Card::HBox> HPile;
+using VPile = Pile<Card::VBox>;
+using HPile = Pile<Card::HBox>;
 
 /// Implementation of the getCompressedSize() method for Card::VBox
 template <> unsigned int Pile<Card::VBox>::getCompressedSize(PileStyle s);
@@ -349,31 +347,31 @@ template <> void HPile::resize(Card::Widget& card, PileStyle s);
  */
 template <class T> class InfoPile : public Pile<T> {
   public:
-    InfoPile(IPile::PileStyle style = IPile::NORMAL, IPile::ShowOpt show = IPile::DONT_CHANGE) : Pile<T>(style, show) {}
-    virtual ~InfoPile() {}
+    explicit InfoPile(IPile::PileStyle style = IPile::NORMAL, IPile::ShowOpt show = IPile::DONT_CHANGE) : Pile<T>(style, show) {}
+    ~InfoPile() override = default;
 
-    virtual void setTopCard(Widget& newCard) {
+    void setTopCard(Widget& newCard) override {
         Pile<T>::setTopCard(newCard);
         setTooltips();
     }
     void setTopCard(Widget& newCard, bool visible) { Pile<T>::setTopCard(newCard, visible); }
 
-    virtual Widget& removeTopCard() {
+    Widget& removeTopCard() override {
         Widget& card(Pile<T>::removeTopCard());
-        UNSET_TIP(card);
+        card.set_has_tooltip(false);
         setTooltips();
         return card;
     }
 
-    virtual unsigned int insert(Widget& card, unsigned int pos) {
+    unsigned int insert(Widget& card, unsigned int pos) override {
         unsigned int rc(Pile<T>::insert(card, pos));
         setTooltips();
         return rc;
     }
 
-    virtual Widget& remove(Widget& card) {
+    Widget& remove(Widget& card) override {
         Pile<T>::remove(card);
-        UNSET_TIP(card);
+        card.set_has_tooltip(false);
         setTooltips();
         return card;
     }
@@ -381,21 +379,21 @@ template <class T> class InfoPile : public Pile<T> {
         Pile<T>::remove(card, visible);
         return card;
     }
-    virtual Widget& remove(unsigned int pos) {
+    Widget& remove(unsigned int pos) override {
         Widget& card(Pile<T>::remove(pos));
-        UNSET_TIP(card);
+        card.set_has_tooltip(false);
         setTooltips();
         return card;
     }
     virtual Widget& remove(unsigned int pos, bool visible) { return Pile<T>::remove(pos, visible); }
 
-    virtual void move(unsigned int dest, unsigned int source) {
+    void move(unsigned int dest, unsigned int source) override {
         Pile<T>::move(dest, source);
         setTooltips();
     }
 
   protected:
-    virtual void resortGUI() {
+    void resortGUI() override {
         Pile<T>::resortGUI();
         setTooltips();
     }
@@ -404,18 +402,18 @@ template <class T> class InfoPile : public Pile<T> {
         Glib::ustring tip(ngettext("%1 card", "%1 cards", Pile<T>::size()));
         tip.replace(tip.find("%1"), 2, YGP::ANumeric::toString(Pile<T>::size()));
         for (unsigned int i(0); i < Pile<T>::size(); ++i)
-            SET_TIP(*(Pile<T>::operator[](i)), tip);
+            Pile<T>::operator[](i)->set_tooltip_text(tip);
     }
 
-    virtual Widget& removeCardFast(unsigned int offset) {
+    Widget& removeCardFast(unsigned int offset) override {
         Widget& card(Pile<T>::removeCardFast(offset));
-        UNSET_TIP(card);
+        card.set_has_tooltip(false);
         return card;
     }
 };
 
-typedef InfoPile<Card::VBox> VInfoPile;
-typedef InfoPile<Card::HBox> HInfoPile;
+using VInfoPile = InfoPile<Card::VBox>;
+using HInfoPile = InfoPile<Card::HBox>;
 
 } // namespace Card
 

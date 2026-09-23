@@ -25,18 +25,15 @@ class BuracoCards : public YGP::MetaEnum {
     /// Creates a meta-enum of type BuracoCards
     /// \returns BuracoCards& Instance of BuracoCards
     static const BuracoCards& get() {
-        if (!instance)
-            instance = new BuracoCards;
-        return *instance;
+        static const BuracoCards instance;
+        return instance;
     }
-    ~BuracoCards();
+    ~BuracoCards() override;
 
   private:
     BuracoCards();
-    BuracoCards(const BuracoCards& other);
-    const BuracoCards& operator=(const BuracoCards& other);
-
-    static BuracoCards* instance;
+    BuracoCards(const BuracoCards& other) = delete;
+    const BuracoCards& operator=(const BuracoCards& other) = delete;
 };
 
 #endif

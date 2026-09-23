@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <array>
 #include <map>
 #include <vector>
 
@@ -42,28 +43,28 @@ class Rovhult : public Card::Game {
     // Manager functions
     Rovhult(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& players,
             unsigned int posPlayer, YGP::Mutex& mxSerialize);
-    ~Rovhult();
+    ~Rovhult() override;
 
-    virtual void end(bool restart);
-    virtual void start();
-    virtual void playOpen(bool open);
-    virtual void clean();
-    virtual const char* name() { return "Rovhult"; }
-    virtual void changeNames(const std::vector<Card::Player*>& newPlayer);
-    virtual void resizeCards();
+    void end(bool restart) override;
+    void start() override;
+    void playOpen(bool open) override;
+    void clean() override;
+    const char* name() override { return "Rovhult"; }
+    void changeNames(const std::vector<Card::Player*>& newPlayer) override;
+    void resizeCards() override;
 
-    virtual bool handleMessage(unsigned int player, const std::string& msg);
+    bool handleMessage(unsigned int player, const std::string& msg) override;
 
   protected:
-    virtual Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile);
-    virtual bool executeRemoteMove(Card::IPile& pile, unsigned int target);
+    Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;
+    bool executeRemoteMove(Card::IPile& pile, unsigned int target) override;
 
   private:
     enum { EXCHANGE = Game::LAST, EXCHANGED };
 
     // Protected manager functions
-    Rovhult(const Rovhult&);
-    const Rovhult& operator=(const Rovhult&);
+    Rovhult(const Rovhult&) = delete;
+    Rovhult& operator=(const Rovhult&) = delete;
 
     // Drag and drop handling
     bool cardDroppedOnTable(unsigned int handCard, unsigned int pile);
@@ -87,8 +88,8 @@ class Rovhult : public Card::Game {
     // Helper functions
     void movePlayedCardsToLoser(unsigned int nrLoser);
     int nextAvailablePlayer(unsigned int actPlayer) const;
-    void makeMove(unsigned int player);
-    bool enableHuman();
+    void makeMove(unsigned int player) override;
+    bool enableHuman() override;
     void dealCards();
     void playCardsFromHand(unsigned int player, unsigned int start, unsigned int end);
     void exchangeAutoplayerCards();
@@ -113,7 +114,7 @@ class Rovhult : public Card::Game {
     int skip(Card::Widget::NUMBERS nr, const Card::IPile& pile, unsigned int pos) const {
         if (pile[pos]->number() == nr) {
             pos = pile.findLastEqual(pos) + 1;
-            return (pos < pile.size()) ? (int)pos : -1;
+            return (pos < pile.size()) ? static_cast<int>(pos) : -1;
         }
         return pos;
     }
@@ -125,25 +126,26 @@ class Rovhult : public Card::Game {
 
     void sendExchangedCards(unsigned int player);
 
-    static const unsigned int NUM_PLAYERS = 4; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = 4; // Number of players
 
     // Columns and rows for the cards of the players
-    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
-    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
+    static constexpr std::array<unsigned int, NUM_PLAYERS> COLS_PLAYER{7, 13, 7, 1};
+    static constexpr std::array<unsigned int, NUM_PLAYERS> ROWS_PLAYER{13, 7, 4, 7};
 
     Card::HInfoPile played;
     Card::VInfoPile staple; // Cards on staple
     struct playerCards {
-        Card::HPile hand;       // For players: Cards in the hand
-        Card::VPile reserve[3]; // Reserve-cards (for end-game)
+        Card::HPile hand;                   // For players: Cards in the hand
+        std::array<Card::VPile, 3> reserve; // Reserve-cards (for end-game)
         Gtk::Label name;
 
         playerCards() : hand(), name() {}
 
       private:
-        playerCards(const playerCards&);
-        playerCards& operator=(const playerCards&);
-    } players[NUM_PLAYERS];
+        playerCards(const playerCards&) = delete;
+        playerCards& operator=(const playerCards&) = delete;
+    };
+    std::array<playerCards, NUM_PLAYERS> players;
 
     unsigned int aExchanged;
 

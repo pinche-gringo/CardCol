@@ -25,18 +25,15 @@ class CardValue : public YGP::MetaEnum {
     /// Creates a meta-enum of type CardValue
     /// \returns const CardValue& Instance of CardValue
     static const CardValue& get() {
-        if (!instance)
-            instance = new CardValue;
-        return *instance;
+        static const CardValue instance;
+        return instance;
     }
-    ~CardValue();
+    ~CardValue() override;
 
   private:
     CardValue();
-    CardValue(const CardValue& other);
-    const CardValue& operator=(const CardValue& other);
-
-    static CardValue* instance;
+    CardValue(const CardValue& other) = delete;
+    CardValue& operator=(const CardValue& other) = delete;
 };
 
 #endif

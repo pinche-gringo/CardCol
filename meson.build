@@ -1,8 +1,9 @@
 project('CardCol', 'cpp',
         version: '0.9.52',
         license: 'GPL-2.0-or-later',
-        meson_version: '>= 0.60.0',
-        default_options: ['warning_level=2', 'buildtype=debugoptimized'])
+        meson_version: '>= 1.5.0',
+        default_options: ['cpp_std=c++26', 'warning_level=2',
+                          'buildtype=debugoptimized'])
 
 fs = import('fs')
 gnome = import('gnome')
@@ -41,7 +42,8 @@ conf.set_quoted('LOCALEDIR', prefix / localedir)
 conf.set_quoted('DOCUDIR', prefix / docudir + '/')
 conf.set('WORDS_BIGENDIAN', host_machine.endian() == 'big')
 
-add_project_arguments('-D_GNU_SOURCE', '-Woverloaded-virtual', language: 'cpp')
+add_project_arguments('-D_GNU_SOURCE', '-Woverloaded-virtual', '-Wsuggest-override',
+                      language: 'cpp')
 
 debug_level = get_option('debug-level')
 if debug_level >= 0
@@ -71,12 +73,6 @@ conf.set('HAVE_GETTEXT', nls)
 if nls
   deps += intl_dep
 endif
-
-foreach header : ['boost/tokenizer.hpp', 'boost/scoped_ptr.hpp']
-  if not cxx.has_header(header)
-    error('Required header @0@ not found'.format(header))
-  endif
-endforeach
 
 if get_option('network')
   thread_dep = dependency('threads', required: false)

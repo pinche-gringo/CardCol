@@ -22,6 +22,8 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <utility>
+
 #include <YGP/Trace.h>
 
 #include <gtkmm/native.h>
@@ -57,7 +59,7 @@ AnimatedCard::AnimatedCard(IPile& dest, unsigned int posDest, Gtk::Widget& src)
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-AnimatedCard::~AnimatedCard() {}
+AnimatedCard::~AnimatedCard() = default;
 
 //-----------------------------------------------------------------------------
 /// Additional actions when starting the animation
@@ -77,7 +79,7 @@ void AnimatedCard::start() {
 /// Cleanup of the animation; moves the animated card to the distination pile
 //-----------------------------------------------------------------------------
 void AnimatedCard::cleanup() {
-    TRACE5("AnimatedCard::cleanup() - " << (int)posDest << '/' << dest.size());
+    TRACE5("AnimatedCard::cleanup() - " << static_cast<int>(posDest) << '/' << dest.size());
     if (posDest == -1U) {
         TRACE8("AnimatedCard::cleanup() - Removing empty card");
         Check1(dest.size() == 1);
@@ -101,14 +103,14 @@ void AnimatedCard::finish() {
 //-----------------------------------------------------------------------------
 void AnimatedCard::getEndPos(int& x, int& y) {
     Check2(dest.size());
-    Widget* widget((posDest == -1U) ? dest[0] : dest[(posDest >= dest.size()) ? posDest - 1 : posDest]);
+    [[maybe_unused]] Widget* widget((posDest == -1U) ? dest[0] : dest[(posDest >= dest.size()) ? posDest - 1 : posDest]);
     Check2(widget);
 
     // Remark: Under GTK4 there is no way to query a widget's on-screen
     // position anymore (see AnimWindow.h); animateTo() is a no-op, so the
     // actual coordinates returned here are inconsequential.
     x = y = 0;
-    TRACE9("AnimatedCard::getEndPos(2x int&) - " << (int)posDest << " Dest: " << x << '/' << y);
+    TRACE9("AnimatedCard::getEndPos(2x int&) - " << static_cast<int>(posDest) << " Dest: " << x << '/' << y);
 }
 
 //-----------------------------------------------------------------------------
@@ -127,7 +129,7 @@ Window::Window(IPile& dest, unsigned int posDest, IPile& src, unsigned int posSr
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-Window::~Window() {}
+Window::~Window() = default;
 
 //-----------------------------------------------------------------------------
 /// Creates an Window-object
@@ -183,7 +185,7 @@ PileWindow::PileWindow(IPile& dest, unsigned int posDest, IPile& src, unsigned i
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-PileWindow::~PileWindow() {}
+PileWindow::~PileWindow() = default;
 
 //-----------------------------------------------------------------------------
 /// Moves to passed window to the passed coordinates
@@ -221,11 +223,11 @@ void PileWindow::start() {
 /// Cleanup of the animation; moves the animated cards to the distination pile
 //-----------------------------------------------------------------------------
 void PileWindow::cleanup() {
-    TRACE5("PileWindow::cleanup() - " << posSrc << '/' << last << " -> " << (int)posDest);
+    TRACE5("PileWindow::cleanup() - " << posSrc << '/' << last << " -> " << static_cast<int>(posDest));
     Window::cleanup();
 
     while (last-- > posSrc) {
-        TRACE5("PileWindow::cleanup() - Move " << posSrc << '/' << last << " -> " << (int)posDest);
+        TRACE5("PileWindow::cleanup() - Move " << posSrc << '/' << last << " -> " << static_cast<int>(posDest));
         dest.insert(src.remove(posSrc), ++posDest);
     }
     TRACE8("PileWindow::cleanup() - Finished");
@@ -244,10 +246,7 @@ PileWindows::PileWindows(IPile& dest, unsigned int posDest, IPile& src, unsigned
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-PileWindows::~PileWindows() {
-    for (std::vector<AnimatedPile*>::iterator i(wins.begin()); i != wins.end(); ++i)
-        delete *i;
-}
+PileWindows::~PileWindows() = default;
 
 //-----------------------------------------------------------------------------
 /// Creates a PileWindow object
@@ -274,10 +273,10 @@ void PileWindows::start() {
     TRACE8("PileWindow::start()");
     PileWindow::start();
 
-    for (std::vector<AnimatedPile*>::iterator i(wins.begin()); i != wins.end(); ++i) {
-        TRACE9("PileWindows::start() - Subwin: " << (i - wins.begin()));
-        Check3(*i);
-        (*i)->start();
+    for (auto& win : wins) {
+        TRACE9("PileWindows::start() - Subwin: " << (&win - wins.data()));
+        Check3(win);
+        win->start();
     }
 }
 
@@ -289,10 +288,10 @@ void PileWindows::start() {
 void PileWindows::getEndPos(int& x, int& y) {
     PileWindow::getEndPos(x, y);
 
-    for (std::vector<AnimatedPile*>::iterator i(wins.begin()); i != wins.end(); ++i) {
-        TRACE9("PileWindows::getEndPos(2x int&) - Subwin: " << (i - wins.begin()));
-        Check3(*i);
-        (*i)->animateTo(x, y);
+    for (auto& win : wins) {
+        TRACE9("PileWindows::getEndPos(2x int&) - Subwin: " << (&win - wins.data()));
+        Check3(win);
+        win->animateTo(x, y);
     }
 }
 
@@ -304,14 +303,14 @@ void PileWindows::cleanup() {
     PileWindow::cleanup();
 
     // Move the animated cards to their target; remove the animated widget
-    for (std::vector<AnimatedPile*>::const_iterator i(wins.begin()); i != wins.end(); ++i) {
-        unsigned int first((*i)->first);
-        unsigned int last((*i)->last);
-        Check3((*i)->posDest <= dest.size());
-        TRACE8("PileWindows::cleanup() - Moving [" << first << '/' << last << "] of " << (*i)->source.size() << " to "
-	       << (*i)->posDest << " of " << dest.size());
+    for (const auto& win : wins) {
+        unsigned int first(win->first);
+        unsigned int last(win->last);
+        Check3(win->posDest <= dest.size());
+        TRACE8("PileWindows::cleanup() - Moving [" << first << '/' << last << "] of " << win->source.size() << " to "
+                                                   << win->posDest << " of " << dest.size());
         do
-            dest.insert((*i)->source.remove(first), ((*i)->posDest)++);
+            dest.insert(win->source.remove(first), (win->posDest)++);
         while (first < last--);
     }
     TRACE8("PileWindows::cleanup() - Finished");
@@ -343,10 +342,9 @@ void PileWindows::addWindow(IPile& src, unsigned int start, unsigned int end) {
     Check1(start <= end);
     Check1(end < src.size());
 
-    AnimatedPile* win(new AnimatedPile(src, start, end));
-    Check3(win);
+    auto win(std::make_unique<AnimatedPile>(src, start, end));
     win->posDest = posDest;
-    wins.push_back(win);
+    wins.push_back(std::move(win));
 }
 
 //-----------------------------------------------------------------------------

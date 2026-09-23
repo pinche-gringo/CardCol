@@ -3,8 +3,8 @@ Prerequisites
 
 The following packages are needed
 
-  - Boost
-  - Gtkmm-2.6 (which itself needs GTK+-2.6). Available at http://www.gktmm.org/
+  - A C++ compiler supporting C++26 (tested with GCC 16)
+  - Gtkmm-4.0 (which itself needs GTK-4). Available at https://www.gtkmm.org/
   - Carddecks; e.g. the KDE cardgames provide a huge collection. See also the
     README.
   - My YGP library; also availabe as a Sourceforge project
@@ -16,7 +16,7 @@ How to build
 
 Additional prerequisite software:
 
-  - Meson (>= 0.60) and Ninja
+  - Meson (>= 1.5) and Ninja
   - mgeni.pl (from the YGP library)
   - GNU gettext (for national language support)
   - ImageMagick (optional; to generate the application icons)

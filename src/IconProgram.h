@@ -1,14 +1,8 @@
 // Program icon, generated from data/CardCol.png (gdk-pixbuf-csource)
 /* GdkPixbuf RGBA C-Source image dump 1-byte-run-length-encoded */
 
-#ifdef __SUNPRO_C
-#    pragma align 4(picGame)
-#endif
-#ifdef __GNUC__
-static const guint8 picGame[] __attribute__((__aligned__(4))) =
-#else
-static const guint8 picGame[] =
-#endif
+// clang-format off
+alignas(4) static constexpr guint8 picGame[] =
     {""
      /* Pixbuf magic (0x47646b50) */
      "GdkP"
@@ -326,3 +320,4 @@ static const guint8 picGame[] =
      "(((\0\202(((\1\3(((\0(((\1(((\2\202(((\1\2(((\2(((\0\203(((\1\1(((\2"
      "\202(((\1\1(((\2\204(((\1\1(((\2\206(((\1\2(((\3(((\2\225(((\1\1(((\0"
      "\207(((\1"};
+// clang-format on
