@@ -27,6 +27,8 @@
 #mesondefine VERSION
 // Release of the program
 #mesondefine PRG_RELEASE
+// Application ID (reverse-DNS)
+#mesondefine APPLICATION_ID
 
 // Version of the communication protocoll
 #mesondefine PROTOCOLL

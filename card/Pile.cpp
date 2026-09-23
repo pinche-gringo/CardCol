@@ -581,7 +581,8 @@ bool IPile::hasFittingPair(const Widget& card, CMPFUNC2 cmp, bool doubles) const
     unsigned int nrs(0);
     unsigned int bCols(0);
 
-    std::vector<unsigned int> foundCards(4);
+    std::vector<unsigned int> foundCards;
+    foundCards.reserve(4);
     if (!doubles)
         foundCards.push_back(card.id());
 
@@ -608,14 +609,7 @@ bool IPile::hasFittingPair(const Widget& card, CMPFUNC2 cmp, bool doubles) const
         else {
             // Filter out doubles (if specififed)
             if (!doubles) {
-                std::vector<unsigned int>::const_iterator i(foundCards.begin());
-                do {
-                    TRACE1("IPile::pileHasFittingPar(const Widget*, CMPFUNC2, bool)) - " << *i << '-' << (*p)->id());
-                    if (*i == (*p)->id())
-                        break;
-                }
-                while (++i != foundCards.end());
-                if (i != foundCards.end())
+                if (std::ranges::contains(foundCards, (*p)->id()))
                     continue;
 
                 foundCards.push_back((*p)->id());
@@ -717,7 +711,8 @@ unsigned int IPile::getSeries(Widget& card, std::map<unsigned int, unsigned int>
     unsigned int nrs(0);
     unsigned int bCols(0x4);
 
-    std::vector<unsigned int> foundCards(4);
+    std::vector<unsigned int> foundCards;
+    foundCards.reserve(4);
     unsigned int cDoubles(0);
     if (!doubles)
         foundCards.push_back(card.id());
@@ -748,14 +743,7 @@ unsigned int IPile::getSeries(Widget& card, std::map<unsigned int, unsigned int>
             else {
                 // Filter out doubles (if specififed)
                 if (!doubles) {
-                    std::vector<unsigned int>::const_iterator i(foundCards.begin());
-                    do {
-                        TRACE1("IPile::getSeries(...) - " << *i << '-' << (*p)->id());
-                        if (*i == (*p)->id())
-                            break;
-                    }
-                    while (++i != foundCards.end());
-                    if (i != foundCards.end()) {
+                    if (std::ranges::contains(foundCards, (*p)->id())) {
                         ++cDoubles;
                         continue;
                     }

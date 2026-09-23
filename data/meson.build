@@ -1,8 +1,8 @@
-install_data('CardCol.desktop', install_dir: datadir / 'applications')
+install_data(app_id + '.desktop', install_dir: datadir / 'applications')
 
 # Application icon, installed into the hicolor icon theme so desktop
 # environments (file managers, task switchers, docks, ...) can find it by the
-# name referenced in CardCol.desktop's Icon= entry. Each size is generated
+# name referenced in the desktop file's Icon= entry. Each size is generated
 # from the master image CardCol.png with ImageMagick.
 convert = find_program('magick', 'convert', required: false)
 if convert.found()

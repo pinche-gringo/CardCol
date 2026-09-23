@@ -9,6 +9,8 @@ fs = import('fs')
 gnome = import('gnome')
 
 package_name = 'Cardgames'
+# Application ID (D-Bus name; also the name of the installed desktop file)
+app_id = 'io.github.pinche-gringo.CardCol'
 bugreport = 'g17m0@users.sourceforge.net'
 version = meson.project_version()
 version_parts = version.split('.')
@@ -34,6 +36,7 @@ conf.set_quoted('PACKAGE_STRING', package_name + ' ' + version)
 conf.set_quoted('PACKAGE_BUGREPORT', bugreport)
 conf.set_quoted('VERSION', version)
 conf.set_quoted('PRG_RELEASE', release)
+conf.set_quoted('APPLICATION_ID', app_id)
 conf.set('PROTOCOLL', protocoll)
 conf.set('PROT_VARIANT', prot_variant)
 conf.set_quoted('STRPROTOCOLL', protocoll.to_string())

@@ -1117,7 +1117,7 @@ void Rovhult::findCard2Play(unsigned int player, unsigned int& start, unsigned i
         Card::Widget::NUMBERS nextMin, nextMax;
         int hpPos(-1);
         start = (played.size() && getPileLimits(nextAvailablePlayer(player), nextMin, nextMax) &&
-                 (((nextMin > cardReverse) && ((hpPos = players[player].hand.find(cardReverse)) = !-1)) ||
+                 (((nextMin > cardReverse) && ((hpPos = players[player].hand.find(cardReverse)) != -1)) ||
                   ((((hpPos = (players[player].hand.findFirstEqualOrBigger(static_cast<Card::Widget::NUMBERS>(nextMax + 1)))) !=
                      -1) &&
                     ((hpPos = skip(cardReverse, players[player].hand, hpPos)) != -1) &&

@@ -401,7 +401,8 @@ void CardgameAppl::readINIFile(const char* pFile) {
 int CardgameAppl::perform(int, const char**) {
     TRACE5("CardgameAppl::perform(int, const char**) - Params: " << args);
 
-    Glib::RefPtr<Gtk::Application> gtkapp(Gtk::Application::create("CardCol"));
+    // Every start is an independent instance (e.g. to play a network game against oneself)
+    Glib::RefPtr<Gtk::Application> gtkapp(Gtk::Application::create(APPLICATION_ID, Gio::Application::Flags::NON_UNIQUE));
 
     // Keyboard accelerators (replacing the per-Gtk::Action Gtk::AccelKey of GTK3;
     // the keys of New, End, Quit and SavePrefs were provided by Gtk::Stock)
