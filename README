@@ -40,7 +40,7 @@ A collection of various multi-person card games; til now they consist of:
 Card decks
 ----------
 
-Are not included. But the configure process tries to determine, where either
+Are not included. But the build configuration tries to determine, where either
 the GNOME carddecks (from the GNOME games), the KDE carddecks (from the KDE
 games) or the cardpics (see http://www.nongnu.org/cardpics/) are installed
 and use those.
@@ -56,7 +56,7 @@ Documentation
 -------------
 
 Is in the doc directory; in HTML-format. If the documentation is properly
-installed (make doc-install in the doc subdirectory; see also the file INSTALL)
+installed (with meson install; see also the file INSTALL)
 or the path is specified either in the INI-file or via an option, it can be
 accessed from the program (by pressing F1 or via Help - Content).
 

@@ -11,125 +11,51 @@ The following packages are needed
     (http://libymp.sourceforge.net)
 
 
-How to build (if extracted from an (tar-)archive)
--------------------------------------------------
-
-Inside the directory containing the source code type
-
-  ./configure [configure-options]
-  make [make-options]
-
-
-How to build (after checking out of CVS for the first time)
------------------------------------------------------------
+How to build
+------------
 
 Additional prerequisite software:
 
-  - CVS (obviously, duh)
-  - GNU gettext
-  - libtool
-  - autoconf
-  - automake
-
-The source can be obtained via (press enter when being asked for a
-password):
-
-  cvs -d:pserver:anonymous@cardcol.cvs.sourceforge.net:/cvsroot/cardcol login
-  cvs -z3 -d:pserver:anonymous@cardcol.cvs.sourceforge.net:/cvsroot/cardcol co -P CardCol
-
+  - Meson (>= 0.60) and Ninja
+  - mgeni.pl (from the YGP library)
+  - GNU gettext (for national language support)
+  - ImageMagick (optional; to generate the application icons)
 
 Inside the directory containing the source code type
 
-  gettextize --intl --no-changelog    # Newer versions need an -f
-  mv Makefile.am~ Makefile.am
-  mv configure.ac~ configure.ac
-  libtoolize -f
-  aclocal && autoheader && automake -a && autoconf
-  ./configure [configure-options]
-  make [make-options]
-
-Updates can be received and compiled with (in the appropiate directory):
-
-  cvs update -R
-  make
+  meson setup build [meson-options]
+  meson compile -C build
+  meson install -C build
 
 
-Common options for configure
-----------------------------
+Common options for meson
+------------------------
 
-  --help                        # Overwhelming help to configure
-  --help=short                  # Reduces the output of configure --help
-  --prefix=<path>		# default: /usr/local
-  --disable-nls                 # Disable national language support
-  --disable-static		# Don't build static libCard (only shared one)
-  --enable-network		# Enable network capabilities
-  --enable-checks[=level]	# Adds asserts and Checks
-  --enable-debug[=level]	# Sets tracelevel & generation of debuginfo
-  --enable-saving               # Games can be saved and loaded (for testing)
-  --with-kde-carddir=[DIR]  	# Path to the KDE carddecks
-  --with-gnome-carddir=[DIR]    # Path to the GNOME carddecks
-  --with-carddpics-dir=[DIR]    # Path to the "cardpics" carddecks
-  --disable-[GAME]		# To disable certain games
+Options are passed to "meson setup" (or later to "meson configure build")
+as -D<option>=<value>; "meson configure build" lists them all.
 
-If you're using `csh' on an old version of System V, you might need to type
-`sh ./configure' instead to prevent `csh' from trying to execute `configure'
-itself.
+  --prefix=<path>               # default: /usr/local
+  -Dnls=disabled                # Disable national language support
+  -Dnetwork=true                # Enable network capabilities
+  -Dchecks=<level>              # Adds asserts and Checks
+  -Ddebug-level=<level>         # Sets tracelevel & generation of debuginfo
+  -Dsaving=true                 # Games can be saved and loaded (for testing)
+  -Drsvg=disabled               # Don't use librsvg to load SVG carddecks
+  -Dkde-carddir=<DIR>           # Path to the KDE carddecks
+  -Dgnome-carddir=<DIR>         # Path to the GNOME carddecks
+  -Dcardpics-dir=<DIR>          # Path to the "cardpics" carddecks
+  -D<game>=false                # To disable certain games (rovhult, twopart,
+                                  hearts, buraco, machiavelli, sgtmayor,
+                                  jabberwocky)
 
-Running `configure' takes awhile.  While running, it prints some messages
-telling which features it is checking for.
+The carddeck directories are detected automatically if not specified; pass
+"no" to not use a certain kind of carddecks.
 
+Common commands
+---------------
 
-Compilers and Options
-
-     Some systems require unusual options for compilation or linking that
-  the `configure' script does not know about.  You can give `configure'
-  initial values for variables by setting them in the environment.  Using
-  a Bourne-compatible shell, you can do that on the command line like
-  this:
-       CC=c89 CFLAGS=-O2 LIBS=-lposix ./configure
-
-  Or on systems that have the `env' program, you can do it like this:
-       env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
-
-  Compiling For Multiple Architectures
-
-     You can compile the package for more than one kind of computer at the
-  same time, by placing the object files for each architecture in their
-  own directory.  To do this, you must use a version of `make' that
-  supports the `VPATH' variable, such as GNU `make'.  `cd' to the
-  directory where you want the object files and executables to go and run
-  the `configure' script.  `configure' automatically checks for the
-  source code in the directory that `configure' is in and in `..'.
-
-     If you have to use a `make' that does not supports the `VPATH'
-  variable, you have to compile the package for one architecture at a time
-  in the source code directory.  After you have installed the package for
-  one architecture, use `make distclean' before reconfiguring for another
-  architecture.
-
-  Installation Names
-
-     By default, `make install' will install the package's files in
-  `/usr/local/bin', `/usr/local/man', etc.  You can specify an
-  installation prefix other than `/usr/local' by giving `configure' the
-  option `--prefix=PATH'.
-
-     You can specify separate installation prefixes for
-  architecture-specific files and architecture-independent files.  If you
-  give `configure' the option `--exec-prefix=PATH', the package will use
-  PATH as the prefix for installing programs and libraries.
-  Documentation and other data files will still use the regular prefix.
-
-     In addition, if you use an unusual directory layout you can give
-  options like `--bindir=PATH' to specify different values for particular
-  kinds of files.  Run `configure --help' for a list of the directories
-  you can set and what kinds of files go in them.
-
-
-Common options/targets for make
--------------------------------
-
-  - install			# Installs the whole thing
-  - clean                       # Deletes the files created during the make
-  - uninstall                   # Uninstalls (after you found out what crap
+  meson install -C build        # Installs the whole thing
+  ninja -C build clean          # Deletes the files created during the build
+  ninja -C build uninstall      # Uninstalls (after you found out what crap
                                   this package actually contains)
+  ninja -C build CardCol-update-po  # Updates the translations in po/
