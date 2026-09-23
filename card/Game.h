@@ -41,7 +41,6 @@ class Menu;
 class SimpleActionGroup;
 } // namespace Gio
 namespace YGP {
-class Socket;
 class ConnectionMgr;
 } // namespace YGP
 namespace Card {
@@ -152,9 +151,6 @@ class Game : public Gtk::Grid {
 
     /// \name Communication helper methods
     //@{
-    static void writeError(YGP::Socket& socket, unsigned int rc, const std::string& msg);
-    static void writeOK(YGP::Socket& socket) { return writeMessage(socket, "Error=0"); }
-    static void writeMessage(YGP::Socket& socket, const std::string& msg);
     void broadcastMessage(const std::string& msg) const;
     void broadcastStartPlayer(unsigned int startplayer);
     //@}

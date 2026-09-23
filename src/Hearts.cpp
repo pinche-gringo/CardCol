@@ -46,7 +46,6 @@
 #include <card/ComputerPlayer.h>
 #include <card/Images.h>
 #include <card/ScoreDlg.h>
-#include <card/Tokenize.h>
 #include <card/Window.h>
 
 #include "Hearts.h"

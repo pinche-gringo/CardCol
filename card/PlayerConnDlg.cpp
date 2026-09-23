@@ -23,7 +23,10 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <memory>
+#include <ranges>
 #include <sstream>
+#include <string>
+#include <string_view>
 
 #include <gtkmm/entry.h>
 #include <gtkmm/grid.h>
@@ -35,14 +38,13 @@
 #include <YGP/AttrParse.h>
 #include <YGP/Check.h>
 #include <YGP/ConnMgr.h>
-#include <YGP/Socket.h>
 #include <YGP/Trace.h>
 
 #include <XGP/XAttribute.h>
 
 #include "Human.h"
+#include "Message.h"
 #include "RemotePlayer.h"
-#include "Tokenize.h"
 
 #include "PlayerConnDlg.h"
 
@@ -123,7 +125,7 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::Connec
     Check3(dlg->pPort);
     Check3(dlg->pWait);
     dlg->pPort->set_text(listenAt);
-    dlg->pWait->activate();
+    dlg->command(WAIT); // Button::activate() would only emit clicked (delayed) after an animation
     XGP::runModal(*dlg);
     return dlg->posPlayer;
 }
@@ -144,7 +146,7 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::Connec
     Check3(dlg->pTarget);
     dlg->pTarget->set_text(host);
     dlg->pPort->set_text(hostPort);
-    dlg->pConnect->activate();
+    dlg->command(CONNECT); // Button::activate() would only emit clicked (delayed) after an animation
     return dlg->posPlayer;
 }
 
@@ -153,18 +155,17 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::Connec
 /// \param target Name or IP address of the server
 /// \param port Port the server is listening at
 //----------------------------------------------------------------------------
-void PlayerConnectDlg::connect(const Glib::ustring& target, unsigned int port) {
-    TRACE3("PlayerConnectDlg::connect(const Glib::ustring&, unsigned int) - " << target << ':' << port);
+void PlayerConnectDlg::connect(const Glib::ustring& target, const Glib::ustring& port) {
+    TRACE3("PlayerConnectDlg::connect(const Glib::ustring&, const Glib::ustring&) - " << target << ':' << port);
     Glib::ustring error;
     try {
         ConnectDlg::connect(target, port);
         Check1(cmgr.getSocket());
 
         Glib::ustring data("Version=" STRPROTOCOLL ";Variant=" STRVARIANT ";Name=\"" + aPlayer[0]->getName() + '"');
-        cmgr.getSocket()->write(data);
+        sendMessage(*cmgr.getSocket(), data.raw());
 
-        std::string input;
-        cmgr.getSocket()->read(input);
+        std::string input(receiveMessage(*cmgr.getSocket()));
         TRACE8("PlayerConnectDlg::connect(const Glib::ustring&, unsigned int) - Received: " << input);
 
         Glib::ustring names;
@@ -186,9 +187,12 @@ void PlayerConnectDlg::connect(const Glib::ustring& target, unsigned int port) {
             delete i;
         aPlayer.clear();
 
-        Tokenize split(names.raw());
         unsigned int c(0);
-        for (Glib::ustring name; !(name = split.getNextNode('\n')).empty();) {
+        for (auto line : names.raw() | std::views::split('\n')) {
+            if (line.empty())
+                continue;
+
+            Glib::ustring name{std::string(std::string_view(line))};
             TRACE9("PlayerConnectDlg::connect(const Glib::ustring&, unsigned int) - Setting " << name);
 
             Player* pPlayer((c == posPlayer) ? static_cast<Player*>(new Human(name))
@@ -206,9 +210,9 @@ void PlayerConnectDlg::connect(const Glib::ustring& target, unsigned int port) {
         if ((c != aPlayer.size()) || (posPlayer >= aPlayer.size()))
             throw std::string(_("Wrong number of players!"));
     }
-    catch (YGP::CommError& err) {
+    catch (boost::system::system_error& err) {
         error = _("Error sending player name!\n\nReason: %1");
-        error.replace(error.find("%1"), 2, err.what());
+        error.replace(error.find("%1"), 2, err.code().message());
     }
     catch (std::string& err) {
         error = _("Invalid response from server!\n\nReason: %1");
@@ -225,16 +229,16 @@ void PlayerConnectDlg::connect(const Glib::ustring& target, unsigned int port) {
 /// Updates the name of the player with the data send from the client
 /// \param socket Socket over which the clients communicates
 //----------------------------------------------------------------------------
-YGP::Socket* PlayerConnectDlg::addClient(int socket) {
-    TRACE3("PlayerConnectDlg::addClient(int)");
-    YGP::Socket* sock(ConnectDlg::addClient(socket));
-    Check3(sock);
+boost::asio::ip::tcp::socket* PlayerConnectDlg::addClient(std::unique_ptr<boost::asio::ip::tcp::socket> socket) {
+    TRACE3("PlayerConnectDlg::addClient(std::unique_ptr<tcp::socket>)");
+    boost::asio::ip::tcp::socket* sock(ConnectDlg::addClient(std::move(socket)));
+    if (!sock)
+        return nullptr;
 
     Glib::ustring error;
     try {
-        std::string input;
-        sock->read(input);
-        TRACE8("PlayerConnectDlg::addClient(int) - Received: " << input);
+        std::string input(receiveMessage(*sock));
+        TRACE8("PlayerConnectDlg::addClient(std::unique_ptr<tcp::socket>) - Received: " << input);
 
         Glib::ustring name;
         unsigned int protocoll(0), variant(0);
@@ -256,7 +260,7 @@ YGP::Socket* PlayerConnectDlg::addClient(int socket) {
             error.replace(error.find("%1"), 2, STRVARIANT);
         }
 
-        TRACE8("PlayerConnectDlg::addClient(int) - Connected: " << name);
+        TRACE8("PlayerConnectDlg::addClient(std::unique_ptr<tcp::socket>) - Connected: " << name);
         Check3(aPlayer.size() > cmgr.getClients().size());
         delete aPlayer[cmgr.getClients().size()];
         aPlayer[cmgr.getClients().size()] = new RemotePlayer(sock, name);
@@ -269,17 +273,19 @@ YGP::Socket* PlayerConnectDlg::addClient(int socket) {
         for (auto& i : aPlayer)
             input += i->getName() + std::string(1, '\n');
 
-        TRACE8("PlayerConnectDlg::addClient(int) - Sending players: " << input);
-        sock->write(input);
+        TRACE8("PlayerConnectDlg::addClient(std::unique_ptr<tcp::socket>) - Sending players: " << input);
+        sendMessage(*sock, input);
     }
-    catch (YGP::CommError& err) {
+    catch (boost::system::system_error& err) {
         error = _("Error getting player name!\n\nReason: %1");
-        error.replace(error.find("%1"), 2, err.what());
+        error.replace(error.find("%1"), 2, err.code().message());
     }
     catch (std::string& err) {
-        sock->write("Error=99;Msg=\"");
-        sock->write(err);
-        sock->write("\"");
+        try {
+            sendMessage(*sock, "Error=99;Msg=\"" + err + '"');
+        }
+        catch (boost::system::system_error&) {
+        }
         error = _("Error analyzing input from client!\n\nReason: %1");
         error.replace(error.find("%1"), 2, err);
     }

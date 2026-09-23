@@ -63,7 +63,6 @@
 #include <card/Images.h>
 #include <card/Random.h>
 #include <card/ScoreDlg.h>
-#include <card/Tokenize.h>
 #include <card/Window.h>
 
 #include "Buraco.h"

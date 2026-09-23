@@ -16,7 +16,10 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <memory>
 #include <vector>
+
+#include <boost/asio/ip/tcp.hpp>
 
 #include <XGP/ConnectDlg.h>
 
@@ -44,8 +47,8 @@ class PlayerConnectDlg : public XGP::ConnectDlg {
 
   protected:
     /// \name Connection management
-    void connect(const Glib::ustring& target, unsigned int port) override;
-    YGP::Socket* addClient(int socket) override;
+    void connect(const Glib::ustring& target, const Glib::ustring& port) override;
+    boost::asio::ip::tcp::socket* addClient(std::unique_ptr<boost::asio::ip::tcp::socket> socket) override;
 
     Gtk::Label* connected;
     Gtk::Label* lblConnected;

@@ -27,7 +27,6 @@
 #include <card/Set.h>
 
 #include <card/Game.h>
-#include <card/Tokenize.h>
 
 namespace Card {
 class ScoreDlg;

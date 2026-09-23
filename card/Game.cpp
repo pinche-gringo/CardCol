@@ -29,6 +29,7 @@
 
 #include <ranges>
 #include <sstream>
+#include <string_view>
 
 #include <glibmm/main.h>
 
@@ -47,18 +48,64 @@
 #include <YGP/AttrParse.h>
 #include <YGP/Check.h>
 #include <YGP/ConnMgr.h>
-#include <YGP/Socket.h>
 #include <YGP/Trace.h>
 
 #include "ComputerPlayer.h"
 #include "Images.h"
+#include "Message.h"
 #include "Pile.h"
 #include "Player.h"
 #include "Set.h"
-#include "Tokenize.h"
 #include "Window.h"
 
 #include "Game.h"
+
+namespace {
+
+/// Returns (lazily) the blank-separated words of the passed text
+/// \param text Text to split
+auto words(std::string_view text) {
+    return text | std::views::split(' ') | std::views::filter([](auto word) { return !word.empty(); }) |
+           std::views::transform([](auto word) { return std::string(std::string_view(word)); });
+}
+
+//----------------------------------------------------------------------------
+/// Writes a message to the partner
+/// \param socket Socket to write message to
+/// \param msg Message to write
+//----------------------------------------------------------------------------
+void writeMessage(boost::asio::ip::tcp::socket& socket, const std::string& msg) {
+    try {
+        Card::sendMessage(socket, msg);
+    }
+    catch (boost::system::system_error& error) {
+        std::string err(_("Can't write message!\n\nReason: %1"));
+        err.replace(err.find("%1"), 2, error.code().message());
+        Gtk::MessageDialog dlg(err, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
+        dlg.set_title(PACKAGE);
+        XGP::runModal(dlg);
+    }
+}
+
+#ifdef WITH_NETWORK
+//----------------------------------------------------------------------------
+/// Writes a status message to the partner
+/// \param socket Socket to write message to
+/// \param rc Error code to send
+/// \param msg Message to write
+//----------------------------------------------------------------------------
+void writeError(boost::asio::ip::tcp::socket& socket, unsigned int rc, const std::string& msg) {
+    std::ostringstream error;
+    error << "Error=" << rc << ";Msg=\"" << msg << '"';
+    writeMessage(socket, error.str());
+}
+
+/// Writes the message signalling success to the partner
+/// \param socket Socket to write message to
+void writeOK(boost::asio::ip::tcp::socket& socket) { writeMessage(socket, "Error=0"); }
+#endif
+
+} // namespace
 
 namespace Card {
 
@@ -181,16 +228,16 @@ bool Game::randomiseCardsToPile(IPile& pile) const {
         try {
             ap.assignValues(input);
 
-            const auto positions(splitWords(input));
+            auto positions(words(input));
             auto act(positions.begin());
             TRACE8("Game::randomiseCardsToPile(IPile&) - Cards: " << cards.size());
             for (unsigned int i(0); i < (cards.size() - 1); ++i, ++act) {
                 unsigned long pos(0);
 
                 // Read next token; the value must be a number
-                if ((act == positions.end()) || stringToNumber(pos, act->c_str()) || (pos >= cards.size())) {
+                if ((act == positions.end()) || stringToNumber(pos, (*act).c_str()) || (pos >= cards.size())) {
                     std::string error(N_("Invalid card specification!"));
-                    throw YGP::CommError(error);
+                    throw YGP::ParseError(error);
                 }
 
                 TRACE9("Game::randomiseCardsToPile(IPile&) const - [" << i << "] = " << pos);
@@ -198,7 +245,7 @@ bool Game::randomiseCardsToPile(IPile& pile) const {
             }
             writeOK(*cmgr.getSocket());
         }
-        catch (YGP::CommError& error) {
+        catch (YGP::ParseError& error) {
             writeError(*cmgr.getSocket(), 99, error.what());
             Glib::ustring err(_("Received invalid input from the server!\n\nReason: %1"));
             err.replace(err.find("%1"), 2, _(error.what()));
@@ -341,7 +388,7 @@ void Game::flipCards2Play(IPile& pile, const std::string& cards) {
     unsigned long card(0);
     unsigned int cCards(0);
     bool bFollow(false);
-    for (const auto& act : splitWords(cards)) {
+    for (const auto& act : words(cards)) {
         if (stringToNumber(card, act.c_str())) {
             std::string error(N_("Invalid card specification!"));
             throw YGP::ParseError(error);
@@ -568,8 +615,8 @@ void Game::broadcastMessage(const std::string& msg) const {
 
     const YGP::ConnectionMgr& cmgr(getConnectionMgr());
     if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
-        for (auto i : cmgr.getClients())
-            writeMessage(*i, msg);
+        for (const auto& client : cmgr.getClients())
+            writeMessage(*client, msg);
     else
         writeMessage(*cmgr.getSocket(), msg);
 }
@@ -584,46 +631,14 @@ void Game::broadcastStartPlayer(unsigned int startplayer) {
     if (cmgr.getMode() == YGP::ConnectionMgr::SERVER) {
         TRACE3("Game::broadcastStartPlayer(unsigned int) - " << startplayer);
 
-        const std::vector<YGP::Socket*>& clients(cmgr.getClients());
         unsigned int player((startplayer - 1) & 0x3);
-        for (auto client : clients) {
+        for (const auto& client : cmgr.getClients()) {
             std::ostringstream msg;
             msg << "ActPlayer=" << player;
             writeMessage(*client, msg.str());
             player = (player - 1) & 0x3;
         }
     }
-}
-
-//----------------------------------------------------------------------------
-/// Writes a message to the partner
-/// \param socket Socket to write message to
-/// \param msg Message to write
-//----------------------------------------------------------------------------
-void Game::writeMessage(YGP::Socket& socket, const std::string& msg) {
-    try {
-        socket.write(msg);
-        socket.write("\0", 1);
-    }
-    catch (YGP::CommError& error) {
-        std::string err(_("Can't write message!\n\nReason: %1"));
-        err.replace(err.find("%1"), 2, error.what());
-        Gtk::MessageDialog dlg(err, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
-        dlg.set_title(PACKAGE);
-        XGP::runModal(dlg);
-    }
-}
-
-//----------------------------------------------------------------------------
-/// Writes a status message to the partner
-/// \param socket Socket to write message to
-/// \param rc Error code to send
-/// \param msg Message to write
-//----------------------------------------------------------------------------
-void Game::writeError(YGP::Socket& socket, unsigned int rc, const std::string& msg) {
-    std::ostringstream error;
-    error << "Error=" << rc << ";Msg=\"" + msg << "\"\0";
-    writeMessage(socket, error.str());
 }
 
 //----------------------------------------------------------------------------

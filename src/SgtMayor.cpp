@@ -46,7 +46,6 @@
 #include <card/Random.h>
 #include <card/RemotePlayer.h>
 #include <card/ScoreDlg.h>
-#include <card/Tokenize.h>
 #include <card/Window.h>
 
 #include "SgtMayor.h"
