@@ -49,6 +49,8 @@ class PlayerConnectDlg : public XGP::ConnectDlg {
     /// \name Connection management
     void connect(const Glib::ustring& target, const Glib::ustring& port) override;
     boost::asio::ip::tcp::socket* addClient(std::unique_ptr<boost::asio::ip::tcp::socket> socket) override;
+    static unsigned int connectToServer(std::vector<Player*>& aPlayer, YGP::ConnectionMgr& cmgr, const Glib::ustring& target,
+                                        const Glib::ustring& port);
 
     Gtk::Label* connected;
     Gtk::Label* lblConnected;

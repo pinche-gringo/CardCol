@@ -111,6 +111,12 @@ void CardgameCollection::initCommunication() {
     Check2(cmgr.getMode() != YGP::ConnectionMgr::NONE);
     Check2(aCommThreads.empty());
 
+    // An existing game must know the position of the player and the new players
+    if (game) {
+        game->setPlayerPosition(playerPos);
+        game->changeNames(aPlayer);
+    }
+
     if (cmgr.getMode() == YGP::ConnectionMgr::CLIENT) {
         status.pop();
         status.push(_("Waiting for the server to start the game ..."));
@@ -156,15 +162,11 @@ void* CardgameCollection::waitForMessages(void* thread) {
             if (message.empty())
                 continue;
 
+            // Wait til the last message has been processed; the GUI returns the token after processing this one
             TRACE9("CardgameCollection::waitForMessages(void*) - Lock (thread)");
-            mxThreadCmd.lock(); // Wait til last message has been processed
+            mxThreadCmd.lock();
             TRACE9("CardgameCollection::waitForMessages(void*) - Perform cmd " << message);
-
             Glib::signal_idle().connect([this, iPlayer, message] { return handleMessage(iPlayer, message); });
-            mxGuiCmd.lock();
-            mxThreadCmd.unlock();
-            mxGuiCmd.unlock();
-            TRACE9("CardgameCollection::waitForMessages(void*) - Handled msg");
         }
     }
     catch (boost::system::system_error& error) {
@@ -301,6 +303,7 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
                 aPlayer[pos++ % aPlayer.size()]->setName(name);
             }
         }
+        return true;
     }
     else if (cmd == "Settings") {
         // Parse in an own scope, so the Rovhult settings are written back before sending them
@@ -338,11 +341,10 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
 #    else
             ATTRIBUTE(ap, unsigned int, temp, "STricks");
 #    endif
-            TRACE1("New points: " << Buraco::ENDPOINTS);
 
             try {
-                TRACE1("Param: " << std::string(msg, msg.find('=')));
-                ap.assignValues(std::string(msg, msg.find('=')));
+                TRACE1("Param: " << msg.substr(msg.find('=') + 1));
+                ap.assignValues(msg.substr(msg.find('=') + 1));
             }
             catch (YGP::ParseError& e) {
                 cmd = _("Invalid settings: `%1'!\n\n%2");
@@ -354,6 +356,7 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
 
         if (cmgr.getMode() == YGP::ConnectionMgr::SERVER)
             sendSettings();
+        return true;
     }
     else if (cmd == "Error") {
         if (param != "0") {
@@ -391,14 +394,10 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
 bool CardgameCollection::handleMessage(unsigned int player, const std::string& msg) {
     TRACE5("CardgameCollection::handleMessage(unsigned int, char*) - " << msg);
 
-    mxGuiCmd.unlock();
-    mxThreadCmd.lock(); // Block message processing
-    mxGuiCmd.lock();
-
     bool unlock(true);
     try {
         int rc(handleGlobalMessage(player, msg));
-        if ((rc == -1) || (!rc && (game && !game->ignoreMessage() && !game->handleMessage(player, msg))))
+        if ((rc == -1) || (!rc && (game && !game->ignoreMessage(msg) && !game->handleMessage(player, msg))))
             unlock = false;
     }
     catch (std::exception& error) {

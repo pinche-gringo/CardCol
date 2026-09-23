@@ -17,8 +17,10 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <array>
+#include <ranges>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/read.hpp>
@@ -50,6 +52,48 @@ inline std::string receiveMessage(boost::asio::ip::tcp::socket& socket) {
     for (char c; boost::asio::read(socket, boost::asio::buffer(&c, 1)), c != MESSAGE_END;)
         msg += c;
     return msg;
+}
+
+/// One field (key=value) of a message
+struct MessageField {
+    std::string key;   ///< Name of the field
+    std::string value; ///< Value of the field (might be empty)
+};
+
+/// Splits a message of the form <tt>key1=value1;key2=value2...</tt> into its
+/// fields (keeping their order and duplicate keys)
+/// \param msg Message to split
+/// \returns std::vector<MessageField> Fields of the message
+/// \remarks The values must not contain semicolons (for quoted values use
+///     YGP::AttributeParse)
+inline std::vector<MessageField> splitMessage(std::string_view msg) {
+    std::vector<MessageField> fields;
+    for (auto part : msg | std::views::split(';')) {
+        std::string_view field(part);
+        if (field.empty())
+            continue;
+
+        const auto pos(field.find('='));
+        fields.emplace_back(std::string(field.substr(0, pos)),
+                            std::string((pos == std::string_view::npos) ? std::string_view() : field.substr(pos + 1)));
+    }
+    return fields;
+}
+
+/// Returns the command of a message (the key of its first field)
+/// \param msg Message to inspect
+/// \returns std::string_view Command
+inline std::string_view commandOf(std::string_view msg) { return msg.substr(0, msg.find_first_of("=;")); }
+
+/// Returns the blank-separated words of the passed text (e.g. a list of card IDs)
+/// \param text Text to split
+/// \returns std::vector<std::string> Non-empty words
+inline std::vector<std::string> words(std::string_view text) {
+    std::vector<std::string> result;
+    for (auto word : text | std::views::split(' '))
+        if (!word.empty())
+            result.emplace_back(std::string_view(word));
+    return result;
 }
 
 } // namespace Card

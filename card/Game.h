@@ -19,14 +19,15 @@
 #include <cardgames-cfg.h>
 
 #include <memory>
+#include <deque>
 #include <string>
 #include <vector>
 
 #include <gtkmm/grid.h>
 
 #include <YGP/Exception.h>
-#include <YGP/Mutex.h>
 
+#include <card/MessageLock.h>
 #include <card/Pile.h>
 
 // Forward declarations
@@ -69,7 +70,7 @@ class Game : public Gtk::Grid {
     };
 
     Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset, const std::vector<Player*>& player, unsigned int posPlayer,
-         YGP::Mutex& mxSerialize, unsigned int rows, unsigned int columns);
+         MessageLock& mxSerialize, unsigned int rows, unsigned int columns);
     ~Game() override;
 
     /// \name Managing
@@ -96,7 +97,7 @@ class Game : public Gtk::Grid {
     //@}
 
     virtual bool handleMessage(unsigned int player, const std::string& msg);
-    bool ignoreMessage();
+    bool ignoreMessage(const std::string& msg);
 
     /// \name Status handling
     //@{
@@ -152,6 +153,7 @@ class Game : public Gtk::Grid {
     /// \name Communication helper methods
     //@{
     void broadcastMessage(const std::string& msg) const;
+    void sendMove(const std::string& msg) const;
     void broadcastStartPlayer(unsigned int startplayer);
     //@}
 
@@ -166,6 +168,11 @@ class Game : public Gtk::Grid {
     void displayTurn(unsigned int player, const Glib::ustring& preText);
     void makeNextMoves();
     bool endRemoteMove(unsigned int player);
+    /// Keeps the message token after the current message has been handled
+    /// (the handler returns false), til the (remote) move has been finished;
+    /// that is when the next player is activated or the status of the game changes
+    void keepMessageLock() { stati.remoteMove = 1; }
+    void releaseMessageLock();
     virtual void makeMove(unsigned int player) = 0;
 
     bool randomiseCardsToPile(IPile& pile) const;
@@ -206,14 +213,13 @@ class Game : public Gtk::Grid {
     std::vector<sigc::connection> activeCards;
     const std::vector<Player*>& actPlayers;
 
-    YGP::Mutex& mxSerializeMsgs;
+    MessageLock& mxSerializeMsgs;
 
     unsigned int posServer; ///< Position the player occupies for the server
 
     unsigned int pos2Play; ///< Upper border of cards to play
     unsigned int pos1Play; ///< Lower border of cards to play
 
-    unsigned int ignoreNextMsg; ///< Number of received messages to ignore
 
   private:
     Game(const Game&) = delete;
@@ -231,6 +237,7 @@ class Game : public Gtk::Grid {
     struct {
         unsigned int restart : 1;
         unsigned int pendingTurn : 1;
+        unsigned int remoteMove : 1; ///< A received move is being executed; the message token is kept
     } stati;
 
     std::vector<sigc::connection> wonCards; // Connections to show won cards
@@ -238,6 +245,8 @@ class Game : public Gtk::Grid {
     std::unique_ptr<Gtk::PopoverMenu> pMenuPopSort;
 
     std::string cardOrder;
+
+    mutable std::deque<std::string> echoes; ///< Messages sent by a client, which the server echoes (and which are to be ignored)
 };
 
 /**Specialized Game to inform controler about status-changes.

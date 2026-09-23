@@ -42,7 +42,7 @@ class Rovhult : public Card::Game {
   public:
     // Manager functions
     Rovhult(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& players,
-            unsigned int posPlayer, YGP::Mutex& mxSerialize);
+            unsigned int posPlayer, Card::MessageLock& mxSerialize);
     ~Rovhult() override;
 
     void end(bool restart) override;
@@ -125,6 +125,10 @@ class Rovhult : public Card::Game {
     bool unmarkAndMoveToLoser(unsigned int player, unsigned int start, unsigned int end);
 
     void sendExchangedCards(unsigned int player);
+    void makeRemoteMove(unsigned int player, unsigned int start, unsigned int end);
+#ifdef WITH_NETWORK
+    bool applyExchange(unsigned int player, const std::string& message);
+#endif
 
     static constexpr unsigned int NUM_PLAYERS = 4; // Number of players
 
@@ -148,6 +152,7 @@ class Rovhult : public Card::Game {
     std::array<playerCards, NUM_PLAYERS> players;
 
     unsigned int aExchanged;
+    unsigned int remoteTarget; ///< Kind of the received move to execute (see getPileOfPlayer; 5 - 7 are stored as 4)
 
     // Preventing endless-loops
     unsigned int cEndgame;

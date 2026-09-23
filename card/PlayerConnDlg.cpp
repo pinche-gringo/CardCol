@@ -110,6 +110,7 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, unsigned in
 unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, const Glib::ustring& defPort, YGP::ConnectionMgr& connMgr) {
     std::unique_ptr<PlayerConnectDlg> dlg(std::make_unique<PlayerConnectDlg>(player, defPort, connMgr));
     XGP::runModal(*dlg);
+    dlg->hide(); // Destroying a still visible dialog confuses GTK's (Wayland) input method handling
     return dlg->posPlayer;
 }
 
@@ -127,6 +128,7 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::Connec
     dlg->pPort->set_text(listenAt);
     dlg->command(WAIT); // Button::activate() would only emit clicked (delayed) after an animation
     XGP::runModal(*dlg);
+    dlg->hide(); // Destroying a still visible dialog confuses GTK's (Wayland) input method handling
     return dlg->posPlayer;
 }
 
@@ -140,14 +142,9 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::Connec
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::ConnectionMgr& cmgr, const Glib::ustring& host,
                                        const Glib::ustring& hostPort) {
-    std::unique_ptr<PlayerConnectDlg> dlg(std::make_unique<PlayerConnectDlg>(player, "0", cmgr));
-    Check3(dlg->pPort);
-    Check3(dlg->pConnect);
-    Check3(dlg->pTarget);
-    dlg->pTarget->set_text(host);
-    dlg->pPort->set_text(hostPort);
-    dlg->command(CONNECT); // Button::activate() would only emit clicked (delayed) after an animation
-    return dlg->posPlayer;
+    // Connect without user interaction; so don't create the dialog (destroying
+    // it directly after showing it crashes GTK's Wayland input method handling)
+    return connectToServer(player, cmgr, host, hostPort);
 }
 
 //----------------------------------------------------------------------------
@@ -156,73 +153,101 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::Connec
 /// \param port Port the server is listening at
 //----------------------------------------------------------------------------
 void PlayerConnectDlg::connect(const Glib::ustring& target, const Glib::ustring& port) {
-    TRACE3("PlayerConnectDlg::connect(const Glib::ustring&, const Glib::ustring&) - " << target << ':' << port);
+    posPlayer = connectToServer(aPlayer, cmgr, target, port);
+}
+
+//----------------------------------------------------------------------------
+/// Connects to a server and negotiates the players with it. Errors are
+/// displayed to the user.
+/// \param aPlayer The players; replaced by the ones received from the server
+/// \param cmgr Connection manager; holding the connection afterwards
+/// \param target Name or IP address of the server
+/// \param port Port the server is listening at
+/// \returns unsigned int The number the player has for the server (0 in case
+///     of an error; the connection manager is reset then)
+//----------------------------------------------------------------------------
+unsigned int PlayerConnectDlg::connectToServer(std::vector<Player*>& aPlayer, YGP::ConnectionMgr& cmgr,
+                                               const Glib::ustring& target, const Glib::ustring& port) {
+    TRACE3("PlayerConnectDlg::connectToServer(...) - " << target << ':' << port);
+    unsigned int posPlayer(0);
     Glib::ustring error;
     try {
-        ConnectDlg::connect(target, port);
-        Check1(cmgr.getSocket());
-
-        Glib::ustring data("Version=" STRPROTOCOLL ";Variant=" STRVARIANT ";Name=\"" + aPlayer[0]->getName() + '"');
-        sendMessage(*cmgr.getSocket(), data.raw());
-
-        std::string input(receiveMessage(*cmgr.getSocket()));
-        TRACE8("PlayerConnectDlg::connect(const Glib::ustring&, unsigned int) - Received: " << input);
-
-        Glib::ustring names;
-        unsigned int rc(0);
-        YGP::AttributeParse ap;
-        ATTRIBUTE(ap, unsigned int, posPlayer, "Self");
-        ATTRIBUTE(ap, Glib::ustring, names, "Names");
-        ATTRIBUTE(ap, Glib::ustring, error, "Msg");
-        ATTRIBUTE(ap, unsigned int, rc, "Error");
-        ap.assignValues(input);
-
-        if (rc)
-            throw error.raw();
-        if (!posPlayer)
-            throw std::string(_("Position of this player is missing!"));
-
-        // Clear the old players
-        for (auto& i : aPlayer)
-            delete i;
-        aPlayer.clear();
-
-        unsigned int c(0);
-        for (auto line : names.raw() | std::views::split('\n')) {
-            if (line.empty())
-                continue;
-
-            Glib::ustring name{std::string(std::string_view(line))};
-            TRACE9("PlayerConnectDlg::connect(const Glib::ustring&, unsigned int) - Setting " << name);
-
-            Player* pPlayer((c == posPlayer) ? static_cast<Player*>(new Human(name))
-                                             : static_cast<Player*>(new RemotePlayer(cmgr.getSocket(), name)));
-
-            if (c < posPlayer)
-                aPlayer.push_back(pPlayer);
-            else {
-                Check3(aPlayer.size() > (c - posPlayer));
-                aPlayer.insert(aPlayer.begin() + c - posPlayer, pPlayer);
-            }
-            c++;
-        }
-        TRACE9("PlayerConnectDlg::connect(const Glib::ustring&, unsigned int) - Players: " << c << "<->" << aPlayer.size());
-        if ((c != aPlayer.size()) || (posPlayer >= aPlayer.size()))
-            throw std::string(_("Wrong number of players!"));
+        cmgr.connectTo(target.raw(), port.raw());
     }
     catch (boost::system::system_error& err) {
-        error = _("Error sending player name!\n\nReason: %1");
+        error = _("Can't connect to server!\n\nReason: %1");
         error.replace(error.find("%1"), 2, err.code().message());
     }
-    catch (std::string& err) {
-        error = _("Invalid response from server!\n\nReason: %1");
-        error.replace(error.find("%1"), 2, err);
-    }
+
+    if (error.empty())
+        try {
+            Check1(cmgr.getSocket());
+
+            Glib::ustring data("Version=" STRPROTOCOLL ";Variant=" STRVARIANT ";Name=\"" + aPlayer[0]->getName() + '"');
+            sendMessage(*cmgr.getSocket(), data.raw());
+
+            std::string input(receiveMessage(*cmgr.getSocket()));
+            TRACE8("PlayerConnectDlg::connectToServer(...) - Received: " << input);
+
+            Glib::ustring names;
+            unsigned int rc(0);
+            YGP::AttributeParse ap;
+            ATTRIBUTE(ap, unsigned int, posPlayer, "Self");
+            ATTRIBUTE(ap, Glib::ustring, names, "Names");
+            ATTRIBUTE(ap, Glib::ustring, error, "Msg");
+            ATTRIBUTE(ap, unsigned int, rc, "Error");
+            ap.assignValues(input);
+
+            if (rc)
+                throw error.raw();
+            if (!posPlayer)
+                throw std::string(_("Position of this player is missing!"));
+
+            // Clear the old players
+            for (auto& i : aPlayer)
+                delete i;
+            aPlayer.clear();
+
+            unsigned int c(0);
+            for (auto line : names.raw() | std::views::split('\n')) {
+                if (line.empty())
+                    continue;
+
+                Glib::ustring name{std::string(std::string_view(line))};
+                TRACE9("PlayerConnectDlg::connectToServer(...) - Setting " << name);
+
+                Player* pPlayer((c == posPlayer) ? static_cast<Player*>(new Human(name))
+                                                 : static_cast<Player*>(new RemotePlayer(cmgr.getSocket(), name)));
+
+                if (c < posPlayer)
+                    aPlayer.push_back(pPlayer);
+                else {
+                    Check3(aPlayer.size() > (c - posPlayer));
+                    aPlayer.insert(aPlayer.begin() + c - posPlayer, pPlayer);
+                }
+                c++;
+            }
+            TRACE9("PlayerConnectDlg::connectToServer(...) - Players: " << c << "<->" << aPlayer.size());
+            if ((c != aPlayer.size()) || (posPlayer >= aPlayer.size()))
+                throw std::string(_("Wrong number of players!"));
+        }
+        catch (boost::system::system_error& err) {
+            error = _("Error sending player name!\n\nReason: %1");
+            error.replace(error.find("%1"), 2, err.code().message());
+        }
+        catch (std::string& err) {
+            error = _("Invalid response from server!\n\nReason: %1");
+            error.replace(error.find("%1"), 2, err);
+        }
     if (error.size()) {
+        posPlayer = 0;
+        cmgr.changeMode(YGP::ConnectionMgr::NONE);
+
         Gtk::MessageDialog dlg(error, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
         dlg.set_title(PACKAGE);
         XGP::runModal(dlg);
     }
+    return posPlayer;
 }
 
 //----------------------------------------------------------------------------

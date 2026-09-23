@@ -26,6 +26,7 @@
 
 #include <memory>
 #include <sstream>
+#include <string_view>
 
 #include <glibmm/main.h>
 
@@ -50,6 +51,7 @@
 
 #include <card/ComputerPlayer.h>
 #include <card/Images.h>
+#include <card/Message.h>
 #include <card/Player.h>
 #include <card/Random.h>
 #include <card/RemotePlayer.h>
@@ -70,7 +72,7 @@ std::array<char, 4> Jabberwocky::sortOrder{};
 /// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Jabberwocky::Jabberwocky(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
-                         const std::vector<Card::Player*>& player, unsigned int posPlayer, YGP::Mutex& mxSerialize)
+                         const std::vector<Card::Player*>& player, unsigned int posPlayer, Card::MessageLock& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 15, 15),
       played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pTrump(nullptr), startPlayer(Card::randomNumber(NUM_PLAYERS)),
       turn(0), idxMenu(-1), pBidValue(), pBidCommit(), pScoreDlg(), menuSort(), menuSort2(), menuShowScoreDlg() {
@@ -228,7 +230,16 @@ void Jabberwocky::makeMove(unsigned int player) {
     TRACE5("Jabberwocky::makeMove() - Turn of player " << player);
     Check3(gameStatus() == PLAYING);
 
-    showCards2Play(player);
+    if (isShowingCardsToPlay()) { // Card of a remote player; already flipped
+        const unsigned int pos(pos2Play);
+        pos1Play = pos2Play = -1U;
+
+        Card::IPile& hand(players[player].hand);
+        playedCards[hand[pos]->colour()].set(hand[pos]->number());
+        animateCard(played, hand, pos).sigAnimation.connect(mem_fun(*this, &Jabberwocky::finishMove));
+    }
+    else
+        showCards2Play(player);
 }
 
 //-----------------------------------------------------------------------------
@@ -395,9 +406,7 @@ void Jabberwocky::cardSelected(unsigned int pos) {
             // Send played card to all clients (if any)
             std::ostringstream msg;
             msg << "Play=" << card.id() << ";Target=0";
-            if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-                ignoreNextMsg = true;
-            broadcastMessage(msg.str());
+            sendMove(msg.str());
         }
 
         playedCards[players[0].hand[pos]->colour()].set(players[0].hand[pos]->number());
@@ -435,9 +444,7 @@ void Jabberwocky::makeBids(unsigned int start) {
                 if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
                     std::ostringstream msg;
                     msg << "Bid=" << players[actPlayer].bid << ";Player=" << actPlayer << ';';
-                    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-                        ignoreNextMsg = true;
-                    broadcastMessage(msg.str());
+                    sendMove(msg.str());
                 }
             }
             else {
@@ -961,42 +968,48 @@ int Jabberwocky::playCard(unsigned int player) {
 /// \returns bool True, if message has been completey processed
 //----------------------------------------------------------------------------
 bool Jabberwocky::handleMessage(unsigned int player, const std::string& message) {
-#if 0
-   Card::Tokenize command (message);
-   std::string cmd (command.getNextNode ('='));
+#ifdef WITH_NETWORK
+    const std::string_view cmd(Card::commandOf(message));
 
-   if (cmd == "Bid") {
-      TRACE5 ("Jabberwocky::handleMessage (unsigned int, const std::string&) - " << message);
+    // Bid=<number of tricks>;Player=<position of player (as seen from the server)>
+    if (cmd == "Bid") {
+        TRACE5("Jabberwocky::handleMessage(unsigned int, const std::string&) - " << message);
 
-      std::string value (command.getNextNode (';'));
-      cmd = command.getNextNode ('=');
-      unsigned long lPlayer (player);
-      if ((cmd == "Player")
-	  && !stringToNumber (lPlayer, command.getNextNode (';').c_str ())
-	  && (lPlayer < NUM_PLAYERS)) {
-	 lPlayer = (lPlayer - posServer) & 0x3;
-	 unsigned long bid;
-	 if ((!stringToNumber (bid, value.c_str ()))
-	     || (bid > getTricks (turn)) || players[lPlayer].bid.isDefined ()) {
-	    players[lPlayer].bid = bid;
-	    showBid (lPlayer);
-	    status.pop ();
+        const auto fields(Card::splitMessage(message));
+        unsigned long sender(0), bid(0);
+        if ((fields.size() < 2) || (fields[1].key != "Player") || stringToNumber(sender, fields[1].value.c_str()) ||
+            (sender >= NUM_PLAYERS) || stringToNumber(bid, fields[0].value.c_str()) || (bid > getTricks(turn)))
+            throw YGP::ParseError(N_("Invalid bid!"));
 
-	    // Continue with bidding; but first correct the player with whom to start
-	    makeBids (((++lPlayer % NUM_PLAYERS) == startPlayer)
-		      ? NUM_PLAYERS : ((lPlayer + NUM_PLAYERS - startPlayer) % NUM_PLAYERS));
-	    return true;
-	 }
-      }
-   }
+        // Inform the other clients
+        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+            broadcastMessage(message);
+
+        // Ignore the own bid (echoed by the server)
+        if (sender != posServer) {
+            unsigned int lPlayer((sender - posServer) & 0x3);
+            if (players[lPlayer].bid.isDefined())
+                throw YGP::ParseError(N_("Invalid bid!"));
+
+            players[lPlayer].bid = bid;
+            showBid(lPlayer);
+            status.pop();
+
+            // Continue with bidding; but first correct the player with whom to start
+            makeBids((((++lPlayer) % NUM_PLAYERS) == startPlayer) ? NUM_PLAYERS
+                                                                  : ((lPlayer + NUM_PLAYERS - startPlayer) % NUM_PLAYERS));
+        }
+        return true;
+    }
 #endif
+
     bool rc(Game::handleMessage(player, message));
-#if 0
-   if ((cmd == "ActPlayer")
-       && (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)) {
-      startPlayer = currentPlayer ();
-      makeBids ();
-   }
+#ifdef WITH_NETWORK
+    // The client starts bidding, after receiving the startplayer
+    if ((cmd == "ActPlayer") && (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)) {
+        startPlayer = currentPlayer();
+        makeBids();
+    }
 #endif
     return rc;
 }

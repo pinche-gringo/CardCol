@@ -317,7 +317,7 @@ static constexpr const char* xpmJoker[] = {"72 96 65 1",
 CardgameCollection::CardgameCollection(Options& opts)
     : XApplication(PACKAGE " V" PRG_RELEASE), status(), filler(), cardFaces(), cards(),
 #ifdef WITH_NETWORK
-      aCommThreads(), mxGuiCmd(), dlgChat(nullptr),
+      aCommThreads(), dlgChat(nullptr),
 #endif
       mxThreadCmd(), cmgr(), playerPos(0), options(opts), aPlayer(), oldGame(GameTypes::NONE), actGame(opts.type), restart(false),
       game(), helpFile() {
@@ -429,10 +429,6 @@ CardgameCollection::CardgameCollection(Options& opts)
 
     show();
     // Remark: Under GTK4 a client can no longer set a window's position (see AnimWindow.h)
-#ifdef WITH_NETWORK
-    mxGuiCmd.lock();
-#endif
-
     Glib::signal_idle().connect(bind_return(mem_fun(*this, &CardgameCollection::loadCards), false));
     makePlayer();
 
@@ -582,6 +578,10 @@ void CardgameCollection::startGame() {
 #endif
 
     if (cmgr.getMode() != YGP::ConnectionMgr::CLIENT) {
+#ifdef WITH_NETWORK
+        // The clients must play with the same settings (e.g. the number of cards to deal)
+        sendSettings();
+#endif
         game->start();
 
 #ifdef SAVE_GAME

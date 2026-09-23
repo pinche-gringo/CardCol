@@ -47,6 +47,7 @@
 
 #include <card/ComputerPlayer.h>
 #include <card/Images.h>
+#include <card/Message.h>
 #include <card/Player.h>
 #include <card/Random.h>
 #include <card/Set.h>
@@ -67,7 +68,7 @@ std::array<char, 4> Twopart::sortOrder{};
 /// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Twopart::Twopart(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
-                 unsigned int posPlayer, YGP::Mutex& mxSerialize)
+                 unsigned int posPlayer, Card::MessageLock& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 12, 15), bfPlayers((1 << NUM_PLAYERS) - 1), offPos(0),
       startPlayer(0), bfOldPlayers(bfPlayers), pTrump(nullptr), played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE),
       staple(Card::IPile::VERY_COMPRESSED, Card::IPile::SHOWBACK), idxMenu(-1) {
@@ -237,9 +238,7 @@ void Twopart::playedSelected() {
         Check3(startPos[offPos - 1] < played.size());
         std::ostringstream msg;
         msg << "Play=" << played[startPos[offPos - 1]]->id() << ";Target=1";
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-        broadcastMessage(msg.str());
+        sendMove(msg.str());
     }
     setNextPlayer(pickUpPlayedPile(0));
     disableHuman();
@@ -294,9 +293,7 @@ void Twopart::cardSelected(unsigned int pos) {
             msg << players[0].hand[i]->id() << ' ';
         msg << players[0].hand[pos]->id() << ";Target=0";
 
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-        broadcastMessage(msg.str());
+        sendMove(msg.str());
     }
 }
 
@@ -379,16 +376,22 @@ void Twopart::makeMove(unsigned int player) {
     TRACE5("Twopart::makeMove() - Turn of player " << player);
     Check3(gameStatus() >= PLAYING);
 
-    unsigned int pos1Play, pos2Play;
-    if (findPos2Play(player, pos1Play, pos2Play) != -1) {
+    // Cards of a remote player are already known (and flipped)
+    const bool remote(isShowingCardsToPlay());
+    unsigned int start(pos1Play), end(pos2Play);
+    if (remote)
+        pos1Play = pos2Play = -1U;
+
+    if (remote || (findPos2Play(player, start, end) != -1)) {
         if (gameStatus() == PLAYING2) {
             TRACE1("TwoPart::makeMove " << player << "; Position: " << offPos << " -> " << played.size());
             startPos[offPos++] = played.size();
         }
 
         // Show card(s) to play
-        flipCards2Play(players[player].hand, pos1Play, pos2Play);
-        animateCards(played, players[player].hand, pos1Play, pos2Play)
+        if (!remote)
+            flipCards2Play(players[player].hand, start, end);
+        animateCards(played, players[player].hand, start, end)
             .sigAnimation.connect(bind(mem_fun(*this, &Twopart::endTurn), player));
     }
     else {
@@ -1052,17 +1055,13 @@ Card::IPile* Twopart::getPileOfPlayer(unsigned int player, unsigned int pile) {
 bool Twopart::handleMessage(unsigned int player, const std::string& message) {
     TRACE1("Twopart::handleMessage(unsigned int player, const std::string&) - " << message << " (" << player << ')');
     bool rc(Game::handleMessage(player, message));
-#if 0
-   Card::Tokenize command (message);
-   std::string cmd (command.getNextNode ('='));
-
-   if (cmd == "ActPlayer") {
-      TRACE1 ("Twopart::handleMessage (unsigned int player, const std::string&) - "
-              "Next player: " << currentPlayer ());
-      startPlayer = currentPlayer ();
-      makeNextMoves ();
-      return true;
-   }
+#ifdef WITH_NETWORK
+    // The client starts playing, after receiving the startplayer
+    if (Card::commandOf(message) == "ActPlayer") {
+        TRACE1("Twopart::handleMessage(unsigned int player, const std::string&) - Next player: " << currentPlayer());
+        startPlayer = currentPlayer();
+        makeNextMoves();
+    }
 #endif
     return rc;
 }

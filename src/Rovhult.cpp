@@ -24,7 +24,12 @@
 
 #include <cardgames-cfg.h>
 
+#include <algorithm>
+#include <array>
 #include <sstream>
+#include <string_view>
+#include <typeinfo>
+#include <vector>
 
 #include <glibmm/main.h>
 #include <glibmm/value.h>
@@ -47,6 +52,7 @@
 #include <CardValue.h>
 
 #include <card/ComputerPlayer.h>
+#include <card/Message.h>
 #include <card/Random.h>
 #include <card/Widget.h>
 #include <card/Window.h>
@@ -67,10 +73,10 @@ Card::Widget::NUMBERS Rovhult::cardReverse(Card::Widget::SEVEN);
 /// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Rovhult::Rovhult(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
-                 unsigned int posPlayer, YGP::Mutex& mxSerialize)
+                 unsigned int posPlayer, Card::MessageLock& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 16, 20),
       played(Card::IPile::VERY_COMPRESSED, Card::IPile::SHOWFACE), staple(Card::IPile::VERY_COMPRESSED), aExchanged(0),
-      cEndgame(0), aTableDND(), aHandDND(), aHandData(), aTableData() {
+      remoteTarget(-1U), cEndgame(0), aTableDND(), aHandDND(), aHandData(), aTableData() {
     TRACE9("Rovhult::Rovhult(Gtk::Box& Gtk::Statusbar&, CardSet&, const std::vector<Glib::ustring>&)");
 
     staple.show();
@@ -249,9 +255,8 @@ void Rovhult::sendExchangedCards(unsigned int player) {
             << players[player].reserve[1].getTopCard().id() << ' ' << players[player].reserve[2].getTopCard().id()
             << ";Player=" << ((player + posServer) & 0x3);
 
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-
+        // The server echoes the message also to its sender, which ignores it
+        // by the passed player (see applyExchange)
         broadcastMessage(msg.str());
         aExchanged |= (1 << player);
     }
@@ -342,9 +347,7 @@ void Rovhult::pileSelected(unsigned int pile) {
                 // Send played card to all clients (if any)
                 std::ostringstream msg;
                 msg << "Play=" << card.id() << ";Target=" << (pile + 5);
-                if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-                    ignoreNextMsg = true;
-                broadcastMessage(msg.str());
+                sendMove(msg.str());
             }
             movePlayedCardsToLoser(0);
         }
@@ -356,9 +359,7 @@ void Rovhult::pileSelected(unsigned int pile) {
         // Send played card to all clients (if any)
         std::ostringstream msg;
         msg << "Play=" << card.id() << ";Target=" << (pile + 1);
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-        broadcastMessage(msg.str());
+        sendMove(msg.str());
     }
 
     // If face of card was visible: Just go on (as the user knows what he has
@@ -467,9 +468,7 @@ void Rovhult::handSelected(unsigned int pos) {
             msg << players[0].hand[i]->id() << ' ';
         msg << players[0].hand[pos]->id() << ";Target=0";
 
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-        broadcastMessage(msg.str());
+        sendMove(msg.str());
     }
 
     playCardsFromHand(0, start, pos);
@@ -552,7 +551,9 @@ void Rovhult::executeMove(unsigned int player) {
 
     bool unfinished(static_cast<int>(player) != nextAvailablePlayer((player - 1) & 0x3));
     if (!removePlayed || unfinished) {
-        if (!player && unfinished && noMoreHumans())
+        // Start counting the moves (to prevent endless games), when the last
+        // (local or remote) human finished
+        if (unfinished && !cEndgame && (typeid(*actPlayers[player]) != typeid(Card::ComputerPlayer)) && noMoreHumans())
             cEndgame = 1;
 
         player = nextAvailablePlayer(player);
@@ -590,9 +591,7 @@ void Rovhult::takeCards() {
     if (getConnectionMgr().getMode() != YGP::ConnectionMgr::NONE) {
         std::ostringstream msg;
         msg << "Play=" << played.getTopCard().id() << ";Target=4";
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-        broadcastMessage(msg.str());
+        sendMove(msg.str());
     }
 
     movePlayedCardsToLoser(0);
@@ -1030,11 +1029,13 @@ void Rovhult::showCards2Play(unsigned int player, unsigned int start, unsigned i
             }
         }
 
-        // Inform the others about the move
+        // Inform the others about the move; like the human (see doPileSelected)
+        // the move is identified by the top card of the last pile to play,
+        // the receivers add the equal cards on the piles before
         if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
             // Send played card to all clients (if any)
             std::ostringstream msg;
-            msg << "Play=" << pile.getTopCard().id() << ";Target=" << target;
+            msg << "Play=" << players[player].reserve[end].getTopCard().id() << ";Target=" << target;
             broadcastMessage(msg.str());
         }
     }
@@ -1046,18 +1047,27 @@ void Rovhult::showCards2Play(unsigned int player, unsigned int start, unsigned i
 void Rovhult::makeMove(unsigned int player) {
     TRACE2("Rovhult::makeMove(unsigned int) - Player " << player);
 
-    unsigned int pos1Play, pos2Play;
+    // Move of a remote player: Execute the received move (its cards have
+    // already been flipped by performCommand)
+    if (isShowingCardsToPlay()) {
+        const unsigned int start(pos1Play), end(pos2Play);
+        pos1Play = pos2Play = -1U;
+        makeRemoteMove(player, start, end);
+        return;
+    }
+
+    unsigned int start(-1U), end(-1U);
     if (cEndgame)
         ++cEndgame;
     if ((cEndgame > 30) && !(cEndgame & 0x7) && players[player].hand.size())
-        pos1Play = pos2Play = selectRandomCard(player);
+        start = end = selectRandomCard(player);
     else
-        findCard2Play(player, pos1Play, pos2Play);
-    TRACE8("Rovhult::makeMove(unsigned int) - Player " << player << "; Card: " << pos2Play);
+        findCard2Play(player, start, end);
+    TRACE8("Rovhult::makeMove(unsigned int) - Player " << player << "; Card: " << end);
 
-    if (pos2Play != -1U) {
-        Check3(pos1Play <= pos2Play);
-        showCards2Play(player, pos1Play, pos2Play);
+    if (end != -1U) {
+        Check3(start <= end);
+        showCards2Play(player, start, end);
     }
     else {
         if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
@@ -1065,6 +1075,48 @@ void Rovhult::makeMove(unsigned int player) {
             msg << "Play=" << played[played.size() - 1]->id() << ";Target=4";
             broadcastMessage(msg.str());
         }
+        movePlayedCardsToLoser(player);
+    }
+}
+
+//-----------------------------------------------------------------------------
+/// Executes the move received from a remote player (as prepared by
+/// executeRemoteMove). Like the move of a computer player the game continues
+/// by itself after the (animated) move.
+/// \param player Player making the move
+/// \param start Position of the first card to play (from the hand)
+/// \param end Position of the last card to play (from the hand)
+//-----------------------------------------------------------------------------
+void Rovhult::makeRemoteMove(unsigned int player, unsigned int start, unsigned int end) {
+    TRACE2("Rovhult::makeRemoteMove(3x unsigned int) - Player " << player << "; Target " << remoteTarget << "; Cards " << start
+                                                                << '/' << end);
+    Check1(player < NUM_PLAYERS);
+
+    const unsigned int target(remoteTarget);
+    remoteTarget = -1U;
+
+    // Check if the game has been ended in the meantime
+    if (gameStatus() != PLAYING) {
+        if (gameStatus() == TOSTOP)
+            stop();
+        return;
+    }
+
+    switch (target) {
+    case 0: // Cards from the hand
+        Check3(start <= end);
+        Check3(end < players[player].hand.size());
+        playCardsFromHand(player, start, end);
+        break;
+
+    case 1: // Top card of a reserve pile (and the equal cards on the piles before)
+    case 2:
+    case 3:
+        doPileSelected(player, target - 1);
+        break;
+
+    default: // Pick up the played cards
+        Check3(target == 4);
         movePlayedCardsToLoser(player);
     }
 }
@@ -1340,20 +1392,13 @@ Card::IPile* Rovhult::getPileOfPlayer(unsigned int player, unsigned int pile) {
 
     TRACE8("Rovhult::getPileOfPlayer(unsigned int, unsigned int) - Player " << player << "; Pile " << pile);
 
-    if (pile > 4) {
-        Card::IPile& playerPile(players[player].reserve[pile - 5]);
-        Check3(playerPile.size());
-        if (cardValid(playerPile.getTopCard().number(), true))
-            return &playerPile;
-        else {
-            played.Card::IPile::append(playerPile.removeTopCard());
-            return &played;
-        }
-    }
-
-    return &(
-        pile ? ((pile == 4) ? static_cast<Card::IPile&>(played) : static_cast<Card::IPile&>(players[player].reserve[pile - 1]))
-             : static_cast<Card::IPile&>(players[player].hand));
+    // The (invalid) card played from a reserve pile (5 - 7) is moved onto
+    // the played cards by executeRemoteMove (after checking the card)
+    Card::IPile& result(pile ? ((pile == 4)
+                                    ? static_cast<Card::IPile&>(played)
+                                    : static_cast<Card::IPile&>(players[player].reserve[(pile > 4) ? (pile - 5) : (pile - 1)]))
+                             : static_cast<Card::IPile&>(players[player].hand));
+    return result.size() ? &result : nullptr;
 }
 
 //----------------------------------------------------------------------------
@@ -1363,84 +1408,127 @@ Card::IPile* Rovhult::getPileOfPlayer(unsigned int player, unsigned int pile) {
 /// \returns bool True, if message has been completey processed
 //----------------------------------------------------------------------------
 bool Rovhult::handleMessage(unsigned int player, const std::string& message) {
-#if 0
-   if (gameStatus () >= EXCHANGE) {
-      TRACE1 ("Rovhult::handleMessage (unsigned int player, const std::string&) - "
-              << message << " (" << player << ')');
+    TRACE1("Rovhult::handleMessage(unsigned int player, const std::string&) - " << message << " (" << player << ')');
 
-      Card::Tokenize command (message);
-      std::string cmd (command.getNextNode ('='));
+#ifdef WITH_NETWORK
+    const std::string_view cmd(Card::commandOf(message));
+    if (cmd == "Exchange")
+        return applyExchange(player, message);
 
-      if (cmd == "Exchange") {
-         std::string cards (command.getNextNode (';'));
-         cmd = command.getNextNode ('=');
-         unsigned long lPlayer (player);
-         if ((cmd == "Player")
-             && !stringToNumber (lPlayer, command.getNextNode (';').c_str ())
-             && (lPlayer < NUM_PLAYERS)) {
-            register unsigned int save (lPlayer);
-            lPlayer = (lPlayer - posServer) & 0x3;
+    // Moves are only valid while playing; the server accepts them only from
+    // the player in turn
+    if (cmd == "Play") {
+        if (gameStatus() != PLAYING)
+            throw YGP::ParseError(N_("Unexpected move!"));
+        if ((getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) && (player != currentPlayer()))
+            throw YGP::ParseError(N_("Move of a player not in turn!"));
 
-            // Don't exchange already exchanged cards
-            if (save != posServer) {
-               // Remove the cards in the hand and the top of the table piles
-	       std::vector<Card::Widget*> pile;
-               for (unsigned int i (0); i < 3; ++i) {
-                  pile.push_back (&players[lPlayer].hand.removeTopCard ());
-                  pile.push_back (&players[lPlayer].reserve[i].removeTopCard ());
-               }
-
-               command = cards;
-               unsigned long card (0);
-               unsigned int target (0);
-
-               // Target piles
-               Card::IPile* piles[] =
-                   { &players[lPlayer].hand, &players[lPlayer].hand,
-                     &players[lPlayer].hand, &players[lPlayer].reserve[0],
-                     &players[lPlayer].reserve[1], &players[lPlayer].reserve[2] };
-
-               while (command.getNextNode (' ').size ()) {
-                  if (stringToNumber (card, command.getActNode ().c_str ()))
-                     break;
-
-                  TRACE8 ("Rovhult::handleMessage (unsigned int, const std::string&) - "
-                          << lPlayer << ": " << card);
-		  for (std::vector<Card::Widget*>::iterator i (pile.begin ()); i != pile.end (); ++i)
-		     if ((*i)->id () == card) {
-			Card::Widget& movedCard (**i);
-			if (target > 2)
-			   movedCard.showFace ();
-			piles[target++]->setTopCard (movedCard);
-			pile.erase (i);
-		     }
-               }
-               if (pile.empty ()) {
-                  aExchanged |= (1 << lPlayer);
-
-                  TRACE2 ("Rovhult::handleMessage (unsigned int player, const std::string&) - "
-                          "Exchanged: " << std::hex << aExchanged << std::dec);
-                     YGP::ConnectionMgr& cmgr (getConnectionMgr ());
-                     // Inform other clients
-                     if (cmgr.getMode () == YGP::ConnectionMgr::SERVER)
-                        broadcastMessage (message);
-
-                     if (aExchanged == 0xf) {
-                        status.pop ();
-                        setGameStatus (PLAYING);
-                        makeNextMoves ();
-                     }
-               }
-            }
-            else
-               ignoreNextMsg = false;
-            return true;
-         }
-      }
-   }
+        // Moves from a reserve pile and picking up the played cards are
+        // specified by the top card of the respective pile (checked here, as
+        // flipCards2Play would accept any card of the pile)
+        const auto fields(Card::splitMessage(message));
+        unsigned long target(0);
+        if ((fields.size() >= 2) && (fields[1].key == "Target") && !stringToNumber(target, fields[1].value.c_str()) && target) {
+            const Card::IPile* pile(getPileOfPlayer(currentPlayer(), target));
+            const auto ids(Card::words(fields[0].value));
+            unsigned long id(0);
+            if (pile && ((ids.size() != 1) || stringToNumber(id, ids[0].c_str()) || (id != pile->getTopCard().id())))
+                throw YGP::ParseError(N_("Invalid card specification!"));
+        }
+    }
 #endif
     return Game::handleMessage(player, message);
 }
+
+#ifdef WITH_NETWORK
+//----------------------------------------------------------------------------
+/// Applies the exchange of the cards of a partner; the message has the form
+/// <tt>Exchange=<IDs of the 3 cards in the hand> <IDs of the top cards of the
+/// reserve piles 0 - 2>;Player=<position of player (as seen from the
+/// server)></tt>
+/// \param player ID of player sending the message
+/// \param message Received message
+/// \returns bool True, as the message has been completey processed
+/// \throw YGP::ParseError In case of an invalid message
+//----------------------------------------------------------------------------
+bool Rovhult::applyExchange(unsigned int player, const std::string& message) {
+    TRACE1("Rovhult::applyExchange(unsigned int, const std::string&) - " << message << " (" << player << ')');
+
+    const auto fields(Card::splitMessage(message));
+    unsigned long sender(0);
+    if ((fields.size() < 2) || (fields[1].key != "Player") || stringToNumber(sender, fields[1].value.c_str()) ||
+        (sender >= NUM_PLAYERS))
+        throw YGP::ParseError(N_("Invalid player!"));
+
+    // Ignore the own exchange (echoed by the server; maybe even after all
+    // exchanges have been received and the game has started)
+    if (sender == posServer)
+        return true;
+
+    const unsigned int lPlayer((sender - posServer) & 0x3);
+    const YGP::ConnectionMgr& cmgr(getConnectionMgr());
+    if (((gameStatus() != EXCHANGE) && (gameStatus() != EXCHANGED)) || (aExchanged & (1 << lPlayer)) ||
+        ((cmgr.getMode() == YGP::ConnectionMgr::SERVER) && (player != lPlayer)))
+        throw YGP::ParseError(N_("Unexpected exchange of cards!"));
+
+    // The cards to exchange: Those in the hand and the top cards of the reserve
+    playerCards& exchanging(players[lPlayer]);
+    if (exchanging.hand.size() != 3)
+        throw YGP::ParseError(N_("Unexpected exchange of cards!"));
+    std::vector<Card::Widget*> available;
+    for (unsigned int i(0); i < 3; ++i) {
+        if (exchanging.reserve[i].size() != 2)
+            throw YGP::ParseError(N_("Unexpected exchange of cards!"));
+        available.push_back(exchanging.hand[i]);
+        available.push_back(&exchanging.reserve[i].getTopCard());
+    }
+
+    // Check the received cards, before changing anything
+    const auto ids(Card::words(fields[0].value));
+    if (ids.size() != available.size())
+        throw YGP::ParseError(N_("Invalid card specification!"));
+
+    std::array<Card::Widget*, 6> newCards{};
+    for (unsigned int i(0); i < ids.size(); ++i) {
+        unsigned long id(0);
+        if (stringToNumber(id, ids[i].c_str()))
+            throw YGP::ParseError(N_("Invalid card specification!"));
+
+        TRACE8("Rovhult::applyExchange(unsigned int, const std::string&) - " << lPlayer << ": " << id);
+        const auto card(std::ranges::find_if(available, [id](const Card::Widget* c) { return c->id() == id; }));
+        if (card == available.end())
+            throw YGP::ParseError(N_("Card not found!"));
+        newCards[i] = *card;
+        available.erase(card);
+    }
+
+    // Put the first 3 cards into the hand and the others onto the reserve piles
+    for (unsigned int i(0); i < 3; ++i) {
+        exchanging.hand.removeTopCard();
+        exchanging.reserve[i].removeTopCard();
+    }
+    for (unsigned int i(0); i < 3; ++i) {
+        exchanging.hand.setTopCard(*newCards[i]);
+        exchanging.reserve[i].setTopCard(*newCards[i + 3], true);
+    }
+    exchanging.hand.sortByNumber();
+
+    aExchanged |= (1 << lPlayer);
+    TRACE2("Rovhult::applyExchange(unsigned int player, const std::string&) - Exchanged: " << std::hex << aExchanged << std::dec);
+
+    // Inform the other clients (the sender ignores the echo)
+    if (cmgr.getMode() == YGP::ConnectionMgr::SERVER)
+        broadcastMessage(message);
+
+    // Start playing, if every player (including the own) has exchanged
+    if ((aExchanged == 0xf) && (gameStatus() == EXCHANGED)) {
+        status.pop();
+        setGameStatus(PLAYING);
+        makeNextMoves();
+    }
+    return true;
+}
+#endif
 
 //----------------------------------------------------------------------------
 /// Executes the remote move locally
@@ -1449,43 +1537,21 @@ bool Rovhult::handleMessage(unsigned int player, const std::string& message) {
 /// \returns bool True, if the timer to execute the move should be set
 //----------------------------------------------------------------------------
 bool Rovhult::executeRemoteMove(Card::IPile& pile, unsigned int target) {
-    if (target) {
-        Check3(gameStatus() == PLAYING);
-        TRACE7("Rovhult::executeRemoteMove(Card::IPile&, unsigned int) - Target " << target);
+    TRACE7("Rovhult::executeRemoteMove(Card::IPile&, unsigned int) - Target " << target);
+    Check3(gameStatus() == PLAYING);
+    Check3(target <= 7);
 
-        unsigned int player(currentPlayer());
-        unsigned int pos1Play, pos2Play;
-        if (target > 3) {
-            if (&pile == &played) {
-                movePlayedCardsToLoser(player);
-                return false;
-            }
-            pos2Play = target - 5;
-        }
-        else
-            pos2Play = target - 1;
-
-        Card::IPile* pile(&players[player].reserve[pos1Play = pos2Play]);
-        Card::Widget::NUMBERS nr(pile->getTopCard().number());
-        pile->getTopCard().mark();
-        if (pile->size() > 1) {
-            while (pos1Play) {
-                pile = &players[player].reserve[pos1Play - 1];
-                if ((pile->size() > 1) && (pile->getTopCard().number() == nr)) {
-                    --pos1Play;
-                    pile->getTopCard().mark();
-                }
-                else
-                    break;
-            }
-        }
-
-        if ((nextAvailablePlayer((player - 1) & 0x3) != static_cast<int>(player)) && noMoreHumans())
-            cEndgame = 1;
-        return true;
+    // A (hidden) card played from a reserve pile turned out to be invalid:
+    // Put it onto the played cards; the player picks them all up
+    if (target > 4) {
+        Check3(&pile == &players[currentPlayer()].reserve[target - 5]);
+        played.Card::IPile::append(pile.removeTopCard());
+        target = 4;
     }
-    else
-        return Game::executeRemoteMove(pile, target);
+
+    // The move itself is executed by makeMove (after a delay)
+    remoteTarget = target;
+    return Game::executeRemoteMove(pile, target);
 }
 
 //-----------------------------------------------------------------------------

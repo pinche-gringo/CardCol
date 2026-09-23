@@ -61,7 +61,7 @@ class Buraco : public Card::Game {
 
   public:
     Buraco(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
-           unsigned int posPlayer, YGP::Mutex& mxSerialize);
+           unsigned int posPlayer, Card::MessageLock& mxSerialize);
     ~Buraco() override;
 
     void start() override;
@@ -97,9 +97,19 @@ class Buraco : public Card::Game {
     void disableHuman() override;
 
     Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;
-    bool executeRemoteMove(Card::IPile& pile, unsigned int target) override;
     unsigned int getActTarget() const override;
     void endTurn(unsigned int player, unsigned int card2Dump);
+    void turnEnded();
+
+#ifdef WITH_NETWORK
+    //@Section network handling
+    unsigned int getRemotePlayer(unsigned int sender) const;
+    bool playRemoteCards(unsigned int sender, const std::string& message);
+    bool moveRemoteCard(unsigned int sender, const std::string& message);
+    bool undoRemoteMove(unsigned int sender);
+    void startRemoteTurn(unsigned int player);
+    void remoteMoveDone(unsigned int pile);
+#endif
 
     //@Section Event handling
     void cardSelected(unsigned int iCard);
@@ -219,6 +229,11 @@ class Buraco : public Card::Game {
     Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
     unsigned int target; ///< Id identifying the target to play to
+
+#ifdef WITH_NETWORK
+    unsigned int movedPile{-1U}; ///< Pile in which a remote player moved a joker (for undo; -1U: none)
+    unsigned int movedFrom{0};   ///< Position from which the joker was moved
+#endif
 
     // Scroll-ctrls for table (holding boxTeam). Declared last, so they are
     // destroyed first (before the widgets they contain)

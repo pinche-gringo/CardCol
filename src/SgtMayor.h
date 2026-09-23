@@ -19,6 +19,7 @@
 #include <array>
 #include <bitset>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include <gtkmm/label.h>
@@ -30,7 +31,8 @@
 
 namespace Card {
 class ScoreDlg;
-}
+struct MessageField;
+} // namespace Card
 namespace Gio {
 class SimpleAction;
 }
@@ -43,7 +45,7 @@ class SgtMayor : public Card::Game {
 
   public:
     SgtMayor(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
-             unsigned int posPlayer, YGP::Mutex& mxSerialize);
+             unsigned int posPlayer, Card::MessageLock& mxSerialize);
     ~SgtMayor() override;
 
     void start() override;
@@ -53,8 +55,8 @@ class SgtMayor : public Card::Game {
     void changeNames(const std::vector<Card::Player*>& newPlayer) override;
     void resizeCards() override;
 
-#if 0
-   virtual bool handleMessage (unsigned int player, const std::string& message);
+#ifdef WITH_NETWORK
+    bool handleMessage(unsigned int player, const std::string& message) override;
 #endif
 
   protected:
@@ -82,6 +84,7 @@ class SgtMayor : public Card::Game {
     void exchange(unsigned int playerBad, unsigned int posBad, unsigned int playerGood, unsigned int posGood);
     void exchgBack(unsigned int playerBad, unsigned int playerGood, unsigned int posGood);
     void exchgNext(Card::HPile* pileGood, Card::HPile* pileBad);
+    void showExchangedCard(Card::IPile& pile, unsigned int& pos);
     void doExchangeCards(unsigned int playerBad, unsigned int posBad, unsigned int playerGood, unsigned int posGood);
     void showNeededTricks();
     void showTrump(Card::Widget::COLOURS);
@@ -92,12 +95,28 @@ class SgtMayor : public Card::Game {
     void playCardDelayed(unsigned int player);
     unsigned int playCard(unsigned int player);
     static unsigned int calcNextPlayer(unsigned int player) { return (++player >= NUM_PLAYERS) ? 0 : player; }
+    /// Converts the position of a player in the game (0 .. NUM_PLAYERS - 1;
+    /// 0 is the own position) into its index in the vector of players (which
+    /// might hold more players than the game needs; as seen from the server the
+    /// vector is rotated by its length, the game by NUM_PLAYERS)
+    /// \param player Position of player in the game
+    /// \returns unsigned int Index of the player in actPlayers
     unsigned int convertPlayer(unsigned int player) const {
-        return (((player + posServer) < NUM_PLAYERS) ? player : player + posServer);
+        const unsigned int all(actPlayers.size());
+        return (((player + posServer) % NUM_PLAYERS) + all - posServer) % all;
+    }
+    /// Converts the index of a player in the vector of players into its position
+    /// in the game (the reverse of convertPlayer)
+    /// \param player Index of the player in actPlayers
+    /// \returns unsigned int Position of player in the game
+    unsigned int localPlayer(unsigned int player) const {
+        return (((player + posServer) % actPlayers.size()) + NUM_PLAYERS - posServer) % NUM_PLAYERS;
     }
     static std::string formatNumber(int nr);
-#if 0
-   static bool readCardInfo (Card::Tokenize& src, unsigned long& card, unsigned long& player);
+#ifdef WITH_NETWORK
+    static bool readCardInfo(const Card::MessageField& card, const Card::MessageField& from, unsigned long& idCard,
+                             unsigned long& player);
+    void handleDeferredMessage();
 #endif
 
     //@Section Computer player
@@ -138,6 +157,13 @@ class SgtMayor : public Card::Game {
     Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
     std::unique_ptr<Card::ScoreDlg> pScoreDlg;
+
+#ifdef WITH_NETWORK
+    bool exchanging{false};         ///< Flag, if the (animated) exchange of cards is running
+    bool remoteExchange{false};     ///< Flag, if the message token is kept for a received exchange
+    std::string deferredMsg;        ///< Message received while exchanging cards
+    unsigned int deferredSender{0}; ///< Sender of the deferred message
+#endif
 
     static constexpr std::array<unsigned int, NUM_PLAYERS> COLS_PLAYER{1, 4, 0};
     static constexpr std::array<unsigned int, NUM_PLAYERS> ROWS_PLAYER{6, 1, 1};

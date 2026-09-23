@@ -205,38 +205,37 @@ void GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, cons
     // New style of reading Gnome cards: Get sub-images by identification
     // Does not work with librsvg <= 2.26.0
     GError* error(nullptr);
-    rsvg_init();
-    RsvgHandle* hSVG(rsvg_handle_new_from_file(path.c_str(), &error));
-    if (!hSVG)
-        throw YGP::FileError(error->message);
+    std::unique_ptr<RsvgHandle, decltype(&g_object_unref)> hSVG(rsvg_handle_new_from_file(path.c_str(), &error), g_object_unref);
+    if (!hSVG) {
+        std::string msg(error ? error->message : path);
+        g_clear_error(&error);
+        throw YGP::FileError(msg);
+    }
 
-    if (!rsvg_handle_close(hSVG, &error) || error)
-        throw YGP::FileError(error->message);
-
-    std::string actCard;
-    Glib::RefPtr<Gdk::Pixbuf> actImg;
     static constexpr std::array<const char*, 4> colours{"club", "spade", "heart", "diamond"};
     static constexpr std::array<const char*, 4> numbers{"10", "jack", "queen", "king"};
 
     for (unsigned int c(0); c < colours.size(); ++c)
         for (unsigned int n(0); n < 13; ++n) {
-            actCard = "#";
-            if (n > 8)
-                actCard += numbers[n - 9];
-            else
-                actCard += static_cast<char>('1' + n);
-            actCard += "_";
-            actCard += colours[c];
-            TRACE9("GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, "
-                   "const std::string&) -\n\tCard: "
-                   << actCard);
+            const std::string number((n > 8) ? numbers[n - 9] : std::string(1, static_cast<char>('1' + n)));
 
-            actImg = Glib::wrap(rsvg_handle_get_pixbuf_sub(hSVG, actCard.c_str()));
+            // Current decks name the cards like "#club_1"; old ones like "#1_club"
+            Glib::RefPtr<Gdk::Pixbuf> actImg;
+            for (const std::string& actCard : {"#" + std::string(colours[c]) + '_' + number, "#" + number + '_' + colours[c]}) {
+                TRACE9("GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, "
+                       "const std::string&) -\n\tCard: "
+                       << actCard);
+                if (rsvg_handle_has_sub(hSVG.get(), actCard.c_str())) {
+                    actImg = Glib::wrap(rsvg_handle_get_pixbuf_sub(hSVG.get(), actCard.c_str()));
+                    break;
+                }
+            }
+
             if (actImg)
                 cards[c * 13 + n] = actImg->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
             else {
                 std::string msg(_("Card `%1' not found"));
-                msg.replace(msg.find("%1"), 2, actCard);
+                msg.replace(msg.find("%1"), 2, std::string(colours[c]) + '_' + number);
                 throw YGP::FileError(msg);
             }
         }

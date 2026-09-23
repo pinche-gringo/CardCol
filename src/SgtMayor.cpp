@@ -23,8 +23,11 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <array>
+#include <exception>
 #include <iomanip>
 #include <sstream>
+#include <string>
+#include <string_view>
 
 #include <cardgames-cfg.h>
 
@@ -43,6 +46,7 @@
 
 #include <card/ComputerPlayer.h>
 #include <card/Images.h>
+#include <card/Message.h>
 #include <card/Random.h>
 #include <card/RemotePlayer.h>
 #include <card/ScoreDlg.h>
@@ -62,7 +66,7 @@ unsigned int SgtMayor::ENDTRICKS(10);
 /// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 SgtMayor::SgtMayor(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
-                   unsigned int posPlayer, YGP::Mutex& mxSerialize)
+                   unsigned int posPlayer, Card::MessageLock& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 10, 8),
       played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pTrump(nullptr), bfColours(0),
       startPlayer(Card::randomNumber(NUM_PLAYERS)), menuSort(), menuSort2(), menuShowScoreDlg(), pScoreDlg(nullptr) {
@@ -125,21 +129,37 @@ SgtMayor::~SgtMayor() {
 /// \param player Actual player
 //-----------------------------------------------------------------------------
 void SgtMayor::makeMove(unsigned int player) {
-    if ((player + posServer) >= NUM_PLAYERS)
-        player -= posServer;
+    player = localPlayer(player);
     TRACE5("SgtMayor::makeMove() - Turn of player - " << player);
+    Check1(player < NUM_PLAYERS);
     Check1(gameStatus() == PLAYING);
+    Check2(pTrump);
 
-    pos1Play = findPos2Play(player);
     Card::HPile& pile(players[player].hand);
-    Card::Widget& card(*pile[pos1Play]);
+    unsigned int pos(-1U);
+    if (isShowingCardsToPlay()) { // Card of a remote player; already flipped
+        pos = pos2Play;
+        pos1Play = pos2Play = -1U;
+        Check3(pos < pile.size());
+
+        // Remember, if the player can't follow the colour (and has no trumps)
+        if (played.size() && (pile[pos]->colour() != played[0]->colour())) {
+            bfColours |= ((1 << played[0]->colour()) << (player << 2));
+            if (pile[pos]->colour() != pTrump->colour())
+                bfColours |= ((1 << pTrump->colour()) << (player << 2));
+        }
+    }
+    else {
+        pos = findPos2Play(player);
+        flipCards2Play(pile, pos, pos);
+    }
 
     // Remember card as being played
+    Card::Widget& card(*pile[pos]);
     playedCards[card.colour()].set(card.number());
 
-    TRACE8("SgtMayor::makeMove(unsigned int) - Going to play card at pos " << pos1Play);
-    flipCards2Play(pile, pos1Play, pos1Play);
-    animateCard(played, pile, pos1Play).sigAnimation.connect(bind(mem_fun(*this, &SgtMayor::playCardDelayed), player));
+    TRACE8("SgtMayor::makeMove(unsigned int) - Going to play card at pos " << pos);
+    animateCard(played, pile, pos).sigAnimation.connect(bind(mem_fun(*this, &SgtMayor::playCardDelayed), player));
 }
 
 //-----------------------------------------------------------------------------
@@ -240,6 +260,12 @@ void SgtMayor::clean() {
     menuSort->set_enabled(false);
     menuSort2->set_enabled(false);
 
+#ifdef WITH_NETWORK
+    // Drop a message deferred while exchanging; its (kept) token is released with the next status change
+    deferredMsg.clear();
+    exchanging = remoteExchange = false;
+#endif
+
     played.clear();
     Game::clean();
 }
@@ -317,9 +343,7 @@ void SgtMayor::cardSelected(unsigned int iCard) {
         // Send played card to all clients (if any)
         std::ostringstream msg;
         msg << "Play=" << selCard.id() << ";Target=0";
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-        broadcastMessage(msg.str());
+        sendMove(msg.str());
     }
 
     animateCard(played, pile, iCard).sigAnimation.connect(bind(mem_fun(*this, &SgtMayor::playCardDelayed), 0));
@@ -368,15 +392,18 @@ bool SgtMayor::selectTrump() {
     unsigned int trumpPlayer((startPlayer + 2) % 3);
     if (trumpPlayer) {
         unsigned int displayPlayer(convertPlayer(startPlayer));
+        const Card::Player& player(*actPlayers[convertPlayer(trumpPlayer)]);
         TRACE9("SgtMayor::selectTrump() - Trumpplayer: " << trumpPlayer);
-        if (typeid(*actPlayers[trumpPlayer]) == typeid(Card::RemotePlayer)) {
+        if (typeid(player) == typeid(Card::RemotePlayer)) {
+            // Wait for the Trump-message (see handleMessage)
             status.pop();
             stat = _("Waiting for %1 to select the special colour ...");
-            stat.replace(stat.find("%1"), 2, actPlayers[displayPlayer]->getName());
+            stat.replace(stat.find("%1"), 2, player.getName());
             status.push(stat);
+            return false;
         }
         else {
-            Check3(typeid(*actPlayers[trumpPlayer]) == typeid(Card::ComputerPlayer));
+            Check3(typeid(player) == typeid(Card::ComputerPlayer));
             // Find special colour
             Card::IPile& pile(players[trumpPlayer].hand);
             std::array<int, 4> number{};
@@ -583,8 +610,8 @@ void SgtMayor::changeNames(const std::vector<Card::Player*>& newPlayer) {
 
     std::vector<Card::Player*> player;
     for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
-        player.push_back(actPlayers[(i + posServer) & 0x3]);
-        players[i].name.set_text(actPlayers[i]->getName());
+        player.push_back(actPlayers[convertPlayer(i)]);
+        players[i].name.set_text(player.back()->getName());
     }
 
     if (pScoreDlg)
@@ -599,93 +626,139 @@ void SgtMayor::changeNames(const std::vector<Card::Player*>& newPlayer) {
 //----------------------------------------------------------------------------
 Card::IPile* SgtMayor::getPileOfPlayer(unsigned int player, unsigned int pile) {
     TRACE9("SgtMayor::getPileOfPlayer(2x unsigned int) - Player " << player << "; " << pile);
-    if ((player + posServer) >= NUM_PLAYERS)
-        player -= posServer;
+    player = localPlayer(player);
     Check3(player < NUM_PLAYERS);
     Check3(!pile);
     return ((player >= NUM_PLAYERS) || pile) ? nullptr : &players[player].hand;
 }
 
-#if 0
+#ifdef WITH_NETWORK
 //-----------------------------------------------------------------------------
-/// Reads card- and playernumber from the next tokens
-/// \param src String to analyze
-/// \param card Filled with number of card
-/// \param player Filled with player number
+/// Reads card- and playernumber from the passed fields of a message
+/// \param card Field holding the ID of the card (key is ignored)
+/// \param from Field holding the (absolute) position of the player owning the card
+/// \param idCard Filled with ID of card
+/// \param player Filled with player number (as seen from the server)
 /// \returns bool True, if parsing was successfull
 //-----------------------------------------------------------------------------
-bool SgtMayor::readCardInfo (Card::Tokenize& src, unsigned long& card, unsigned long& player) {
-   std::string strCard (src.getNextNode (';'));
-   std::string from (src.getNextNode ('='));
-   std::string strPlayer (src.getNextNode (';'));
-   if ((from == "From")
-       && !stringToNumber (card, strCard.c_str ())
-       && (card < 52)
-       && !stringToNumber (player, strPlayer.c_str ())
-       && (player < NUM_PLAYERS))
-      return true;
-   return false;
+bool SgtMayor::readCardInfo(const Card::MessageField& card, const Card::MessageField& from, unsigned long& idCard,
+                            unsigned long& player) {
+    return (from.key == "From") && !stringToNumber(idCard, card.value.c_str()) && (idCard < 52) &&
+           !stringToNumber(player, from.value.c_str()) && (player < NUM_PLAYERS);
 }
 
 //----------------------------------------------------------------------------
-/// Handles the messages the server might send for the Sgt.Mayor cardgame
+/// Handles the messages the partners might send for the Sgt.Mayor cardgame:
+///   - <tt>Exchange=<i>ID of good card</i>;From=<i>player</i>;With=<i>ID of bad
+///     card</i>;From=<i>player</i></tt>: A player exchanges a bad card with a
+///     good card of another player (positions are as seen from the server)
+///   - <tt>Trump=<i>colour</i></tt>: The special colour has been selected
+///   - <tt>ActPlayer=<i>player</i></tt> (only clients): Sets the start player
+///     and starts the exchange of the cards
+///   - Everything else is handled by Card::Game::handleMessage
 /// \param player ID of player sending the message
 /// \param message Message received from the server
 /// \returns bool True, if message has been completey processed
-/// \throw YGP::ParseError, YGP::CommError In case of an error an describing text
+/// \throw YGP::ParseError In case of an error an describing text
 //----------------------------------------------------------------------------
-bool SgtMayor::handleMessage (unsigned int player, const std::string& message) {
-   TRACE1 ("SgtMayor::handleMessage (unsigned int player, const std::string&) - "
-	   << message << " (" << player << ')');
-   Card::Tokenize command (message);
-   std::string cmd (command.getNextNode ('='));
+bool SgtMayor::handleMessage(unsigned int player, const std::string& message) {
+    TRACE1("SgtMayor::handleMessage(unsigned int player, const std::string&) - " << message << " (" << player << ')');
 
-   if (cmd == "Exchange") {
-      unsigned long card1, card2;
-      unsigned long player1, player2;
-      if (readCardInfo (command, card1, player1)
-	  && (command.getNextNode ('=') == "With")
-	  && (readCardInfo (command, card2, player2))) {
-	 player1 = (NUM_PLAYERS + player1 - posServer) % NUM_PLAYERS;
-	 player2 = (NUM_PLAYERS + player2 - posServer) % NUM_PLAYERS;
+    // While cards are exchanged (which takes a while, due to the animation) the
+    // next message must wait
+    if (exchanging) {
+        TRACE5("SgtMayor::handleMessage(unsigned int player, const std::string&) - Deferring " << message);
+        Check3(deferredMsg.empty());
+        deferredMsg = message;
+        deferredSender = player;
+        keepMessageLock();
+        return false;
+    }
 
-	 card1 = players[player1].hand.find (static_cast <unsigned int> (card1));
-	 card2 = players[player2].hand.find (static_cast <unsigned int> (card2));
-	 if ((card1 == -1U) || (card2 == -1U))
-	    throw YGP::ParseError (N_("Card not found!"));
+    const std::string_view cmd(Card::commandOf(message));
+    if (cmd == "Exchange") {
+        const auto fields(Card::splitMessage(message));
+        unsigned long card1(0), card2(0);
+        unsigned long player1(0), player2(0);
+        if ((fields.size() < 4) || !readCardInfo(fields[0], fields[1], card1, player1) || (fields[2].key != "With") ||
+            !readCardInfo(fields[2], fields[3], card2, player2))
+            throw YGP::ParseError(N_("Invalid exchange of cards!"));
 
-	 status.pop ();
-	 if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT) {
-	    doExchangeCards (player2, card2, player1, card1);
-	 }
-	 else
-	    exchangeCards (player2, card2, player1, card1);
-	 makeExchange ();
-	 return true;
-      }
-   }
-   else if (cmd == "Trump") {
-      unsigned long trumpColour;
-      if (!stringToNumber (trumpColour, command.getNextNode (';').c_str ())) {
-	 if (getConnectionMgr ().getMode () == YGP::ConnectionMgr::CLIENT)
-	    doShowTrump ((Card::Widget::COLOURS)trumpColour);
-	 else
-	    showTrump ((Card::Widget::COLOURS)trumpColour);
-	 makeNextMoves ();
-	 return true;
-      }
-   }
-   bool rc (Game::handleMessage (player, message));
-   if (cmd == "ActPlayer") {
-      startPlayer = currentPlayer ();
-      if ((startPlayer + posServer - 1) >= NUM_PLAYERS)
-	 startPlayer -= 1;
-      TRACE9 ("SgtMayor::handleMessage (unsigned int player, const std::string&) - Start with "
-	      << startPlayer);
-      showNeededTricks ();
-      makeExchange ();
-   }
-   return rc;
+        // Convert the positions to the own view
+        player1 = (NUM_PLAYERS + player1 - posServer) % NUM_PLAYERS;
+        player2 = (NUM_PLAYERS + player2 - posServer) % NUM_PLAYERS;
+        if (pTrump || (player1 == player2) || (diffTricks[player1] >= 0) || (diffTricks[player2] <= 0))
+            throw YGP::ParseError(N_("Invalid exchange of cards!"));
+
+        const int pos1(players[player1].hand.find(static_cast<unsigned int>(card1)));
+        const int pos2(players[player2].hand.find(static_cast<unsigned int>(card2)));
+        if ((pos1 == -1) || (pos2 == -1))
+            throw YGP::ParseError(N_("Card not found!"));
+
+        // The server informs the (other) clients about the exchange
+        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
+            doExchangeCards(player2, pos2, player1, pos1);
+        else
+            exchangeCards(player2, pos2, player1, pos1);
+
+        // Wait with the next message til the exchange is finished (exchgNext)
+        remoteExchange = true;
+        keepMessageLock();
+        return false;
+    }
+    else if (cmd == "Trump") {
+        const auto fields(Card::splitMessage(message));
+        unsigned long trumpColour(0);
+        if (stringToNumber(trumpColour, fields.at(0).value.c_str()) || (trumpColour > Card::Widget::HEARTS) || pTrump ||
+            diffTricks[0] || diffTricks[1] || diffTricks[2])
+            throw YGP::ParseError(N_("Invalid special colour!"));
+
+        // The server informs the (other) clients about the special colour
+        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
+            doShowTrump(static_cast<Card::Widget::COLOURS>(trumpColour));
+        else
+            showTrump(static_cast<Card::Widget::COLOURS>(trumpColour));
+        makeNextMoves();
+        return true;
+    }
+
+    bool rc(Game::handleMessage(player, message));
+
+    // The client starts exchanging the cards, after receiving the startplayer
+    if ((cmd == "ActPlayer") && (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)) {
+        startPlayer = localPlayer(currentPlayer());
+        TRACE9("SgtMayor::handleMessage(unsigned int player, const std::string&) - Start with " << startPlayer);
+        showNeededTricks();
+        makeExchange();
+    }
+    return rc;
+}
+
+//----------------------------------------------------------------------------
+/// Handles the message received while exchanging cards
+//----------------------------------------------------------------------------
+void SgtMayor::handleDeferredMessage() {
+    Check3(deferredMsg.size());
+    Check3(!exchanging);
+
+    std::string msg;
+    msg.swap(deferredMsg);
+    TRACE5("SgtMayor::handleDeferredMessage() - " << msg);
+    try {
+        // The token is still kept for the message; so release it if processed
+        if (handleMessage(deferredSender, msg))
+            releaseMessageLock();
+    }
+    catch (std::exception& error) {
+        releaseMessageLock();
+
+        Glib::ustring err(_("Error processing command `%1'!\n\n%2"));
+        err.replace(err.find("%1"), 2, msg);
+        err.replace(err.find("%2"), 2, _(error.what()));
+        Gtk::MessageDialog dlg(err, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
+        dlg.set_title(PACKAGE);
+        XGP::runModal(dlg);
+    }
 }
 #endif
 
@@ -697,12 +770,9 @@ bool SgtMayor::handleMessage (unsigned int player, const std::string& message) {
 void SgtMayor::showTrump(Card::Widget::COLOURS colour) {
     TRACE9("SgtMayor::showTrump(Card::Widget::COLOURS) - " << colour);
     if (getConnectionMgr().getMode() != YGP::ConnectionMgr::NONE) {
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-
         std::ostringstream msg;
         msg << "Trump=" << colour;
-        broadcastMessage(msg.str());
+        sendMove(msg.str());
     }
 
     doShowTrump(colour);
@@ -789,7 +859,7 @@ unsigned int SgtMayor::playCard(unsigned int player) {
         player = calcNextPlayer(player);
 
     if (players[player].hand.size()) {
-        Check3((posServer + player) < actPlayers.size());
+        Check3(convertPlayer(player) < actPlayers.size());
         displayTurn(convertPlayer(player));
         return player;
     }
@@ -811,7 +881,7 @@ unsigned int SgtMayor::playCard(unsigned int player) {
         // Resort player for score dialogue
         std::vector<Card::Player*> player;
         for (unsigned int i(0); i < NUM_PLAYERS; ++i)
-            player.push_back(actPlayers[i]);
+            player.push_back(actPlayers[convertPlayer(i)]);
 
         pScoreDlg.reset(Card::ScoreDlg::create(player));
         Gtk::Window* win(dynamic_cast<Gtk::Window*>(get_root()));
@@ -917,8 +987,10 @@ void SgtMayor::makeExchange() {
                     if (i % NUM_PLAYERS) {
                         if ((getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT) ||
                             (typeid(*actPlayers[convertPlayer(i % NUM_PLAYERS)]) == typeid(Card::RemotePlayer))) {
+                            // Wait for the Exchange-message (see handleMessage)
                             Glib::ustring msg(_("Waiting for %1 to exchange cards ..."));
                             msg.replace(msg.find("%1"), 2, actPlayers[convertPlayer(i % NUM_PLAYERS)]->getName());
+                            status.pop();
                             status.push(msg);
                         }
                         else
@@ -1003,8 +1075,9 @@ void SgtMayor::exchange(unsigned int playerBad, unsigned int posBad, unsigned in
     TRACE9("SgtMayor::exchange(4x unsigned int ) - Player " << playerBad << " and " << playerGood << " exchange "
                                                             << *pileBad[posBad] << " and " << *pileGood[posGood]);
 
+    // Show the human the card he gets
     if (!playerGood)
-        flipCards2Play(pileBad, posBad, posBad);
+        showExchangedCard(pileBad, posBad);
     animateCard(pileGood, pileBad, posBad)
         .sigAnimation.connect(bind(mem_fun(*this, &SgtMayor::exchgBack), playerBad, playerGood, posGood));
 }
@@ -1020,8 +1093,21 @@ void SgtMayor::exchgBack(unsigned int playerBad, unsigned int playerGood, unsign
     Card::HPile& pileBad(players[playerBad].hand);
 
     if (!playerBad)
-        flipCards2Play(pileGood, posGood, posGood);
+        showExchangedCard(pileGood, posGood);
     animateCard(pileBad, pileGood, posGood).sigAnimation.connect(bind(mem_fun(*this, &SgtMayor::exchgNext), &pileGood, &pileBad));
+}
+
+//-----------------------------------------------------------------------------
+/// Shows the face of a card, which is given to the human while exchanging cards
+/// \param pile Pile holding the card
+/// \param pos Position of the card in the pile; updated if the card is moved
+//-----------------------------------------------------------------------------
+void SgtMayor::showExchangedCard(Card::IPile& pile, unsigned int& pos) {
+    // The server must not use flipCards2Play, as that informs the clients about playing the card
+    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+        pile[pos]->showFace();
+    else
+        flipCards2Play(pile, pos, pos);
 }
 
 //-----------------------------------------------------------------------------
@@ -1034,7 +1120,21 @@ void SgtMayor::exchgNext(Card::HPile* pileGood, Card::HPile* pileBad) {
     Check1(pileBad);
     pileBad->sortByColour();
     pileGood->sortByColour();
+
+#ifdef WITH_NETWORK
+    exchanging = false;
+#endif
     makeExchange();
+
+#ifdef WITH_NETWORK
+    // A received exchange has been finished; continue with the next message
+    if (remoteExchange) {
+        remoteExchange = false;
+        releaseMessageLock();
+    }
+    if (deferredMsg.size())
+        handleDeferredMessage();
+#endif
 }
 
 //----------------------------------------------------------------------------
@@ -1079,9 +1179,7 @@ void SgtMayor::exchangeCards(unsigned int playerBad, unsigned int posBad, unsign
         msg << "Exchange=" << players[playerGood].hand[posGood]->id() << ";From=" << (playerGood + posServer) % NUM_PLAYERS
             << ";With=" << players[playerBad].hand[posBad]->id() << ";From=" << (playerBad + posServer) % NUM_PLAYERS;
 
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-        broadcastMessage(msg.str());
+        sendMove(msg.str());
     }
     doExchangeCards(playerBad, posBad, playerGood, posGood);
 }
@@ -1108,6 +1206,9 @@ void SgtMayor::doExchangeCards(unsigned int playerBad, unsigned int posBad, unsi
     --diffTricks[playerBad];
     ++diffTricks[playerGood];
 
+#ifdef WITH_NETWORK
+    exchanging = true;
+#endif
     exchange(playerBad, posBad, playerGood, posGood);
 }
 

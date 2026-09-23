@@ -28,10 +28,10 @@
 
 #include <YGP/ConnMgr.h>
 #include <YGP/Exception.h>
-#include <YGP/Mutex.h>
 #include <YGP/Thread.h>
 
 #include <card/Images.h>
+#include <card/MessageLock.h>
 #include <card/Pile.h>
 #include <card/Set.h>
 
@@ -66,7 +66,7 @@ class CardgameCollection : public XGP::XApplication {
     Card::Set& getCards() { return cards; }
     const std::vector<Card::Player*>& getPlayer() const { return aPlayer; }
     YGP::ConnectionMgr& getConnectionMgr() { return cmgr; };
-    YGP::Mutex& getClientMutex() { return mxThreadCmd; }
+    Card::MessageLock& getClientMutex() { return mxThreadCmd; }
     unsigned int getPlayerPosition() const { return playerPos; }
 
 #ifdef WITH_ROVHULT
@@ -151,11 +151,10 @@ class CardgameCollection : public XGP::XApplication {
 #ifdef WITH_NETWORK
     using THRDAPPL = YGP::OThread<CardgameCollection>;
     std::vector<THRDAPPL*> aCommThreads;
-    YGP::Mutex mxGuiCmd;
 
     ChatDlg* dlgChat;
 #endif
-    YGP::Mutex mxThreadCmd;
+    Card::MessageLock mxThreadCmd; ///< Serialises the processing of received messages
     YGP::ConnectionMgr cmgr;
     unsigned int playerPos;
 

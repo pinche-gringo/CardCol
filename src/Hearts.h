@@ -42,7 +42,7 @@ class Hearts : public Card::Game {
 
   public:
     Hearts(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
-           unsigned int posPlayer, YGP::Mutex& mxSerialize);
+           unsigned int posPlayer, Card::MessageLock& mxSerialize);
     ~Hearts() override;
 
     void start() override;
@@ -87,6 +87,7 @@ class Hearts : public Card::Game {
     void finishMove();
     void takeWonCards(unsigned int player);
     bool cardsExchanged(unsigned int cards);
+    bool allCardsExchanged();
     static unsigned int numberOfCards(const ColourPositions& aPositions, Card::Widget::COLOURS colour);
     static unsigned int pointsOfPile(const Card::IPile& pile);
 

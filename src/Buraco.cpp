@@ -61,6 +61,7 @@
 #include <card/ComputerPlayer.h>
 #include <card/Human.h>
 #include <card/Images.h>
+#include <card/Message.h>
 #include <card/Random.h>
 #include <card/ScoreDlg.h>
 #include <card/Window.h>
@@ -85,7 +86,7 @@ namespace {
 /// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Buraco::Buraco(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
-               unsigned int posPlayer, YGP::Mutex& mxSerialize)
+               unsigned int posPlayer, Card::MessageLock& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10), nameTeams(), startPlayer(-1U), info(),
       newPile(_("New pile")), staple(Card::IPile::TOTALLY_COMPRESSED, Card::IPile::SHOWBACK),
       dumped(Card::IPile::TOTALLY_COMPRESSED, Card::IPile::SHOWFACE), dumpedTop(), stapleTop(), aDNDHand(), aDNDTable(),
@@ -297,9 +298,7 @@ void Buraco::playCards() {
                 std::ostringstream msg;
                 msg << "Play=" << dumpedCard.id() << ";Target=3";
 
-                if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-                    ignoreNextMsg = true;
-                broadcastMessage(msg.str());
+                sendMove(msg.str());
             }
 
             playerPile.insertSorted(dumped.removeTopCard(), compByNumberWithJokers);
@@ -343,7 +342,17 @@ void Buraco::playCards() {
 
                 // Put taken card back for animation
                 dumped.setTopCard(playerPile.remove(dumpedCard));
+
+                // The partners receive the picked up card (as card in the hand; see above), the
+                // cards of the hand to play to the new pile and then the picked up card to add to it
+                const unsigned int newPos(tablePiles[player & 1].size() << 16);
+                target = newPos;
                 flipCards2Play(playerPile, pos1Play, pos2Play);
+                if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
+                    std::ostringstream msg;
+                    msg << "Play=" << dumpedCard.id() << ";Target=" << newPos + posTarget + 100;
+                    broadcastMessage(msg.str());
+                }
 
                 BuracoPile& newPile(makeNewPile(player & 1));
                 Card::PileWindows& win(animateCards2(newPile, playerPile, pos1Play, pos2Play));
@@ -358,9 +367,7 @@ void Buraco::playCards() {
                 std::ostringstream msg;
                 msg << "Play=" << staple.getTopCard().id() << ";Target=2";
 
-                if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-                    ignoreNextMsg = true;
-                broadcastMessage(msg.str());
+                sendMove(msg.str());
             }
 
             playerPile.insertSorted(staple.removeTopCard(), compByNumberWithJokers);
@@ -396,11 +403,26 @@ void Buraco::endTurn(unsigned int player, unsigned int card2Dump) {
     Check1(playerPile.size() > card2Dump);
 
     gStatus.startTurn = 1;
-    animateCard(dumped, playerPile, card2Dump).sigAnimation.connect(mem_fun(*this, &Buraco::makeNextMoves));
+    animateCard(dumped, playerPile, card2Dump).sigAnimation.connect(mem_fun(*this, &Buraco::turnEnded));
 
     ++player &= 0x3;
     displayTurn(player);
     setNextPlayer(player);
+}
+
+//-----------------------------------------------------------------------------
+/// Actions after the card to end the turn has been dumped: Cleans up the
+/// cards of the player who ended the turn (removing a cerrado, giving him the
+/// reserve or ending the game, if he has no cards left) and activates the next
+/// player.
+/// \remarks The cleanup must be done here (and not only when the next player
+///     starts his turn), as the next player might be a remote player, whose
+///     moves are only received.
+//-----------------------------------------------------------------------------
+void Buraco::turnEnded() {
+    TRACE8("Buraco::turnEnded() - Next player: " << currentPlayer());
+    if ((gameStatus() != PLAYING) || !cleanup())
+        makeNextMoves();
 }
 
 //-----------------------------------------------------------------------------
@@ -594,13 +616,20 @@ void Buraco::start() {
         unfinishedMonoPiles[0] = unfinishedMonoPiles[1] = 0;
         updateInfo();
 
+#ifdef WITH_NETWORK
+        movedPile = -1U;
+
+        // A client waits for the server to send the startplayer (see handleMessage)
+        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT) {
+            dumped.getTopCard().hide();
+            return;
+        }
+#endif
+
         // Set random startplayer (if not already set)
         if (startPlayer == -1U)
             startPlayer = Card::randomNumber(4);
         setStartPlayer();
-
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            dumped.getTopCard().hide();
     }
 }
 
@@ -754,28 +783,16 @@ void Buraco::cardSelected(unsigned int iCard) {
         std::ostringstream msg;
         msg << "Play=" << hands[0][iCard]->id() << ";Target=1";
 
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-        broadcastMessage(msg.str());
+        sendMove(msg.str());
     }
 
+    // If the player has no more cards left (except of jokers) he gets the
+    // reserve (or the game ends) after the card has been dumped (see turnEnded).
+    // Remark: This can't be done here, as the dumped card is still in the hand
+    // (until the animation ends), which would also move it.
     unregisterHandDND(*hands[0][iCard]);
-    animateCard(dumped, hands[0], iCard).sigAnimation.connect(mem_fun(*this, &Buraco::makeNextMoves));
+    animateCard(dumped, hands[0], iCard).sigAnimation.connect(mem_fun(*this, &Buraco::turnEnded));
     menuUndo->set_enabled(false);
-
-    // If the player has no more cards left (except of jokers): Give him the
-    // reserve
-    if (containsOnlyJoker(hands[0])) {
-        if (!reserve[0].empty()) {
-            Game::disableHuman();
-            addBuraco(0);
-        }
-        else if (hands[0].empty()) {
-            points[0] += 100;
-            endGame();
-            return;
-        }
-    }
 
     gStatus.startTurn = 1;
     setNextPlayer(1);
@@ -816,9 +833,7 @@ void Buraco::doStapleSelected() {
             std::ostringstream msg;
             msg << "Play=" << staple.getTopCard().id() << ";Target=2";
 
-            if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-                ignoreNextMsg = true;
-            broadcastMessage(msg.str());
+            sendMove(msg.str());
         }
 
         unsigned int player(currentPlayer());
@@ -887,9 +902,7 @@ void Buraco::doDelayedDumpedSelected() {
             std::ostringstream msg;
             msg << "Play=" << card.id() << ";Target=3";
 
-            if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-                ignoreNextMsg = true;
-            broadcastMessage(msg.str());
+            sendMove(msg.str());
         }
 
         // Special handling of player starting the game and can choose one of the
@@ -907,9 +920,7 @@ void Buraco::doDelayedDumpedSelected() {
                 std::ostringstream msg;
                 msg << "Play=" << card.id() << ";Target=" << (tablePiles[0].size() << 16) + 100;
 
-                if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-                    ++ignoreNextMsg;
-                broadcastMessage(msg.str());
+                sendMove(msg.str());
             }
 
             // Create new pile with picked up card
@@ -1219,9 +1230,7 @@ bool Buraco::cardDroppedOnTable(const Glib::ValueBase& value, double, double, un
         if (getConnectionMgr().getMode() != YGP::ConnectionMgr::NONE) {
             std::ostringstream msg;
             msg << "Play=" << moved.id() << ";Target=" << (iPile << 16) + iCard + 100;
-            if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-                ignoreNextMsg = true;
-            broadcastMessage(msg.str());
+            sendMove(msg.str());
         }
 
         pile->insert(moved, iCard);
@@ -1627,9 +1636,7 @@ void Buraco::sendMoveCard(unsigned int pile, unsigned int from, unsigned int to)
         std::ostringstream msg;
         msg << "Move=" << from << ";To=" << to << ";Pile=" << pile;
 
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            const_cast<Buraco*>(this)->ignoreNextMsg = true;
-        broadcastMessage(msg.str());
+        sendMove(msg.str());
     }
 }
 
@@ -2016,149 +2023,337 @@ void Buraco::changeNames(const std::vector<Card::Player*>& newPlayer) {
 }
 
 //----------------------------------------------------------------------------
-/// Returns the passed pile of the player
+/// Returns the pile from which the passed player plays cards to the passed
+/// target
 /// \param player Number of player
-/// \param pile ID of the pile to return
-/// \returns Card::IPile* Pointer to pile to use or NULL
+/// \param pile ID of the target (see handleMessage)
+/// \returns Card::IPile* Pointer to pile to use or NULL, if the target is
+///     invalid
 //----------------------------------------------------------------------------
 Card::IPile* Buraco::getPileOfPlayer(unsigned int player, unsigned int pile) {
-    if (((pile > 3) && (pile < 100)) || (player >= NUM_PLAYERS))
+    if (player >= NUM_PLAYERS)
         return nullptr;
 
-    if ((pile >= 100) && (pile != -1U)) {
-        if (pile != 0xffff0000) {
-            pile -= 100;
-            if ((pile >> 16) > tablePiles[player & 1].size())
-                return nullptr;
-
-            if ((pile >> 16) == tablePiles[player & 1].size()) {
-                TRACE8("Buraco::getPileOfPlayer(unsigned int, unsigned int) - Creating pile");
-                makeNewPile(player & 1);
-            }
-        }
-        // TODO: What? target = pile;
+    switch (pile) {
+    case 1:
         return &hands[player];
+    case 2:
+        return &staple;
+    case 3:
+        return &dumped;
+    default:
+        // Cards played to a pile on the table (an existing or a new one)
+        return ((pile >= 100) && (((pile - 100) >> 16) <= tablePiles[player & 1].size())) ? &hands[player] : nullptr;
     }
-    return &((pile == 2) ? static_cast<Card::IPile&>(staple)
-                         : ((pile == 3) ? static_cast<Card::IPile&>(dumped) : static_cast<Card::IPile&>(hands[player])));
 }
 
 //----------------------------------------------------------------------------
-/// Handles the messages the server might send for the Buraco cardgame
+/// Handles the messages the partners send for the Buraco cardgame. Those are
+/// (additionally to the ones handled by Card::Game):
+///   - <tt>Play=</tt><i>IDs of cards</i><tt>;Target=</tt><i>target</i>: The
+///     player in turn plays the (blank-separated) cards to the target, which
+///     is one of:
+///       - 1: Dumps the (one) card from his hand; ending his turn.
+///       - 2: Takes the top card of the staple into his hand.
+///       - 3: Takes the top card of the dumped cards into his hand. If this is
+///            not the first move of the game, he picks up the dumped cards:
+///            He must play the taken card (with others) to a new pile; the
+///            remaining dumped cards are added to his hand, as soon as that
+///            pile holds (at least) 3 cards.
+///       - (<i>pile</i> << 16) + <i>pos</i> + 100: Plays the cards from his
+///            hand to the position of the pile (of his team). If \c pile is
+///            the number of existing piles, a new pile is created.
+///   - <tt>Move=</tt><i>from</i><tt>;To=</tt><i>to</i><tt>;Pile=</tt><i>pile</i>:
+///     Moves a card (a joker) within the pile of the team of the player in
+///     turn; followed by playing a card to that pile.
+///   - <tt>Undo</tt>: Undoes the last card the (human) player in turn played
+///     to the table.
+///
+/// The server passes the moves of a client on to all clients. Implicit
+/// consequences of moves (removing a cerrado, getting the dumped cards or the
+/// reserve, ending the game) are performed by every partner itself.
 /// \param player ID of the player sending the message
-/// \param message Message received from the server
+/// \param message Message received from the partner
 /// \returns bool True, if message has been processed completey
 //----------------------------------------------------------------------------
 bool Buraco::handleMessage([[maybe_unused]] unsigned int player, [[maybe_unused]] const std::string& message) {
     TRACE1("Buraco::handleMessage(unsigned int player, const std::string&) - " << message << " (" << player << ')');
 
-    bool rc(true);
-#if 0
-   Card::Tokenize command(message);
-   std::string cmd(command.getNextNode('='));
+#ifdef WITH_NETWORK
+    const std::string_view cmd(Card::commandOf(message));
+    if ((cmd == "Play") || (cmd == "Move") || (cmd == "Undo")) {
+        if (gameStatus() == PLAYING)
+            return (cmd == "Play") ? playRemoteCards(player, message)
+                                   : ((cmd == "Move") ? moveRemoteCard(player, message) : undoRemoteMove(player));
 
-   if (cmd == "Undo") {
-      // Inform clients about cards to play
-      if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
-          broadcastMessage(cmd);
+        if (gameStatus() > INITIALIZING) {
+            TRACE1("Buraco::handleMessage(unsigned int player, const std::string&) - Game stopped; ignoring " << message);
+            return true;
+        }
+    }
+#endif
 
-      undoLast(player);
-   }
-   else if (cmd == "Move") {
-      YGP::AttributeParse ap;
-      unsigned int card(-1U), dest(-1U), iPile(-1U);
-      ATTRIBUTE(ap, unsigned int, card, "Move");
-      ATTRIBUTE(ap, unsigned int, dest, "To");
-      ATTRIBUTE(ap, unsigned int, iPile, "Pile");
-      ap.assignValues(message);
-
-      if (iPile >= tablePiles[currentPlayer() & 1].size ())
-         throw YGP::ParseError(N_("Invalid pile!"));
-      Card::IPile& pile(*tablePiles[currentPlayer() & 1][iPile]);
-      if ((card >= pile.size()) || (dest >= pile.size()))
-         throw YGP::ParseError(N_("Invalid card!"));
-
-      pile.move(dest, card);
-   }
-   else {
-      rc = Game::handleMessage(player, message);
-      if (cmd == "ActPlayer") {
-         TRACE1("Buraco::handleMessage(unsigned int player, const std::string&) - Next player: " << currentPlayer());
-
-         startPlayer = currentPlayer();
-         setStartPlayer();
-      }
-   }
+    bool rc(Game::handleMessage(player, message));
+#ifdef WITH_NETWORK
+    // The client starts playing, after receiving the startplayer
+    if ((cmd == "ActPlayer") && (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT) && (gameStatus() == PLAYING)) {
+        TRACE1("Buraco::handleMessage(unsigned int player, const std::string&) - Start player: " << currentPlayer());
+        startPlayer = currentPlayer();
+        setStartPlayer();
+    }
 #endif
     return rc;
 }
 
+#ifdef WITH_NETWORK
 //----------------------------------------------------------------------------
-/// Executes the remote move locally
-/// \param pile Pile to move to/from
-/// \param dest ID of target as send by the partner
-/// \returns bool True, if the timer to execute the move should be set
-/// \pre Expects \c pos1Play and \c pos2Play to be set to the positions to play
-/// \remarks
-///    - \c dest == 0: Computerplayer playing its card
-///    - \c dest == 1: Play from hand to dumped
-///    - \c dest == 2: Pick up from staple
-///    - \c dest == 3: Pick up from dumped pile
-///    - \c dest == 100 + pile/card: Played from hand to table pile \c pile
+/// Returns the player in turn, after checking that he can make the received
+/// move
+/// \param sender ID of the player sending the message
+/// \returns unsigned int Player in turn
+/// \throw YGP::ParseError If the player in turn can't have sent the move
 //----------------------------------------------------------------------------
-bool Buraco::executeRemoteMove(Card::IPile& /*pile*/, unsigned int dest) {
-    TRACE8("Buraco::executeRemoteMove(Card::IPile&, unsigned int) - " << dest);
-    Check1((dest < 4) || (dest >= 100));
-    Check2(pos1Play != -1U);
-    Check2(pos2Play != -1U);
+unsigned int Buraco::getRemotePlayer(unsigned int sender) const {
+    const unsigned int player(currentPlayer());
 
+    // The own moves are never received; a server receives the moves of a
+    // client only from that client
+    if (!player || (player >= NUM_PLAYERS) ||
+        ((getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) && (sender != player)))
+        throw YGP::ParseError(N_("Received a move of a player not in turn!"));
+    return player;
+}
+
+//----------------------------------------------------------------------------
+/// Executes the received move of a remote player (or a computer player of the
+/// server): Plays the passed cards to the passed target
+/// \param sender ID of the player sending the message
+/// \param message Message describing the move: <tt>Play=</tt><i>IDs of
+///     cards</i><tt>;Target=</tt><i>target</i> (see handleMessage)
+/// \returns bool False, as the (animated) move is still pending; the game
+///     continues, after it has been finished
+/// \throw YGP::ParseError In case of an invalid move
+//----------------------------------------------------------------------------
+bool Buraco::playRemoteCards(unsigned int sender, const std::string& message) {
+    TRACE3("Buraco::playRemoteCards(unsigned int, const std::string&) - " << message);
+
+    const auto fields(Card::splitMessage(message));
+    unsigned long dest(0);
+    if ((fields.size() < 2) || (fields[1].key != "Target") || stringToNumber(dest, fields[1].value.c_str()) ||
+        (dest != static_cast<unsigned int>(dest)))
+        throw YGP::ParseError(N_("Invalid target!"));
+
+    const unsigned int player(getRemotePlayer(sender));
+    const unsigned int team(player & 1);
+    Card::IPile* src(getPileOfPlayer(player, dest));
+    if (!src)
+        throw YGP::ParseError(N_("Invalid target!"));
+
+    // Check the move
+    Card::HPile& hand(hands[player]);
+    const auto ids(Card::words(fields[0].value));
+    unsigned int iPile(-1U), pos(0);
+    if (src == &hand) {
+        if (dest != 1) {
+            iPile = (dest - 100) >> 16;
+            pos = (dest - 100) & 0xffff;
+            const BuracoPile* pile((iPile < tablePiles[team].size()) ? tablePiles[team][iPile].get() : nullptr);
+            if (pile ? (!pile->get_visible() || (pos > pile->size()) || ((pile->size() + ids.size()) > 7))
+                     : (pos || (ids.size() > 7)))
+                throw YGP::ParseError(N_("Invalid target!"));
+        }
+        else if (ids.size() != 1)
+            throw YGP::ParseError(N_("Invalid card specification!"));
+
+        // Move the cards to play to the end of the hand (sets pos1Play/pos2Play)
+        if (ids.empty() || (ids.size() > hand.size()))
+            throw YGP::ParseError(N_("Card not found!"));
+        flipCards2Play(hand, fields[0].value);
+    }
+    else {
+        // The top card of the staple/the dumped cards is taken (the cards are
+        // identified by their ID; and several cards might have the same)
+        unsigned long id(0);
+        if ((ids.size() != 1) || stringToNumber(id, ids[0].c_str()) || src->empty() || (src->getTopCard().id() != id))
+            throw YGP::ParseError(N_("Card not found!"));
+    }
+
+    // Inform the other clients (the sender ignores the echo)
+    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+        broadcastMessage(message);
+
+    const unsigned int first(pos1Play), last(pos2Play);
+    pos1Play = pos2Play = -1U;
     switch (dest) {
     case 1:
-        Check3(pos1Play == pos2Play);
-        gStatus.startGame = gStatus.startTurn = 0;
-        endTurn(currentPlayer(), pos1Play);
+        Check3(first == last);
+        gStatus.startGame = 0;
+        endTurn(player, first);
         break;
 
-    case 2: {
-        unsigned int player(currentPlayer());
-        Card::Window& win(animateCard(hands[player], staple, staple.size() - 1));
-        if (!player)
-            win.sigAnimation.connect(mem_fun(*this, &Buraco::enableHumanHand));
-        break;
-    }
-
+    case 2:
     case 3:
-        doDumpedSelected();
-        break;
-
-    default:
-        if (dest != 0xffff0000) {
-            if (((dest >> 16) >= tablePiles[currentPlayer() & 1].size()) ||
-                (tablePiles[currentPlayer() & 1][dest >> 16]->size() < (dest & 0xffff)))
-                throw YGP::ParseError(N_("Invalid target specification!"));
-            unsigned int player(currentPlayer());
-
-            Check3(pos1Play != -1U);
-            Check3(pos2Play != -1U);
-            Check2(pos1Play <= pos2Play);
-            Check2(pos2Play < hands[player].size());
-            if (pos1Play == pos2Play)
-                undo.assign(dest >> 16, dest & 0xffff, pos1Play);
-
-            animateCards(*tablePiles[player & 1][dest >> 16], dest & 0xff, hands[player], pos1Play, pos2Play)
-                .sigAnimation.connect(mem_fun(*this, &Buraco::makeNextMoves));
+        startRemoteTurn(player);
+        if (dest == 3) {
+            if (!gStatus.startGame && (dumped.size() > 1))
+                gStatus.pickUpPlayed = 1;
+            dumped.getTopCard().show();
         }
+        else if (gStatus.startGame && dumped.size()) // The first dumped card is not secret anymore
+            dumped.getTopCard().show();
+        gStatus.startGame = 0;
+
+        animateCard(hand, *src, src->size() - 1).sigAnimation.connect(sigc::bind(mem_fun(*this, &Buraco::remoteMoveDone), -1U));
         break;
+
+    default: {
+        BuracoPile& pile((iPile < tablePiles[team].size()) ? *tablePiles[team][iPile] : makeNewPile(team));
+
+        // Count the started piles of monos (like the players do it themselves)
+        if (isJoker(*hand[first]) &&
+            (pile.empty() ? ((last > first) &&
+                             std::all_of(hand.begin() + first, hand.end(), [](const Card::Widget* c) { return isJoker(*c); }))
+                          : ((pile.size() == 1) && isJoker(pile.getTopCard()))))
+            ++unfinishedMonoPiles[team];
+
+        if (first == last) {
+            undo.assign(iPile, pos, first);
+            if (movedPile == iPile)
+                undo.monoPos = movedFrom;
+        }
+        animateCards(pile, pos, hand, first, last)
+            .sigAnimation.connect(sigc::bind(mem_fun(*this, &Buraco::remoteMoveDone), iPile));
+    }
     }
 
+    movedPile = -1U;
+    keepMessageLock();
     return false;
 }
 
 //----------------------------------------------------------------------------
-/// Returns the actual target, where flipCard2Play should position the cards to
-/// \returns unsigned int ID of the target
+/// Executes the received move of a card (a joker) within a pile on the table
+/// \param sender ID of the player sending the message
+/// \param message Message describing the move: <tt>Move=</tt><i>from</i>
+///     <tt>;To=</tt><i>to</i><tt>;Pile=</tt><i>pile</i>
+/// \returns bool True, as the move has been completely processed
+/// \throw YGP::ParseError In case of an invalid move
 //----------------------------------------------------------------------------
-unsigned int Buraco::getActTarget() const { return target; }
+bool Buraco::moveRemoteCard(unsigned int sender, const std::string& message) {
+    TRACE3("Buraco::moveRemoteCard(unsigned int, const std::string&) - " << message);
+
+    unsigned long from(-1UL), to(-1UL), iPile(-1UL);
+    for (const auto& field : Card::splitMessage(message)) {
+        unsigned long* value((field.key == "Move") ? &from
+                                                   : ((field.key == "To") ? &to : ((field.key == "Pile") ? &iPile : nullptr)));
+        if (!value || stringToNumber(*value, field.value.c_str()))
+            throw YGP::ParseError(N_("Invalid move!"));
+    }
+
+    const unsigned int player(getRemotePlayer(sender));
+    if (iPile >= tablePiles[player & 1].size())
+        throw YGP::ParseError(N_("Invalid pile!"));
+    BuracoPile& pile(*tablePiles[player & 1][iPile]);
+    if ((from >= pile.size()) || (to >= pile.size()))
+        throw YGP::ParseError(N_("Invalid card!"));
+
+    // Inform the other clients (the sender ignores the echo)
+    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+        broadcastMessage(message);
+
+    pile.move(static_cast<unsigned int>(to), static_cast<unsigned int>(from));
+    movedPile = static_cast<unsigned int>(iPile);
+    movedFrom = static_cast<unsigned int>(from);
+    return true;
+}
+
+//----------------------------------------------------------------------------
+/// Undoes the last move to the table of the (remote) player in turn
+/// \param sender ID of the player sending the message
+/// \returns bool True, as the undo has been completely processed
+/// \throw YGP::ParseError If there is nothing to undo
+//----------------------------------------------------------------------------
+bool Buraco::undoRemoteMove(unsigned int sender) {
+    const unsigned int player(getRemotePlayer(sender));
+    const auto& piles(tablePiles[player & 1]);
+    if ((undo.destPile >= piles.size()) || (undo.destPos >= piles[undo.destPile]->size()) ||
+        (undo.pickUp && (hands[player].size() < CARDS2DEAL)))
+        throw YGP::ParseError(N_("Nothing to undo!"));
+
+    // Inform the other clients (the sender ignores the echo)
+    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+        broadcastMessage("Undo");
+
+    undoLast(player);
+    return true;
+}
+
+//----------------------------------------------------------------------------
+/// Performs the actions at the start of the turn of a remote player (like
+/// playCards does it for a computer player)
+/// \param player Player in turn
+//----------------------------------------------------------------------------
+void Buraco::startRemoteTurn(unsigned int player) {
+    if (gStatus.startTurn) {
+        TRACE5("Buraco::startRemoteTurn(unsigned int) - " << player);
+        gStatus.startTurn = 0;
+
+        if (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) == (player >> 1))
+            ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = 0x3;
+    }
+}
+
+//----------------------------------------------------------------------------
+/// Actions after a received move has been executed (animated): Performs the
+/// implicit consequences of the move (like the player did it himself) and
+/// continues the game.
+/// \param pile Pile of the team of the player in turn the cards have been
+///     played to; -1U if a card has been taken into the hand
+//----------------------------------------------------------------------------
+void Buraco::remoteMoveDone(unsigned int pile) {
+    TRACE5("Buraco::remoteMoveDone(unsigned int) - " << pile);
+    if (gameStatus() == STOPPED) // Game has been stopped meanwhile
+        return;
+
+    if ((pile != -1U) && (gameStatus() == PLAYING)) {
+        const unsigned int player(currentPlayer());
+        const unsigned int team(player & 1);
+        Check3(pile < tablePiles[team].size());
+
+        cleanCerrado(player);
+
+        // The pile with the picked up card is complete: Take the dumped cards
+        if (gStatus.pickUpPlayed && (tablePiles[team][pile]->size() > 2)) {
+            gStatus.pickUpPlayed = 0;
+            if (dumped.size()) {
+                hands[player].getCards(dumped);
+                hands[player].sort(compByNumberWithJokers);
+            }
+        }
+
+        // If the player has no more cards left (except of jokers): Give him the
+        // reserve or end the game
+        if (containsOnlyJoker(hands[player]) &&
+            std::ranges::all_of(tablePiles[team], [](const auto& p) { return p->size() > 2; })) {
+            if (!reserve[team].empty())
+                addBuraco(player);
+            else if (hands[player].empty()) {
+                points[team] += 100;
+                endGame();
+                return;
+            }
+        }
+    }
+    makeNextMoves();
+}
+#endif
+
+//----------------------------------------------------------------------------
+/// Returns the actual target, where flipCard2Play should position the cards to
+/// \returns unsigned int ID of the target (in the format of the Play-message;
+///     see handleMessage)
+//----------------------------------------------------------------------------
+unsigned int Buraco::getActTarget() const { return (target == -1U) ? 1 : (target + 100); }
 
 //-----------------------------------------------------------------------------
 /// Adds buraco-specific menus
@@ -2218,9 +2413,7 @@ void Buraco::removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr
 //-----------------------------------------------------------------------------
 void Buraco::undoMove() {
     if (getConnectionMgr().getMode() != YGP::ConnectionMgr::NONE) {
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-            ignoreNextMsg = true;
-        broadcastMessage("Undo");
+        sendMove("Undo");
     }
 
     undoLast(0);
@@ -2235,12 +2428,14 @@ void Buraco::undoLast(unsigned int player) {
     if (!player)
         disableHuman();
 
+    // Return the reserve (which has been inserted at the start of the hand)
     if (undo.pickUp) {
-        Check3(reserve[0].empty());
-        Check3(hands[player].size() > 10);
+        Check3(reserve[player & 1].empty());
+        Check3(hands[player].size() >= CARDS2DEAL);
 
-        for (unsigned int i(0); i < 12; ++i)
+        for (unsigned int i(0); i < CARDS2DEAL; ++i)
             reserve[player & 1].push_back(&hands[player].remove(0));
+        updateInfo();
     }
 
     Check3(undo.destPile < tablePiles[player & 1].size());
@@ -2267,7 +2462,8 @@ void Buraco::undoLast(unsigned int player) {
         src.move(undo.monoPos, src.getPosJoker());
 
     menuUndo->set_enabled(false);
-    enableHumanHand();
+    if (!player) // The undo of a remote player just changes the table
+        enableHumanHand();
 }
 
 //-----------------------------------------------------------------------------

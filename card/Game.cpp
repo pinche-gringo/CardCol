@@ -62,13 +62,6 @@
 
 namespace {
 
-/// Returns (lazily) the blank-separated words of the passed text
-/// \param text Text to split
-auto words(std::string_view text) {
-    return text | std::views::split(' ') | std::views::filter([](auto word) { return !word.empty(); }) |
-           std::views::transform([](auto word) { return std::string(std::string_view(word)); });
-}
-
 //----------------------------------------------------------------------------
 /// Writes a message to the partner
 /// \param socket Socket to write message to
@@ -120,9 +113,9 @@ namespace Card {
 /// \param columns Number of columns needed by game
 //-----------------------------------------------------------------------------
 Game::Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset, const std::vector<Player*>& player, unsigned int posPlayer,
-           YGP::Mutex& mxSerialize, unsigned int, unsigned int)
+           MessageLock& mxSerialize, unsigned int, unsigned int)
     : Gtk::Grid(), status(statusbar), cards(cardset), activeCards(), actPlayers(player), mxSerializeMsgs(mxSerialize),
-      posServer(posPlayer), pos2Play(-1U), pos1Play(-1U), ignoreNextMsg(0), data(nullptr), statGame(NONE), actPlayer(0), stati(),
+      posServer(posPlayer), pos2Play(-1U), pos1Play(-1U), data(nullptr), statGame(NONE), actPlayer(0), stati(),
       wonCards(), pWonPile(nullptr), pMenuPopSort(nullptr), cardOrder() {
     TRACE3("Game::Game(Gtk::Box&, Gtk::Statusbar&, set&, std::vector<Player*>,"
            "unsinged int, unsigned int)");
@@ -137,7 +130,7 @@ Game::Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset, const std:
     set_margin(5);
     insert_before(parent, statusbar);
 
-    stati.pendingTurn = stati.restart = 0;
+    stati.pendingTurn = stati.restart = stati.remoteMove = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -228,14 +221,14 @@ bool Game::randomiseCardsToPile(IPile& pile) const {
         try {
             ap.assignValues(input);
 
-            auto positions(words(input));
+            const auto positions(Card::words(input));
             auto act(positions.begin());
             TRACE8("Game::randomiseCardsToPile(IPile&) - Cards: " << cards.size());
             for (unsigned int i(0); i < (cards.size() - 1); ++i, ++act) {
                 unsigned long pos(0);
 
                 // Read next token; the value must be a number
-                if ((act == positions.end()) || stringToNumber(pos, (*act).c_str()) || (pos >= cards.size())) {
+                if ((act == positions.end()) || stringToNumber(pos, act->c_str()) || (pos >= cards.size())) {
                     std::string error(N_("Invalid card specification!"));
                     throw YGP::ParseError(error);
                 }
@@ -280,6 +273,7 @@ bool Game::randomiseCardsToPile(IPile& pile) const {
 //-----------------------------------------------------------------------------
 void Game::clean() {
     TRACE8("Game::clean()");
+    echoes.clear();
     disableHuman();
     disableWonCards();
 }
@@ -288,6 +282,7 @@ void Game::clean() {
 /// Activates the next player
 //-----------------------------------------------------------------------------
 void Game::makeNextMoves() {
+    releaseMessageLock();
     if (actPlayer >= 0) {
         TRACE8("Game::makeNextMoves() - " << actPlayer);
         Check3(actPlayer < static_cast<int>(actPlayers.size()));
@@ -312,11 +307,22 @@ void Game::makeNextMoves() {
 //-----------------------------------------------------------------------------
 bool Game::endRemoteMove(unsigned int player) {
     TRACE8("Game::endRemoteMove() - " << player);
-    makeMove(player);
-    mxSerializeMsgs.unlock();
+    // Like for a computer player the game continues by itself after the move
+    // (which might be animated); the message token is released then
     stati.pendingTurn = 0;
-    makeNextMoves();
+    makeMove(player);
     return false;
+}
+
+//-----------------------------------------------------------------------------
+/// Releases the message token, if kept for a remote move
+//-----------------------------------------------------------------------------
+void Game::releaseMessageLock() {
+    if (stati.remoteMove) {
+        TRACE8("Game::releaseMessageLock()");
+        stati.remoteMove = 0;
+        mxSerializeMsgs.unlock();
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -371,6 +377,7 @@ void Game::displayTurn(unsigned int player, const Glib::ustring& preText) {
 /// \param newStatus Status to set
 //-----------------------------------------------------------------------------
 void Game::setGameStatus(unsigned int newStatus) {
+    releaseMessageLock();
     statGame = newStatus;
     control(statGame);
 }
@@ -622,6 +629,17 @@ void Game::broadcastMessage(const std::string& msg) const {
 }
 
 //----------------------------------------------------------------------------
+/// Sends a move of the local player to the partners. The server relays it
+/// (unchanged) to all its clients, so a client ignores its echo.
+/// \param msg Message describing the move
+//----------------------------------------------------------------------------
+void Game::sendMove(const std::string& msg) const {
+    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
+        echoes.push_back(msg);
+    broadcastMessage(msg);
+}
+
+//----------------------------------------------------------------------------
 /// Writes a set-startplayer message to all clients
 /// \param startplayer Startplayer
 //----------------------------------------------------------------------------
@@ -631,12 +649,13 @@ void Game::broadcastStartPlayer(unsigned int startplayer) {
     if (cmgr.getMode() == YGP::ConnectionMgr::SERVER) {
         TRACE3("Game::broadcastStartPlayer(unsigned int) - " << startplayer);
 
-        unsigned int player((startplayer - 1) & 0x3);
+        // Client n sits at position n + 1 (as seen from the server); send the startplayer relative to it
+        const unsigned int players(actPlayers.size());
+        unsigned int pos(1);
         for (const auto& client : cmgr.getClients()) {
             std::ostringstream msg;
-            msg << "ActPlayer=" << player;
+            msg << "ActPlayer=" << ((startplayer + players - pos++ % players) % players);
             writeMessage(*client, msg.str());
-            player = (player - 1) & 0x3;
         }
     }
 }
@@ -654,7 +673,6 @@ bool Game::handleMessage(unsigned int player, const std::string& msg) {
     Check2(!data);
 
     bool rc(true);
-    Check2(!ignoreNextMsg);
     switch (statGame) {
     case NONE:
         statGame = INITIALIZING;
@@ -691,57 +709,52 @@ bool Game::performCommand([[maybe_unused]] unsigned int player, [[maybe_unused]]
     TRACE8("Game::performCommand(unsigned int player, const std::string&) - " << msg << " (" << player << ')');
     Check1(msg.size());
 
-#if 0 // Only needed for network functionality
-   Tokenize command(msg);
-   std::string cmd(command.getNextNode('='));
-   TRACE2("Game::performCommand(unsigned int player, const std::string&) - " << cmd);
+#ifdef WITH_NETWORK
+    const auto fields(splitMessage(msg));
+    const std::string& cmd(fields.at(0).key);
+    TRACE2("Game::performCommand(unsigned int player, const std::string&) - " << cmd);
 
-   if (cmd == "Play") {
-      cmd = command.getNextNode(';');
-      std::string playTo(command.getNextNode('='));
-      std::string strTarget(command.getNextNode(';'));
+    if (cmd == "Play") {
+        // Play=<IDs of cards>;Target=<target>
+        unsigned long target(-1UL);
+        if ((fields.size() < 2) || (fields[1].key != "Target") || stringToNumber(target, fields[1].value.c_str()))
+            throw YGP::ParseError(N_("Invalid target!"));
 
-      unsigned long target(-1UL);
-      if (stringToNumber(target, strTarget.c_str()) || (playTo != "Target"))
-         throw YGP::ParseError(N_("Invalid target!"));
+        Check3(actPlayer >= 0);
+        IPile* pile(getPileOfPlayer(actPlayer, target));
+        if (!pile)
+            throw YGP::ParseError(N_("Invalid target!"));
+        flipCards2Play(*pile, fields[0].value);
 
-      Check3(actPlayer >= 0);
-      IPile* pile(getPileOfPlayer(actPlayer, target));
-      if (!pile)
-         throw YGP::ParseError(N_("Invalid target!"));
-      flipCards2Play(*pile, cmd);
+        // Inform clients about cards to play
+        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+            broadcastMessage(msg);
 
-      // Inform clients about cards to play
-      if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
-          broadcastMessage(msg);
+        if (executeRemoteMove(*pile, target)) {
+            Glib::signal_timeout().connect([this, player = actPlayer] { return endRemoteMove(player); }, ComputerPlayer::TIMEOUT);
+            stati.pendingTurn = 1;
+            keepMessageLock();
+            return false;
+        }
+        makeNextMoves();
+    }
+    else if (cmd == "ActPlayer") {
+        unsigned long next(0);
+        if (stringToNumber(next, fields[0].value.c_str()) || (next >= actPlayers.size()))
+            throw YGP::ParseError(N_("Invalid number"));
+        TRACE8("Game::performCommand(unsigned int player, const std::string&) - Next player: " << next);
 
-      if (executeRemoteMove(*pile, target)) {
-         Glib::signal_timeout().connect(bind(mem_fun(*this, &Game::endRemoteMove), actPlayer),
-                                        ComputerPlayer::TIMEOUT);
-         stati.pendingTurn = 1;
-         return false;
-      }
-      else
-         makeNextMoves();
-   }
-   else if (cmd == "ActPlayer") {
-      cmd = command.getNextNode(';');
-      TRACE8("Game::performCommand(unsigned int player, const std::string&) - Next player: " << cmd);
-      unsigned long player;
-      if (stringToNumber(player, cmd.c_str()))
-         throw YGP::ParseError(N_("Invalid number"));
-
-      actPlayer = player;
-      if (statGame == PLAYING)
-         displayTurn(player);
-   }
-   else if (cmd == "End") {
-      end(false);
-      if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
-         broadcastMessage("End");
-   }
-   else
-      throw YGP::ParseError(N_("Unknown command!"));
+        actPlayer = next;
+        if (statGame == PLAYING)
+            displayTurn(next);
+    }
+    else if (cmd == "End") {
+        end(false);
+        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+            broadcastMessage("End");
+    }
+    else
+        throw YGP::ParseError(N_("Unknown command!"));
 #endif
     return true;
 }
@@ -779,14 +792,15 @@ bool Game::executeRemoteMove(IPile& /*pile*/, unsigned int /*card*/) {
 bool Game::canBeStopped() const { return !(actPlayer && stati.pendingTurn); }
 
 //----------------------------------------------------------------------------
-/// Checks if the game should ignore a message. If so, the count of messages
-/// to ignore is reduced by 1.
-/// \returns bool True, if a message should be ignored
+/// Checks if the game should ignore a message: The server echoes the moves a
+/// client sends (see sendMove) to all clients, so the client must ignore them.
+/// \param msg Received message
+/// \returns bool True, if the message should be ignored
 //----------------------------------------------------------------------------
-bool Game::ignoreMessage() {
-    if (ignoreNextMsg) {
-        TRACE9("Game::ignoreMessage() - Ignoring " << ignoreNextMsg);
-        --ignoreNextMsg;
+bool Game::ignoreMessage(const std::string& msg) {
+    if (!echoes.empty() && (echoes.front() == msg)) {
+        TRACE9("Game::ignoreMessage(const std::string&) - Ignoring " << msg);
+        echoes.pop_front();
         return true;
     }
     return false;

@@ -45,6 +45,7 @@
 
 #include <card/ComputerPlayer.h>
 #include <card/Images.h>
+#include <card/Message.h>
 #include <card/ScoreDlg.h>
 #include <card/Window.h>
 
@@ -78,7 +79,7 @@ template <class T> T& createPile(std::unique_ptr<Card::IPile>& owner) {
 /// \param mxSerialize Mutex to serialize messages from the server
 //-----------------------------------------------------------------------------
 Hearts::Hearts(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
-               unsigned int posPlayer, YGP::Mutex& mxSerialize)
+               unsigned int posPlayer, Card::MessageLock& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 18, 12), playedSQ(false), player2Exchange(3),
       played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pScoreDlg(nullptr), menuSort(), menuSort2(), menuShowScoreDlg() {
     TRACE9("Hearts::Hearts(Box&, Statusbar&, Card::Set&, ...");
@@ -145,16 +146,23 @@ void Hearts::makeMove(unsigned int player) {
     Check1(gameStatus() == PLAYING);
 
     Card::IPile& pile(*players[player].hand);
-    unsigned int pos2Play(findPos2Play(player));
-    TRACE8("Hearts::makeMove(unsigned int) - Going to play card at pos " << pos2Play);
-    Check3(pos2Play < pile.size());
+    unsigned int pos(-1U);
+    if (isShowingCardsToPlay()) { // Card of a remote player; already flipped
+        pos = pos2Play;
+        pos1Play = pos2Play = -1U;
+    }
+    else {
+        pos = findPos2Play(player);
+        flipCards2Play(pile, pos, pos);
+    }
+    TRACE8("Hearts::makeMove(unsigned int) - Going to play card at pos " << pos);
+    Check3(pos < pile.size());
 
-    aPlayed[pile[pos2Play]->colour()]++;
-    if ((pile[pos2Play]->colour() == Card::Widget::SPADES) && (pile[pos2Play]->number() == Card::Widget::QUEEN))
+    aPlayed[pile[pos]->colour()]++;
+    if ((pile[pos]->colour() == Card::Widget::SPADES) && (pile[pos]->number() == Card::Widget::QUEEN))
         playedSQ = true;
 
-    flipCards2Play(pile, pos2Play, pos2Play);
-    animateCard(played, pile, pos2Play).sigAnimation.connect(mem_fun(*this, &Hearts::finishMove));
+    animateCard(played, pile, pos).sigAnimation.connect(mem_fun(*this, &Hearts::finishMove));
 }
 
 //-----------------------------------------------------------------------------
@@ -340,9 +348,7 @@ void Hearts::cardSelected(unsigned int iCard) {
                 // Send played card to all clients (if any)
                 std::ostringstream msg;
                 msg << "Play=" << played[played.size() - 1]->id() << ";Target=0";
-                if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
-                    ignoreNextMsg = true;
-                broadcastMessage(msg.str());
+                sendMove(msg.str());
             }
         }
         else {
@@ -361,8 +367,7 @@ void Hearts::cardSelected(unsigned int iCard) {
                         << ";Player=" << posServer;
                     broadcastMessage(msg.str());
 
-                    YGP::ConnectionMgr& cmgr(getConnectionMgr());
-                    if ((cmgr.getMode() == YGP::ConnectionMgr::SERVER) && cardsExchanged((cmgr.getClients().size() + 1) * 3)) {
+                    if (allCardsExchanged()) {
                         exchangeCards();
                         return;
                     }
@@ -958,57 +963,48 @@ Card::IPile* Hearts::getPileOfPlayer(unsigned int player, unsigned int pile) {
 /// \returns bool True, if message has been completey processed
 //----------------------------------------------------------------------------
 bool Hearts::handleMessage(unsigned int player, const std::string& message) {
-#if 0
-   if (gameStatus() == EXCHANGE) {
-      TRACE1("Hearts::handleMessage(unsigned int player, const std::string&) - " << message << " (" << player << ')');
+#ifdef WITH_NETWORK
+    // Exchange=<IDs of cards>;Player=<position of player (as seen from the server)>
+    if ((gameStatus() == EXCHANGE) && (Card::commandOf(message) == "Exchange")) {
+        TRACE1("Hearts::handleMessage(unsigned int player, const std::string&) - " << message << " (" << player << ')');
 
-      Card::Tokenize command(message);
-      std::string cmd(command.getNextNode('='));
+        const auto fields(Card::splitMessage(message));
+        unsigned long lPlayer(player);
+        if ((fields.size() >= 2) && (fields[1].key == "Player") && !stringToNumber(lPlayer, fields[1].value.c_str()) &&
+            (lPlayer < NUM_PLAYERS)) {
+            // The server receives the exchanges of the clients directly; a client all over the server
+            Check3((getConnectionMgr().getMode() != YGP::ConnectionMgr::SERVER) || (lPlayer == player));
 
-      if (cmd == "Exchange") {
-         std::string cards(command.getNextNode(';'));
-         cmd = command.getNextNode('=');
-         unsigned long lPlayer(player);
-         if ((cmd == "Player")
-             && !stringToNumber(lPlayer, command.getNextNode(';').c_str())
-             && (lPlayer < NUM_PLAYERS)) {
-            Check3(player ? (lPlayer == player) : true);
-
-            const unsigned int save(lPlayer);
+            const unsigned int sender(lPlayer);
             lPlayer = (lPlayer - posServer) & 0x3;
 
-            // Don't exchange already exchanged cards
-            if (save != posServer) {
-               command = cards;
-               unsigned long card(0);
-               while (command.getNextNode(' ').size()) {
-                  if (stringToNumber(card, command.getActNode().c_str()))
-                     break;
+            // Don't exchange already exchanged cards (the own ones, echoed by the server)
+            if (sender != posServer) {
+                for (const auto& id : Card::words(fields[0].value)) {
+                    unsigned long card(0);
+                    if (stringToNumber(card, id.c_str()))
+                        throw YGP::ParseError(N_("Invalid card specification!"));
 
-                  TRACE9("Hearts::handleMessage(unsigned int, const std::string&) - " << lPlayer << ": " << card);
-                  card = players[lPlayer].hand->find(static_cast<unsigned int>(card));
-                  Check3(card < players[lPlayer].hand->size());
-                  if (card != -1U)
-                     aExchange[lPlayer].getCards(*players[lPlayer].hand, card, card);
-               }
+                    TRACE9("Hearts::handleMessage(unsigned int, const std::string&) - " << lPlayer << ": " << card);
+                    const int pos(players[lPlayer].hand->find(static_cast<unsigned int>(card)));
+                    if (pos == -1)
+                        throw YGP::ParseError(N_("Card not found!"));
+                    aExchange[lPlayer].getCards(*players[lPlayer].hand, pos, pos);
+                }
             }
 
-            TRACE2("Hearts::handleMessage(unsigned int player, const std::string&) - Exchanged: "
-                   << aExchange[lPlayer].size() << " cards");
+            TRACE2("Hearts::handleMessage(unsigned int player, const std::string&) - Exchanged: " << aExchange[lPlayer].size()
+                                                                                                  << " cards");
             if (aExchange[lPlayer].size() == 3) {
-               YGP::ConnectionMgr& cmgr(getConnectionMgr());
-               // Inform other clients
-               if (cmgr.getMode() == YGP::ConnectionMgr::SERVER)
-                  broadcastMessage(message);
-
-               if (cardsExchanged(((cmgr.getMode() == YGP::ConnectionMgr::SERVER)
-                                   ? (cmgr.getClients().size() + 1) : NUM_PLAYERS) * 3))
-                  exchangeCards();
+                // Inform other clients
+                if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+                    broadcastMessage(message);
+                if (allCardsExchanged())
+                    exchangeCards();
             }
             return true;
-         }
-      }
-   }
+        }
+    }
 #endif
     return Game::handleMessage(player, message);
 }
@@ -1027,6 +1023,18 @@ bool Hearts::cardsExchanged(unsigned int cards) {
 
     TRACE9("Hearts::cardsExchanged(unsigned int) - Remaining: " << cards);
     return !(cards - played.size());
+}
+
+//----------------------------------------------------------------------------
+/// Checks if all players, which exchange their cards interactively, did so.
+/// The server waits for its own and the remote players (its computer players
+/// exchange their cards afterwards), while a client waits for all players.
+/// \returns bool True, if all cards have been exchanged
+/// \pre Game must be in EXCHANGE state
+//----------------------------------------------------------------------------
+bool Hearts::allCardsExchanged() {
+    const YGP::ConnectionMgr& cmgr(getConnectionMgr());
+    return cardsExchanged(((cmgr.getMode() == YGP::ConnectionMgr::SERVER) ? (cmgr.getClients().size() + 1) : NUM_PLAYERS) * 3);
 }
 
 //-----------------------------------------------------------------------------

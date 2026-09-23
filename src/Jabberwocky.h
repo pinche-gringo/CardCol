@@ -48,7 +48,7 @@ class SimpleActionGroup;
 class Jabberwocky : public Card::Game {
   public:
     Jabberwocky(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
-                unsigned int posPlayer, YGP::Mutex& mxSerialize);
+                unsigned int posPlayer, Card::MessageLock& mxSerialize);
     ~Jabberwocky() override;
 
     void start() override;

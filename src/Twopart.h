@@ -38,7 +38,7 @@ class Twopart : public Card::Game {
   public:
     // Manager functions
     Twopart(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& players,
-            unsigned int posPlayer, YGP::Mutex& mxSerialize);
+            unsigned int posPlayer, Card::MessageLock& mxSerialize);
     ~Twopart() override;
 
     void start() override;

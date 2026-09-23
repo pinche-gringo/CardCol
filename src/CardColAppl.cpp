@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <locale>
 #include <string>
 
 #include <gtkmm/application.h>
@@ -403,6 +404,10 @@ int CardgameAppl::perform(int, const char**) {
 
     // Every start is an independent instance (e.g. to play a network game against oneself)
     Glib::RefPtr<Gtk::Application> gtkapp(Gtk::Application::create(APPLICATION_ID, Gio::Application::Flags::NON_UNIQUE));
+
+    // glibmm sets the C++ global locale to the user's one; but numbers formatted by streams are exchanged with
+    // the network partners (and written to files), so they must not use locale-dependent (thousands) separators
+    std::locale::global(std::locale(std::locale(), std::locale::classic(), std::locale::numeric));
 
     // Keyboard accelerators (replacing the per-Gtk::Action Gtk::AccelKey of GTK3;
     // the keys of New, End, Quit and SavePrefs were provided by Gtk::Stock)

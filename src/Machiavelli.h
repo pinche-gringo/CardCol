@@ -20,6 +20,7 @@
 #include <map>
 #include <memory>
 #include <stack>
+#include <utility>
 #include <vector>
 
 #include <gtkmm/button.h>
@@ -40,7 +41,6 @@
 
 // Forward declarations
 namespace YGP {
-class Mutex;
 class CardSet;
 class StatusObject;
 } // namespace YGP
@@ -56,7 +56,7 @@ class Statusbar;
 class Machiavelli : public Card::Game {
   public:
     Machiavelli(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
-                unsigned int posPlayer, YGP::Mutex& mxSerialize);
+                unsigned int posPlayer, Card::MessageLock& mxSerialize);
     ~Machiavelli() override;
 
     void start() override;
@@ -92,13 +92,14 @@ class Machiavelli : public Card::Game {
 
     /// \name Helper methods
     //@{
-    void setStartPlayer();
+    bool setStartPlayer();
     unsigned int findNextPlayer(unsigned int player) const;
     MachiPile& makeNewPile();
     MachiPile& makeNewPile(unsigned int pos);
     void removePile(unsigned int pile);
     bool showCardsToPlay(unsigned int player);
-    void dealCard(unsigned int player);
+    bool dealCard(unsigned int player);
+    void addTableMove(unsigned int pile, unsigned int first, unsigned int nr, unsigned int destPile, unsigned int destPos);
     void checkPiles(YGP::StatusObject& obj, bool mark = false) const;
     void endGame(unsigned int looser);
     bool playSerie(Card::IPile& playerPile);
@@ -139,6 +140,16 @@ class Machiavelli : public Card::Game {
 
     void endComputerMove();
 
+#ifdef WITH_NETWORK
+    /// \name Execution of received moves
+    //@{
+    void playRemoteCards(unsigned int player);
+    bool reorderRemote(const std::string& message);
+    void endRemoteReorder(MachiPile* src);
+    void moveRemote(const std::string& message);
+    //@}
+#endif
+
     std::array<Gtk::Label, NUM_PLAYERS> names;  // Names of the player
     std::array<Card::HPile, NUM_PLAYERS> hands; // For all players: Cards in hand
 
@@ -159,12 +170,19 @@ class Machiavelli : public Card::Game {
     std::map<Card::Widget*, CONNECTIONS> aDNDHand;
     std::map<Card::Widget*, CONNECTIONS> aDNDTable;
 
-    unsigned int target; // Target of the last move of the computer player
+    unsigned int target; // Target ((pile << 16) + position) of the cards to play (from a hand)
+
+    /// Cards the computer player moves between the piles on the table during
+    /// its actual move (the first value describes the source like
+    /// (number of cards << 16) + (pile << 8) + first card, the second the
+    /// target like (pile << 16) + position); they are sent to the clients
+    /// (as Reorder messages) after the cards played from the hand
+    std::vector<std::pair<unsigned int, unsigned int>> posPiles;
 
     // Structure holding undo-information
     struct undoValue {
-        unsigned int destPos : 4;
-        unsigned int srcPos : 4;
+        unsigned int destPos : 8;
+        unsigned int srcPos : 8;
         unsigned int destPile : 8;
         unsigned int srcPile : 8;
         unsigned int number : 4;
