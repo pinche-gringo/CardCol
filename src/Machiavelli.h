@@ -1,8 +1,6 @@
 #ifndef MACHIAVELLI_H
 #define MACHIAVELLI_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,16 +16,15 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
+#include <deque>
 #include <map>
 #include <stack>
 #include <vector>
-#include <deque>
 
-#include <gtkmm/label.h>
 #include <gtkmm/button.h>
 #include <gtkmm/dragsource.h>
 #include <gtkmm/droptarget.h>
+#include <gtkmm/label.h>
 #include <gtkmm/scrolledwindow.h>
 
 #include <giomm/simpleaction.h>
@@ -35,178 +32,169 @@
 #include <XGP/AutoContainer.h>
 
 #include <card/Game.h>
-#include <card/Window.h>
 #include <card/Widget.h>
+#include <card/Window.h>
 
 #include "MachiPile.h"
 
-
 // Forward declarations
 namespace YGP {
-   class Mutex;
-   class CardSet;
-   class StatusObject;
-}
+class Mutex;
+class CardSet;
+class StatusObject;
+} // namespace YGP
 namespace XGP {
-   class MessageDlg;
+class MessageDlg;
 }
 namespace Gtk {
-   class Statusbar;
+class Statusbar;
 }
-
 
 /**Class handling the Machiavelli cardgame
  */
 class Machiavelli : public Card::Game {
- public:
-   Machiavelli (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
-                const std::vector<Card::Player*>& player, unsigned int posPlayer,
-                YGP::Mutex& mxSerialize);
-   virtual ~Machiavelli ();
+  public:
+    Machiavelli(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
+                unsigned int posPlayer, YGP::Mutex& mxSerialize);
+    virtual ~Machiavelli();
 
-   virtual void start ();
-   virtual void clean ();
-   virtual const char* name () { return "Machiavelli"; }
-   virtual void playOpen (bool);
+    virtual void start();
+    virtual void clean();
+    virtual const char* name() { return "Machiavelli"; }
+    virtual void playOpen(bool);
 
-   virtual void addMenus (const Glib::RefPtr<Gio::Menu>& menu,
-                          const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
-   virtual void removeMenus (const Glib::RefPtr<Gio::Menu>& menu,
-                             const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+    virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+    virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
 
-   virtual unsigned int numberOfDecks () const { return 4; }
-   virtual void resizeCards ();
+    virtual unsigned int numberOfDecks() const { return 4; }
+    virtual void resizeCards();
 
-   virtual bool handleMessage (unsigned int player, const std::string& msg);
+    virtual bool handleMessage(unsigned int player, const std::string& msg);
 
- private:
-   Machiavelli ();
-   Machiavelli (const Machiavelli& other);
-   const Machiavelli& operator= (const Machiavelli& other);
+  private:
+    Machiavelli();
+    Machiavelli(const Machiavelli& other);
+    const Machiavelli& operator=(const Machiavelli& other);
 
-   static const unsigned int NUM_PLAYERS = 4;              // Number of players
+    static const unsigned int NUM_PLAYERS = 4; // Number of players
 
-   /// \name Virtual methods
-   //@{
-   virtual void makeMove (unsigned int player);
-   virtual bool enableHuman ();
-   virtual void disableHuman ();
-   void changeNames (const std::vector<Card::Player*>& newPlayer);
+    /// \name Virtual methods
+    //@{
+    virtual void makeMove(unsigned int player);
+    virtual bool enableHuman();
+    virtual void disableHuman();
+    void changeNames(const std::vector<Card::Player*>& newPlayer);
 
-   virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
-   virtual unsigned int getActTarget () const;
-   //@}
+    virtual Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile);
+    virtual unsigned int getActTarget() const;
+    //@}
 
-   /// \name Helper methods
-   //@{
-   void setStartPlayer ();
-   unsigned int findNextPlayer (unsigned int player) const;
-   MachiPile& makeNewPile ();
-   MachiPile& makeNewPile (unsigned int pos);
-   void removePile (unsigned int pile);
-   bool showCardsToPlay (unsigned int player);
-   void dealCard (unsigned int player);
-   void checkPiles (YGP::StatusObject& obj, bool mark = false) const;
-   void endGame (unsigned int looser);
-   bool playSerie (Card::IPile& playerPile);
-   bool cardFitsOnPile (const Card::Widget& card, unsigned int offset);
-   bool reorderTableToFit (Card::IPile& playerPile);
-   bool reorderTableToFit2 (Card::IPile& playerPile);
-   bool reorderTableToFit3 (Card::IPile& playerPile);
-   bool reorderTableToFit4 ();
-   void addBorderCards2Missing (unsigned int iPile, unsigned int which = -1U);
-   //@}
+    /// \name Helper methods
+    //@{
+    void setStartPlayer();
+    unsigned int findNextPlayer(unsigned int player) const;
+    MachiPile& makeNewPile();
+    MachiPile& makeNewPile(unsigned int pos);
+    void removePile(unsigned int pile);
+    bool showCardsToPlay(unsigned int player);
+    void dealCard(unsigned int player);
+    void checkPiles(YGP::StatusObject& obj, bool mark = false) const;
+    void endGame(unsigned int looser);
+    bool playSerie(Card::IPile& playerPile);
+    bool cardFitsOnPile(const Card::Widget& card, unsigned int offset);
+    bool reorderTableToFit(Card::IPile& playerPile);
+    bool reorderTableToFit2(Card::IPile& playerPile);
+    bool reorderTableToFit3(Card::IPile& playerPile);
+    bool reorderTableToFit4();
+    void addBorderCards2Missing(unsigned int iPile, unsigned int which = -1U);
+    //@}
 
-   /// \name Drag-and-drop methods
-   //@{
-   void registerTableDND (unsigned int pile, unsigned int start, unsigned int end);
-   void registerTableDND (Card::Widget& card, unsigned int nr);
-   void unregisterTableDND (Card::Widget& card);
-   void unregisterTableDND ();
-   void registerHandDND (unsigned int start, unsigned int end);
-   void registerHandDND (unsigned int iCard);
-   void unregisterHandDND (Card::Widget& card);
+    /// \name Drag-and-drop methods
+    //@{
+    void registerTableDND(unsigned int pile, unsigned int start, unsigned int end);
+    void registerTableDND(Card::Widget& card, unsigned int nr);
+    void unregisterTableDND(Card::Widget& card);
+    void unregisterTableDND();
+    void registerHandDND(unsigned int start, unsigned int end);
+    void registerHandDND(unsigned int iCard);
+    void unregisterHandDND(Card::Widget& card);
 
-   bool cardDropped (const Glib::ValueBase& value, unsigned int card);
-   bool cardDroppedOnTable (const Glib::ValueBase& value, unsigned int cardPile);
+    bool cardDropped(const Glib::ValueBase& value, unsigned int card);
+    bool cardDroppedOnTable(const Glib::ValueBase& value, unsigned int cardPile);
 
-   bool doRegisterHand (unsigned int first, unsigned int last);
-   //@}
+    bool doRegisterHand(unsigned int first, unsigned int last);
+    //@}
 
-   /// \name Callback from events
-   //@{
-   void unmarkAndEnd (MachiPile* pile);
-   void endTurn ();
-   void doEndTurn ();
-   void undoMove (unsigned int number);
-   void removeUndoDlg (int);
-   void sortHand ();
-   void sortHandByColour ();
-   //@}
+    /// \name Callback from events
+    //@{
+    void unmarkAndEnd(MachiPile* pile);
+    void endTurn();
+    void doEndTurn();
+    void undoMove(unsigned int number);
+    void removeUndoDlg(int);
+    void sortHand();
+    void sortHandByColour();
+    //@}
 
-   void endComputerMove ();
+    void endComputerMove();
 
-   Gtk::Label names[NUM_PLAYERS];                        // Names of the player
-   Card::HPile  hands[NUM_PLAYERS];           // For all players: Cards in hand
+    Gtk::Label names[NUM_PLAYERS];  // Names of the player
+    Card::HPile hands[NUM_PLAYERS]; // For all players: Cards in hand
 
-   XGP::AutoContainer piles;                              // Piles on the table
-   std::vector<MachiPile*> tablePiles;     // Piles on table; for faster access
+    XGP::AutoContainer piles;           // Piles on the table
+    std::vector<MachiPile*> tablePiles; // Piles on table; for faster access
 
-   unsigned int startPlayer;
+    unsigned int startPlayer;
 
-   Gtk::Label       newPile;
-   Glib::RefPtr<Gtk::DropTarget> dstNewPile;
-   Card::VInfoPile    staple;
-   Gtk::Button      nextTurn;
+    Gtk::Label newPile;
+    Glib::RefPtr<Gtk::DropTarget> dstNewPile;
+    Card::VInfoPile staple;
+    Gtk::Button nextTurn;
 
-   typedef struct {
-      Glib::RefPtr<Gtk::DragSource> src;
-      Glib::RefPtr<Gtk::DropTarget> dst;
-   } CONNECTIONS;
-   std::map<Card::Widget*, CONNECTIONS> aDNDHand;
-   std::map<Card::Widget*, CONNECTIONS> aDNDTable;
+    typedef struct {
+        Glib::RefPtr<Gtk::DragSource> src;
+        Glib::RefPtr<Gtk::DropTarget> dst;
+    } CONNECTIONS;
+    std::map<Card::Widget*, CONNECTIONS> aDNDHand;
+    std::map<Card::Widget*, CONNECTIONS> aDNDTable;
 
-   unsigned int target;       // Target of the last move of the computer player
+    unsigned int target; // Target of the last move of the computer player
 
-   // Structure holding undo-information
-   typedef struct undoValue {
-      unsigned int destPos : 4;
-      unsigned int srcPos : 4;
-      unsigned int destPile : 8;
-      unsigned int srcPile : 8;
-      unsigned int number : 4;
-      unsigned int create : 1;
+    // Structure holding undo-information
+    typedef struct undoValue {
+        unsigned int destPos : 4;
+        unsigned int srcPos : 4;
+        unsigned int destPile : 8;
+        unsigned int srcPile : 8;
+        unsigned int number : 4;
+        unsigned int create : 1;
 
-      undoValue (unsigned int targetPile, unsigned int targetPos,
-                 unsigned int pile, unsigned int pos, unsigned int nr)
-          : destPos (targetPos), srcPos (pos), destPile (targetPile)
-       , srcPile (pile), number (nr), create (false) { }
-      undoValue (unsigned int targetPile, unsigned int targetPos,
-                 unsigned int pile, unsigned int pos, unsigned int nr,
-                 bool createPile)
-          : destPos (targetPos), srcPos (pos), destPile (targetPile)
-       , srcPile (pile), number (nr), create (createPile) { }
-   } undoValue;
+        undoValue(unsigned int targetPile, unsigned int targetPos, unsigned int pile, unsigned int pos, unsigned int nr)
+            : destPos(targetPos), srcPos(pos), destPile(targetPile), srcPile(pile), number(nr), create(false) {}
+        undoValue(unsigned int targetPile, unsigned int targetPos, unsigned int pile, unsigned int pos, unsigned int nr,
+                  bool createPile)
+            : destPos(targetPos), srcPos(pos), destPile(targetPile), srcPile(pile), number(nr), create(createPile) {}
+    } undoValue;
 
-   std::stack<undoValue> undo;
+    std::stack<undoValue> undo;
 
-   // Structure to store which cards are missing on a pile, to be able to add from hand
-   typedef struct missingCards {
-      unsigned int        pile;
-      Card::Widget::NUMBERS nr;
-      Card::Widget::COLOURS colour;
+    // Structure to store which cards are missing on a pile, to be able to add from hand
+    typedef struct missingCards {
+        unsigned int pile;
+        Card::Widget::NUMBERS nr;
+        Card::Widget::COLOURS colour;
 
-      missingCards (unsigned int pile, Card::Widget::NUMBERS nr, Card::Widget::COLOURS colour)
-	 : pile (pile), nr (nr), colour (colour) { }
-      missingCards (unsigned int pile) : pile (pile), nr (Card::Widget::UNREACHABLE), colour () { }
-   } missingCards;
-   std::vector<missingCards> missing;
+        missingCards(unsigned int pile, Card::Widget::NUMBERS nr, Card::Widget::COLOURS colour)
+            : pile(pile), nr(nr), colour(colour) {}
+        missingCards(unsigned int pile) : pile(pile), nr(Card::Widget::UNREACHABLE), colour() {}
+    } missingCards;
+    std::vector<missingCards> missing;
 
-   XGP::MessageDlg* undoDlg;
+    XGP::MessageDlg* undoDlg;
 
-   Glib::RefPtr<Gio::SimpleAction> undo1;
-   Glib::RefPtr<Gio::SimpleAction> undoAll;
-   Glib::RefPtr<Gio::SimpleAction> nxtTurn;
+    Glib::RefPtr<Gio::SimpleAction> undo1;
+    Glib::RefPtr<Gio::SimpleAction> undoAll;
+    Glib::RefPtr<Gio::SimpleAction> nxtTurn;
 };
 
 #endif

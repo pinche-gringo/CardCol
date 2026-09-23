@@ -1,11 +1,11 @@
-//PROJECT     : Cardgames
-//SUBSYSTEM   : BuracoCards
-//REFERENCES  :
-//TODO        :
-//BUGS        :
-//AUTHOR      : Markus Schwab
-//CREATED     : 03.08.2006
-//COPYRIGHT   : Copyright (C) 2006, 2008, 2026
+// PROJECT     : Cardgames
+// SUBSYSTEM   : BuracoCards
+// REFERENCES  :
+// TODO        :
+// BUGS        :
+// AUTHOR      : Markus Schwab
+// CREATED     : 03.08.2006
+// COPYRIGHT   : Copyright (C) 2006, 2008, 2026
 
 // This file is part of CardCol.
 //
@@ -22,26 +22,22 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <cardgames-cfg.h>
 
 #include "BuracoCards.h"
 
-
-BuracoCards* BuracoCards::instance (NULL);
-
+BuracoCards* BuracoCards::instance(NULL);
 
 //-----------------------------------------------------------------------------
 /// Default constructor; Fills the values
 //-----------------------------------------------------------------------------
-BuracoCards::BuracoCards () {
-   insert (std::make_pair (11, "11"));
-   insert (std::make_pair (13, "13"));
-   insert (std::make_pair (15, "15"));
+BuracoCards::BuracoCards() {
+    insert(std::make_pair(11, "11"));
+    insert(std::make_pair(13, "13"));
+    insert(std::make_pair(15, "15"));
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-BuracoCards::~BuracoCards () {
-}
+BuracoCards::~BuracoCards() {}

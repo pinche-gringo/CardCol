@@ -1,8 +1,6 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-//$Id: Player.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,15 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
-#include <sigc++/trackable.h>
 #include <glibmm/ustring.h>
-
+#include <sigc++/trackable.h>
 
 namespace Card {
-   class Game;
+class Game;
 }
-
 
 namespace Card {
 
@@ -35,32 +30,32 @@ namespace Card {
    Every player can either be local human, remote human or computer player
 */
 class Player : public sigc::trackable {
- public:
-   Player (const Glib::ustring& playerName);
-   virtual ~Player ();
+  public:
+    Player(const Glib::ustring& playerName);
+    virtual ~Player();
 
-   /// Returns the name of the player
-   /// \returns Glib::ustring Name of the player
-   const Glib::ustring& getName () const { return name; }
-   /// Sets/changes the name of this player
-   /// \param playerName New name of this player
-   void setName (const Glib::ustring& playerName) { name = playerName; }
+    /// Returns the name of the player
+    /// \returns Glib::ustring Name of the player
+    const Glib::ustring& getName() const { return name; }
+    /// Sets/changes the name of this player
+    /// \param playerName New name of this player
+    void setName(const Glib::ustring& playerName) { name = playerName; }
 
-   /// Executes the turn of the player.
-   /// \param game Game playing.
-   /// \returns bool Flag, if the method should be called again in the next turn.
-   virtual bool makeTurn (Game* game) = 0;
+    /// Executes the turn of the player.
+    /// \param game Game playing.
+    /// \returns bool Flag, if the method should be called again in the next turn.
+    virtual bool makeTurn(Game* game) = 0;
 
-   virtual unsigned int timeout () const;
+    virtual unsigned int timeout() const;
 
- protected:
-   Glib::ustring name;
+  protected:
+    Glib::ustring name;
 
- private:
-   Player (const Player& other);
-   const Player& operator= (const Player& other);
+  private:
+    Player(const Player& other);
+    const Player& operator=(const Player& other);
 };
 
-}
+} // namespace Card
 
 #endif

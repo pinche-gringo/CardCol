@@ -1,8 +1,6 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <string>
 #include <vector>
 
@@ -26,38 +23,37 @@
 
 #include <YGP/Entity.h>
 
-
 /**General options of the CardCol application
  */
 class Options : public YGP::Entity {
-   friend class Settings;
-   friend class CardgameAppl;
-   friend class CardgameCollection;
+    friend class Settings;
+    friend class CardgameAppl;
+    friend class CardgameCollection;
 
- public:
-   Options ();
-   virtual ~Options ();
+  public:
+    Options();
+    virtual ~Options();
 
- private:
-   Options (const Options& other);
-   const Options& operator= (const Options& other);
+  private:
+    Options(const Options& other);
+    const Options& operator=(const Options& other);
 
-   std::string strType;        // %attrib%; Type;        "Rovhult"
-   unsigned int type;
-   std::string  browser;       // %attrib%; Helpbrowser; "galeon"
-   std::string  helpPath;      // %attrib%; Helpdir;     DOCUDIR
-   std::string  target;
-   std::string  port;
+    std::string strType; // %attrib%; Type;        "Rovhult"
+    unsigned int type;
+    std::string browser;  // %attrib%; Helpbrowser; "galeon"
+    std::string helpPath; // %attrib%; Helpdir;     DOCUDIR
+    std::string target;
+    std::string port;
 
-   CardOptions  co;
+    CardOptions co;
 
 #ifdef SAVE_GAME
-   bool load;
-   std::string gameFile;
+    bool load;
+    std::string gameFile;
 #endif
 
-   std::vector<Glib::ustring> names;
-   const char*    pNameINIFile;
+    std::vector<Glib::ustring> names;
+    const char* pNameINIFile;
 };
 
 #endif

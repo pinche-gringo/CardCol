@@ -1,8 +1,6 @@
 #ifndef HUMAN_H
 #define HUMAN_H
 
-//$Id: Human.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,29 +16,27 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <card/Player.h>
-
 
 namespace Card {
 
 /**Implementation of a human player.
-*/
+ */
 class Human : public Player {
- public:
-   /// Constructor from a name
-   /// \param name Name of the human player
-   Human (const Glib::ustring& name) : Player (name) { }
-   virtual ~Human ();
+  public:
+    /// Constructor from a name
+    /// \param name Name of the human player
+    Human(const Glib::ustring& name) : Player(name) {}
+    virtual ~Human();
 
-   virtual bool makeTurn (Game* game);
+    virtual bool makeTurn(Game* game);
 
- private:
-   Human ();
-   Human (const Human& other);
-   const Human& operator= (const Human& other);
+  private:
+    Human();
+    Human(const Human& other);
+    const Human& operator=(const Human& other);
 };
 
-}
+} // namespace Card
 
 #endif

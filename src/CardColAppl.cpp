@@ -1,11 +1,11 @@
-//PROJECT     : Cardgames
-//SUBSYSTEM   : Console-Application
-//REFERENCES  :
-//TODO        :
-//BUGS        :
-//AUTHOR      : Markus Schwab
-//CREATED     : 7.7.2005
-//COPYRIGHT   : Copyright (C) 2005 - 2018, 2026
+// PROJECT     : Cardgames
+// SUBSYSTEM   : Console-Application
+// REFERENCES  :
+// TODO        :
+// BUGS        :
+// AUTHOR      : Markus Schwab
+// CREATED     : 7.7.2005
+// COPYRIGHT   : Copyright (C) 2005 - 2018, 2026
 
 // This file is part of CardCol.
 //
@@ -22,99 +22,92 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <cardgames-cfg.h>
 
 #include <cstdio>
 
 #include <gtkmm/application.h>
 
-#include <YGP/File.h>
 #include <YGP/Check.h>
-#include <YGP/Trace.h>
+#include <YGP/File.h>
 #include <YGP/INIFile.h>
+#include <YGP/Trace.h>
 
 #include <XGP/XAttribute.h>
 
+#include <card/ComputerPlayer.h>
 #include <card/Images.h>
 #include <card/ScoreDlg.h>
-#include <card/ComputerPlayer.h>
 
 #ifdef WITH_BURACO
-#  include "Buraco.h"
-#  include "BuracoCards.h"
+#    include "Buraco.h"
+#    include "BuracoCards.h"
 #endif
 #ifdef WITH_HEARTS
-#  include "Hearts.h"
+#    include "Hearts.h"
 #endif
 #ifdef WITH_ROVHULT
-#  include "Rovhult.h"
-#  include "CardValue.h"
+#    include "CardValue.h"
+#    include "Rovhult.h"
 #endif
 #ifdef WITH_SGTMAYOR
-#  include "SgtMayor.h"
+#    include "SgtMayor.h"
 #endif
 #include "GameTypes.h"
 
 #include "CardColAppl.h"
 
-
-const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {
-   { IVIOAPPL_HELP_OPTION },
-   { "game", 'g' },
-   { "browser", 'b' },
-   { "dir-help", 'd' },
-   { "file", 'f' },
-   { "list-games", 'G' },
+const YGP::IVIOApplication::longOptions CardgameAppl::lo[] = {{IVIOAPPL_HELP_OPTION},
+                                                              {"game", 'g'},
+                                                              {"browser", 'b'},
+                                                              {"dir-help", 'd'},
+                                                              {"file", 'f'},
+                                                              {"list-games", 'G'},
 #ifdef WITH_NETWORK
-   { "listen-at", 'l' },
-   { "connect-to", 'c' },
+                                                              {"listen-at", 'l'},
+                                                              {"connect-to", 'c'},
 #endif
-   { "version", 'V' },
+                                                              {"version", 'V'},
 #ifdef SAVE_GAME
-   { "save-game", 'S' },
-   { "load-game", 'L' },
+                                                              {"save-game", 'S'},
+                                                              {"load-game", 'L'},
 #endif
-   { NULL, '\0' } };
-
+                                                              {NULL, '\0'}};
 
 #ifdef WITH_NETWORK
-const unsigned int CardgameAppl::PORT (DEFPORT);
+const unsigned int CardgameAppl::PORT(DEFPORT);
 #endif
-
-
 
 //-----------------------------------------------------------------------------
 /// Displays the help
 //-----------------------------------------------------------------------------
-void CardgameAppl::showHelp () const {
-   std::cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
-             << _(" [OPTIONS]\n\n")
-      /* For translations: Write the Rovhult as o-slash */
-             << "  -g, --game ......... " << _("GAME Select game to start (default: Rovhult)\n")
-             << "  -G, --list-games ... " << _("List available games\n")
-             << "  -f, --file ......... " << _("FILE Use file as INI file\n")
-             << "  -b, --browser ...... " << _("NAME Browser to use to display the help\n")
-             << "  -d, --dir-help ..... " << _("DIR Directory to search for help\n")
+void CardgameAppl::showHelp() const {
+    std::cout << _("Collection of cardgames\n\nUsage: ") << PACKAGE
+              << _(" [OPTIONS]\n\n")
+              /* For translations: Write the Rovhult as o-slash */
+              << "  -g, --game ......... " << _("GAME Select game to start (default: Rovhult)\n") << "  -G, --list-games ... "
+              << _("List available games\n") << "  -f, --file ......... " << _("FILE Use file as INI file\n")
+              << "  -b, --browser ...... " << _("NAME Browser to use to display the help\n") << "  -d, --dir-help ..... "
+              << _("DIR Directory to search for help\n")
 #ifdef WITH_NETWORK
-             << "  -l, --listen-at .... " << _("PORT Awaits connections on port PORT\n")
-             << "  -c, --connect-to ... " << _("SERVER:PORT Connects to SERVER:PORT\n")
+              << "  -l, --listen-at .... " << _("PORT Awaits connections on port PORT\n") << "  -c, --connect-to ... "
+              << _("SERVER:PORT Connects to SERVER:PORT\n")
 #endif
 #ifdef SAVE_GAME
-             << "  -S, --save-game .... " << _("FILE Saves game into FILE\n")
-             << "  -L, --load-game .... " << _("FILE Load game from FILE\n")
+              << "  -S, --save-game .... " << _("FILE Saves game into FILE\n") << "  -L, --load-game .... "
+              << _("FILE Load game from FILE\n")
 #endif
-             << "  -V, --version ...... " << _("Output version information and exit\n")
-             << "  -h, -?, --help ..... " << _("Displays this help and exit\n\n")
+              << "  -V, --version ...... " << _("Output version information and exit\n") << "  -h, -?, --help ..... "
+              << _("Displays this help and exit\n\n")
 
-      /* For translations: Write one of the Rovhults as an O with slash */
-             << _("Valid values for GAME are - unless disabled while configuring - Buraco, Hearts,\n"
-		  "Jabberwocky, Machiavelli, Rovhult, SgtMayor, Twopart or the corresponding numbers\n"
-		  "to the games or the translation of the name (as displayed below).\n\n");
-   showGames();
+              /* For translations: Write one of the Rovhults as an O with slash */
+              << _("Valid values for GAME are - unless disabled while configuring - Buraco, Hearts,\n"
+                   "Jabberwocky, Machiavelli, Rovhult, SgtMayor, Twopart or the corresponding numbers\n"
+                   "to the games or the translation of the name (as displayed below).\n\n");
+    showGames();
 
-   std::cout << _("\nThe INI file can have the following entries:\n\n")
-             <<  "  [Game]\n"
+    std::cout << _("\nThe INI file can have the following entries:\n\n")
+              << "  [Game]\n"
                  "  Type=Twopart\n"
                  "  Helpbrowser=firefox\n"
                  "  Helpdir=/usr/share/doc/Cardgames/\n"
@@ -153,7 +146,7 @@ void CardgameAppl::showHelp () const {
                  "\n  [SgtMayor]\n"
                  "  Tricks=10\n"
 #endif
-      ;
+        ;
 }
 
 //-----------------------------------------------------------------------------
@@ -162,118 +155,124 @@ void CardgameAppl::showHelp () const {
 /// \returns bool Status; false: Invalid option/option-value Require :
 ///     option not '\0�'
 //-----------------------------------------------------------------------------
-bool CardgameAppl::handleOption (const char option) {
-   Check3 (option != '\0');
+bool CardgameAppl::handleOption(const char option) {
+    Check3(option != '\0');
 
-   switch (option) {
-   case 'g': {
-      const char* game (getOptionValue ());
-      if (game) {
-         int type (convertToGameType (game));
-         if (type != GameTypes::NONE)
-            options.type = type;
-         else {
-            Glib::ustring err (_("-warning: Invalid game type `%1'"));
-            err.replace (err.find ("%1"), 2, game);
-            std::cerr << PACKAGE << err << '\n';
-         }
-      }
-      else
-         std::cerr << PACKAGE << _("-warning: No game specified! Ignoring option `g'\n");
-      break; }
+    switch (option) {
+    case 'g': {
+        const char* game(getOptionValue());
+        if (game) {
+            int type(convertToGameType(game));
+            if (type != GameTypes::NONE)
+                options.type = type;
+            else {
+                Glib::ustring err(_("-warning: Invalid game type `%1'"));
+                err.replace(err.find("%1"), 2, game);
+                std::cerr << PACKAGE << err << '\n';
+            }
+        }
+        else
+            std::cerr << PACKAGE << _("-warning: No game specified! Ignoring option `g'\n");
+        break;
+    }
 
-   case 'd': {
-      const char* pDir (getOptionValue ());
-      if (pDir)
-         options.helpPath = pDir;
-      else
-         std::cerr << PACKAGE << _("-warning: No directory specified! Ignoring option `d'\n");
-      break; }
+    case 'd': {
+        const char* pDir(getOptionValue());
+        if (pDir)
+            options.helpPath = pDir;
+        else
+            std::cerr << PACKAGE << _("-warning: No directory specified! Ignoring option `d'\n");
+        break;
+    }
 
-   case 'b': {
-      const char* pBrowser (getOptionValue ());
-      if (pBrowser)
-         options.browser = pBrowser;
-      else
-         std::cerr << PACKAGE << _("-warning: No browser specified! Ignoring option `b'\n");
-      break; }
+    case 'b': {
+        const char* pBrowser(getOptionValue());
+        if (pBrowser)
+            options.browser = pBrowser;
+        else
+            std::cerr << PACKAGE << _("-warning: No browser specified! Ignoring option `b'\n");
+        break;
+    }
 
-   case 'f': {
-      const char* pFile (getOptionValue ());
-      if (pFile)
-         readINIFile (pFile);
-      else
-         std::cerr << PACKAGE << _("-warning: No file specified! Ignoring option `f'\n");
-      break; }
+    case 'f': {
+        const char* pFile(getOptionValue());
+        if (pFile)
+            readINIFile(pFile);
+        else
+            std::cerr << PACKAGE << _("-warning: No file specified! Ignoring option `f'\n");
+        break;
+    }
 
-   case 'G':
-      showGames ();
-      exit (0);
-      break;
+    case 'G':
+        showGames();
+        exit(0);
+        break;
 
 #ifdef WITH_NETWORK
-   case 'l': {
-      const char* port (getOptionValue ());
-      if (port)
-         options.port = port;
-      else {
-	 std::string e (_("-warning: No port specified - using %1!\n"));
-	 e.replace (e.find ("%1"), 2, options.port = STRING (DEFPORT));
-	 std::cerr << PACKAGE << e;
-      }
-      break; }
+    case 'l': {
+        const char* port(getOptionValue());
+        if (port)
+            options.port = port;
+        else {
+            std::string e(_("-warning: No port specified - using %1!\n"));
+            e.replace(e.find("%1"), 2, options.port = STRING(DEFPORT));
+            std::cerr << PACKAGE << e;
+        }
+        break;
+    }
 
-   case 'c': {
-      const char* target (getOptionValue ());
-      if (target) {
-         char* port (strchr (target, ':'));
-         if (port) {
-            options.target.assign (target, port - target);
-            options.port = port + 1;
-         }
-         else {
-             options.target = target;
-             options.port = STRING (DEFPORT);
-         }
-      }
-      else
-         std::cerr << PACKAGE << _("-warning: No target specified! Ignoring option `c'\n");
-      break; }
+    case 'c': {
+        const char* target(getOptionValue());
+        if (target) {
+            char* port(strchr(target, ':'));
+            if (port) {
+                options.target.assign(target, port - target);
+                options.port = port + 1;
+            }
+            else {
+                options.target = target;
+                options.port = STRING(DEFPORT);
+            }
+        }
+        else
+            std::cerr << PACKAGE << _("-warning: No target specified! Ignoring option `c'\n");
+        break;
+    }
 #endif
 
-   case 'V':
-      std::cout << description () << '\n';
-      exit (0);
-      break;
+    case 'V':
+        std::cout << description() << '\n';
+        exit(0);
+        break;
 
 #ifdef SAVE_GAME
-   case 'L':
-   case 'S':
-      const char* file (getOptionValue ());
-      if (file) {
-         if (options.gameFile.size ()) {
-            std::string info (_("-warning: Option `%1' has already been specified!"
-                                "\nOverwriting old setting\n"));
-            info.replace (info.find ("%1"), 2, 1, (options.load ? 'L' : 'S'));
-            std::cerr << PACKAGE  << info;
-         }
+    case 'L':
+    case 'S':
+        const char* file(getOptionValue());
+        if (file) {
+            if (options.gameFile.size()) {
+                std::string info(_("-warning: Option `%1' has already been specified!"
+                                   "\nOverwriting old setting\n"));
+                info.replace(info.find("%1"), 2, 1, (options.load ? 'L' : 'S'));
+                std::cerr << PACKAGE << info;
+            }
 
-         options.gameFile = file;
-         options.load = (option == 'L');
-      }
-      else {
-         std::string info (_("-warning: No file specified! Ignoring option `%1'\n"));
-         info.replace (info.find ("%1"), 2, 1, option);
-         std::cerr << PACKAGE << info;
-      }
-      break;
+            options.gameFile = file;
+            options.load = (option == 'L');
+        }
+        else {
+            std::string info(_("-warning: No file specified! Ignoring option `%1'\n"));
+            info.replace(info.find("%1"), 2, 1, option);
+            std::cerr << PACKAGE << info;
+        }
+        break;
 #endif
 
-   default:
-      return false;
-   }
+    default:
+        return false;
+    }
 
-   return true;
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -281,23 +280,24 @@ bool CardgameAppl::handleOption (const char option) {
 /// \param pText Text to convert
 /// \returns int Type of game as understood by the CardgameCollection
 //-----------------------------------------------------------------------------
-int CardgameAppl::convertToGameType (const char* pText) {
-   TRACE9 ("CardgameAppl::convertToGameType (const char*) - " << pText);
+int CardgameAppl::convertToGameType(const char* pText) {
+    TRACE9("CardgameAppl::convertToGameType(const char*) - " << pText);
 
-   if (!strcmp (pText, "Rovhult"))
-      return GameTypes::ROVHULT;
+    if (!strcmp(pText, "Rovhult"))
+        return GameTypes::ROVHULT;
 
     try {
-       return GameTypes::get ()[_(pText)];
+        return GameTypes::get()[_(pText)];
     }
     catch (std::out_of_range&) {
-       try {
-	  YGP::ANumeric value (pText);
-	  int iVal (value);
-	  if (GameTypes::get ().exists (iVal))
-	     return iVal;
-       }
-       catch (std::invalid_argument&) { }
+        try {
+            YGP::ANumeric value(pText);
+            int iVal(value);
+            if (GameTypes::get().exists(iVal))
+                return iVal;
+        }
+        catch (std::invalid_argument&) {
+        }
     }
     return GameTypes::NONE;
 }
@@ -307,91 +307,90 @@ int CardgameAppl::convertToGameType (const char* pText) {
 /// \param pFile Pointer to filename
 /// \pre pFile not NULL
 //-----------------------------------------------------------------------------
-void CardgameAppl::readINIFile (const char* pFile) {
-   TRACE5 ("CardgameAppl::readINIFile (const char*) - " << pFile);
-   Check3 (pFile);
+void CardgameAppl::readINIFile(const char* pFile) {
+    TRACE5("CardgameAppl::readINIFile(const char*) - " << pFile);
+    Check3(pFile);
 
-   if (options.names.empty ()) {
-      options.names.push_back (_("Human"));
-      options.names.push_back (_("Player 1"));
-      options.names.push_back (_("Player 2"));
-      options.names.push_back (_("Player 3"));
-      options.pNameINIFile = pFile;
-   }
+    if (options.names.empty()) {
+        options.names.push_back(_("Human"));
+        options.names.push_back(_("Player 1"));
+        options.names.push_back(_("Player 2"));
+        options.names.push_back(_("Player 3"));
+        options.pNameINIFile = pFile;
+    }
 
-   try {
-      INIFILE (pFile);
-      INISECTION (Game);
-      _inifile_.addEntity (options, Game);
-      INIATTR2 (Game, unsigned int, CardgameCollection::WIDTH, WindowWidth);
-      INIATTR2 (Game, unsigned int, CardgameCollection::HEIGHT, WindowHeight);
-      INIATTR2 (Game, int, CardgameCollection::POSX, WindowPosX);
-      INIATTR2 (Game, int, CardgameCollection::POSY, WindowPosY);
-      INIATTR2 (Game, int, Card::ScoreDlg::LASTX, ScoreDlgPosX);
-      INIATTR2 (Game, int, Card::ScoreDlg::LASTY, ScoreDlgPosY);
-      INIATTR2 (Game, std::string, options.co.decks, CardFront);
-      INIATTR2 (Game, std::string, options.co.back, CardBack);
-      INIATTR2 (Game, unsigned int, Card::ComputerPlayer::TIMEOUT, Delay);
+    try {
+        INIFILE(pFile);
+        INISECTION(Game);
+        _inifile_.addEntity(options, Game);
+        INIATTR2(Game, unsigned int, CardgameCollection::WIDTH, WindowWidth);
+        INIATTR2(Game, unsigned int, CardgameCollection::HEIGHT, WindowHeight);
+        INIATTR2(Game, int, CardgameCollection::POSX, WindowPosX);
+        INIATTR2(Game, int, CardgameCollection::POSY, WindowPosY);
+        INIATTR2(Game, int, Card::ScoreDlg::LASTX, ScoreDlgPosX);
+        INIATTR2(Game, int, Card::ScoreDlg::LASTY, ScoreDlgPosY);
+        INIATTR2(Game, std::string, options.co.decks, CardFront);
+        INIATTR2(Game, std::string, options.co.back, CardBack);
+        INIATTR2(Game, unsigned int, Card::ComputerPlayer::TIMEOUT, Delay);
 
-      INILIST2 (Player, Glib::ustring, options.names);
+        INILIST2(Player, Glib::ustring, options.names);
 
-      INISECTION (Cards);
-      _inifile_.addEntity (options.co, Cards);
-      INIATTR2 (Cards, unsigned int, Card::Images::HEIGHT, Height);
-      INIATTR2 (Cards, unsigned int, Card::Images::WIDTH, Width);
+        INISECTION(Cards);
+        _inifile_.addEntity(options.co, Cards);
+        INIATTR2(Cards, unsigned int, Card::Images::HEIGHT, Height);
+        INIATTR2(Cards, unsigned int, Card::Images::WIDTH, Width);
 
 #ifdef WITH_BURACO
-      INISECTION (Buraco);
-      INIATTR2 (Buraco, unsigned int, Buraco::ENDPOINTS, EndPoints);
-      INIATTR4 (Buraco, BuracoCards::get (), Buraco::CARDS2DEAL, Cards);
+        INISECTION(Buraco);
+        INIATTR2(Buraco, unsigned int, Buraco::ENDPOINTS, EndPoints);
+        INIATTR4(Buraco, BuracoCards::get(), Buraco::CARDS2DEAL, Cards);
 #endif
 
 #ifdef WITH_HEARTS
-      INISECTION (Hearts);
-      INIATTR2 (Hearts, unsigned int, Hearts::ENDPOINTS, EndPoints);
+        INISECTION(Hearts);
+        INIATTR2(Hearts, unsigned int, Hearts::ENDPOINTS, EndPoints);
 #endif
 
 #ifdef WITH_ROVHULT
-      TRACE9 ("Nuke: " << Rovhult::cardNuke << "; Reverse: " << Rovhult::cardReverse
-	      << "; Skip: " << Rovhult::cardSkip);
-      INISECTION (Rovhult);
-      INIATTR4 (Rovhult, CardValue::get (), (unsigned int&)Rovhult::cardNuke, CardNuke);
-      INIATTR4 (Rovhult, CardValue::get (), (unsigned int&)Rovhult::cardReverse, CardReverse);
-      INIATTR4 (Rovhult, CardValue::get (), (unsigned int&)Rovhult::cardSkip, CardSkip);
+        TRACE9("Nuke: " << Rovhult::cardNuke << "; Reverse: " << Rovhult::cardReverse << "; Skip: " << Rovhult::cardSkip);
+        INISECTION(Rovhult);
+        INIATTR4(Rovhult, CardValue::get(), (unsigned int&)Rovhult::cardNuke, CardNuke);
+        INIATTR4(Rovhult, CardValue::get(), (unsigned int&)Rovhult::cardReverse, CardReverse);
+        INIATTR4(Rovhult, CardValue::get(), (unsigned int&)Rovhult::cardSkip, CardSkip);
 #endif
 
 #ifdef WITH_SGTMAYOR
-      INISECTION (SgtMayor);
-      INIATTR2 (SgtMayor, unsigned int, SgtMayor::ENDTRICKS, Tricks);
+        INISECTION(SgtMayor);
+        INIATTR2(SgtMayor, unsigned int, SgtMayor::ENDTRICKS, Tricks);
 #endif
-      INIFILE_READ ();
-      TRACE9 ("Nuke: " << Rovhult::cardNuke << "; Reverse: " << Rovhult::cardReverse
-	      << "; Skip: " << Rovhult::cardSkip);
-   }
-   catch (YGP::FileError&) { }
-   catch (std::exception& error) {
-      Glib::ustring err (_("-warning: Error reading INI-file `%1'! %2\n"));
-      err.replace (err.find ("%1"), 2, pFile);
-      err.replace (err.find ("%2"), 2, error.what ());
-      std::cerr << name () << err;
-   }
+        INIFILE_READ();
+        TRACE9("Nuke: " << Rovhult::cardNuke << "; Reverse: " << Rovhult::cardReverse << "; Skip: " << Rovhult::cardSkip);
+    }
+    catch (YGP::FileError&) {
+    }
+    catch (std::exception& error) {
+        Glib::ustring err(_("-warning: Error reading INI-file `%1'! %2\n"));
+        err.replace(err.find("%1"), 2, pFile);
+        err.replace(err.find("%2"), 2, error.what());
+        std::cerr << name() << err;
+    }
 
-   int type (convertToGameType (options.strType.c_str ()));
-   if (type != GameTypes::NONE)
-      options.type = type;
-   else {
-      Glib::ustring err ("-warning: INI-file `%1' contains invalid game type `%2'");
-      err.replace (err.find ("%1"), 2, pFile);
-      err.replace (err.find ("%2"), 2, options.strType);
-      std::cerr << PACKAGE << err << '\n';
-   }
+    int type(convertToGameType(options.strType.c_str()));
+    if (type != GameTypes::NONE)
+        options.type = type;
+    else {
+        Glib::ustring err("-warning: INI-file `%1' contains invalid game type `%2'");
+        err.replace(err.find("%1"), 2, pFile);
+        err.replace(err.find("%2"), 2, options.strType);
+        std::cerr << PACKAGE << err << '\n';
+    }
 
-   // Correct the timeout of the computer player
-   if (Card::ComputerPlayer::TIMEOUT < 100)
-      Card::ComputerPlayer::TIMEOUT = 100;
+    // Correct the timeout of the computer player
+    if (Card::ComputerPlayer::TIMEOUT < 100)
+        Card::ComputerPlayer::TIMEOUT = 100;
 
 #ifdef WITH_ROVHULT
-   CardgameCollection::checkRovhultSpecialCards ();
+    CardgameCollection::checkRovhultSpecialCards();
 #endif
 }
 
@@ -401,103 +400,92 @@ void CardgameAppl::readINIFile (const char* pFile) {
 /// \param const char* Array with pointer to arguments
 /// \returns int Status
 //-----------------------------------------------------------------------------
-int CardgameAppl::perform (int, const char**) {
-   TRACE5 ("CardgameAppl::perform (int, const char**) - Params: " << args);
-   srand (time (NULL));              // Initialize the random number generator
+int CardgameAppl::perform(int, const char**) {
+    TRACE5("CardgameAppl::perform(int, const char**) - Params: " << args);
+    srand(time(NULL)); // Initialize the random number generator
 
-   Glib::RefPtr<Gtk::Application> gtkapp(Gtk::Application::create("CardCol"));
+    Glib::RefPtr<Gtk::Application> gtkapp(Gtk::Application::create("CardCol"));
 
-   // Keyboard accelerators (replacing the per-Gtk::Action Gtk::AccelKey of GTK3;
-   // the keys of New, End, Quit and SavePrefs were provided by Gtk::Stock)
-   gtkapp->set_accel_for_action ("win.New", "<Control>n");
-   gtkapp->set_accel_for_action ("win.End", "<Control>w");
-   gtkapp->set_accel_for_action ("win.Quit", "<Control>q");
-   gtkapp->set_accel_for_action ("win.SavePrefs", "<Control>s");
-   gtkapp->set_accel_for_action ("win.ChgDecks", "<Control>d");
-   gtkapp->set_accel_for_action ("win.ChgNames", "<Control>c");
-   gtkapp->set_accel_for_action ("win.Prefs", "F9");
+    // Keyboard accelerators (replacing the per-Gtk::Action Gtk::AccelKey of GTK3;
+    // the keys of New, End, Quit and SavePrefs were provided by Gtk::Stock)
+    gtkapp->set_accel_for_action("win.New", "<Control>n");
+    gtkapp->set_accel_for_action("win.End", "<Control>w");
+    gtkapp->set_accel_for_action("win.Quit", "<Control>q");
+    gtkapp->set_accel_for_action("win.SavePrefs", "<Control>s");
+    gtkapp->set_accel_for_action("win.ChgDecks", "<Control>d");
+    gtkapp->set_accel_for_action("win.ChgNames", "<Control>c");
+    gtkapp->set_accel_for_action("win.Prefs", "F9");
 #if TRACELEVEL >= 1
-   gtkapp->set_accel_for_action ("win.Debug", "<Control>g");
+    gtkapp->set_accel_for_action("win.Debug", "<Control>g");
 #endif
 #ifdef WITH_NETWORK
-   gtkapp->set_accel_for_action ("win.Connect", "<Shift><Control>c");
-   gtkapp->set_accel_for_action ("win.Chat", "<Alt><Control>c");
+    gtkapp->set_accel_for_action("win.Connect", "<Shift><Control>c");
+    gtkapp->set_accel_for_action("win.Chat", "<Alt><Control>c");
 #endif
 #ifdef WITH_BURACO
-   gtkapp->set_accel_for_action
-      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::BURACO), "<Control>b");
-   gtkapp->set_accel_for_action ("game.BuracoUndo", "<Control>z");
-   gtkapp->set_accel_for_action ("game.BuracoSort", "S");
-   gtkapp->set_accel_for_action ("game.BuracoSortCol", "<Shift>S");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::BURACO), "<Control>b");
+    gtkapp->set_accel_for_action("game.BuracoUndo", "<Control>z");
+    gtkapp->set_accel_for_action("game.BuracoSort", "S");
+    gtkapp->set_accel_for_action("game.BuracoSortCol", "<Shift>S");
 #endif
 #ifdef WITH_HEARTS
-   gtkapp->set_accel_for_action
-      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::HEARTS), "<Control>h");
-   gtkapp->set_accel_for_action ("game.HeartSort", "<Shift>S");
-   gtkapp->set_accel_for_action ("game.HeartSortCol", "S");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::HEARTS), "<Control>h");
+    gtkapp->set_accel_for_action("game.HeartSort", "<Shift>S");
+    gtkapp->set_accel_for_action("game.HeartSortCol", "S");
 #endif
 #ifdef WITH_JABBERWOCKY
-   gtkapp->set_accel_for_action
-      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::JABBERWOCKY), "<Control>j");
-   gtkapp->set_accel_for_action ("game.JabberwockySort", "<Shift>S");
-   gtkapp->set_accel_for_action ("game.JabberwockySortCol", "S");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::JABBERWOCKY), "<Control>j");
+    gtkapp->set_accel_for_action("game.JabberwockySort", "<Shift>S");
+    gtkapp->set_accel_for_action("game.JabberwockySortCol", "S");
 #endif
 #ifdef WITH_MACHIAVELLI
-   gtkapp->set_accel_for_action
-      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::MACHIAVELLI), "<Control>m");
-   gtkapp->set_accel_for_action ("game.MachiUndo", "<Control>z");
-   gtkapp->set_accel_for_action ("game.MachiUndoAll", "<Control><Alt>z");
-   gtkapp->set_accel_for_action ("game.MachiSort", "<Shift>S");
-   gtkapp->set_accel_for_action ("game.MachiSortCol", "S");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::MACHIAVELLI), "<Control>m");
+    gtkapp->set_accel_for_action("game.MachiUndo", "<Control>z");
+    gtkapp->set_accel_for_action("game.MachiUndoAll", "<Control><Alt>z");
+    gtkapp->set_accel_for_action("game.MachiSort", "<Shift>S");
+    gtkapp->set_accel_for_action("game.MachiSortCol", "S");
 #endif
 #ifdef WITH_ROVHULT
-   gtkapp->set_accel_for_action
-      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::ROVHULT), "<Control>r");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::ROVHULT), "<Control>r");
 #endif
 #ifdef WITH_SGTMAYOR
-   gtkapp->set_accel_for_action
-      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::SGTMAYOR), "<Control>y");
-   gtkapp->set_accel_for_action ("game.SgMayorSort", "<Shift>S");
-   gtkapp->set_accel_for_action ("game.SgMayorSortCol", "S");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::SGTMAYOR), "<Control>y");
+    gtkapp->set_accel_for_action("game.SgMayorSort", "<Shift>S");
+    gtkapp->set_accel_for_action("game.SgMayorSortCol", "S");
 #endif
 #ifdef WITH_TWOPART
-   gtkapp->set_accel_for_action
-      (Glib::ustring::compose ("win.ChgGame(%1)", (int)GameTypes::TWOPART), "<Control>t");
-   gtkapp->set_accel_for_action ("game.TwopartSort", "<Shift>S");
-   gtkapp->set_accel_for_action ("game.TwopartSortCol", "S");
+    gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", (int)GameTypes::TWOPART), "<Control>t");
+    gtkapp->set_accel_for_action("game.TwopartSort", "<Shift>S");
+    gtkapp->set_accel_for_action("game.TwopartSortCol", "S");
 #endif
-#if defined(WITH_BURACO) || defined(WITH_HEARTS) || defined(WITH_JABBERWOCKY) \
-   || defined(WITH_SGTMAYOR)
-   gtkapp->set_accel_for_action ("game.showScoreDlg", "<Shift><Control>s");
+#if defined(WITH_BURACO) || defined(WITH_HEARTS) || defined(WITH_JABBERWOCKY) || defined(WITH_SGTMAYOR)
+    gtkapp->set_accel_for_action("game.showScoreDlg", "<Shift><Control>s");
 #endif
 
-   return gtkapp->make_window_and_run<CardgameCollection> (0, NULL, options);
+    return gtkapp->make_window_and_run<CardgameCollection>(0, NULL, options);
 }
 
 //-----------------------------------------------------------------------------
 /// Shows a description of the program
 //-----------------------------------------------------------------------------
-const char* CardgameAppl::description () const {
-   static std::string version
-      (PACKAGE " V" VERSION " - "
-       + std::string (_("Compiled on"))
-       + std::string (" " __DATE__ " - " __TIME__ "\n\n")
-       + std::string (_("Copyright (C) 2002 - 2009 Markus Schwab; e-mail: g17m0@users.sourceforge.net"
-			"\nDistributed under the terms of the GNU General "
-			"Public License")));
-   return version.c_str ();
- }
+const char* CardgameAppl::description() const {
+    static std::string version(PACKAGE " V" VERSION " - " + std::string(_("Compiled on")) +
+                               std::string(" " __DATE__ " - " __TIME__ "\n\n") +
+                               std::string(_("Copyright (C) 2002 - 2009 Markus Schwab; e-mail: g17m0@users.sourceforge.net"
+                                             "\nDistributed under the terms of the GNU General "
+                                             "Public License")));
+    return version.c_str();
+}
 
 //-----------------------------------------------------------------------------
 /// Shows the available games
 //-----------------------------------------------------------------------------
-void CardgameAppl::showGames () const {
-   const GameTypes& types (GameTypes::get ());
-   std::cout << _("Available games:\n\n");
-   for (GameTypes::const_iterator i (types.begin ()); i != types.end (); ++i)
-      std::cout << "  " << i->first << ": " << i->second << '\n';
+void CardgameAppl::showGames() const {
+    const GameTypes& types(GameTypes::get());
+    std::cout << _("Available games:\n\n");
+    for (GameTypes::const_iterator i(types.begin()); i != types.end(); ++i)
+        std::cout << "  " << i->first << ": " << i->second << '\n';
 }
-
 
 //-----------------------------------------------------------------------------
 /// Entrypoint of application
@@ -505,11 +493,11 @@ void CardgameAppl::showGames () const {
 /// \param argv Array with pointer to parameter
 /// \returns int Status
 //-----------------------------------------------------------------------------
-int main (int argc, const char* argv[]) {
-   YGP::IVIOApplication::initI18n (PACKAGE, LOCALEDIR);
-   // Remark: Glib::thread_init() no longer exists/is needed - GLib threading is
-   // initialized automatically since glib 2.32
+int main(int argc, const char* argv[]) {
+    YGP::IVIOApplication::initI18n(PACKAGE, LOCALEDIR);
+    // Remark: Glib::thread_init() no longer exists/is needed - GLib threading is
+    // initialized automatically since glib 2.32
 
-   CardgameAppl appl (argc, argv);
-   return appl.run ();
+    CardgameAppl appl(argc, argv);
+    return appl.run();
 }

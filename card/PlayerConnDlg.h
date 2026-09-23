@@ -1,8 +1,6 @@
 #ifndef PLAYERCONNECTDLG_H
 #define PLAYERCONNECTDLG_H
 
-//$Id: PlayerConnDlg.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,15 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <vector>
 
 #include <XGP/ConnectDlg.h>
 
 namespace Card {
-   class Player;
+class Player;
 }
-
 
 namespace Card {
 
@@ -36,36 +32,32 @@ namespace Card {
    After establishing the connection it negotiates the player names.
 */
 class PlayerConnectDlg : public XGP::ConnectDlg {
- public:
-   PlayerConnectDlg (std::vector<Player*>& player, const Glib::ustring& port,
-                     YGP::ConnectionMgr& cmgr);
-   virtual ~PlayerConnectDlg ();
+  public:
+    PlayerConnectDlg(std::vector<Player*>& player, const Glib::ustring& port, YGP::ConnectionMgr& cmgr);
+    virtual ~PlayerConnectDlg();
 
-   static unsigned int perform (std::vector<Player*>& player, const Glib::ustring& port,
-                                YGP::ConnectionMgr& cmgr);
-   static unsigned int perform (std::vector<Player*>& player, unsigned int port,
-                                YGP::ConnectionMgr& cmgr);
-   static unsigned int perform (std::vector<Player*>& player, YGP::ConnectionMgr& cmgr,
-                                const Glib::ustring& listenAt);
-   static unsigned int perform (std::vector<Player*>& player, YGP::ConnectionMgr& cmgr,
-                                const Glib::ustring& host, const Glib::ustring& hostPort);
+    static unsigned int perform(std::vector<Player*>& player, const Glib::ustring& port, YGP::ConnectionMgr& cmgr);
+    static unsigned int perform(std::vector<Player*>& player, unsigned int port, YGP::ConnectionMgr& cmgr);
+    static unsigned int perform(std::vector<Player*>& player, YGP::ConnectionMgr& cmgr, const Glib::ustring& listenAt);
+    static unsigned int perform(std::vector<Player*>& player, YGP::ConnectionMgr& cmgr, const Glib::ustring& host,
+                                const Glib::ustring& hostPort);
 
- protected:
-   /// \name Connection management
-   virtual void connect (const Glib::ustring& target, unsigned int port);
-   virtual YGP::Socket* addClient (int socket);
+  protected:
+    /// \name Connection management
+    virtual void connect(const Glib::ustring& target, unsigned int port);
+    virtual YGP::Socket* addClient(int socket);
 
-   Gtk::Label* connected;
-   Gtk::Label* lblConnected;
+    Gtk::Label* connected;
+    Gtk::Label* lblConnected;
 
- private:
-   std::vector<Player*>& aPlayer;
-   unsigned int posPlayer;
+  private:
+    std::vector<Player*>& aPlayer;
+    unsigned int posPlayer;
 
-   PlayerConnectDlg (const PlayerConnectDlg& other);
-   const PlayerConnectDlg& operator= (const PlayerConnectDlg& other);
+    PlayerConnectDlg(const PlayerConnectDlg& other);
+    const PlayerConnectDlg& operator=(const PlayerConnectDlg& other);
 };
 
-}
+} // namespace Card
 
 #endif

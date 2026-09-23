@@ -1,8 +1,6 @@
 #ifndef COMPUTERPLAYER_H
 #define COMPUTERPLAYER_H
 
-//$Id: ComputerPlayer.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,32 +16,30 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <card/Player.h>
-
 
 namespace Card {
 
 /**Implementation of a computer player.
-*/
+ */
 class ComputerPlayer : public Player {
- public:
-   /// Constructor from a name
-   /// \param name Name of the computer player
-   ComputerPlayer (const Glib::ustring& name) : Player (name) { }
-   virtual ~ComputerPlayer ();
+  public:
+    /// Constructor from a name
+    /// \param name Name of the computer player
+    ComputerPlayer(const Glib::ustring& name) : Player(name) {}
+    virtual ~ComputerPlayer();
 
-   virtual bool makeTurn (Game* game);
-   virtual unsigned int timeout () const;
+    virtual bool makeTurn(Game* game);
+    virtual unsigned int timeout() const;
 
-   static unsigned int TIMEOUT;
+    static unsigned int TIMEOUT;
 
- private:
-   ComputerPlayer ();
-   ComputerPlayer (const ComputerPlayer& other);
-   const ComputerPlayer& operator= (const ComputerPlayer& other);
+  private:
+    ComputerPlayer();
+    ComputerPlayer(const ComputerPlayer& other);
+    const ComputerPlayer& operator=(const ComputerPlayer& other);
 };
 
-}
+} // namespace Card
 
 #endif

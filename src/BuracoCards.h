@@ -1,8 +1,6 @@
 #ifndef BURACOCARDS_H
 #define BURACOCARDS_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,29 +16,27 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <YGP/MetaEnum.h>
-
 
 /**Storing the possible values a card can have as text
  */
 class BuracoCards : public YGP::MetaEnum {
- public:
-   /// Creates a meta-enum of type BuracoCards
-   /// \returns BuracoCards& Instance of BuracoCards
-   static const BuracoCards& get () {
-      if (!instance)
-	 instance = new BuracoCards;
-      return *instance;
-   }
-   ~BuracoCards ();
+  public:
+    /// Creates a meta-enum of type BuracoCards
+    /// \returns BuracoCards& Instance of BuracoCards
+    static const BuracoCards& get() {
+        if (!instance)
+            instance = new BuracoCards;
+        return *instance;
+    }
+    ~BuracoCards();
 
- private:
-   BuracoCards ();
-   BuracoCards (const BuracoCards& other);
-   const BuracoCards& operator= (const BuracoCards& other);
+  private:
+    BuracoCards();
+    BuracoCards(const BuracoCards& other);
+    const BuracoCards& operator=(const BuracoCards& other);
 
-   static BuracoCards* instance;
+    static BuracoCards* instance;
 };
 
 #endif

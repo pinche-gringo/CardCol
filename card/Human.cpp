@@ -1,14 +1,11 @@
-//$Id: Human.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
-//PROJECT     : Cardgames
-//SUBSYSTEM   : Common
-//REFERENCES  :
-//TODO        :
-//BUGS        :
-//REVISION    : $Revision: 1.1 $
-//AUTHOR      : Markus Schwab
-//CREATED     : 25.07.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2005, 2008, 2009
+// PROJECT     : Cardgames
+// SUBSYSTEM   : Common
+// REFERENCES  :
+// TODO        :
+// BUGS        :
+// AUTHOR      : Markus Schwab
+// CREATED     : 25.07.2003
+// COPYRIGHT   : Copyright (C) 2003 - 2005, 2008, 2009, 2026
 
 // This file is part of CardCol.
 //
@@ -25,32 +22,29 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
 #include "Game.h"
 #include "Human.h"
 
-
 namespace Card {
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-Human::~Human () {
-}
+Human::~Human() {}
 
 //----------------------------------------------------------------------------
 /// Allows the human to execute its turn by enabling its cards
 /// \param game Game played
 /// \returns bool Flag, if the method should be called again in the next turn.
 //----------------------------------------------------------------------------
-bool Human::makeTurn (Game* game) {
-   TRACE1 ("Human::makeTurn (Game*) - " << name);
-   Check1 (game);
-   game->enableHuman ();
-   return false;
+bool Human::makeTurn(Game* game) {
+    TRACE1("Human::makeTurn(Game*) - " << name);
+    Check1(game);
+    game->enableHuman();
+    return false;
 }
 
-}
+} // namespace Card

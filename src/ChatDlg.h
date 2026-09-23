@@ -1,7 +1,5 @@
- #ifndef CHATDLG_H
+#ifndef CHATDLG_H
 #define CHATDLG_H
-
-//$Id$
 
 // This file is part of CardCol.
 //
@@ -18,19 +16,16 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <glibmm/refptr.h>
 
 #include <XGP/XDialog.h>
 
-
 namespace Gtk {
-   class Entry;
-   class TextTag;
-   class TextView;
-   class TextBuffer;
-}
-
+class Entry;
+class TextTag;
+class TextView;
+class TextBuffer;
+} // namespace Gtk
 
 /**Dialog to enter a message to send to others and to display messages received
  * from others.
@@ -38,37 +33,37 @@ namespace Gtk {
  * The dialog emits a signal when a message is to send.
  */
 class ChatDlg : public XGP::XDialog {
- public:
-   virtual ~ChatDlg ();
+  public:
+    virtual ~ChatDlg();
 
-   /// Creates the dialog
-   /// \param parent Parent window
-   static ChatDlg* create (Gtk::Window& parent) {
-      ChatDlg* dlg (new ChatDlg);
-      dlg->set_transient_for (parent);
-      dlg->signal_response ().connect (mem_fun (*dlg, &ChatDlg::free));
-      return dlg;
-   }
+    /// Creates the dialog
+    /// \param parent Parent window
+    static ChatDlg* create(Gtk::Window& parent) {
+        ChatDlg* dlg(new ChatDlg);
+        dlg->set_transient_for(parent);
+        dlg->signal_response().connect(mem_fun(*dlg, &ChatDlg::free));
+        return dlg;
+    }
 
-   /// Signal emitted, when OK is selected
-   sigc::signal<void(const Glib::ustring&)> signalSend;
+    /// Signal emitted, when OK is selected
+    sigc::signal<void(const Glib::ustring&)> signalSend;
 
-   void addMessage (const Glib::ustring& sender, const Glib::ustring& msg);
+    void addMessage(const Glib::ustring& sender, const Glib::ustring& msg);
 
- protected:
-   ChatDlg ();
-   void sendMessage ();
+  protected:
+    ChatDlg();
+    void sendMessage();
 
- private:
-   //Prohibited manager functions
-   ChatDlg (const ChatDlg& other);
-   const ChatDlg& operator= (const ChatDlg& other);
+  private:
+    // Prohibited manager functions
+    ChatDlg(const ChatDlg& other);
+    const ChatDlg& operator=(const ChatDlg& other);
 
-   Gtk::Entry*    txtMsg;
-   Gtk::TextView* tvMsgs;
+    Gtk::Entry* txtMsg;
+    Gtk::TextView* tvMsgs;
 
-   Glib::RefPtr<Gtk::TextTag>    tagSender;
-   Glib::RefPtr<Gtk::TextBuffer> msgs;
+    Glib::RefPtr<Gtk::TextTag> tagSender;
+    Glib::RefPtr<Gtk::TextBuffer> msgs;
 };
 
 #endif

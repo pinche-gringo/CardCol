@@ -1,14 +1,11 @@
-//$Id: ComputerPlayer.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
-//PROJECT     : Cardgames
-//SUBSYSTEM   : Common
-//REFERENCES  :
-//TODO        :
-//BUGS        :
-//REVISION    : $Revision: 1.1 $
-//AUTHOR      : Markus Schwab
-//CREATED     : 25.07.2003
-//COPYRIGHT   : Copyright (C) 2003 - 2005, 2008
+// PROJECT     : Cardgames
+// SUBSYSTEM   : Common
+// REFERENCES  :
+// TODO        :
+// BUGS        :
+// AUTHOR      : Markus Schwab
+// CREATED     : 25.07.2003
+// COPYRIGHT   : Copyright (C) 2003 - 2005, 2008, 2026
 
 // This file is part of CardCol.
 //
@@ -25,42 +22,35 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
-#include "Game.h"
 #include "ComputerPlayer.h"
-
+#include "Game.h"
 
 namespace Card {
 
-unsigned int ComputerPlayer::TIMEOUT (700);
-
+unsigned int ComputerPlayer::TIMEOUT(700);
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-ComputerPlayer::~ComputerPlayer () {
-}
-
+ComputerPlayer::~ComputerPlayer() {}
 
 //----------------------------------------------------------------------------
 /// Executes the turn of a computer player
 /// \param game Game played
 //----------------------------------------------------------------------------
-bool ComputerPlayer::makeTurn (Game* game) {
-   TRACE1 ("ComputerPlayer::makeTurn (Game*) - " << name);
-   Check1 (game);
-   return game->makeComputerMove ();
+bool ComputerPlayer::makeTurn(Game* game) {
+    TRACE1("ComputerPlayer::makeTurn(Game*) - " << name);
+    Check1(game);
+    return game->makeComputerMove();
 }
 
 //----------------------------------------------------------------------------
 /// Time in between two turns of the player.
 /// \returns unsigned int Time to delay: 0 -> execute immediately
 //----------------------------------------------------------------------------
-unsigned int ComputerPlayer::timeout () const {
-   return TIMEOUT;
-}
+unsigned int ComputerPlayer::timeout() const { return TIMEOUT; }
 
-}
+} // namespace Card

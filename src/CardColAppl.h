@@ -1,8 +1,6 @@
 #ifndef CARDCOLAPPL_H
 #define CARDCOLAPPL_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,59 +16,55 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <cardgames-cfg.h>
 
 #include "Options.h"
 
 #include <YGP/IVIOAppl.h>
 
-
 #ifdef WITH_NETWORK
-#  define DEFPORT                31338
-#  define STR(nr)                #nr
-#  define STRING(nr)             STR (nr)
+#    define DEFPORT 31338
+#    define STR(nr) #nr
+#    define STRING(nr) STR(nr)
 #endif
-
 
 /**Console part of the Cardgames; cares about reading the INI-file and
  * processing the options
  */
 class CardgameAppl : public YGP::IVIOApplication {
- public:
-   CardgameAppl (const int argc, const char* argv[])
-      : IVIOApplication (argc, argv, lo), options () { }
-   ~CardgameAppl () { }
+  public:
+    CardgameAppl(const int argc, const char* argv[]) : IVIOApplication(argc, argv, lo), options() {}
+    ~CardgameAppl() {}
 
-   static int convertToGameType (const char* pText);
+    static int convertToGameType(const char* pText);
 
 #ifdef WITH_NETWORK
-   static const unsigned int PORT;
+    static const unsigned int PORT;
 #endif
 
- protected:
-   virtual void readINIFile (const char* pFile);
-   virtual bool handleOption (const char option);
+  protected:
+    virtual void readINIFile(const char* pFile);
+    virtual bool handleOption(const char option);
 
-   // Program-handling
-   virtual bool        shallShowInfo () const { return false; }
-   virtual int         perform (int argc, const char* argv[]);
-   virtual const char* name () const { return PACKAGE_NAME; }
-   virtual const char* description () const;
+    // Program-handling
+    virtual bool shallShowInfo() const { return false; }
+    virtual int perform(int argc, const char* argv[]);
+    virtual const char* name() const { return PACKAGE_NAME; }
+    virtual const char* description() const;
 
-   // Help-handling
-   virtual void showHelp () const;
-   void showGames () const;
+    // Help-handling
+    virtual void showHelp() const;
+    void showGames() const;
 
- private:
-   // Prohobited manager functions
-   CardgameAppl ();
-   CardgameAppl (const CardgameAppl&);
-   const CardgameAppl& operator= (const CardgameAppl&);
+  private:
+    // Prohobited manager functions
+    CardgameAppl();
+    CardgameAppl(const CardgameAppl&);
+    const CardgameAppl& operator=(const CardgameAppl&);
 
-   Options options;
+    Options options;
 
-   static const longOptions lo[];
+    static const longOptions lo[];
 };
 
 #endif

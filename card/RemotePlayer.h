@@ -1,8 +1,6 @@
 #ifndef REMOTEHUMAN_H
 #define REMOTEHUMAN_H
 
-//$Id: RemotePlayer.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,15 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include "Player.h"
-
 
 // Forward declarations
 namespace YGP {
-   class Socket;
+class Socket;
 }
-
 
 namespace Card {
 
@@ -34,26 +29,25 @@ namespace Card {
    network.
 */
 class RemotePlayer : public Player {
- public:
-   /// Constructor; taking the socket for the communication and a name of the
-   /// player
-   /// \param socket Socket used for the communication
-   /// \param name Name of the (remote) player
-   RemotePlayer (YGP::Socket* socket, const Glib::ustring& name) : Player (name)
-       , sock (socket) { }
-   virtual ~RemotePlayer ();
+  public:
+    /// Constructor; taking the socket for the communication and a name of the
+    /// player
+    /// \param socket Socket used for the communication
+    /// \param name Name of the (remote) player
+    RemotePlayer(YGP::Socket* socket, const Glib::ustring& name) : Player(name), sock(socket) {}
+    virtual ~RemotePlayer();
 
-   virtual bool makeTurn (Game* game);
+    virtual bool makeTurn(Game* game);
 
- protected:
-   YGP::Socket* sock;
+  protected:
+    YGP::Socket* sock;
 
- private:
-   RemotePlayer ();
-   RemotePlayer (const RemotePlayer& other);
-   const RemotePlayer& operator= (const RemotePlayer& other);
+  private:
+    RemotePlayer();
+    RemotePlayer(const RemotePlayer& other);
+    const RemotePlayer& operator=(const RemotePlayer& other);
 };
 
-}
+} // namespace Card
 
 #endif

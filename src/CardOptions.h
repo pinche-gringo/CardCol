@@ -1,8 +1,6 @@
 #ifndef CARDOPTIONS_H
 #define CARDOPTIONS_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <string>
 
 #include <cardgames-cfg.h>
@@ -27,24 +24,23 @@
 
 #include <YGP/Entity.h>
 
-
 /**Options handling the cards within the CardCol application
  */
 class CardOptions : public YGP::Entity {
-   friend class Settings;
-   friend class CardgameAppl;
-   friend class CardgameCollection;
+    friend class Settings;
+    friend class CardgameAppl;
+    friend class CardgameCollection;
 
- public:
-   CardOptions ();
-   virtual ~CardOptions ();
+  public:
+    CardOptions();
+    virtual ~CardOptions();
 
- private:
-   CardOptions (const CardOptions& other);
-   const CardOptions& operator= (const CardOptions& other);
+  private:
+    CardOptions(const CardOptions& other);
+    const CardOptions& operator=(const CardOptions& other);
 
-   std::string  decks;         // %attrib%; Front;   CARDDECKS_DIR CARDDECKS_FRONT
-   std::string  back;          // %attrib%; Back;    CARDDECKS_DIR CARDDECKS_BACK
+    std::string decks; // %attrib%; Front;   CARDDECKS_DIR CARDDECKS_FRONT
+    std::string back;  // %attrib%; Back;    CARDDECKS_DIR CARDDECKS_BACK
 };
 
 #endif

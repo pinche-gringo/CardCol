@@ -16,215 +16,211 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <map>
 #include <string>
 #include <vector>
 
-#include <gtkmm/label.h>
 #include <gtkmm/frame.h>
+#include <gtkmm/label.h>
 
-#include <card/Set.h>
 #include <card/Pile.h>
+#include <card/Set.h>
 #include <card/Widget.h>
 
 #include "BuracoPile.h"
 
 #include <card/Game.h>
 
-
 namespace Gtk {
-   class ScrolledWindow;
-   class DragSource;
-   class DropTarget;
-}
+class ScrolledWindow;
+class DragSource;
+class DropTarget;
+} // namespace Gtk
 namespace Gdk {
-   class ContentProvider;
+class ContentProvider;
 }
 namespace Gio {
-   class SimpleAction;
+class SimpleAction;
 }
 namespace Glib {
-   class ValueBase;
+class ValueBase;
 }
 
 namespace Card {
-   class ScoreDlg;
+class ScoreDlg;
 }
-
 
 /**Class handling the Buraco cardgame
  */
-class Buraco: public Card::Game {
-   friend class Settings;
-   friend class CardgameAppl;
-   friend class CardgameCollection;
+class Buraco : public Card::Game {
+    friend class Settings;
+    friend class CardgameAppl;
+    friend class CardgameCollection;
 
- public:
-   Buraco(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
-          const std::vector<Card::Player*>& player, unsigned int posPlayer, YGP::Mutex& mxSerialize);
-   virtual ~Buraco();
+  public:
+    Buraco(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
+           unsigned int posPlayer, YGP::Mutex& mxSerialize);
+    virtual ~Buraco();
 
-   virtual void start();
-   virtual void clean();
-   virtual const char* name() { return "Buraco"; }
-   virtual void playOpen(bool);
-   virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu,
-                         const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
-   virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu,
-                            const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+    virtual void start();
+    virtual void clean();
+    virtual const char* name() { return "Buraco"; }
+    virtual void playOpen(bool);
+    virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+    virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
 
-   virtual void changeNames(const std::vector<Card::Player*>& newPlayer);
-   virtual void resizeCards();
+    virtual void changeNames(const std::vector<Card::Player*>& newPlayer);
+    virtual void resizeCards();
 
-   virtual unsigned int numberOfDecks() const { return 4; }
-   virtual unsigned int numberOfJokers() const { return 3; }
+    virtual unsigned int numberOfDecks() const { return 4; }
+    virtual unsigned int numberOfJokers() const { return 3; }
 
-   virtual bool handleMessage(unsigned int player, const std::string& msg);
+    virtual bool handleMessage(unsigned int player, const std::string& msg);
 
-   static unsigned int getPoints(const Card::Widget& card);
-   static bool isJoker(const Card::Widget& card);
-   static int cardDistance(const Card::Widget& a, const Card::Widget& b);
-   static int cardDistance(const Card::Widget& a, const Card::Widget& b, bool aceIsOne);
+    static unsigned int getPoints(const Card::Widget& card);
+    static bool isJoker(const Card::Widget& card);
+    static int cardDistance(const Card::Widget& a, const Card::Widget& b);
+    static int cardDistance(const Card::Widget& a, const Card::Widget& b, bool aceIsOne);
 
- private:
-   Buraco(const Buraco& other);
-   const Buraco& operator=(const Buraco& other);
+  private:
+    Buraco(const Buraco& other);
+    const Buraco& operator=(const Buraco& other);
 
-   static const unsigned int NUM_PLAYERS = 4;              // Number of players
+    static const unsigned int NUM_PLAYERS = 4; // Number of players
 
-   //@Section Virtual methods
-   virtual void makeMove(unsigned int player);
-   virtual bool enableHuman();
-   virtual void disableHuman();
+    //@Section Virtual methods
+    virtual void makeMove(unsigned int player);
+    virtual bool enableHuman();
+    virtual void disableHuman();
 
-   virtual Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile);
-   virtual bool executeRemoteMove(Card::IPile& pile, unsigned int target);
-   virtual unsigned int getActTarget() const;
-   void endTurn(unsigned int player, int card2Dump);
+    virtual Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile);
+    virtual bool executeRemoteMove(Card::IPile& pile, unsigned int target);
+    virtual unsigned int getActTarget() const;
+    void endTurn(unsigned int player, int card2Dump);
 
-   //@Section Event handling
-   void cardSelected(unsigned int iCard);
-   void dumpedSelected();
-   void doDelayedDumpedSelected();
-   void doDumpedSelected();
-   void stapleSelected();
-   void doStapleSelected();
-   bool doRegisterHand(unsigned int first, unsigned int last);
+    //@Section Event handling
+    void cardSelected(unsigned int iCard);
+    void dumpedSelected();
+    void doDelayedDumpedSelected();
+    void doDumpedSelected();
+    void stapleSelected();
+    void doStapleSelected();
+    bool doRegisterHand(unsigned int first, unsigned int last);
 
-   void undoMove();
-   void undoLast(unsigned int player);
-   void sortHand();
-   void sortHandByColour();
+    void undoMove();
+    void undoLast(unsigned int player);
+    void sortHand();
+    void sortHandByColour();
 
-   //@Section helper methods
-   void addBuraco4HumanAndEnable();
-   void enableHumanHand();
-   void enableCard(unsigned int pos);
-   static bool containsOnlyJoker(const Card::IPile& pile);
-   static bool containsNoJoker(const Card::IPile& pile);
-   static bool showJoker(Card::IPile* pile, unsigned int cJokers, bool show);
-   void addBuraco(unsigned int player);
-   void playCards();
-   int  executeMove(unsigned int player, unsigned int& pos1Play, unsigned int& pos2Play);
-   void endGame();
-   bool canClosePile(unsigned int player, unsigned int pile) const;
-   bool canGetRidOfCards(unsigned int player) const;
-   bool canPlayCards(unsigned int player, unsigned int cards, unsigned int pile = -1U) const;
+    //@Section helper methods
+    void addBuraco4HumanAndEnable();
+    void enableHumanHand();
+    void enableCard(unsigned int pos);
+    static bool containsOnlyJoker(const Card::IPile& pile);
+    static bool containsNoJoker(const Card::IPile& pile);
+    static bool showJoker(Card::IPile* pile, unsigned int cJokers, bool show);
+    void addBuraco(unsigned int player);
+    void playCards();
+    int executeMove(unsigned int player, unsigned int& pos1Play, unsigned int& pos2Play);
+    void endGame();
+    bool canClosePile(unsigned int player, unsigned int pile) const;
+    bool canGetRidOfCards(unsigned int player) const;
+    bool canPlayCards(unsigned int player, unsigned int cards, unsigned int pile = -1U) const;
 
-   void sendMoveCard(unsigned int pile, unsigned int from, unsigned int to) const;
-   static bool pileHasFittingPair(const Card::IPile& pile, const Card::Widget& card, bool withJokers=false);
-   static bool pileHasFittingPair(const Card::IPile& pile, const Card::Widget* exclude=NULL);
-   static bool compByNumberWithJokers(const Card::Widget* a, const Card::Widget* b);
-   static bool compByColourWithJokers(const Card::Widget* a, const Card::Widget* b);
-   void makeTeamNames(std::vector<Card::Player*>& names) const;
-   void setStartPlayer();
-   bool cleanup();
+    void sendMoveCard(unsigned int pile, unsigned int from, unsigned int to) const;
+    static bool pileHasFittingPair(const Card::IPile& pile, const Card::Widget& card, bool withJokers = false);
+    static bool pileHasFittingPair(const Card::IPile& pile, const Card::Widget* exclude = NULL);
+    static bool compByNumberWithJokers(const Card::Widget* a, const Card::Widget* b);
+    static bool compByColourWithJokers(const Card::Widget* a, const Card::Widget* b);
+    void makeTeamNames(std::vector<Card::Player*>& names) const;
+    void setStartPlayer();
+    bool cleanup();
 
-   //@Section to handle piles on table
-   BuracoPile& makeNewPile(unsigned int team);
-   unsigned int cardFitsOnPlayedPile(unsigned int player, unsigned int card);
-   int  cardFitsOnPile(unsigned int pile, const Card::Widget& card) const;
-   void removeCerrado(unsigned int player, BuracoPile& pile);
-   void cleanCerrado(unsigned int player);
-   void updateInfo();
-   bool humanPilesOK(unsigned int except=-1U) const;
+    //@Section to handle piles on table
+    BuracoPile& makeNewPile(unsigned int team);
+    unsigned int cardFitsOnPlayedPile(unsigned int player, unsigned int card);
+    int cardFitsOnPile(unsigned int pile, const Card::Widget& card) const;
+    void removeCerrado(unsigned int player, BuracoPile& pile);
+    void cleanCerrado(unsigned int player);
+    void updateInfo();
+    bool humanPilesOK(unsigned int except = -1U) const;
 
-   //@Section DND
-   void registerTableDND(unsigned int pile, unsigned int start, unsigned int end);
-   void registerTableDND(Card::Widget& card, unsigned int nr);
-   void unregisterTableDND(Card::Widget& card);
-   void registerHandDND(unsigned int start, unsigned int end);
-   void registerHandDND(unsigned int iCard);
-   void unregisterHandDND(Card::Widget& card);
-   Glib::RefPtr<Gdk::ContentProvider> prepareHandDrag(double x, double y, unsigned int cardPos);
-   bool cardDropped(const Glib::ValueBase& value, double x, double y, unsigned int card);
-   bool cardDroppedOnTable(const Glib::ValueBase& value, double x, double y, unsigned int cardPile);
+    //@Section DND
+    void registerTableDND(unsigned int pile, unsigned int start, unsigned int end);
+    void registerTableDND(Card::Widget& card, unsigned int nr);
+    void unregisterTableDND(Card::Widget& card);
+    void registerHandDND(unsigned int start, unsigned int end);
+    void registerHandDND(unsigned int iCard);
+    void unregisterHandDND(Card::Widget& card);
+    Glib::RefPtr<Gdk::ContentProvider> prepareHandDrag(double x, double y, unsigned int cardPos);
+    bool cardDropped(const Glib::ValueBase& value, double x, double y, unsigned int card);
+    bool cardDroppedOnTable(const Glib::ValueBase& value, double x, double y, unsigned int cardPile);
 
-   Gtk::Label names[NUM_PLAYERS];                        // Names of the player
-   Card::HPile hands[NUM_PLAYERS];            // For all players: Cards in hand
-   std::vector<BuracoPile*> tablePiles[NUM_PLAYERS >> 1];     // Piles on table
-   std::vector<Card::Widget*> reserve[NUM_PLAYERS >> 1];  // New staple 4 teams
-   int points[NUM_PLAYERS >> 1];                       // Number of points/team
-   unsigned int unfinishedMonoPiles[NUM_PLAYERS >> 1];
+    Gtk::Label names[NUM_PLAYERS];                         // Names of the player
+    Card::HPile hands[NUM_PLAYERS];                        // For all players: Cards in hand
+    std::vector<BuracoPile*> tablePiles[NUM_PLAYERS >> 1]; // Piles on table
+    std::vector<Card::Widget*> reserve[NUM_PLAYERS >> 1];  // New staple 4 teams
+    int points[NUM_PLAYERS >> 1];                          // Number of points/team
+    unsigned int unfinishedMonoPiles[NUM_PLAYERS >> 1];
 
-   Gtk::ScrolledWindow* scrlTable[NUM_PLAYERS >> 1];   // Scroll-ctrls for table
+    Gtk::ScrolledWindow* scrlTable[NUM_PLAYERS >> 1]; // Scroll-ctrls for table
 
-   std::vector<Card::Player*> nameTeams;
-   unsigned int startPlayer;
+    std::vector<Card::Player*> nameTeams;
+    unsigned int startPlayer;
 
-   Gtk::Label info;
-   Card::HBox boxTeam[NUM_PLAYERS >> 1];
+    Gtk::Label info;
+    Card::HBox boxTeam[NUM_PLAYERS >> 1];
 
-   Gtk::Label       newPile;
-   Card::VInfoPile  staple;
-   Card::VInfoPile  dumped;
-   sigc::connection dumpedTop;
-   sigc::connection stapleTop;
+    Gtk::Label newPile;
+    Card::VInfoPile staple;
+    Card::VInfoPile dumped;
+    sigc::connection dumpedTop;
+    sigc::connection stapleTop;
 
-   typedef struct {
-      Glib::RefPtr<Gtk::DragSource> drag;
-      Glib::RefPtr<Gtk::DropTarget> drop;
-   } CONNECTIONS;
-   std::map<Card::Widget*, CONNECTIONS> aDNDHand;
-   std::map<Card::Widget*, Glib::RefPtr<Gtk::DropTarget> > aDNDTable;
+    typedef struct {
+        Glib::RefPtr<Gtk::DragSource> drag;
+        Glib::RefPtr<Gtk::DropTarget> drop;
+    } CONNECTIONS;
+    std::map<Card::Widget*, CONNECTIONS> aDNDHand;
+    std::map<Card::Widget*, Glib::RefPtr<Gtk::DropTarget>> aDNDTable;
 
-   struct {
-      unsigned int startGame : 1;
-      unsigned int startTurn : 1;
-      unsigned int team1Buraco : 2;
-      unsigned int team2Buraco : 2;
-      unsigned int pickUpPlayed : 1;
-   } gStatus;
+    struct {
+        unsigned int startGame : 1;
+        unsigned int startTurn : 1;
+        unsigned int team1Buraco : 2;
+        unsigned int team2Buraco : 2;
+        unsigned int pickUpPlayed : 1;
+    } gStatus;
 
-   typedef struct undoValue {
-      unsigned int destPile : 8;
-      unsigned int destPos  : 3;
-      unsigned int srcPos   : 7;
-      unsigned int pickUp   : 1;
-      unsigned int monoPos  : 3;
+    typedef struct undoValue {
+        unsigned int destPile : 8;
+        unsigned int destPos : 3;
+        unsigned int srcPos : 7;
+        unsigned int pickUp : 1;
+        unsigned int monoPos : 3;
 
-      void assign(unsigned int targetPile, unsigned int targetPos, unsigned int pos) {
-	 destPile = targetPile;
-	 destPos = targetPos;
-	 srcPos = pos;
-	 monoPos = 7;
-	 pickUp = 0; }
-   } undoValue;
-   undoValue undo;
+        void assign(unsigned int targetPile, unsigned int targetPos, unsigned int pos) {
+            destPile = targetPile;
+            destPos = targetPos;
+            srcPos = pos;
+            monoPos = 7;
+            pickUp = 0;
+        }
+    } undoValue;
+    undoValue undo;
 
-   Card::ScoreDlg* pScoreDlg;
+    Card::ScoreDlg* pScoreDlg;
 
-   int idxMenu;
-   Glib::RefPtr<Gio::SimpleAction> menuUndo;
-   Glib::RefPtr<Gio::SimpleAction> menuSort;
-   Glib::RefPtr<Gio::SimpleAction> menuSort2;
-   Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
+    int idxMenu;
+    Glib::RefPtr<Gio::SimpleAction> menuUndo;
+    Glib::RefPtr<Gio::SimpleAction> menuSort;
+    Glib::RefPtr<Gio::SimpleAction> menuSort2;
+    Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
-   unsigned int target;               ///< Id identifying the target to play to
+    unsigned int target; ///< Id identifying the target to play to
 
-   static unsigned int ENDPOINTS;
-   static unsigned int CARDS2DEAL;
+    static unsigned int ENDPOINTS;
+    static unsigned int CARDS2DEAL;
 };
 
 #endif

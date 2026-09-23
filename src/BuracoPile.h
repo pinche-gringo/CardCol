@@ -1,8 +1,6 @@
 #ifndef BURACOPILE_H
 #define BURACOPILE_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,59 +16,55 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <card/Pile.h>
 
 /**Class for piles in the Buraco cardgame
  */
 class BuracoPile : public Card::VPile {
- public:
-   BuracoPile ();
-   virtual ~BuracoPile ();
+  public:
+    BuracoPile();
+    virtual ~BuracoPile();
 
-   virtual void setTopCard (Card::Widget& newCard);
-   void setTopCard (Card::Widget& newCard, bool visible) {
-      Card::VPile::setTopCard (newCard, visible); }
+    virtual void setTopCard(Card::Widget& newCard);
+    void setTopCard(Card::Widget& newCard, bool visible) { Card::VPile::setTopCard(newCard, visible); }
 
-   virtual unsigned int insert (Card::Widget& card, unsigned int pos);
+    virtual unsigned int insert(Card::Widget& card, unsigned int pos);
 
-   virtual Card::Widget& remove (Card::Widget& card);
-   Card::Widget& remove (Card::Widget& card, bool visible);
-   virtual Card::Widget& remove (unsigned int pos);
-   Card::Widget& remove (unsigned int pos, bool visible);
+    virtual Card::Widget& remove(Card::Widget& card);
+    Card::Widget& remove(Card::Widget& card, bool visible);
+    virtual Card::Widget& remove(unsigned int pos);
+    Card::Widget& remove(unsigned int pos, bool visible);
 
-   unsigned int getCardPoints () const;
-   unsigned int getPotentialPoints () const { return status.points; }
-   int getPoints () const {
-      return ((size () == 7) ? status.points : ((status.points >= 1000)
-                                                ? -1000 : 0)); }
+    unsigned int getCardPoints() const;
+    unsigned int getPotentialPoints() const { return status.points; }
+    int getPoints() const { return ((size() == 7) ? status.points : ((status.points >= 1000) ? -1000 : 0)); }
 
-   unsigned int getPosJoker () const { return status.posJoker; }
-   unsigned int getPosFirst () const { return status.posFirst; }
-   unsigned int getPosLast () const { return status.posLast; }
+    unsigned int getPosJoker() const { return status.posJoker; }
+    unsigned int getPosFirst() const { return status.posFirst; }
+    unsigned int getPosLast() const { return status.posLast; }
 
-   bool getPosition4Card (const Card::Widget& card, unsigned int& pos,
-                          unsigned int& move) const;
+    bool getPosition4Card(const Card::Widget& card, unsigned int& pos, unsigned int& move) const;
 
- protected:
-   bool isValid (const Card::Widget& card) const {
-      unsigned int pos, move;
-      return getPosition4Card (card, pos, move); }
-   void analysePile ();
+  protected:
+    bool isValid(const Card::Widget& card) const {
+        unsigned int pos, move;
+        return getPosition4Card(card, pos, move);
+    }
+    void analysePile();
 
- private:
-   BuracoPile (const BuracoPile& other);
-   const BuracoPile& operator= (const BuracoPile& other);
+  private:
+    BuracoPile(const BuracoPile& other);
+    const BuracoPile& operator=(const BuracoPile& other);
 
-   enum { UNDEFINED, NUMBER, COLOUR };
+    enum { UNDEFINED, NUMBER, COLOUR };
 
-   struct {
-      unsigned int posFirst : 3;
-      unsigned int posLast  : 3;
-      unsigned int posJoker : 3;
-      unsigned int type     : 2;
-      unsigned int points   : 11;
-   } status;
+    struct {
+        unsigned int posFirst : 3;
+        unsigned int posLast : 3;
+        unsigned int posJoker : 3;
+        unsigned int type : 2;
+        unsigned int points : 11;
+    } status;
 };
 
 #endif

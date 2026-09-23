@@ -16,40 +16,37 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <string>
 #include <vector>
-
 
 namespace Card {
 
 class Widget;
 class Images;
 
-
 /**Class to hold the cards used in a game
-*/
+ */
 class Set {
- public:
-   Set() : cards_() { }
-   Set(const Images& decks): cards_() { addPacket(decks); }
-   ~Set();
+  public:
+    Set() : cards_() {}
+    Set(const Images& decks) : cards_() { addPacket(decks); }
+    ~Set();
 
-   Widget& getCard(unsigned int nrCard) const;
-   const std::vector<Widget*>& getCards() const { return cards_; }
-   unsigned int size() const { return cards_.size(); }
+    Widget& getCard(unsigned int nrCard) const;
+    const std::vector<Widget*>& getCards() const { return cards_; }
+    unsigned int size() const { return cards_.size(); }
 
-   void shuffle();
-   void set(unsigned int pos, unsigned int nrCard);
+    void shuffle();
+    void set(unsigned int pos, unsigned int nrCard);
 
-   void clear();
-   void addPacket(const Images& decks);
-   void update() const;
+    void clear();
+    void addPacket(const Images& decks);
+    void update() const;
 
- private:
-   std::vector<Widget*> cards_;
+  private:
+    std::vector<Widget*> cards_;
 };
 
-}
+} // namespace Card
 
 #endif

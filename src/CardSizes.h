@@ -1,8 +1,6 @@
 #ifndef CARDSIZES_H
 #define CARDSIZES_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,45 +16,43 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <YGP/MetaEnum.h>
-
 
 /**Enumeration holding the supported card-sizes
  */
 class CardSizes : public YGP::MetaEnum {
- public:
-   typedef enum { TINY = 0, SMALL, NORMAL, BIG } SIZES;
+  public:
+    typedef enum { TINY = 0, SMALL, NORMAL, BIG } SIZES;
 
-   /// Creates a meta-enum of type CardSizes
-   /// \returns CardSizes& Instance of CardSizes
-   static const CardSizes& get () {
-      if (!instance)
-         instance = new CardSizes;
-      return *instance;
-   };
-   ~CardSizes ();
+    /// Creates a meta-enum of type CardSizes
+    /// \returns CardSizes& Instance of CardSizes
+    static const CardSizes& get() {
+        if (!instance)
+            instance = new CardSizes;
+        return *instance;
+    };
+    ~CardSizes();
 
-   static SIZES getSize (unsigned int width, unsigned int height);
-   static unsigned int getWidth (SIZES size);
-   static unsigned int getHeight (SIZES size);
+    static SIZES getSize(unsigned int width, unsigned int height);
+    static unsigned int getWidth(SIZES size);
+    static unsigned int getHeight(SIZES size);
 
-   static const unsigned int WIDTH_TINY;
-   static const unsigned int HEIGHT_TINY;
-   static const unsigned int WIDTH_SMALL;
-   static const unsigned int HEIGHT_SMALL;
-   static const unsigned int WIDTH_NORMAL;
-   static const unsigned int HEIGHT_NORMAL;
-   static const unsigned int WIDTH_BIG;
-   static const unsigned int HEIGHT_BIG;
+    static const unsigned int WIDTH_TINY;
+    static const unsigned int HEIGHT_TINY;
+    static const unsigned int WIDTH_SMALL;
+    static const unsigned int HEIGHT_SMALL;
+    static const unsigned int WIDTH_NORMAL;
+    static const unsigned int HEIGHT_NORMAL;
+    static const unsigned int WIDTH_BIG;
+    static const unsigned int HEIGHT_BIG;
 
- private:
-   CardSizes ();
-   CardSizes (const CardSizes& other);
+  private:
+    CardSizes();
+    CardSizes(const CardSizes& other);
 
-   const CardSizes& operator= (const CardSizes& other);
+    const CardSizes& operator=(const CardSizes& other);
 
-   static CardSizes* instance;
+    static CardSizes* instance;
 };
 
 #endif

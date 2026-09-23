@@ -1,8 +1,6 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <cardgames-cfg.h>
 
 #include <string>
@@ -26,67 +23,65 @@
 #include <gtkmm/entry.h>
 
 #include <XGP/EnumEntry.h>
-#include <XGP/XAttrSpin.h>
 #include <XGP/XAttrEntry.h>
+#include <XGP/XAttrSpin.h>
 
 #include "GameTypes.h"
 
 #include <XGP/XDialog.h>
 
-
 // Forward declarations
 class Options;
 
 namespace Gtk {
-   class Grid;
+class Grid;
 }
 
-
 class Settings : public XGP::XDialog {
- public:
-   virtual ~Settings ();
+  public:
+    virtual ~Settings();
 
-   static Settings* create (Gtk::Window& parent, Options& options);
+    static Settings* create(Gtk::Window& parent, Options& options);
 
-   /// Signal emitted, when OK clicked
-   sigc::signal<void()> sigCommit;
-   sigc::signal<void()> sigCardResize;
+    /// Signal emitted, when OK clicked
+    sigc::signal<void()> sigCommit;
+    sigc::signal<void()> sigCardResize;
 
- protected:
-   Settings (Options& options);
+  protected:
+    Settings(Options& options);
 
- private:
-   //Prohibited manager functions
-   Settings (const Settings& other);
-   const Settings& operator= (const Settings& other);
+  private:
+    // Prohibited manager functions
+    Settings(const Settings& other);
+    const Settings& operator=(const Settings& other);
 
-   virtual void okEvent ();
+    virtual void okEvent();
 
-   XGP::EnumEntry gameType;
-   XGP::XAttributeSpinEntry<unsigned int> timeout;
-   XGP::EnumEntry cardSize;
+    XGP::EnumEntry gameType;
+    XGP::XAttributeSpinEntry<unsigned int> timeout;
+    XGP::EnumEntry cardSize;
 #ifdef WITH_BURACO
-   XGP::XAttributeSpinEntry<unsigned int> maxBuracoPoints;
-   XGP::EnumEntry numBuracoCards;
+    XGP::XAttributeSpinEntry<unsigned int> maxBuracoPoints;
+    XGP::EnumEntry numBuracoCards;
 #endif
 #ifdef WITH_HEARTS
-   XGP::XAttributeSpinEntry<unsigned int> maxHeartsPoints;
+    XGP::XAttributeSpinEntry<unsigned int> maxHeartsPoints;
 #endif
 #ifdef WITH_ROVHULT
-   XGP::EnumEntry cardNuke;
-   XGP::EnumEntry cardReverse;
-   XGP::EnumEntry cardSkip;
+    XGP::EnumEntry cardNuke;
+    XGP::EnumEntry cardReverse;
+    XGP::EnumEntry cardSkip;
 
-   void chgValueRovhult (unsigned int which);
+    void chgValueRovhult(unsigned int which);
 #endif
 #ifdef WITH_SGTMAYOR
-   XGP::XAttributeSpinEntry<unsigned int> tricksSgtMayor;
+    XGP::XAttributeSpinEntry<unsigned int> tricksSgtMayor;
 #endif
 
-   static XGP::XAttributeSpinEntry<unsigned int> Settings::* intFields[];
-   static Settings* instance;
+    static XGP::XAttributeSpinEntry<unsigned int> Settings::* intFields[];
+    static Settings* instance;
 
-   unsigned int& startGame;
+    unsigned int& startGame;
 };
 
 #endif

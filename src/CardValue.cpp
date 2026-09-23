@@ -1,11 +1,11 @@
-//PROJECT     : Cardgames
-//SUBSYSTEM   : libCard
-//REFERENCES  :
-//TODO        :
-//BUGS        :
-//AUTHOR      : Markus Schwab
-//CREATED     : 02.08.2006
-//COPYRIGHT   : Copyright (C) 2006, 2007, 2026
+// PROJECT     : Cardgames
+// SUBSYSTEM   : libCard
+// REFERENCES  :
+// TODO        :
+// BUGS        :
+// AUTHOR      : Markus Schwab
+// CREATED     : 02.08.2006
+// COPYRIGHT   : Copyright (C) 2006, 2007, 2026
 
 // This file is part of CardCol.
 //
@@ -22,32 +22,28 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <cardgames-cfg.h>
 
 #include "card/Widget.h"
 
 #include "CardValue.h"
 
-
-CardValue* CardValue::instance (NULL);
-
+CardValue* CardValue::instance(NULL);
 
 //-----------------------------------------------------------------------------
 /// Default constructor; Fills the values
 //-----------------------------------------------------------------------------
-CardValue::CardValue () {
-   for (unsigned nr (Card::Widget::THREE); nr < Card::Widget::TEN; ++nr)
-      insert (std::make_pair (nr, std::string (1, Card::Widget::strNumber (static_cast<Card::Widget::NUMBERS> (nr)))));
-   insert (std::make_pair (Card::Widget::TEN, _("10")));
-   insert (std::make_pair (Card::Widget::JACK, _("Jack")));
-   insert (std::make_pair (Card::Widget::QUEEN, _("Queen")));
-   insert (std::make_pair (Card::Widget::KING, _("King")));
-   insert (std::make_pair (Card::Widget::ACE, _("Ace")));
+CardValue::CardValue() {
+    for (unsigned nr(Card::Widget::THREE); nr < Card::Widget::TEN; ++nr)
+        insert(std::make_pair(nr, std::string(1, Card::Widget::strNumber(static_cast<Card::Widget::NUMBERS>(nr)))));
+    insert(std::make_pair(Card::Widget::TEN, _("10")));
+    insert(std::make_pair(Card::Widget::JACK, _("Jack")));
+    insert(std::make_pair(Card::Widget::QUEEN, _("Queen")));
+    insert(std::make_pair(Card::Widget::KING, _("King")));
+    insert(std::make_pair(Card::Widget::ACE, _("Ace")));
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-CardValue::~CardValue () {
-}
+CardValue::~CardValue() {}

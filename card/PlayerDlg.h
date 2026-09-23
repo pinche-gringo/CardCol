@@ -1,8 +1,6 @@
 #ifndef PLAYERDLG_H
 #define PLAYERDLG_H
 
-//$Id: PlayerDlg.h,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,74 +16,71 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <vector>
 
 #include <XGP/XDialog.h>
 
-
 namespace Gtk {
-   class Label;
-   class Entry;
-   class Grid;
-}
+class Label;
+class Entry;
+class Grid;
+} // namespace Gtk
 
 namespace Card {
-   class Player;
+class Player;
 }
-
 
 namespace Card {
 
 // Class to enter the names of the players
 class PlayerDlg : public XGP::XDialog {
- public:
-   PlayerDlg (std::vector<Player*>& player);
-   virtual ~PlayerDlg ();
+  public:
+    PlayerDlg(std::vector<Player*>& player);
+    virtual ~PlayerDlg();
 
-   /// Creates a new player-dialogue; showing the passed players. Any
-   /// changes to the names are also reflected into the passed names
-   /// \param player Vector holding name of all players
-   /// \returns PlayerDlg* Pointer to the created dialoge
-   static PlayerDlg* create (std::vector<Player*>& player) {
-      PlayerDlg* dlg (new PlayerDlg (player));
-      dlg->signal_response ().connect (mem_fun (*dlg, &PlayerDlg::free));
-      return dlg;
-   }
+    /// Creates a new player-dialogue; showing the passed players. Any
+    /// changes to the names are also reflected into the passed names
+    /// \param player Vector holding name of all players
+    /// \returns PlayerDlg* Pointer to the created dialoge
+    static PlayerDlg* create(std::vector<Player*>& player) {
+        PlayerDlg* dlg(new PlayerDlg(player));
+        dlg->signal_response().connect(mem_fun(*dlg, &PlayerDlg::free));
+        return dlg;
+    }
 
-   /// Signal emitted, when OK clicked
-   sigc::signal<void()> sigCommit;
+    /// Signal emitted, when OK clicked
+    sigc::signal<void()> sigCommit;
 
- protected:
-   virtual void okEvent ();                     ///< Callback after clicking OK
+  protected:
+    virtual void okEvent(); ///< Callback after clicking OK
 
- private:
-   /// \name Prohibited manager functions
-   //@{
-   PlayerDlg (const PlayerDlg& other);
-   const PlayerDlg& operator= (const PlayerDlg& other);
-   //@}
+  private:
+    /// \name Prohibited manager functions
+    //@{
+    PlayerDlg(const PlayerDlg& other);
+    const PlayerDlg& operator=(const PlayerDlg& other);
+    //@}
 
-   Gtk::Grid* pClient;
+    Gtk::Grid* pClient;
 
-   typedef struct line {
-      Gtk::Label* label;
-      Gtk::Entry* value;
+    typedef struct line {
+        Gtk::Label* label;
+        Gtk::Entry* value;
 
-      line (const Glib::ustring& label, const Glib::ustring& attribute);
-      ~line ();
+        line(const Glib::ustring& label, const Glib::ustring& attribute);
+        ~line();
 
-      void attach (Gtk::Grid& table, unsigned int line);
+        void attach(Gtk::Grid& table, unsigned int line);
 
-    private:
-      line (const line&);
-      line& operator= (const line&);
-   } line;
+      private:
+        line(const line&);
+        line& operator=(const line&);
+    } line;
 
-   std::vector<line*>    aPlayers;
-   std::vector<Player*>& values;
+    std::vector<line*> aPlayers;
+    std::vector<Player*>& values;
 };
 
-}
+} // namespace Card
 
 #endif

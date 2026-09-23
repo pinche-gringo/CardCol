@@ -1,11 +1,11 @@
-//PROJECT     : Cardgames
-//SUBSYSTEM   : GameTypes
-//REFERENCES  :
-//TODO        :
-//BUGS        :
-//AUTHOR      : Markus Schwab
-//CREATED     : 28.04.2005
-//COPYRIGHT   : Copyright (C) 2005 - 2018, 2026
+// PROJECT     : Cardgames
+// SUBSYSTEM   : GameTypes
+// REFERENCES  :
+// TODO        :
+// BUGS        :
+// AUTHOR      : Markus Schwab
+// CREATED     : 28.04.2005
+// COPYRIGHT   : Copyright (C) 2005 - 2018, 2026
 
 // This file is part of CardCol.
 //
@@ -22,7 +22,6 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <cardgames-cfg.h>
 
 #include <glibmm/convert.h>
@@ -30,47 +29,45 @@
 
 #include "GameTypes.h"
 
-
 GameTypes* GameTypes::instance(NULL);
-
 
 //-----------------------------------------------------------------------------
 /// Default constructor
 //-----------------------------------------------------------------------------
 GameTypes::GameTypes() {
 #ifdef WITH_ROVHULT
-   Glib::ustring rovhult(_("Rovhult"));
-   if (rovhult == "Rovhult") {
-      try {
-	 rovhult = Glib::locale_to_utf8("Røvhult");
-      }
-      catch (Glib::Error&) {}
-   }
+    Glib::ustring rovhult(_("Rovhult"));
+    if (rovhult == "Rovhult") {
+        try {
+            rovhult = Glib::locale_to_utf8("Røvhult");
+        }
+        catch (Glib::Error&) {
+        }
+    }
 
-   insert(std::make_pair((int)ROVHULT, rovhult));
+    insert(std::make_pair((int)ROVHULT, rovhult));
 #endif
 #ifdef WITH_TWOPART
-   insert(std::make_pair((int)TWOPART, _("Twopart")));
+    insert(std::make_pair((int)TWOPART, _("Twopart")));
 #endif
 #ifdef WITH_HEARTS
-   insert(std::make_pair((int)HEARTS, _("Hearts")));
+    insert(std::make_pair((int)HEARTS, _("Hearts")));
 #endif
 #ifdef WITH_JABBERWOCKY
-   insert(std::make_pair((int)JABBERWOCKY, _("Jabberwocky")));
+    insert(std::make_pair((int)JABBERWOCKY, _("Jabberwocky")));
 #endif
 #ifdef WITH_BURACO
-   insert(std::make_pair((int)BURACO, _("Buraco")));
+    insert(std::make_pair((int)BURACO, _("Buraco")));
 #endif
 #ifdef WITH_MACHIAVELLI
-   insert(std::make_pair((int)MACHIAVELLI, _("Machiavelli")));
+    insert(std::make_pair((int)MACHIAVELLI, _("Machiavelli")));
 #endif
 #ifdef WITH_SGTMAYOR
-   insert(std::make_pair((int)SGTMAYOR, _("SgtMayor")));
+    insert(std::make_pair((int)SGTMAYOR, _("SgtMayor")));
 #endif
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-GameTypes::~GameTypes() {
-}
+GameTypes::~GameTypes() {}

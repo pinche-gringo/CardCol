@@ -16,59 +16,58 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <cardgames-cfg.h>
 
 #include <YGP/MetaEnum.h>
 
-
 /**Class to store the different game-types; both as string and as (unique)
    numeric representation
 */
-class GameTypes: public YGP::MetaEnum {
- public:
-   enum {
+class GameTypes : public YGP::MetaEnum {
+  public:
+    enum {
 #ifdef WITH_BURACO
-	  BURACO,
+        BURACO,
 #endif
 #ifdef WITH_HEARTS
-	  HEARTS,
+        HEARTS,
 #endif
 #ifdef WITH_JABBERWOCKY
-	  JABBERWOCKY,
+        JABBERWOCKY,
 #endif
 #ifdef WITH_MACHIAVELLI
-	  MACHIAVELLI,
+        MACHIAVELLI,
 #endif
 #ifdef WITH_ROVHULT
-	  ROVHULT,
+        ROVHULT,
 #endif
 #ifdef WITH_SGTMAYOR
-	  SGTMAYOR,
+        SGTMAYOR,
 #endif
 #ifdef WITH_TWOPART
-	  TWOPART,
+        TWOPART,
 #endif
-	  LAST,
-	  NONE=-1 };
+        LAST,
+        NONE = -1
+    };
 
-   /// Creates a meta-enum of type GameTypes
-   /// \returns GamesTypes& Instance of GameTypes
-   static const GameTypes& get() {
-      if (!instance)
-	 instance = new GameTypes;
-      return *instance;
-   }
+    /// Creates a meta-enum of type GameTypes
+    /// \returns GamesTypes& Instance of GameTypes
+    static const GameTypes& get() {
+        if (!instance)
+            instance = new GameTypes;
+        return *instance;
+    }
 
-   ~GameTypes();
+    ~GameTypes();
 
- private:
-   GameTypes();
-   GameTypes(const GameTypes& other);
+  private:
+    GameTypes();
+    GameTypes(const GameTypes& other);
 
-   const GameTypes& operator=(const GameTypes& other);
+    const GameTypes& operator=(const GameTypes& other);
 
-   static GameTypes* instance;
+    static GameTypes* instance;
 };
 
 #endif

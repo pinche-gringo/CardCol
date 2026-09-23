@@ -1,8 +1,6 @@
 #ifndef SGTMAYOR_H
 #define SGTMAYOR_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,141 +16,130 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
-#include <vector>
 #include <bitset>
+#include <vector>
 
 #include <gtkmm/label.h>
 
-#include <card/Set.h>
 #include <card/Pile.h>
+#include <card/Set.h>
 
 #include <card/Game.h>
 
-
 namespace Card {
-   class ScoreDlg;
+class ScoreDlg;
 }
 namespace Gio {
-   class SimpleAction;
+class SimpleAction;
 }
-
 
 // Class to handle the Hearts cardgame
 class SgtMayor : public Card::Game {
-   friend class Settings;
-   friend class CardgameAppl;
-   friend class CardgameCollection;
+    friend class Settings;
+    friend class CardgameAppl;
+    friend class CardgameCollection;
 
- public:
-   SgtMayor (Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
-             const std::vector<Card::Player*>& player, unsigned int posPlayer,
-             YGP::Mutex& mxSerialize);
-   virtual ~SgtMayor ();
+  public:
+    SgtMayor(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
+             unsigned int posPlayer, YGP::Mutex& mxSerialize);
+    virtual ~SgtMayor();
 
-   virtual void start ();
-   virtual void clean ();
-   virtual void playOpen (bool open);
-   virtual const char* name () { return "Sgt. Mayor"; }
-   virtual void changeNames (const std::vector<Card::Player*>& newPlayer);
-   virtual void resizeCards ();
+    virtual void start();
+    virtual void clean();
+    virtual void playOpen(bool open);
+    virtual const char* name() { return "Sgt. Mayor"; }
+    virtual void changeNames(const std::vector<Card::Player*>& newPlayer);
+    virtual void resizeCards();
 
 #if 0
    virtual bool handleMessage (unsigned int player, const std::string& message) throw (YGP::ParseError, YGP::CommError);
 #endif
 
- protected:
-   virtual Card::IPile* getPileOfPlayer (unsigned int player, unsigned int pile);
+  protected:
+    virtual Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile);
 
- private:
-   // Protected manager functions
-   SgtMayor (const SgtMayor& other);
-   const SgtMayor& operator= (const SgtMayor& other);
+  private:
+    // Protected manager functions
+    SgtMayor(const SgtMayor& other);
+    const SgtMayor& operator=(const SgtMayor& other);
 
-   //@Section Event handling
-   void cardSelected (unsigned int iCard);
-   void cardExchange (unsigned int iCard);
-   void cardColourSelect (unsigned int iCard);
+    //@Section Event handling
+    void cardSelected(unsigned int iCard);
+    void cardExchange(unsigned int iCard);
+    void cardColourSelect(unsigned int iCard);
 
-   //@Section Virtual methods
-   virtual void makeMove (unsigned int player);
-   virtual bool enableHuman ();
+    //@Section Virtual methods
+    virtual void makeMove(unsigned int player);
+    virtual bool enableHuman();
 
-   //@Section Helper methods
-   bool selectTrump ();
-   void exchangeCards (unsigned int playerBad, unsigned int posBad, unsigned int playerGood);
-   void exchangeCards (unsigned int playerBad, unsigned int posBad,
-		       unsigned int playerGood, unsigned int posGood);
-   void exchangeCards (unsigned int playerBad, unsigned int playerGood);
-   void exchange (unsigned int playerBad, unsigned int posBad,
-		  unsigned int playerGood, unsigned int posGood);
-   void exchgBack (unsigned int playerBad, unsigned int playerGood, unsigned int posGood);
-   void exchgNext (Card::HPile* pileGood, Card::HPile* pileBad);
-   void doExchangeCards (unsigned int playerBad, unsigned int posBad,
-			 unsigned int playerGood, unsigned int posGood);
-   void showNeededTricks ();
-   void showTrump (Card::Widget::COLOURS);
-   void doShowTrump (Card::Widget::COLOURS);
-   void makeExchange ();
-   void displayExchangeStatus ();
-   void startPlaying ();
-   void playCardDelayed (unsigned int player);
-   unsigned int playCard (unsigned int player);
-   static unsigned int calcNextPlayer (unsigned int player) {
-      return (++player >= NUM_PLAYERS) ? 0 : player;
-   }
-   unsigned int convertPlayer (unsigned int player) {
-      return (((player + posServer) < NUM_PLAYERS) ? player : player + posServer);
-   }
-   static std::string formatNumber (int nr);
+    //@Section Helper methods
+    bool selectTrump();
+    void exchangeCards(unsigned int playerBad, unsigned int posBad, unsigned int playerGood);
+    void exchangeCards(unsigned int playerBad, unsigned int posBad, unsigned int playerGood, unsigned int posGood);
+    void exchangeCards(unsigned int playerBad, unsigned int playerGood);
+    void exchange(unsigned int playerBad, unsigned int posBad, unsigned int playerGood, unsigned int posGood);
+    void exchgBack(unsigned int playerBad, unsigned int playerGood, unsigned int posGood);
+    void exchgNext(Card::HPile* pileGood, Card::HPile* pileBad);
+    void doExchangeCards(unsigned int playerBad, unsigned int posBad, unsigned int playerGood, unsigned int posGood);
+    void showNeededTricks();
+    void showTrump(Card::Widget::COLOURS);
+    void doShowTrump(Card::Widget::COLOURS);
+    void makeExchange();
+    void displayExchangeStatus();
+    void startPlaying();
+    void playCardDelayed(unsigned int player);
+    unsigned int playCard(unsigned int player);
+    static unsigned int calcNextPlayer(unsigned int player) { return (++player >= NUM_PLAYERS) ? 0 : player; }
+    unsigned int convertPlayer(unsigned int player) {
+        return (((player + posServer) < NUM_PLAYERS) ? player : player + posServer);
+    }
+    static std::string formatNumber(int nr);
 #if 0
    static bool readCardInfo (YGP::Tokenize& src, unsigned long& card, unsigned long& player);
 #endif
 
-   //@Section Computer player
-   unsigned int findPos2Play (unsigned int player);
-   bool isHighest (const Card::Widget& card) const;
-   unsigned int tryToGetTrickWithTrump (const Card::IPile& pile) const;
+    //@Section Computer player
+    unsigned int findPos2Play(unsigned int player);
+    bool isHighest(const Card::Widget& card) const;
+    unsigned int tryToGetTrickWithTrump(const Card::IPile& pile) const;
 
-   virtual void addMenus (const Glib::RefPtr<Gio::Menu>& menu,
-                          const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
-   virtual void removeMenus (const Glib::RefPtr<Gio::Menu>& menu,
-                             const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
-   virtual void showWonCards (bool show = true, unsigned int style = -1U);
+    virtual void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+    virtual void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions);
+    virtual void showWonCards(bool show = true, unsigned int style = -1U);
 
-   static const unsigned int NUM_PLAYERS = 3;              // Number of players
+    static const unsigned int NUM_PLAYERS = 3; // Number of players
 
-   struct playerCards {
-      Card::HPile  hand;                      // For players: Cards in the hand
-      Card::HPile  won;                                           // Won tricks
-      Gtk::Label name;
-      Gtk::Label neededTricks;
+    struct playerCards {
+        Card::HPile hand; // For players: Cards in the hand
+        Card::HPile won;  // Won tricks
+        Gtk::Label name;
+        Gtk::Label neededTricks;
 
-      playerCards () : hand (), won (), name (), neededTricks () { }
+        playerCards() : hand(), won(), name(), neededTricks() {}
 
-    private:
-      playerCards (const playerCards&);
-      playerCards& operator= (const playerCards&);
-   } players[NUM_PLAYERS];
-   Card::HPile played;
-   Card::Widget* pTrump;
+      private:
+        playerCards(const playerCards&);
+        playerCards& operator=(const playerCards&);
+    } players[NUM_PLAYERS];
+    Card::HPile played;
+    Card::Widget* pTrump;
 
-   unsigned int bfColours;
+    unsigned int bfColours;
 
-   unsigned int startPlayer;
-   std::bitset<13> playedCards[4];
-   int diffTricks[NUM_PLAYERS];
+    unsigned int startPlayer;
+    std::bitset<13> playedCards[4];
+    int diffTricks[NUM_PLAYERS];
 
-   Glib::RefPtr<Gio::SimpleAction> menuSort;
-   Glib::RefPtr<Gio::SimpleAction> menuSort2;
-   Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
+    Glib::RefPtr<Gio::SimpleAction> menuSort;
+    Glib::RefPtr<Gio::SimpleAction> menuSort2;
+    Glib::RefPtr<Gio::SimpleAction> menuShowScoreDlg;
 
-   Card::ScoreDlg* pScoreDlg;
+    Card::ScoreDlg* pScoreDlg;
 
-   static const unsigned int COLS_PLAYER[NUM_PLAYERS];
-   static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
+    static const unsigned int COLS_PLAYER[NUM_PLAYERS];
+    static const unsigned int ROWS_PLAYER[NUM_PLAYERS];
 
-   static unsigned int ENDTRICKS;
+    static unsigned int ENDTRICKS;
 };
 
 #endif

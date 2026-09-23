@@ -1,8 +1,6 @@
 #ifndef CARDVALUE_H
 #define CARDVALUE_H
 
-//$Id$
-
 // This file is part of CardCol.
 //
 // CardCol is free software: you can redistribute it and/or modify
@@ -18,29 +16,27 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <YGP/MetaEnum.h>
-
 
 /**Storing the possible values a card can have as text
  */
 class CardValue : public YGP::MetaEnum {
- public:
-   /// Creates a meta-enum of type CardValue
-   /// \returns const CardValue& Instance of CardValue
-   static const CardValue& get () {
-      if (!instance)
-	 instance = new CardValue;
-      return *instance;
-   }
-   ~CardValue ();
+  public:
+    /// Creates a meta-enum of type CardValue
+    /// \returns const CardValue& Instance of CardValue
+    static const CardValue& get() {
+        if (!instance)
+            instance = new CardValue;
+        return *instance;
+    }
+    ~CardValue();
 
- private:
-   CardValue ();
-   CardValue (const CardValue& other);
-   const CardValue& operator= (const CardValue& other);
+  private:
+    CardValue();
+    CardValue(const CardValue& other);
+    const CardValue& operator=(const CardValue& other);
 
-   static CardValue* instance;
+    static CardValue* instance;
 };
 
 #endif

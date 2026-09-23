@@ -1,14 +1,11 @@
-//$Id: Player.cpp,v 1.1 2009/06/14 07:03:27 g17m0 Exp $
-
-//PROJECT     : Cardgames
-//SUBSYSTEM   : Common
-//REFERENCES  :
-//TODO        :
-//BUGS        :
-//REVISION    : $Revision: 1.1 $
-//AUTHOR      : Markus Schwab
-//CREATED     : 25.07.2003
-//COPYRIGHT   : Copyright (C) 2002 - 2004, 2008
+// PROJECT     : Cardgames
+// SUBSYSTEM   : Common
+// REFERENCES  :
+// TODO        :
+// BUGS        :
+// AUTHOR      : Markus Schwab
+// CREATED     : 25.07.2003
+// COPYRIGHT   : Copyright (C) 2002 - 2004, 2008, 2026
 
 // This file is part of CardCol.
 //
@@ -25,9 +22,7 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include "Player.h"
-
 
 namespace Card {
 
@@ -35,22 +30,17 @@ namespace Card {
 /// Constructor; from a name
 /// \param playerName Name of the player
 //-----------------------------------------------------------------------------
-Player::Player (const Glib::ustring& playerName) : name (playerName) {
-}
+Player::Player(const Glib::ustring& playerName) : name(playerName) {}
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-Player::~Player () {
-}
-
+Player::~Player() {}
 
 //----------------------------------------------------------------------------
 /// Time in between two turns of the player.
 /// \returns unsigned int Time to delay: 0 -> execute immediately
 //----------------------------------------------------------------------------
-unsigned int Player::timeout () const {
-   return 0;
-}
+unsigned int Player::timeout() const { return 0; }
 
-}
+} // namespace Card

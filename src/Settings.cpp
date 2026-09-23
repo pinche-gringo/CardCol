@@ -1,11 +1,11 @@
-//PROJECT     : Cardgames
-//SUBSYSTEM   : Settings
-//REFERENCES  :
-//TODO        :
-//BUGS        :
-//AUTHOR      : Markus Schwab
-//CREATED     : 28.4.2005
-//COPYRIGHT   : Copyright (C) 2005 - 2009, 2011, 2026
+// PROJECT     : Cardgames
+// SUBSYSTEM   : Settings
+// REFERENCES  :
+// TODO        :
+// BUGS        :
+// AUTHOR      : Markus Schwab
+// CREATED     : 28.4.2005
+// COPYRIGHT   : Copyright (C) 2005 - 2009, 2011, 2026
 
 // This file is part of CardCol.
 //
@@ -22,7 +22,6 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <cardgames-cfg.h>
 
 #include <gtkmm/box.h>
@@ -31,228 +30,223 @@
 #include <gtkmm/notebook.h>
 
 #include <YGP/Check.h>
-#include <YGP/Trace.h>
 #include <YGP/MetaEnum.h>
+#include <YGP/Trace.h>
 
-#include <card/Pile.h>
-#include <card/Images.h>
 #include <card/ComputerPlayer.h>
+#include <card/Images.h>
+#include <card/Pile.h>
 
 #ifdef WITH_BURACO
-#  include "Buraco.h"
-#  include "BuracoCards.h"
+#    include "Buraco.h"
+#    include "BuracoCards.h"
 #endif
 #ifdef WITH_HEARTS
-#  include "Hearts.h"
+#    include "Hearts.h"
 #endif
 #ifdef WITH_ROVHULT
-#  include "Rovhult.h"
-#  include "CardValue.h"
+#    include "CardValue.h"
+#    include "Rovhult.h"
 #endif
 #ifdef WITH_SGTMAYOR
-#  include "SgtMayor.h"
+#    include "SgtMayor.h"
 #endif
 
-#include "Options.h"
 #include "CardSizes.h"
+#include "Options.h"
 
 #include "Settings.h"
 
-
-XGP::XAttributeSpinEntry<unsigned int> Settings::* Settings::intFields[] =
-   {
+XGP::XAttributeSpinEntry<unsigned int> Settings::* Settings::intFields[] = {
 #ifdef WITH_BURACO
-     &Settings::maxBuracoPoints,
+    &Settings::maxBuracoPoints,
 #endif
 #ifdef WITH_HEARTS
-     &Settings::maxHeartsPoints,
+    &Settings::maxHeartsPoints,
 #endif
 #ifdef WITH_SGTMAYOR
-     &Settings::tricksSgtMayor,
+    &Settings::tricksSgtMayor,
 #endif
-     &Settings::timeout
-   };
+    &Settings::timeout};
 
-Settings* Settings::instance (NULL);
-
+Settings* Settings::instance(NULL);
 
 //-----------------------------------------------------------------------------
 /// Constructor
 /// \param options Options to change
 //-----------------------------------------------------------------------------
-Settings::Settings (Options& options)
-   : XGP::XDialog (OKCANCEL),
-     sigCommit (), sigCardResize (),
-     gameType (GameTypes::get ()),
-     timeout (Card::ComputerPlayer::TIMEOUT, Gtk::Adjustment::create (0, 100.0, 10000.0, 1, 100)),
-     cardSize (CardSizes::get ()),
+Settings::Settings(Options& options)
+    : XGP::XDialog(OKCANCEL), sigCommit(), sigCardResize(), gameType(GameTypes::get()),
+      timeout(Card::ComputerPlayer::TIMEOUT, Gtk::Adjustment::create(0, 100.0, 10000.0, 1, 100)), cardSize(CardSizes::get()),
 #ifdef WITH_BURACO
-     maxBuracoPoints (Buraco::ENDPOINTS, Gtk::Adjustment::create (0, 0, 100000.0, 1, 100)),
-     numBuracoCards (BuracoCards::get ()),
+      maxBuracoPoints(Buraco::ENDPOINTS, Gtk::Adjustment::create(0, 0, 100000.0, 1, 100)), numBuracoCards(BuracoCards::get()),
 #endif
 #ifdef WITH_HEARTS
-     maxHeartsPoints (Hearts::ENDPOINTS, Gtk::Adjustment::create (0, 0, 100000.0, 1, 100)),
+      maxHeartsPoints(Hearts::ENDPOINTS, Gtk::Adjustment::create(0, 0, 100000.0, 1, 100)),
 #endif
 #ifdef WITH_ROVHULT
-     cardNuke (CardValue::get ()),
-     cardReverse (CardValue::get ()),
-     cardSkip (CardValue::get ()),
+      cardNuke(CardValue::get()), cardReverse(CardValue::get()), cardSkip(CardValue::get()),
 #endif
 #ifdef WITH_SGTMAYOR
-     tricksSgtMayor (SgtMayor::ENDTRICKS, Gtk::Adjustment::create (0, 3, 100000.0, 1, 3)),
+      tricksSgtMayor(SgtMayor::ENDTRICKS, Gtk::Adjustment::create(0, 3, 100000.0, 1, 3)),
 #endif
-     startGame (options.type) {
-   Check3 (instance == NULL);
-   instance = this;
+      startGame(options.type) {
+    Check3(instance == NULL);
+    instance = this;
 
-   set_title (_("Preferences"));
+    set_title(_("Preferences"));
 
-   Gtk::Notebook& nb (*Gtk::make_managed<Gtk::Notebook> ());
-   Gtk::Grid& pagGeneral (*Gtk::make_managed<Gtk::Grid> ());
-   pagGeneral.set_row_spacing (3); pagGeneral.set_column_spacing (5);
+    Gtk::Notebook& nb(*Gtk::make_managed<Gtk::Notebook>());
+    Gtk::Grid& pagGeneral(*Gtk::make_managed<Gtk::Grid>());
+    pagGeneral.set_row_spacing(3);
+    pagGeneral.set_column_spacing(5);
 
-   Gtk::Label* lbl (Gtk::make_managed<Gtk::Label> (_("_Delay of computer player (ms):"), true));
-   lbl->set_mnemonic_widget (timeout);
-   pagGeneral.attach (*lbl,    0, 0);
-   timeout.set_hexpand ();
-   pagGeneral.attach (timeout, 1, 0);
+    Gtk::Label* lbl(Gtk::make_managed<Gtk::Label>(_("_Delay of computer player (ms):"), true));
+    lbl->set_mnemonic_widget(timeout);
+    pagGeneral.attach(*lbl, 0, 0);
+    timeout.set_hexpand();
+    pagGeneral.attach(timeout, 1, 0);
 
-   lbl = Gtk::make_managed<Gtk::Label> (_("D_efault game:"), true);
-   lbl->set_mnemonic_widget (gameType);
-   pagGeneral.attach (*lbl,     0, 1);
-   gameType.set_hexpand ();
-   pagGeneral.attach (gameType, 1, 1);
+    lbl = Gtk::make_managed<Gtk::Label>(_("D_efault game:"), true);
+    lbl->set_mnemonic_widget(gameType);
+    pagGeneral.attach(*lbl, 0, 1);
+    gameType.set_hexpand();
+    pagGeneral.attach(gameType, 1, 1);
 
-   gameType.set_active_text (GameTypes::get ()[options.type]);
-   nb.append_page (pagGeneral, _("_General"), true);
+    gameType.set_active_text(GameTypes::get()[options.type]);
+    nb.append_page(pagGeneral, _("_General"), true);
 
-   lbl = Gtk::make_managed<Gtk::Label> (_("C_ard size:"), true);
-   lbl->set_mnemonic_widget (cardSize);
-   pagGeneral.attach (*lbl,     0, 2);
-   cardSize.set_hexpand ();
-   pagGeneral.attach (cardSize, 1, 2);
+    lbl = Gtk::make_managed<Gtk::Label>(_("C_ard size:"), true);
+    lbl->set_mnemonic_widget(cardSize);
+    pagGeneral.attach(*lbl, 0, 2);
+    cardSize.set_hexpand();
+    pagGeneral.attach(cardSize, 1, 2);
 
-   cardSize.set_active_text (CardSizes::get ()[CardSizes::getSize (Card::Images::WIDTH, Card::Images::HEIGHT)]);
+    cardSize.set_active_text(CardSizes::get()[CardSizes::getSize(Card::Images::WIDTH, Card::Images::HEIGHT)]);
 
 #ifdef WITH_BURACO
-   Gtk::Grid& pagBuraco (*Gtk::make_managed<Gtk::Grid> ());
-   pagBuraco.set_row_spacing (3); pagBuraco.set_column_spacing (5);
-   lbl = Gtk::make_managed<Gtk::Label> (_("_Points to end game:"), true);
-   lbl->set_mnemonic_widget (maxBuracoPoints);
-   pagBuraco.attach (*lbl,            0, 0);
-   maxBuracoPoints.set_hexpand ();
-   pagBuraco.attach (maxBuracoPoints, 1, 0);
+    Gtk::Grid& pagBuraco(*Gtk::make_managed<Gtk::Grid>());
+    pagBuraco.set_row_spacing(3);
+    pagBuraco.set_column_spacing(5);
+    lbl = Gtk::make_managed<Gtk::Label>(_("_Points to end game:"), true);
+    lbl->set_mnemonic_widget(maxBuracoPoints);
+    pagBuraco.attach(*lbl, 0, 0);
+    maxBuracoPoints.set_hexpand();
+    pagBuraco.attach(maxBuracoPoints, 1, 0);
 
-   lbl = Gtk::make_managed<Gtk::Label> (_("_Number of cards:"), true);
-   lbl->set_mnemonic_widget (cardNuke);
-   pagBuraco.attach (*lbl,           0, 1);
-   numBuracoCards.set_hexpand ();
-   pagBuraco.attach (numBuracoCards, 1, 1);
-   numBuracoCards.set_active_text (BuracoCards::get ()[Buraco::CARDS2DEAL]);
+    lbl = Gtk::make_managed<Gtk::Label>(_("_Number of cards:"), true);
+    lbl->set_mnemonic_widget(cardNuke);
+    pagBuraco.attach(*lbl, 0, 1);
+    numBuracoCards.set_hexpand();
+    pagBuraco.attach(numBuracoCards, 1, 1);
+    numBuracoCards.set_active_text(BuracoCards::get()[Buraco::CARDS2DEAL]);
 
-   nb.append_page (pagBuraco, _("_Buraco"), true);
+    nb.append_page(pagBuraco, _("_Buraco"), true);
 #endif
 
 #ifdef WITH_HEARTS
-   Gtk::Box& pagHearts (*Gtk::make_managed<Card::HBox> ());
-   lbl = Gtk::make_managed<Gtk::Label> (_("_Points to end game:"), true);
-   lbl->set_mnemonic_widget (maxHeartsPoints);
-   lbl->set_margin (5);
-   pagHearts.append (*lbl);
-   maxHeartsPoints.set_hexpand (); maxHeartsPoints.set_margin (5);
-   pagHearts.append (maxHeartsPoints);
+    Gtk::Box& pagHearts(*Gtk::make_managed<Card::HBox>());
+    lbl = Gtk::make_managed<Gtk::Label>(_("_Points to end game:"), true);
+    lbl->set_mnemonic_widget(maxHeartsPoints);
+    lbl->set_margin(5);
+    pagHearts.append(*lbl);
+    maxHeartsPoints.set_hexpand();
+    maxHeartsPoints.set_margin(5);
+    pagHearts.append(maxHeartsPoints);
 
-   nb.append_page (pagHearts, _("_Hearts"), true);
+    nb.append_page(pagHearts, _("_Hearts"), true);
 #endif
 
 #ifdef WITH_ROVHULT
-   Gtk::Grid& pagRovhult (*Gtk::make_managed<Gtk::Grid> ());
-   pagRovhult.set_row_spacing (3); pagRovhult.set_column_spacing (5);
-   lbl = Gtk::make_managed<Gtk::Label> (_("_Nuke card (default 10):"), true);
-   lbl->set_mnemonic_widget (cardNuke);
-   pagRovhult.attach (*lbl,        0, 0);
-   cardNuke.set_hexpand ();
-   pagRovhult.attach (cardNuke,    1, 0);
-   cardNuke.set_active_text (CardValue::get ()[Rovhult::cardNuke]);
-   cardNuke.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 0));
+    Gtk::Grid& pagRovhult(*Gtk::make_managed<Gtk::Grid>());
+    pagRovhult.set_row_spacing(3);
+    pagRovhult.set_column_spacing(5);
+    lbl = Gtk::make_managed<Gtk::Label>(_("_Nuke card (default 10):"), true);
+    lbl->set_mnemonic_widget(cardNuke);
+    pagRovhult.attach(*lbl, 0, 0);
+    cardNuke.set_hexpand();
+    pagRovhult.attach(cardNuke, 1, 0);
+    cardNuke.set_active_text(CardValue::get()[Rovhult::cardNuke]);
+    cardNuke.signal_changed().connect(bind(mem_fun(*this, &Settings::chgValueRovhult), 0));
 
-   lbl = Gtk::make_managed<Gtk::Label> (_("Re_verse card (default 7):"), true);
-   lbl->set_mnemonic_widget (cardReverse);
-   pagRovhult.attach (*lbl,        0, 1);
-   cardReverse.set_hexpand ();
-   pagRovhult.attach (cardReverse, 1, 1);
-   cardReverse.set_active_text (CardValue::get ()[Rovhult::cardReverse]);
-   cardReverse.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 1));
+    lbl = Gtk::make_managed<Gtk::Label>(_("Re_verse card (default 7):"), true);
+    lbl->set_mnemonic_widget(cardReverse);
+    pagRovhult.attach(*lbl, 0, 1);
+    cardReverse.set_hexpand();
+    pagRovhult.attach(cardReverse, 1, 1);
+    cardReverse.set_active_text(CardValue::get()[Rovhult::cardReverse]);
+    cardReverse.signal_changed().connect(bind(mem_fun(*this, &Settings::chgValueRovhult), 1));
 
-   lbl = Gtk::make_managed<Gtk::Label> (_("_Skip card (default 8):"), true);
-   lbl->set_mnemonic_widget (cardSkip);
-   pagRovhult.attach (*lbl,        0, 2);
-   cardSkip.set_hexpand ();
-   pagRovhult.attach (cardSkip,    1, 2);
-   cardSkip.set_active_text (CardValue::get ()[Rovhult::cardSkip]);
-   cardSkip.signal_changed ().connect (bind (mem_fun (*this, &Settings::chgValueRovhult), 2));
+    lbl = Gtk::make_managed<Gtk::Label>(_("_Skip card (default 8):"), true);
+    lbl->set_mnemonic_widget(cardSkip);
+    pagRovhult.attach(*lbl, 0, 2);
+    cardSkip.set_hexpand();
+    pagRovhult.attach(cardSkip, 1, 2);
+    cardSkip.set_active_text(CardValue::get()[Rovhult::cardSkip]);
+    cardSkip.signal_changed().connect(bind(mem_fun(*this, &Settings::chgValueRovhult), 2));
 
-   nb.append_page (pagRovhult, _("_Rovhult"), true);
+    nb.append_page(pagRovhult, _("_Rovhult"), true);
 #endif
 
 #ifdef WITH_SGTMAYOR
-   Gtk::Box& pagSgtMayor (*Gtk::make_managed<Card::HBox> ());
-   lbl = Gtk::make_managed<Gtk::Label> (_("_Tricks to win game:"), true);
-   lbl->set_mnemonic_widget (tricksSgtMayor);
-   lbl->set_margin (5);
-   pagSgtMayor.append (*lbl);
-   tricksSgtMayor.set_hexpand (); tricksSgtMayor.set_margin (5);
-   pagSgtMayor.append (tricksSgtMayor);
+    Gtk::Box& pagSgtMayor(*Gtk::make_managed<Card::HBox>());
+    lbl = Gtk::make_managed<Gtk::Label>(_("_Tricks to win game:"), true);
+    lbl->set_mnemonic_widget(tricksSgtMayor);
+    lbl->set_margin(5);
+    pagSgtMayor.append(*lbl);
+    tricksSgtMayor.set_hexpand();
+    tricksSgtMayor.set_margin(5);
+    pagSgtMayor.append(tricksSgtMayor);
 
-   nb.append_page (pagSgtMayor, _("Sgt. _Mayor"), true);
+    nb.append_page(pagSgtMayor, _("Sgt. _Mayor"), true);
 #endif
 
-#if !defined (WITH_BURACO) && !defined (WITH_HEARTS) && !defined (WITH_ROVHULT) && !defined (WITH_SGTMAYOR)
-   nb.set_show_tabs (0);
+#if !defined(WITH_BURACO) && !defined(WITH_HEARTS) && !defined(WITH_ROVHULT) && !defined(WITH_SGTMAYOR)
+    nb.set_show_tabs(0);
 #endif
 
-   nb.set_hexpand (); nb.set_vexpand (); nb.set_margin (5);
-   get_content_area ()->append (nb);
-   show ();
+    nb.set_hexpand();
+    nb.set_vexpand();
+    nb.set_margin(5);
+    get_content_area()->append(nb);
+    show();
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-Settings::~Settings () {
-   instance = NULL;
-}
+Settings::~Settings() { instance = NULL; }
 
 //-----------------------------------------------------------------------------
 /// Handling of the OK button; closes the dialog with commiting data
 //-----------------------------------------------------------------------------
-void Settings::okEvent () {
-   ok->grab_focus ();
+void Settings::okEvent() {
+    ok->grab_focus();
 
-   for (unsigned int i (0); i < (sizeof (intFields) / sizeof (*intFields)); ++i)
-      (this->*intFields[i]).commit ();
+    for (unsigned int i(0); i < (sizeof(intFields) / sizeof(*intFields)); ++i)
+        (this->*intFields[i]).commit();
 
-    startGame = GameTypes::get ()[gameType.get_active_text ()];
+    startGame = GameTypes::get()[gameType.get_active_text()];
 
-    unsigned int width (CardSizes::getWidth ((CardSizes::SIZES)CardSizes::get ()[cardSize.get_active_text ()]));
-    unsigned int height (CardSizes::getHeight ((CardSizes::SIZES)CardSizes::get ()[cardSize.get_active_text ()]));
+    unsigned int width(CardSizes::getWidth((CardSizes::SIZES)CardSizes::get()[cardSize.get_active_text()]));
+    unsigned int height(CardSizes::getHeight((CardSizes::SIZES)CardSizes::get()[cardSize.get_active_text()]));
     if ((width != Card::Images::WIDTH) || (height != Card::Images::HEIGHT)) {
-       Card::Images::WIDTH = width;
-       Card::Images::HEIGHT = height;
-       sigCardResize.emit ();
+        Card::Images::WIDTH = width;
+        Card::Images::HEIGHT = height;
+        sigCardResize.emit();
     }
 
 #ifdef WITH_ROVHULT
-    Rovhult::cardNuke = static_cast<Card::Widget::NUMBERS> (CardValue::get ()[cardNuke.get_active_text ()]);
-    Rovhult::cardReverse = static_cast<Card::Widget::NUMBERS> (CardValue::get ()[cardReverse.get_active_text ()]);
-    Rovhult::cardSkip = static_cast<Card::Widget::NUMBERS> (CardValue::get ()[cardSkip.get_active_text ()]);
+    Rovhult::cardNuke = static_cast<Card::Widget::NUMBERS>(CardValue::get()[cardNuke.get_active_text()]);
+    Rovhult::cardReverse = static_cast<Card::Widget::NUMBERS>(CardValue::get()[cardReverse.get_active_text()]);
+    Rovhult::cardSkip = static_cast<Card::Widget::NUMBERS>(CardValue::get()[cardSkip.get_active_text()]);
 #endif
 
 #ifdef WITH_BURACO
-    Buraco::CARDS2DEAL = BuracoCards::get ()[numBuracoCards.get_active_text ()];
+    Buraco::CARDS2DEAL = BuracoCards::get()[numBuracoCards.get_active_text()];
 #endif
 
-    sigCommit.emit ();
+    sigCommit.emit();
 }
 
 //-----------------------------------------------------------------------------
@@ -261,15 +255,16 @@ void Settings::okEvent () {
 /// \param parent Parent window
 /// \returns Settings* Pointer to the created window
 //-----------------------------------------------------------------------------
-Settings* Settings::create (Gtk::Window& parent, Options& options) {
-   if (instance == NULL) {
-      instance = new Settings (options); Check3 (instance);
-      instance->set_transient_for (parent);
-      instance->signal_response ().connect (mem_fun (*instance, &Settings::free));
-   }
-   else
-      instance->present ();
-   return instance;
+Settings* Settings::create(Gtk::Window& parent, Options& options) {
+    if (instance == NULL) {
+        instance = new Settings(options);
+        Check3(instance);
+        instance->set_transient_for(parent);
+        instance->signal_response().connect(mem_fun(*instance, &Settings::free));
+    }
+    else
+        instance->present();
+    return instance;
 }
 
 #ifdef WITH_ROVHULT
@@ -277,22 +272,21 @@ Settings* Settings::create (Gtk::Window& parent, Options& options) {
 /// Callback when a value of the R�vhult-settings have been changed
 /// \param which ID of changed control
 //-----------------------------------------------------------------------------
-void Settings::chgValueRovhult (unsigned int which) {
-   TRACE8 ("Settings::chgValueRovhult (unsigned int) - " << which);
-   Check1 (which < 3);
+void Settings::chgValueRovhult(unsigned int which) {
+    TRACE8("Settings::chgValueRovhult(unsigned int) - " << which);
+    Check1(which < 3);
 
-   XGP::EnumEntry* fields[] = { &cardNuke, &cardReverse, &cardSkip };
-   bool valuesOK (true);
-   for (unsigned int i (0); i < (sizeof (fields) / sizeof (*fields)); ++i) {
-      Check3 (fields[i]);
-      if ((i != which)
-	  && (fields[i]->get_active_text () == fields[which]->get_active_text ())) {
-	 valuesOK = false;
-	 break;
-      }
-   }
+    XGP::EnumEntry* fields[] = {&cardNuke, &cardReverse, &cardSkip};
+    bool valuesOK(true);
+    for (unsigned int i(0); i < (sizeof(fields) / sizeof(*fields)); ++i) {
+        Check3(fields[i]);
+        if ((i != which) && (fields[i]->get_active_text() == fields[which]->get_active_text())) {
+            valuesOK = false;
+            break;
+        }
+    }
 
-   ok->set_sensitive (valuesOK);
+    ok->set_sensitive(valuesOK);
 }
 
 #endif
