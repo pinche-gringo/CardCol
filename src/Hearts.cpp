@@ -310,7 +310,6 @@ void Hearts::takeCard(unsigned int iCard) {
     Check1(iCard < played.size());
     Check1(gameStatus() == EXCHANGE);
 
-    played.resize(iCard, Card::IPile::NORMAL);
     animateCard(*players[0].hand, played, iCard).sigAnimation.connect(mem_fun(*this, &Hearts::cardTaken));
 }
 
@@ -563,7 +562,6 @@ bool Hearts::moveSelectedCardToPlayed(unsigned int player, unsigned int card) {
         win.sigAnimation.connect(mem_fun(*this, &Hearts::finishMove));
     }
     else {
-        players[player].hand->resize(card, Card::IPile::NORMAL);
         // If there are already two cards exchanged (and thus the 3rd is going
         // to be exchanged) start exchanging of cards for the computer players
         Card::Window& win(animateCard(played, *players[player].hand, card));

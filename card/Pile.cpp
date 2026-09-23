@@ -193,8 +193,15 @@ unsigned int IPile::insert(Widget& card, unsigned int pos) {
 
     std::vector<Widget*>::iterator i(cards.insert(begin() + pos, &card));
 
-    if (style > NORMAL) // Cards to display compressed?
-        resize((pos == (size() - 1)) ? pos - 1 : pos, style);
+    // Resize the inserted card according to its new position, as it might
+    // still have the size of its previous pile
+    if (pos == (size() - 1)) {
+        if (style > NORMAL) // Compress the previous top-card (if any)
+            resize(pos - 1, style);
+        resize(pos, NORMAL);
+    }
+    else
+        resize(pos, style);
 
     return i - begin();
 }
@@ -562,7 +569,7 @@ int IPile::find(unsigned int id, unsigned int start) const {
 //-----------------------------------------------------------------------------
 void IPile::resize(Widget& card, PileStyle) {
     TRACE1("IPile::resize - base");
-    card.set_size_request(Images::WIDTH, Images::HEIGHT);
+    card.set_size_request();
 }
 
 //-----------------------------------------------------------------------------
@@ -914,7 +921,9 @@ template <> void Pile<Card::VBox>::resize(Card::Widget& card, PileStyle s) {
         card.hide();
     else {
         TRACE1("VPile::resize " << card << '/' << getCompressedSize(s));
-        card.set_size_request(-1, getCompressedSize(s));
+        // Remark: Full-sized cards request -1 (instead of Images::HEIGHT), so they
+        //     keep their full size, if the size of the cards changes
+        card.set_size_request(-1, (s == NORMAL) ? -1 : static_cast<int>(getCompressedSize(s)));
         if (style == TOTALLY_COMPRESSED)
             card.show();
     }
@@ -945,7 +954,7 @@ template <> void HPile::resize(Card::Widget& card, PileStyle s) {
     if (s == TOTALLY_COMPRESSED)
         card.hide();
     else {
-        card.set_size_request(getCompressedSize(s), -1);
+        card.set_size_request((s == NORMAL) ? -1 : static_cast<int>(getCompressedSize(s)), -1);
         if (style == TOTALLY_COMPRESSED)
             card.show();
     }

@@ -103,6 +103,8 @@ class Widget : public Gtk::Box {
 
     bool isVisible;
     unsigned int nrCard;
+    int reqWidth{-1};  ///< Requested width (-1: Full width of the image)
+    int reqHeight{-1}; ///< Requested height (-1: Full height of the image)
 
     static const Images* deck;
     static constexpr std::array<COLOURS, 4> transColour{CLUBS, SPADES, HEARTS, DIAMONDS};

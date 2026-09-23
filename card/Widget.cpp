@@ -22,6 +22,8 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <algorithm>
+
 #include <cardgames-cfg.h>
 
 // Remark: Deliberately restrict tracing of this file to level 1
@@ -131,9 +133,7 @@ void Widget::update() {
     // Remark: Re-apply the current (possibly compressed) size-request, as it
     //     crops the shown image to match; a plain img.set_pixbuf() would show
     //     the full-sized image again, undoing any compression of the pile
-    int width(-1), height(-1);
-    get_size_request(width, height);
-    set_size_request(width, height);
+    set_size_request(reqWidth, reqHeight);
 }
 
 //-----------------------------------------------------------------------------
@@ -203,14 +203,21 @@ Widget* Widget::getEmpty() { return new Widget; }
 //-----------------------------------------------------------------------------
 /// Sets the minimum size of a widget; that is, the widget’s size request will
 /// be at least width by height.
+/// \param width Width to show; -1: Full width of the image
+/// \param height Height to show; -1: Full height of the image
+/// \remarks The request is stored, so that -1 follows changes of the card-size
 //-----------------------------------------------------------------------------
 void Widget::set_size_request(int width, int height) {
+    reqWidth = width;
+    reqHeight = height;
+
     Glib::RefPtr<Gdk::Pixbuf> pic(getShownImage());
     Glib::RefPtr<Gdk::Pixbuf> dest(
-        Gdk::Pixbuf::create_subpixbuf(pic, 0, 0, width < 0 ? pic->get_width() : width, height < 0 ? pic->get_height() : height));
+        Gdk::Pixbuf::create_subpixbuf(pic, 0, 0, width < 0 ? pic->get_width() : std::min(width, pic->get_width()),
+                                      height < 0 ? pic->get_height() : std::min(height, pic->get_height())));
 
     img.set_pixbuf(dest);
-    Gtk::Box::set_size_request(width, height);
+    Gtk::Box::set_size_request(dest->get_width(), dest->get_height());
 }
 
 } // namespace Card

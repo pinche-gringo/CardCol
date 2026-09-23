@@ -23,6 +23,8 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <array>
+#include <cmath>
+#include <cstdint>
 #include <cstring>
 #include <iomanip>
 #include <memory>
@@ -192,6 +194,85 @@ class GnomeLoader : public ImageLoader {
 //-----------------------------------------------------------------------------
 GnomeLoader::~GnomeLoader() = default;
 
+#    ifdef HAVE_RSVG
+//-----------------------------------------------------------------------------
+/// Renders a single element of an SVG in the size of the cards
+/// \param hSVG Handle to the SVG
+/// \param id ID of the element to render
+/// \returns Glib::RefPtr<Gdk::Pixbuf> Rendered image (empty on error)
+/// \remarks rsvg_handle_get_pixbuf_sub() can't be used, as it returns an
+///     image of the size of the whole document (with only the element drawn).
+///     The ink-rectangles reported by librsvg are unreliable for many decks
+///     (they might e.g. start at the origin of the document), so the card is
+///     cut out by its logical rectangle; extended to its cell in the 13x5
+///     grid all decks use (to include the outline of the card)
+//-----------------------------------------------------------------------------
+static Glib::RefPtr<Gdk::Pixbuf> renderSVGElement(RsvgHandle* hSVG, const char* id) {
+    // Get the size of the document; if it is not given absolutely (e.g. as
+    // percentage) use the size of the viewbox
+    double docWidth(0), docHeight(0);
+    if (!rsvg_handle_get_intrinsic_size_in_pixels(hSVG, &docWidth, &docHeight)) {
+        gboolean hasWidth, hasHeight, hasViewBox;
+        RsvgLength w, h;
+        RsvgRectangle viewBox;
+        rsvg_handle_get_intrinsic_dimensions(hSVG, &hasWidth, &w, &hasHeight, &h, &hasViewBox, &viewBox);
+        if (hasViewBox) {
+            docWidth = viewBox.width;
+            docHeight = viewBox.height;
+        }
+    }
+    if ((docWidth <= 0) || (docHeight <= 0))
+        return {};
+
+    RsvgRectangle document{0, 0, docWidth, docHeight};
+    RsvgRectangle ink, card;
+    if (!rsvg_handle_get_geometry_for_layer(hSVG, id, &document, &ink, &card, nullptr) || (card.width <= 0) ||
+        (card.height <= 0))
+        return {};
+
+    // Use the grid-cell containing the card, if it fits into it
+    const double cellWidth(docWidth / 13), cellHeight(docHeight / 5);
+    const double cellX(std::floor((card.x + card.width / 2) / cellWidth) * cellWidth);
+    const double cellY(std::floor((card.y + card.height / 2) / cellHeight) * cellHeight);
+    if ((card.x >= cellX) && (card.y >= cellY) && ((card.x + card.width) <= (cellX + cellWidth)) &&
+        ((card.y + card.height) <= (cellY + cellHeight)))
+        card = {cellX, cellY, cellWidth, cellHeight};
+
+    const int width(static_cast<int>(Images::WIDTH)), height(static_cast<int>(Images::HEIGHT));
+    std::unique_ptr<cairo_surface_t, decltype(&cairo_surface_destroy)> surface(
+        cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height), cairo_surface_destroy);
+    std::unique_ptr<cairo_t, decltype(&cairo_destroy)> cr(cairo_create(surface.get()), cairo_destroy);
+
+    // Stretch the card to its size (as the other decks are) and render only it
+    cairo_scale(cr.get(), width / card.width, height / card.height);
+    cairo_translate(cr.get(), -card.x, -card.y);
+    if (!rsvg_handle_render_layer(hSVG, cr.get(), id, &document, nullptr))
+        return {};
+    cairo_surface_flush(surface.get());
+
+    // Convert the (premultiplied, native-endian) ARGB of cairo to the RGBA of the pixbuf
+    Glib::RefPtr<Gdk::Pixbuf> img(Gdk::Pixbuf::create(Gdk::Colorspace::RGB, true, 8, width, height));
+    const unsigned char* src(cairo_image_surface_get_data(surface.get()));
+    const int strideSrc(cairo_image_surface_get_stride(surface.get()));
+    unsigned char* dest(img->get_pixels());
+    const int strideDest(img->get_rowstride());
+    for (int y(0); y < height; ++y) {
+        const auto* line(reinterpret_cast<const uint32_t*>(src + y * strideSrc));
+        unsigned char* pixel(dest + y * strideDest);
+        for (int x(0); x < width; ++x, pixel += 4) {
+            const uint32_t argb(line[x]);
+            const unsigned int alpha(argb >> 24);
+            for (unsigned int i(0); i < 3; ++i) {
+                const unsigned int value((argb >> (16 - (i << 3))) & 0xff);
+                pixel[i] = static_cast<unsigned char>(alpha ? ((value * 255 + (alpha >> 1)) / alpha) : 0);
+            }
+            pixel[3] = static_cast<unsigned char>(alpha);
+        }
+    }
+    return img;
+}
+#    endif
+
 //-----------------------------------------------------------------------------
 /// Loads the cards(faces)
 /// \param cards Vector of pixbufs to load the cards into
@@ -226,13 +307,13 @@ void GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, cons
                        "const std::string&) -\n\tCard: "
                        << actCard);
                 if (rsvg_handle_has_sub(hSVG.get(), actCard.c_str())) {
-                    actImg = Glib::wrap(rsvg_handle_get_pixbuf_sub(hSVG.get(), actCard.c_str()));
+                    actImg = renderSVGElement(hSVG.get(), actCard.c_str());
                     break;
                 }
             }
 
             if (actImg)
-                cards[c * 13 + n] = actImg->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
+                cards[c * 13 + n] = actImg;
             else {
                 std::string msg(_("Card `%1' not found"));
                 msg.replace(msg.find("%1"), 2, std::string(colours[c]) + '_' + number);
