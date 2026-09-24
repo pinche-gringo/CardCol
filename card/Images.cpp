@@ -279,9 +279,7 @@ static Glib::RefPtr<Gdk::Pixbuf> renderSVGElement(RsvgHandle* hSVG, const char* 
 /// \param path Path to files
 //-----------------------------------------------------------------------------
 void GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, const std::string& path) {
-    TRACE1("GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, "
-           "const std::string&) -\n\t"
-           << path);
+    TRACE1("GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\t" << path);
 #    ifdef HAVE_RSVG
     // New style of reading Gnome cards: Get sub-images by identification
     // Does not work with librsvg <= 2.26.0
@@ -303,17 +301,17 @@ void GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, cons
             // Current decks name the cards like "#club_1"; old ones like "#1_club"
             Glib::RefPtr<Gdk::Pixbuf> actImg;
             for (const std::string& actCard : {"#" + std::string(colours[c]) + '_' + number, "#" + number + '_' + colours[c]}) {
-                TRACE9("GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, "
-                       "const std::string&) -\n\tCard: "
-                       << actCard);
+                TRACE9("GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tCard: " << actCard);
                 if (rsvg_handle_has_sub(hSVG.get(), actCard.c_str())) {
                     actImg = renderSVGElement(hSVG.get(), actCard.c_str());
                     break;
                 }
             }
 
+            // Store the card in the order of the other decks: Grouped by number
+            // (ace, king, queen, ..., 2), with the colours in the order above
             if (actImg)
-                cards[c * 13 + n] = actImg;
+                cards[(n ? (13 - n) * 4 : 0) + c] = actImg;
             else {
                 std::string msg(_("Card `%1' not found"));
                 msg.replace(msg.find("%1"), 2, std::string(colours[c]) + '_' + number);
@@ -331,8 +329,7 @@ void GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, cons
         unsigned int y(i & 3);
         if (y)
             y = 4 - y;
-        TRACE8("GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, "
-               "const std::string&) -\n\tPosition "
+        TRACE8("GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tPosition "
                << x << '/' << y);
 
         cards[i] = Gdk::Pixbuf::create_subpixbuf(img, widthImg * x, heightImg * y, widthImg, heightImg);
