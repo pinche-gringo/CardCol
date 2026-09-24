@@ -77,6 +77,11 @@
 #  define N_(String)                          gettext_noop (String)
 #  define gettext_noop(String)                (String)
 #else
+// Remark: Other headers (e.g. of glibmm) might include libintl.h; do it before defining the macros
+// below, which otherwise would mangle its declarations
+#  if __has_include(<libintl.h>)
+#    include <libintl.h>
+#  endif
 #  define _(String)                           (String)
 #  define N_(String)                          (String)
 #  define ngettext(Str1, Str2, flag)          (((flag) == 1) ? (Str1) : (Str2))
