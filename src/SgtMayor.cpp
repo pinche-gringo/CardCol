@@ -42,12 +42,12 @@
 #include <YGP/ANumeric.h>
 #include <YGP/Check.h>
 #include <YGP/ConnMgr.h>
+#include <YGP/Random.h>
 #include <YGP/Trace.h>
 
 #include <card/ComputerPlayer.h>
 #include <card/Images.h>
 #include <card/Message.h>
-#include <card/Random.h>
 #include <card/RemotePlayer.h>
 #include <card/ScoreDlg.h>
 #include <card/Window.h>
@@ -69,7 +69,7 @@ SgtMayor::SgtMayor(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cards
                    unsigned int posPlayer, Card::MessageLock& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 10, 8),
       played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pTrump(nullptr), bfColours(0),
-      startPlayer(Card::randomNumber(NUM_PLAYERS)), menuSort(), menuSort2(), menuShowScoreDlg(), pScoreDlg(nullptr) {
+      startPlayer(YGP::randomNumber(NUM_PLAYERS)), menuSort(), menuSort2(), menuShowScoreDlg(), pScoreDlg(nullptr) {
     TRACE9("SgtMayor::SgtMayor(Box&, Statusbar&, Card::Set&, ...)");
 
     // Show and attach card-piles

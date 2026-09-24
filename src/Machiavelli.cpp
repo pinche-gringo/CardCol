@@ -47,6 +47,7 @@
 #include <YGP/AttrParse.h>
 #include <YGP/Check.h>
 #include <YGP/ConnMgr.h>
+#include <YGP/Random.h>
 #include <YGP/StatusObj.h>
 #include <YGP/Trace.h>
 
@@ -57,7 +58,6 @@
 #include <card/Images.h>
 #include <card/Message.h>
 #include <card/Player.h>
-#include <card/Random.h>
 #include <card/Set.h>
 #include <card/Widget.h>
 #include <card/Window.h>
@@ -196,7 +196,7 @@ void Machiavelli::start() {
         if (getConnectionMgr().getMode() != YGP::ConnectionMgr::CLIENT) {
             // Set random startplayer (if not already set)
             if (startPlayer == -1U)
-                startPlayer = Card::randomNumber(4);
+                startPlayer = YGP::randomNumber(4);
             setStartPlayer();
         }
     }

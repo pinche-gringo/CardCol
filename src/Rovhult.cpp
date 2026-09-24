@@ -47,13 +47,13 @@
 
 #include <YGP/Check.h>
 #include <YGP/ConnMgr.h>
+#include <YGP/Random.h>
 #include <YGP/Trace.h>
 
 #include <CardValue.h>
 
 #include <card/ComputerPlayer.h>
 #include <card/Message.h>
-#include <card/Random.h>
 #include <card/Widget.h>
 #include <card/Window.h>
 
@@ -140,7 +140,7 @@ void Rovhult::start() {
         aExchanged = 0;
 
         if (getConnectionMgr().getMode() != YGP::ConnectionMgr::CLIENT) {
-            setNextPlayer(Card::randomNumber(4));
+            setNextPlayer(YGP::randomNumber(4));
             broadcastStartPlayer(currentPlayer());
         }
 
@@ -1592,6 +1592,6 @@ bool Rovhult::noMoreHumans() const {
 //-----------------------------------------------------------------------------
 unsigned int Rovhult::selectRandomCard(unsigned int player) {
     Check3(players[player].hand.size());
-    unsigned int pos2Play(Card::randomNumber(players[player].hand.size()));
+    unsigned int pos2Play(YGP::randomNumber(players[player].hand.size()));
     return cardValid(players[player].hand[pos2Play]->number(), true) ? pos2Play : -1U;
 }

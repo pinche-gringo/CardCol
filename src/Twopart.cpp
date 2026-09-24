@@ -41,6 +41,7 @@
 
 #include <YGP/Check.h>
 #include <YGP/ConnMgr.h>
+#include <YGP/Random.h>
 #include <YGP/Trace.h>
 
 #include <XGP/XDialog.h>
@@ -49,7 +50,6 @@
 #include <card/Images.h>
 #include <card/Message.h>
 #include <card/Player.h>
-#include <card/Random.h>
 #include <card/Set.h>
 #include <card/Widget.h>
 #include <card/Window.h>
@@ -143,7 +143,7 @@ void Twopart::start() {
         players[0].won.setStyle(Card::IPile::QUITE_COMPRESSED);
 
         if (getConnectionMgr().getMode() != YGP::ConnectionMgr::CLIENT) {
-            setNextPlayer(startPlayer = Card::randomNumber(NUM_PLAYERS));
+            setNextPlayer(startPlayer = YGP::randomNumber(NUM_PLAYERS));
             broadcastStartPlayer(startPlayer);
             displayTurn(currentPlayer());
             makeNextMoves();

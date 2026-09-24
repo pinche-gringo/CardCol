@@ -45,6 +45,7 @@
 #include <YGP/ANumeric.h>
 #include <YGP/Check.h>
 #include <YGP/ConnMgr.h>
+#include <YGP/Random.h>
 #include <YGP/Trace.h>
 
 #include <XGP/XDialog.h>
@@ -53,7 +54,6 @@
 #include <card/Images.h>
 #include <card/Message.h>
 #include <card/Player.h>
-#include <card/Random.h>
 #include <card/RemotePlayer.h>
 #include <card/ScoreDlg.h>
 #include <card/Window.h>
@@ -74,7 +74,7 @@ std::array<char, 4> Jabberwocky::sortOrder{};
 Jabberwocky::Jabberwocky(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
                          const std::vector<Card::Player*>& player, unsigned int posPlayer, Card::MessageLock& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 15, 15),
-      played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pTrump(nullptr), startPlayer(Card::randomNumber(NUM_PLAYERS)),
+      played(Card::IPile::COMPRESSED, Card::IPile::SHOWFACE), pTrump(nullptr), startPlayer(YGP::randomNumber(NUM_PLAYERS)),
       turn(0), idxMenu(-1), pBidValue(), pBidCommit(), pScoreDlg(), menuSort(), menuSort2(), menuShowScoreDlg() {
     TRACE9("Jabberwocky::Jabberwocky(Box&, Statusbar&, CardSet&, ...)");
 
@@ -438,7 +438,7 @@ void Jabberwocky::makeBids(unsigned int start) {
                 // does not place a bid which sums all bids up to the number of players
                 players[actPlayer].bid = calcTricks(actPlayer);
                 if ((start == NUM_PLAYERS) && (sumBids() == getTricks(turn)))
-                    players[actPlayer].bid += Card::randomNumber(2) ? 1 : -1;
+                    players[actPlayer].bid += YGP::randomNumber(2) ? 1 : -1;
                 showBid(actPlayer);
 
                 if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {

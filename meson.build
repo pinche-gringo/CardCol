@@ -63,7 +63,7 @@ endif
 # Dependencies
 deps = [dependency('gtkmm-4.0', version: '>= 4.0.0', include_type: 'system'),
         dependency('gthread-2.0', version: '> 2.2.0', include_type: 'system'),
-        dependency('YGP', version: '>= 0.9.30', include_type: 'system'),
+        dependency('YGP', version: '>= 0.9.50', include_type: 'system'),
         dependency('XGP', version: '>= 0.9.50', include_type: 'system'),
         # Boost.Asio (header-only) for the network communication
         dependency('boost', version: '>= 1.70', include_type: 'system')]
