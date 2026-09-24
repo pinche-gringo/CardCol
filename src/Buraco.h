@@ -179,6 +179,7 @@ class Buraco : public Card::Game {
     std::vector<Card::Player*> nameTeams;
     unsigned int startPlayer;
 
+    Gtk::Frame frameInfo;
     Gtk::Label info;
     std::array<Card::HBox, NUM_TEAMS> boxTeam;
 

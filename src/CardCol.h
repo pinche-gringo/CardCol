@@ -142,6 +142,7 @@ class CardgameCollection : public XGP::XApplication {
     void changePlayernames();
     void makePlayer();
 
+    Gtk::Box boxStatus; ///< Row holding the statusbar and game specific status information
     Gtk::Statusbar status;
     Gtk::Box filler; ///< Placeholder pushing the statusbar to the bottom until a game exists
 

@@ -315,7 +315,7 @@ static constexpr const char* xpmJoker[] = {"72 96 65 1",
 /// \param opts Options for the program
 //-----------------------------------------------------------------------------
 CardgameCollection::CardgameCollection(Options& opts)
-    : XApplication(PACKAGE " V" PRG_RELEASE), status(), filler(), cardFaces(), cards(),
+    : XApplication(PACKAGE " V" PRG_RELEASE), boxStatus(Gtk::Orientation::HORIZONTAL), status(), filler(), cardFaces(), cards(),
 #ifdef WITH_NETWORK
       aCommThreads(), dlgChat(nullptr),
 #endif
@@ -424,8 +424,11 @@ CardgameCollection::CardgameCollection(Options& opts)
     filler.show();
     getClient().append(filler);
 
+    status.set_hexpand();
     status.show();
-    getClient().append(status);
+    boxStatus.append(status);
+    boxStatus.show();
+    getClient().append(boxStatus);
 
     show();
     // Remark: Under GTK4 a client can no longer set a window's position (see AnimWindow.h)

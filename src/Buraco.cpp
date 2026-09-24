@@ -87,7 +87,7 @@ namespace {
 //-----------------------------------------------------------------------------
 Buraco::Buraco(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, const std::vector<Card::Player*>& player,
                unsigned int posPlayer, Card::MessageLock& mxSerialize)
-    : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10), nameTeams(), startPlayer(-1U), info(),
+    : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10), nameTeams(), startPlayer(-1U), frameInfo(), info(),
       newPile(_("New pile")), staple(Card::IPile::TOTALLY_COMPRESSED, Card::IPile::SHOWBACK),
       dumped(Card::IPile::TOTALLY_COMPRESSED, Card::IPile::SHOWFACE), dumpedTop(), stapleTop(), aDNDHand(), aDNDTable(),
       gStatus(), undo(), pScoreDlg(nullptr), idxMenu(-1), menuUndo(), menuSort(), menuSort2(), menuShowScoreDlg(), target(-1U) {
@@ -161,14 +161,15 @@ Buraco::Buraco(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, 
 
     // Remark: Gtk::Statusbar is a plain Gtk::Widget under GTK4 (no longer a
     // box that can hold extra children), so the info-frame is appended as a
-    // sibling to the statusbar's own parent container instead.
-    Gtk::Frame* frameInfo(Gtk::make_managed<Gtk::Frame>());
-    frameInfo->set_margin(5);
+    // sibling to the statusbar into its (horizontal) parent container instead.
+    frameInfo.set_margin(5);
+    frameInfo.set_halign(Gtk::Align::END);
+    frameInfo.set_hexpand(false);
     info.show();
-    frameInfo->set_child(info);
-    frameInfo->show();
+    frameInfo.set_child(info);
+    frameInfo.show();
     if (Gtk::Box* boxStatus = dynamic_cast<Gtk::Box*>(statusbar.get_parent()))
-        boxStatus->append(*frameInfo);
+        boxStatus->append(frameInfo);
 
     changeNames(player);
     resizeCards();
@@ -180,6 +181,8 @@ Buraco::Buraco(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset, 
 Buraco::~Buraco() {
     TRACE9("Buraco::~Buraco()");
     clean();
+    if (Gtk::Box* boxStatus = dynamic_cast<Gtk::Box*>(frameInfo.get_parent()))
+        boxStatus->remove(frameInfo);
     delete pScoreDlg;
 
     // Free team names

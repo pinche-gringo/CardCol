@@ -128,7 +128,15 @@ Game::Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset, const std:
     set_hexpand();
     set_vexpand();
     set_margin(5);
-    insert_before(parent, statusbar);
+
+    // The statusbar might be embedded in a container; insert before the child of parent holding it
+    Gtk::Widget* sibling(&statusbar);
+    while (sibling && (sibling->get_parent() != &parent))
+        sibling = sibling->get_parent();
+    if (sibling)
+        insert_before(parent, *sibling);
+    else
+        parent.append(*this);
 
     stati.pendingTurn = stati.restart = stati.remoteMove = 0;
 }
