@@ -278,11 +278,13 @@ bool CardgameAppl::handleOption(const char option) {
 int CardgameAppl::convertToGameType(const char* pText) {
     TRACE9("CardgameAppl::convertToGameType(const char*) - " << pText);
 
-    if (!std::strcmp(pText, "Rovhult"))
-        return GameTypes::ROVHULT;
+    int type(GameTypes::fromKey(pText));
+    if (type != GameTypes::NONE)
+        return type;
 
+    // Accept also the (translated) display name; older INI-files stored that
     try {
-        return GameTypes::get()[_(pText)];
+        return GameTypes::get()[pText];
     }
     catch (std::out_of_range&) {
         try {
@@ -500,6 +502,7 @@ void CardgameAppl::showGames() const {
 //-----------------------------------------------------------------------------
 int main(int argc, const char* argv[]) {
     YGP::IVIOApplication::initI18n(PACKAGE, LOCALEDIR);
+    bind_textdomain_codeset(PACKAGE, "UTF-8"); // GTK expects UTF-8, independent of the locale
     // Remark: Glib::thread_init() no longer exists/is needed - GLib threading is
     // initialized automatically since glib 2.32
 

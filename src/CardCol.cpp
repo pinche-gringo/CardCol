@@ -680,7 +680,7 @@ void CardgameCollection::savePreferences() {
     std::ofstream inifile(options.pNameINIFile);
     inifile.imbue(std::locale::classic()); // Avoid locale-dependent thousands separators
     if (inifile) {
-        options.strType = GameTypes::get()[options.type];
+        options.strType = GameTypes::getKey(options.type);
         YGP::INIFile::write(inifile, "Game", options);
 
         // Remark: Under GTK4 a client can no longer query a window's position (see AnimWindow.h)

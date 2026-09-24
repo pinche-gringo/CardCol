@@ -24,48 +24,80 @@
 
 #include <cardgames-cfg.h>
 
-#include <glibmm/convert.h>
-#include <glibmm/ustring.h>
+#include <cstring>
+
+#include <string>
 
 #include "GameTypes.h"
 
-//-----------------------------------------------------------------------------
-/// Default constructor
-//-----------------------------------------------------------------------------
-GameTypes::GameTypes() {
-#ifdef WITH_ROVHULT
-    Glib::ustring rovhult(_("Rovhult"));
-    if (rovhult == "Rovhult") {
-        try {
-            rovhult = Glib::locale_to_utf8("Røvhult");
-        }
-        catch (Glib::Error&) {
-        }
-    }
+namespace {
 
-    insert(std::make_pair(static_cast<int>(ROVHULT), rovhult));
-#endif
-#ifdef WITH_TWOPART
-    insert(std::make_pair(static_cast<int>(TWOPART), _("Twopart")));
+/// Untranslated names of the games (in the order of the enum); used in the INI-file
+const char* const KEYS[] = {
+#ifdef WITH_BURACO
+    N_("Buraco"),
 #endif
 #ifdef WITH_HEARTS
-    insert(std::make_pair(static_cast<int>(HEARTS), _("Hearts")));
+    N_("Hearts"),
 #endif
 #ifdef WITH_JABBERWOCKY
-    insert(std::make_pair(static_cast<int>(JABBERWOCKY), _("Jabberwocky")));
-#endif
-#ifdef WITH_BURACO
-    insert(std::make_pair(static_cast<int>(BURACO), _("Buraco")));
+    N_("Jabberwocky"),
 #endif
 #ifdef WITH_MACHIAVELLI
-    insert(std::make_pair(static_cast<int>(MACHIAVELLI), _("Machiavelli")));
+    N_("Machiavelli"),
+#endif
+#ifdef WITH_ROVHULT
+    /* For translations: Write the Rovhult as o-slash */
+    N_("Rovhult"),
 #endif
 #ifdef WITH_SGTMAYOR
-    insert(std::make_pair(static_cast<int>(SGTMAYOR), _("SgtMayor")));
+    N_("SgtMayor"),
 #endif
+#ifdef WITH_TWOPART
+    N_("Twopart"),
+#endif
+};
+static_assert(sizeof(KEYS) / sizeof(*KEYS) == GameTypes::LAST, "KEYS must match the enum");
+
+} // namespace
+
+//-----------------------------------------------------------------------------
+/// Defaultconstructor
+//-----------------------------------------------------------------------------
+GameTypes::GameTypes() {
+    for (int i(0); i < LAST; ++i) {
+        std::string name(_(KEYS[i]));
+#ifdef WITH_ROVHULT
+        // Without translation use the correct spelling anyway
+        if ((i == ROVHULT) && (name == KEYS[i]))
+            name = "R\u00f8vhult";
+#endif
+        insert(std::make_pair(i, name));
+    }
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
 GameTypes::~GameTypes() = default;
+
+//-----------------------------------------------------------------------------
+/// Returns the untranslated name (as stored in the INI-file) of a game
+/// \param type Type of the game
+/// \returns const char* Name of the game; "" if type is invalid
+//-----------------------------------------------------------------------------
+const char* GameTypes::getKey(int type) {
+    return ((type >= 0) && (type < LAST)) ? KEYS[type] : "";
+}
+
+//-----------------------------------------------------------------------------
+/// Returns the type of a game from its untranslated name
+/// \param pKey Untranslated name of the game
+/// \returns int Type of the game; NONE if not found
+//-----------------------------------------------------------------------------
+int GameTypes::fromKey(const char* pKey) {
+    for (int i(0); i < LAST; ++i)
+        if (!std::strcmp(pKey, KEYS[i]))
+            return i;
+    return NONE;
+}

@@ -60,6 +60,9 @@ class GameTypes : public YGP::MetaEnum {
 
     ~GameTypes() override;
 
+    static const char* getKey(int type);
+    static int fromKey(const char* pKey);
+
   private:
     GameTypes();
     GameTypes(const GameTypes& other) = delete;
