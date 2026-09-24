@@ -294,30 +294,31 @@ void GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>& cards, cons
     static constexpr std::array<const char*, 4> colours{"club", "spade", "heart", "diamond"};
     static constexpr std::array<const char*, 4> numbers{"10", "jack", "queen", "king"};
 
-    for (unsigned int c(0); c < colours.size(); ++c)
-        for (unsigned int n(0); n < 13; ++n) {
-            const std::string number((n > 8) ? numbers[n - 9] : std::string(1, static_cast<char>('1' + n)));
+    // Load the cards in their order (grouped by number: ace, king, queen, ...,
+    // 2; each in the order of the colours above) by their names
+    for (unsigned int i(0); i < 52; ++i) {
+        const char* colour(colours[i & 3]);
+        const unsigned int n((i < 4) ? 0 : 13 - (i >> 2)); // 0: Ace, 1: Two, ..., 12: King
+        const std::string number((n > 8) ? numbers[n - 9] : std::string(1, static_cast<char>('1' + n)));
 
-            // Current decks name the cards like "#club_1"; old ones like "#1_club"
-            Glib::RefPtr<Gdk::Pixbuf> actImg;
-            for (const std::string& actCard : {"#" + std::string(colours[c]) + '_' + number, "#" + number + '_' + colours[c]}) {
-                TRACE9("GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tCard: " << actCard);
-                if (rsvg_handle_has_sub(hSVG.get(), actCard.c_str())) {
-                    actImg = renderSVGElement(hSVG.get(), actCard.c_str());
-                    break;
-                }
-            }
-
-            // Store the card in the order of the other decks: Grouped by number
-            // (ace, king, queen, ..., 2), with the colours in the order above
-            if (actImg)
-                cards[(n ? (13 - n) * 4 : 0) + c] = actImg;
-            else {
-                std::string msg(_("Card `%1' not found"));
-                msg.replace(msg.find("%1"), 2, std::string(colours[c]) + '_' + number);
-                throw YGP::FileError(msg);
+        // Current decks name the cards like "#club_1"; old ones like "#1_club"
+        Glib::RefPtr<Gdk::Pixbuf> actImg;
+        for (const std::string& actCard : {"#" + std::string(colour) + '_' + number, "#" + number + '_' + colour}) {
+            TRACE9("GnomeLoader::loadFronts(std::vector<Glib::RefPtr<Gdk::Pixbuf>>&, const std::string&) -\n\tCard: " << actCard);
+            if (rsvg_handle_has_sub(hSVG.get(), actCard.c_str())) {
+                actImg = renderSVGElement(hSVG.get(), actCard.c_str());
+                break;
             }
         }
+
+        if (actImg)
+            cards[i] = actImg;
+        else {
+            std::string msg(_("Card `%1' not found"));
+            msg.replace(msg.find("%1"), 2, std::string(colour) + '_' + number);
+            throw YGP::FileError(msg);
+        }
+    }
 #    else
     // Old style of reading Gnome cards: Extract cards from certain positions
     Glib::RefPtr<Gdk::Pixbuf> img(loadImage(path));
