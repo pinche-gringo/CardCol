@@ -113,7 +113,7 @@ Rovhult::Rovhult(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset
     staple.setShowOption(Card::IPile::SHOWBACK);
 
     played.set_margin(1);
-    attach(played, 7, 5, 4, 9);
+    attach(played, 7, 7, 5, 6);
 }
 
 //-----------------------------------------------------------------------------
