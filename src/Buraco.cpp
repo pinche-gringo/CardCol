@@ -965,7 +965,7 @@ void Buraco::enableCard(unsigned int pos) {
 }
 
 //-----------------------------------------------------------------------------
-/// Prepares the card for drag�n�drop
+/// Prepares the card for drag'n'drop
 /// \param iCard Number of card in hand
 //-----------------------------------------------------------------------------
 void Buraco::registerHandDND(unsigned int iCard) {
@@ -992,7 +992,7 @@ void Buraco::registerHandDND(unsigned int iCard) {
 }
 
 //-----------------------------------------------------------------------------
-/// Stops the drag�n�drop abilities of the passed card
+/// Stops the drag'n'drop abilities of the passed card
 /// \param card Card to unregister of dnd
 //-----------------------------------------------------------------------------
 void Buraco::unregisterHandDND(Card::Widget& card) {
@@ -1008,7 +1008,7 @@ void Buraco::unregisterHandDND(Card::Widget& card) {
 }
 
 //-----------------------------------------------------------------------------
-/// Prepares the passed region of cards for drag�n�drop
+/// Prepares the passed region of cards for drag'n'drop
 /// \param pile Pile whose cards should be registered
 /// \param start Number of first card to prepare for DND
 /// \param end Number of last card to prepare for DND
@@ -1031,7 +1031,7 @@ void Buraco::registerTableDND(unsigned int pile, unsigned int start, unsigned in
 }
 
 //-----------------------------------------------------------------------------
-/// Prepares the card for drag�n�drop
+/// Prepares the card for drag'n'drop
 /// \param card Card to register
 /// \param nr Number of card in pile
 //-----------------------------------------------------------------------------
@@ -1047,7 +1047,7 @@ void Buraco::registerTableDND(Card::Widget& card, unsigned int nr) {
 }
 
 //-----------------------------------------------------------------------------
-/// Stops the drag�n�drop abilities of the passed card
+/// Stops the drag'n'drop abilities of the passed card
 /// \param card Card to de-register
 //-----------------------------------------------------------------------------
 void Buraco::unregisterTableDND(Card::Widget& card) {
@@ -1099,7 +1099,7 @@ bool Buraco::cardDropped(const Glib::ValueBase& value, double, double, unsigned 
 }
 
 //-----------------------------------------------------------------------------
-/// Prepares the passed region of cards for drag�n�drop
+/// Prepares the passed region of cards for drag'n'drop
 /// \param except Pile which can be invalid
 /// \returns bool True, if the piles are OK
 //-----------------------------------------------------------------------------
@@ -1309,7 +1309,7 @@ Glib::RefPtr<Gdk::ContentProvider> Buraco::prepareHandDrag(double, double, unsig
 }
 
 //-----------------------------------------------------------------------------
-/// Prepares the passed region of cards for drag�n�drop
+/// Prepares the passed region of cards for drag'n'drop
 /// \param start Number of first card to prepare for DND
 /// \param end Number of last card to prepare for DND
 /// \pre \c start < \c end; \c end <= Nr. ofcards
