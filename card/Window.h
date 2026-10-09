@@ -25,28 +25,59 @@
 
 #include <XGP/AnimWindow.h>
 
+namespace Gtk {
+class Box;
+class Fixed;
+} // namespace Gtk
 namespace Card {
 class Widget;
 }
 
 namespace Card {
 
-/**Baseclass for animated windows in the cardgame collection
+/**Copies of the cards, which are shown (and moved) in the animation layer
+ * instead of the real cards; those are made invisible meanwhile.
+ *
+ * \remarks The widget is not managed; so it is not destroyed with the
+ *     animation layer (which would end the animation with piles maybe already
+ *     destroyed)
  */
-class AnimatedCard : public XGP::AnimatedWindow {
+class StandIn {
+  public:
+    explicit StandIn(Gtk::Fixed& layer);
+    ~StandIn();
+
+    void show(IPile& src, unsigned int first, unsigned int last);
+    void restore();
+
+    Gtk::Fixed& layer;
+    std::unique_ptr<Gtk::Box> box; ///< Widget holding the copies of the cards
+
+  private:
+    StandIn(const StandIn&) = delete;
+    StandIn& operator=(const StandIn&) = delete;
+
+    std::vector<Widget*> hidden; ///< Cards made invisible while animating
+};
+
+/**Baseclass for animated windows in the cardgame collection
+ * \remarks Derives first from StandIn, so its widget exists when passed to
+ *     XGP::AnimatedWindow (and still exists, when that is destroyed)
+ */
+class AnimatedCard : protected StandIn, public XGP::AnimatedWindow {
   public:
     ~AnimatedCard() override;
 
     /// Signal emitted, when the animation is finished
     sigc::signal<void()> sigAnimation;
 
-    void getEndPos(int& x, int& y) override;
+    void getEndPos(double& x, double& y) override;
     void start() override;
     void cleanup() override;
     void finish() override;
 
   protected:
-    AnimatedCard(IPile& dest, unsigned int posDest, Gtk::Widget& src);
+    AnimatedCard(Gtk::Fixed& layer, IPile& dest, unsigned int posDest);
 
     IPile& dest;
     unsigned int posDest;
@@ -64,13 +95,13 @@ class Window : public AnimatedCard {
   public:
     ~Window() override;
 
-    static Window* create(IPile& dest, unsigned int posDest, IPile& src, unsigned int posSrc);
+    static Window* create(Gtk::Fixed& layer, IPile& dest, unsigned int posDest, IPile& src, unsigned int posSrc);
 
     void start() override;
     void cleanup() override;
 
   protected:
-    Window(IPile& dest, unsigned int posDest, IPile& src, unsigned int posSrc);
+    Window(Gtk::Fixed& layer, IPile& dest, unsigned int posDest, IPile& src, unsigned int posSrc);
 
     IPile& src;
     unsigned int posSrc;
@@ -88,6 +119,7 @@ class PileWindow : public Window {
     ~PileWindow() override;
 
     /// Creates a PileWindow object
+    /// \param layer Layer to show the animated cards in
     /// \param dest Destination pile
     /// \param posDest Where to put the card in the destination
     /// \param src Source pile; should be a Pile<T>
@@ -95,18 +127,18 @@ class PileWindow : public Window {
     /// \param end Last card of source to move
     /// \returns PileWindow* Created window to animate
     /// \pre The first card must be shown somewhere (to get its position)
-    static PileWindow* create(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end) {
+    static PileWindow* create(Gtk::Fixed& layer, IPile& dest, unsigned int posDest, IPile& src, unsigned int start,
+                              unsigned int end) {
         Check1(src.getWidget());
         Check1(dynamic_cast<Gtk::Box*>(src.getWidget()));
-        return new PileWindow(dest, posDest, src, start, end);
+        return new PileWindow(layer, dest, posDest, src, start, end);
     }
 
     void start() override;
     void cleanup() override;
-    void getEndPos(int& x, int& y) override;
 
   protected:
-    PileWindow(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end);
+    PileWindow(Gtk::Fixed& layer, IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end);
 
     unsigned int last;
 
@@ -122,36 +154,35 @@ class PileWindows : public PileWindow {
   public:
     ~PileWindows() override;
 
-    static PileWindows* create(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end);
+    static PileWindows* create(Gtk::Fixed& layer, IPile& dest, unsigned int posDest, IPile& src, unsigned int start,
+                               unsigned int end);
 
     void start() override;
-    void getEndPos(int& x, int& y) override;
+    void getEndPos(double& x, double& y) override;
     void cleanup() override;
 
     void addWindow(IPile& src, unsigned int start, unsigned int end);
     void addWindow(unsigned int posDest, IPile& src, unsigned int start, unsigned int end);
 
   protected:
-    PileWindows(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end);
+    PileWindows(Gtk::Fixed& layer, IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end);
 
   private:
     PileWindows(const PileWindows&) = delete;
     PileWindows& operator=(const PileWindows&) = delete;
 
-    struct AnimatedPile : public XGP::AnimatedWindow {
-        AnimatedPile(IPile& src, unsigned int start, unsigned int end);
-        ~AnimatedPile() override = default;
+    /// Further cards to animate (moved in step with the cards of the PileWindow)
+    struct AnimatedPile {
+        AnimatedPile(Gtk::Fixed& layer, IPile& src, unsigned int start, unsigned int end);
 
+        StandIn standIn;
         IPile& source;
         unsigned int first, last;
         unsigned int posDest; ///< Target position in destination
-
-        void start() override;
-        void getEndPos(int& x, int& y) override;
-        void animateTo(int x, int y);
     };
 
     std::vector<std::unique_ptr<AnimatedPile>> wins;
+    unsigned int steps{0}; ///< Remaining steps of the animation
 };
 
 } // namespace Card

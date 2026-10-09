@@ -489,7 +489,6 @@ void CardgameCollection::startGame() {
             while (ctx->iteration(false))
                 ;
 
-            getClient().remove(*game);
             game.reset();
         }
     }

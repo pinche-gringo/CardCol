@@ -116,7 +116,7 @@ Game::Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset, const std:
            MessageLock& mxSerialize, unsigned int, unsigned int)
     : Gtk::Grid(), status(statusbar), cards(cardset), activeCards(), actPlayers(player), mxSerializeMsgs(mxSerialize),
       posServer(posPlayer), pos2Play(-1U), pos1Play(-1U), data(nullptr), statGame(NONE), actPlayer(0), stati(),
-      wonCards(), pWonPile(nullptr), pMenuPopSort(nullptr), cardOrder() {
+      wonCards(), pWonPile(nullptr), pMenuPopSort(nullptr), cardOrder(), overlay(), animLayer() {
     TRACE3("Game::Game(Gtk::Box&, Gtk::Statusbar&, set&, std::vector<Player*>,"
            "unsinged int, unsigned int)");
     Check3(cardset.size());
@@ -129,14 +129,19 @@ Game::Game(Gtk::Box& parent, Gtk::Statusbar& statusbar, Set& cardset, const std:
     set_vexpand();
     set_margin(5);
 
+    // Show the game with a layer above it, in which the cards are animated
+    overlay.set_child(*this);
+    animLayer.set_can_target(false);
+    overlay.add_overlay(animLayer);
+
     // The statusbar might be embedded in a container; insert before the child of parent holding it
     Gtk::Widget* sibling(&statusbar);
     while (sibling && (sibling->get_parent() != &parent))
         sibling = sibling->get_parent();
     if (sibling)
-        insert_before(parent, *sibling);
+        overlay.insert_before(parent, *sibling);
     else
-        parent.append(*this);
+        parent.append(overlay);
 
     stati.pendingTurn = stati.restart = stati.remoteMove = 0;
 }
@@ -149,6 +154,10 @@ Game::~Game() {
     clean();
     if (pMenuPopSort)
         pMenuPopSort->unparent();
+
+    overlay.unset_child();
+    if (auto* parent(dynamic_cast<Gtk::Box*>(overlay.get_parent())); parent)
+        parent->remove(overlay);
 }
 
 //-----------------------------------------------------------------------------
@@ -847,7 +856,7 @@ Window& Game::animateCard(IPile& dest, unsigned int posDest, IPile& src, unsigne
     Check1(pos < src.size());
     Check1(posDest <= dest.size());
 
-    Window& win(*Window::create(dest, posDest, src, pos));
+    Window& win(*Window::create(animLayer, dest, posDest, src, pos));
     unsigned int timeout(actPlayers[actPlayer]->timeout());
     if (timeout)
         Glib::signal_timeout().connect(bind_return(mem_fun(win, &Window::animate), false), timeout);
@@ -871,7 +880,7 @@ PileWindow& Game::animateCards(IPile& dest, unsigned int posDest, IPile& src, un
     Check1(start <= end);
     Check1(posDest <= dest.size());
 
-    PileWindow& win(*PileWindow::create(dest, posDest, src, start, end));
+    PileWindow& win(*PileWindow::create(animLayer, dest, posDest, src, start, end));
     unsigned int timeout(actPlayers[actPlayer]->timeout());
     if (timeout)
         Glib::signal_timeout().connect(bind_return(mem_fun(win, &PileWindow::animate), false), timeout);
@@ -896,7 +905,7 @@ PileWindows& Game::animateCards2(IPile& dest, unsigned int posDest, IPile& src, 
     Check1(start <= end);
     Check1(posDest <= dest.size());
 
-    PileWindows& win(*PileWindows::create(dest, posDest, src, start, end));
+    PileWindows& win(*PileWindows::create(animLayer, dest, posDest, src, start, end));
     unsigned int timeout(actPlayers[actPlayer]->timeout());
     if (timeout)
         Glib::signal_timeout().connect(bind_return(mem_fun(win, &PileWindow::animate), false), timeout);

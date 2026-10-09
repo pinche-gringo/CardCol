@@ -23,7 +23,9 @@
 #include <string>
 #include <vector>
 
+#include <gtkmm/fixed.h>
 #include <gtkmm/grid.h>
+#include <gtkmm/overlay.h>
 
 #include <YGP/Exception.h>
 
@@ -245,6 +247,9 @@ class Game : public Gtk::Grid {
     std::unique_ptr<Gtk::PopoverMenu> pMenuPopSort;
 
     std::string cardOrder;
+
+    Gtk::Overlay overlay; ///< Holds the game and (above it) the animation layer
+    Gtk::Fixed animLayer; ///< Layer showing the animated cards
 
     mutable std::deque<std::string> echoes; ///< Messages sent by a client, which the server echoes (and which are to be ignored)
 };
