@@ -37,9 +37,6 @@
 namespace Card {
 
 namespace {
-/// Number of steps of an animation (as done by XGP::AnimatedWindow)
-constexpr unsigned int ANIMATION_STEPS(10);
-
 /// Returns the position of the passed widget relative to the passed layer
 /// \param widget Widget to inspect
 /// \param layer Layer to which the position is relative to
@@ -348,7 +345,6 @@ void PileWindows::start() {
     TRACE8("PileWindows::start()");
     PileWindow::start();
 
-    steps = ANIMATION_STEPS;
     for (auto& win : wins) {
         TRACE9("PileWindows::start() - Subwin: " << (&win - wins.data()));
         Check3(win);
@@ -365,8 +361,7 @@ void PileWindows::start() {
 void PileWindows::getEndPos(double& x, double& y) {
     PileWindow::getEndPos(x, y);
 
-    if (steps)
-        --steps;
+    const unsigned int steps(getSteps());
     for (auto& win : wins) {
         TRACE9("PileWindows::getEndPos(2x double&) - Subwin: " << (&win - wins.data()));
         Check3(win);

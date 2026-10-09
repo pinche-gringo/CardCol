@@ -182,7 +182,6 @@ class PileWindows : public PileWindow {
     };
 
     std::vector<std::unique_ptr<AnimatedPile>> wins;
-    unsigned int steps{0}; ///< Remaining steps of the animation
 };
 
 } // namespace Card
