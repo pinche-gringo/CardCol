@@ -214,7 +214,10 @@ void PileWindow::getEndPos(int& x, int& y) {
 //-----------------------------------------------------------------------------
 void PileWindow::start() {
     TRACE8("PileWindow::start()");
-    Window::start();
+    // Remark: Window::start() is skipped, as it maximises the first card; like
+    // in a pile only the last card is shown completely
+    AnimatedCard::start();
+    src.resize(last, IPile::NORMAL);
     // Remark: raising the remaining cards is not possible anymore under GTK4 (see
     // AnimWindow.h)
 }
