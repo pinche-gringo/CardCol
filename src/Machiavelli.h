@@ -67,7 +67,7 @@ class Machiavelli : public Card::Game {
     void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
     void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
 
-    unsigned int numberOfDecks() const override { return 4; }
+    unsigned int numberOfDecks() const override { return MachiavelliRules::NUM_DECKS; }
     void resizeCards() override;
 
     bool handleMessage(unsigned int player, const std::string& msg) override;
@@ -77,7 +77,7 @@ class Machiavelli : public Card::Game {
     Machiavelli(const Machiavelli& other) = delete;
     const Machiavelli& operator=(const Machiavelli& other) = delete;
 
-    static constexpr unsigned int NUM_PLAYERS = 4; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = MachiavelliRules::NUM_PLAYERS; // Number of players
 
     /// \name Virtual methods
     //@{
@@ -102,13 +102,10 @@ class Machiavelli : public Card::Game {
     void addTableMove(unsigned int pile, unsigned int first, unsigned int nr, unsigned int destPile, unsigned int destPos);
     void checkPiles(YGP::StatusObject& obj, bool mark = false) const;
     void endGame(unsigned int looser);
-    bool playSerie(Card::IPile& playerPile);
-    bool cardFitsOnPile(const Card::Widget& card, unsigned int offset);
-    bool reorderTableToFit(Card::IPile& playerPile);
-    bool reorderTableToFit2(Card::IPile& playerPile);
-    bool reorderTableToFit3(Card::IPile& playerPile);
-    bool reorderTableToFit4();
-    void addBorderCards2Missing(unsigned int iPile, unsigned int which = -1U);
+    std::array<unsigned int, NUM_PLAYERS> handSizes() const;
+    MachiavelliRules::Table currentTable() const;
+    static void reorderHand(Card::IPile& pile, const Card::Cards& order);
+    void executeMove(Card::IPile& hand, const MachiavelliRules::Move& move);
     //@}
 
     /// \name Drag-and-drop methods
@@ -196,18 +193,6 @@ class Machiavelli : public Card::Game {
     };
 
     std::stack<undoValue> undo;
-
-    // Structure to store which cards are missing on a pile, to be able to add from hand
-    struct missingCards {
-        unsigned int pile;
-        Card::Widget::NUMBERS nr;
-        Card::Widget::COLOURS colour;
-
-        missingCards(unsigned int pile, Card::Widget::NUMBERS nr, Card::Widget::COLOURS colour)
-            : pile(pile), nr(nr), colour(colour) {}
-        explicit missingCards(unsigned int pile) : pile(pile), nr(Card::Widget::UNREACHABLE), colour() {}
-    };
-    std::vector<missingCards> missing;
 
     std::unique_ptr<XGP::MessageDlg> undoDlg;
 

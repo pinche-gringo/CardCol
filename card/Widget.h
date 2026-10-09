@@ -26,15 +26,17 @@
 #include <gtkmm/picture.h>
 
 #include <card/Images.h>
+#include <card/Value.h>
 
 namespace Card {
 
 /**Class to display a card on the screen.
 
   This is actually a plain box and not a button, to avoid
-  side-effects caused by the theme.
+  side-effects caused by the theme. The value of the card (colour, number)
+  is provided by the Card::Value base.
  */
-class Widget : public Gtk::Box {
+class Widget : public Gtk::Box, public Value {
   public:
     explicit Widget(unsigned int card, bool showFace = true);
     Widget(const Widget&);
@@ -50,14 +52,8 @@ class Widget : public Gtk::Box {
     void showBack() { showFace(false); }
     bool showsFace() const { return isVisible; }
 
-    enum COLOURS { CLUBS = 0, DIAMONDS, SPADES, HEARTS };
-    enum NUMBERS { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE, UNREACHABLE };
-
-    unsigned int id() const { return nrCard; }
-    COLOURS colour() const { return transColour[nrCard & 0x3]; }
-    NUMBERS number() const { return (nrCard > 51) ? UNREACHABLE : static_cast<NUMBERS>((51 - nrCard) >> 2); }
-    char numberStr() const { return strNumber(number()); }
-    char colourStr() const { return strColour(colour()); }
+    /// Returns the value of the card
+    const Value& value() const { return *this; }
 
     const Glib::RefPtr<Gdk::Pixbuf> getShownImage() const {
         return isVisible ? deck->getCardImage(nrCard) : deck->getCardBackground();
@@ -81,16 +77,13 @@ class Widget : public Gtk::Box {
 
     static Widget* getEmpty();
 
-    static char strNumber(Widget::NUMBERS nr);
-    static char strColour(Widget::COLOURS col);
-
   protected:
     virtual void on_clicked();
     virtual void on_left_released(int nPress, double x, double y);
     virtual void on_right_released(int nPress, double x, double y);
 
   private:
-    Widget() : clicked_(), rightClicked_(), img(), isVisible(false), nrCard(0) { initGestures(); }
+    Widget() : Value(0), clicked_(), rightClicked_(), img(), isVisible(false) { initGestures(); }
 
     void initGestures();
 
@@ -102,13 +95,14 @@ class Widget : public Gtk::Box {
     Glib::RefPtr<Gtk::GestureClick> rightClick;
 
     bool isVisible;
-    unsigned int nrCard;
     int reqWidth{-1};  ///< Requested width (-1: Full width of the image)
     int reqHeight{-1}; ///< Requested height (-1: Full height of the image)
 
     static const Images* deck;
-    static constexpr std::array<COLOURS, 4> transColour{CLUBS, SPADES, HEARTS, DIAMONDS};
 };
+
+/// Accessor to the value of a card (see card/Cards.h)
+inline const Value& value(const Widget* card) { return *card; }
 
 } // namespace Card
 

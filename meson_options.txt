@@ -33,3 +33,6 @@ option('gnome-carddir', type: 'string', value: '',
        description: 'Path to the GNOME carddecks (empty: autodetect, "no": don\'t use)')
 option('cardpics-dir', type: 'string', value: '',
        description: 'Path to the cardpics (empty: autodetect, "no": don\'t use)')
+
+option('tests', type: 'feature', value: 'auto',
+       description: 'Build the unit tests and game simulations (needs Boost.Test)')

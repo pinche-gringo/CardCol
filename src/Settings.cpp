@@ -137,7 +137,7 @@ Settings::Settings(Options& options)
     pagBuraco.attach(maxBuracoPoints, 1, 0);
 
     lbl = Gtk::make_managed<Gtk::Label>(_("_Number of cards:"), true);
-    lbl->set_mnemonic_widget(cardNuke);
+    lbl->set_mnemonic_widget(numBuracoCards);
     pagBuraco.attach(*lbl, 0, 1);
     numBuracoCards.set_hexpand();
     pagBuraco.attach(numBuracoCards, 1, 1);

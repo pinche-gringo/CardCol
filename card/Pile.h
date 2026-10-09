@@ -33,6 +33,7 @@
 #include <YGP/Check.h>
 #include <YGP/Trace.h>
 
+#include <card/Cards.h>
 #include <card/Widget.h>
 
 namespace Card {
@@ -141,23 +142,23 @@ class IPile {
     }
     int find1EqualOrBiggerByNr(const Widget& card) const { return find1EqualOrBigger(card, compCardsByNr); }
     int find1EqualOrBiggerByColour(const Widget& card) const { return find1EqualOrBigger(card, compCards); }
-    int findFirstEqualOrBigger(Widget::NUMBERS nr) const;
-    int findFirstEqualOrBiggerColour(Widget::COLOURS nr) const;
+    int findFirstEqualOrBigger(Widget::NUMBERS nr) const { return Card::findFirstEqualOrBigger(cards, nr); }
+    int findFirstEqualOrBiggerColour(Widget::COLOURS col) const { return Card::findFirstEqualOrBiggerColour(cards, col); }
     int findLastEqualOrBigger(Widget::NUMBERS nr) const {
         int pos(findFirstEqualOrBigger(nr));
         return (pos == -1) ? -1 : findLastEqual(pos);
     }
-    int findLastEqualOrBiggerColour(Widget::COLOURS col) const;
-    int findLastEqual(unsigned int pos) const;
-    int findLastEqualColour(unsigned int pos) const;
-    int findFirstEqual(unsigned int pos) const;
-    int findFirstEqualColour(unsigned int pos) const;
-    int find(Widget::NUMBERS nr, unsigned int start = 0) const;
-    int find(Widget::COLOURS colour, unsigned int start = 0) const;
-    int find(unsigned int id, unsigned int start = 0) const;
+    int findLastEqualOrBiggerColour(Widget::COLOURS col) const { return Card::findLastEqualOrBiggerColour(cards, col); }
+    int findLastEqual(unsigned int pos) const { return Card::findLastEqual(cards, pos); }
+    int findLastEqualColour(unsigned int pos) const { return Card::findLastEqualColour(cards, pos); }
+    int findFirstEqual(unsigned int pos) const { return Card::findFirstEqual(cards, pos); }
+    int findFirstEqualColour(unsigned int pos) const { return Card::findFirstEqualColour(cards, pos); }
+    int find(Widget::NUMBERS nr, unsigned int start = 0) const { return Card::find(cards, nr, start); }
+    int find(Widget::COLOURS colour, unsigned int start = 0) const { return Card::find(cards, colour, start); }
+    int find(unsigned int id, unsigned int start = 0) const { return Card::findID(cards, id, start); }
 
-    unsigned int findLowestCard() const;
-    unsigned int findLowestCard(Widget::COLOURS excludeColour) const;
+    unsigned int findLowestCard() const { return Card::findLowestCard(cards); }
+    unsigned int findLowestCard(Widget::COLOURS excludeColour) const { return Card::findLowestCard(cards, excludeColour); }
     //@}
 
     /// \name Test availability
@@ -202,10 +203,13 @@ class IPile {
     void sortByNumber() { sort(compCardsByNr); }
     void sortByColour() { sort(compCards); }
 
-    static bool compCards(const Widget* a, const Widget* b);
-    static bool compCardsByNr(const Widget* a, const Widget* b);
-    static bool compCardsByID(const Widget* a, const Widget* b);
+    static bool compCards(const Widget* a, const Widget* b) { return lessByColour(*a, *b); }
+    static bool compCardsByNr(const Widget* a, const Widget* b) { return lessByNumber(*a, *b); }
+    static bool compCardsByID(const Widget* a, const Widget* b) { return lessByID(*a, *b); }
     //@}
+
+    /// Returns the values of the cards in the pile
+    Cards values() const { return Card::values(cards); }
 
     void getCards(IPile& src, unsigned int start = 0, int end = -1) { getCards(size(), src, start, end); }
     void getCards(unsigned int posDest, IPile& src, unsigned int start = 0, int end = -1);

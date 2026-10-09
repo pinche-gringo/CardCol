@@ -16,18 +16,38 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <cstdlib>
 #include <random>
 
 namespace Card {
 
-/// Returns the (per thread) random number engine, seeded non-deterministically
+/// Returns the seed the random engine (of the current thread) has been
+/// initialised with: The value of the environment variable CARDCOL_SEED (if
+/// set) or a random value.
+/// \remarks Every random decision of the games is derived from this engine,
+///     so setting CARDCOL_SEED replays a game exactly (as long as the
+///     human player makes the same moves)
+inline unsigned int& randomSeed() {
+    thread_local unsigned int seed{[] {
+        const char* env(std::getenv("CARDCOL_SEED"));
+        return (env && *env) ? static_cast<unsigned int>(std::strtoul(env, nullptr, 0)) : std::random_device{}();
+    }()};
+    return seed;
+}
+
 inline std::mt19937& randomEngine() {
-    thread_local std::mt19937 engine{std::random_device{}()};
+    thread_local std::mt19937 engine{randomSeed()};
     return engine;
 }
 
-/// Returns a uniformly distributed random number in the range [0, upper)
-/// \param upper Upper (exclusive) border of the random number; must not be 0
+/// Re-initialises the random engine (of the current thread) with the passed seed
+/// \param seed Seed to use
+inline void seedRandom(unsigned int seed) {
+    randomSeed() = seed;
+    randomEngine().seed(seed);
+}
+
+/// Returns a random number in the range [0, upper)
 inline unsigned int randomNumber(unsigned int upper) {
     return std::uniform_int_distribution<unsigned int>(0, upper - 1)(randomEngine());
 }

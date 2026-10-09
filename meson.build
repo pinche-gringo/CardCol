@@ -180,6 +180,7 @@ top_inc = include_directories('.')
 
 subdir('card')
 subdir('src')
+subdir('tests')
 if nls
   subdir('po')
 endif

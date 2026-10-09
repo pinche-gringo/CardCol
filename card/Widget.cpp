@@ -43,7 +43,7 @@ const Images* Widget::deck(nullptr);
 /// \param card Number of image inside the set to display
 /// \param visible Flag, if card should be displayed visible
 //-----------------------------------------------------------------------------
-Widget::Widget(const unsigned int card, bool visible) : clicked_(), rightClicked_(), img(), isVisible(visible), nrCard(card) {
+Widget::Widget(const unsigned int card, bool visible) : Value(card), clicked_(), rightClicked_(), img(), isVisible(visible) {
     TRACE3("Widget::Widget(const Images&, unsinged int, bool) - " << card << " (" << visible << ')');
     Check1(deck);
 
@@ -62,8 +62,8 @@ Widget::Widget(const unsigned int card, bool visible) : clicked_(), rightClicked
 /// \param other Card to copy
 //-----------------------------------------------------------------------------
 Widget::Widget(const Widget& other)
-    : sigc::trackable(), Glib::ObjectBase(), Gtk::Box(), clicked_(), rightClicked_(), img(), isVisible(other.isVisible),
-      nrCard(other.nrCard) {
+    : sigc::trackable(), Glib::ObjectBase(), Gtk::Box(), Value(other), clicked_(), rightClicked_(), img(),
+      isVisible(other.isVisible) {
     TRACE3("Widget::Widget(const Widget&) - " << nrCard << "(" << isVisible << ')');
     Check1(deck);
 
@@ -103,25 +103,6 @@ void Widget::initGestures() {
 void Widget::showFace(bool visible) {
     isVisible = visible;
     update();
-}
-
-//-----------------------------------------------------------------------------
-/// Returns the number of the card as character
-/// \returns char Character describing number of card
-//-----------------------------------------------------------------------------
-char Widget::strNumber(Widget::NUMBERS nr) {
-    static Glib::ustring specialCards(_("TJQKA"));
-    return static_cast<char>((nr >= Widget::TEN) ? specialCards[nr - Widget::TEN] : nr + '2');
-}
-
-//-----------------------------------------------------------------------------
-/// Returns the colour of the card as character
-/// \returns char Character describing colour of card
-//-----------------------------------------------------------------------------
-char Widget::strColour(Widget::COLOURS col) {
-    // Letters describing the colours(clubs, spades, hearts, diamonds)
-    static Glib::ustring colours(_("CDSH"));
-    return static_cast<char>(colours[col]);
 }
 
 //-----------------------------------------------------------------------------
@@ -169,13 +150,7 @@ void Widget::on_right_released(int, double x, double y) {
 //-----------------------------------------------------------------------------
 /// Output operator; Writes number and colour of the card
 //-----------------------------------------------------------------------------
-std::ostream& operator<<(std::ostream& out, const Widget& card) {
-    if (card.nrCard >= 52)
-        out << "Joker";
-    else
-        out << card.colourStr() << card.numberStr();
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const Widget& card) { return out << card.value(); }
 
 //-----------------------------------------------------------------------------
 /// Marks the card; this is done by changing the saturation

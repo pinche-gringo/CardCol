@@ -31,6 +31,7 @@
 #include <card/Widget.h>
 
 #include "BuracoPile.h"
+#include "BuracoRules.h"
 
 #include <card/Game.h>
 
@@ -74,22 +75,17 @@ class Buraco : public Card::Game {
     void changeNames(const std::vector<Card::Player*>& newPlayer) override;
     void resizeCards() override;
 
-    unsigned int numberOfDecks() const override { return 4; }
-    unsigned int numberOfJokers() const override { return 3; }
+    unsigned int numberOfDecks() const override { return BuracoRules::NUM_DECKS; }
+    unsigned int numberOfJokers() const override { return BuracoRules::NUM_JOKERS; }
 
     bool handleMessage(unsigned int player, const std::string& msg) override;
-
-    static unsigned int getPoints(const Card::Widget& card);
-    static bool isJoker(const Card::Widget& card);
-    static int cardDistance(const Card::Widget& a, const Card::Widget& b);
-    static int cardDistance(const Card::Widget& a, const Card::Widget& b, bool aceIsOne);
 
   private:
     Buraco(const Buraco& other) = delete;
     const Buraco& operator=(const Buraco& other) = delete;
 
-    static constexpr unsigned int NUM_PLAYERS = 4;              // Number of players
-    static constexpr unsigned int NUM_TEAMS = NUM_PLAYERS >> 1; // Number of teams
+    static constexpr unsigned int NUM_PLAYERS = BuracoRules::NUM_PLAYERS; // Number of players
+    static constexpr unsigned int NUM_TEAMS = BuracoRules::NUM_TEAMS;     // Number of teams
 
     //@Section Virtual methods
     void makeMove(unsigned int player) override;
@@ -129,20 +125,16 @@ class Buraco : public Card::Game {
     void addBuraco4HumanAndEnable();
     void enableHumanHand();
     void enableCard(unsigned int pos);
-    static bool containsOnlyJoker(const Card::IPile& pile);
-    static bool containsNoJoker(const Card::IPile& pile);
     static bool showJoker(Card::IPile* pile, unsigned int cJokers, bool show);
     void addBuraco(unsigned int player);
     void playCards();
-    int executeMove(unsigned int player, unsigned int& pos1Play, unsigned int& pos2Play);
+    unsigned int executeMove(unsigned int player, unsigned int& pos1Play, unsigned int& pos2Play);
     void endGame();
-    bool canClosePile(unsigned int player, unsigned int pile) const;
-    bool canGetRidOfCards(unsigned int player) const;
-    bool canPlayCards(unsigned int player, unsigned int cards, unsigned int pile = -1U) const;
+    BuracoRules::Table makeTable() const;
+    void arrangeHand(unsigned int player, const Card::Cards& order);
+    void showInvalidMove(BuracoRules::PlayError error);
 
     void sendMoveCard(unsigned int pile, unsigned int from, unsigned int to) const;
-    static bool pileHasFittingPair(const Card::IPile& pile, const Card::Widget& card, bool withJokers = false);
-    static bool pileHasFittingPair(const Card::IPile& pile, const Card::Widget* exclude = nullptr);
     static bool compByNumberWithJokers(const Card::Widget* a, const Card::Widget* b);
     static bool compByColourWithJokers(const Card::Widget* a, const Card::Widget* b);
     void makeTeamNames(std::vector<Card::Player*>& names) const;
@@ -151,12 +143,9 @@ class Buraco : public Card::Game {
 
     //@Section to handle piles on table
     BuracoPile& makeNewPile(unsigned int team);
-    unsigned int cardFitsOnPlayedPile(unsigned int player, unsigned int card);
-    int cardFitsOnPile(unsigned int pile, const Card::Widget& card) const;
     void removeCerrado(unsigned int player, BuracoPile& pile);
     void cleanCerrado(unsigned int player);
     void updateInfo();
-    bool humanPilesOK(unsigned int except = -1U) const;
 
     //@Section DND
     void registerTableDND(unsigned int pile, unsigned int start, unsigned int end);

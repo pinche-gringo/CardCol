@@ -27,6 +27,8 @@
 
 #include <card/Game.h>
 
+#include "TwopartRules.h"
+
 namespace Gio {
 class Menu;
 class SimpleActionGroup;
@@ -71,50 +73,21 @@ class Twopart : public Card::Game {
     void endTurn(unsigned int player);
     bool enableHuman() override;
     unsigned int pickUpPlayedPile(unsigned int player);
-    int findNextPlayer(unsigned int player) const;
-    int findNextPlayerWithCards(unsigned int player) const;
-    void removePlayer(unsigned int player) { bfPlayers &= ~(1 << player); }
-    void addPlayer(unsigned int player) { bfPlayers |= 1 << player; }
-    static unsigned int playersInBitfield(unsigned int bfPlayers) {
-        unsigned int cPlayers(0);
-        for (unsigned int i(0); i < NUM_PLAYERS; ++i)
-            if (bfPlayers & (1 << i))
-                ++cPlayers;
-        return cPlayers;
-    }
-    unsigned int removePlayersWithoutCards();
-
-    void userWants2End(unsigned int input);
-    void analyzeLastPlayed(unsigned int startPos, unsigned int cards, int& max, int& maxPos, int& maxEqual, int& maxEqualPos,
-                           int& trumps) const;
-
-    unsigned int pos2Player(unsigned int pos) const;
-    int findPos2Play(unsigned int player, unsigned int& start, unsigned int& end) const;
-    unsigned int findSmallestCard(unsigned int player) const;
-    unsigned int findEndOfSerie(unsigned int player, unsigned int start) const;
-    unsigned int findStartOfSerie(unsigned int player, unsigned int start) const;
-    int findBigger(const Card::IPile& pile, Card::Widget::NUMBERS nr) const;
+    TwopartRules::HandSizes handSizes() const;
 
     bool startPartTwo(unsigned int player);
 
     void makeMove(unsigned int player) override;
-    bool endRound(unsigned int& player);
 
     void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
     void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
 
-    static std::array<char, 4> sortOrder;
+    static Card::Value::COLOURS sortTrump; ///< Colour of trump, used by compByColourAccTrumps
     static bool compByColourAccTrumps(const Card::Widget* a, const Card::Widget* b);
 
-    static constexpr unsigned int NUM_PLAYERS = 4; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = TwopartRules::NUM_PLAYERS; // Number of players
 
-    unsigned int bfPlayers; // Array indicating players still in round
-
-    // Variables to store positions during playing
-    std::array<unsigned int, NUM_PLAYERS - 1> startPos; // Offset of cards played by players
-    unsigned int offPos;                                // Offset in startPos-array
-    unsigned int startPlayer;                           // Player who started round (needed for endRound)
-    unsigned int bfOldPlayers;                          // Array indicating players while starting round
+    TwopartRules::Table table; ///< State of the game (players in round, played cards, trump)
 
     // Columns and rows for the cards of the players
     static constexpr std::array<unsigned int, NUM_PLAYERS> COLS_PLAYER{1, 13, 7, 1};

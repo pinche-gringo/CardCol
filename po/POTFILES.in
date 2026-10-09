@@ -4,9 +4,11 @@
 #
 # Package source files
 src/Rovhult.cpp
+src/RovhultRules.cpp
 card/Images.cpp
 card/Pile.h
 src/Twopart.cpp
+src/TwopartRules.cpp
 card/DeckSelect.cpp
 card/Game.cpp
 card/PlayerDlg.cpp
@@ -15,13 +17,18 @@ src/CardCol.cpp
 src/CardColNet.cpp
 src/CardColAppl.cpp
 src/Hearts.cpp
+src/HeartsRules.cpp
 card/ScoreDlg.cpp
 src/Buraco.cpp
+src/BuracoRules.cpp
 src/Machiavelli.cpp
+src/MachiavelliRules.cpp
 src/MachiPile.cpp
 src/SgtMayor.cpp
+src/SgtMayorRules.cpp
 src/Settings.cpp
 src/GameTypes.cpp
 src/ChatDlg.cpp
 src/Jabberwocky.cpp
+src/JabberwockyRules.cpp
 src/CardSizes.cpp

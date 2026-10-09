@@ -17,8 +17,8 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <array>
-#include <bitset>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <gtkmm/label.h>
@@ -29,6 +29,8 @@
 #include <card/Set.h>
 
 #include <card/Game.h>
+
+#include "JabberwockyRules.h"
 
 namespace Card {
 class ScoreDlg;
@@ -76,34 +78,23 @@ class Jabberwocky : public Card::Game {
     void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
 
     //@Section helper methods
-    static unsigned int getTricks(unsigned int round) { return (round < 7) ? (round + 3) : (15 - round); }
     void cardSelected(unsigned int pos);
     void makeBids(unsigned int start = 0);
     void startGame();
     void placedBid(Gtk::SpinButton* value, Gtk::Button* commit, unsigned int start);
     void showBid(unsigned int player);
-    unsigned int calcTricks(unsigned int player) const;
 
     void showCards2Play(unsigned int player);
     int playCard(unsigned int player);
     void finishMove();
-    /// Array holding the position of the last card of each colour (or -1)
-    using ColourPositions = std::array<int, 4>;
-
-    static void getPositionOfColours(const Card::IPile& pile, ColourPositions& result);
-    bool isHighest(const Card::Widget& card) const;
-    bool isHighEnough(const Card::Widget& card) const;
-    unsigned int findHigherCard(const Card::Widget& cardCmp, const Card::IPile& pile, unsigned int aPosColour) const;
-    unsigned int findLowerCard(const Card::Widget& cardCmp, const Card::IPile& pile, int aPosColour) const;
-    unsigned int findWorstCard(const Card::IPile& card, const ColourPositions& aPositions) const;
-    unsigned int check4Winner() const;
-    unsigned int sumBids() const;
+    unsigned int sumOtherBids(unsigned int player) const;
     void takeWonCards(unsigned int player);
+    JabberwockyRules::Table& currentTable();
 
-    static std::array<char, 4> sortOrder;
+    static Card::Widget::COLOURS trumpColour; ///< Colour of the trumps (for sorting)
     static bool compByColourAccTrumps(const Card::Widget* a, const Card::Widget* b);
 
-    static constexpr unsigned int NUM_PLAYERS = 4; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = JabberwockyRules::NUM_PLAYERS; // Number of players
 
     struct playerCards {
         Card::HPile hand; // For players: Cards in the hand
@@ -128,9 +119,8 @@ class Jabberwocky : public Card::Game {
     std::unique_ptr<Gtk::SpinButton> pBidValue; ///< Widget to enter the human's bid (while active); else NULL
     std::unique_ptr<Gtk::Button> pBidCommit;    ///< Button to commit the human's bid (while active); else NULL
 
-    // Variables needed by computer player
-    std::array<std::bitset<13>, 4> playedCards;
-    std::array<std::array<bool, 4>, NUM_PLAYERS> outOfColour;
+    /// State of the round (played cards, ...); needed by the rules and the computer player
+    std::optional<JabberwockyRules::Table> table;
 
     std::unique_ptr<Card::ScoreDlg> pScoreDlg;
 

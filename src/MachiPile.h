@@ -20,6 +20,8 @@
 
 #include <card/Pile.h>
 
+#include "MachiavelliRules.h"
+
 /**Class for piles in the Machiavelli cardgame
  */
 class MachiPile : public Card::HPile {
@@ -31,7 +33,7 @@ class MachiPile : public Card::HPile {
         explicit PileError(const std::string& what) : std::runtime_error(what) {}
     };
 
-    enum TYPE { UNDEFINED, NUMBER, COLOUR };
+    using TYPE = MachiavelliRules::PileType;
 
     MachiPile();
     ~MachiPile() override;
@@ -46,16 +48,9 @@ class MachiPile : public Card::HPile {
     Card::Widget& remove(unsigned int pos) override;
     Card::Widget& remove(unsigned int pos, bool visible);
 
-    unsigned int getPosition4Card(const Card::Widget& card) const;
-    bool hasMatching3rd(std::vector<Card::Widget*>& pair, MachiPile::const_iterator& match, unsigned int& nr) const;
-
     TYPE getType() const { return type; }
-
-    int getPosOfColour(Card::Widget::COLOURS colour) const;
-
-    enum ACEFLAG { ACE, BOTH, ONE };
-    static int cardDistance(const Card::Widget& a, const Card::Widget& b) { return cardDistance(a, b, BOTH); }
-    static int cardDistance(const Card::Widget& a, const Card::Widget& b, ACEFLAG aceIsOne);
+    /// Returns the pile without display (for the rules)
+    MachiavelliRules::Pile rules() const { return MachiavelliRules::Pile(values(), type); }
 
     void checkIntegrity() const;
     void mark() const;

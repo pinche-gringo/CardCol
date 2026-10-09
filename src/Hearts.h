@@ -27,6 +27,8 @@
 
 #include <card/Game.h>
 
+#include "HeartsRules.h"
+
 namespace Card {
 class ScoreDlg;
 }
@@ -60,11 +62,6 @@ class Hearts : public Card::Game {
   private:
     enum Status { EXCHANGE = Game::LAST };
 
-    /// Array holding the position of the last card of each colour (or -1)
-    using ColourPositions = std::array<int, 4>;
-
-    static void getPositionOfColours(const Card::IPile& pile, ColourPositions& result);
-
     // Protected manager functions
     Hearts(const Hearts& other) = delete;
     Hearts& operator=(const Hearts& other) = delete;
@@ -81,27 +78,20 @@ class Hearts : public Card::Game {
     //@Section Helper methods
     bool moveSelectedCardToPlayed(unsigned int player, unsigned int card);
     unsigned int calcNextPlayer(unsigned int player);
-    unsigned int check4Winner() const;
+    HeartsRules::Table currentTable() const;
     void exchangeCards();
     void finishExchangeCards();
     void finishMove();
     void takeWonCards(unsigned int player);
     bool cardsExchanged(unsigned int cards);
     bool allCardsExchanged();
-    static unsigned int numberOfCards(const ColourPositions& aPositions, Card::Widget::COLOURS colour);
-    static unsigned int pointsOfPile(const Card::IPile& pile);
-
-    //@Section Computer player
-    unsigned int findPos2Play(unsigned int player);
-    unsigned int findWorstCard(const Card::IPile& pile, const ColourPositions& aPositions) const;
-    unsigned int findLowerCard(const Card::IPile& pile, const ColourPositions& aPositions) const;
 
     void startPlaying();
 
     void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
     void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
 
-    static constexpr unsigned int NUM_PLAYERS = 4; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = HeartsRules::NUM_PLAYERS; // Number of players
 
     bool playedSQ;                       // Flag, if the queen of spades has been played
     std::array<unsigned int, 4> aPlayed; // Array holding played cars for each colour

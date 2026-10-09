@@ -27,6 +27,8 @@
 
 #include <card/Game.h>
 
+#include "RovhultRules.h"
+
 namespace Gtk {
 class DragSource;
 class DropTarget;
@@ -94,30 +96,16 @@ class Rovhult : public Card::Game {
     void playCardsFromHand(unsigned int player, unsigned int start, unsigned int end);
     void exchangeAutoplayerCards();
     void sortReserve(unsigned int player);
+    void arrangeCards(unsigned int player, const RovhultRules::Player& arranged);
 
-    unsigned int numberOfEqualTopCards() const;
-    bool played4Equal();
     void fillUpPile(Card::IPile& pile, unsigned int minCards);
 
-    int makeTurn(unsigned int player);
-    void findCard2Play(unsigned int player, unsigned int& start, unsigned int& end) const;
     void showCards2Play(unsigned int player, unsigned int start, unsigned int end);
     void showCardOfPile(unsigned int player, unsigned int pile, bool invalid) const;
-    unsigned int selectRandomCard(unsigned int player);
 
-    static int compareCards(const Card::Widget& lhs, const Card::Widget& rhs);
-    bool getPileLimits(unsigned int player, Card::Widget::NUMBERS& min, Card::Widget::NUMBERS& max) const;
-    bool existOnlySpecialCards(const Card::IPile& pile, unsigned int start, unsigned int end) const;
-    bool isSpecialCard(Card::Widget::NUMBERS nr) const { return (nr == Card::Widget::TEN) || (nr == Card::Widget::TWO); }
-    static unsigned int getCardValue(const Card::Widget& card);
-
-    int skip(Card::Widget::NUMBERS nr, const Card::IPile& pile, unsigned int pos) const {
-        if (pile[pos]->number() == nr) {
-            pos = pile.findLastEqual(pos) + 1;
-            return (pos < pile.size()) ? static_cast<int>(pos) : -1;
-        }
-        return pos;
-    }
+    static RovhultRules::Options options() { return {cardNuke, cardSkip, cardReverse}; }
+    RovhultRules::Player playerCardsOf(unsigned int player) const;
+    RovhultRules::Table currentTable() const;
 
     bool cardValid(Card::Widget::NUMBERS nr, bool silent = false) const;
     void executeMove(unsigned int player);
@@ -130,7 +118,7 @@ class Rovhult : public Card::Game {
     bool applyExchange(unsigned int player, const std::string& message);
 #endif
 
-    static constexpr unsigned int NUM_PLAYERS = 4; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = RovhultRules::NUM_PLAYERS; // Number of players
 
     // Columns and rows for the cards of the players
     static constexpr std::array<unsigned int, NUM_PLAYERS> COLS_PLAYER{7, 13, 7, 1};

@@ -17,7 +17,6 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <array>
-#include <bitset>
 #include <memory>
 #include <string>
 #include <vector>
@@ -28,6 +27,8 @@
 #include <card/Set.h>
 
 #include <card/Game.h>
+
+#include "SgtMayorRules.h"
 
 namespace Card {
 class ScoreDlg;
@@ -119,16 +120,11 @@ class SgtMayor : public Card::Game {
     void handleDeferredMessage();
 #endif
 
-    //@Section Computer player
-    unsigned int findPos2Play(unsigned int player);
-    bool isHighest(const Card::Widget& card) const;
-    unsigned int tryToGetTrickWithTrump(const Card::IPile& pile) const;
-
     void addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
     void removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPtr<Gio::SimpleActionGroup>& actions) override;
     void showWonCards(bool show = true, unsigned int style = -1U) override;
 
-    static constexpr unsigned int NUM_PLAYERS = 3; // Number of players
+    static constexpr unsigned int NUM_PLAYERS = SgtMayorRules::NUM_PLAYERS; // Number of players
 
     struct playerCards {
         Card::HPile hand; // For players: Cards in the hand
@@ -146,11 +142,10 @@ class SgtMayor : public Card::Game {
     Card::HPile played;
     std::unique_ptr<Card::Widget> pTrump;
 
-    unsigned int bfColours;
-
     unsigned int startPlayer;
-    std::array<std::bitset<13>, 4> playedCards;
-    std::array<int, NUM_PLAYERS> diffTricks;
+    SgtMayorRules::Table table;              ///< State of the round (as needed by the rules)
+    std::array<int, NUM_PLAYERS> diffTricks; ///< Tricks made more (or less) than needed in the last round
+    std::array<int, NUM_PLAYERS> points;     ///< Points of the game (as displayed in the score dialog)
 
     Glib::RefPtr<Gio::SimpleAction> menuSort;
     Glib::RefPtr<Gio::SimpleAction> menuSort2;
