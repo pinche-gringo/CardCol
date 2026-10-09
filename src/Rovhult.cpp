@@ -985,9 +985,20 @@ void Rovhult::makeMove(unsigned int player) {
     }
 
     const RovhultRules::Table table(currentTable());
-    const RovhultRules::Move move(RovhultRules::playRandomly(cEndgame, table.players[player])
-                                      ? RovhultRules::selectRandomCard(table.players[player].hand, table.played, options())
-                                      : RovhultRules::selectMove(table, player, options()));
+    const int loser(RovhultRules::loserOfEndlessGame(cEndgame, table));
+    if (loser != -1) {
+        status.pop();
+        Glib::ustring stat(_("The game doesn't end; %1 lost (having the most cards)"));
+        stat.replace(stat.find("%1"), 2, actPlayers[loser]->getName());
+        status.push(stat);
+        setGameStatus(STOPPED);
+        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+            broadcastMessage("End");
+        return;
+    }
+
+    const RovhultRules::Move move(RovhultRules::playRandomly(cEndgame) ? RovhultRules::selectRandomMove(table, player, options())
+                                                                       : RovhultRules::selectMove(table, player, options()));
     TRACE8("Rovhult::makeMove(unsigned int) - Player " << player << "; Card: " << move.end);
 
     if (move.source != RovhultRules::Move::TAKE) {

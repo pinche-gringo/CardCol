@@ -24,9 +24,9 @@
 // cycle; here the human "gets impatient" after HUMAN_PATIENCE moves: The
 // counting is started then and the human plays like the computer players.
 //
-// Even then the computer players might not end the game (their random moves
-// don't break every cycle, see RovhultRules::playRandomly); such games are
-// reported as warning (and must be rare).
+// Even then the players might not be able to finish (e.g. if the skip card is
+// the ace and only two players are left); such games are ended after
+// RovhultRules::MAX_ENDGAME_MOVES (and must be rare).
 
 #define BOOST_TEST_MODULE RovhultSimulation
 #include <boost/test/unit_test.hpp>
@@ -44,7 +44,6 @@ namespace {
 
 constexpr unsigned int HUMAN = 0;            ///< Player counting as human
 constexpr unsigned int MAX_MOVES = 10000;    ///< Moves after which the game is considered as endless
-constexpr unsigned int MAX_ENDGAME = 2000;   ///< Counted moves after which the game is considered as endless
 constexpr unsigned int HUMAN_PATIENCE = 500; ///< Moves after which the human starts to break cycles
 
 /// State of a simulated game
@@ -73,7 +72,7 @@ struct Statistics {
     unsigned long moves{0};
     unsigned int maxMoves{0};
     unsigned int impatient{0};
-    unsigned int endless{0};
+    unsigned int ended{0}; ///< Games ended, because they took too long
 };
 
 /// Returns the special cards to use for the passed seed: Every fourth game
@@ -158,9 +157,10 @@ void playGame(unsigned int seed, Statistics& stats) {
                                        << Card::Cards(player.reserve[2]) << ", played " << Card::Cards(game.table.played)) {
                 BOOST_TEST_REQUIRE(moves < MAX_MOVES, "Game doesn't end");
                 BOOST_TEST_REQUIRE(player.hasCards());
-                if (cEndgame >= MAX_ENDGAME) {
-                    BOOST_TEST_WARN(false, "Endgame doesn't end");
-                    ++stats.endless;
+                const int loser(loserOfEndlessGame(cEndgame, game.table));
+                if (loser != -1) {
+                    BOOST_TEST_REQUIRE(game.table.players[loser].hasCards());
+                    ++stats.ended;
                     return;
                 }
 
@@ -170,8 +170,8 @@ void playGame(unsigned int seed, Statistics& stats) {
                     ++stats.impatient;
                 }
 
-                const Move move((((current != HUMAN) || impatient) && playRandomly(cEndgame, player))
-                                    ? selectRandomCard(player.hand, game.table.played, game.options)
+                const Move move((((current != HUMAN) || impatient) && playRandomly(cEndgame))
+                                    ? selectRandomMove(game.table, current, game.options)
                                     : selectMove(game.table, current, game.options));
                 const PlayError error(checkMove(game.table, current, move, game.options));
                 BOOST_TEST_REQUIRE(static_cast<int>(error) == static_cast<int>(PlayError::NONE),
@@ -261,7 +261,7 @@ BOOST_AUTO_TEST_CASE(computer_players_play_complete_games) {
     for (unsigned int seed(seeds.first); seed < seeds.end(); ++seed)
         BOOST_TEST_CONTEXT("Seed " << seed) { playGame(seed, stats); }
     BOOST_TEST_MESSAGE("Played " << seeds.count << " games with " << stats.moves << " moves (max. " << stats.maxMoves
-                                 << "); human got impatient in " << stats.impatient << " games; " << stats.endless
-                                 << " endless games");
-    BOOST_TEST(stats.endless * 100 <= seeds.count, stats.endless << " endless games");
+                                 << "); human got impatient in " << stats.impatient << " games; " << stats.ended
+                                 << " games ended as endless");
+    BOOST_TEST(stats.ended * 100 <= seeds.count, stats.ended << " games ended as endless");
 }

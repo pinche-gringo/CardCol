@@ -20,6 +20,8 @@
 
 #include <algorithm>
 #include <cstring>
+#include <tuple>
+#include <vector>
 
 #include "RovhultRules.h"
 
@@ -409,24 +411,69 @@ BOOST_AUTO_TEST_CASE(plays_from_reserve) {
 
 BOOST_AUTO_TEST_CASE(random_moves) {
     unsigned int cEndgame(0);
-    const Player p(player("C5"));
-    BOOST_TEST(!playRandomly(cEndgame, p));
+    BOOST_TEST(!playRandomly(cEndgame));
     BOOST_TEST(cEndgame == 0u);
 
+    Card::seedRandom(1);
     cEndgame = 1;
     unsigned int randomMoves(0);
-    for (unsigned int i(0); i < 64; ++i)
-        randomMoves += playRandomly(cEndgame, p);
-    BOOST_TEST(cEndgame == 65u);
-    BOOST_TEST(randomMoves == 5u); // 32, 40, 48, 56, 64
-    cEndgame = 39;
-    BOOST_TEST(!playRandomly(cEndgame, player("", {"C3", "", ""})));
+    for (unsigned int i(0); i < 30; ++i)
+        randomMoves += playRandomly(cEndgame);
+    BOOST_TEST(cEndgame == 31u);
+    BOOST_TEST(randomMoves == 0u);
 
-    Card::seedRandom(1);
-    for (unsigned int i(0); i < 20; ++i) {
-        const Move move(selectRandomCard(cards("C5 H8 SK"), cards("D8"), DEFAULT));
-        BOOST_TEST(((move == TAKE) || (move == hand(1, 1)) || (move == hand(2, 2))), move);
+    // Afterwards random moves get more frequent (but not periodic, which
+    // didn't break every cycle)
+    for (unsigned int i(0); i < 1000; ++i)
+        randomMoves += playRandomly(cEndgame);
+    BOOST_TEST(randomMoves > 300u);
+    BOOST_TEST(randomMoves < 600u);
+}
+
+BOOST_AUTO_TEST_CASE(endless_game_is_ended) {
+    // Regression (seed 21712 of the simulation): Two players are left and the
+    // skip card is the ace: Playing it skips the other player and the own ace
+    // must be beaten (and is taken instead)
+    Table t(table(player("", {"", "", ""}), "HA SA"));
+    t.players[1] = player("H3 S5 H6 C6", {"DQ HT", "H2 HQ", "SK HK"});
+    t.players[2] = player("C7 S7 CQ CA", {"D3", "S3 S9", "H5 DK"});
+    t.players[3] = player("");
+    BOOST_TEST(loserOfEndlessGame(MAX_ENDGAME_MOVES, t) == -1);
+    BOOST_TEST(loserOfEndlessGame(MAX_ENDGAME_MOVES + 1, t) == 1); // Having the most cards
+}
+
+/// Returns all moves selectRandomMove returns for the passed table (for player 0)
+std::vector<Move> randomMoves(const Table& t) {
+    std::vector<Move> moves;
+    for (unsigned int seed(1); seed < 200; ++seed) {
+        Card::seedRandom(seed);
+        const Move move(selectRandomMove(t, 0, DEFAULT));
+        BOOST_TEST(checkMove(t, 0, move, DEFAULT) == PlayError::NONE, move);
+        if (std::ranges::find(moves, move) == moves.end())
+            moves.push_back(move);
     }
+    std::ranges::sort(moves, [](const Move& a, const Move& b) {
+        return std::tie(a.source, a.start, a.end) < std::tie(b.source, b.start, b.end);
+    });
+    return moves;
+}
+
+BOOST_AUTO_TEST_CASE(random_move_from_hand) {
+    // Only valid moves; equal cards might be played together; taking the
+    // played cards is always possible
+    BOOST_TEST((randomMoves(table(player("C5 H8 SK DK"), "D8")) ==
+                std::vector<Move>{hand(1, 1), hand(2, 2), hand(2, 3), hand(3, 3), TAKE}));
+    BOOST_TEST((randomMoves(table(player("C5 H6"), "D8")) == std::vector<Move>{TAKE}));
+    BOOST_TEST((randomMoves(table(player("C5 H6"), "")) == std::vector<Move>{hand(0, 0), hand(1, 1)}));
+}
+
+BOOST_AUTO_TEST_CASE(random_move_from_reserve) {
+    // Regression (seed 5913 of the simulation): A player with only reserve
+    // cards always played deterministically; and taking the played cards
+    // instead of beating them wasn't possible
+    BOOST_TEST((randomMoves(table(player("", {"C3 H8", "C4 S8", "C5 DK"}), "D6")) ==
+                std::vector<Move>{reserve(0, 0), reserve(0, 1), reserve(2, 2), TAKE}));
+    BOOST_TEST((randomMoves(table(player("", {"", "C4", "C5"}), "DA")) == std::vector<Move>{reserve(1, 1)}));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

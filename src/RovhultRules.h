@@ -35,6 +35,9 @@ static constexpr unsigned int NUM_PLAYERS = 4;
 static constexpr unsigned int NUM_RESERVE = 3;
 /// Number of cards a player should hold in the hand (while there are cards on the staple)
 static constexpr unsigned int CARDS_IN_HAND = 3;
+/// Number of counted moves in the endgame (see playRandomly), after which the
+/// game is ended (as the players might not be able to finish)
+static constexpr unsigned int MAX_ENDGAME_MOVES = 1000;
 
 /// Cards with a special meaning (configurable by the user)
 struct Options {
@@ -115,9 +118,10 @@ void sortReserve(Player& player, const Options& options);
 /// \name Computer player
 //@{
 void exchangeCards(Player& player, const Options& options);
-bool playRandomly(unsigned int& cEndgame, const Player& player);
+bool playRandomly(unsigned int& cEndgame);
+int loserOfEndlessGame(unsigned int cEndgame, const Table& table);
 Move selectMove(const Table& table, unsigned int player, const Options& options);
-Move selectRandomCard(const Card::Cards& hand, const Card::Cards& played, const Options& options);
+Move selectRandomMove(const Table& table, unsigned int player, const Options& options);
 //@}
 
 } // namespace RovhultRules

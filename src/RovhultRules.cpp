@@ -601,16 +601,46 @@ void exchangeCards(Player& player, const Options& options) {
 
 //-----------------------------------------------------------------------------
 /// Counts the moves of the computer players (to prevent endless games),
-/// after the counting has been started (by setting the counter to 1). Every
-/// 8th move after the 30th the computer plays a random card.
+/// after the counting has been started (by setting the counter to 1). After
+/// the 30th move the computer makes random moves; with a probability of 1/8,
+/// increasing (after the 125th move) up to 1/2. Random (instead of periodic)
+/// moves are needed to break every cycle of moves.
 /// \param cEndgame Counter of moves in the endgame (0: not counting)
-/// \param player Cards of the player in turn
-/// \returns bool True, if the player should play a random card (see selectRandomCard)
+/// \returns bool True, if the player should make a random move (see selectRandomMove)
 //-----------------------------------------------------------------------------
-bool playRandomly(unsigned int& cEndgame, const Player& player) {
+bool playRandomly(unsigned int& cEndgame) {
     if (cEndgame)
         ++cEndgame;
-    return (cEndgame > 30) && !(cEndgame & 0x7) && player.hand.size();
+    return (cEndgame > 30) && (Card::randomNumber(1000) < std::clamp(cEndgame, 125U, 500U));
+}
+
+//-----------------------------------------------------------------------------
+/// Checks if the endgame takes too long: In some positions the players can't
+/// finish (e.g. if the skip card is the highest one and two players are
+/// left). The game is ended then and the player having the most cards lost.
+/// \param cEndgame Counter of moves in the endgame (see playRandomly)
+/// \param table Actual state of the game
+/// \returns int Player who lost the game; -1, if the game continues
+//-----------------------------------------------------------------------------
+int loserOfEndlessGame(unsigned int cEndgame, const Table& table) {
+    if (cEndgame <= MAX_ENDGAME_MOVES)
+        return -1;
+
+    int loser(-1);
+    std::size_t maxCards(0);
+    for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
+        const Player& player(table.players[i]);
+        std::size_t cards(player.hand.size());
+        for (const auto& pile : player.reserve)
+            cards += pile.size();
+        if (cards > maxCards) {
+            maxCards = cards;
+            loser = i;
+        }
+    }
+    TRACE1("RovhultRules::loserOfEndlessGame(unsigned int, const Table&) - Ending game; loser: " << loser);
+    Check3(loser != -1);
+    return loser;
 }
 
 //-----------------------------------------------------------------------------
@@ -628,17 +658,50 @@ Move selectMove(const Table& table, unsigned int player, const Options& options)
 }
 
 //-----------------------------------------------------------------------------
-/// Selects a random card of the hand; if it can't be played, the played
-/// cards are taken
-/// \param hand Cards of the player (not empty)
-/// \param played Played cards
+/// Selects a random move out of the valid ones: Playing a card of the hand
+/// (or all equal ones), a visible card of the reserve piles (if the hand is
+/// empty) or taking the played cards. A hidden reserve card is only played,
+/// if there are no other cards.
+/// \param table Actual state of the game
+/// \param player Player in turn
 /// \param options Special cards
 /// \returns Move Move to execute
 //-----------------------------------------------------------------------------
-Move selectRandomCard(const Card::Cards& hand, const Card::Cards& played, const Options& options) {
-    Check1(hand.size());
-    const unsigned int pos(Card::randomNumber(hand.size()));
-    return canPlay(hand[pos].number(), played, options) ? Move{Move::HAND, pos, pos} : Move{};
+Move selectRandomMove(const Table& table, unsigned int player, const Options& options) {
+    Check1(player < NUM_PLAYERS);
+    const Player& actPlayer(table.players[player]);
+
+    std::vector<Move> moves;
+    if (actPlayer.hand.size()) {
+        const Card::Cards& hand(actPlayer.hand);
+        for (unsigned int i(0); i < hand.size(); ++i)
+            if (canPlay(hand[i].number(), table.played, options)) {
+                moves.push_back({Move::HAND, i, i});
+                const unsigned int last(Card::findLastEqual(hand, i));
+                if (last > i)
+                    moves.push_back({Move::HAND, i, last});
+            }
+    }
+    else {
+        bool visible(false);
+        for (unsigned int i(0); i < NUM_RESERVE; ++i)
+            if (actPlayer.topVisible(i)) {
+                visible = true;
+                const Move move{Move::RESERVE, firstPileToPlay(actPlayer, i), i};
+                if (checkMove(table, player, move, options) == PlayError::NONE)
+                    moves.push_back(move);
+            }
+        if (!visible)
+            return selectFromReserve(table, player, options);
+    }
+    if (table.played.size())
+        moves.push_back({});
+
+    Check3(moves.size());
+    const Move& move(moves[Card::randomNumber(moves.size())]);
+    TRACE5("RovhultRules::selectRandomMove(...) - Player " << player << ": " << move.source << ' ' << move.start << '-'
+                                                           << move.end << " (of " << moves.size() << ')');
+    return move;
 }
 
 } // namespace RovhultRules
