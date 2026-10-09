@@ -30,6 +30,7 @@
 #include <YGP/Trace.h>
 
 #include <card/Cards.h>
+#include <card/Random.h>
 
 #include "TwopartRules.h"
 
@@ -139,6 +140,29 @@ unsigned int selectCardPartOne(unsigned int player, const Card::Cards& hand, con
 }
 
 //-----------------------------------------------------------------------------
+/// Selects a random move in part 2: Either picking up the played cards (if
+/// any) or playing one of the cards which can be played
+/// \param hand Cards of the player
+/// \param played Played cards
+/// \param table Actual state of the game
+/// \returns std::optional<Play> Card to play; nothing if the player picks up
+///     the played cards
+//-----------------------------------------------------------------------------
+std::optional<Play> selectRandomPlay(const Card::Cards& hand, const Card::Cards& played, const Table& table) {
+    std::vector<unsigned int> playable;
+    for (unsigned int i(0); i < hand.size(); ++i)
+        if (checkPlay(hand, i, i, played, table) == PlayError::NONE)
+            playable.push_back(i);
+
+    Check3(playable.size() || played.size());
+    const unsigned int choice(Card::randomNumber(playable.size() + (played.size() ? 1 : 0)));
+    TRACE5("TwopartRules::selectRandomPlay(...) - Choosing " << choice << " of " << playable.size() << " playable cards");
+    if (choice == playable.size())
+        return {};
+    return Play{playable[choice], playable[choice]};
+}
+
+//-----------------------------------------------------------------------------
 /// Searches for the card(s) to play in part 2
 /// \param hand Cards of the player (sorted by colour, trumps last)
 /// \param played Played cards
@@ -151,6 +175,11 @@ std::optional<Play> selectCardsPartTwo(unsigned int player, const Card::Cards& h
     Check1(hand.size());
     Check1(table.trump);
     const Value::COLOURS trump(*table.trump);
+
+    // The players might pick up and play the same cards again and again; if
+    // the round takes too long, vary the moves randomly
+    if ((table.pickUps >= PICKUPS_TO_VARY) && Card::randomNumber(2))
+        return selectRandomPlay(hand, played, table);
 
     // Find first fitting card
     unsigned int start(-1U);
@@ -206,6 +235,7 @@ void Table::reset() {
     startPlayer = 0;
     startPos.fill(0);
     offPos = 0;
+    pickUps = 0;
     trump.reset();
     partTwo = false;
 }
@@ -412,6 +442,7 @@ int Table::endRoundPartTwo(unsigned int player, const HandSizes& hands) {
     bfPlayers = ALL_PLAYERS;
     removePlayersWithoutCards(hands);
     offPos = 0;
+    pickUps = 0;
     int next(hands[player] ? static_cast<int>(player) : nextPlayer(player));
 
     bfOldPlayers = bfPlayers;
@@ -435,6 +466,7 @@ PickUp Table::pickUp(unsigned int player, const HandSizes& hands) {
     Check3(bfPlayers);
 
     PickUp result{startPos[--offPos], 0};
+    ++pickUps;
     TRACE3("TwopartRules::Table::pickUp(unsigned int, ...) - Player " << player << " picks up played cards at " << offPos << '('
                                                                       << result.start << ')');
     removePlayer(player);
@@ -481,6 +513,7 @@ Receivers Table::startPartTwo(const std::array<Card::Cards, NUM_PLAYERS>& won, u
 
     partTwo = true;
     offPos = 0;
+    pickUps = 0;
     startPlayer = -1U;
 
     // Check if there are players without cards

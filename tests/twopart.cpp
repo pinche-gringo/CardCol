@@ -18,6 +18,7 @@
 #define BOOST_TEST_MODULE Twopart
 #include <boost/test/unit_test.hpp>
 
+#include <set>
 #include <string>
 
 #include "TwopartRules.h"
@@ -338,6 +339,19 @@ BOOST_AUTO_TEST_CASE(pick_up) {
     BOOST_TEST(table.bfPlayers == ALL_PLAYERS);
 }
 
+BOOST_AUTO_TEST_CASE(pick_ups_are_counted_per_round) {
+    Table table(partTwo(Value::HEARTS));
+    table.registerPlay(0);
+    table.endTurn(0, cards("D5"), {2, 3, 3, 3});
+    table.pickUp(1, {2, 3, 3, 3});
+    BOOST_TEST(table.pickUps == 1u);
+
+    table.registerPlay(1);
+    table.bfPlayers = 0b0001;
+    BOOST_TEST(table.endTurn(0, cards("D4 D5"), {1, 4, 3, 3}).endOfRound);
+    BOOST_TEST(table.pickUps == 0u);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(computer_player)
@@ -413,6 +427,37 @@ BOOST_AUTO_TEST_CASE(pick_up_if_trump_cant_be_beaten) {
     const Table table(partTwo(Value::CLUBS));
     BOOST_TEST(toString(selectCardsToPlay(1, cards("D3 C2"), cards("C5"), 0, 0, table)) == "-");
     BOOST_TEST(toString(selectCardsToPlay(1, cards("D3 C2 C7"), cards("C5"), 0, 0, table)) == "2-2");
+}
+
+BOOST_AUTO_TEST_CASE(varies_moves_in_long_rounds) {
+    // Regression: Endless game (seed 12 of the simulation): The players beat
+    // the C9 alternately with CT and CQ, the next one picks it up, ...
+    Table table(partTwo(Value::CLUBS));
+    const Card::Cards hand(cards("D4 D5 D6 S4 H2 H9 HT HQ C8 CQ"));
+    const Card::Cards played(cards("S5 S6 S7 C9"));
+    BOOST_TEST(toString(selectCardsToPlay(0, hand, played, 0, 0, table)) == "9-9");
+
+    table.pickUps = PICKUPS_TO_VARY;
+    std::set<std::string> moves;
+    for (unsigned int seed(1); seed < 100; ++seed) {
+        Card::seedRandom(seed);
+        const auto play(selectCardsToPlay(0, hand, played, 0, 0, table));
+        if (play)
+            BOOST_TEST(checkPlay(hand, play->start, play->end, played, table) == PlayError::NONE);
+        moves.insert(toString(play));
+    }
+    BOOST_TEST(moves.contains("-"));
+    BOOST_TEST(moves.contains("9-9"));
+
+    // Regression (seed 48710): The players lead their smallest card, the next
+    // one picks it up, ...
+    const Card::Cards lead(cards("S8 CK"));
+    moves.clear();
+    for (unsigned int seed(1); seed < 100; ++seed) {
+        Card::seedRandom(seed);
+        moves.insert(toString(selectCardsToPlay(2, lead, cards(""), 0, 0, table)));
+    }
+    BOOST_TEST((moves == std::set<std::string>{"0-0", "1-1"}));
 }
 
 BOOST_AUTO_TEST_CASE(start_with_smallest_serie) {

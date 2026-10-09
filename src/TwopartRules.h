@@ -46,6 +46,9 @@ static constexpr unsigned int NUM_PLAYERS = 4;
 static constexpr unsigned int CARDS_IN_HAND = 3;
 /// Bitfield containing all players
 static constexpr unsigned int ALL_PLAYERS = (1 << NUM_PLAYERS) - 1;
+/// Number of pick-ups in a round of part 2, after which the computer players
+/// start to vary their moves (to break endless cycles)
+static constexpr unsigned int PICKUPS_TO_VARY = 2 * NUM_PLAYERS;
 
 /// Colour of the trump; not set while there are cards on the stock
 using Trump = std::optional<Card::Value::COLOURS>;
@@ -93,9 +96,10 @@ struct Table {
     /// Part 1: [0] holds the start of the round in the played cards; part 2:
     /// Start of the plays still on the played cards
     std::array<unsigned int, NUM_PLAYERS> startPos;
-    unsigned int offPos; ///< Number of plays in startPos (part 2)
-    Trump trump;         ///< Colour of the trump
-    bool partTwo;        ///< Flag, if part 2 is played
+    unsigned int offPos;  ///< Number of plays in startPos (part 2)
+    unsigned int pickUps; ///< Number of pick-ups in the actual round (part 2)
+    Trump trump;          ///< Colour of the trump
+    bool partTwo;         ///< Flag, if part 2 is played
 
     Table() { reset(); }
 

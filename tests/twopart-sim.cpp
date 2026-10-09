@@ -16,15 +16,15 @@
 // Simulation of complete Twopart games played by four computer players,
 // checking the invariants of the game after every move. The flow mirrors the
 // one of the class Twopart.
+//
+// The computer players could pick up and play the same cards again and again
+// in part 2; they vary their moves randomly in long rounds to break such
+// cycles (see TwopartRules::PICKUPS_TO_VARY), so every game must end.
 
 #define BOOST_TEST_MODULE TwopartSimulation
 #include <boost/test/unit_test.hpp>
 
 #include <algorithm>
-#include <set>
-#include <sstream>
-#include <string>
-#include <vector>
 
 #include "TwopartRules.h"
 
@@ -35,18 +35,16 @@ using Card::Value;
 
 namespace {
 
-constexpr unsigned int MAX_MOVES = 5000;
-/// Number of moves, after which the states are recorded to detect endless games
-constexpr unsigned int RECORD_STATES = 500;
+constexpr unsigned int MAX_MOVES = 5000; ///< Moves after which the game is considered as endless
 
 /// Statistics over all games
 struct Statistics {
     unsigned int games = 0;
     unsigned int moves = 0;
+    unsigned int maxMoves = 0;
     unsigned int pickUps = 0;
     unsigned int ties = 0;
     unsigned int playersWithoutCards = 0; ///< Players starting part 2 without cards
-    std::vector<unsigned int> endless;    ///< Seeds of games, where the computer players repeat their moves forever
     std::array<unsigned int, NUM_PLAYERS> lost{};
 };
 
@@ -64,18 +62,6 @@ struct Game {
         for (unsigned int i(0); i < NUM_PLAYERS; ++i)
             sizes[i] = hands[i].size();
         return sizes;
-    }
-
-    /// Returns a description of the state of the game (when the passed player is about to move)
-    std::string state(unsigned int player) const {
-        std::ostringstream out;
-        out << player << ':' << table.bfPlayers << ':' << table.offPos << ':';
-        for (unsigned int i(0); i < table.offPos; ++i)
-            out << table.startPos[i] << ',';
-        for (const auto& hand : hands)
-            out << '|' << hand;
-        out << '|' << played;
-        return out.str();
     }
 
     /// Checks that no card has been lost or duplicated
@@ -130,23 +116,14 @@ void playGame(unsigned int seed, Statistics& stats) {
     table.reset();
     unsigned int next(table.startPlayer = Card::randomNumber(NUM_PLAYERS));
     bool gameOver(false);
-    std::set<std::string> states;
 
-    for (unsigned int move(0); !gameOver; ++move) {
+    unsigned int move(0);
+    for (; !gameOver; ++move) {
         BOOST_TEST_REQUIRE(move < MAX_MOVES, "Game doesn't end");
         ++stats.moves;
         const unsigned int player(next);
         BOOST_TEST_REQUIRE(player < NUM_PLAYERS);
 
-        // Long games are checked for repetitions: The computer players (in
-        // part 2) might pick up and play the same cards again and again
-        if (move >= RECORD_STATES) {
-            BOOST_TEST_REQUIRE(table.partTwo);
-            if (!states.insert(game.state(player)).second) {
-                stats.endless.push_back(seed);
-                return;
-            }
-        }
         BOOST_TEST_REQUIRE(table.isInRound(player));
         Card::Cards& hand(game.hands[player]);
 
@@ -266,6 +243,7 @@ void playGame(unsigned int seed, Statistics& stats) {
         }
     }
     ++stats.games;
+    stats.maxMoves = std::max(stats.maxMoves, move);
 }
 
 } // namespace
@@ -276,18 +254,9 @@ BOOST_AUTO_TEST_CASE(computer_players_play_complete_games) {
     for (unsigned int seed(seeds.first); seed < seeds.end(); ++seed) {
         BOOST_TEST_CONTEXT("Seed " << seed) { playGame(seed, stats); }
     }
-    BOOST_TEST_MESSAGE("Games: " << stats.games << "; moves: " << stats.moves << "; pick-ups: " << stats.pickUps
-                                 << "; ties: " << stats.ties << "; players without cards in part 2: " << stats.playersWithoutCards
-                                 << "; lost: " << stats.lost[0] << "/" << stats.lost[1] << "/" << stats.lost[2] << "/"
-                                 << stats.lost[3]);
-    BOOST_TEST(stats.games + stats.endless.size() == seeds.count);
-
-    // Known issue: The computer players can repeat their moves forever in part 2
-    // (picking up the cards played last, instead of using their few trumps)
-    if (stats.endless.size()) {
-        std::ostringstream seedList;
-        for (auto seed : stats.endless)
-            seedList << ' ' << seed;
-        BOOST_TEST_WARN(stats.endless.empty(), stats.endless.size() << " endless game(s); seeds:" << seedList.str());
-    }
+    BOOST_TEST_MESSAGE("Games: " << stats.games << "; moves: " << stats.moves << " (max. " << stats.maxMoves
+                                 << "); pick-ups: " << stats.pickUps << "; ties: " << stats.ties
+                                 << "; players without cards in part 2: " << stats.playersWithoutCards << "; lost: "
+                                 << stats.lost[0] << "/" << stats.lost[1] << "/" << stats.lost[2] << "/" << stats.lost[3]);
+    BOOST_TEST(stats.games == seeds.count);
 }
