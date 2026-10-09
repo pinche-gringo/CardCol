@@ -18,7 +18,7 @@ msgstr ""
 
 #: src/Rovhult.cpp:179 src/Hearts.cpp:398
 msgid "Waiting for other player to exchange their cards ..."
-msgstr ""
+msgstr "Waiting for the other players to exchange their cards ..."
 
 #: src/Rovhult.cpp:336 src/Rovhult.cpp:422 src/RovhultRules.cpp:288
 #: src/Buraco.cpp:1437 src/Machiavelli.cpp:664
@@ -135,7 +135,7 @@ msgstr[1] ""
 
 #: src/TwopartRules.cpp:578
 msgid "The played cards must be a serie (same colour, increasing by one)!"
-msgstr ""
+msgstr "The played cards must be a series (same colour, increasing by one)!"
 
 #: src/TwopartRules.cpp:580
 msgid "Only one card can be played in the first part!"
@@ -143,7 +143,7 @@ msgstr ""
 
 #: card/DeckSelect.cpp:59
 msgid "Select carddeck"
-msgstr ""
+msgstr "Select card deck"
 
 #: card/DeckSelect.cpp:60
 msgid "Available decks"
@@ -250,7 +250,7 @@ msgstr ""
 
 #: card/PlayerConnDlg.cpp:277
 msgid "Protocoll version %1 needed!"
-msgstr ""
+msgstr "Protocol version %1 needed!"
 
 #: card/PlayerConnDlg.cpp:282
 msgid ""
@@ -259,6 +259,10 @@ msgid ""
 "Generally this means, that the partner does not support\n"
 "all game types - Continue at your own risk!"
 msgstr ""
+"Protocol variant not sufficient - Version %1 needed!\n"
+"\n"
+"Generally this means that the partner does not support\n"
+"all game types - Continue at your own risk!"
 
 #: card/PlayerConnDlg.cpp:305
 msgid ""
@@ -395,7 +399,7 @@ msgstr ""
 
 #: src/CardCol.cpp:971
 msgid "Loading cardimages ..."
-msgstr ""
+msgstr "Loading card images ..."
 
 #: src/CardCol.cpp:990
 msgid "Start a new game with Ctrl+N (or Game -> New)"
@@ -406,7 +410,7 @@ msgid ""
 "Invalid values for Rovhult's special cards!\n"
 "Resetting them to default values."
 msgstr ""
-"Invalid value for Røvhult's special cards!\n"
+"Invalid values for Røvhult's special cards!\n"
 "Resetting them to default values."
 
 #: src/CardColNet.cpp:77
@@ -453,6 +457,9 @@ msgid ""
 "\n"
 "%3"
 msgstr ""
+"%1 sent error %2\n"
+"\n"
+"%3"
 
 #: src/CardColNet.cpp:378
 msgid "The server"
@@ -471,6 +478,9 @@ msgid ""
 "\n"
 "Usage: "
 msgstr ""
+"Collection of card games\n"
+"\n"
+"Usage: "
 
 #: src/CardColAppl.cpp:80
 msgid ""
@@ -651,7 +661,7 @@ msgstr ""
 
 #: src/HeartsRules.cpp:175
 msgid "You must play a card with an equal colour as the first played one!"
-msgstr ""
+msgstr "You must play a card of the same colour as the first one played!"
 
 #: src/HeartsRules.cpp:177
 msgid "The game must be started with the two of clubs!"
@@ -678,7 +688,7 @@ msgid "New pile"
 msgstr ""
 
 #: src/Buraco.cpp:1176
-msgid "%1 picked up the burraco"
+msgid "%1 picked up the buraco"
 msgstr ""
 
 #: src/Buraco.cpp:1256
@@ -899,7 +909,7 @@ msgstr ""
 
 #: src/SgtMayor.cpp:779
 msgid "You can exchange %1 %2; %4 with %3 (and than %5 with %6)!"
-msgstr ""
+msgstr "You can exchange %1 %2; %4 with %3 (and then %5 with %6)!"
 
 #: src/SgtMayor.cpp:786
 msgid "You can exchange %1 %2 with %3!"
@@ -913,7 +923,7 @@ msgstr[1] ""
 
 #: src/SgtMayorRules.cpp:137
 msgid "Play a card with an equal colour as the first played one!"
-msgstr ""
+msgstr "Play a card of the same colour as the first one played!"
 
 #: src/Settings.cpp:99
 msgid "Preferences"
@@ -1025,7 +1035,7 @@ msgstr ""
 
 #: src/JabberwockyRules.cpp:176
 msgid "Play first cards with an equal colour as the first played one!"
-msgstr ""
+msgstr "First play cards of the same colour as the first one played!"
 
 #: src/JabberwockyRules.cpp:178
 msgid ""
@@ -1038,6 +1048,8 @@ msgid ""
 "The sum of all bids must be different\n"
 "than the number of possible tricks!"
 msgstr ""
+"The sum of all bids must be different\n"
+"from the number of possible tricks!"
 
 #: src/CardSizes.cpp:33
 msgid "Tiny"

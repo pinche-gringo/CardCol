@@ -22,8 +22,9 @@
 
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Sgt. Mayor - Mach Deine Stiche oder Du wirst es b&uuml;&szlig;en</title>
-    <meta name="description" content="Dokumentation des Sgt. Mayors Kartenspiels">
+    <meta name="description" content="Dokumentation des Sgt. Mayor Kartenspiels">
     <meta name="keywords" content="documentation, docu, dokumentation, doku, Sgt. Mayor, game, card, cardgame, spiel, karte, kartenspiel">
 
     <meta name="DC.Creator" content="Markus Schwab">
@@ -38,13 +39,13 @@
     <p>Sgt. Mayor ist ein englisches Kartenspiel - oder zumindest lernte ich
       es von zwei Engl&auml;ndern kennen (bzw. eigentlich von Ver&oacute;nica
       (die zwar keine Engl&auml;nderin ist, aber es von diesen beiden
-      lernte. Aber wem interessiert's ...)). Es ist auch unter dem
+      lernte. Aber wen interessiert's ...)). Es ist auch unter dem
       Namen 3-5-8 bekannt (obwohl dies eher dessen 6-3-8 Variante ist).</p>
 
     <p>Ziel des Spieles ist es, zumindest eine bestimmte Anzahl von
       Stichen zu machen. Der Spieler, der zuerst (aufsummiert) 10<a
       href="#Note1"><sup>1</sup></a> Stiche &uuml;ber der
-      ben&ouml;tigten Stichanzahl liegt, gewinnt.
+      ben&ouml;tigten Stichanzahl liegt, gewinnt.</p>
 
     <h2>Karten austeilen</h2>
     <p>Gespielt wird Sgt. Mayor von 3 Personen mit einem normalen
@@ -52,13 +53,13 @@
       wurde. Jeder Spieler erh&auml;lt 17 Karten.</p>
 
     <p>Das erste Spiel beginnt ein zuf&auml;llig ausgew&auml;hlter
-      Spieler (der 6 Stiche machen mu&szlig;). Die weiteren Spiele
-      werden der Reihe nach von den anderen Spielen gestartet.</p>
+      Spieler (der 6 Stiche machen muss). Die weiteren Spiele
+      werden der Reihe nach von den anderen Spielern gestartet.</p>
 
     <h2>Das Spiel</h2>
     <p>Die Spieler m&uuml;ssen jeweils 6, 3 und 8 Stiche
       machen. Zun&auml;chst w&auml;hlt der Spieler, der die 8 Stiche
-      machen mu&szlig;, die Trumpf-Farbe aus (durch Anklicken einer
+      machen muss, die Trumpf-Farbe aus (durch Anklicken einer
       Karte dieser Farbe). Danach startet er das Spiel nach den
       folgenden Regeln:</p>
 
@@ -72,31 +73,31 @@
       h&ouml;chsten Trumpf). Der Gewinner startet dann die
       n&auml;chste Runde.</p>
 
-    <p>Die Differenz der gemachten mit der zu machenden Stiche wird zu
+    <p>Die Differenz der gemachten und der zu machenden Stiche wird zu
       den Punkten addiert. Der Spieler, der zuerst 10<a
       href="#Note1"><sup>1</sup></a> Punkte erreicht, gewinnt.</p>
 
     <p>Das n&auml;chste Spiel startet der Spieler, der zuvor 6 Stiche machen
-      mu&szlig;te (wobei er jetzt 9 Stiche erzielen mu&szlig;).</p>
+      musste (wobei er jetzt 9 Stiche erzielen muss).</p>
 
     <h2>Kartentausch</h2>
     <p>Bevor das n&auml;chste Spiel (durch Ausw&auml;hlen der
       Trumpf-Farbe) gestartet wird, werden noch Karten ausgetauscht.</p>
 
-    <p>Der- oder diejenige(n) mit einem &Uuml;berschu&szlig; an
+    <p>Der- oder diejenige(n) mit einem &Uuml;berschuss an
       Stichen geben diese Differenz an unerw&uuml;nschten Karten an
-      den- oder diejenige(n) mit zuwenigen. Diese m&uuml;ssen die
+      den- oder diejenige(n) mit zu wenigen. Diese m&uuml;ssen die
       h&ouml;chste Karte dieser Farbe zur&uuml;ckgeben (bzw. eine
       beliebige, wenn sie diese Farbe nicht besitzen).</p>
 
-    <p>Sollten zwei Personen zuviele Stiche gemacht haben, beginnt
+    <p>Sollten zwei Personen zu viele Stiche gemacht haben, beginnt
       derjenige den Tausch, der im neuen Spiel mehr Stiche machen
-      mu&szlig;.</p>
+      muss.</p>
 
     <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
 
     <h2>Anmerkungen zum Layout</h2>
-    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+    <p>Nach Starten des Spiels hat man (von links nach rechts und von oben nach
       unten):</p>
 
     <ul>
@@ -104,8 +105,8 @@
 
      <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb, darunter
         die in seiner Hand. Die gewonnenen Karten k&ouml;nnen durch Anklicken
-        betrachtet werden; ein Rechts-Klick erm&ouml;glicht zu&auml;tzlich
-        sortieren.</li>
+        betrachtet werden; ein Rechts-Klick erm&ouml;glicht zus&auml;tzlich
+        das Sortieren.</li>
 
       <li>In der n&auml;chsten Reihe befindet sich der Stapel der gespielten
         Karten.</li>

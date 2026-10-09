@@ -17,14 +17,15 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 -->
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//ES"
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
         "http://www.w3.org/TR/html4/strict.dtd">
 
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Hearts - Ein Spiel, in dem man sie besser nicht bekommt</title>
     <meta name="description" content="Dokumentation des Hearts Kartenspiels">
-    <meta name="keywords" content="Dokumentation, Doku, Hearts; Spiel, Karten, Kartenspiel">
+    <meta name="keywords" content="Dokumentation, Doku, Hearts, Spiel, Karten, Kartenspiel">
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-10">
@@ -38,7 +39,7 @@
       Betriebssystems vorhandenes Kartenspiel. Es wird mit einem
       52&nbsp;Karten umfassenden Deck gespielt.</p>
 
-    <p>Kurz zusammengefa&szlig;t geht es darum, Punkte zu vermeiden,
+    <p>Kurz zusammengefasst geht es darum, Punkte zu vermeiden,
       die man bekommt, wenn man Stiche mit bestimmten Karten gewinnt.</p>
 
     <h2>Karten austeilen/tauschen</h2>
@@ -47,14 +48,14 @@
     <p>In den meisten Runden werden anfangs jeweils 3 Karten
       getauscht. In der ersten Runde nach links, in der zweiten Runde
       nach links und in der dritten mit dem Gegen&uuml;ber. In der
-      vierten Runde wird nicht getauscht, dananch beginnt es von vorne.</p>
+      vierten Runde wird nicht getauscht, danach beginnt es von vorne.</p>
 
     <h2>Das Spiel</h2>
-    <p>Der Spieler der anschlie&szlig;end die Kreuz-2 hat, beginnt das
+    <p>Der Spieler, der anschlie&szlig;end die Kreuz-2 hat, beginnt das
       Spiel (mit eben jener Karte). Die anderen Runden k&ouml;nnen mit
       jeder beliebigen Karte er&ouml;ffnet werden.</p>
 
-    <p>Die Spieler setzen gegen Uhrzeigersinn fort. Dabei besteht
+    <p>Die Spieler setzen gegen den Uhrzeigersinn fort. Dabei besteht
       Farbzwang, sonst kann man eine beliebige Karte abwerfen. Der
       Spieler mit der h&ouml;chsten Karte der zuerst gespielten Farbe
       gewinnt den Stich und startet die n&auml;chste Runde.</p>
@@ -80,19 +81,19 @@
     <p>Das Spiel endet, wenn einer der Spieler 100 Punkte<a
       href="#Note1"><sup>1</sup></a> erreicht hat.</p>
 
-    <p>Der Spieler mit den wenigsten Punkten, hat gewonnen.</p>
+    <p>Der Spieler mit den wenigsten Punkten hat gewonnen.</p>
 
     <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
 
     <h2>Anmerkungen zum Layout</h2>
-    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+    <p>Nach Starten des Spiels hat man (von links nach rechts und von oben nach
       unten):</p>
 
     <ul>
       <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb,
         darunter die in seiner Hand. Die gewonnenen Karten k&ouml;nnen
         durch Anklicken betrachtet werden; ein Rechts-Klick
-        erm&ouml;glicht zu&auml;tzlich sortieren.</li>
+        erm&ouml;glicht zus&auml;tzlich das Sortieren.</li>
 
       <li>In der n&auml;chsten Reihe befinden sich die Karten der Spieler
         1 und 3. Zwischen ihnen ist der Stapel der gespielten Karten.</li>

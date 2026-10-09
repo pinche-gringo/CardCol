@@ -22,6 +22,7 @@
 
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>R&oslash;vhult - Ein international bekanntes Spiel (alias Shithead, Asshole, ...)</title>
     <meta name="description" content="Dokumentation des R&oslash;vhult Kartenspiels">
     <meta name="keywords" content="Dokumentation, Doku, Rovhult, R&oslash;vhult, Shithead, Spiel, Karten, Kartenspiel">
@@ -38,15 +39,15 @@
     <p>R&oslash;vhult lernte ich von drei D&auml;nen; daher auch der recht
       d&auml;nische Name und dieser h&uuml;bsche, unaussprechliche Buchstabe
       (klingt etwa wie ein &laquo;&Ouml;&raquo;, wenn man sich gerade
-      ankotzt).  Andere Name f&uuml;r das Spiel sind Shithead (UK) oder
+      ankotzt).  Andere Namen f&uuml;r das Spiel sind Shithead (UK) oder
       Asshole (Australien, USA).</p>
 
-    <p>Das Zielt des Spieles ist es, <b>nicht</b> als Letzter alle
+    <p>Das Ziel des Spieles ist es, <b>nicht</b> als Letzter alle
       seine Karten loszuwerden. Dabei gibt es die folgenden - recht
       einfachen, da auch Yankees dieses Spiel kennen ;) - Regeln:</p>
 
     <h2>Karten austeilen/Vorbereitung</h2>
-    <p>Jeder Spieler startet mit drei Kartein in der Hand und zweimal
+    <p>Jeder Spieler startet mit drei Karten in der Hand und zweimal
       drei Karten auf dem Tisch (die unteren drei jeweils mit der
       R&uuml;ckseite und die oberen mit der Vorderseite nach
       oben). Die restlichen Karten kommen auf einen Stapel.</p>
@@ -58,20 +59,20 @@
       &quot;gute&quot; Karten auf den Tisch zu bekommen, aber das ist
       nat&uuml;rlich Geschmackssache.</p>
 
-    <p>Das eigentlich Spiel wird gestart, indem man auf eine Karte in
+    <p>Das eigentliche Spiel wird gestartet, indem man auf eine Karte in
       seiner Hand klickt. Die Karten werden sortiert und das Spiel
-      beginnt mit einem zufällig ausgewählten Spieler.</p>
+      beginnt mit einem zufÃ¤llig ausgewÃ¤hlten Spieler.</p>
 
     <h2>Das Spiel</h2>
     <p>Es wird gegen den Uhrzeigersinn gespielt; jeder Spieler legt
       eine gleichwertige oder h&ouml;here als die zuletzt gespielte
-      Karte ab (Asse gelten as h&ouml;her als alle anderen Karten). Man kann
+      Karte ab (Asse gelten als h&ouml;her als alle anderen Karten). Man kann
       eine beliebige Anzahl von Karten mit der gleichen Nummer spielen
       (z.B.: die &spades;-5 und die &clubs;-5). Nach dem Zug muss
       der Spieler Karten vom Reservestapel aufnehmen, bis er wieder
       drei Karten in der Hand hat oder der Reservestapel leer ist.</p>
 
-    <p>Es gibt einige Spezialkarten und Ausnahmen::</p>
+    <p>Es gibt einige Spezialkarten und Ausnahmen:</p>
     <dl>
       <dt><b>2'er</b></dt>
       <dd><p>K&ouml;nnen immer gespielt werden; der n&auml;chste Spieler kann
@@ -97,16 +98,16 @@
     </dl>
 
     <p>Wenn ein Spieler nicht nach diesen Regeln fortsetzen kann, muss er
-      alle gespielten Karten aufnehemn. Nat&uuml;rlich kann dies auch freiwillig
+      alle gespielten Karten aufnehmen. Nat&uuml;rlich kann dies auch freiwillig
       gemacht werden, wonach der n&auml;chste Spieler fortsetzt.</p>
 
     <h2>Spielen der Karten vom Tisch</h2>
     <p>Wenn ein Spieler keine Karten mehr in der Hand hat (und auch
       der Stapel bereits leer ist), kann er mit den Karten auf dem
-      Tisch fortsetzen. Diese werden nach den selben Regeln gespielt;
+      Tisch fortsetzen. Diese werden nach denselben Regeln gespielt;
       zun&auml;chst die mit sichtbarer Vorderseite und dann - wenn
       diese auch erfolgreich gespielt wurden - mit der sichtbaren
-      Rückseite.</p>
+      RÃ¼ckseite.</p>
 
     <p>Beachte, dass, wenn der gespielte Stapel aufgenommen
       werden muss, die Karten mit sichtbarer Vorderseite nicht
@@ -117,18 +118,18 @@
 
     <p>Mit den Karten mit sichtbarer R&uuml;ckseite muss auf gut
       Gl&uuml;ck gespielt werden.  Wenn die Karte nicht
-      gem&auml;&szlig; den Regeln, muss sie und der ganze Stapel
+      gem&auml;&szlig; den Regeln ist, muss sie und der ganze Stapel
       aufgenommen werden.</p>
 
     <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
 
     <h2>Anmerkungen zum Layout</h2>
-    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+    <p>Nach Starten des Spiels hat man (von links nach rechts und von oben nach
       unten):</p>
 
     <ul>
       <li>Den Reservestapel: Ein Haufen von (verdeckten) Karten, von dem
-        neue Karten aufgenommen werden. Wird die Mauszeiger darauf
+        neue Karten aufgenommen werden. Wird der Mauszeiger darauf
         positioniert, erscheint ein kleines Fenster, das &uuml;ber die
         Anzahl der &uuml;brigen Karten informiert.</li>
 
@@ -146,7 +147,7 @@
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
       Ziehen und Ablegen bedeutet, eine Karte mit einer Maustaste anzuklicken,
-      diese Taste festzuhalten un dann das Objekt (die Karte, in unserem
+      diese Taste festzuhalten und dann das Objekt (die Karte, in unserem
       Fall) zu seinem Ziel zu ziehen. Das Ende dieser Aktion wird durch
       Loslassen der Maustaste signalisiert.</p>
 

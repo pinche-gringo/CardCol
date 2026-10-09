@@ -22,7 +22,8 @@
 
 <html>
   <head>
-    <title>Corazones - Un juego donde mejor no se conseguirlas</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Corazones - Un juego donde es mejor no conseguirlas</title>
     <meta name="description" content="Documentaci&oacute;n del juego de cartas Corazones">
     <meta name="keywords" content="Documentation, Docu, Hearts; game, card, cardgame, documentacion, juego, corazones">
 
@@ -34,28 +35,28 @@
   <body>
     <h1 align="center">Corazones</h1>
     <hr size=2>
-    <p>Corazones es un juego inclu&iacute;do en algunas versiones de
-      un sistema operativo popular. Se le juega con 52 cartas.</p>
+    <p>Corazones es un juego incluido en algunas versiones de
+      un sistema operativo popular. Se juega con 52 cartas.</p>
 
-    <p>En pocas palabras se trata de evitar de hacer puntos, cuales se
-      consiegue ganando bazas con ciertas cartas.</p>
+    <p>En pocas palabras se trata de evitar hacer puntos, los cuales se
+      consiguen ganando bazas con ciertas cartas.</p>
 
     <h2>Reparto/Intercambio de cartas</h2>
-    <p>Los cuatro jugadores consieguen trece cartas en su mano.</p>
+    <p>Los cuatro jugadores consiguen trece cartas en su mano.</p>
 
-    <p>En la mayor&iacute;a de los turnos se cambia 3 cartas. En el
-      primer turno con el jugador a la izquierda, en es segundo hacia
-      la dereche y el tercer al frente. No hay ning&uacute;n cambio en
-      el cuatro turno, despu&eacute;s se lo repite.</p>
+    <p>En la mayor&iacute;a de los turnos se cambian 3 cartas. En el
+      primer turno con el jugador a la izquierda, en el segundo hacia
+      la derecha y en el tercero al frente. No hay ning&uacute;n cambio en
+      el cuarto turno, despu&eacute;s se repite.</p>
 
     <h2>El juego</h2>
     <p>Despu&eacute;s del intercambio, comienza el jugador que tenga el dos
-      de tr&eacute;boles (con esa carta misma). Cualquier carta sirve
+      de tr&eacute;boles (con esa misma carta). Cualquier carta sirve
       para empezar los dem&aacute;s turnos.</p>
 
     <p>Los jugadores contin&uacute;an contra la direcci&oacute;n de
       las agujas del reloj, siguiendo la pinta. Si no tienen cartas
-      con esa pinta pueden echar cualquier carta.  &Eacute;l que
+      con esa pinta, pueden echar cualquier carta.  El que
       jug&oacute; la carta m&aacute;s alta (con el palo de la primera
       carta) consigue las cartas jugadas y comenzar&aacute; el
       pr&oacute;ximo turno.</p>
@@ -64,7 +65,7 @@
 
     <ul>
       <li>Una mano no se puede comenzar con un coraz&oacute;n, si no
-        han estado jugado en manos anteriores.</li>
+        han sido jugados en manos anteriores.</li>
 
       <li>En la primera mano no se puede jugar ni un coraz&oacute;n ni la reina
         de espadas.</li>
@@ -76,25 +77,25 @@
       trece puntos la reina de espadas. Si un jugador
       recibi&oacute; todas esas cartas (tendr&iacute;a 26 puntos), los
       puntos se invierten y no conseguir&aacute; ni un punto y los
-      dem&aacute;s 26 (eso se llama "disparando la luna".</p>
+      dem&aacute;s 26 (eso se llama "disparando la luna").</p>
 
-    <p>El juego termina si uno de los jugadores alcanza a los cien<a
+    <p>El juego termina si uno de los jugadores alcanza los cien<a
       href="#Note1"><sup>1</sup></a> puntos.</p>
 
     <p>El jugador que tiene el menor puntaje gana.</p>
 
     <p>&iexcl;La barra de estado muestra lo que est&aacute; pasando!</p>
 
-    <h2>Notas por el layout</h2>
+    <h2>Notas sobre el layout</h2>
     <p>Despu&eacute;s de iniciar se encuentra (de izquierda a derecha y de arriba a
       abajo):</p>
 
     <ul>
       <li>Las cartas del jugador humano. Por arriba sus cartas ganadas encima de
         sus cartas en su mano. Se puede chequearlas con hacer clic en ellas; hacer
-        clic con la tecla derecha permite ordenarlas.</li>
+        clic con el bot&oacute;n derecho permite ordenarlas.</li>
 
-      <li>En la l&iacute;nea pr&oacute;xima es lo mismo con los jugadores 1 y 3. Entre ellos se
+      <li>En la l&iacute;nea pr&oacute;xima est&aacute; lo mismo con los jugadores 1 y 3. Entre ellos se
         encuentran las cartas jugadas.</li>
 
       <li>En la l&iacute;nea &uacute;ltima est&aacute;n las cartas del jugador 2.</li>
@@ -102,7 +103,7 @@
 
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
-      Ese valor se puede cambiar en los propiedades.</p>
+      Ese valor se puede cambiar en las propiedades.</p>
 
     <hr size=3 noshade>
     <table width="100%">
@@ -114,7 +115,7 @@
         </td>
         <td><a href="Buraco.html.es">Anterior</a><br>(Buraco)</td>
         <td><a href="CardCol.html.es">Contenido</a></td>
-        <td><a href="Hearts.html.es">Pr&oacute;ximo</a><br>(Hearts)</td>
+        <td><a href="Jabberwocky.html.es">Pr&oacute;ximo</a><br>(Jabberwocky)</td>
       </tr>
     </table>
   </body>

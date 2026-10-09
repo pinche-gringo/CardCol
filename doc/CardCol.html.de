@@ -22,6 +22,7 @@
 
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Cardgames - Eine Sammlung von Kartenspielen f&uuml;r mehrere Personen</title>
 
     <meta name="description" content="Beschreibung der Kartenspiele">
@@ -39,14 +40,14 @@
     <p>Dies ist eine Sammlung von Kartenspielen, die ich von verschiedenen
       Leuten gelernt habe; im Allgemeinen w&auml;hrend einer Reise (was
       schl&auml;gt besser die Zeit w&auml;hrend einer &gt; 10st&uuml;ndigen
-      Bus/Bahn/was-auch-immer-Reise tot, als ein gutes Kartenspiel?</p>
+      Bus/Bahn/was-auch-immer-Reise tot als ein gutes Kartenspiel?)</p>
 
     <p>Alle Spiele sind f&uuml;r mehrere Personen (&uuml;ber ein Netzwerk oder
-      mit Computer-Spieler).  Sollte jemand Solit&auml;rspiele suchen, kann
+      mit Computer-Spielern).  Sollte jemand Solit&auml;rspiele suchen, kann
       ich die exzellenten KDE-Kartenspiele empfehlen.</p>
 
     <p>Vertrieben wird das Programm unter der GNU General Public License, die
-      prinizipell folgendes aussagt (Details findet man in der in diesem Paket
+      prinzipiell Folgendes aussagt (Details findet man in der in diesem Paket
       enthaltenen Datei <tt>COPYING</tt> oder auf der
       <a href="http://www.gnu.org/">GNU Homepage (http://www.gnu.org)</a>):</p>
 
@@ -67,20 +68,20 @@
       erstellt.</p>
 
     <h2>Spiele</h2>
-    <p>Zur Zeit existieren die folgenden Spiele:</p>
+    <p>Zurzeit existieren die folgenden Spiele:</p>
 
     <table>
       <tbody><tr><td>&nbsp;&nbsp;<a href="Buraco.html.de">Buraco </a></td><td> - Canasta mit lateinamerikanischem Einschlag</td></tr>
         <tr><td>&nbsp;&nbsp;<a href="Hearts.html.de">Hearts </a></td><td> - Ein Spiel, in dem man sie besser nicht bekommt</td></tr>
         <tr><td>&nbsp;&nbsp;<a href="Jabberwocky.html.de">Jabberwocky </a></td><td> - Mache Stiche wie behauptet</td></tr>
-	<tr><td>&nbsp;&nbsp;<a href="Machiavelli.html.de">Machiavelli </a></td><td> - Sortiere Karten bis man keine mehr hat</td></tr>
+	<tr><td>&nbsp;&nbsp;<a href="Machiavelli.html.de">Machiavelli </a></td><td> - Sortiere Karten, bis man keine mehr hat</td></tr>
 	<tr><td>&nbsp;&nbsp;<a href="Rovhult.html.de">R&oslash;vhult </a></td><td> - Ein international bekanntes Spiel (alias Shithead, Asshole, ...)</td></tr>
 	<tr><td>&nbsp;&nbsp;<a href="Sgt.Mayor.html.de">Sgt. Mayor </a></td><td> - Mach Deine Stiche oder Du wirst es b&uuml;&szlig;en</td></tr>
 	<tr><td>&nbsp;&nbsp;<a href="Twopart.html.de">Twopart </a></td><td> - Ein Kartenspiel aus Norwegen (in zwei Teilen)</td></tr>
     </tbody></table>
 
     <h2>Aufruf</h2>
-    <p>Prinzipell startet man das Programm ohne jegliche Optionen, also etwa</p>
+    <p>Prinzipiell startet man das Programm ohne jegliche Optionen, also etwa</p>
 
     <pre>   CardCol</pre>
 
@@ -99,13 +100,13 @@
     <p>Ein "Gr&uuml;tzi" an Micheal (Miguel) Suttner, von dem ich
       <tt>Machiavelli</tt> habe.</p>
 
-    <p>Ein lautes Hallo an Verónica, Tanja und Graham f&uuml;r das
+    <p>Ein lautes Hallo an VerÃ³nica, Tanja und Graham f&uuml;r das
       Beibringen von <tt>Sgt. Mayor</tt>.</p>
 
     <p>Gr&uuml;&szlig;e an Andreas, Jakob und Janus, von denen ich
-      <tt>Røvhult</tt> lernte.</p>
+      <tt>RÃ¸vhult</tt> lernte.</p>
 
-    <p>Dank an Ann-Karin, Arne, Bårn und Solveing, dass sie mir
+    <p>Dank an Ann-Karin, Arne, BÃ¥rn und Solveing, dass sie mir
       <tt>Twopart</tt> beigebracht haben.</p>
 
     <p>Die Idee zu <tt>Jabberwocky</tt> kommt vom gleichnamigen <a

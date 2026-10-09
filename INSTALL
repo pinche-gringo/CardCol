@@ -1,28 +1,33 @@
 Prerequisites
 -------------
 
-The following packages are needed
+The following packages are needed:
 
   - A C++ compiler supporting C++26 (tested with GCC 16)
   - Boost (>= 1.70; only the header-only Boost.Asio is used)
-  - Gtkmm-4.0 (which itself needs GTK-4). Available at https://www.gtkmm.org/
-  - Carddecks; e.g. the KDE cardgames provide a huge collection. See also the
-    README.
-  - My YGP library; also availabe as a Sourceforge project
-    (http://libymp.sourceforge.net)
+  - gtkmm-4.0 (which itself needs GTK 4); available at https://www.gtkmm.org/
+  - My YGP library (libYGP and libXGP, >= 0.9.50); also available as a
+    Github project (https://github.com/pinche-gringo/libYGP)
+  - Card decks; e.g. the KDE card games provide a huge collection. See also
+    the README.
+
+Optional:
+
+  - librsvg 2 (to load SVG card decks, e.g. those of KDE)
+  - Boost.Test (to build the unit tests and game simulations)
 
 
 How to build
 ------------
 
-Additional prerequisite software:
+Additional software needed to build:
 
   - Meson (>= 1.5) and Ninja
   - mgeni.pl (from the YGP library)
   - GNU gettext (for national language support)
   - ImageMagick (optional; to generate the application icons)
 
-Inside the directory containing the source code type
+Inside the directory containing the source code, type
 
   meson setup build [meson-options]
   meson compile -C build
@@ -35,27 +40,30 @@ Common options for meson
 Options are passed to "meson setup" (or later to "meson configure build")
 as -D<option>=<value>; "meson configure build" lists them all.
 
-  --prefix=<path>               # default: /usr/local
+  --prefix=<path>               # Default: /usr/local
   -Dnls=disabled                # Disable national language support
   -Dnetwork=true                # Enable network capabilities
-  -Dchecks=<level>              # Adds asserts and Checks
-  -Ddebug-level=<level>         # Sets tracelevel & generation of debuginfo
+  -Dchecks=<level>              # Add asserts and internal checks
+  -Ddebug-level=<level>         # Set the trace level & generate debug info
   -Dsaving=true                 # Games can be saved and loaded (for testing)
-  -Drsvg=disabled               # Don't use librsvg to load SVG carddecks
-  -Dkde-carddir=<DIR>           # Path to the KDE carddecks
-  -Dgnome-carddir=<DIR>         # Path to the GNOME carddecks
-  -Dcardpics-dir=<DIR>          # Path to the "cardpics" carddecks
-  -D<game>=false                # To disable certain games (rovhult, twopart,
+  -Drsvg=disabled               # Don't use librsvg to load SVG card decks
+  -Dtests=disabled              # Don't build the unit tests and simulations
+  -Dkde-carddir=<DIR>           # Path to the KDE card decks
+  -Dgnome-carddir=<DIR>         # Path to the GNOME card decks
+  -Dcardpics-dir=<DIR>          # Path to the "cardpics" card decks
+  -D<game>=false                # Disable certain games (rovhult, twopart,
                                   hearts, buraco, machiavelli, sgtmayor,
                                   jabberwocky)
 
-The carddeck directories are detected automatically if not specified; pass
-"no" to not use a certain kind of carddecks.
+The card deck directories are detected automatically if not specified; pass
+"no" to not use a certain kind of card deck.
+
 
 Common commands
 ---------------
 
   meson install -C build        # Installs the whole thing
+  meson test -C build           # Runs the unit tests (if built)
   ninja -C build clean          # Deletes the files created during the build
   ninja -C build uninstall      # Uninstalls (after you found out what crap
                                   this package actually contains)

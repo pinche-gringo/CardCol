@@ -22,9 +22,10 @@
 
 <html>
   <head>
-    <title>Machiavelli - Sortiere Karten bis man keine mehr hat</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Machiavelli - Sortiere Karten, bis man keine mehr hat</title>
     <meta name="description" content="Dokumentation des Machiavelli Kartenspiels">
-    <meta name="keywords" content="Dokumentation, Doku, Buraco, Spiel, Karten, Kartenspiel">
+    <meta name="keywords" content="Dokumentation, Doku, Machiavelli, Spiel, Karten, Kartenspiel">
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-11-29">
@@ -37,11 +38,11 @@
 
     <p>Machiavelli lernte ich von einem Schweizer, der es seinerseits von
       Italienern gelernt hat (und die es m&ouml;glicherweise wiederum,
-      ...). Und genausowenig, wie ich die Herkunft (exakt) kenne, bin ich mir
+      ...). Und genauso wenig, wie ich die Herkunft (exakt) kenne, bin ich mir
       beim Namen sicher ...</p>
 
     <p>Wie auch immer; Machiavelli wird mit 4 Sets von 52 Karten
-      gespielt und kurz zusammengefa&szlig;t geht es darum, seine Karten
+      gespielt und kurz zusammengefasst geht es darum, seine Karten
       loszuwerden.</p>
 
     <h2>Karten austeilen</h2>
@@ -49,7 +50,7 @@
       kommen auf den Reservestapel.</p>
 
     <p>Das erste Spiel wird von einem zuf&auml;llig ausgew&auml;hlten
-      Spieler gestart; die anderen beginnen abwechselnd die
+      Spieler gestartet; die anderen beginnen abwechselnd die
       n&auml;chsten Spieler.</p>
 
     <h2>Das Spiel</h2>
@@ -61,7 +62,7 @@
       existierenden - und so alle seine Karten loszuwerden.
       Zusammenpassend bedeutet, dass entweder die Nummern gleich
       sind (unabh&auml;ngig von der Farbe, wobei aber jede Farbe
-      lediglich einmal vorkommen darf) oder die Farben gleich sind,
+      lediglich einmal vorkommen darf) oder die Farben gleich sind
       und die Nummern in einer fortlaufenden Serie sind (As als Eins,
       Zwei, Drei, ..., Zehn, Bube, Dame, K&ouml;nig, As).</p>
 
@@ -72,7 +73,7 @@
       entsprechen.</p>
 
     <p>Abgelegt und/oder sortiert werden die Karten mit Ziehen und Ablegen -
-      drag and drop<a href="#Note1"><sup>1</sup></a>.
+      drag and drop<a href="#Note1"><sup>1</sup></a>.</p>
 
     <p>Kann/will der Spieler keine Karten ablegen, setzt der
       n&auml;chste Spieler (gegen den Uhrzeigersinn) fort, der noch
@@ -84,21 +85,21 @@
     <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
 
     <h2>Anmerkungen zum Layout</h2>
-    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+    <p>Nach Starten des Spiels hat man (von links nach rechts und von oben nach
       unten):</p>
 
     <ul>
       <li>Den Reservestapel: Ein Haufen von (verdeckten) Karten, von dem
-        neue Karten aufgenommen werden. Wird die Mauszeiger darauf
+        neue Karten aufgenommen werden. Wird der Mauszeiger darauf
         positioniert, erscheint ein kleines Fenster, das &uuml;ber die
         Anzahl der &uuml;brigen Karten informiert.</li>
 
-      <li>Die Karten des Spielers. Anfangs sortiert nach Farber, aber &uuml;ber
-        das Me&uuml; oder durch Ziehen und Ablegen (drag und drop)<a
+      <li>Die Karten des Spielers. Anfangs sortiert nach Farbe, aber &uuml;ber
+        das Men&uuml; oder durch Ziehen und Ablegen (drag and drop)<a
         href="#Note1"><sup>1</sup></a> sortierbar.</li>
 
       <li>Die Stapel am Tisch. Zu diesen Karten k&ouml;nnen mit Ziehen
-        und Ablegen (drag und drop)<a href="#Note1"><sup>1</sup></a> weitere
+        und Ablegen (drag and drop)<a href="#Note1"><sup>1</sup></a> weitere
 	Karten hinzugef&uuml;gt werden, beziehungsweise k&ouml;nnen diese an
 	andere Stapel angef&uuml;gt werden.</li>
 
@@ -108,7 +109,7 @@
     <hr size=1 noshade>
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note1"></a>1)
       Ziehen und Ablegen bedeutet, eine Karte mit einer Maustaste anzuklicken,
-      diese Taste festzuhalten un dann das Objekt (die Karte, in unserem
+      diese Taste festzuhalten und dann das Objekt (die Karte, in unserem
       Fall) zu seinem Ziel zu ziehen. Das Ende dieser Aktion wird durch
       Loslassen der Maustaste signalisiert.</p>
 

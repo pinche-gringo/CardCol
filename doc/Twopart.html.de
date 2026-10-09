@@ -22,6 +22,7 @@
 
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Twopart - Ein Kartenspiel aus Norwegen (in zwei Teilen)</title>
     <meta name="description" content="Dokumentation des Twopart Kartenspiels">
     <meta name="keywords" content="documentation, docu, dokumentation, doku, Twopart, game, card, cardgame, spiel, karte, kartenspiel">
@@ -49,23 +50,23 @@
       die sie gegen den Uhrzeigersinn spielen. Die restlichen Karten
       kommen auf den Reservestapel.</p>
 
-    <p>Das Spiel startet ein zuf‰llig ausgew‰hlter Spieler.</p>
+    <p>Das Spiel startet ein zuf√§llig ausgew√§hlter Spieler.</p>
 
     <h2>Das Spiel</h2>
     <h3>Erster Teil</h3>
     <p>In jedem Durchgang legt jeder Spieler eine (beliebige) Karte ab
       und nimmt daf&uuml;r eine vom Reservestapel auf. Die gespielten
-      Karten gewinnt derjeninge, der die h&ouml;chste Karte
+      Karten gewinnt derjenige, der die h&ouml;chste Karte
       (unabh&auml;ngig von der Farbe) gespielt hat. Gibt es mehrere
       Karten mit der gleichen Nummer (nicht unbedingt die
       h&ouml;chste), spielen die Spieler dieser Karten in einer
       weiteren Runde (nach den gleichen Regeln) um die ganzen
       gespielten Karten, bis ein eindeutiger Gewinner feststeht.</p>
 
-    <p> Sollten gleiche Karten vorhanden sein und einer deren Spieler
+    <p> Sollten gleiche Karten vorhanden sein und einer ihrer Spieler
       keine Karten mehr besitzen, ist er nicht in der n&auml;chsten Runde
       dabei und lediglich die anderen setzen fort (beziehungsweise der
-      einzig &uuml;brige bekommt den Stapel). Sollten alle Spieler mit
+      einzig &Uuml;brige bekommt den Stapel). Sollten alle Spieler mit
       gleichen Karten keine weiteren mehr haben, bekommt derjenige,
       der die erste (gleiche) Karte gespielt hat, alle gespielten Karten.</p>
 
@@ -74,11 +75,11 @@
       Spieler (nach ihm), der noch Karten hat.</p>
 
     <p>Die Farbe der letzten Karte des Reservestapels bestimmt die
-      Trumpfarbe f&uuml;r den zweiten Teil; diese Karte wird
+      Trumpffarbe f&uuml;r den zweiten Teil; diese Karte wird
       allerdings erst am <b>Ende</b> der Runde angezeigt.</p>
 
     <p>Der erste Teil endet, wenn keiner der Spieler Karten
-      &uuml;brighat.  Wenn ein Spieler keine Karten gewonnen hat,
+      &uuml;brig hat.  Wenn ein Spieler keine Karten gewonnen hat,
       bekommt er alle niedrigen Karten bis (inklusive) der 5 von den
       anderen; gibt es zwei oder mehr Ungl&uuml;ckliche, teilen sie
       sich diese (mehr oder weniger zuf&auml;llig).</p>
@@ -87,7 +88,7 @@
     <p>Im zweiten Teil versuchen die Spieler, die gesammelten Karten wieder
       loszuwerden.</p>
 
-    <p>Der Gewinner des ersten Duchgangs beginnt und legt eine Karte
+    <p>Der Gewinner des ersten Durchgangs beginnt und legt eine Karte
       (oder eine Serie von Karten mit der gleichen Farbe, wenn die
       &auml;u&szlig;erst rechte ausgew&auml;hlt wird) ab.</p>
 
@@ -101,7 +102,7 @@
       er alle Karten, die der letzte Spieler abgelegt hat,
       aufnehmen.</p>
 
-    <p>Eine Runde endet, wenn es soviele Karten(serien) am Tisch gibt,
+    <p>Eine Runde endet, wenn es so viele Karten(serien) am Tisch gibt,
       wie es Spieler mit Karten am Beginn der Runde gab. Die
       gespielten Karten werden entfernt und der letzte Spieler startet
       eine neue Runde (wenn er noch Karten hat, sonst der N&auml;chste
@@ -112,12 +113,12 @@
     <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
 
     <h2>Anmerkungen zum Layout</h2>
-    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+    <p>Nach Starten des Spiels hat man (von links nach rechts und von oben nach
       unten):</p>
 
     <ul>
       <li>Den Reservestapel: Ein Haufen von Karten (R&uuml;ckseite
-        nach oben), von dem neue Karten aufgenommen werden. Wird die
+        nach oben), von dem neue Karten aufgenommen werden. Wird der
         Mauszeiger darauf positioniert, erscheint ein kleines Fenster,
         das &uuml;ber die Anzahl der &uuml;brigen Karten
         informiert. Im zweiten Teil wird hier &uuml;ber die
@@ -126,7 +127,7 @@
       <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb,
         darunter die in seiner Hand. Die gewonnenen Karten k&ouml;nnen
         durch Anklicken betrachtet werden; ein Rechts-Klick
-        erm&ouml;glicht zu&auml;tzlich sortieren.</li>
+        erm&ouml;glicht zus&auml;tzlich das Sortieren.</li>
 
       <li>In der n&auml;chsten Reihe befinden sich die Karten der Spieler
         1 und 3. Zwischen ihnen ist der Stapel der gespielten Karten (der

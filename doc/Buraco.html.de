@@ -22,6 +22,7 @@
 
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Buraco - Canasta mit lateinamerikanischem Einschlag</title>
     <meta name="description" content="Dokumentation des Buraco Kartenspiels">
     <meta name="keywords" content="Dokumentation, Doku, Buraco, Spiel, Karten, Kartenspiel">
@@ -36,8 +37,8 @@
     <hr size=2>
 
     <p>Buraco stammt aus Venezuela (und ist anscheinend auch in
-      Brasilien bekannt). Es ist ‰hnlich wie Canasta; allerdings etwas
-      schneller zu Ende, Dank der &bdquo;Buracos&rdquo; (Reservekarten, die man
+      Brasilien bekannt). Es ist √§hnlich wie Canasta; allerdings etwas
+      schneller zu Ende, dank der &bdquo;Buracos&rdquo; (Reservekarten, die man
       aufnimmt, sobald einer des Teams keine Karten mehr hat).</p>
 
     <p>Ziel des Spieles ist es, mit Hilfe seines
@@ -50,15 +51,15 @@
     <h2>Karten austeilen</h2>
     <p>Jeder der 4 Spieler startet mit 11<a href="#Note1"><sup>1</sup></a>
       Karten in der Hand. Zus&auml;tzlich gibt es zwei weitere Kartenstapel
-      mit genausovielen Karten (die sogenannten &bdquo;Buracos&rdquo;), je einen pro Team.</p>
+      mit genauso vielen Karten (die sogenannten &bdquo;Buracos&rdquo;), je einen pro Team.</p>
 
     <p>Die restlichen Karten kommen (verdeckt) auf den Reservestapel.</p>
 
     <p>Das erste Spiel wird von einem zuf&auml;llig ausgew&auml;hlten
-      Spieler gestart; die anderen beginnen abwechselnd die
+      Spieler gestartet; die anderen beginnen abwechselnd die
       n&auml;chsten Spieler.</p>
 
-    <p>Der Spieler der das Spiel startet, bekommt zus&auml;tzlich die
+    <p>Der Spieler, der das Spiel startet, bekommt zus&auml;tzlich die
       oberste Karte des Reservestapels im Sto&szlig; der unben&ouml;tigten
       Karten angezeigt.</p>
 
@@ -73,14 +74,14 @@
     <p><a name="Passend"></a>Passend bedeutet, dass entweder die
       Nummer gleich ist (unabh&auml;ngig von der Farbe) oder die Farbe
       und die Nummern in einer fortlaufenden Serie sind (As als Eins,
-      Drei, Vier, ..., Zehn, Bube, Dame, K&ouml;nig, As - Der Zweier
+      Drei, Vier, ..., Zehn, Bube, Dame, K&ouml;nig, As - der Zweier
       ist ein Joker und kommt daher nicht in der Reihe vor).</p>
 
     <p>Als Ausnahme dazu kann der startende Spieler zwischen der
       (sichtbaren) Karte im unben&ouml;tigten Sto&szlig; oder der
       (verdeckten) Karte des Reservestapels ausw&auml;hlen - auch ohne
       ein passendes Paar zu haben oder die 3 Karten spielen zu
-      m&uuml;ssen).</p>
+      m&uuml;ssen.</p>
 
     <h3>Ablegen</h3>
     <p>Danach kann er neue Stapel von &bdquo;zusammenpassenden&rdquo; Karten
@@ -89,7 +90,7 @@
       auch, die Karten in der Hand zu halten, um so eventuell den
       Ablegestapel aufnehmen zu k&ouml;nnen).</p>
 
-    <p>Jeder Stapel muss mindestens 3 Karten enthalten; wovon
+    <p>Jeder Stapel muss mindestens 3 Karten enthalten, wovon
       eine entweder ein Joker oder eine (beliebigfarbige) 2 sein kann
       (die dabei eine Karte ersetzen).</p>
 
@@ -111,7 +112,7 @@
 
       <li><p>Hat ein Spieler keine Karten (au&szlig;er Joker oder
           2'er) mehr, nimmt er den &bdquo;Buraco&rdquo; auf (einen vorher zur Seite
-          gelegten Reservestapels). Danach kann er normal fortsetzen
+          gelegten Reservestapel). Danach kann er normal fortsetzen
           (d.h., er ist noch immer am Zug, wenn er noch keine Karte
           abgeworfen hat).</p></li>
 
@@ -123,9 +124,9 @@
           (innerhalb des Stapels) verschoben, aber nicht wieder
           aufgenommen werden. Das bedeutet: Hat man beispielsweise
           eine Reihe von &hearts; 5, 6 und Joker, kann man den Joker
-          nach unten verschieben (wird zu &hearts;4 und danach einen
-          &hearts;3 anlegen<a href="#Note3"><sup>3</sup></a> aber man
-          kann nicht ein &hearts;7 ablegen und daf&uuml;r den Joker in
+          nach unten verschieben (wird zu &hearts;4) und danach einen
+          &hearts;3 anlegen<a href="#Note3"><sup>3</sup></a>, aber man
+          kann nicht einen &hearts;7 ablegen und daf&uuml;r den Joker in
           seine Hand aufnehmen (allerdings kann man den 7'er ablegen
           und der Joker wird zum 8'er oder 4'er).</p></li>
 
@@ -137,7 +138,7 @@
     <h3>Ende des Zuges</h3>
     <p>Kann/will der Spieler keine Karten ablegen, muss er eine
       (unben&ouml;tigte) Karte auf den daf&uuml;r vorgesehenen
-      Sto&szlig; abwerfen (durch anklicken) und der n&auml;chste
+      Sto&szlig; abwerfen (durch Anklicken) und der n&auml;chste
       Spieler setzt (gegen den Uhrzeigersinn) fort.</p>
 
     <h3>Ende des Spiels</h3>
@@ -147,14 +148,14 @@
       Sto&szlig; abgeworfen werden, muss aber nicht).</p>
 
     <p>Ein Team kann das Spiel jedoch nicht beenden, wenn es einen
-      Stapel von ausschlieﬂlich Jokern und 2'ern angefangen aber nicht
+      Stapel von ausschlie√ülich Jokern und 2'ern angefangen, aber nicht
       <i>geschlossen</i> hat.</p>
 
     <h2>Abrechnung</h2>
     <p>Ist das Spiel beendet, werden die Punkte gez&auml;hlt. Jeder
       &bdquo;Cerrado&rdquo; ohne Joker oder 2'er z&auml;hlt 400 Punkte (sonst
       200); au&szlig;er jener der Asse - diese bringen 500
-      beziehungsweise 300 Punkte. Ein &bdquo;cerrado&rdquo; aus Jokern und 2'er
+      beziehungsweise 300 Punkte. Ein &bdquo;Cerrado&rdquo; aus Jokern und 2'ern
       sind 1.000 Punkte; einer nur mit 2'ern 2.000.  Aber
       <b>Achtung</b>: Wird ein solcher Stapel angefangen, aber nicht
       geschlossen, bringt er 1.000 Minuspunkte!</p>
@@ -175,26 +176,26 @@
     <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
 
     <h2>Anmerkungen zum Layout</h2>
-    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+    <p>Nach Starten des Spiels hat man (von links nach rechts und von oben nach
       unten):</p>
 
     <ul>
       <li>Den Reservestapel: Ein Haufen von (verdeckten) Karten, von dem
-        neue Karten aufgenommen werden. Wird die Mauszeiger darauf
+        neue Karten aufgenommen werden. Wird der Mauszeiger darauf
         positioniert, erscheint ein kleines Fenster, das &uuml;ber die
         Anzahl der &uuml;brigen Karten informiert.</li>
 
-      <li>Der Ablegestapel. Auch dieser zeigt die Anzahl der Karten,
+      <li>Den Ablegestapel. Auch dieser zeigt die Anzahl der Karten,
         wenn der Mauszeiger darauf positioniert wird.</li>
 
       <li>Die Karten des Spielers. Anfangs sortiert nach Nummern, aber
-        mit Ziehen und Ablegen (drag und drop)<a
-        href="#Note1"><sup>1</sup></a> oder &uuml;ber das Men&uuml;
+        mit Ziehen und Ablegen (drag and drop)<a
+        href="#Note2"><sup>2</sup></a> oder &uuml;ber das Men&uuml;
         <tt>Buraco</tt> sortierbar.</li>
 
       <li>Die Stapel am Tisch von Team 1. Zu diesen Karten k&ouml;nnen
-        mit Ziehen und Ablegen (drag und drop)<a
-        href="#Note1"><sup>1</sup></a> weitere Karten hinzugef&uuml;gt
+        mit Ziehen und Ablegen (drag and drop)<a
+        href="#Note2"><sup>2</sup></a> weitere Karten hinzugef&uuml;gt
         werden.</li>
 
       <li>Die Stapel am Tisch von Team 2.</li>
@@ -208,14 +209,14 @@
 
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note2"></a>2)
       Ziehen und Ablegen bedeutet, eine Karte mit einer Maustaste anzuklicken,
-      diese Taste festzuhalten un dann das Objekt (die Karte, in unserem
+      diese Taste festzuhalten und dann das Objekt (die Karte, in unserem
       Fall) zu seinem Ziel zu ziehen. Das Ende dieser Aktion wird durch
       Loslassen der Maustaste signalisiert.</p>
 
     <p style="text-indent:-0.3cm;margin-left:0.3cm"><a name="Note3"></a>3)
-      Der Joker muss nicht manuell im Staple verschoben werden. Wird eine
+      Der Joker muss nicht manuell im Stapel verschoben werden. Wird eine
       entsprechende Karte auf den Stapel verschoben, wird der Joker notfalls
-      automatisch an die richtige Stelle platziert.</p>
+      automatisch an der richtigen Stelle platziert.</p>
 
     <hr size=3 noshade>
     <table width="100%">

@@ -4,7 +4,7 @@ A collection of card games
 Copyright (C) 2002 - 2026 Markus Schwab <pelotudo.gringo@gmail.com>
 -------------------------------------------------------------------
 
-The package is distributed under the GNU General Public License; in the hope
+The package is distributed under the GNU General Public License in the hope
 that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
 warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 file COPYING for details.
@@ -13,68 +13,68 @@ file COPYING for details.
 Description
 -----------
 
-A collection of various multi-person card games; til now they consist of:
+A collection of various multi-player card games; so far they are:
 
-  - Røvhult (the danish words for arsehole); obviously I learned it from danes,
-    but it is also known internationally (as shithead or asshole).
+  - RÃ¸vhult (the Danish word for arsehole): Obviously I learned it from Danes,
+    but it is also known internationally (as Shithead or Asshole).
 
-  - Twopart: A game I learned from some norwegians. They probably mentioned the
-    name, though I was not able to remember it (you have no idea how long it
-    took me to learn the word "Røvhult" - not to mention the pronuncation).
-    So the name describes the game.
+  - Twopart: A game I learned from some Norwegians. They probably mentioned
+    its name, though I was not able to remember it (you have no idea how long
+    it took me to learn the word "RÃ¸vhult" - not to mention the pronunciation).
+    So the name simply describes the game.
 
-  - Buraco: A famous game in Venezuela; a bit similar to Canasta or the like
-    in Europe.
+  - Buraco: A popular game in Venezuela; somewhat similar to Canasta.
 
-  - Machiavelli: Append your cards to the ones on the table without getting
+  - Machiavelli: Add your cards to the ones on the table without getting
     (too) confused while moving them around.
 
-  - Sgt. Major: The player must make a certain amount of ticks. Making more is
-    rewarded and making less punished in the next round.
+  - Sgt. Mayor: Every player must make a certain number of tricks. Making more
+    is rewarded and making fewer is punished in the next round.
 
-  - Jabberwocky: Bid the tricks you think you are going to win.
+  - Jabberwocky: Bid the number of tricks you think you are going to win.
 
-  - Hearts: A game included in various (?) versions of Windows.
+  - Hearts: The game included in various versions of Windows.
 
 
 Card decks
 ----------
 
-Are not included. But the build configuration tries to determine, where either
-the GNOME carddecks (from the GNOME games), the KDE carddecks (from the KDE
-games) or the cardpics (see http://www.nongnu.org/cardpics/) are installed
-and use those.
+Card decks are not included. The build configuration tries to find out where
+the GNOME card decks (from GNOME Games), the KDE card decks (from KDE Games)
+or the cardpics (see https://www.nongnu.org/cardpics/) are installed and uses
+those.
 
 
 Installation
--------------
+------------
 
-See the file INSTALL
+See the file INSTALL.
 
 
 Documentation
 -------------
 
-Is in the doc directory; in HTML-format. If the documentation is properly
-installed (with meson install; see also the file INSTALL)
-or the path is specified either in the INI-file or via an option, it can be
-accessed from the program (by pressing F1 or via Help - Content).
+The documentation is in the doc directory, in HTML format. If it is properly
+installed (with "meson install"; see also the file INSTALL) or its path is
+specified either in the INI file (Helpdir) or with the option --dir-help, it
+can be accessed from within the program (by pressing F1 or via Help -
+Contents).
 
 
 How to report bugs and/or send patches
 --------------------------------------
 
-Bug reports and patches should be send to the e-mail address of the author (me)
+Bug reports and patches should be sent to the e-mail address of the author
 (pelotudo.gringo@gmail.com).
 
-Please include for bugs:
+For bugs, please include:
 
-  - The version of the package. In case you don't know: The title of the
-    about box.
-  - The version of the used libYGP library.
+  - The version of the package. In case you don't know it: It is shown in the
+    title of the About box.
+  - The version of the libYGP library used.
   - How to reproduce the bug.
-  - In case of a crash there should also be a stackdump in your systemlog which
-    might help in localizing the bug.
+  - In case of a crash, a stack trace (e.g. from your system log or a
+    debugger), which might help in locating the bug.
   - Anything else you think might be helpful.
 
-Please note that I don't (can't) check my mails daily, so please be patient.
+Please note that I don't (can't) check my mail daily, so please be patient.

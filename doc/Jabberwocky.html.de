@@ -22,9 +22,10 @@
 
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Jabberwocky - Mache Stiche wie behauptet</title>
     <meta name="description" content="Dokumentation des Jabberwocky Kartenspiels">
-    <meta name="keywords" content="Dokumentation, Doku, Jabberwocky; Spiel, Karten, Kartenspiel">
+    <meta name="keywords" content="Dokumentation, Doku, Jabberwocky, Spiel, Karten, Kartenspiel">
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2006-08-19">
@@ -36,54 +37,54 @@
     <hr size=2>
 
     <p>Jabberwocky (auch als <i>China Poker</i> bekannt) ist ein Kartenspiel
-      für 4 Personen, das mit einem 52&nbsp;Karten umfassenden Deck gespielt wird.</p>
+      fÃ¼r 4 Personen, das mit einem 52&nbsp;Karten umfassenden Deck gespielt wird.</p>
 
-    <p>Das Ziel ist in 13 Runden die jeweiligen Stiche, die man machen
+    <p>Das Ziel ist, in 13 Runden die jeweiligen Stiche, die man machen
       wird, korrekt vorherzusagen. Das Spiel gewinnt der Spieler, der
-      dies am häufigsten errät.</p>
+      dies am hÃ¤ufigsten errÃ¤t.</p>
 
     <h2>Karten austeilen</h2>
-    <p>Am Beginn der ersten Runde erhält jeder der 4 Spieler jeweils 3
+    <p>Am Beginn der ersten Runde erhÃ¤lt jeder der 4 Spieler jeweils 3
       Karten. Danach wird die oberste Karte der restlichen Karten
       aufgedeckt. Die Farbe dieser Karte bestimmt die Trumpf-Farbe.</p>
 
-    <p>Die Anzahl der Karten erhöht sich in jeder Runde um
+    <p>Die Anzahl der Karten erhÃ¶ht sich in jeder Runde um
       eins, bis zur maximalen Anzahl von 9 Karten pro Spieler. Danach
       wird die Anzahl der Karten in jeder Runde um eine verringert.
       Nach 13 Runden, wenn die Spieler wieder 3 Karten bekommen haben,
       endet das Spiel.</p>
 
-    <h2>Anzahl der Stiche schätzen</h2>
-    <p>Ein zufällig ausgewählter Spieler startet das erste Spiel,
-       indem er die Anzahl seiner zu machenden Stiche schätzt (eine
-       Zahl von 0 bis zur Anzahl der möglichen Stiche; Ungültige Werte
+    <h2>Anzahl der Stiche schÃ¤tzen</h2>
+    <p>Ein zufÃ¤llig ausgewÃ¤hlter Spieler startet das erste Spiel,
+       indem er die Anzahl seiner zu machenden Stiche schÃ¤tzt (eine
+       Zahl von 0 bis zur Anzahl der mÃ¶glichen Stiche; ungÃ¼ltige Werte
        werden korrigiert).</p>
 
-    <p>Die anderen Spieler folgen mit ihren Schätzungen. Der letzte
-      Spieler muss seine Zahl derart wählen, dass die Anzahl der Stiche
-      nicht gleich der Anzahl der Spieler ist (sodass es nicht möglich
+    <p>Die anderen Spieler folgen mit ihren SchÃ¤tzungen. Der letzte
+      Spieler muss seine Zahl derart wÃ¤hlen, dass die Anzahl der Stiche
+      nicht gleich der Anzahl der Spieler ist (sodass es nicht mÃ¶glich
       ist, dass alle Spieler in einer Runde Punkte machen).</p>
 
     <h2>Das Spiel</h2>
-    <p>Der Spieler, der die erste Schätzung abgab, startet auch das
-      Spiel, indem er eine beliebige Karte ausspielt. Für die folgenden
+    <p>Der Spieler, der die erste SchÃ¤tzung abgab, startet auch das
+      Spiel, indem er eine beliebige Karte ausspielt. FÃ¼r die folgenden
       Spieler herrscht Farbzwang; wenn sie diese Farbe nicht haben,
-      können sie jede beliebige Karte spielen.</p>
+      kÃ¶nnen sie jede beliebige Karte spielen.</p>
 
     <p>Ein Stich kann nicht mit einer Trumpfkarte angefangen werden,
-      außer wenn in vorhergegangenen Stichen bereits Trumpf gespielt
-      wurde (bzw. &ldquo;Trumpf bereits <i>angebrochen</i>&rdquo; wurde).</p>
+      auÃŸer wenn in vorhergegangenen Stichen bereits Trumpf gespielt
+      wurde (bzw. &bdquo;Trumpf bereits <i>angebrochen</i>&ldquo; wurde).</p>
 
-    <p>Der Spieler, der die höchste Karte mit der Farbe der zuerst
-      gespielten Karte, gespielt hat, gewinnt den Stich, außer wenn
+    <p>Der Spieler, der die hÃ¶chste Karte mit der Farbe der zuerst
+      gespielten Karte gespielt hat, gewinnt den Stich, auÃŸer wenn
       auch Trumpfkarten gespielt wurden. Dann gewinnt der Spieler, der
-      die höchste dieser Karten gespielt hat. Der Gewinner startet den
-      nächsten Stich.</p>
+      die hÃ¶chste dieser Karten gespielt hat. Der Gewinner startet den
+      nÃ¤chsten Stich.</p>
 
     <p>Die Runde endet, wenn alle Karten gespielt wurden.</p>
 
     <h2>Abrechnung</h2>
-    <p>Am Ende der Runde erhält jeder Spieler, der seine Stiche exakt
+    <p>Am Ende der Runde erhÃ¤lt jeder Spieler, der seine Stiche exakt
       vorausgesagt hat, einen Punkt (sonst keinen).</p>
 
     <p>Der oder die Spieler mit den meisten Punkten nach 13 Runden
@@ -92,14 +93,14 @@
     <p>Die Statuszeile gibt Informationen &uuml;ber den Spielverlauf!</p>
 
     <h2>Anmerkungen zum Layout</h2>
-    <p>Nach Starten des Spiel hat man (von links nach rechts und von oben nach
+    <p>Nach Starten des Spiels hat man (von links nach rechts und von oben nach
       unten):</p>
 
     <ul>
       <li>Die Karten des Spielers. Die gewonnenen Karten oberhalb,
         darunter die in seiner Hand. Die gewonnenen Karten k&ouml;nnen
         durch Anklicken betrachtet werden; ein Rechts-Klick
-        erm&ouml;glicht zu&auml;tzlich sortieren.</li>
+        erm&ouml;glicht zus&auml;tzlich das Sortieren.</li>
 
       <li>In der n&auml;chsten Reihe befinden sich die Karten der Spieler
         1 und 3. Zwischen ihnen ist der Stapel der gespielten Karten.</li>
@@ -117,7 +118,7 @@
         </td>
         <td><a href="Hearts.html.de">Vorherige</a><br>(Hearts)</td>
         <td><a href="CardCol.html.de">Cardgames</a></td>
-        <td><a href="Machiavelli.html.de">Nächste</a><br>(Machiavelli)</td>
+        <td><a href="Machiavelli.html.de">NÃ¤chste</a><br>(Machiavelli)</td>
       </tr>
     </table>
   </body>

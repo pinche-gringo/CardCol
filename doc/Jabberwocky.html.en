@@ -22,7 +22,8 @@
 
 <html>
   <head>
-    <title>Jabberwocky - Make the tricks your promised to</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Jabberwocky - Make the tricks you promised to</title>
     <meta name="description" content="Documentation of the Jabberwocky card game">
     <meta name="keywords" content="Documentation, Docu, Jabberwocky; game, card, cardgame">
 
@@ -57,17 +58,17 @@
     <h2>Bidding</h2>
     <p>A randomly selected player starts the first game by making a
       bid for the number of tricks &mdash; any number from 0 to the number of
-      possible tricks (invalid values are corrected)</p>
+      possible tricks (invalid values are corrected).</p>
 
-    <p>The other players follow in turn. The last player making a bid,
+    <p>The other players follow in turn. The last player making a bid
       must use a number which does not sum up all bids to the number
-      of possible tricks (so to make it impossible for each player to
+      of possible tricks (so as to make it impossible for each player to
       score in one round).</p>
 
     <p>Bidding (and dealing) passes counter-clockwise after each round.</p>
 
     <h2>Playing</h2>
-    <p>The player who made the first bid leads also the first trick by
+    <p>The player who made the first bid also leads the first trick by
       playing any card. The other players must follow suit. If a
       player does not have any cards of the lead suit, any other suit
       may be played instead.</p>
@@ -75,7 +76,7 @@
     <p>A trump card may not be played first in a trick unless the
       trump suit has already been played or the player has only trump
       cards available. (Trump is said to be <i>broken</i> the first
-      time a trump card is played.)</li>
+      time a trump card is played.)</p>
 
     <p>The person who played the highest card in the leading suit wins
       that trick unless a trump card was played, in which case the
@@ -89,21 +90,21 @@
     <h2>Scoring</h2>
     <p>Once a round has finished, players are given one point for
       acquiring the exact number of tricks that they bid (otherwise
-      they get no point).</p>
+      they get no points).</p>
 
     <p>The player(s) with the most points at the end of all 13 rounds
       wins. Tie wins are possible.</p>
 
     <p>The status line gives some information about what's going on!</p>
 
-    <h2>Note to the layout</h2>
+    <h2>Note on the layout</h2>
     <p>After starting a game you have (from left to right and from top to
       bottom):</p>
 
     <ul>
       <li>The cards of the human player. On top his won cards, below
         the cards in his hand. The won cards can be inspected by
-        clicking on them; right-clicking allows to sort them.</li>
+        clicking on them; right-clicking allows you to sort them.</li>
 
       <li>In the next line it's the same with players 1 and 3. In
         between them there's the played pile.</li>

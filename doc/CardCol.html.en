@@ -22,6 +22,7 @@
 
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Cardgames - a collection of multi-player cardgames</title>
     <meta name="description" content="Documentation of the cardgames">
     <meta name="keywords" content="Documentation, Docu, game, card, cardgame">
@@ -41,11 +42,11 @@
       rides than a good cardgame?)</p>
 
     <p>They are all multi-player games having a computer player.  If
-      you search for patience (single-player) games, you are wrong here;
+      you search for patience (single-player) games, you are in the wrong place;
       but check out the excellent KDE cardgames.</p>
 
     <p>They are distributed under the GNU General Public License, which
-      basically says like this (see the file <tt>COPYING</tt> along with
+      basically says this (see the file <tt>COPYING</tt> along with
       this package or the <a href="http://www.gnu.org/">GNU homepage
         (http://www.gnu.org)</a> for more details):</p>
 
@@ -69,42 +70,42 @@
     <p>Currently there are the following games:</p>
 
     <table>
-      <tbody><tr><td>&nbsp;&nbsp;<a href="Buraco.html.en">Buraco </a></td><td> -   Canasta with a latin touch</td></tr>
-        <tr><td>&nbsp;&nbsp;<a href="Hearts.html.en">Hearts </a></td><td> -   A game where you better don't get them</td></tr>
+      <tbody><tr><td>&nbsp;&nbsp;<a href="Buraco.html.en">Buraco </a></td><td> -   Canasta with a Latin touch</td></tr>
+        <tr><td>&nbsp;&nbsp;<a href="Hearts.html.en">Hearts </a></td><td> -   A game where you'd better not get them</td></tr>
         <tr><td>&nbsp;&nbsp;<a href="Jabberwocky.html.en">Jabberwocky </a></td><td> - Make the tricks you promised to</td></tr>
         <tr><td>&nbsp;&nbsp;<a href="Machiavelli.html.en">Machiavelli</a></td><td> -   Order (and re-order) cards til you have no more</td></tr>
-        <tr><td>&nbsp;&nbsp;<a href="Rovhult.html.en">R&oslash;vhult </a></td><td> -   An internationally know cardgame (aka Shithead, Asshole, ...)</td></tr>
+        <tr><td>&nbsp;&nbsp;<a href="Rovhult.html.en">R&oslash;vhult </a></td><td> -   An internationally known cardgame (aka Shithead, Asshole, ...)</td></tr>
         <tr><td>&nbsp;&nbsp;<a href="Sgt.Mayor.html.en">Sgt. Mayor </a></td><td> -   Get your tricks or regret it</td></tr>
-        <tr><td>&nbsp;&nbsp;<a href="Twopart.html.en">Twopart </a></td><td> -   A norwegian cardgame (in two parts)</td></tr>
+        <tr><td>&nbsp;&nbsp;<a href="Twopart.html.en">Twopart </a></td><td> -   A Norwegian cardgame (in two parts)</td></tr>
     </tbody></table>
 
     <h2>Usage</h2>
-    <p>Principally the program is started without any options, like this:</p>
+    <p>In principle, the program is started without any options, like this:</p>
 
     <pre>   CardCol</pre>
 
-    <p>Depending on the version (or the options while configuring) exist
+    <p>Depending on the version (or the options while configuring) there are
       different options to control the program.</p>
 
     <pre>   CardCol --help</pre>
 
-    <p>prints a help for the usage.</p>
+    <p>prints help on the usage.</p>
 
     <h2>Credits</h2>
     <p>A big hug to Ingrid and Jonathan for teaching me all of the tricks
       which <tt>Buraco</tt> has to offer. Not to mention the hours we actually
-      spend playing it.</p>
+      spent playing it.</p>
 
     <p>A "Gr&uuml;tzi" to Michael (Miguel) Suttner who informed me about
       <tt>Machiavelli</tt>.</p>
 
-    <p>A big hello to Verónica, Tanja and Graham for showing me
+    <p>A big hello to VerÃ³nica, Tanja and Graham for showing me
       <tt>Sgt. Mayor</tt>. A nice one (beanflickers)!</p>
 
     <p>Greetings to Andreas, Jakob and Janus, who taught me the rules of
-      <tt>Røvhult</tt>.</p>
+      <tt>RÃ¸vhult</tt>.</p>
 
-    <p>Thanks to Ann-Karin, Arne, Bårn and Solveing for introducing
+    <p>Thanks to Ann-Karin, Arne, BÃ¥rn and Solveing for introducing
       me to <tt>Twopart</tt>.</p>
 
     <p>The idea for <tt>Jabberwocky</tt> comes from the same-named <a

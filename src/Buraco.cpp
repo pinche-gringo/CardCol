@@ -1173,7 +1173,7 @@ void Buraco::addBuraco(unsigned int player) {
         Glib::signal_idle().connect(bind(sigc::ptr_fun(&Buraco::showJoker), &hands[player], cJokers, true));
 
     status.pop();
-    Glib::ustring stat(_("%1 picked up the burraco"));
+    Glib::ustring stat(_("%1 picked up the buraco"));
     stat.replace(stat.find("%1"), 2, actPlayers[player]->getName());
     status.push(stat);
     updateInfo();

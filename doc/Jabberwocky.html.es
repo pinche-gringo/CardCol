@@ -22,6 +22,7 @@
 
 <html>
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Jabberwocky - </title>
     <meta name="description" content="Documentaci&oacute;n del juego de cartas Jabberwocky">
     <meta name="keywords" content="Documentation, Docu, Jabberwocky; game, card, cardgame, documentacion, juego">
@@ -32,72 +33,72 @@
   </head>
 
   <body>
-    <h1 align="center">Jabberwocky - Prediga y acerte tus bazas</h1>
+    <h1 align="center">Jabberwocky - Predice y acierta tus bazas</h1>
     <hr size=2>
 
     <p>Jabberwocky es un juego de cartas en el cual pueden participar
-      de 4 personas. El objetivo es predecir y acertar un número
+      4 personas. El objetivo es predecir y acertar un nÃºmero
       de bazas a lo largo de 13 rondas. El ganador es quien logra
-      advinar el mayor número de predicciones.</p>
+      adivinar el mayor nÃºmero de predicciones.</p>
 
     <h2>Repartir</h2>
     <p>Para empezar se distribuyen 3 cartas a cada participante. Luego
-      se muestra la carta superior del montón que definirá la pinta
+      se muestra la carta superior del montÃ³n que definirÃ¡ la pinta
       especial.</p>
 
     <p>Con cada ronda se agrega una carta hasta alcanzar 9 cartas para
       cada jugador. Luego se hace en sentido contrario restando una
-      carta. Después de 13 rondas, cuando los jugadores tienen otra
+      carta. DespuÃ©s de 13 rondas, cuando los jugadores tienen otra
       vez 3 cartas, concluye el juego.</p>
 
-    <h2>Predecir el número de bazas</h2>
-    <p>Un jugador casual inicia el juego prediciendo un número
-      específico de bazas a alcanzar (entre 0 y el número de las
-      cartas en la mano; valores inválidas están corrigidas).</p>
+    <h2>Predecir el nÃºmero de bazas</h2>
+    <p>Un jugador casual inicia el juego prediciendo un nÃºmero
+      especÃ­fico de bazas a alcanzar (entre 0 y el nÃºmero de las
+      cartas en la mano; valores invÃ¡lidos se corrigen).</p>
 
-    <p>Los siguentes jugadores hacen sus respectivas predicciones. La
-      del último jugador deberá ser tal que la suma de las
-      predicciones difiera del número de cartas en la mano (Esto
+    <p>Los siguientes jugadores hacen sus respectivas predicciones. La
+      del Ãºltimo jugador deberÃ¡ ser tal que la suma de las
+      predicciones difiera del nÃºmero de cartas en la mano (esto
       implica que en cada ronda por lo menos un jugador quede sin
       puntos).</p>
 
     <h2>El juego</h2>
-    <p>El jugador que hizo la primera predicción iniciará la ronda
-      lanzando una carta cualquiera. Los próximos jugadores deben
+    <p>El jugador que hizo la primera predicciÃ³n iniciarÃ¡ la ronda
+      lanzando una carta cualquiera. Los prÃ³ximos jugadores deben
       seguir la misma pinta. En caso de no tenerla, pueden jugar
       cualquier otra carta.</p>
 
-    <p>No se puede comenzar una mano con la pinta especial si ésta no
+    <p>No se puede comenzar una mano con la pinta especial si Ã©sta no
       ha sido jugada en manos anteriores.</p>
 
-    <p>El jugador que lanza la carta más alta de la pinta elegida al
+    <p>El jugador que lanza la carta mÃ¡s alta de la pinta elegida al
       iniciar la mano gana, excepto si se han lanzado cartas de la
-      pinta especial, en cuyo caso gana quien lanza la carta más alta
+      pinta especial, en cuyo caso gana quien lanza la carta mÃ¡s alta
       de la misma. Ese ganador empieza la siguiente mano.</p>
 
     <p>La ronda finaliza cuando se han jugado todas las cartas.</p>
 
-    <h2>Puntuación</h2>
-    <p>Al final de cada ronda los aciertos en los predicciones le dan
+    <h2>PuntuaciÃ³n</h2>
+    <p>Al final de cada ronda los aciertos en las predicciones le dan
       un punto al jugador. Gana el o los jugadores que acumulen la
-      puntuación más alta luego de 13 rondas.</p>
+      puntuaciÃ³n mÃ¡s alta luego de 13 rondas.</p>
 
     <p>&iexcl;La barra de estado muestra lo que est&aacute; pasando!</p>
 
-    <h2>Notas por el layout</h2>
-    <p>Después de iniciar se encuentra (de izquierda a derecha
+    <h2>Notas sobre el layout</h2>
+    <p>DespuÃ©s de iniciar se encuentra (de izquierda a derecha
       y de arriba a abajo):</p>
 
     <ul>
       <li>Las cartas del jugador humano. Por arriba sus cartas ganadas
         encima de sus cartas en su mano. Se puede chequearlas con
-        hacer clic en ellas; hacer clic con la tecla derecha permite
+        hacer clic en ellas; hacer clic con el bot&oacute;n derecho permite
         ordenarlas.</li>
 
-      <li>En la línea próxima hay lo mismo con los jugadores 1 y
+      <li>En la lÃ­nea prÃ³xima estÃ¡ lo mismo con los jugadores 1 y
         3. Entre ellos se encuentran las cartas jugadas.</li>
 
-      <li>En la última línea están las cartas del jugador 2.</li>
+      <li>En la Ãºltima lÃ­nea estÃ¡n las cartas del jugador 2.</li>
     </ul>
 
     <hr size=3 noshade>
