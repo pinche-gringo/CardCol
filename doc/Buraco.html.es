@@ -1,6 +1,6 @@
 <!-- -*-HTML-*- -->
 <!--
-  Copyright (C) 2003 - 2009 Markus Schwab (g17m0@users.sourceforge.net)
+  Copyright (C) 2003 - 2026 Markus Schwab (pelotudo.gringo@gmail.com)
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-06-22">
   </head>
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2009, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2026, distributed under the GNU Free Documentation License">
 
   <body>
     <h1 align="center">Buraco</h1>
@@ -211,7 +211,7 @@
       <tr>
         <td width="*">
           <address>
-            <a href="mailto:g17m0@users.sourceforge.net">Markus Schwab (g17m0@users.sourceforge.net)</a><br>
+            <a href="mailto:pelotudo.gringo@gmail.com">Markus Schwab (pelotudo.gringo@gmail.com)</a><br>
           </address>
         </td>
         <td>Anterior</td>

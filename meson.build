@@ -11,7 +11,7 @@ gnome = import('gnome')
 package_name = 'Cardgames'
 # Application ID (D-Bus name; also the name of the installed desktop file)
 app_id = 'io.github.pinche-gringo.CardCol'
-bugreport = 'g17m0@users.sourceforge.net'
+bugreport = 'pelotudo.gringo@gmail.com'
 version = meson.project_version()
 version_parts = version.split('.')
 release = '@0@.@1@'.format(version_parts[0], version_parts[1])
