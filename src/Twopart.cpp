@@ -75,7 +75,9 @@ Twopart::Twopart(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset
       idxMenu(-1) {
     staple.show();
     staple.set_margin(5);
-    attach(staple, 2, 2, 1, 1);
+    staple.set_halign(Gtk::Align::START);
+    staple.set_valign(Gtk::Align::START);
+    attach(staple, COL_STAPLE, ROW_STAPLE, 1, 1);
 
     // Show and attach card-piles
     changeNames(player);
@@ -97,6 +99,8 @@ Twopart::Twopart(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset
         players[i].hand.show();
         players[i].hand.set_margin_start(1);
         players[i].hand.set_margin_end(1);
+        if (!i)
+            players[i].hand.set_halign(Gtk::Align::CENTER);
         attach(players[i].hand, COLS_PLAYER[i], ROWS_PLAYER[i], i ? 3 : 15, 1);
         TRACE9("Twopart::Twopart() - Hand at: " << COLS_PLAYER[i] << '/' << ROWS_PLAYER[i]);
 
@@ -107,6 +111,11 @@ Twopart::Twopart(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset
     played.show();
     played.set_margin_top(5);
     played.set_margin_bottom(5);
+    // Remark: Show the cards centered and don't stretch the pile vertically;
+    //     else the (cropped) pictures of the compressed cards request more
+    //     width, leaving space between them
+    played.set_halign(Gtk::Align::CENTER);
+    played.set_valign(Gtk::Align::CENTER);
     attach(played, 3, 6, 8, 3);
     resizeCards();
 }
@@ -299,11 +308,13 @@ void Twopart::endTurn(unsigned int player) {
     bool isAnimated(false);
     if (result.endOfRound) {
         // Show trump if not already visible
-        if (pTrump && !pTrump->get_visible()) {
+        // Remark: Check the parent, as new widgets are visible since GTK-4
+        if (pTrump && !pTrump->get_parent()) {
             pTrump->showFace();
-            pTrump->show();
             pTrump->set_margin(5);
-            attach(*pTrump, 2, 2, 1, 1);
+            pTrump->set_halign(Gtk::Align::START);
+            pTrump->set_valign(Gtk::Align::START);
+            attach(*pTrump, COL_STAPLE, ROW_STAPLE, 1, 1);
         }
 
         if (gameStatus() == PLAYING2)
@@ -604,11 +615,10 @@ void Twopart::removeMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefPt
 /// \pre The cardsize must be set in Card::Images WIDTH/HEIGHT
 //-----------------------------------------------------------------------------
 void Twopart::resizeCards() {
-    played.set_size_request(Card::Images::WIDTH + 150, Card::Images::HEIGHT);
+    played.set_size_request(-1, Card::Images::HEIGHT);
     staple.set_size_request(Card::Images::WIDTH, Card::Images::HEIGHT);
     for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
         players[i].won.set_size_request(Card::Images::WIDTH + 20, Card::Images::HEIGHT + 5);
-        players[i].hand.set_size_request(i ? (Card::Images::WIDTH + (2 * 7)) : (Card::Images::WIDTH * 3),
-                                         Card::Images::HEIGHT + 5);
+        players[i].hand.set_size_request(i ? (Card::Images::WIDTH + (2 * 7)) : -1, Card::Images::HEIGHT + 5);
     }
 }

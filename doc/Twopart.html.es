@@ -1,6 +1,6 @@
 <!-- -*-HTML-*- -->
 <!--
-  Copyright (C) 2003 - 2009 Markus Schwab (g17m0@users.sourceforge.net)
+  Copyright (C) 2003 - 2026 Markus Schwab (g17m0@users.sourceforge.net)
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 
     <meta name="DC.Creator" content="Markus Schwab">
     <meta name="DC.Date" content="2003-02-11">
-    <meta name="DC.Rights" content="Copyright (C) 2003 - 2009, distributed under the GNU Free Documentation License">
+    <meta name="DC.Rights" content="Copyright (C) 2003 - 2026, distributed under the GNU Free Documentation License">
   </head>
 
   <body>
@@ -38,7 +38,7 @@
     <p>Twopart es un juego de cartas que aprend&iacute; de cuatro
       noruegos.  No me recuerdo si me han dicho el nombre original,
       pero si lo han hecho le olvid&eacute;; m&aacute;s rapido que
-      George W. Bush necesita por decir su pr&oacute;xima
+      Donald el Tonto necesita por decir su pr&oacute;xima
       tonter&iacute;a (o empezar una nueva guerra).</p>
 
     <p>El juego es separado en dos partes (por eso su nombre; obviamente no soy

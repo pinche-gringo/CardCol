@@ -93,6 +93,10 @@ class Twopart : public Card::Game {
     static constexpr std::array<unsigned int, NUM_PLAYERS> COLS_PLAYER{1, 13, 7, 1};
     static constexpr std::array<unsigned int, NUM_PLAYERS> ROWS_PLAYER{10, 8, 4, 8};
 
+    // Column and row of the staple (and the trump, which replaces it)
+    static constexpr unsigned int COL_STAPLE{1};
+    static constexpr unsigned int ROW_STAPLE{2};
+
     std::unique_ptr<Card::Widget> pTrump;
 
     Card::HInfoPile played;
