@@ -658,7 +658,8 @@ void Buraco::cardSelected(unsigned int iCard) {
     // reserve (or the game ends) after the card has been dumped (see turnEnded).
     // Remark: This can't be done here, as the dumped card is still in the hand
     // (until the animation ends), which would also move it.
-    unregisterHandDND(*hands[0][iCard]);
+    // The whole hand is disabled now (before the reserve is added in turnEnded)
+    disableHuman();
     animateCard(dumped, hands[0], iCard).sigAnimation.connect(mem_fun(*this, &Buraco::turnEnded));
     menuUndo->set_enabled(false);
 
