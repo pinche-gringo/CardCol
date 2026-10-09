@@ -1,3 +1,12 @@
+Overview of changes in version 0.9.60:
+
+  - Updated to C++-26
+  - Updated to GTKMM-4
+  - Updated Build System to Meson
+  - Added automated tests
+  - Hearts: Card moves are animated
+
+
 Overview of changes in version 0.9.52:
 
   - card/DeckSelect.cpp: Offer all KDE-4 carddecks; Show queen of hearts
