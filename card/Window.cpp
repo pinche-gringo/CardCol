@@ -43,7 +43,7 @@ namespace {
 /// \param x X-coordinate; unchanged if the position can't be determined
 /// \param y Y-coordinate; unchanged if the position can't be determined
 /// \returns bool True, if the position could be determined
-bool getPosition(const Gtk::Widget& widget, const Gtk::Fixed& layer, double& x, double& y) {
+bool positionOf(const Gtk::Widget& widget, const Gtk::Fixed& layer, double& x, double& y) {
     if (auto pos(widget.compute_point(layer, Gdk::Graphene::Point(0.0F, 0.0F))); pos) {
         x = pos->get_x();
         y = pos->get_y();
@@ -79,16 +79,21 @@ StandIn::~StandIn() {
 /// \param src Pile holding the cards
 /// \param first First card to show
 /// \param last Last card to show
+/// \param x X-coordinate of the cards (relative to the layer)
+/// \param y Y-coordinate of the cards (relative to the layer)
+/// \returns bool True, if the copies are shown; the caller must move them to x/y
+/// \remarks The copies are not moved here, as the position is tracked by the
+///     caller (Gtk::Fixed reports the position only after the next layout)
 //-----------------------------------------------------------------------------
-void StandIn::show(IPile& src, unsigned int first, unsigned int last) {
+bool StandIn::show(IPile& src, unsigned int first, unsigned int last, double& x, double& y) {
     TRACE8("StandIn::show(IPile&, 2x unsigned int) - " << first << '/' << last);
     Check1(first <= last);
     Check1(last < src.size());
     Check1(hidden.empty());
 
-    double x, y;
-    if (!src[first]->get_mapped() || !getPosition(*src[first], layer, x, y))
-        return;
+    // Remark: Cards not yet layouted (e.g. just added) have no valid position
+    if (!src[first]->get_mapped() || (src[first]->get_width() <= 0) || !positionOf(*src[first], layer, x, y))
+        return false;
 
     // Arrange the copies like the cards in the pile; only the last is shown completely
     bool vertical((src.getWidget() != nullptr) && (src.getWidget()->get_orientation() == Gtk::Orientation::VERTICAL));
@@ -108,8 +113,8 @@ void StandIn::show(IPile& src, unsigned int first, unsigned int last) {
         hidden.push_back(&card);
     }
 
-    layer.move(*box, x, y);
     box->set_visible(true);
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -189,8 +194,8 @@ void AnimatedCard::getEndPos(double& x, double& y) {
     Widget* target((posDest == -1U) ? dest[0] : dest[(posDest >= dest.size()) ? posDest - 1 : posDest]);
     Check2(target);
 
-    fixed.get_child_position(widget, x, y);
-    getPosition(*target, fixed, x, y);
+    getPosition(x, y);
+    positionOf(*target, fixed, x, y);
     TRACE9("AnimatedCard::getEndPos(2x double&) - " << static_cast<int>(posDest) << " Dest: " << x << '/' << y);
 }
 
@@ -235,7 +240,10 @@ void Window::start() {
     TRACE8("Window::start()");
     AnimatedCard::start();
     src.resize(posSrc, IPile::NORMAL);
-    show(src, posSrc, posSrc);
+
+    double x, y;
+    if (show(src, posSrc, posSrc, x, y))
+        moveTo(x, y);
 }
 
 //-----------------------------------------------------------------------------
@@ -257,8 +265,7 @@ void Window::cleanup() {
 /// \param start First card to animate from source
 /// \param end Last card to animate from source
 //-----------------------------------------------------------------------------
-PileWindow::PileWindow(Gtk::Fixed& layer, IPile& dest, unsigned int posDest, IPile& src, unsigned int start,
-                       unsigned int end)
+PileWindow::PileWindow(Gtk::Fixed& layer, IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end)
     : Window(layer, dest, posDest, src, start), last(end) {
     TRACE8("PileWindow::PileWindow(...) - " << start << '/' << end);
     Check3(src.size());
@@ -281,7 +288,10 @@ void PileWindow::start() {
     // in a pile only the last card is shown completely
     AnimatedCard::start();
     src.resize(last, IPile::NORMAL);
-    show(src, posSrc, last);
+
+    double x, y;
+    if (show(src, posSrc, last, x, y))
+        moveTo(x, y);
 }
 
 //-----------------------------------------------------------------------------
@@ -307,8 +317,7 @@ void PileWindow::cleanup() {
 /// \param start First card to animate from source
 /// \param end Last card to animate from source
 //-----------------------------------------------------------------------------
-PileWindows::PileWindows(Gtk::Fixed& layer, IPile& dest, unsigned int posDest, IPile& src, unsigned int start,
-                         unsigned int end)
+PileWindows::PileWindows(Gtk::Fixed& layer, IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end)
     : PileWindow(layer, dest, posDest, src, start, end), wins() {
     TRACE8("PileWindows::PileWindows(...) - " << start << '/' << end);
 }
@@ -348,7 +357,9 @@ void PileWindows::start() {
     for (auto& win : wins) {
         TRACE9("PileWindows::start() - Subwin: " << (&win - wins.data()));
         Check3(win);
-        win->standIn.show(win->source, win->first, win->last);
+        double x, y;
+        if (win->standIn.show(win->source, win->first, win->last, x, y))
+            win->moveTo(x, y);
     }
 }
 
@@ -365,12 +376,8 @@ void PileWindows::getEndPos(double& x, double& y) {
     for (auto& win : wins) {
         TRACE9("PileWindows::getEndPos(2x double&) - Subwin: " << (&win - wins.data()));
         Check3(win);
-        Gtk::Box& box(*win->standIn.box);
-        if (box.get_visible()) {
-            double x2, y2;
-            fixed.get_child_position(box, x2, y2);
-            fixed.move(box, x2 + (x - x2) / (steps + 1), y2 + (y - y2) / (steps + 1));
-        }
+        if (win->standIn.box->get_visible())
+            win->moveTo(win->posX + (x - win->posX) / (steps + 1), win->posY + (y - win->posY) / (steps + 1));
     }
 }
 
@@ -438,6 +445,17 @@ void PileWindows::addWindow(IPile& src, unsigned int start, unsigned int end) {
 PileWindows::AnimatedPile::AnimatedPile(Gtk::Fixed& layer, IPile& src, unsigned int start, unsigned int end)
     : standIn(layer), source(src), first(start), last(end), posDest(0) {
     TRACE9("PileWindows::AnimatedPile::AnimatedPile(Gtk::Fixed&, IPile&, 2x unsigned int)");
+}
+
+//-----------------------------------------------------------------------------
+/// Moves the animated cards to the passed position (and remembers it)
+/// \param x X-coordinate (relative to the animation layer)
+/// \param y Y-coordinate (relative to the animation layer)
+//-----------------------------------------------------------------------------
+void PileWindows::AnimatedPile::moveTo(double x, double y) {
+    standIn.layer.move(*standIn.box, x, y);
+    posX = x;
+    posY = y;
 }
 
 } // namespace Card

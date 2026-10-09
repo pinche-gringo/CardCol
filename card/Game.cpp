@@ -849,15 +849,16 @@ void Game::resizeCards() {}
 /// \param posDest Where to put the card in the destination
 /// \param source Source pile
 /// \param pos First card of source to move
+/// \param delay Time (in ms) til the animation starts; -1U: Timeout of the current player
 /// \pre The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
-Window& Game::animateCard(IPile& dest, unsigned int posDest, IPile& src, unsigned int pos) {
+Window& Game::animateCard(IPile& dest, unsigned int posDest, IPile& src, unsigned int pos, unsigned int delay) {
     TRACE3("Game::animateCard(...) - " << pos);
     Check1(pos < src.size());
     Check1(posDest <= dest.size());
 
     Window& win(*Window::create(animLayer, dest, posDest, src, pos));
-    unsigned int timeout(actPlayers[actPlayer]->timeout());
+    unsigned int timeout((delay == -1U) ? actPlayers[actPlayer]->timeout() : delay);
     if (timeout)
         Glib::signal_timeout().connect(bind_return(mem_fun(win, &Window::animate), false), timeout);
     else
@@ -872,16 +873,18 @@ Window& Game::animateCard(IPile& dest, unsigned int posDest, IPile& src, unsigne
 /// \param source Source pile
 /// \param start First card of source to move
 /// \param end Last card of source to move
+/// \param delay Time (in ms) til the animation starts; -1U: Timeout of the current player
 /// \pre The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
-PileWindow& Game::animateCards(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end) {
+PileWindow& Game::animateCards(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end,
+                               unsigned int delay) {
     TRACE3("Game::animateCards(...) - " << start << '/' << end);
     Check1(end < src.size());
     Check1(start <= end);
     Check1(posDest <= dest.size());
 
     PileWindow& win(*PileWindow::create(animLayer, dest, posDest, src, start, end));
-    unsigned int timeout(actPlayers[actPlayer]->timeout());
+    unsigned int timeout((delay == -1U) ? actPlayers[actPlayer]->timeout() : delay);
     if (timeout)
         Glib::signal_timeout().connect(bind_return(mem_fun(win, &PileWindow::animate), false), timeout);
     else
@@ -897,16 +900,18 @@ PileWindow& Game::animateCards(IPile& dest, unsigned int posDest, IPile& src, un
 /// \param source Source pile
 /// \param start First card of source to move
 /// \param end Last card of source to move
+/// \param delay Time (in ms) til the animation starts; -1U: Timeout of the current player
 /// \pre The card must be shown somewhere (to get its position)
 //-----------------------------------------------------------------------------
-PileWindows& Game::animateCards2(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end) {
+PileWindows& Game::animateCards2(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end,
+                                 unsigned int delay) {
     TRACE3("Game::animateCards2(...) - " << start << '/' << end);
     Check1(end < src.size());
     Check1(start <= end);
     Check1(posDest <= dest.size());
 
     PileWindows& win(*PileWindows::create(animLayer, dest, posDest, src, start, end));
-    unsigned int timeout(actPlayers[actPlayer]->timeout());
+    unsigned int timeout((delay == -1U) ? actPlayers[actPlayer]->timeout() : delay);
     if (timeout)
         Glib::signal_timeout().connect(bind_return(mem_fun(win, &PileWindow::animate), false), timeout);
     else

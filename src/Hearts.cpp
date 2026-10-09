@@ -55,6 +55,10 @@ unsigned int Hearts::ENDPOINTS(100);
 
 namespace {
 
+/// Delay (in ms) before animating cards, which have just been added or moved;
+/// so that their new position has been layouted
+constexpr unsigned int LAYOUT_DELAY(50);
+
 //-----------------------------------------------------------------------------
 /// Creates a pile of the passed type and stores it in the passed owner
 /// \param owner Smart pointer taking over the ownership of the created pile
@@ -172,32 +176,52 @@ void Hearts::makeMove(unsigned int player) {
 void Hearts::finishMove() {
     unsigned int next(calcNextPlayer(currentPlayer()));
 
+    // Show a complete trick for a moment, before the winner takes it (and continues)
     if (played.size() == NUM_PLAYERS)
         Glib::signal_timeout().connect(bind_return(bind(mem_fun(*this, &Hearts::takeWonCards), next), false),
                                        Card::ComputerPlayer::TIMEOUT - 50);
+    else
+        nextMove(next);
+}
 
-    if (players[next].hand->size()) {
-        setNextPlayer(next);
+//-----------------------------------------------------------------------------
+/// Lets the passed player make his move (if he has cards left)
+/// \param player Player in turn
+//-----------------------------------------------------------------------------
+void Hearts::nextMove(unsigned int player) {
+    if (players[player].hand->size()) {
+        setNextPlayer(player);
         makeNextMoves();
     }
 }
 
 //-----------------------------------------------------------------------------
-/// Picks up the won cards
+/// Moves the won cards to the passed player
 /// \param player Player taking won cards
 //-----------------------------------------------------------------------------
 void Hearts::takeWonCards(unsigned int player) {
     TRACE9("Hearts::takeWonCards(unsigned int) - " << player);
     Check1(player < NUM_PLAYERS);
-    if (played.size() == NUM_PLAYERS) {
-        players[player].won->getCards(played, 0, NUM_PLAYERS - 1);
 
-        if (!player) {
-            enableWonCards(*players[0].won);
-            menuSort->set_enabled();
-            menuSort2->set_enabled();
-        }
+    // Remark: Do nothing, if the game has been ended meanwhile
+    if (played.size() == NUM_PLAYERS)
+        animateCards(*players[player].won, played, 0, NUM_PLAYERS - 1, 0)
+            .sigAnimation.connect(bind(mem_fun(*this, &Hearts::trickTaken), player));
+}
+
+//-----------------------------------------------------------------------------
+/// Actions after the won cards have been moved to the passed player; he
+/// continues the game
+/// \param player Player who took the won cards
+//-----------------------------------------------------------------------------
+void Hearts::trickTaken(unsigned int player) {
+    TRACE9("Hearts::trickTaken(unsigned int) - " << player);
+    if (!player) {
+        enableWonCards(*players[0].won);
+        menuSort->set_enabled();
+        menuSort2->set_enabled();
     }
+    nextMove(player);
 }
 
 //-----------------------------------------------------------------------------
@@ -259,6 +283,8 @@ void Hearts::clean() {
     }
 
     played.clear();
+    for (auto& exchange : aExchange)
+        exchange.clear();
     Game::clean();
 
     menuSort->set_enabled(false);
@@ -310,6 +336,7 @@ void Hearts::takeCard(unsigned int iCard) {
     Check1(iCard < played.size());
     Check1(gameStatus() == EXCHANGE);
 
+    disableHuman();
     animateCard(*players[0].hand, played, iCard).sigAnimation.connect(mem_fun(*this, &Hearts::cardTaken));
 }
 
@@ -330,10 +357,6 @@ void Hearts::cardSelected(unsigned int iCard) {
     TRACE5("Hearts::cardSelected(unsigned int) - Position " << iCard);
     Check1(iCard < players[0].hand->size());
     Check3((gameStatus() == PLAYING) || (gameStatus() == EXCHANGE));
-
-    // Pick up won pile
-    if (played.size() == NUM_PLAYERS)
-        takeWonCards(0);
 
     // Hide won pile again (if not in debug-mode)
 #if TRACELEVEL > 0
@@ -502,12 +525,14 @@ bool Hearts::moveSelectedCardToPlayed(unsigned int player, unsigned int card) {
         if (actCard.is(Card::Widget::SPADES, Card::Widget::QUEEN))
             playedSQ = true;
 
+        disableHuman();
         Card::Window& win(animateCard(played, *players[player].hand, card));
         win.sigAnimation.connect(mem_fun(*this, &Hearts::finishMove));
     }
     else {
         // If there are already two cards exchanged (and thus the 3rd is going
         // to be exchanged) start exchanging of cards for the computer players
+        disableHuman();
         Card::Window& win(animateCard(played, *players[player].hand, card));
         win.sigAnimation.connect((played.size() != 2) ? mem_fun(*this, &Hearts::makeNextMoves)
                                                       : mem_fun(*this, &Hearts::exchangeCards));
@@ -529,51 +554,85 @@ void Hearts::exchangeCards() {
     Check1(player2Exchange < NUM_PLAYERS);
     Check3(played.size() == 3);
 
-    aExchange[0].getCards(played);
-    Check9(aExchange[0].size() == 3);
+    disableHuman();
     if (getConnectionMgr().getMode() != YGP::ConnectionMgr::CLIENT) {
         for (unsigned int i(getConnectionMgr().getClients().size() + 1); i < NUM_PLAYERS; ++i) {
             TRACE8("Hearts::exchangeCards() - Player " << i);
 
-            Card::IPile& source(*players[i].hand);
-            for (const auto& card : HeartsRules::selectCardsToExchange(source.values())) {
-                const int pos(source.find(card.id()));
-                Check3(pos != -1);
-                aExchange[i].getCards(source, pos, pos);
-            }
+            aExchange[i].clear();
+            for (const auto& card : HeartsRules::selectCardsToExchange(players[i].hand->values()))
+                aExchange[i].push_back(card.id());
+            Check3(aExchange[i].size() == 3);
 
             if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
                 std::ostringstream msg;
-                msg << "Exchange=" << aExchange[i][0]->id() << ' ' << aExchange[i][1]->id() << ' ' << aExchange[i][2]->id()
-                    << ";Player=" << i << ';';
+                msg << "Exchange=" << aExchange[i][0] << ' ' << aExchange[i][1] << ' ' << aExchange[i][2] << ";Player=" << i
+                    << ';';
                 broadcastMessage(msg.str());
             }
         }
     }
+    exchangeStep(0);
+}
 
-    Check3(played.empty());
-    Check3(aExchange[player2Exchange].size() == 3);
-    played.getCards(aExchange[NUM_PLAYERS - player2Exchange]);
-    Glib::signal_timeout().connect(bind_return(mem_fun(*this, &Hearts::finishExchangeCards), false),
-                                   Card::ComputerPlayer::TIMEOUT);
+//-----------------------------------------------------------------------------
+/// Animates the cards the passed player gives away to the receiving player
+/// (the human receives them onto the played pile, to see them); afterwards
+/// the next player gives his cards
+/// \param giver Player giving away his cards; the human gives the cards on
+///     the played pile
+//-----------------------------------------------------------------------------
+void Hearts::exchangeStep(unsigned int giver) {
+    TRACE8("Hearts::exchangeStep(unsigned int) - " << giver);
+    if (gameStatus() != EXCHANGE) // Game ended meanwhile
+        return;
+
+    if (giver == NUM_PLAYERS) {
+        Glib::signal_timeout().connect(bind_return(mem_fun(*this, &Hearts::takeExchangedCards), false),
+                                       Card::ComputerPlayer::TIMEOUT);
+        return;
+    }
+
+    // Move the cards to give away to the end of the hand (to animate them together)
+    Card::IPile* src(&played);
+    if (giver) {
+        src = players[giver].hand.get();
+        Check3(aExchange[giver].size() == 3);
+        for (auto id : aExchange[giver]) {
+            const int pos(src->find(id));
+            Check3(pos != -1);
+            src->move(src->size() - 1, pos);
+        }
+    }
+    Check3(src->size() >= 3);
+
+    const unsigned int receiver((giver + player2Exchange) & 0x3);
+    animateCards(receiver ? *players[receiver].hand : played, *src, src->size() - 3, src->size() - 1, LAYOUT_DELAY)
+        .sigAnimation.connect(bind(mem_fun(*this, &Hearts::exchangeStep), giver + 1));
+}
+
+//-----------------------------------------------------------------------------
+/// Moves the cards the human received into his hand
+//-----------------------------------------------------------------------------
+void Hearts::takeExchangedCards() {
+    TRACE9("Hearts::takeExchangedCards()");
+    if (gameStatus() != EXCHANGE) // Game ended meanwhile
+        return;
+
+    Check3(played.size() == 3);
+    animateCards(*players[0].hand, played, 0, played.size() - 1, 0)
+        .sigAnimation.connect(mem_fun(*this, &Hearts::exchangeFinished));
 }
 
 //-----------------------------------------------------------------------------
 /// Finishes exchanging the cards and starts the game
 //-----------------------------------------------------------------------------
-void Hearts::finishExchangeCards() {
-    TRACE9("Hearts::finishExchangeCards()");
-    aExchange[NUM_PLAYERS - player2Exchange].getCards(played);
-
+void Hearts::exchangeFinished() {
+    TRACE9("Hearts::exchangeFinished()");
     for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
-        TRACE9("Hearts::finishExchangeCards() - " << i << " gives to " << ((i + player2Exchange) & 0x3));
-        Check3(aExchange[i].size() == 3);
-        Card::IPile& target(*players[(i + player2Exchange) & 0x3].hand);
-        target.getCards(aExchange[i]);
-
-        target.sortByColour();
-        Check3(target.size() == (cards.size() / NUM_PLAYERS));
-        Check3(aExchange[i].empty());
+        aExchange[i].clear();
+        players[i].hand->sortByColour();
+        Check3(players[i].hand->size() == (cards.size() / NUM_PLAYERS));
     }
 
     startPlaying();
@@ -651,10 +710,9 @@ bool Hearts::handleMessage(unsigned int player, const std::string& message) {
                         throw YGP::ParseError(N_("Invalid card specification!"));
 
                     TRACE9("Hearts::handleMessage(unsigned int, const std::string&) - " << lPlayer << ": " << card);
-                    const int pos(players[lPlayer].hand->find(static_cast<unsigned int>(card)));
-                    if (pos == -1)
+                    if (players[lPlayer].hand->find(static_cast<unsigned int>(card)) == -1)
                         throw YGP::ParseError(N_("Card not found!"));
-                    aExchange[lPlayer].getCards(*players[lPlayer].hand, pos, pos);
+                    aExchange[lPlayer].push_back(static_cast<unsigned int>(card));
                 }
             }
 

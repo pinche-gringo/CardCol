@@ -80,9 +80,13 @@ class Hearts : public Card::Game {
     unsigned int calcNextPlayer(unsigned int player);
     HeartsRules::Table currentTable() const;
     void exchangeCards();
-    void finishExchangeCards();
+    void exchangeStep(unsigned int giver);
+    void takeExchangedCards();
+    void exchangeFinished();
     void finishMove();
+    void nextMove(unsigned int player);
     void takeWonCards(unsigned int player);
+    void trickTaken(unsigned int player);
     bool cardsExchanged(unsigned int cards);
     bool allCardsExchanged();
 
@@ -96,8 +100,8 @@ class Hearts : public Card::Game {
     bool playedSQ;                       // Flag, if the queen of spades has been played
     std::array<unsigned int, 4> aPlayed; // Array holding played cars for each colour
 
-    unsigned int player2Exchange;                   // ID of (next) player to exchange cards with
-    std::array<Card::IPile, NUM_PLAYERS> aExchange; // Cards the players are exchanging
+    unsigned int player2Exchange;                                 // ID of (next) player to exchange cards with
+    std::array<std::vector<unsigned int>, NUM_PLAYERS> aExchange; // IDs of the cards the players are exchanging
 
     struct playerCards {
         std::unique_ptr<Card::IPile> hand; // For players: Cards in the hand

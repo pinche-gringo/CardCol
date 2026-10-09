@@ -181,16 +181,21 @@ class Game : public Gtk::Grid {
 
     /// \name Animation
     //@{
-    Window& animateCard(IPile& dest, IPile& src, unsigned int pos) { return animateCard(dest, dest.size(), src, pos); }
-    Window& animateCard(IPile& dest, unsigned int posDest, IPile& src, unsigned int pos);
-    PileWindow& animateCards(IPile& dest, IPile& src, unsigned int start, unsigned int end) {
-        return animateCards(dest, dest.size(), src, start, end);
+    // Remark: The animation starts after delay ms; -1U: After the timeout of the current player
+    Window& animateCard(IPile& dest, IPile& src, unsigned int pos, unsigned int delay = -1U) {
+        return animateCard(dest, dest.size(), src, pos, delay);
     }
-    PileWindow& animateCards(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end);
-    PileWindows& animateCards2(IPile& dest, IPile& src, unsigned int start, unsigned int end) {
-        return animateCards2(dest, dest.size(), src, start, end);
+    Window& animateCard(IPile& dest, unsigned int posDest, IPile& src, unsigned int pos, unsigned int delay = -1U);
+    PileWindow& animateCards(IPile& dest, IPile& src, unsigned int start, unsigned int end, unsigned int delay = -1U) {
+        return animateCards(dest, dest.size(), src, start, end, delay);
     }
-    PileWindows& animateCards2(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end);
+    PileWindow& animateCards(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end,
+                             unsigned int delay = -1U);
+    PileWindows& animateCards2(IPile& dest, IPile& src, unsigned int start, unsigned int end, unsigned int delay = -1U) {
+        return animateCards2(dest, dest.size(), src, start, end, delay);
+    }
+    PileWindows& animateCards2(IPile& dest, unsigned int posDest, IPile& src, unsigned int start, unsigned int end,
+                               unsigned int delay = -1U);
     //@}
 
     bool performCommand(unsigned int player, const std::string& msg);

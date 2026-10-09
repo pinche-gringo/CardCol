@@ -47,7 +47,7 @@ class StandIn {
     explicit StandIn(Gtk::Fixed& layer);
     ~StandIn();
 
-    void show(IPile& src, unsigned int first, unsigned int last);
+    bool show(IPile& src, unsigned int first, unsigned int last, double& x, double& y);
     void restore();
 
     Gtk::Fixed& layer;
@@ -175,10 +175,14 @@ class PileWindows : public PileWindow {
     struct AnimatedPile {
         AnimatedPile(Gtk::Fixed& layer, IPile& src, unsigned int start, unsigned int end);
 
+        void moveTo(double x, double y);
+
         StandIn standIn;
         IPile& source;
         unsigned int first, last;
         unsigned int posDest; ///< Target position in destination
+        double posX{0};       ///< Current x-position of the animated cards
+        double posY{0};       ///< Current y-position of the animated cards
     };
 
     std::vector<std::unique_ptr<AnimatedPile>> wins;
