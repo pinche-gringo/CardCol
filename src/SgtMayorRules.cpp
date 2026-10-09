@@ -424,7 +424,7 @@ unsigned int selectCardToPlay(const Card::Cards& hand, unsigned int player, unsi
             if ((pos == -1U) ||
                 (nextHasntColour && !table.isHighest(hand[pos]) && ((cColours[trump] + playedCards[trump].count()) < 13))) {
                 pos = Card::findLowestCard(hand, trump);
-                bfColours |= (1 << trump);
+                bfColours |= ((1 << trump) << (player << 2));
             }
             else
                 pos -= cColours[trump] - 1;
@@ -448,7 +448,7 @@ unsigned int selectCardToPlay(const Card::Cards& hand, unsigned int player, unsi
                     bfColours |= ((1 << played[0].colour()) << (player << 2));
                     pos = Card::findLowestCard(hand, trump);
                     if (hand[pos].colour() != trump)
-                        bfColours |= (1 << trump);
+                        bfColours |= ((1 << trump) << (player << 2));
                 }
             }
         }
@@ -457,11 +457,14 @@ unsigned int selectCardToPlay(const Card::Cards& hand, unsigned int player, unsi
                 hand, ((played[0].colour() != played[1].colour()) || (played[0].number() > played[1].number())) ? played[0]
                                                                                                                 : played[1]);
             if ((pos == -1U) || (hand[pos].colour() != played[0].colour())) {
-                pos = (Card::exists(hand, played[0].colour())
-                           ? Card::find(hand, played[0].colour())
-                           : (bfColours |= ((1 << played[0].colour()) << (player << 2)), tryToGetTrickWithTrump(hand, trump)));
-                if (hand[pos].colour() != trump)
-                    bfColours |= (1 << trump);
+                if (Card::exists(hand, played[0].colour()))
+                    pos = Card::find(hand, played[0].colour());
+                else {
+                    bfColours |= ((1 << played[0].colour()) << (player << 2));
+                    pos = tryToGetTrickWithTrump(hand, trump);
+                    if (hand[pos].colour() != trump)
+                        bfColours |= ((1 << trump) << (player << 2));
+                }
             }
         }
         break;

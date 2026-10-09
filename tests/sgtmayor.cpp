@@ -263,6 +263,26 @@ BOOST_AUTO_TEST_CASE(trump_if_out_of_colour) {
     BOOST_TEST(table.outOfColours == (1u << (Value::SPADES + 4)));
 }
 
+BOOST_AUTO_TEST_CASE(notes_missing_trump_for_the_player) {
+    Table table(withTrick(Value::HEARTS, "S5"));
+    BOOST_TEST(selectCardToPlay(hand("C3 D9"), 1, 0, table) == 0u);
+    BOOST_TEST(table.outOfColours == ((1u << (Value::SPADES + 4)) | (1u << (Value::HEARTS + 4))));
+
+    table = withTrick(Value::HEARTS, "S5 H3");
+    BOOST_TEST(selectCardToPlay(hand("C3 D9"), 2, 0, table) == 0u);
+    BOOST_TEST(table.outOfColours == ((1u << (Value::SPADES + 8)) | (1u << (Value::HEARTS + 8))));
+
+    table = withTrick(Value::HEARTS, "S5 S9");
+    BOOST_TEST(selectCardToPlay(hand("C3 D9"), 2, 0, table) == 0u);
+    BOOST_TEST(table.outOfColours == ((1u << (Value::SPADES + 8)) | (1u << (Value::HEARTS + 8))));
+}
+
+BOOST_AUTO_TEST_CASE(following_doesnt_note_a_missing_trump) {
+    Table table(withTrick(Value::HEARTS, "S5 S9"));
+    BOOST_TEST(selectCardToPlay(hand("C3 S2 S7"), 2, 0, table) == 1u);
+    BOOST_TEST(table.outOfColours == 0u);
+}
+
 BOOST_AUTO_TEST_CASE(third_after_trump) {
     // The second player trumped: Play a low card of the colour
     Table table(withTrick(Value::HEARTS, "S5 H3"));
