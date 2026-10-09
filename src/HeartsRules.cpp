@@ -371,8 +371,9 @@ Card::Cards selectCardsToExchange(const Card::Cards& hand) {
     cCards = numberOfCards(posColours, Value::SPADES);
     if (cCards && (cCards < 5)) {
         // Search for the queen of spades and get rid of cards equal or bigger
-        unsigned int start(posColours[Value::SPADES] - moved - cCards + 1);
-        while ((start <= (posColours[Value::SPADES] - moved - 1)) && (source[start].number() < Value::QUEEN)) {
+        const unsigned int last(posColours[Value::SPADES] - moved);
+        unsigned int start(last - cCards + 1);
+        while ((start < last) && (source[start].number() < Value::QUEEN)) {
             Check3(source[start].colour() == Value::SPADES);
             ++start;
         }
@@ -386,10 +387,11 @@ Card::Cards selectCardsToExchange(const Card::Cards& hand) {
         if ((moved < CARDS_TO_EXCHANGE) && (start < (posColours[Value::SPADES] - moved))) {
             start = posColours[Value::SPADES] - moved;
             cCards = 2 - moved;
-            TRACE3("HeartsRules::selectCardsToExchange(...) - Getting rid of all high spades: " << start - cCards << " - "
-                                                                                              << start);
-            take(start - cCards, start);
-            moved += cCards + 1;
+            // The cards might start with the spades
+            const unsigned int from((start > cCards) ? start - cCards : 0);
+            TRACE3("HeartsRules::selectCardsToExchange(...) - Getting rid of all high spades: " << from << " - " << start);
+            take(from, start);
+            moved += start - from + 1;
         }
     }
 
@@ -427,7 +429,7 @@ unsigned int selectCardToPlay(const Card::Cards& hand, const Table& table) {
 
     // Player starts the round: If he has loads of spades: Play them
     unsigned int nrSpades(numberOfCards(aPos, Value::SPADES));
-    unsigned int missingSpades(table.cardsInGame - nrSpades - table.played[Value::SPADES]);
+    unsigned int missingSpades((table.cardsInGame / 4) - nrSpades - table.played[Value::SPADES]);
     // If there are still spades left (with other players) and either the player has no high
     // spades or loads of spades: Play them
     if (missingSpades && !table.playedSQ &&

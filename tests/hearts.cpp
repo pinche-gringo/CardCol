@@ -139,6 +139,20 @@ BOOST_AUTO_TEST_CASE(exchanges_queen_of_spades_if_short_of_spades) {
     BOOST_TEST(Test::containsAll(exchange, cards("SQ")));
 }
 
+BOOST_AUTO_TEST_CASE(exchanges_with_a_single_spade_after_the_clubs) {
+    const Card::Cards hand(Test::sortedByColour(cards("CQ CK S9 H2 H3 H5 H6 H7 H9 HT HJ HQ HK")));
+    const Card::Cards exchange(selectCardsToExchange(hand));
+    BOOST_TEST(exchange.size() == CARDS_TO_EXCHANGE);
+    BOOST_TEST(Test::containsAll(exchange, cards("CQ CK")));
+}
+
+BOOST_AUTO_TEST_CASE(exchanges_high_spades_at_the_start_of_the_hand) {
+    const Card::Cards hand(Test::sortedByColour(cards("SK SA H2 H3 H4 H5 H6 H7 H8 H9 HT HJ HQ")));
+    const Card::Cards exchange(selectCardsToExchange(hand));
+    BOOST_TEST(exchange.size() == CARDS_TO_EXCHANGE);
+    BOOST_TEST(Test::containsAll(exchange, cards("SK SA HQ")));
+}
+
 BOOST_AUTO_TEST_CASE(exchanges_three_distinct_cards_of_every_deal) {
     for (unsigned int seed(1); seed < 500; ++seed) {
         BOOST_TEST_CONTEXT("Seed " << seed) {
@@ -173,6 +187,20 @@ BOOST_AUTO_TEST_CASE(throws_no_points_in_first_round) {
     const Card::Cards hand(cards("D3 SQ H9"));
     const Table table(withTrick(Table(), "C2"));
     BOOST_TEST(hand[selectCardToPlay(hand, table)] == card("D3"));
+}
+
+BOOST_AUTO_TEST_CASE(leads_spades_if_holding_many) {
+    // Five of the 13 spades: Lead the lowest to drive out the others
+    const Card::Cards hand(cards("D2 D5 S7 S8 S9 SQ SK H9"));
+    BOOST_TEST(hand[selectCardToPlay(hand, afterFirstTrick())] == card("S7"));
+}
+
+BOOST_AUTO_TEST_CASE(leads_no_spades_if_others_have_none) {
+    // The other players hold no spade: Lead a low card instead
+    const Card::Cards hand(cards("D2 D5 S7 S8 S9 SQ SK H9"));
+    Table table(afterFirstTrick());
+    table.played[Value::SPADES] = 8;
+    BOOST_TEST(hand[selectCardToPlay(hand, table)] == card("D2"));
 }
 
 BOOST_AUTO_TEST_CASE(starts_with_the_two_of_clubs) {
