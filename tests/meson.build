@@ -16,13 +16,15 @@ test_deps = [rules_dep, boost_test_dep]
 # -Dchecks defines CHECK, which clashes with Boost.Test
 test_args = ['-DBOOST_TEST_DYN_LINK', '-UCHECK']
 
-test('card', executable('test-card', files('card.cpp'),
+test('card', executable('test-card', files('Card.cpp'),
                         cpp_args: test_args, dependencies: test_deps),
      suite: 'unit')
 
 foreach game : enabled_games
   foreach kind : ['unit', 'simulation']
-    source = (kind == 'unit') ? game + '.cpp' : game + '-sim.cpp'
+    # The sources are named like the rules (e.g. Rovhult.cpp for RovhultRules.cpp)
+    name = rules_sources[game][0].replace('Rules.cpp', '')
+    source = (kind == 'unit') ? name + '.cpp' : name + '-sim.cpp'
     if fs.is_file(source)
       test(game + '-' + kind, executable('test-@0@-@1@'.format(game, kind), files(source),
                             cpp_args: test_args, dependencies: test_deps),
