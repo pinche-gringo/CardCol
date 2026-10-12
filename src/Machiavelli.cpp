@@ -94,7 +94,7 @@ constexpr unsigned int dndPos(int payload) { return static_cast<unsigned int>(pa
 Machiavelli::Machiavelli(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set& cardset,
                          const std::vector<Card::Player*>& player, unsigned int posPlayer, Card::MessageLock& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10), piles(), tablePiles(), startPlayer(-1U),
-      newPile(_("New pile")), dstNewPile(), staple(Card::IPile::TOTALLY_COMPRESSED, Card::IPile::SHOWBACK),
+      dstTable(), dstPiles(), staple(Card::IPile::TOTALLY_COMPRESSED, Card::IPile::SHOWBACK),
       nextTurn(_("_End turn"), true), aDNDHand(), aDNDTable(), target(-1U), posPiles(), undo(), undoDlg(nullptr), undo1(),
       undoAll(), nxtTurn() {
     TRACE9("Machiavelli::Machiavelli(Box&, Statusbar&, CardSet&, const std::vector<Glib::ustring>&)");
@@ -134,15 +134,11 @@ Machiavelli::Machiavelli(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set&
     nextTurn.set_margin_start(5);
     nextTurn.set_margin_end(5);
     attach(nextTurn, 0, 5, 1, 1);
-    newPile.set_hexpand();
-    newPile.set_margin_top(5);
-    newPile.set_margin_bottom(5);
-    attach(newPile, 0, 3, 12, 1);
     piles.set_hexpand();
     piles.set_vexpand();
     piles.set_margin_top(5);
     piles.set_margin_bottom(5);
-    attach(piles, 0, 2, 12, 1);
+    attach(piles, 0, 2, 12, 2);
 
     TRACE9("Machiavelli::Machiavelli(Box&, Statusbar&, CardSet&, const std::vector<Glib::ustring>&) - Show widgets");
 
@@ -215,6 +211,7 @@ void Machiavelli::clean() {
     staple.clear();
 
     for (const auto& tablePile : tablePiles) {
+        unregisterPileDND(*tablePile);
         tablePile->clear();
         piles.remove(*tablePile);
     }
@@ -288,13 +285,16 @@ bool Machiavelli::enableHuman() {
         registerHandDND(i);
     Check3(aDNDHand.size() == hands[0].size());
 
-    dstNewPile = Gtk::DropTarget::create(G_TYPE_INT, Gdk::DragAction::MOVE);
-    dstNewPile->signal_drop().connect(
-        [this](const Glib::ValueBase& value, double, double) -> bool { return cardDroppedOnTable(value, -1U); }, false);
-    newPile.add_controller(dstNewPile);
+    // The free space of the table accepts drops to create a new pile ...
+    dstTable = Gtk::DropTarget::create(G_TYPE_INT, Gdk::DragAction::MOVE);
+    dstTable->signal_drop().connect(
+        [this](const Glib::ValueBase& value, double, double) -> bool { return cardDroppedOnTable(value, nullptr); }, false);
+    piles.add_controller(dstTable);
 
+    // ... while the piles accept drops to add cards to them
     for (unsigned int i(0); i < tablePiles.size(); ++i) {
         MachiPile& pile(*tablePiles[i]);
+        registerPileDND(pile);
         unsigned int value(i << 8);
         for (auto& j : pile)
             registerTableDND(*j, value++);
@@ -313,10 +313,13 @@ void Machiavelli::disableHuman() {
     TRACE2("Machiavelli::disableHuman() - DND: " << aDNDHand.size() << "; " << aDNDTable.size());
     Game::disableHuman();
 
-    if (dstNewPile) {
-        newPile.remove_controller(dstNewPile);
-        dstNewPile.reset();
+    if (dstTable) {
+        piles.remove_controller(dstTable);
+        dstTable.reset();
     }
+    for (auto& i : dstPiles)
+        i.first->remove_controller(i.second);
+    dstPiles.clear();
 
     if (aDNDHand.size())
         for (auto& i : hands[0])
@@ -529,15 +532,9 @@ void Machiavelli::registerTableDND(unsigned int pile, unsigned int start, unsign
 void Machiavelli::registerTableDND(Card::Widget& card, unsigned int nr) {
     TRACE9("Machiavelli::registerTableDND(Card::Widget&, unsigned int) - " << card << " = " << std::hex << nr << std::dec);
 
+    // Card can be dragged from the table (drops are handled by its pile; see
+    // registerPileDND())
     CONNECTIONS conn;
-
-    // Card accepts drops from hand and from the table ...
-    conn.dst = Gtk::DropTarget::create(G_TYPE_INT, Gdk::DragAction::MOVE);
-    conn.dst->signal_drop().connect(
-        [this, nr](const Glib::ValueBase& value, double, double) -> bool { return cardDroppedOnTable(value, nr); }, false);
-    card.add_controller(conn.dst);
-
-    // ... and can be dragged from the table
     conn.src = Gtk::DragSource::create();
     conn.src->set_actions(Gdk::DragAction::MOVE);
     conn.src->signal_prepare().connect(
@@ -564,7 +561,6 @@ void Machiavelli::unregisterTableDND(Card::Widget& card) {
     auto i(aDNDTable.find(&card));
     Check1(i != aDNDTable.end());
 
-    card.remove_controller(i->second.dst);
     card.remove_controller(i->second.src);
     aDNDTable.erase(i);
 }
@@ -573,12 +569,39 @@ void Machiavelli::unregisterTableDND(Card::Widget& card) {
 /// Stops the drag'n'drop abilities of all cards on the table
 //-----------------------------------------------------------------------------
 void Machiavelli::unregisterTableDND() {
-    for (auto& i : aDNDTable) {
-        i.first->remove_controller(i.second.dst);
+    for (auto& i : aDNDTable)
         i.first->remove_controller(i.second.src);
-    }
 
     aDNDTable.clear();
+}
+
+//-----------------------------------------------------------------------------
+/// Prepares the pile to accept dropped cards (from the hand or the table)
+/// \param pile Pile to register
+//-----------------------------------------------------------------------------
+void Machiavelli::registerPileDND(MachiPile& pile) {
+    TRACE9("Machiavelli::registerPileDND(MachiPile&) - " << &pile);
+    Check3(dstPiles.find(&pile) == dstPiles.end());
+
+    auto dst(Gtk::DropTarget::create(G_TYPE_INT, Gdk::DragAction::MOVE));
+    dst->signal_drop().connect(
+        [this, &pile](const Glib::ValueBase& value, double, double) -> bool { return cardDroppedOnTable(value, &pile); },
+        false);
+    pile.add_controller(dst);
+    dstPiles[&pile] = dst;
+}
+
+//-----------------------------------------------------------------------------
+/// Stops the pile from accepting dropped cards (if it was registered)
+/// \param pile Pile to de-register
+//-----------------------------------------------------------------------------
+void Machiavelli::unregisterPileDND(MachiPile& pile) {
+    TRACE9("Machiavelli::unregisterPileDND(MachiPile&) - " << &pile);
+    auto i(dstPiles.find(&pile));
+    if (i != dstPiles.end()) {
+        pile.remove_controller(i->second);
+        dstPiles.erase(i);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -629,16 +652,16 @@ bool Machiavelli::doRegisterHand(unsigned int first, unsigned int last) {
 //-----------------------------------------------------------------------------
 /// Callback after dropping a card on the table
 /// \param value Drag payload (see makeDNDPayload())
-/// \param iCard Combination of card and pile on which card was dropped
-///     (or -1U if dropped on the "new pile" label)
+/// \param target Pile on which the card was dropped (or nullptr if dropped on
+///     the free space of the table to create a new pile)
 /// \returns bool True, if the drop was handled
 //-----------------------------------------------------------------------------
-bool Machiavelli::cardDroppedOnTable(const Glib::ValueBase& value, unsigned int iCard) {
+bool Machiavelli::cardDroppedOnTable(const Glib::ValueBase& value, const MachiPile* target) {
     Glib::Value<int> v;
     v.init(value.gobj());
     unsigned int info(dndInfo(v.get()));
     unsigned int pos(dndPos(v.get()));
-    TRACE1("Machiavelli::cardDroppedOnTable(...) - Card dropped on " << std::hex << iCard << std::dec << "; " << info);
+    TRACE1("Machiavelli::cardDroppedOnTable(...) - Card dropped on " << target << "; " << info);
     Check1((info == HAND) || (info == TABLE));
 
     unsigned int nrpile(pos >> 8);
@@ -646,8 +669,10 @@ bool Machiavelli::cardDroppedOnTable(const Glib::ValueBase& value, unsigned int 
     Check2((info == HAND) ? (off < hands[0].size()) : (nrpile < tablePiles.size() && (off < tablePiles[nrpile]->size())));
 
     // Move dropped card to a (new) pile on the table
-    unsigned int iPile((iCard == -1U) ? tablePiles.size() : (iCard >> 8));
-    Check1(iPile <= tablePiles.size());
+    unsigned int iPile(0);
+    while ((iPile < tablePiles.size()) && (tablePiles[iPile].get() != target))
+        ++iPile;
+    Check1(target ? (iPile < tablePiles.size()) : (iPile == tablePiles.size()));
 
     // Ignore dnd from a pile to itself
     if ((info == TABLE) && (iPile == nrpile))
@@ -669,7 +694,7 @@ bool Machiavelli::cardDroppedOnTable(const Glib::ValueBase& value, unsigned int 
     const MachiavelliRules::Transfer& transfer(move.transfers[0]);
     off = transfer.first;
     unsigned int nr(transfer.number());
-    iCard = transfer.destPos;
+    unsigned int iCard(transfer.destPos);
     MachiPile* pile((iPile == tablePiles.size()) ? &makeNewPile() : tablePiles[iPile].get());
     Check3(pile);
 
@@ -803,6 +828,8 @@ MachiPile& Machiavelli::makeNewPile() {
     MachiPile& pile(*tablePiles.emplace_back(std::make_unique<MachiPile>()));
     pile.show();
     piles.add(pile);
+    if (dstTable)
+        registerPileDND(pile);
     TRACE8("Machiavelli::makeNewPile() - Pile " << tablePiles.size());
     return pile;
 }
@@ -819,6 +846,8 @@ MachiPile& Machiavelli::makeNewPile(unsigned int pos) {
     MachiPile& pile(**tablePiles.insert(tablePiles.begin() + pos, std::make_unique<MachiPile>()));
     pile.show();
     piles.insert(pile, pos);
+    if (dstTable)
+        registerPileDND(pile);
     return pile;
 }
 
@@ -1075,6 +1104,7 @@ void Machiavelli::removePile(unsigned int pile) {
 
     Check3(tablePiles[pile]->empty());
 
+    unregisterPileDND(*tablePiles[pile]);
     piles.remove(*tablePiles[pile]);
     tablePiles.erase(tablePiles.begin() + pile); // Deletes the pile
 }

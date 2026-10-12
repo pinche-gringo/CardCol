@@ -52,11 +52,19 @@ class Statusbar;
 }
 
 /**Container for the piles on the table; unlike its base, the piles are shown
-   with their own width (and not all with the width of the widest pile)
+   with their own width (and not all with the width of the widest pile).
+
+   The piles are packed to the top left: Otherwise the flow-box distributes
+   the free space between the lines and the piles, which moves the lines apart
+   and stretches the piles (leaving gaps between their cards)
  */
 class MachiTable : public XGP::AutoContainer {
   public:
-    MachiTable() { view.set_homogeneous(false); }
+    MachiTable() {
+        view.set_homogeneous(false);
+        view.set_halign(Gtk::Align::START);
+        view.set_valign(Gtk::Align::START);
+    }
 };
 
 /**Class handling the Machiavelli cardgame
@@ -122,12 +130,14 @@ class Machiavelli : public Card::Game {
     void registerTableDND(Card::Widget& card, unsigned int nr);
     void unregisterTableDND(Card::Widget& card);
     void unregisterTableDND();
+    void registerPileDND(MachiPile& pile);
+    void unregisterPileDND(MachiPile& pile);
     void registerHandDND(unsigned int start, unsigned int end);
     void registerHandDND(unsigned int iCard);
     void unregisterHandDND(Card::Widget& card);
 
     bool cardDropped(const Glib::ValueBase& value, unsigned int card);
-    bool cardDroppedOnTable(const Glib::ValueBase& value, unsigned int cardPile);
+    bool cardDroppedOnTable(const Glib::ValueBase& value, const MachiPile* target);
 
     bool doRegisterHand(unsigned int first, unsigned int last);
     //@}
@@ -163,8 +173,8 @@ class Machiavelli : public Card::Game {
 
     unsigned int startPlayer;
 
-    Gtk::Label newPile;
-    Glib::RefPtr<Gtk::DropTarget> dstNewPile;
+    Glib::RefPtr<Gtk::DropTarget> dstTable;                       // Drops on the free table: Create new pile
+    std::map<MachiPile*, Glib::RefPtr<Gtk::DropTarget>> dstPiles; // Drops on a pile: Add to this pile
     Card::VInfoPile staple;
     Gtk::Button nextTurn;
 
