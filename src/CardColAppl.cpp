@@ -451,6 +451,7 @@ int CardgameAppl::perform(int, const char**) {
     gtkapp->set_accel_for_action("game.MachiUndoAll", "<Control><Alt>z");
     gtkapp->set_accel_for_action("game.MachiSort", "<Shift>S");
     gtkapp->set_accel_for_action("game.MachiSortCol", "S");
+    gtkapp->set_accel_for_action("game.MachiEndTurn", "<Control>Return");
 #endif
 #ifdef WITH_ROVHULT
     gtkapp->set_accel_for_action(Glib::ustring::compose("win.ChgGame(%1)", static_cast<int>(GameTypes::ROVHULT)), "<Control>r");
