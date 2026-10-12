@@ -95,6 +95,7 @@ class Widget : public Gtk::Box, public Value {
     Glib::RefPtr<Gtk::GestureClick> rightClick;
 
     bool isVisible;
+    bool isMarked{false}; ///< Flag, if the card is shown marked (desaturated)
     int reqWidth{-1};  ///< Requested width (-1: Full width of the image)
     int reqHeight{-1}; ///< Requested height (-1: Full height of the image)
 

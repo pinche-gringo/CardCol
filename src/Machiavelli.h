@@ -51,6 +51,14 @@ namespace Gtk {
 class Statusbar;
 }
 
+/**Container for the piles on the table; unlike its base, the piles are shown
+   with their own width (and not all with the width of the widest pile)
+ */
+class MachiTable : public XGP::AutoContainer {
+  public:
+    MachiTable() { view.set_homogeneous(false); }
+};
+
 /**Class handling the Machiavelli cardgame
  */
 class Machiavelli : public Card::Game {
@@ -150,7 +158,7 @@ class Machiavelli : public Card::Game {
     std::array<Gtk::Label, NUM_PLAYERS> names;  // Names of the player
     std::array<Card::HPile, NUM_PLAYERS> hands; // For all players: Cards in hand
 
-    XGP::AutoContainer piles;                           // Piles on the table
+    MachiTable piles;                                   // Piles on the table
     std::vector<std::unique_ptr<MachiPile>> tablePiles; // Piles on table (owned); for faster access
 
     unsigned int startPlayer;

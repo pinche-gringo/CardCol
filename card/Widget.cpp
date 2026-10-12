@@ -156,17 +156,17 @@ std::ostream& operator<<(std::ostream& out, const Widget& card) { return out << 
 /// Marks the card; this is done by changing the saturation
 //-----------------------------------------------------------------------------
 void Widget::mark() {
-    Glib::RefPtr<Gdk::Pixbuf> pic(getShownImage());
-    Glib::RefPtr<Gdk::Pixbuf> dest(pic->copy());
-
-    pic->saturate_and_pixelate(dest, 0.5, true);
-    img.set_pixbuf(dest);
+    isMarked = true;
+    update();
 }
 
 //-----------------------------------------------------------------------------
 /// Unmarks the card; this is done by changing the saturation back
 //-----------------------------------------------------------------------------
-void Widget::unmark() { update(); }
+void Widget::unmark() {
+    isMarked = false;
+    update();
+}
 
 //-----------------------------------------------------------------------------
 /// Returns an empty card (without any image)
@@ -190,6 +190,14 @@ void Widget::set_size_request(int width, int height) {
     Glib::RefPtr<Gdk::Pixbuf> dest(
         Gdk::Pixbuf::create_subpixbuf(pic, 0, 0, width < 0 ? pic->get_width() : std::min(width, pic->get_width()),
                                       height < 0 ? pic->get_height() : std::min(height, pic->get_height())));
+
+    // Remark: Mark the (possibly cropped) image shown, so a marked card keeps
+    //     its compressed size
+    if (isMarked) {
+        Glib::RefPtr<Gdk::Pixbuf> marked(dest->copy());
+        dest->saturate_and_pixelate(marked, 0.5, true);
+        dest = marked;
+    }
 
     img.set_pixbuf(dest);
     Gtk::Box::set_size_request(dest->get_width(), dest->get_height());

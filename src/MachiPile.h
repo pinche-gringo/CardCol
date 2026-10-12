@@ -55,7 +55,6 @@ class MachiPile : public Card::HPile {
     void checkIntegrity() const;
     void mark() const;
     void unmark() const;
-    void markValidity() const;
 
   private:
     MachiPile(const MachiPile& other) = delete;

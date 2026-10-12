@@ -149,16 +149,3 @@ void MachiPile::unmark() const {
     for (auto i : *this)
         i->unmark();
 }
-
-//----------------------------------------------------------------------------
-/// Unmarks all cards in the pile
-//----------------------------------------------------------------------------
-void MachiPile::markValidity() const {
-    try {
-        checkIntegrity();
-        unmark();
-    }
-    catch (PileError&) {
-        mark();
-    }
-}

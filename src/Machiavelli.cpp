@@ -741,7 +741,7 @@ bool Machiavelli::cardDroppedOnTable(const Glib::ValueBase& value, unsigned int 
                 unregisterTableDND(*srcPile[i]);
                 registerTableDND(*srcPile[i], (nrpile << 8) + i);
             }
-            srcPile.markValidity();
+            srcPile.unmark();
         }
     }
 
@@ -750,7 +750,7 @@ bool Machiavelli::cardDroppedOnTable(const Glib::ValueBase& value, unsigned int 
         registerHandDND(pos, hands[0].size() - 1);
     Check3(aDNDHand.size() == hands[0].size());
 
-    pile->markValidity();
+    pile->unmark();
 
     undo.push(val);
     undo1->set_enabled(true);
@@ -964,7 +964,7 @@ bool Machiavelli::dealCard(unsigned int player) {
     if (staple.size()) {
         const unsigned int pos(player ? MachiavelliRules::dealPosition(hands[player].values(), staple.getTopCard())
                                       : hands[0].size());
-        animateCard(hands[player], pos, staple, staple.size() - 1)
+        animateCard(hands[player], pos, staple, staple.size() - 1, Card::ComputerPlayer::TIMEOUT / 4)
             .sigAnimation.connect(mem_fun(*this, &Machiavelli::endComputerMove));
         return true;
     }
