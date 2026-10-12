@@ -106,6 +106,11 @@ Jabberwocky::Jabberwocky(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set&
     }
     played.set_margin_top(5);
     played.set_margin_bottom(5);
+    // Remark: Show the cards centered and don't stretch the pile vertically;
+    //     else the (cropped) pictures of the compressed cards request more
+    //     width, leaving space between them
+    played.set_halign(Gtk::Align::CENTER);
+    played.set_valign(Gtk::Align::CENTER);
     attach(played, 3, 6, 8, 3);
 
     resizeCards();
@@ -716,7 +721,7 @@ bool Jabberwocky::handleMessage(unsigned int player, const std::string& message)
 /// \pre The cardsize must be set in CardImages::WIDTH/HEIGHT
 //-----------------------------------------------------------------------------
 void Jabberwocky::resizeCards() {
-    played.set_size_request(Card::Images::WIDTH + 150, Card::Images::HEIGHT);
+    played.set_size_request(-1, Card::Images::HEIGHT);
     for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
         players[i].won.set_size_request(Card::Images::WIDTH + 20, Card::Images::HEIGHT + 5);
         players[i].hand.set_size_request((i & 1) ? Card::Images::WIDTH + 8 * 5 : Card::Images::WIDTH * 3,
