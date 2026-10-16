@@ -643,6 +643,8 @@ void CardgameCollection::changeGame(int game) {
     Check3(static_cast<unsigned int>(game) < GameTypes::LAST);
 
     actGame = game;
+    Check3(actChgGame);
+    actChgGame->change_state(Glib::Variant<int>::create(game));
 }
 
 //-----------------------------------------------------------------------------

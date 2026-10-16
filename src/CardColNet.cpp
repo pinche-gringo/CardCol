@@ -251,7 +251,7 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
             throw YGP::ParseError(cmd);
         }
 
-        actGame = type;
+        changeGame(type);
         if (game) {
             restart = true;
             if (restartGame())
