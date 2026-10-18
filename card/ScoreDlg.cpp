@@ -23,6 +23,7 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <climits>
+#include <clocale>
 #include <memory>
 
 #include <cardgames-cfg.h>
@@ -38,6 +39,37 @@
 #include "ScoreDlg.h"
 
 namespace Card {
+
+namespace {
+
+//-----------------------------------------------------------------------------
+/// Uses (for the current thread) the numeric formatting of the user's locale
+/// while an object of this class exists.
+/// \remarks The global locale uses the classic numeric formatting (see
+///          CardgameAppl::perform), as numbers are exchanged with the network
+///          partners
+//-----------------------------------------------------------------------------
+class UserNumericLocale {
+  public:
+    UserNumericLocale() : prev(userLocale() ? uselocale(userLocale()) : nullptr) {}
+    ~UserNumericLocale() {
+        if (prev)
+            uselocale(prev);
+    }
+
+    UserNumericLocale(const UserNumericLocale&) = delete;
+    UserNumericLocale& operator=(const UserNumericLocale&) = delete;
+
+  private:
+    static locale_t userLocale() {
+        static const locale_t loc(newlocale(LC_NUMERIC_MASK, "", duplocale(LC_GLOBAL_LOCALE)));
+        return loc;
+    }
+
+    locale_t prev;
+};
+
+} // namespace
 
 int ScoreDlg::LASTX(-1);
 int ScoreDlg::LASTY(-1);
@@ -201,6 +233,7 @@ ScoreDlg::column::~column() = default;
 void ScoreDlg::column::addEntry(int points) {
     Check3(pBox);
     Check3(pLastEntry);
+    UserNumericLocale locale;
     NumLabel* label(Gtk::make_managed<NumLabel>(points));
     label->set_xalign(1.0);
     label->set_yalign(0);
