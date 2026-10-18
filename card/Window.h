@@ -71,6 +71,8 @@ class AnimatedCard : protected StandIn, public XGP::AnimatedWindow {
     /// Signal emitted, when the animation is finished
     sigc::signal<void()> sigAnimation;
 
+    static void abortAll(const Gtk::Fixed& layer);
+
     void getEndPos(double& x, double& y) override;
     void start() override;
     void cleanup() override;

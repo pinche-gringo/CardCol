@@ -22,7 +22,9 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <set>
 #include <utility>
+#include <vector>
 
 #include <YGP/Trace.h>
 
@@ -51,6 +53,9 @@ bool positionOf(const Gtk::Widget& widget, const Gtk::Fixed& layer, double& x, d
     }
     return false;
 }
+
+/// Animations which have not yet finished
+std::set<AnimatedCard*> running;
 } // namespace
 
 //-----------------------------------------------------------------------------
@@ -139,12 +144,31 @@ void StandIn::restore() {
 AnimatedCard::AnimatedCard(Gtk::Fixed& layer, IPile& dest, unsigned int posDest)
     : StandIn(layer), XGP::AnimatedWindow(layer, *box), sigAnimation(), dest(dest), posDest(posDest) {
     TRACE9("AnimatedCard::AnimatedCard(Gtk::Fixed&, IPile&, unsigned int) - " << posDest);
+    running.insert(this);
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
 //-----------------------------------------------------------------------------
-AnimatedCard::~AnimatedCard() = default;
+AnimatedCard::~AnimatedCard() { running.erase(this); }
+
+//-----------------------------------------------------------------------------
+/// Aborts (and deletes) all not yet finished animations in the passed layer;
+/// the animated cards are shown again (at their original position)
+/// \param layer Layer whose animations should be aborted
+/// \remarks Must be called before the piles of the animations are cleared or
+///     destroyed; else the animation accesses them when continuing
+//-----------------------------------------------------------------------------
+void AnimatedCard::abortAll(const Gtk::Fixed& layer) {
+    std::vector<AnimatedCard*> aborted;
+    for (auto* anim : running)
+        if (&anim->layer == &layer)
+            aborted.push_back(anim);
+
+    TRACE5("AnimatedCard::abortAll(const Gtk::Fixed&) - Aborting " << aborted.size() << " animations");
+    for (auto* anim : aborted)
+        delete anim;
+}
 
 //-----------------------------------------------------------------------------
 /// Additional actions when starting the animation
@@ -180,6 +204,9 @@ void AnimatedCard::cleanup() {
 //-----------------------------------------------------------------------------
 void AnimatedCard::finish() {
     TRACE8("AnimatedCard::finish()");
+    // Remark: The animation is deleted after the callback, which might clean
+    // the game (and therefore abort its animations)
+    running.erase(this);
     sigAnimation.emit();
 }
 

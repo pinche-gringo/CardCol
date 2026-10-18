@@ -290,6 +290,7 @@ bool Game::randomiseCardsToPile(IPile& pile) const {
 //-----------------------------------------------------------------------------
 void Game::clean() {
     TRACE8("Game::clean()");
+    AnimatedCard::abortAll(animLayer);
     echoes.clear();
     disableHuman();
     disableWonCards();
