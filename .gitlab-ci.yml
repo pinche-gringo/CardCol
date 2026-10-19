@@ -25,7 +25,6 @@ stages:
   - image
   - test
   - release
-  - bump
 
 variables:
   RELEASE_TAG_REGEX: '/^Cardgames_V\d+\.\d+\.\d+$/'
@@ -180,53 +179,5 @@ release:
         - name: $TARBALL
           url: '${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${VERSION}/${TARBALL}'
           link_type: package
-  rules:
-    - if: $CI_COMMIT_TAG =~ $RELEASE_TAG_REGEX
-
-# Increases the patch-level of the project version in meson.build and commits
-# that on the branch containing the tagged commit
-bump_version:
-  stage: bump
-  needs: [release]
-  variables:
-    GIT_DEPTH: 0
-  script:
-    - |
-      if [ -z "$CI_PUSH_TOKEN" ]; then
-        echo "Variable CI_PUSH_TOKEN is not set; can't push the version increase"
-        exit 1
-      fi
-    - git fetch origin '+refs/heads/*:refs/remotes/origin/*'
-    # Prefer the default branch, if it contains the tag; else the most recently changed branch
-    - |
-      BRANCHES=$(git for-each-ref --contains "$CI_COMMIT_SHA" --sort=-committerdate \
-                     --format='%(refname:lstrip=3)' refs/remotes/origin | grep -v '^HEAD$' || true)
-      if echo "$BRANCHES" | grep -qx "$CI_DEFAULT_BRANCH"; then
-        BRANCH=$CI_DEFAULT_BRANCH
-      else
-        BRANCH=$(echo "$BRANCHES" | head -n 1)
-      fi
-      if [ -z "$BRANCH" ]; then
-        echo "No branch contains the tagged commit $CI_COMMIT_SHA"
-        exit 1
-      fi
-      echo "Increasing version on branch $BRANCH"
-    - git checkout -B "$BRANCH" "origin/$BRANCH"
-    - *get_version
-    - |
-      if [ "$CI_COMMIT_TAG" != "${TAG_PREFIX}${VERSION}" ]; then
-        echo "Version on $BRANCH is already $VERSION; nothing to do"
-        exit 0
-      fi
-    - NEW_VERSION="${VERSION%.*}.$(( ${VERSION##*.} + 1 ))"
-    - |
-      sed -i "0,/version: *'$VERSION'/s//version: '$NEW_VERSION'/" meson.build
-    - git diff --exit-code --quiet meson.build && { echo "Version not changed"; exit 1; }
-    - git config user.name "$GITLAB_USER_NAME"
-    - git config user.email "$GITLAB_USER_EMAIL"
-    - 'git commit -m "meson.build: Increased version to $NEW_VERSION" meson.build'
-    - git push -o ci.skip
-        "${CI_SERVER_PROTOCOL}://oauth2:${CI_PUSH_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/${CI_PROJECT_PATH}.git"
-        "HEAD:refs/heads/$BRANCH"
   rules:
     - if: $CI_COMMIT_TAG =~ $RELEASE_TAG_REGEX
