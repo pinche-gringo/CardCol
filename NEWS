@@ -1,3 +1,12 @@
+Overview of changes in version 0.9.70:
+
+  - Re-enable animated cards, all games use them
+  - Add tests
+  - Add Gitlab build
+  - Fix failing games
+  - Bugfixes
+
+
 Overview of changes in version 0.9.60:
 
   - Updated to C++-26
