@@ -17,8 +17,9 @@
 # container registry of the project. It's (re)built only if ci/Dockerfile changes
 # (e.g. a newer libYGP is used) or the pipeline is started manually (Build ->
 # Pipelines -> Run pipeline); do the latter once to create the image initially.
-# libYGP is cloned with the job token, so this project must be allowed to access
-# the libYGP repository (libYGP: Settings -> CI/CD -> Job token permissions).
+# libYGP is installed from the RPMs of its release (package registry of libYGP),
+# downloaded with the job token, so this project must be allowed to access the
+# libYGP project (libYGP: Settings -> CI/CD -> Job token permissions).
 
 stages:
   - image
@@ -30,7 +31,7 @@ variables:
   RELEASE_TAG_REGEX: '/^Cardgames_V\d+\.\d+\.\d+$/'
   TAG_PREFIX: Cardgames_V
   PACKAGE_NAME: CardCol
-  YGP_REPO: $CI_SERVER_URL/casa/ygp.git
+  YGP_PACKAGES: $CI_API_V4_URL/projects/casa%2Fygp/packages/generic/libYGP
   CI_IMAGE: $CI_REGISTRY_IMAGE/ci-base:latest
 
 default:
@@ -54,7 +55,7 @@ build_image:
     - printf '%s' "$CI_JOB_TOKEN" > "$CI_BUILDS_DIR/job_token"
     - buildah build --ulimit nofile=524288:524288 --layers
         --secret id=job_token,src="$CI_BUILDS_DIR/job_token"
-        --build-arg YGP_REPO="$YGP_REPO"
+        --build-arg YGP_PACKAGES="$YGP_PACKAGES"
         --tag "$CI_IMAGE" ci/
     - buildah push --tls-verify=false "$CI_IMAGE"
   after_script:
