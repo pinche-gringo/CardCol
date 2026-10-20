@@ -7,9 +7,6 @@
 #     2. builds the RPMs (CardCol.spec) from that tarball and uploads them as well
 #     3. creates a GitLab release for the tag (notes taken from NEWS)
 #
-# Needed CI/CD variable (Settings -> CI/CD -> Variables, masked & protected):
-#   CI_PUSH_TOKEN: Project access token with scope "write_repository" (and a
-#                  role allowed to push to the release-branches)
 # Tags matching Cardgames_V* should be protected, so the protected variable is available.
 #
 # The jobs run in an image with all dependencies (ci/Dockerfile), stored in the
