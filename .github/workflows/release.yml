@@ -2,8 +2,8 @@
 #
 # Pushing a tag named Cardgames_V<major>.<minor>.<patch> (e.g. with release.py -r github)
 #   1. builds the project and runs the tests
-#   2. creates the source-tarball (meson dist)
-#   3. creates a GitHub release for the tag (notes taken from NEWS) with the tarball
+#   2. creates the source-tarball (meson dist) and the RPMs (CardCol.spec)
+#   3. creates a GitHub release for the tag (notes taken from NEWS) with those files
 #
 # libYGP/libXGP are installed from the RPMs of the libYGP release on GitHub
 # (YGP_VERSION/YGP_RELEASE below).
@@ -39,8 +39,9 @@ jobs:
       - name: Install dependencies
         run: |
           dnf install -y --setopt=install_weak_deps=False \
-              gcc gcc-c++ meson ninja-build git gettext gettext-devel perl \
-              boost-devel gtkmm4.0-devel librsvg2-devel ImageMagick aisleriot gh
+              gcc gcc-c++ meson ninja-build git gettext gettext-devel perl rpm-build \
+              boost-devel gtkmm4.0-devel librsvg2-devel ImageMagick aisleriot \
+              desktop-file-utils gh
 
       - name: Install libYGP
         env:
@@ -81,6 +82,13 @@ jobs:
       - name: Create source-tarball
         run: meson dist -C build --no-tests --formats xztar
 
+      - name: Build RPMs
+        run: |
+          TOPDIR="$GITHUB_WORKSPACE/rpmbuild"
+          mkdir -p "$TOPDIR/SOURCES"
+          cp "build/meson-dist/$TARBALL" "$TOPDIR/SOURCES/"
+          rpmbuild -ba --define "_topdir $TOPDIR" --define "cardcol_version $VERSION" CardCol.spec
+
       # Release notes: The section of this version in NEWS; else the tag message
       - name: Create release notes
         run: |
@@ -100,6 +108,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          files=("build/meson-dist/$TARBALL" rpmbuild/SRPMS/*.rpm)
+          for rpm in rpmbuild/RPMS/*/*.rpm; do
+            case "$rpm" in
+              *-debuginfo-*|*-debugsource-*) ;;
+              *) files+=("$rpm") ;;
+            esac
+          done
           gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
-             --title "$PACKAGE_NAME $VERSION" --notes-file release-notes.md \
-             "build/meson-dist/$TARBALL"
+             --title "$PACKAGE_NAME $VERSION" --notes-file release-notes.md "${files[@]}"

@@ -4,9 +4,8 @@
 #   and checks the code (cppcheck, clang-tidy)
 # - Pushing a tag named Cardgames_V<major>.<minor>.<patch> additionally
 #     1. creates the source-tarball (meson dist) and uploads it to the package registry
-#     2. creates a GitLab release for the tag (notes taken from NEWS)
-#     3. commits an increased patch-level of the project version in meson.build
-#        to the branch the tag was created on
+#     2. builds the RPMs (CardCol.spec) from that tarball and uploads them as well
+#     3. creates a GitLab release for the tag (notes taken from NEWS)
 #
 # Needed CI/CD variable (Settings -> CI/CD -> Variables, masked & protected):
 #   CI_PUSH_TOKEN: Project access token with scope "write_repository" (and a
@@ -162,11 +161,49 @@ dist:
   rules:
     - if: $CI_COMMIT_TAG =~ $RELEASE_TAG_REGEX
 
+# Builds the (source-)RPMs from the tarball of the dist-job and uploads them to
+# the generic package registry
+rpm:
+  stage: release
+  needs:
+    - job: dist
+      artifacts: true
+  script:
+    - TOPDIR="$CI_PROJECT_DIR/rpmbuild"
+    - mkdir -p "$TOPDIR/SOURCES"
+    - cp "build/meson-dist/$TARBALL" "$TOPDIR/SOURCES/"
+    - rpmbuild -ba --define "_topdir $TOPDIR" --define "cardcol_version $VERSION" CardCol.spec
+    # Upload all packages; remember the names of the (non-debug) ones for the release
+    - |
+      : > rpm.env
+      for rpm in "$TOPDIR"/RPMS/*/*.rpm "$TOPDIR"/SRPMS/*.rpm; do
+        file=$(basename "$rpm")
+        curl --fail --silent --show-error --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+             --upload-file "$rpm" \
+             "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${VERSION}/${file}"
+        case "$file" in
+          *.src.rpm) echo "SRPM=$file" >> rpm.env ;;
+          *-debuginfo-*|*-debugsource-*) ;;
+          *) echo "RPM_$(rpm -qp --queryformat '%{NAME}' "$rpm" | tr 'a-z-' 'A-Z_')=$file" >> rpm.env ;;
+        esac
+      done
+      cat rpm.env
+  artifacts:
+    paths:
+      - rpmbuild/RPMS/
+      - rpmbuild/SRPMS/
+    reports:
+      dotenv: rpm.env
+  rules:
+    - if: $CI_COMMIT_TAG =~ $RELEASE_TAG_REGEX
+
 release:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   needs:
     - job: dist
+      artifacts: true
+    - job: rpm
       artifacts: true
   script:
     - echo "Creating release $VERSION for tag $CI_COMMIT_TAG"
@@ -178,6 +215,15 @@ release:
       links:
         - name: $TARBALL
           url: '${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${VERSION}/${TARBALL}'
+          link_type: package
+        - name: $RPM_CARDCOL
+          url: '${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${VERSION}/${RPM_CARDCOL}'
+          link_type: package
+        - name: $RPM_CARDCOL_DEVEL
+          url: '${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${VERSION}/${RPM_CARDCOL_DEVEL}'
+          link_type: package
+        - name: $SRPM
+          url: '${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${VERSION}/${SRPM}'
           link_type: package
   rules:
     - if: $CI_COMMIT_TAG =~ $RELEASE_TAG_REGEX

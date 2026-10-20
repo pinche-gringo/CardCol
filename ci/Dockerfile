@@ -12,9 +12,9 @@ ARG YGP_RELEASE=1
 ARG YGP_PACKAGES
 
 RUN dnf install -y --setopt=install_weak_deps=False \
-        gcc gcc-c++ meson ninja-build git gettext gettext-devel perl \
+        gcc gcc-c++ meson ninja-build git gettext gettext-devel perl rpm-build \
         boost-devel gtkmm4.0-devel librsvg2-devel ImageMagick \
-        aisleriot \
+        aisleriot desktop-file-utils \
         cppcheck clang-tools-extra curl \
     && dnf clean all
 
