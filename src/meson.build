@@ -49,7 +49,9 @@ foreach meta : ['Options', 'CardOptions']
                                    capture: true)
 endforeach
 
+# libCard is found by the dynamic linker in /usr; other prefixes need a RUNPATH
+# (a standard one like /usr/lib64 is rejected by rpmbuild's check-rpaths)
 executable('CardCol', cardcol_sources,
            dependencies: [card_dep, rules_dep],
-           install_rpath: prefix / get_option('libdir'),
+           install_rpath: prefix == '/usr' ? '' : prefix / get_option('libdir'),
            install: true)
