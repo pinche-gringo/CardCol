@@ -1,0 +1,105 @@
+# GitHub release for CardCol
+#
+# Pushing a tag named Cardgames_V<major>.<minor>.<patch> (e.g. with release.py -r github)
+#   1. builds the project and runs the tests
+#   2. creates the source-tarball (meson dist)
+#   3. creates a GitHub release for the tag (notes taken from NEWS) with the tarball
+#
+# libYGP/libXGP are installed from the RPMs of the libYGP release on GitHub
+# (YGP_VERSION/YGP_RELEASE below).
+#
+# Note: GitHub doesn't run workflows if more than 3 tags are pushed at once.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'Cardgames_V[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+env:
+  PACKAGE_NAME: CardCol
+  TAG_PREFIX: Cardgames_V
+  YGP_REPOSITORY: pinche-gringo/libYGP
+  YGP_VERSION: 0.9.62
+  YGP_RELEASE: 1
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    container: fedora:45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # git must be available before the checkout, else no repository is created
+      - name: Install dependencies
+        run: |
+          dnf install -y --setopt=install_weak_deps=False \
+              gcc gcc-c++ meson ninja-build git gettext gettext-devel perl \
+              boost-devel gtkmm4.0-devel librsvg2-devel ImageMagick aisleriot gh
+
+      - name: Install libYGP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SUFFIX="${YGP_VERSION}-${YGP_RELEASE}$(rpm --eval '%{dist}').$(rpm --eval '%{_arch}').rpm"
+          mkdir ygp
+          for pkg in libYGP libYGP-devel libXGP libXGP-devel; do
+            gh release download "libYGP_V$YGP_VERSION" --repo "$YGP_REPOSITORY" \
+               --dir ygp --pattern "$pkg-$SUFFIX"
+          done
+          dnf install -y --setopt=install_weak_deps=False ygp/*.rpm
+          rm -rf ygp
+
+      - uses: actions/checkout@v5
+
+      - name: Check version
+        run: |
+          # The workspace belongs to another user than the one of the container
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          # The checkout converts annotated tags to lightweight ones; get the original
+          git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          VERSION=$(sed -n "s/^ *version: *'\([0-9][0-9.]*\)'.*/\1/p" meson.build | head -n 1)
+          echo "Project version $VERSION"
+          if [ "$GITHUB_REF_NAME" != "${TAG_PREFIX}${VERSION}" ]; then
+            echo "Tag $GITHUB_REF_NAME doesn't match the project version $VERSION in meson.build"
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "TARBALL=${PACKAGE_NAME}-${VERSION}.tar.xz" >> "$GITHUB_ENV"
+
+      - name: Build and test
+        run: |
+          meson setup build
+          meson compile -C build
+          meson test -C build --print-errorlogs
+
+      - name: Create source-tarball
+        run: meson dist -C build --no-tests --formats xztar
+
+      # Release notes: The section of this version in NEWS; else the tag message
+      - name: Create release notes
+        run: |
+          awk -v ver="$VERSION" '
+            tolower($0) ~ "^overview of changes in version " ver ":" { found = 1; next }
+            found && /^Overview of / { exit }
+            found { print }' NEWS > release-notes.md
+          if ! grep -q '[^[:space:]]' release-notes.md; then
+            git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > release-notes.md
+          fi
+          if ! grep -q '[^[:space:]]' release-notes.md; then
+            echo "Release $VERSION" > release-notes.md
+          fi
+          cat release-notes.md
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+             --title "$PACKAGE_NAME $VERSION" --notes-file release-notes.md \
+             "build/meson-dist/$TARBALL"
