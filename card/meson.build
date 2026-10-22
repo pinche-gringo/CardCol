@@ -18,7 +18,7 @@ card_headers = files('Widget.h', 'Images.h', 'Pile.h', 'Set.h', 'Window.h',
                      'Game.h', 'Human.h', 'DeckSelect.h', 'PlayerDlg.h',
                      'ScoreDlg.h', 'PlayerConnDlg.h', 'Player.h',
                      'RemotePlayer.h', 'ComputerPlayer.h', 'Message.h', 'MessageLock.h',
-                     'Value.h', 'Cards.h', 'Random.h')
+                     'Value.h', 'Cards.h', 'Random.h', 'UserNumericLocale.h')
 
 # Named like libtool's "-release": libCard-<release>.so
 libcard = shared_library('Card-' + release, card_sources,

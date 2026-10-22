@@ -62,6 +62,7 @@
 #include <card/Images.h>
 #include <card/Message.h>
 #include <card/ScoreDlg.h>
+#include <card/UserNumericLocale.h>
 #include <card/Window.h>
 
 #include "Buraco.h"
@@ -1253,6 +1254,7 @@ void Buraco::removeCerrado(unsigned int player, BuracoPile& pile) {
 /// Actualizes the info-part of the statusbar
 //-----------------------------------------------------------------------------
 void Buraco::updateInfo() {
+    Card::UserNumericLocale locale;
     Glib::ustring strInfo(_("Points [Buraco]: %1 [%2] / %3 [%4]"));
     strInfo.replace(strInfo.find("%1"), 2, YGP::ANumeric::toString(points[0]));
     strInfo.replace(strInfo.find("%2"), 2, (reserve[0].empty() ? _("N") : _("Y")));
