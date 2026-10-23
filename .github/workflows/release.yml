@@ -24,7 +24,7 @@ env:
   PACKAGE_NAME: CardCol
   TAG_PREFIX: Cardgames_V
   YGP_REPOSITORY: pinche-gringo/libYGP
-  YGP_VERSION: 0.9.62
+  YGP_VERSION: 0.9.70
   YGP_RELEASE: 1
 
 jobs:
