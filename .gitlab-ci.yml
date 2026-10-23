@@ -55,8 +55,9 @@ default:
         curl --fail --silent --show-error --location --header "JOB-TOKEN: $CI_JOB_TOKEN" \
              --output "/tmp/ygp/$pkg-$SUFFIX" "$YGP_PACKAGES/$YGP_VERSION/$pkg-$SUFFIX" || exit 1
       done
-      # rpm instead of dnf: The dependencies are in the image, so no repository-metadata is needed
-      rpm -U --replacepkgs /tmp/ygp/*.rpm
+      # rpm instead of dnf: The dependencies are in the image, so no repository-metadata is needed.
+      # The RPMs of libYGP aren't signed, so only their digests are verified
+      rpm -U --replacepkgs --define '_pkgverify_level digest' /tmp/ygp/*.rpm
       rm -rf /tmp/ygp
 
 # Builds the base image with the dependencies (with buildah, so no privileged
