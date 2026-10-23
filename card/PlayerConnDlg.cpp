@@ -32,9 +32,11 @@
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/messagedialog.h>
+#include <gtkmm/passwordentry.h>
 
 #include <cardgames-cfg.h>
 
+#include <YGP/AssParse.h>
 #include <YGP/AttrParse.h>
 #include <YGP/Check.h>
 #include <YGP/ConnMgr.h>
@@ -65,14 +67,14 @@ PlayerConnectDlg::PlayerConnectDlg(std::vector<Player*>& player, const Glib::ust
     lblConnected->set_margin_end(5);
     lblConnected->set_margin_top(3);
     lblConnected->set_margin_bottom(3);
-    pClient->attach(*lblConnected, 0, 3);
+    pClient->attach(*lblConnected, 0, FIRST_FREE_ROW);
 
     connected->set_hexpand();
     connected->set_margin_start(5);
     connected->set_margin_end(5);
     connected->set_margin_top(3);
     connected->set_margin_bottom(3);
-    pClient->attach(*connected, 1, 3);
+    pClient->attach(*connected, 1, FIRST_FREE_ROW);
 
     lblConnected->set_xalign(0);
     lblConnected->set_yalign(0);
@@ -119,13 +121,16 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, const Glib:
 /// \param player The player
 /// \param connMgr Connection manager; holding the connections to use
 /// \param listenAt Port the server should listen at
+/// \param password Password the clients must know
 /// \returns unsigned int The number the player has for the server
 //----------------------------------------------------------------------------
-unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::ConnectionMgr& cmgr, const Glib::ustring& listenAt) {
+unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::ConnectionMgr& cmgr, const Glib::ustring& listenAt,
+                                       const Glib::ustring& password) {
     std::unique_ptr<PlayerConnectDlg> dlg(std::make_unique<PlayerConnectDlg>(player, "0", cmgr));
     Check3(dlg->pPort);
     Check3(dlg->pWait);
     dlg->pPort->set_text(listenAt);
+    dlg->pPassword->set_text(password);
     dlg->command(WAIT); // Button::activate() would only emit clicked (delayed) after an animation
     XGP::runModal(*dlg);
     dlg->hide(); // Destroying a still visible dialog confuses GTK's (Wayland) input method handling
@@ -138,12 +143,14 @@ unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::Connec
 /// \param connMgr Connection manager; holding the connections to use
 /// \param host Host the client should connect too
 /// \param hostPort Port the host is listening at
+/// \param password Password of the server
 /// \returns unsigned int The number the player has for the server
 //----------------------------------------------------------------------------
 unsigned int PlayerConnectDlg::perform(std::vector<Player*>& player, YGP::ConnectionMgr& cmgr, const Glib::ustring& host,
-                                       const Glib::ustring& hostPort) {
+                                       const Glib::ustring& hostPort, const Glib::ustring& password) {
     // Connect without user interaction; so don't create the dialog (destroying
     // it directly after showing it crashes GTK's Wayland input method handling)
+    cmgr.setPassword(password.raw());
     return connectToServer(player, cmgr, host, hostPort);
 }
 
@@ -179,14 +186,15 @@ unsigned int PlayerConnectDlg::connectToServer(std::vector<Player*>& aPlayer, YG
         error.replace(error.find("%1"), 2, err.code().message());
     }
 
-    if (error.empty())
+    if (error.empty()) {
+        Check1(cmgr.getServer());
+        YGP::Connection::Deadline deadline(*cmgr.getServer(), cmgr.getTimeout());
         try {
-            Check1(cmgr.getSocket());
+            std::string data("Version=" STRPROTOCOLL ";Variant=" STRVARIANT ";");
+            data += YGP::AssignmentParse::makeAssignment("Name", sanitizeName(aPlayer[0]->getName()).raw());
+            sendMessage(*cmgr.getServer(), data);
 
-            Glib::ustring data("Version=" STRPROTOCOLL ";Variant=" STRVARIANT ";Name=\"" + aPlayer[0]->getName() + '"');
-            sendMessage(*cmgr.getSocket(), data.raw());
-
-            std::string input(receiveMessage(*cmgr.getSocket()));
+            std::string input(receiveMessage(*cmgr.getServer()));
             TRACE8("PlayerConnectDlg::connectToServer(...) - Received: " << input);
 
             Glib::ustring names;
@@ -203,42 +211,47 @@ unsigned int PlayerConnectDlg::connectToServer(std::vector<Player*>& aPlayer, YG
             if (!posPlayer)
                 throw std::string(_("Position of this player is missing!"));
 
+            // Check the received names before replacing the players
+            std::vector<Glib::ustring> aNames;
+            for (auto line : names.raw() | std::views::split('\n'))
+                if (!line.empty())
+                    aNames.push_back(sanitizeName(std::string(std::string_view(line))));
+            TRACE9("PlayerConnectDlg::connectToServer(...) - Players: " << aNames.size());
+            if ((aNames.size() < 2) || (aNames.size() > 9) || (posPlayer >= aNames.size()))
+                throw std::string(_("Wrong number of players!"));
+
             // Clear the old players
             for (auto& i : aPlayer)
                 delete i;
             aPlayer.clear();
 
-            unsigned int c(0);
-            for (auto line : names.raw() | std::views::split('\n')) {
-                if (line.empty())
-                    continue;
-
-                Glib::ustring name{std::string(std::string_view(line))};
+            for (const auto& [c, name] : std::views::enumerate(aNames)) {
                 TRACE9("PlayerConnectDlg::connectToServer(...) - Setting " << name);
+                Player* pPlayer((static_cast<unsigned int>(c) == posPlayer)
+                                    ? static_cast<Player*>(new Human(name))
+                                    : static_cast<Player*>(new RemotePlayer(cmgr.getServer(), name)));
 
-                Player* pPlayer((c == posPlayer) ? static_cast<Player*>(new Human(name))
-                                                 : static_cast<Player*>(new RemotePlayer(cmgr.getSocket(), name)));
-
-                if (c < posPlayer)
+                // The players are rotated, so this player is the first one
+                if (static_cast<unsigned int>(c) < posPlayer)
                     aPlayer.push_back(pPlayer);
-                else {
-                    Check3(aPlayer.size() > (c - posPlayer));
-                    aPlayer.insert(aPlayer.begin() + c - posPlayer, pPlayer);
-                }
-                c++;
+                else
+                    aPlayer.insert(aPlayer.begin() + (c - posPlayer), pPlayer);
             }
-            TRACE9("PlayerConnectDlg::connectToServer(...) - Players: " << c << "<->" << aPlayer.size());
-            if ((c != aPlayer.size()) || (posPlayer >= aPlayer.size()))
-                throw std::string(_("Wrong number of players!"));
         }
         catch (boost::system::system_error& err) {
-            error = _("Error sending player name!\n\nReason: %1");
-            error.replace(error.find("%1"), 2, err.code().message());
+            error = _("Error exchanging the players with the server!\n\nReason: %1");
+            error.replace(error.find("%1"), 2,
+                          deadline.expired() ? make_error_code(YGP::ConnectionError::timeout).message() : err.code().message());
+        }
+        catch (YGP::ParseError& err) {
+            error = _("Invalid response from server!\n\nReason: %1");
+            error.replace(error.find("%1"), 2, err.what());
         }
         catch (std::string& err) {
             error = _("Invalid response from server!\n\nReason: %1");
             error.replace(error.find("%1"), 2, err);
         }
+    }
     if (error.size()) {
         posPlayer = 0;
         cmgr.changeMode(YGP::ConnectionMgr::NONE);
@@ -251,75 +264,100 @@ unsigned int PlayerConnectDlg::connectToServer(std::vector<Player*>& aPlayer, YG
 }
 
 //----------------------------------------------------------------------------
-/// Updates the name of the player with the data send from the client
-/// \param socket Socket over which the clients communicates
+/// Negotiates the players with a newly connected client. Only clients
+/// passing this are added to the connections; errors are displayed to the
+/// user (and the connection to the client is closed).
+/// \param connection Connection over which the clients communicates (NULL, if
+///    the client could not connect)
+/// \returns YGP::Connection* Added connection (or NULL)
 //----------------------------------------------------------------------------
-boost::asio::ip::tcp::socket* PlayerConnectDlg::addClient(std::unique_ptr<boost::asio::ip::tcp::socket> socket) {
-    TRACE3("PlayerConnectDlg::addClient(std::unique_ptr<tcp::socket>)");
-    boost::asio::ip::tcp::socket* sock(ConnectDlg::addClient(std::move(socket)));
-    if (!sock)
+YGP::Connection* PlayerConnectDlg::addClient(std::unique_ptr<YGP::Connection> connection) {
+    TRACE3("PlayerConnectDlg::addClient(std::unique_ptr<YGP::Connection>)");
+    if (!connection)
         return nullptr;
 
-    Glib::ustring error;
-    try {
-        std::string input(receiveMessage(*sock));
-        TRACE8("PlayerConnectDlg::addClient(std::unique_ptr<tcp::socket>) - Received: " << input);
+    // Client n sits at position n (as seen from the server)
+    const std::size_t pos(cmgr.getClients().size() + 1);
+    Check3(pos < aPlayer.size());
+    Check3(aPlayer.size() < 10);
 
-        Glib::ustring name;
-        unsigned int protocoll(0), variant(0);
-        YGP::AttributeParse ap;
-        ATTRIBUTE(ap, Glib::ustring, name, "Name");
-        ATTRIBUTE(ap, unsigned int, protocoll, "Version");
-        ATTRIBUTE(ap, unsigned int, variant, "Variant");
-        ap.assignValues(input);
-
-        if (protocoll < PROTOCOLL) {
-            error = _("Protocoll version %1 needed!");
-            error.replace(error.find("%1"), 2, STRPROTOCOLL);
-            throw error.raw();
-        }
-        else if ((protocoll == PROTOCOLL) && (variant < PROT_VARIANT)) {
-            error = _("Protocoll variant not sufficient - Version %1 needed!\n\n"
-                      "Generally this means, that the partner does not support\n"
-                      "all game types - Continue at your own risk!");
-            error.replace(error.find("%1"), 2, STRVARIANT);
-        }
-
-        TRACE8("PlayerConnectDlg::addClient(std::unique_ptr<tcp::socket>) - Connected: " << name);
-        Check3(aPlayer.size() > cmgr.getClients().size());
-        delete aPlayer[cmgr.getClients().size()];
-        aPlayer[cmgr.getClients().size()] = new RemotePlayer(sock, name);
-        connected->set_text(connected->get_text() + name + '\n');
-
-        Check3(aPlayer.size() < 10);
-        input = "Self=";
-        input += static_cast<char>('0' + cmgr.getClients().size());
-        input += ";Names=";
-        for (auto& i : aPlayer)
-            input += i->getName() + std::string(1, '\n');
-
-        TRACE8("PlayerConnectDlg::addClient(std::unique_ptr<tcp::socket>) - Sending players: " << input);
-        sendMessage(*sock, input);
-    }
-    catch (boost::system::system_error& err) {
-        error = _("Error getting player name!\n\nReason: %1");
-        error.replace(error.find("%1"), 2, err.code().message());
-    }
-    catch (std::string& err) {
+    Glib::ustring error, warning, name;
+    {
+        // Limit only the negotiation (and not the dialogs following) by the deadline
+        YGP::Connection::Deadline deadline(*connection, cmgr.getTimeout());
         try {
-            sendMessage(*sock, "Error=99;Msg=\"" + err + '"');
+            std::string input(receiveMessage(*connection));
+            TRACE8("PlayerConnectDlg::addClient(std::unique_ptr<YGP::Connection>) - Received: " << input);
+
+            unsigned int protocoll(0), variant(0);
+            YGP::AttributeParse ap;
+            ATTRIBUTE(ap, Glib::ustring, name, "Name");
+            ATTRIBUTE(ap, unsigned int, protocoll, "Version");
+            ATTRIBUTE(ap, unsigned int, variant, "Variant");
+            try {
+                ap.assignValues(input);
+            }
+            catch (YGP::ParseError& e) {
+                throw std::string(e.what());
+            }
+
+            if (protocoll < PROTOCOLL) {
+                error = _("Protocoll version %1 needed!");
+                error.replace(error.find("%1"), 2, STRPROTOCOLL);
+                throw error.raw();
+            }
+            else if ((protocoll == PROTOCOLL) && (variant < PROT_VARIANT)) {
+                warning = _("Protocoll variant not sufficient - Version %1 needed!\n\n"
+                            "Generally this means, that the partner does not support\n"
+                            "all game types - Continue at your own risk!");
+                warning.replace(warning.find("%1"), 2, STRVARIANT);
+            }
+
+            name = sanitizeName(name);
+            if (name.empty())
+                throw std::string(_("Name of the player is missing!"));
+            TRACE8("PlayerConnectDlg::addClient(std::unique_ptr<YGP::Connection>) - Connected: " << name);
+
+            input = "Self=";
+            input += static_cast<char>('0' + pos);
+            input += ";Names=";
+            for (const auto& [i, player] : std::views::enumerate(aPlayer))
+                input += sanitizeName((static_cast<std::size_t>(i) == pos) ? name : player->getName()) + std::string(1, '\n');
+
+            TRACE8("PlayerConnectDlg::addClient(std::unique_ptr<YGP::Connection>) - Sending players: " << input);
+            sendMessage(*connection, input);
         }
-        catch (boost::system::system_error&) {
+        catch (boost::system::system_error& err) {
+            error = _("Error getting player name!\n\nReason: %1");
+            error.replace(error.find("%1"), 2,
+                          deadline.expired() ? make_error_code(YGP::ConnectionError::timeout).message() : err.code().message());
         }
-        error = _("Error analyzing input from client!\n\nReason: %1");
-        error.replace(error.find("%1"), 2, err);
+        catch (std::string& err) {
+            try {
+                sendMessage(*connection, "Error=99;" + YGP::AssignmentParse::makeAssignment("Msg", err));
+            }
+            catch (boost::system::system_error&) {
+            }
+            error = _("Error analyzing input from client!\n\nReason: %1");
+            error.replace(error.find("%1"), 2, err);
+        }
     }
-    if (error.size()) {
-        Gtk::MessageDialog dlg(error, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
+
+    YGP::Connection* conn(nullptr);
+    if (error.empty()) {
+        conn = connection.get();
+        delete aPlayer[pos];
+        aPlayer[pos] = new RemotePlayer(conn, name);
+        connected->set_text(connected->get_text() + name + '\n');
+        ConnectDlg::addClient(std::move(connection));
+    }
+
+    if (error.size() || warning.size()) {
+        Gtk::MessageDialog dlg(error.size() ? error : warning, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
         dlg.set_title(PACKAGE);
         XGP::runModal(dlg);
     }
-    return sock;
+    return conn;
 }
 
 } // namespace Card

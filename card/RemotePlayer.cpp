@@ -45,7 +45,7 @@ RemotePlayer::~RemotePlayer() = default;
 bool RemotePlayer::makeTurn(Game* game) {
     TRACE1("RemotePlayer::makeTurn(Game*) - " << name);
     Check1(game);
-    Check1(sock);
+    Check1(conn);
 
     game->endTurn();
     return false;

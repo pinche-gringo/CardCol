@@ -97,7 +97,12 @@ void CardgameAppl::showHelp() const {
               /* For translations: Write one of the Rovhults as an O with slash */
               << _("Valid values for GAME are - unless disabled while configuring - Buraco, Hearts,\n"
                    "Jabberwocky, Machiavelli, Rovhult, SgtMayor, Twopart or the corresponding numbers\n"
-                   "to the games or the translation of the name (as displayed below).\n\n");
+                   "to the games or the translation of the name (as displayed below).\n\n")
+#ifdef WITH_NETWORK
+              << _("The password for network games (-l, -c) is taken from the environment\n"
+                   "variable CARDCOL_PASSWORD; all partners must use the same one.\n\n")
+#endif
+        ;
     showGames();
 
     std::cout << _("\nThe INI file can have the following entries:\n\n")

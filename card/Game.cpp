@@ -45,6 +45,7 @@
 
 #include <XGP/XDialog.h>
 
+#include <YGP/AssParse.h>
 #include <YGP/AttrParse.h>
 #include <YGP/Check.h>
 #include <YGP/ConnMgr.h>
@@ -64,12 +65,12 @@ namespace {
 
 //----------------------------------------------------------------------------
 /// Writes a message to the partner
-/// \param socket Socket to write message to
+/// \param connection Connection to write message to
 /// \param msg Message to write
 //----------------------------------------------------------------------------
-void writeMessage(boost::asio::ip::tcp::socket& socket, const std::string& msg) {
+void writeMessage(YGP::Connection& connection, const std::string& msg) {
     try {
-        Card::sendMessage(socket, msg);
+        Card::sendMessage(connection, msg);
     }
     catch (boost::system::system_error& error) {
         std::string err(_("Can't write message!\n\nReason: %1"));
@@ -83,19 +84,19 @@ void writeMessage(boost::asio::ip::tcp::socket& socket, const std::string& msg) 
 #ifdef WITH_NETWORK
 //----------------------------------------------------------------------------
 /// Writes a status message to the partner
-/// \param socket Socket to write message to
+/// \param connection Connection to write message to
 /// \param rc Error code to send
 /// \param msg Message to write
 //----------------------------------------------------------------------------
-void writeError(boost::asio::ip::tcp::socket& socket, unsigned int rc, const std::string& msg) {
+void writeError(YGP::Connection& connection, unsigned int rc, const std::string& msg) {
     std::ostringstream error;
-    error << "Error=" << rc << ";Msg=\"" << msg << '"';
-    writeMessage(socket, error.str());
+    error << "Error=" << rc << ';' << YGP::AssignmentParse::makeAssignment("Msg", msg);
+    writeMessage(connection, error.str());
 }
 
 /// Writes the message signalling success to the partner
-/// \param socket Socket to write message to
-void writeOK(boost::asio::ip::tcp::socket& socket) { writeMessage(socket, "Error=0"); }
+/// \param connection Connection to write message to
+void writeOK(YGP::Connection& connection) { writeMessage(connection, "Error=0"); }
 #endif
 
 } // namespace
@@ -253,10 +254,10 @@ bool Game::randomiseCardsToPile(IPile& pile) const {
                 TRACE9("Game::randomiseCardsToPile(IPile&) const - [" << i << "] = " << pos);
                 cards.set(i, pos);
             }
-            writeOK(*cmgr.getSocket());
+            writeOK(*cmgr.getServer());
         }
         catch (YGP::ParseError& error) {
-            writeError(*cmgr.getSocket(), 99, error.what());
+            writeError(*cmgr.getServer(), 99, error.what());
             Glib::ustring err(_("Received invalid input from the server!\n\nReason: %1"));
             err.replace(err.find("%1"), 2, _(error.what()));
             Gtk::MessageDialog dlg(err, false, Gtk::MessageType::ERROR, Gtk::ButtonsType::OK);
@@ -670,7 +671,7 @@ void Game::broadcastMessage(const std::string& msg) const {
                 writeMessage(*client, msg);
     }
     else
-        writeMessage(*cmgr.getSocket(), msg);
+        writeMessage(*cmgr.getServer(), msg);
 }
 
 //----------------------------------------------------------------------------

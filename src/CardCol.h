@@ -110,7 +110,7 @@ class CardgameCollection : public XGP::XApplication {
     void initCommunication();
     void waitForMessages(std::stop_token stop);
     void receiveNext(CommPartner& partner, std::stop_token stop);
-    void partnerLost(const boost::asio::ip::tcp::socket* sock, boost::system::error_code error);
+    void partnerLost(const YGP::Connection* conn, boost::system::error_code error);
     int handleGlobalMessage(unsigned int player, const std::string& msg);
     bool handleMessage(unsigned int player, const std::string& msg);
     void sendMessage(const Glib::ustring& msg);
@@ -157,9 +157,9 @@ class CardgameCollection : public XGP::XApplication {
 #ifdef WITH_NETWORK
     /// Partner the communication thread receives messages from
     struct CommPartner {
-        boost::asio::ip::tcp::socket* sock; ///< Socket to the partner (owned by cmgr)
-        unsigned int player;                ///< Index of the partner in aPlayer
-        std::string buffer;                 ///< Received, but not yet processed data
+        YGP::Connection* conn; ///< Connection to the partner (owned by cmgr)
+        unsigned int player;   ///< Index of the partner in aPlayer
+        std::string buffer;    ///< Received, but not yet processed data
     };
     std::vector<std::unique_ptr<CommPartner>> aCommPartners; ///< Partners handled by commThread
     std::jthread commThread;                                 ///< Thread receiving the messages of all partners

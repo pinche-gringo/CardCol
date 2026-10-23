@@ -6,7 +6,7 @@ FROM fedora:45
 
 RUN dnf install -y --setopt=install_weak_deps=False \
         gcc gcc-c++ meson ninja-build git gettext gettext-devel perl rpm-build \
-        boost-devel gtkmm4.0-devel librsvg2-devel ImageMagick \
+        boost-devel openssl-devel gtkmm4.0-devel librsvg2-devel ImageMagick \
         aisleriot desktop-file-utils \
         cppcheck clang-tools-extra curl \
     && dnf clean all

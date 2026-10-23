@@ -16,9 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <boost/asio/ip/tcp.hpp>
-
 #include "Player.h"
+
+namespace YGP {
+class Connection;
+} // namespace YGP
 
 namespace Card {
 
@@ -27,17 +29,17 @@ namespace Card {
 */
 class RemotePlayer : public Player {
   public:
-    /// Constructor; taking the socket for the communication and a name of the
-    /// player
-    /// \param socket Socket used for the communication
+    /// Constructor; taking the connection for the communication and a name of
+    /// the player
+    /// \param connection Connection used for the communication
     /// \param name Name of the (remote) player
-    RemotePlayer(boost::asio::ip::tcp::socket* socket, const Glib::ustring& name) : Player(name), sock(socket) {}
+    RemotePlayer(YGP::Connection* connection, const Glib::ustring& name) : Player(name), conn(connection) {}
     ~RemotePlayer() override;
 
     bool makeTurn(Game* game) override;
 
   protected:
-    boost::asio::ip::tcp::socket* sock;
+    YGP::Connection* conn;
 
   private:
     RemotePlayer() = delete;

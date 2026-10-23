@@ -16,42 +16,69 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <array>
 #include <ranges>
 #include <string>
 #include <string_view>
 #include <vector>
 
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/read.hpp>
-#include <boost/asio/write.hpp>
+#include <glib.h>
+#include <glibmm/ustring.h>
+
+#include <YGP/Connection.h>
 
 namespace Card {
 
 /// Character terminating every message exchanged with the partners
 inline constexpr char MESSAGE_END = '\0';
 
+/// Maximal length of a message (without its terminator); longer messages are
+/// treated as protocol error
+inline constexpr std::size_t MAX_MESSAGE = 64 * 1024;
+
+/// Maximal length (in characters) of the name of a player
+inline constexpr Glib::ustring::size_type MAX_NAME = 40;
+
 /// Sends the passed message (followed by its terminator)
-/// \param socket Socket to write to
+/// \param connection Connection to write to
 /// \param msg Message to send
 /// \throw boost::system::system_error In case of an error
-inline void sendMessage(boost::asio::ip::tcp::socket& socket, std::string_view msg) {
-    const std::array buffers{boost::asio::buffer(msg), boost::asio::buffer(&MESSAGE_END, 1)};
-    boost::asio::write(socket, buffers);
+inline void sendMessage(YGP::Connection& connection, std::string_view msg) {
+    std::string data(msg);
+    data += MESSAGE_END;
+    connection.write(data);
 }
 
 /// Receives the next message (without its terminator)
-/// \param socket Socket to read from
+/// \param connection Connection to read from
 /// \returns std::string Received message
 /// \throw boost::system::system_error In case of an error (with the code
-///     boost::asio::error::eof if the partner closed the connection)
+///     boost::asio::error::eof if the partner closed the connection or
+///     YGP::ConnectionError::tooMuchData if the message is too long)
 /// \remarks The message is read byte-wise, so no data following it is consumed
-///     and the socket can be handed over to another reader
-inline std::string receiveMessage(boost::asio::ip::tcp::socket& socket) {
+///     and the connection can be handed over to another reader
+inline std::string receiveMessage(YGP::Connection& connection) {
     std::string msg;
-    for (char c; boost::asio::read(socket, boost::asio::buffer(&c, 1)), c != MESSAGE_END;)
+    for (char c; connection.read(&c, 1), c != MESSAGE_END;) {
+        if (msg.size() >= MAX_MESSAGE)
+            throw boost::system::system_error(make_error_code(YGP::ConnectionError::tooMuchData));
         msg += c;
+    }
     return msg;
+}
+
+/// Makes the passed name of a player safe to use: Control characters (like
+/// the newline separating the names in a list) are removed and the name is
+/// limited to MAX_NAME characters.
+/// \param name Name to check
+/// \returns Glib::ustring Sanitised name
+inline Glib::ustring sanitizeName(const Glib::ustring& name) {
+    Glib::ustring result;
+    for (const gunichar c : name.validate() ? name : name.make_valid())
+        if (!g_unichar_iscntrl(c))
+            result += c;
+    if (result.size() > MAX_NAME)
+        result.erase(MAX_NAME);
+    return result;
 }
 
 /// One field (key=value) of a message

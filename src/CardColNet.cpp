@@ -27,17 +27,19 @@
 #ifdef WITH_NETWORK
 
 #    include <algorithm>
+#    include <cstdlib>
 #    include <memory>
 #    include <ranges>
 #    include <sstream>
 #    include <string>
 #    include <string_view>
 
-#    include <boost/asio/read_until.hpp>
+#    include <boost/asio/post.hpp>
 
 #    include <glibmm/main.h>
 #    include <gtkmm/messagedialog.h>
 
+#    include <YGP/AssParse.h>
 #    include <YGP/AttrParse.h>
 #    include <YGP/Check.h>
 #    include <YGP/Trace.h>
@@ -124,9 +126,9 @@ void CardgameCollection::initCommunication() {
     if (cmgr.getMode() == YGP::ConnectionMgr::CLIENT) {
         status.pop();
         status.push(_("Waiting for the server to start the game ..."));
-        Check3(cmgr.getSocket());
+        Check3(cmgr.getServer());
         Check3(playerPos);
-        aCommPartners.push_back(std::make_unique<CommPartner>(cmgr.getSocket(), aPlayer.size() - playerPos, std::string()));
+        aCommPartners.push_back(std::make_unique<CommPartner>(cmgr.getServer(), aPlayer.size() - playerPos, std::string()));
     }
     else {
         broadcastNames();
@@ -159,51 +161,67 @@ void CardgameCollection::waitForMessages(std::stop_token stop) {
 }
 
 //----------------------------------------------------------------------------
-/// Starts receiving the next message from the passed partner. Received
-/// messages are passed to the GUI (one at a time); errors cause the partner
-/// to be removed.
+/// Reads the data available from the passed partner and passes the complete
+/// messages to the GUI (one at a time); then waits for more data. Errors
+/// (including too long messages) cause the partner to be removed.
 /// \param partner Partner to receive the message from
 /// \param stop Token signalling the communication thread to stop
+/// \remarks The data is read without blocking, as the GUI thread might send
+///     data over the same connection meanwhile (and the TLS stream must not be
+///     used concurrently)
 //----------------------------------------------------------------------------
 void CardgameCollection::receiveNext(CommPartner& partner, std::stop_token stop) {
-    boost::asio::async_read_until(
-        *partner.sock, boost::asio::dynamic_buffer(partner.buffer), Card::MESSAGE_END,
-        [this, &partner, stop](const boost::system::error_code& error, std::size_t length) {
-            if ((error == boost::asio::error::operation_aborted) || stop.stop_requested())
+    if (stop.stop_requested())
+        return;
+
+    boost::system::error_code error;
+    const bool drained(partner.conn->readAvailable(partner.buffer, Card::MAX_MESSAGE + 1, error));
+    for (std::size_t end; (end = partner.buffer.find(Card::MESSAGE_END)) != std::string::npos;) {
+        std::string message(partner.buffer, 0, end);
+        partner.buffer.erase(0, end + 1);
+        TRACE7("CardgameCollection::receiveNext(CommPartner&, std::stop_token) - `" << message << '\'');
+        if (message.size()) {
+            // Wait til the last message has been processed; the GUI returns the token after processing this one
+            TRACE9("CardgameCollection::receiveNext(CommPartner&, std::stop_token) - Lock (thread)");
+            if (!mxThreadCmd.lock(stop))
                 return;
 
-            if (error) {
-                Glib::signal_idle().connect_once([this, sock = partner.sock, error] { partnerLost(sock, error); });
-                return;
-            }
+            TRACE9("CardgameCollection::receiveNext(CommPartner&, std::stop_token) - Perform cmd " << message);
+            Glib::signal_idle().connect([this, player = partner.player, message] { return handleMessage(player, message); });
+        }
+    }
+    if (!error && (partner.buffer.size() > Card::MAX_MESSAGE))
+        error = make_error_code(YGP::ConnectionError::tooMuchData);
 
-            std::string message(partner.buffer, 0, length - 1);
-            partner.buffer.erase(0, length);
-            TRACE7("CardgameCollection::receiveNext(CommPartner&, std::stop_token) - `" << message << '\'');
-            if (message.size()) {
-                // Wait til the last message has been processed; the GUI returns the token after processing this one
-                TRACE9("CardgameCollection::receiveNext(CommPartner&, std::stop_token) - Lock (thread)");
-                if (!mxThreadCmd.lock(stop))
-                    return;
+    if (error)
+        Glib::signal_idle().connect_once([this, conn = partner.conn, error] { partnerLost(conn, error); });
+    else if (!drained)
+        // There is more data than fitting into the buffer; process it after the other partners
+        boost::asio::post(cmgr.getContext(), [this, &partner, stop] { receiveNext(partner, stop); });
+    else
+        partner.conn->getSocket().async_wait(boost::asio::ip::tcp::socket::wait_read,
+                                             [this, &partner, stop](const boost::system::error_code& error) {
+                                                 if ((error == boost::asio::error::operation_aborted) || stop.stop_requested())
+                                                     return;
 
-                TRACE9("CardgameCollection::receiveNext(CommPartner&, std::stop_token) - Perform cmd " << message);
-                Glib::signal_idle().connect(
-                    [this, player = partner.player, message] { return handleMessage(player, message); });
-            }
-            receiveNext(partner, stop);
-        });
+                                                 if (error)
+                                                     Glib::signal_idle().connect_once(
+                                                         [this, conn = partner.conn, error] { partnerLost(conn, error); });
+                                                 else
+                                                     receiveNext(partner, stop);
+                                             });
 }
 
 //----------------------------------------------------------------------------
 /// Handles (in the GUI thread) the lost connection to a partner
-/// \param sock Socket of the partner
+/// \param conn Connection to the partner
 /// \param error Error, which caused the loss of the connection
 //----------------------------------------------------------------------------
-void CardgameCollection::partnerLost(const boost::asio::ip::tcp::socket* sock, boost::system::error_code error) {
-    TRACE7("CardgameCollection::partnerLost(const tcp::socket*, error_code) - " << error.message());
+void CardgameCollection::partnerLost(const YGP::Connection* conn, boost::system::error_code error) {
+    TRACE7("CardgameCollection::partnerLost(const YGP::Connection*, error_code) - " << error.message());
 
     // Ignore partners which have been removed meanwhile
-    auto partner(std::ranges::find(aCommPartners, sock, [](const auto& p) { return p->sock; }));
+    auto partner(std::ranges::find(aCommPartners, conn, [](const auto& p) { return p->conn; }));
     if (partner == aCommPartners.end())
         return;
 
@@ -224,7 +242,7 @@ void CardgameCollection::partnerLost(const boost::asio::ip::tcp::socket* sock, b
     // The server must change the disconnected remote to a computer controled player
     const bool server(cmgr.getMode() == YGP::ConnectionMgr::SERVER);
     if (server) {
-        TRACE7("CardgameCollection::partnerLost(const tcp::socket*, error_code) - Removing " << aPlayer[iPlayer]->getName());
+        TRACE7("CardgameCollection::partnerLost(const YGP::Connection*, error_code) - Removing " << aPlayer[iPlayer]->getName());
         Card::Player* oldPlayer(aPlayer[iPlayer]);
         Check3(oldPlayer);
         aPlayer[iPlayer] = new Card::ComputerPlayer(oldPlayer->getName());
@@ -240,7 +258,7 @@ void CardgameCollection::partnerLost(const boost::asio::ip::tcp::socket* sock, b
             delete oldPlayer;
         }
     }
-    cmgr.disconnect(sock);
+    cmgr.disconnect(conn);
 
     if (aCommPartners.empty()) {
         stopCommunication();
@@ -291,6 +309,13 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
     TRACE3("CardgameCollection::handleGlobalMessage(unsigned int, char*) - " << cmd);
 
     if (cmd == "Game") {
+        // Only the server decides which game is played
+        if (cmgr.getMode() != YGP::ConnectionMgr::CLIENT) {
+            cmd = _("Unexpected command `%1'");
+            cmd.replace(cmd.find("%1"), 2, "Game");
+            throw YGP::ParseError(cmd);
+        }
+
         int type(CardgameAppl::convertToGameType(param.c_str()));
         if (type == GameTypes::NONE) {
             cmd = _("Invalid game type: `%1'");
@@ -308,7 +333,7 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
             startGame();
             mxThreadCmd.unlock();
         }
-        Card::sendMessage(*cmgr.getSocket(), "Error=0");
+        Card::sendMessage(*cmgr.getServer(), "Error=0");
         return -1;
     }
     else if (cmd == "Msg") {
@@ -325,6 +350,7 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
         catch (YGP::ParseError&) {
             cmd = _("Invalid message received!");
         }
+        param = Card::sanitizeName(param);
         if (cmd.size() && param.size()) {
             showChatDlg();
             dlgChat->addMessage(param, cmd);
@@ -336,7 +362,9 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
     }
     else if (cmd == "ChgNames") {
         if (cmgr.getMode() == YGP::ConnectionMgr::SERVER) {
-            aPlayer[player]->setName(param);
+            const Glib::ustring name(Card::sanitizeName(param));
+            if (name.size())
+                aPlayer[player]->setName(name);
             broadcastNames();
         }
         else {
@@ -345,7 +373,7 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
                 if (line.empty())
                     continue;
 
-                std::string name(std::string_view{line});
+                Glib::ustring name(Card::sanitizeName(std::string(std::string_view{line})));
                 TRACE9("CardgameCollection::handleGlobalMessage(unsigned int, const std::string&) - Setting " << name);
                 aPlayer[pos++ % aPlayer.size()]->setName(name);
             }
@@ -451,10 +479,7 @@ bool CardgameCollection::handleMessage(unsigned int player, const std::string& m
         TRACE9("CardgameCollection::handleMessage(unsigned int, const std::string)"
                " - Error "
                << error.what());
-        std::string msg("Error=99;Msg=\"");
-        msg += error.what();
-        msg += '"';
-        broadcastMsg(msg);
+        broadcastMsg("Error=99;" + YGP::AssignmentParse::makeAssignment("Msg", error.what()));
 
         Glib::ustring message(_("Error processing command `%1'!\n\n%2"));
         message.replace(message.find("%1"), 2, msg);
@@ -492,13 +517,8 @@ void CardgameCollection::sendMessage(const Glib::ustring& msg) {
 
     dlgChat->addMessage(aPlayer[0]->getName(), msg);
 
-    std::string sendString("Msg=\"");
-    sendString += msg;
-    sendString += "\";Sender=\"";
-    sendString += aPlayer[0]->getName();
-    sendString += '"';
-
-    broadcastMsg(sendString);
+    broadcastMsg(YGP::AssignmentParse::makeAssignment("Msg", msg.raw()) +
+                 YGP::AssignmentParse::makeAssignment("Sender", Card::sanitizeName(aPlayer[0]->getName()).raw()));
 }
 
 //-----------------------------------------------------------------------------
@@ -515,8 +535,8 @@ void CardgameCollection::broadcastMsg(const std::string& msg, unsigned int exclu
                     Card::sendMessage(*client, msg);
         }
         else {
-            Check3(cmgr.getSocket());
-            Card::sendMessage(*cmgr.getSocket(), msg);
+            Check3(cmgr.getServer());
+            Card::sendMessage(*cmgr.getServer(), msg);
         }
     }
     catch (std::exception&) {
@@ -524,16 +544,20 @@ void CardgameCollection::broadcastMsg(const std::string& msg, unsigned int exclu
 }
 
 //-----------------------------------------------------------------------------
-/// Starts the connections, if passed as options
+/// Starts the connections, if passed as options. The password is taken from
+/// the environment variable CARDCOL_PASSWORD (not from an option, as those
+/// are visible to other users of the computer).
 /// \param options Options of program; containing host/port
 //-----------------------------------------------------------------------------
 void CardgameCollection::autoConnect(const Options& options) {
     if (options.port.size()) {
         TRACE9("CardgameCollection::autoConnect(const Options&) - Connect: " << options.target << '-' << options.port);
+        const char* envPassword(std::getenv("CARDCOL_PASSWORD"));
+        const Glib::ustring password(envPassword ? envPassword : "");
         if (options.target.size())
-            playerPos = Card::PlayerConnectDlg::perform(aPlayer, cmgr, options.target, options.port);
+            playerPos = Card::PlayerConnectDlg::perform(aPlayer, cmgr, options.target, options.port, password);
         else
-            playerPos = Card::PlayerConnectDlg::perform(aPlayer, cmgr, options.port);
+            playerPos = Card::PlayerConnectDlg::perform(aPlayer, cmgr, options.port, password);
 
         TRACE1("CardgameCollection::autoConnect(const Options&) - " << cmgr.getMode() << "; Pos: " << playerPos);
         if (cmgr.getMode() != YGP::ConnectionMgr::NONE)
@@ -564,7 +588,7 @@ void CardgameCollection::stopCommunication() {
     if (!aCommPartners.empty()) {
         for (auto& partner : aCommPartners) {
             boost::system::error_code ignore;
-            partner->sock->cancel(ignore);
+            partner->conn->getSocket().cancel(ignore);
         }
         cmgr.getContext().restart();
         cmgr.getContext().poll();
@@ -582,9 +606,9 @@ void CardgameCollection::broadcastNames() {
     std::string msg("ChgNames=");
     if (cmgr.getMode() == YGP::ConnectionMgr::SERVER)
         for (auto& i : aPlayer)
-            msg += i->getName() + '\n';
+            msg += Card::sanitizeName(i->getName()) + '\n';
     else
-        msg += aPlayer[0]->getName();
+        msg += Card::sanitizeName(aPlayer[0]->getName());
 
     broadcastMsg(msg);
 }

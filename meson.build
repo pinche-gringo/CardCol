@@ -1,5 +1,5 @@
 project('CardCol', 'cpp',
-        version: '0.9.76',
+        version: '0.9.80',
         license: 'GPL-2.0-or-later',
         meson_version: '>= 1.5.0',
         default_options: ['cpp_std=c++26', 'warning_level=2',
@@ -17,7 +17,7 @@ version_parts = version.split('.')
 release = '@0@.@1@'.format(version_parts[0], version_parts[1])
 
 # Version of the communication protocoll
-protocoll = 1
+protocoll = 2
 prot_variant = 3
 
 cxx = meson.get_compiler('cpp')
@@ -62,11 +62,11 @@ endif
 
 # Dependencies
 # Minimal version of libYGP; the CI (GitLab & GitHub) installs exactly this release
-ygp_version = '0.9.70'
+ygp_version = '0.9.80'
 deps = [dependency('gtkmm-4.0', version: '>= 4.0.0', include_type: 'system'),
         dependency('gthread-2.0', version: '> 2.2.0', include_type: 'system'),
         dependency('YGP', version: '>= ' + ygp_version, include_type: 'system'),
-        dependency('XGP', version: '>= 0.9.50', include_type: 'system'),
+        dependency('XGP', version: '>= ' + ygp_version, include_type: 'system'),
         # Boost.Asio (header-only) for the network communication
         dependency('boost', version: '>= 1.70', include_type: 'system')]
 

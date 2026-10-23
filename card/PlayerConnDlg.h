@@ -19,8 +19,6 @@
 #include <memory>
 #include <vector>
 
-#include <boost/asio/ip/tcp.hpp>
-
 #include <XGP/ConnectDlg.h>
 
 namespace Card {
@@ -41,14 +39,15 @@ class PlayerConnectDlg : public XGP::ConnectDlg {
 
     static unsigned int perform(std::vector<Player*>& player, const Glib::ustring& port, YGP::ConnectionMgr& cmgr);
     static unsigned int perform(std::vector<Player*>& player, unsigned int port, YGP::ConnectionMgr& cmgr);
-    static unsigned int perform(std::vector<Player*>& player, YGP::ConnectionMgr& cmgr, const Glib::ustring& listenAt);
+    static unsigned int perform(std::vector<Player*>& player, YGP::ConnectionMgr& cmgr, const Glib::ustring& listenAt,
+                                const Glib::ustring& password);
     static unsigned int perform(std::vector<Player*>& player, YGP::ConnectionMgr& cmgr, const Glib::ustring& host,
-                                const Glib::ustring& hostPort);
+                                const Glib::ustring& hostPort, const Glib::ustring& password);
 
   protected:
     /// \name Connection management
     void connect(const Glib::ustring& target, const Glib::ustring& port) override;
-    boost::asio::ip::tcp::socket* addClient(std::unique_ptr<boost::asio::ip::tcp::socket> socket) override;
+    YGP::Connection* addClient(std::unique_ptr<YGP::Connection> connection) override;
     static unsigned int connectToServer(std::vector<Player*>& aPlayer, YGP::ConnectionMgr& cmgr, const Glib::ustring& target,
                                         const Glib::ustring& port);
 
