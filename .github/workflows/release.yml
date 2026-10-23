@@ -5,8 +5,8 @@
 #   2. creates the source-tarball (meson dist) and the RPMs (CardCol.spec)
 #   3. creates a GitHub release for the tag (notes taken from NEWS) with those files
 #
-# libYGP/libXGP are installed from the RPMs of the libYGP release on GitHub
-# (YGP_VERSION/YGP_RELEASE below).
+# libYGP/libXGP are installed from the RPMs of the libYGP release on GitHub, in
+# the version of ygp_version in meson.build (and YGP_RELEASE below).
 #
 # Note: GitHub doesn't run workflows if more than 3 tags are pushed at once.
 
@@ -24,7 +24,6 @@ env:
   PACKAGE_NAME: CardCol
   TAG_PREFIX: Cardgames_V
   YGP_REPOSITORY: pinche-gringo/libYGP
-  YGP_VERSION: 0.9.70
   YGP_RELEASE: 1
 
 jobs:
@@ -43,19 +42,6 @@ jobs:
               boost-devel gtkmm4.0-devel librsvg2-devel ImageMagick aisleriot \
               desktop-file-utils gh
 
-      - name: Install libYGP
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          SUFFIX="${YGP_VERSION}-${YGP_RELEASE}$(rpm --eval '%{dist}').$(rpm --eval '%{_arch}').rpm"
-          mkdir ygp
-          for pkg in libYGP libYGP-devel libXGP libXGP-devel; do
-            gh release download "libYGP_V$YGP_VERSION" --repo "$YGP_REPOSITORY" \
-               --dir ygp --pattern "$pkg-$SUFFIX"
-          done
-          dnf install -y --setopt=install_weak_deps=False ygp/*.rpm
-          rm -rf ygp
-
       - uses: actions/checkout@v5
 
       - name: Check version
@@ -72,6 +58,25 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "TARBALL=${PACKAGE_NAME}-${VERSION}.tar.xz" >> "$GITHUB_ENV"
+
+      - name: Install libYGP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          YGP_VERSION=$(sed -n "s/^ *ygp_version *= *'\([0-9][0-9.]*\)'.*/\1/p" meson.build | head -n 1)
+          if [ -z "$YGP_VERSION" ]; then
+            echo "No ygp_version found in meson.build"
+            exit 1
+          fi
+          echo "Installing libYGP $YGP_VERSION"
+          SUFFIX="${YGP_VERSION}-${YGP_RELEASE}$(rpm --eval '%{dist}').$(rpm --eval '%{_arch}').rpm"
+          mkdir ygp
+          for pkg in libYGP libYGP-devel libXGP libXGP-devel; do
+            gh release download "libYGP_V$YGP_VERSION" --repo "$YGP_REPOSITORY" \
+               --dir ygp --pattern "$pkg-$SUFFIX"
+          done
+          dnf install -y --setopt=install_weak_deps=False ygp/*.rpm
+          rm -rf ygp
 
       - name: Build and test
         run: |
