@@ -354,6 +354,31 @@ bool Game::enableHuman() {
 }
 
 //-----------------------------------------------------------------------------
+/// Checks if the passed player is a computer player (played locally)
+/// \param player ID of player to check
+/// \returns bool True, if the player is a computer player
+//-----------------------------------------------------------------------------
+bool Game::isComputerPlayer(unsigned int player) const {
+    Check1(player < actPlayers.size());
+    return typeid(*actPlayers[player]) == typeid(ComputerPlayer);
+}
+
+//-----------------------------------------------------------------------------
+/// Informs the game, that the passed (remote) player has been replaced by a
+/// computer player (e.g. after losing the connection). If the replaced player
+/// was in turn, the computer player continues for him.
+/// \param player ID of the replaced player
+//-----------------------------------------------------------------------------
+void Game::playerReplaced(unsigned int player) {
+    TRACE8("Game::playerReplaced(unsigned int) - " << player);
+    Check1(player < actPlayers.size());
+
+    // A remote move being executed continues the game by itself
+    if ((gameStatus() == PLAYING) && (actPlayer == static_cast<int>(player)) && !stati.remoteMove && !stati.pendingTurn)
+        makeNextMoves();
+}
+
+//-----------------------------------------------------------------------------
 /// Makes the move for the next computer player.
 /// \returns bool Flag for timer, if it should continue (false: no; else: yes)
 //-----------------------------------------------------------------------------
@@ -639,9 +664,11 @@ void Game::broadcastMessage(const std::string& msg) const {
     TRACE3("Game::broadcastMessage(const std::string&) - " << msg);
 
     const YGP::ConnectionMgr& cmgr(getConnectionMgr());
-    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
         for (const auto& client : cmgr.getClients())
-            writeMessage(*client, msg);
+            if (client)
+                writeMessage(*client, msg);
+    }
     else
         writeMessage(*cmgr.getSocket(), msg);
 }
@@ -669,12 +696,12 @@ void Game::broadcastStartPlayer(unsigned int startplayer) {
 
         // Client n sits at position n + 1 (as seen from the server); send the startplayer relative to it
         const unsigned int players(actPlayers.size());
-        unsigned int pos(1);
-        for (const auto& client : cmgr.getClients()) {
-            std::ostringstream msg;
-            msg << "ActPlayer=" << ((startplayer + players - pos++ % players) % players);
-            writeMessage(*client, msg.str());
-        }
+        for (const auto& [i, client] : std::views::enumerate(cmgr.getClients()))
+            if (client) {
+                std::ostringstream msg;
+                msg << "ActPlayer=" << ((startplayer + players - static_cast<unsigned int>(i + 1) % players) % players);
+                writeMessage(*client, msg.str());
+            }
     }
 }
 

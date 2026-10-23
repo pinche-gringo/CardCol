@@ -55,6 +55,7 @@ class Hearts : public Card::Game {
     void resizeCards() override;
 
     bool handleMessage(unsigned int player, const std::string& message) override;
+    void playerReplaced(unsigned int player) override;
 
   protected:
     Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;

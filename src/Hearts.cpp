@@ -428,9 +428,7 @@ void Hearts::startPlaying() {
     setNextPlayer(nextPlayer);
     displayTurn(nextPlayer);
 
-    YGP::ConnectionMgr& cmgr(getConnectionMgr());
-    if (((cmgr.getMode() == YGP::ConnectionMgr::NONE) && nextPlayer) ||
-        ((cmgr.getMode() == YGP::ConnectionMgr::SERVER) && (nextPlayer > getConnectionMgr().getClients().size()))) {
+    if (isComputerPlayer(nextPlayer)) {
         unsigned int pos2Play(0);
         flipCards2Play(*players[nextPlayer].hand, pos2Play, pos2Play);
         aPlayed[(*players[nextPlayer].hand)[pos2Play]->colour()]++;
@@ -555,8 +553,9 @@ void Hearts::exchangeCards() {
     Check3(played.size() == 3);
 
     disableHuman();
-    if (getConnectionMgr().getMode() != YGP::ConnectionMgr::CLIENT) {
-        for (unsigned int i(getConnectionMgr().getClients().size() + 1); i < NUM_PLAYERS; ++i) {
+    // Exchange for the computer players (except those replacing remote players, which already exchanged)
+    for (unsigned int i(1); i < NUM_PLAYERS; ++i)
+        if (isComputerPlayer(i) && (aExchange[i].size() != 3)) {
             TRACE8("Hearts::exchangeCards() - Player " << i);
 
             aExchange[i].clear();
@@ -571,7 +570,6 @@ void Hearts::exchangeCards() {
                 broadcastMessage(msg.str());
             }
         }
-    }
     exchangeStep(0);
 }
 
@@ -752,12 +750,36 @@ bool Hearts::cardsExchanged(unsigned int cards) {
 /// Checks if all players, which exchange their cards interactively, did so.
 /// The server waits for its own and the remote players (its computer players
 /// exchange their cards afterwards), while a client waits for all players.
+/// Computer players, which replaced remote players after their exchange, are
+/// counted too.
 /// \returns bool True, if all cards have been exchanged
 /// \pre Game must be in EXCHANGE state
 //----------------------------------------------------------------------------
 bool Hearts::allCardsExchanged() {
-    const YGP::ConnectionMgr& cmgr(getConnectionMgr());
-    return cardsExchanged(((cmgr.getMode() == YGP::ConnectionMgr::SERVER) ? (cmgr.getClients().size() + 1) : NUM_PLAYERS) * 3);
+    unsigned int interactive(1);
+    for (unsigned int i(1); i < NUM_PLAYERS; ++i)
+        if (!isComputerPlayer(i) || (aExchange[i].size() == 3))
+            ++interactive;
+    return cardsExchanged(interactive * 3);
+}
+
+//----------------------------------------------------------------------------
+/// Informs the game, that the passed (remote) player has been replaced by a
+/// computer player. While exchanging cards, the computer player exchanges
+/// them (if the remote one didn't yet), if that was the last missing exchange.
+/// \param player ID of the replaced player
+//----------------------------------------------------------------------------
+void Hearts::playerReplaced(unsigned int player) {
+    TRACE8("Hearts::playerReplaced(unsigned int) - " << player);
+    Check1(player < NUM_PLAYERS);
+
+    if (gameStatus() == EXCHANGE) {
+        // If the remote player did exchange, waiting (or the exchange) continues unchanged
+        if ((aExchange[player].size() != 3) && (played.size() == 3) && allCardsExchanged())
+            exchangeCards();
+    }
+    else
+        Game::playerReplaced(player);
 }
 
 //-----------------------------------------------------------------------------

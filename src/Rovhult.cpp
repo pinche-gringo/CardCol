@@ -183,8 +183,9 @@ void Rovhult::finishedExchange(unsigned int /*iCard*/) {
 /// Exchanges the cards of the computer-players
 //-----------------------------------------------------------------------------
 void Rovhult::exchangeAutoplayerCards() {
-    if (getConnectionMgr().getMode() != YGP::ConnectionMgr::CLIENT)
-        for (unsigned int i(getConnectionMgr().getClients().size() + 1); i < NUM_PLAYERS; ++i) {
+    // Exchange for the computer players (except those replacing remote players, which already exchanged)
+    for (unsigned int i(1); i < NUM_PLAYERS; ++i)
+        if (isComputerPlayer(i) && !(aExchanged & (1 << i))) {
             RovhultRules::Player cards(playerCardsOf(i));
             RovhultRules::exchangeCards(cards, options());
             arrangeCards(i, cards);
@@ -1267,6 +1268,38 @@ bool Rovhult::executeRemoteMove(Card::IPile& pile, unsigned int target) {
     // The move itself is executed by makeMove (after a delay)
     remoteTarget = target;
     return Game::executeRemoteMove(pile, target);
+}
+
+//----------------------------------------------------------------------------
+/// Informs the game, that the passed (remote) player has been replaced by a
+/// computer player. If the own cards have already been exchanged, the computer
+/// player exchanges his (if the remote one didn't yet); the game starts, if
+/// that was the last missing exchange.
+/// \param player ID of the replaced player
+//----------------------------------------------------------------------------
+void Rovhult::playerReplaced(unsigned int player) {
+    TRACE8("Rovhult::playerReplaced(unsigned int) - " << player);
+    Check1(player < NUM_PLAYERS);
+
+    switch (gameStatus()) {
+    case EXCHANGE: // The computer player exchanges together with the others (in finishedExchange)
+        break;
+
+    case EXCHANGED:
+        if (!(aExchanged & (1 << player))) {
+            exchangeAutoplayerCards();
+            // Without connection the exchanges aren't tracked
+            if ((getConnectionMgr().getMode() == YGP::ConnectionMgr::NONE) || (aExchanged == 0xf)) {
+                status.pop();
+                setGameStatus(PLAYING);
+                makeNextMoves();
+            }
+        }
+        break;
+
+    default:
+        Game::playerReplaced(player);
+    }
 }
 
 //-----------------------------------------------------------------------------

@@ -99,6 +99,7 @@ class Game : public Gtk::Grid {
     //@}
 
     virtual bool handleMessage(unsigned int player, const std::string& msg);
+    virtual void playerReplaced(unsigned int player);
     bool ignoreMessage(const std::string& msg);
 
     /// \name Status handling
@@ -132,6 +133,7 @@ class Game : public Gtk::Grid {
     //@{
     virtual bool enableHuman();
     bool makeComputerMove();
+    bool isComputerPlayer(unsigned int player) const;
     //@}
 
     /// \name Methods to make the game load/save before dealing

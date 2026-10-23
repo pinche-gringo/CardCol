@@ -162,8 +162,7 @@ class CardgameCollection : public XGP::XApplication {
         std::string buffer;                 ///< Received, but not yet processed data
     };
     std::vector<std::unique_ptr<CommPartner>> aCommPartners; ///< Partners handled by commThread
-    boost::asio::io_context* commCtx;                         ///< Context running the receive-operations
-    std::jthread commThread;                                  ///< Thread receiving the messages of all partners
+    std::jthread commThread;                                 ///< Thread receiving the messages of all partners
 
     ChatDlg* dlgChat;
 #endif

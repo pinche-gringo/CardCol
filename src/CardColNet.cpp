@@ -131,18 +131,14 @@ void CardgameCollection::initCommunication() {
     else {
         broadcastNames();
 
-        for (const auto& [i, client] : std::views::enumerate(cmgr.getClients())) {
-            Check3(client);
-            aCommPartners.push_back(std::make_unique<CommPartner>(client.get(), i + 1, std::string()));
-        }
+        // Client n sits at position n + 1 (disconnected clients are NULL)
+        for (const auto& [i, client] : std::views::enumerate(cmgr.getClients()))
+            if (client)
+                aCommPartners.push_back(std::make_unique<CommPartner>(client.get(), i + 1, std::string()));
     }
 
-    if (!aCommPartners.empty()) {
-        // All sockets are created by the connection manager and therefore share its context
-        commCtx = &static_cast<boost::asio::io_context&>(
-            boost::asio::query(aCommPartners.front()->sock->get_executor(), boost::asio::execution::context));
+    if (!aCommPartners.empty())
         commThread = std::jthread([this](std::stop_token stop) { waitForMessages(stop); });
-    }
 
     apMenus[CHAT]->set_enabled(true);
 }
@@ -153,12 +149,11 @@ void CardgameCollection::initCommunication() {
 //----------------------------------------------------------------------------
 void CardgameCollection::waitForMessages(std::stop_token stop) {
     TRACE1("CardgameCollection::waitForMessages(std::stop_token)");
-    Check2(commCtx);
-
-    commCtx->restart();
+    boost::asio::io_context& ctx(cmgr.getContext());
+    ctx.restart();
     for (auto& partner : aCommPartners)
         receiveNext(*partner, stop);
-    commCtx->run();
+    ctx.run();
 
     TRACE7("CardgameCollection::waitForMessages(std::stop_token) - Finished");
 }
@@ -227,7 +222,8 @@ void CardgameCollection::partnerLost(const boost::asio::ip::tcp::socket* sock, b
     }
 
     // The server must change the disconnected remote to a computer controled player
-    if (cmgr.getMode() == YGP::ConnectionMgr::SERVER) {
+    const bool server(cmgr.getMode() == YGP::ConnectionMgr::SERVER);
+    if (server) {
         TRACE7("CardgameCollection::partnerLost(const tcp::socket*, error_code) - Removing " << aPlayer[iPlayer]->getName());
         Card::Player* oldPlayer(aPlayer[iPlayer]);
         Check3(oldPlayer);
@@ -250,6 +246,15 @@ void CardgameCollection::partnerLost(const boost::asio::ip::tcp::socket* sock, b
         stopCommunication();
         apMenus[CHAT]->set_enabled(false);
         cmgr.changeMode(YGP::ConnectionMgr::NONE);
+    }
+
+    // Let the computer players continue for the replaced ones
+    if (game) {
+        if (server)
+            game->playerReplaced(iPlayer);
+        else
+            for (unsigned int i(1); i < aPlayer.size(); ++i)
+                game->playerReplaced(i);
     }
 
     showMessage(msg);
@@ -499,17 +504,15 @@ void CardgameCollection::sendMessage(const Glib::ustring& msg) {
 //-----------------------------------------------------------------------------
 /// Broadcast a message to all partners
 /// \param msg Message to broadcast
-/// \param exclude Partner to exclude (Zero-based; -1: None)
+/// \param exclude Client to exclude (Zero-based; -1: None)
 //-----------------------------------------------------------------------------
 void CardgameCollection::broadcastMsg(const std::string& msg, unsigned int exclude) {
     TRACE9("CardgameCollection::broadcastMsg(const Glib::ustring&, unsigned int) - " << msg << "; Exclude: " << exclude);
     try {
         if (cmgr.getMode() == YGP::ConnectionMgr::SERVER) {
             for (const auto& [i, client] : std::views::enumerate(cmgr.getClients()))
-                if (exclude != static_cast<unsigned int>(i)) {
-                    Check(client);
+                if (client && (exclude != static_cast<unsigned int>(i)))
                     Card::sendMessage(*client, msg);
-                }
         }
         else {
             Check3(cmgr.getSocket());
@@ -553,21 +556,20 @@ void CardgameCollection::stopCommunication() {
     TRACE9("CardgameCollection::stopCommunication()");
     if (commThread.joinable()) {
         commThread.request_stop(); // Aborts waiting for the message token
-        commCtx->stop();
+        cmgr.getContext().stop();
         commThread.join();
     }
 
     // Abort the outstanding receive-operations and let them finish, while their partners still exist
-    if (commCtx) {
+    if (!aCommPartners.empty()) {
         for (auto& partner : aCommPartners) {
             boost::system::error_code ignore;
             partner->sock->cancel(ignore);
         }
-        commCtx->restart();
-        commCtx->poll();
-        commCtx = nullptr;
+        cmgr.getContext().restart();
+        cmgr.getContext().poll();
+        aCommPartners.clear();
     }
-    aCommPartners.clear();
 }
 
 //-----------------------------------------------------------------------------
