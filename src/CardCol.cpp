@@ -317,7 +317,7 @@ static constexpr const char* xpmJoker[] = {"72 96 65 1",
 CardgameCollection::CardgameCollection(Options& opts)
     : XApplication(PACKAGE " V" PRG_RELEASE), boxStatus(Gtk::Orientation::HORIZONTAL), status(), filler(), cardFaces(), cards(),
 #ifdef WITH_NETWORK
-      aCommThreads(), dlgChat(nullptr),
+      aCommPartners(), commCtx(nullptr), commThread(), dlgChat(nullptr),
 #endif
       mxThreadCmd(), cmgr(), playerPos(0), options(opts), aPlayer(), oldGame(GameTypes::NONE), actGame(opts.type), restart(false),
       game(), helpFile() {
@@ -465,7 +465,7 @@ CardgameCollection::~CardgameCollection() {
         delete i;
 
 #ifdef WITH_NETWORK
-    removeCommThreads();
+    stopCommunication();
 #endif
 }
 

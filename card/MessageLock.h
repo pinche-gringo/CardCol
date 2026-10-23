@@ -18,6 +18,7 @@
 
 #include <condition_variable>
 #include <mutex>
+#include <stop_token>
 
 namespace Card {
 
@@ -36,11 +37,15 @@ class MessageLock {
     MessageLock(const MessageLock&) = delete;
     MessageLock& operator=(const MessageLock&) = delete;
 
-    /// Takes the token; waits until it is available
-    void lock() {
+    /// Takes the token; waits until it is available or a stop is requested
+    /// \param stop Token to abort waiting
+    /// \returns bool True, if the token has been taken; false if a stop has been requested
+    bool lock(std::stop_token stop) {
         std::unique_lock guard(mx);
-        cv.wait(guard, [this] { return !locked; });
+        if (!cv.wait(guard, stop, [this] { return !locked; }))
+            return false;
         locked = true;
+        return true;
     }
     /// Returns the token (if taken)
     void unlock() {
@@ -53,7 +58,7 @@ class MessageLock {
 
   private:
     std::mutex mx;
-    std::condition_variable cv;
+    std::condition_variable_any cv;
     bool locked{false};
 };
 

@@ -20,7 +20,9 @@
 
 #include <array>
 #include <memory>
+#include <stop_token>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <gtkmm/button.h>
@@ -28,7 +30,6 @@
 
 #include <YGP/ConnMgr.h>
 #include <YGP/Exception.h>
-#include <YGP/Thread.h>
 
 #include <card/Images.h>
 #include <card/MessageLock.h>
@@ -98,14 +99,18 @@ class CardgameCollection : public XGP::XApplication {
     void newGame();
     void endGame();
 #ifdef WITH_NETWORK
+    struct CommPartner;
+
     void autoConnect(const Options& options);
     void connect();
     void showChatDlg();
     void closeChat(int);
     bool stopClientWaiting();
-    void removeCommThreads();
+    void stopCommunication();
     void initCommunication();
-    void* waitForMessages(void*);
+    void waitForMessages(std::stop_token stop);
+    void receiveNext(CommPartner& partner, std::stop_token stop);
+    void partnerLost(const boost::asio::ip::tcp::socket* sock, boost::system::error_code error);
     int handleGlobalMessage(unsigned int player, const std::string& msg);
     bool handleMessage(unsigned int player, const std::string& msg);
     void sendMessage(const Glib::ustring& msg);
@@ -150,8 +155,15 @@ class CardgameCollection : public XGP::XApplication {
     Card::Set cards;
 
 #ifdef WITH_NETWORK
-    using THRDAPPL = YGP::OThread<CardgameCollection>;
-    std::vector<THRDAPPL*> aCommThreads;
+    /// Partner the communication thread receives messages from
+    struct CommPartner {
+        boost::asio::ip::tcp::socket* sock; ///< Socket to the partner (owned by cmgr)
+        unsigned int player;                ///< Index of the partner in aPlayer
+        std::string buffer;                 ///< Received, but not yet processed data
+    };
+    std::vector<std::unique_ptr<CommPartner>> aCommPartners; ///< Partners handled by commThread
+    boost::asio::io_context* commCtx;                         ///< Context running the receive-operations
+    std::jthread commThread;                                  ///< Thread receiving the messages of all partners
 
     ChatDlg* dlgChat;
 #endif
