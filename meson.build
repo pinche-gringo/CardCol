@@ -62,7 +62,7 @@ endif
 
 # Dependencies
 # Minimal version of libYGP; the CI (GitLab & GitHub) installs exactly this release
-ygp_version = '0.9.80'
+ygp_version = '1.0.00'
 deps = [dependency('gtkmm-4.0', version: '>= 4.0.0', include_type: 'system'),
         dependency('gthread-2.0', version: '> 2.2.0', include_type: 'system'),
         dependency('YGP', version: '>= ' + ygp_version, include_type: 'system'),
