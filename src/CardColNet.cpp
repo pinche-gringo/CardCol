@@ -381,7 +381,14 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
         return true;
     }
     else if (cmd == "Settings") {
-        // Parse in an own scope, so the Rovhult settings are written back before sending them
+        // Only the server decides with which settings is played
+        if (cmgr.getMode() != YGP::ConnectionMgr::CLIENT) {
+            cmd = _("Unexpected command `%1'");
+            cmd.replace(cmd.find("%1"), 2, "Settings");
+            throw YGP::ParseError(cmd);
+        }
+
+        // Parse in an own scope, so the Rovhult settings are written back before checking them
         {
 #    ifdef WITH_ROVHULT
             EnumAsUInt nuke(Rovhult::cardNuke), reverse(Rovhult::cardReverse), skip(Rovhult::cardSkip);
@@ -428,9 +435,9 @@ int CardgameCollection::handleGlobalMessage(unsigned int player, const std::stri
                 throw YGP::ParseError(cmd);
             }
         }
-
-        if (cmgr.getMode() == YGP::ConnectionMgr::SERVER)
-            sendSettings();
+#    ifdef WITH_ROVHULT
+        checkRovhultSpecialCards();
+#    endif
         return true;
     }
     else if (cmd == "Error") {
@@ -614,10 +621,11 @@ void CardgameCollection::broadcastNames() {
 }
 
 //-----------------------------------------------------------------------------
-/// Sends the changed settings to the clients
+/// Sends the changed settings to the clients (only the server decides with
+/// which settings is played)
 //-----------------------------------------------------------------------------
 void CardgameCollection::sendSettings() {
-    if (cmgr.getMode() != YGP::ConnectionMgr::NONE) {
+    if (cmgr.getMode() == YGP::ConnectionMgr::SERVER) {
         std::ostringstream msg;
         msg << "Settings=";
 
