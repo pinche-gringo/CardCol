@@ -299,7 +299,8 @@ void Table::registerPlay(unsigned int posInPlayed) {
     Check1(partTwo);
     Check1(offPos < startPos.size());
     TRACE1("TwopartRules::Table::registerPlay(unsigned int) - Position: " << offPos << " -> " << posInPlayed);
-    startPos[offPos++] = posInPlayed;
+    if (offPos < startPos.size())
+        startPos[offPos++] = posInPlayed;
 }
 
 //-----------------------------------------------------------------------------
@@ -465,7 +466,7 @@ PickUp Table::pickUp(unsigned int player, const HandSizes& hands) {
     Check3(offPos <= startPos.size());
     Check3(bfPlayers);
 
-    PickUp result{startPos[--offPos], 0};
+    PickUp result{offPos ? startPos[--offPos] : 0, 0};
     ++pickUps;
     TRACE3("TwopartRules::Table::pickUp(unsigned int, ...) - Player " << player << " picks up played cards at " << offPos << '('
                                                                       << result.start << ')');

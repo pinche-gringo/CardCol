@@ -533,6 +533,10 @@ Card::IPile* Twopart::getPileOfPlayer(unsigned int player, unsigned int pile) {
     if ((player >= NUM_PLAYERS) || (pile > 1))
         return nullptr;
 
+    // The played cards can only be picked up in part 2, after cards have been played
+    if (pile && ((gameStatus() != PLAYING2) || !table.offPos || (table.startPos[table.offPos - 1] >= played.size())))
+        return nullptr;
+
     return &(pile ? played : players[player].hand);
 }
 
@@ -547,7 +551,7 @@ bool Twopart::handleMessage(unsigned int player, const std::string& message) {
     bool rc(Game::handleMessage(player, message));
 #ifdef WITH_NETWORK
     // The client starts playing, after receiving the startplayer
-    if (Card::commandOf(message) == "ActPlayer") {
+    if ((Card::commandOf(message) == "ActPlayer") && (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)) {
         TRACE1("Twopart::handleMessage(unsigned int player, const std::string&) - Next player: " << currentPlayer());
         table.startPlayer = currentPlayer();
         makeNextMoves();
