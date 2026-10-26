@@ -605,7 +605,10 @@ bool Twopart::executeRemoteMove(Card::IPile& pile, unsigned int target) {
         TRACE7("Twopart::executeRemoteMove(Card::IPile&, unsigned int) - Target " << target);
         Check3(gameStatus() == PLAYING2);
         pos1Play = pos2Play = -1U;
+
+        // The next player continues after the cards have been picked up (see endPickup)
         setNextPlayer(pickUpPlayedPile(currentPlayer()));
+        keepMessageLock();
         return false;
     }
     return Game::executeRemoteMove(pile, target);

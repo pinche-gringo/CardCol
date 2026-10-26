@@ -1,3 +1,35 @@
+Overview of changes in version 0.9.80:
+
+  - Use YGP 1.0 with passwort salting
+  - Improve security in network handling: Check active player
+  - Fix network handling bugs in some games
+
+
+Overview of changes in version 0.9.75:
+
+  - Don't verify YGP package signature
+
+
+Overview of changes in version 0.9.74:
+
+  - Define needed YGP version only in meson.build
+
+
+Overview of changes in version 0.9.73:
+
+  - Use latest YGP version
+
+
+Overview of changes in version 0.9.72:
+
+  - Add Github release
+
+
+Overview of changes in version 0.9.71:
+
+  - Add Gitlab release
+
+
 Overview of changes in version 0.9.70:
 
   - Re-enable animated cards, all games use them

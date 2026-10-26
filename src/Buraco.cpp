@@ -291,6 +291,22 @@ void Buraco::playCards() {
         ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = 0x3;
 
     Card::IPile& playerPile(hands[player]);
+#ifdef WITH_NETWORK
+    // A remote player replaced (by the computer) after taking the top card of
+    // the dumped cards must still play it to a new pile: Put it back and play it
+    // like the computer (the partners have it in his hand, like in that case)
+    if (!gStatus.startTurn && (pickedUp != -1U)) {
+        const int pos(playerPile.find(pickedUp));
+        pickedUp = -1U;
+        if (pos != -1) {
+            TRACE2("Buraco::playCards() - Finishing the pick-up of " << player);
+            dumped.setTopCard(playerPile.remove(static_cast<unsigned int>(pos)), true);
+            playTakenCard(player);
+            return;
+        }
+    }
+#endif
+
     if (gStatus.startTurn) {
         Check3(dumped.size());
         gStatus.startTurn = 0;
@@ -306,34 +322,7 @@ void Buraco::playCards() {
             }
 
             if (!gStatus.startGame) {
-                BuracoRules::Table table(makeTable());
-                if (dumped.size() > 1)
-                    gStatus.pickUpPlayed = 1;
-
-                // Arrange the cards to play (with the taken card) at the end of the hand.
-                // Remark: The taken card stays on the dumped cards (for the animation)
-                const BuracoRules::PickUp cards(BuracoRules::playPickedUp(table, player, dumpedCard));
-                arrangeHand(player, table.hands[player]);
-                unsigned int pos1Play(cards.first), pos2Play(cards.last);
-                const unsigned int posTarget(cards.posTaken);
-                TRACE1("posTarget: " << posTarget);
-                Check3((pos2Play - pos1Play) >= 1);
-
-                // The partners receive the picked up card (as card in the hand; see above), the
-                // cards of the hand to play to the new pile and then the picked up card to add to it
-                const unsigned int newPos(tablePiles[player & 1].size() << 16);
-                target = newPos;
-                flipCards2Play(playerPile, pos1Play, pos2Play);
-                if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
-                    std::ostringstream msg;
-                    msg << "Play=" << dumpedCard.id() << ";Target=" << newPos + posTarget + 100;
-                    broadcastMessage(msg.str());
-                }
-
-                BuracoPile& newPile(makeNewPile(player & 1));
-                Card::PileWindows& win(animateCards2(newPile, playerPile, pos1Play, pos2Play));
-                win.sigAnimation.connect(mem_fun(*this, &Buraco::makeNextMoves));
-                win.addWindow(posTarget, dumped, dumped.size() - 1, dumped.size() - 1);
+                playTakenCard(player);
                 return;
             }
             playerPile.insertSorted(dumped.removeTopCard(), compByNumberWithJokers);
@@ -367,6 +356,47 @@ void Buraco::playCards() {
         Check3(pos1Play == pos2Play);
         endTurn(player, pos1Play);
     }
+}
+
+//-----------------------------------------------------------------------------
+/// Plays the card the (computer) player has taken from the dumped cards (still
+/// on top of them) together with fitting cards of his hand to a new pile
+/// \param player Player in turn
+//-----------------------------------------------------------------------------
+void Buraco::playTakenCard(unsigned int player) {
+    TRACE2("Buraco::playTakenCard(unsigned int) - " << player);
+    Check1(dumped.size());
+    Card::IPile& playerPile(hands[player]);
+    Card::Widget& dumpedCard(dumped.getTopCard());
+
+    BuracoRules::Table table(makeTable());
+    if (dumped.size() > 1)
+        gStatus.pickUpPlayed = 1;
+
+    // Arrange the cards to play (with the taken card) at the end of the hand.
+    // Remark: The taken card stays on the dumped cards (for the animation)
+    const BuracoRules::PickUp cards(BuracoRules::playPickedUp(table, player, dumpedCard));
+    arrangeHand(player, table.hands[player]);
+    unsigned int pos1Play(cards.first), pos2Play(cards.last);
+    const unsigned int posTarget(cards.posTaken);
+    TRACE1("posTarget: " << posTarget);
+    Check3((pos2Play - pos1Play) >= 1);
+
+    // The partners receive the picked up card (as card in the hand; see above), the
+    // cards of the hand to play to the new pile and then the picked up card to add to it
+    const unsigned int newPos(tablePiles[player & 1].size() << 16);
+    target = newPos;
+    flipCards2Play(playerPile, pos1Play, pos2Play);
+    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
+        std::ostringstream msg;
+        msg << "Play=" << dumpedCard.id() << ";Target=" << newPos + posTarget + 100;
+        broadcastMessage(msg.str());
+    }
+
+    BuracoPile& newPile(makeNewPile(player & 1));
+    Card::PileWindows& win(animateCards2(newPile, playerPile, pos1Play, pos2Play));
+    win.sigAnimation.connect(mem_fun(*this, &Buraco::makeNextMoves));
+    win.addWindow(posTarget, dumped, dumped.size() - 1, dumped.size() - 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -1625,7 +1655,6 @@ bool Buraco::playRemoteCards(unsigned int sender, const std::string& message) {
             throw YGP::ParseError(N_("Card not found!"));
     }
 
-    bool pickUpPile(false); // Flag, if the card taken from the dumped cards starts a new pile
     if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
         // The server checks the move of its client against the rules (before
         // changing anything). A received move of a joker is executed (and
@@ -1641,13 +1670,13 @@ bool Buraco::playRemoteCards(unsigned int sender, const std::string& message) {
             movedFrom = moved.from;
         }
 
-        // After picking up the dumped cards the taken card must start a new pile
-        pickUpPile = (dest > 3) && (pickedUp != -1U);
-        pickedUp = ((dest == 3) && !gStatus.startGame) ? src->getTopCard().id() : -1U;
-
         // Inform the other clients (the sender ignores the echo)
         broadcastMessage(message);
     }
+
+    // After picking up the dumped cards the taken card must start a new pile
+    const bool pickUpPile((dest > 3) && (pickedUp != -1U));
+    pickedUp = ((dest == 3) && !gStatus.startGame) ? src->getTopCard().id() : -1U;
 
     // Move the cards to play to the end of the hand (sets pos1Play/pos2Play)
     if (src == &hand)

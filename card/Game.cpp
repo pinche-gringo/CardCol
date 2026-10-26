@@ -832,6 +832,10 @@ bool Game::performCommand([[maybe_unused]] unsigned int player, [[maybe_unused]]
             keepMessageLock();
             return false;
         }
+
+        // The game continues itself, if the move is still executed (e.g. animated)
+        if (stati.remoteMove)
+            return false;
         makeNextMoves();
     }
     else if (cmd == "ActPlayer") {
@@ -883,7 +887,10 @@ void Game::checkRemoteMove(unsigned int /*player*/, const IPile& /*pile*/, unsig
 /// Executes the remote move locally
 /// \param pile Pile to move to/from
 /// \param card ID of target, where to play the card
-/// \returns bool True, if the timer to execute the move should be set
+/// \returns bool True, if the timer to execute the move should be set; if
+///     false and the move is still being executed (e.g. animated), the method
+///     must keep the message lock (keepMessageLock()) and the game continue
+///     itself afterwards (with makeNextMoves())
 //----------------------------------------------------------------------------
 bool Game::executeRemoteMove(IPile& /*pile*/, unsigned int /*card*/) {
     TRACE8("Game::executeRemoteMove(IPile&, unsigned int) - " << pos2Play);

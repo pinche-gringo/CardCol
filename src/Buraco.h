@@ -96,6 +96,7 @@ class Buraco : public Card::Game {
     unsigned int getActTarget() const override;
     void endTurn(unsigned int player, unsigned int card2Dump);
     void turnEnded();
+    void playTakenCard(unsigned int player);
 
 #ifdef WITH_NETWORK
     /// Move of a joker received by the server; it is executed (and passed on)
@@ -240,7 +241,7 @@ class Buraco : public Card::Game {
 
     PendingMove pendingMove;    ///< Move of a joker waiting for the card played to its pile (server only)
     unsigned int pickedUp{-1U}; ///< ID of the card the remote player in turn took from the dumped cards,
-                                ///< which he must play to a new pile next (server only; -1U: none)
+                                ///< which he must play to a new pile next (-1U: none)
 #endif
 
     // Scroll-ctrls for table (holding boxTeam). Declared last, so they are
