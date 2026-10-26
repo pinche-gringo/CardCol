@@ -59,7 +59,7 @@ namespace Card {
 /// \param connMgr Connection manager; holding the connections to use
 //-----------------------------------------------------------------------------
 PlayerConnectDlg::PlayerConnectDlg(std::vector<Player*>& player, const Glib::ustring& port, YGP::ConnectionMgr& cmgr)
-    : XGP::ConnectDlg(player.size(), port, cmgr), connected(Gtk::make_managed<Gtk::Label>()),
+    : XGP::ConnectDlg(player.size() - 1, port, cmgr), connected(Gtk::make_managed<Gtk::Label>()),
       lblConnected(Gtk::make_managed<Gtk::Label>(_("Connected:"))), aPlayer(player), posPlayer(0) {
     TRACE8("PlayerConnectDlg::PlayerConnectDlg(std::vector<Player*>&, const Glib::ustring&, ConnectionMgr&");
 
@@ -278,8 +278,11 @@ YGP::Connection* PlayerConnectDlg::addClient(std::unique_ptr<YGP::Connection> co
 
     // Client n sits at position n (as seen from the server)
     const std::size_t pos(cmgr.getClients().size() + 1);
-    Check3(pos < aPlayer.size());
     Check3(aPlayer.size() < 10);
+    if (pos >= aPlayer.size()) {
+        TRACE1("PlayerConnectDlg::addClient(std::unique_ptr<YGP::Connection>) - No free seat; rejecting client");
+        return nullptr;
+    }
 
     Glib::ustring error, warning, name;
     {
