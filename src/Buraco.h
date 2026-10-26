@@ -199,6 +199,7 @@ class Buraco : public Card::Game {
         unsigned int srcPos : 7;
         unsigned int pickUp : 1;
         unsigned int monoPos : 3;
+        unsigned int valid : 1; ///< Flag, if the last move of the player in turn can be undone
 
         void assign(unsigned int targetPile, unsigned int targetPos, unsigned int pos) {
             destPile = targetPile;
@@ -206,6 +207,7 @@ class Buraco : public Card::Game {
             srcPos = pos;
             monoPos = 7;
             pickUp = 0;
+            valid = 1;
         }
     };
     undoValue undo;

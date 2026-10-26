@@ -379,6 +379,7 @@ void Buraco::endTurn(unsigned int player, unsigned int card2Dump) {
     Check1(playerPile.size() > card2Dump);
 
     gStatus.startTurn = 1;
+    undo.valid = 0;
     animateCard(dumped, playerPile, card2Dump).sigAnimation.connect(mem_fun(*this, &Buraco::turnEnded));
 
     ++player &= 0x3;
@@ -480,6 +481,7 @@ void Buraco::start() {
         dumped.setTopCard(staple.removeTopCard());
 
         gStatus.startTurn = gStatus.startGame = 1;
+        undo.valid = 0;
         gStatus.team1Buraco = gStatus.team2Buraco = 0x3;
         gStatus.pickUpPlayed = 0;
 
@@ -665,6 +667,7 @@ void Buraco::cardSelected(unsigned int iCard) {
     menuUndo->set_enabled(false);
 
     gStatus.startTurn = 1;
+    undo.valid = 0;
     setNextPlayer(1);
     displayTurn(1);
 }
@@ -1619,6 +1622,7 @@ bool Buraco::playRemoteCards(unsigned int sender, const std::string& message) {
 
     const unsigned int first(pos1Play), last(pos2Play);
     pos1Play = pos2Play = -1U;
+    undo.valid = 0; // Only a single card played to the table can be undone
     switch (dest) {
     case 1:
         Check3(first == last);
@@ -1698,6 +1702,7 @@ bool Buraco::moveRemoteCard(unsigned int sender, const std::string& message) {
 
     pile.move(static_cast<unsigned int>(to), static_cast<unsigned int>(from));
     movedPile = static_cast<unsigned int>(iPile);
+    undo.valid = 0;
     movedFrom = static_cast<unsigned int>(from);
     return true;
 }
@@ -1711,8 +1716,9 @@ bool Buraco::moveRemoteCard(unsigned int sender, const std::string& message) {
 bool Buraco::undoRemoteMove(unsigned int sender) {
     const unsigned int player(getRemotePlayer(sender));
     const auto& piles(tablePiles[player & 1]);
-    if ((undo.destPile >= piles.size()) || (undo.destPos >= piles[undo.destPile]->size()) ||
-        (undo.pickUp && (hands[player].size() < CARDS2DEAL)))
+    if (!undo.valid || (undo.destPile >= piles.size()) || (undo.destPos >= piles[undo.destPile]->size()) ||
+        (undo.pickUp && ((hands[player].size() < CARDS2DEAL) || !reserve[player & 1].empty())) ||
+        (undo.srcPos > (hands[player].size() - (undo.pickUp ? CARDS2DEAL : 0))))
         throw YGP::ParseError(N_("Nothing to undo!"));
 
     // Inform the other clients (the sender ignores the echo)
@@ -1898,8 +1904,9 @@ void Buraco::undoLast(unsigned int player) {
         boxTeam[player & 1].remove(src);
         tablePiles[player & 1].erase(tablePiles[player & 1].begin() + undo.destPile); // Deletes src
     }
-    else if (undo.monoPos != 7)
+    else if ((undo.monoPos != 7) && (undo.monoPos < src.size()) && (src.getPosJoker() < src.size()))
         src.move(undo.monoPos, src.getPosJoker());
+    undo.valid = 0;
 
     menuUndo->set_enabled(false);
     if (!player) // The undo of a remote player just changes the table
