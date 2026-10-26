@@ -1,4 +1,4 @@
-Overview of changes in version 0.9.80:
+Overview of changes in version 1.0.00:
 
   - Use YGP 1.0 with passwort salting
   - Improve security in network handling: Check active player
