@@ -95,8 +95,8 @@ Machiavelli::Machiavelli(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set&
                          const std::vector<Card::Player*>& player, unsigned int posPlayer, Card::MessageLock& mxSerialize)
     : Game(parent, statusbar, cardset, player, posPlayer, mxSerialize, 3, 10), piles(), tablePiles(), startPlayer(-1U),
       dstTable(), dstPiles(), staple(Card::IPile::TOTALLY_COMPRESSED, Card::IPile::SHOWBACK),
-      nextTurn(_("_End turn"), true), aDNDHand(), aDNDTable(), target(-1U), posPiles(), undo(), undoDlg(nullptr), undo1(),
-      undoAll(), nxtTurn() {
+      nextTurn(_("_End turn"), true), aDNDHand(), aDNDTable(), target(-1U), posPiles(), undo(), remoteMoves(), undoDlg(nullptr),
+      undo1(), undoAll(), nxtTurn() {
     TRACE9("Machiavelli::Machiavelli(Box&, Statusbar&, CardSet&, const std::vector<Glib::ustring>&)");
 
     TRACE9("Machiavelli::Machiavelli(Box&, Statusbar&, CardSet&, const std::vector<Glib::ustring>&) - Init common staples");
@@ -173,6 +173,15 @@ void Machiavelli::start() {
     pos1Play = pos2Play = -1U;
     target = -1U;
     posPiles.clear();
+    remoteMoves = {};
+
+    // Moves of an interrupted game can't be undone
+    undo = {};
+    undoDlg.reset();
+    if (undo1) {
+        undo1->set_enabled(false);
+        undoAll->set_enabled(false);
+    }
 
     if (randomiseCardsToPile(staple)) {
         for (unsigned int i(0); i < NUM_PLAYERS; ++i)
@@ -248,6 +257,11 @@ void Machiavelli::makeMove(unsigned int player) {
         playRemoteCards(player);
         return;
     }
+
+    // A remote player replaced (by the computer) during his turn: Take back his
+    // moves, as he might have left the table invalid
+    if (!remoteMoves.empty())
+        takeBackRemoteMoves();
 #endif
     Check1(gameStatus() == PLAYING);
 
@@ -1164,8 +1178,14 @@ bool Machiavelli::handleMessage([[maybe_unused]] unsigned int player, const std:
 
         if (cmd == "EndTurn") {
             // EndTurn
-            if (server)
+            if (server) {
+                // Only valid piles might be left on the table
+                if (MachiavelliRules::firstInvalidPile(currentTable()) != -1)
+                    throw YGP::ParseError(N_("Can't end turn: The piles are not valid!"));
+
+                remoteMoves = {};
                 broadcastMessage(message);
+            }
 
             unsigned int nextPlayer(findNextPlayer(currentPlayer()));
             setNextPlayer(nextPlayer);
@@ -1244,6 +1264,9 @@ void Machiavelli::playRemoteCards(unsigned int player) {
     Check1(gameStatus() == PLAYING);
 
     Check3(nrPile <= tablePiles.size());
+    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+        remoteMoves.emplace(nrPile, pos, 0xff, 0, end - start + 1);
+
     MachiPile& pile((nrPile == tablePiles.size()) ? makeNewPile() : *tablePiles[nrPile]);
     Check3(pos <= pile.size());
     animateCards(pile, pos, hands[player], start, end).sigAnimation.connect([this] { makeNextMoves(); });
@@ -1294,9 +1317,16 @@ bool Machiavelli::reorderRemote(const std::string& message) {
         (posDest > ((nrDest == tablePiles.size()) ? 0 : tablePiles[nrDest]->size())))
         throw YGP::ParseError(N_("Invalid destination pile!"));
 
-    // Inform the (other) clients
-    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
+        // The server accepts only moves the player could make locally
+        if (!MachiavelliRules::isHumanMove(hands[currentPlayer()].values(), currentTable(),
+                                           MachiavelliRules::Move(nrDest, {{nrSrc, posSrc, posSrc + nr - 1, posDest}})))
+            throw YGP::ParseError(N_("Invalid move!"));
+        remoteMoves.emplace(nrDest, posDest, nrSrc, posSrc, nr, nr == tablePiles[nrSrc]->size());
+
+        // Inform the (other) clients
         broadcastMessage(message);
+    }
 
     MachiPile& src(*tablePiles[nrSrc]);
     MachiPile& pile((nrDest == tablePiles.size()) ? makeNewPile() : *tablePiles[nrDest]);
@@ -1348,6 +1378,19 @@ void Machiavelli::moveRemote(const std::string& message) {
     ATTRIBUTE(ap, unsigned int, create, "Create");
     ap.assignValues(message);
 
+    // The server accepts only taking back the last move of the turn (like the
+    // player sends it; see undoMove()); the position in the hand is not checked
+    const bool server(getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER);
+    if (server) {
+        if (remoteMoves.empty())
+            throw YGP::ParseError(N_("Nothing to undo!"));
+
+        const undoValue& last(remoteMoves.top());
+        if ((src != last.destPile) || (card1 != last.destPos) || (card2 != (last.destPos + last.number - 1U)) ||
+            (dest != last.srcPile) || ((dest != 0xff) && (destPos != last.srcPos)) || ((create != 0) != last.create))
+            throw YGP::ParseError(N_("Invalid move!"));
+    }
+
     if (create ? (dest > tablePiles.size()) : ((dest >= tablePiles.size()) && (dest != 255)))
         throw YGP::ParseError(N_("Invalid destination pile!"));
     if (create)
@@ -1372,8 +1415,10 @@ void Machiavelli::moveRemote(const std::string& message) {
     }
 
     // Inform the (other) clients
-    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+    if (server) {
+        remoteMoves.pop();
         broadcastMessage(message);
+    }
 
     Check3(srcPile);
     do
@@ -1382,6 +1427,51 @@ void Machiavelli::moveRemote(const std::string& message) {
 
     if (srcPile->empty())
         removePile(src);
+}
+
+//----------------------------------------------------------------------------
+/// Takes back the moves the (remote) player in turn has made during his turn
+/// (e.g. if he is replaced by the computer); the clients are informed like
+/// for undoing moves
+//----------------------------------------------------------------------------
+void Machiavelli::takeBackRemoteMoves() {
+    TRACE3("Machiavelli::takeBackRemoteMoves() - Moves: " << remoteMoves.size());
+    while (!remoteMoves.empty()) {
+        const undoValue& last(remoteMoves.top());
+        std::ostringstream msg;
+        msg << "Move=" << last.destPile << ";From=" << last.destPos << ";To=" << (last.destPos + last.number - 1U)
+            << ";Target=" << last.srcPile << ";At=" << ((last.srcPile == 0xff) ? hands[currentPlayer()].size() : last.srcPos);
+        if (last.create)
+            msg << ";Create=1";
+
+        try {
+            moveRemote(msg.str());
+        }
+        catch (std::exception& error) { // Should not happen: The moves have been executed before
+            TRACE1("Machiavelli::takeBackRemoteMoves() - " << msg.str() << ": " << error.what());
+            remoteMoves = {};
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+/// Checks (on the server) if the card a client plays from the hand is valid:
+/// Only a single card can be played to the position, where it fits (see
+/// MachiavelliRules::checkMove)
+/// \param pile Hand of the player
+/// \param target Target of the card ((pile << 16) + position)
+/// \param positions Positions of the played cards in the hand
+/// \throw YGP::ParseError If the move is invalid
+//----------------------------------------------------------------------------
+void Machiavelli::checkRemoteMove(unsigned int /*player*/, const Card::IPile& pile, unsigned int target,
+                                  const std::vector<unsigned int>& positions) const {
+    TRACE5("Machiavelli::checkRemoteMove(unsigned int, const IPile&, unsigned int, const std::vector&) - " << std::hex << target
+                                                                                                           << std::dec);
+    if ((positions.size() != 1) ||
+        !MachiavelliRules::isHumanMove(
+            pile.values(), currentTable(),
+            MachiavelliRules::Move(target >> 16, {{MachiavelliRules::HAND, positions[0], positions[0], target & 0xffff}})))
+        throw YGP::ParseError(N_("Invalid move!"));
 }
 #endif
 

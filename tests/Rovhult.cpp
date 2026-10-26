@@ -188,6 +188,47 @@ BOOST_AUTO_TEST_CASE(moves) {
     BOOST_TEST(checkMove(table(player("", {"C3", "C4", ""}), "DA"), 0, reserve(0, 1), DEFAULT) == PlayError::INVALID_MOVE);
 }
 
+BOOST_AUTO_TEST_CASE(cards_from_hand) {
+    const Table withHand(table(player("C5 H5 S5 D9"), "S4"));
+    BOOST_TEST(checkHandCards(withHand, 0, {1}, DEFAULT) == PlayError::NONE);
+    BOOST_TEST(checkHandCards(withHand, 0, {0, 1, 2}, DEFAULT) == PlayError::NONE);
+    BOOST_TEST(checkHandCards(withHand, 0, {2, 0}, DEFAULT) == PlayError::NONE); // Order doesn't matter
+    BOOST_TEST(checkHandCards(withHand, 0, {3}, DEFAULT) == PlayError::NONE);
+    BOOST_TEST(checkHandCards(withHand, 0, {2, 3}, DEFAULT) == PlayError::INVALID_MOVE); // Different numbers
+    BOOST_TEST(checkHandCards(withHand, 0, {1, 1}, DEFAULT) == PlayError::INVALID_MOVE); // Same card twice
+    BOOST_TEST(checkHandCards(withHand, 0, {4}, DEFAULT) == PlayError::INVALID_MOVE);
+    BOOST_TEST(checkHandCards(withHand, 0, {}, DEFAULT) == PlayError::INVALID_MOVE);
+    BOOST_TEST(checkHandCards(table(player("C5 H5 D9"), "S7"), 0, {0, 1}, DEFAULT) == PlayError::NONE);
+    BOOST_TEST(checkHandCards(table(player("C5 H5 D9"), "S7"), 0, {2}, DEFAULT) == PlayError::SMALLER_AFTER_REVERSE);
+    BOOST_TEST(checkHandCards(table(player("C5 H5 D9"), "S6"), 0, {0, 1}, DEFAULT) == PlayError::EQUAL_OR_BIGGER);
+    BOOST_TEST(checkHandCards(table(player(""), "S6"), 0, {0}, DEFAULT) == PlayError::INVALID_MOVE);
+}
+
+BOOST_AUTO_TEST_CASE(cards_from_reserve) {
+    // Visible cards; the equal ones before are played too
+    const Table visible(table(player("", {"C3 H8", "C4 S8", "C5"}), "D6"));
+    BOOST_TEST(checkReserveCard(visible, 0, 1, false, DEFAULT) == PlayError::NONE);
+    BOOST_TEST(checkReserveCard(visible, 0, 0, false, DEFAULT) == PlayError::NONE);
+    BOOST_TEST(checkReserveCard(visible, 0, 2, false, DEFAULT) == PlayError::VISIBLE_CARDS_FIRST);
+    BOOST_TEST(checkReserveCard(visible, 0, 2, true, DEFAULT) == PlayError::VISIBLE_CARDS_FIRST);
+    BOOST_TEST(checkReserveCard(visible, 0, 1, true, DEFAULT) == PlayError::INVALID_MOVE); // Visible cards can't fail
+    BOOST_TEST(checkReserveCard(table(player("", {"C3 H5", "C4", ""}), "D6"), 0, 0, false, DEFAULT) ==
+               PlayError::EQUAL_OR_BIGGER);
+    BOOST_TEST(checkReserveCard(table(player("", {"C3 H5", "C4", ""}), "D6"), 0, 2, false, DEFAULT) == PlayError::INVALID_MOVE);
+
+    // Only if the hand is empty
+    BOOST_TEST(checkReserveCard(table(player("SK", {"C3 H8", "C4", ""}), "D6"), 0, 0, false, DEFAULT) ==
+               PlayError::INVALID_MOVE);
+
+    // Hidden cards: Must be valid or fail (if the move says so)
+    const Table hidden(table(player("", {"C3", "CK", ""}), "D6"));
+    BOOST_TEST(checkReserveCard(hidden, 0, 1, false, DEFAULT) == PlayError::NONE);
+    BOOST_TEST(checkReserveCard(hidden, 0, 1, true, DEFAULT) == PlayError::INVALID_MOVE);
+    BOOST_TEST(checkReserveCard(hidden, 0, 0, false, DEFAULT) == PlayError::EQUAL_OR_BIGGER);
+    BOOST_TEST(checkReserveCard(hidden, 0, 0, true, DEFAULT) == PlayError::NONE);
+    BOOST_TEST(checkReserveCard(hidden, 0, 3, false, DEFAULT) == PlayError::INVALID_MOVE);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(flow)

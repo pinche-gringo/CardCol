@@ -88,6 +88,26 @@ BOOST_AUTO_TEST_CASE(part_two_series) {
     BOOST_TEST(checkPlay(hand, 2, 3, cards(""), table) == PlayError::NO_SERIE);
 }
 
+BOOST_AUTO_TEST_CASE(positions_of_cards) {
+    // Part 1: Only a single card
+    const Card::Cards hand1(cards("D2 S5 HA"));
+    BOOST_TEST(checkPlay(hand1, {1}, cards("CA"), Table()) == PlayError::NONE);
+    BOOST_TEST(checkPlay(hand1, {0, 1}, cards(""), Table()) == PlayError::ONLY_ONE_CARD);
+    BOOST_TEST(checkPlay(hand1, {2, 0}, cards(""), Table()) == PlayError::ONLY_ONE_CARD);
+
+    // Part 2: Ascending, consecutive positions holding a serie
+    const Table table(partTwo(Value::HEARTS));
+    const Card::Cards hand(cards("S3 S4 S5 S7 D9"));
+    BOOST_TEST(checkPlay(hand, {0, 1, 2}, cards("S4"), table) == PlayError::NONE);
+    BOOST_TEST(checkPlay(hand, {1, 2}, cards("S4"), table) == PlayError::NONE);
+    BOOST_TEST(checkPlay(hand, {3}, cards("S6"), table) == PlayError::NONE);
+    BOOST_TEST(checkPlay(hand, {2, 1, 0}, cards("S2"), table) == PlayError::NO_SERIE); // Wrong order
+    BOOST_TEST(checkPlay(hand, {0, 2}, cards("S2"), table) == PlayError::NO_SERIE);    // Gap
+    BOOST_TEST(checkPlay(hand, {2, 3}, cards(""), table) == PlayError::NO_SERIE);      // No serie
+    BOOST_TEST(checkPlay(hand, {0, 1}, cards("S4"), table) == PlayError::NOT_BIGGER);
+    BOOST_TEST(checkPlay(hand, {4}, cards("S4"), table) == PlayError::NOT_BIGGER);
+}
+
 BOOST_AUTO_TEST_CASE(messages) {
     BOOST_TEST(std::string(describe(PlayError::NONE)).empty());
     BOOST_TEST(std::string(describe(PlayError::NOT_BIGGER)) ==

@@ -1247,6 +1247,45 @@ bool Rovhult::applyExchange(unsigned int player, const std::string& message) {
 #endif
 
 //----------------------------------------------------------------------------
+/// Checks (on the server) if a move received from a client is valid
+/// \param player Player in turn (who made the move)
+/// \param pile Pile the cards are played from (see getPileOfPlayer())
+/// \param target ID of the target, as sent by the client (see getPileOfPlayer)
+/// \param positions Positions of the played cards in \c pile
+/// \throw YGP::ParseError If the move violates the rules of the game
+/// \remarks handleMessage has already checked, that moves from the reserve
+///     and picking up are specified by the top card of the respective pile
+//----------------------------------------------------------------------------
+void Rovhult::checkRemoteMove(unsigned int player, const Card::IPile& pile, unsigned int target,
+                              const std::vector<unsigned int>& positions) const {
+    TRACE8("Rovhult::checkRemoteMove(2x unsigned int, ...) - Player " << player << "; Target " << target << "; Cards "
+                                                                       << positions.size());
+    Check1(player < NUM_PLAYERS);
+    Check1(target <= 7);
+
+    // The moves are built like those of the human (see handSelected,
+    // pileSelected and takeCards)
+    const RovhultRules::Table table(currentTable());
+    RovhultRules::PlayError error(RovhultRules::PlayError::NONE);
+    if (!target)
+        error = RovhultRules::checkHandCards(table, player, positions, options());
+    else if ((positions.size() != 1) || (positions[0] != (pile.size() - 1)))
+        error = RovhultRules::PlayError::INVALID_MOVE;
+    else if (target == 4)
+        error = RovhultRules::checkMove(table, player, RovhultRules::Move{}, options());
+    else // A hidden card played from a reserve pile (5 - 7) must turn out to be invalid
+        error = RovhultRules::checkReserveCard(table, player, (target > 4) ? (target - 5) : (target - 1), target > 4, options());
+
+    if (error != RovhultRules::PlayError::NONE) {
+        TRACE1("Rovhult::checkRemoteMove(2x unsigned int, ...) - Invalid move: " << static_cast<int>(error));
+        // The message about the reverse card needs its name, which can't be translated later
+        throw YGP::ParseError(RovhultRules::describe((error == RovhultRules::PlayError::SMALLER_AFTER_REVERSE)
+                                                         ? RovhultRules::PlayError::INVALID_MOVE
+                                                         : error));
+    }
+}
+
+//----------------------------------------------------------------------------
 /// Executes the remote move locally
 /// \param pile Pile to move to/from
 /// \param target ID of target as send by the partner

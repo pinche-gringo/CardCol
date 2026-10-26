@@ -316,6 +316,45 @@ BOOST_AUTO_TEST_CASE(moves_of_human) {
                0);
 }
 
+BOOST_AUTO_TEST_CASE(received_moves_of_human) {
+    const Card::Cards hand(cards("C2 H4 S9"));
+    const Table t(table({"H5 H6 H7 H8", "S8 C8 D8", "H6 H7 H8 H9 HT", "D2"}));
+
+    // From the hand: One card to the position where it fits
+    BOOST_TEST(isHumanMove(hand, t, Move(0, {{HAND, 1, 1, 0}})));
+    BOOST_TEST(isHumanMove(hand, t, Move(4, {{HAND, 0, 0, 0}})));
+    BOOST_TEST(!isHumanMove(hand, t, Move(0, {{HAND, 1, 1, 4}})));    // Wrong position
+    BOOST_TEST(!isHumanMove(hand, t, Move(0, {{HAND, 2, 2, 0}})));    // Doesn't fit
+    BOOST_TEST(!isHumanMove(hand, t, Move(4, {{HAND, 0, 1, 0}})));    // Only one card
+    BOOST_TEST(!isHumanMove(hand, t, Move(4, {{HAND, 3, 3, 0}})));    // Not in hand
+    BOOST_TEST(!isHumanMove(hand, t, Move(5, {{HAND, 0, 0, 0}})));    // No such pile
+    BOOST_TEST(!isHumanMove(hand, t, Move(4, {{HAND, 0, 0, 1}})));    // New pile: Position 0
+    BOOST_TEST(!isHumanMove(hand, t, Move(4, {{HAND, 1, 1, 0}, {HAND, 0, 0, 1}})));
+
+    // From the table: Like checkMove calculates it
+    BOOST_TEST(isHumanMove(hand, t, Move(4, {{2, 3, 4, 0}})));
+    BOOST_TEST(!isHumanMove(hand, t, Move(4, {{2, 3, 3, 0}}))); // The rest of the pile is moved
+    BOOST_TEST(isHumanMove(hand, t, Move(4, {{1, 1, 1, 0}})));
+    BOOST_TEST(!isHumanMove(hand, t, Move(4, {{1, 1, 2, 0}}))); // Only one card of numbered piles
+    BOOST_TEST(isHumanMove(hand, t, Move(1, {{0, 3, 3, 3}})));
+    BOOST_TEST(!isHumanMove(hand, t, Move(1, {{2, 2, 2, 3}}))); // Split origin first
+    BOOST_TEST(!isHumanMove(hand, t, Move(2, {{2, 4, 4, 5}}))); // Same pile
+    BOOST_TEST(!isHumanMove(hand, t, Move(1, {{4, 0, 0, 3}}))); // No such pile
+    BOOST_TEST(!isHumanMove(hand, t, Move(4, {{2, 3, 5, 0}}))); // Not in pile
+    BOOST_TEST(!isHumanMove(hand, t, Move(4, {{2, 4, 3, 0}})));
+    BOOST_TEST(!isHumanMove(hand, t, Move(4, {})));
+
+    // The left part of a pile (the dropped card is the last one)
+    const Table t2(table({"C4 C5 C6 C7", "C8"}));
+    BOOST_TEST(isHumanMove(hand, t2, Move(1, {{0, 0, 3, 0}})));
+    BOOST_TEST(!isHumanMove(hand, t2, Move(1, {{0, 0, 2, 0}})));
+
+    // Empty piles can't be targets
+    Table t3(t2);
+    t3.emplace_back();
+    BOOST_TEST(!isHumanMove(hand, t3, Move(2, {{HAND, 0, 0, 0}})));
+}
+
 BOOST_AUTO_TEST_CASE(players_and_dealing) {
     BOOST_TEST(findNextPlayer({7, 7, 7, 7}, 0) == 1U);
     BOOST_TEST(findNextPlayer({7, 0, 0, 7}, 0) == 3U);

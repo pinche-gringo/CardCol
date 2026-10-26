@@ -60,6 +60,8 @@ class Rovhult : public Card::Game {
 
   protected:
     Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;
+    void checkRemoteMove(unsigned int player, const Card::IPile& pile, unsigned int target,
+                         const std::vector<unsigned int>& positions) const override;
     bool executeRemoteMove(Card::IPile& pile, unsigned int target) override;
 
   private:

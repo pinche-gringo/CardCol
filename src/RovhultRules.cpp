@@ -417,6 +417,62 @@ PlayError checkMove(const Table& table, unsigned int player, const Move& move, c
 }
 
 //-----------------------------------------------------------------------------
+/// Checks if the cards at the passed positions of the hand can be played: They
+/// must have the same number and that number must be playable. Their order in
+/// the hand doesn't matter (as cards with equal numbers might be sorted
+/// differently).
+/// \param table Actual state of the game
+/// \param player Player making the move
+/// \param positions Positions of the cards to play in the hand of the player
+/// \param options Special cards
+/// \returns PlayError Reason why the cards must not be played (or NONE)
+//-----------------------------------------------------------------------------
+PlayError checkHandCards(const Table& table, unsigned int player, const std::vector<unsigned int>& positions,
+                         const Options& options) {
+    Check1(player < NUM_PLAYERS);
+    const Card::Cards& hand(table.players[player].hand);
+    if (positions.empty() || (positions[0] >= hand.size()))
+        return PlayError::INVALID_MOVE;
+
+    for (unsigned int i(1); i < positions.size(); ++i)
+        if ((positions[i] >= hand.size()) || (hand[positions[i]].number() != hand[positions[0]].number()) ||
+            (std::ranges::find(positions.begin(), positions.begin() + i, positions[i]) != (positions.begin() + i)))
+            return PlayError::INVALID_MOVE;
+    return checkMove(table, player, {Move::HAND, positions[0], positions[0]}, options);
+}
+
+//-----------------------------------------------------------------------------
+/// Checks if the top card of the passed reserve pile can be played (together
+/// with the equal visible cards on the piles before; see firstPileToPlay).
+/// Like the human the player can try to play a hidden card, which turns out
+/// to be invalid; he must take the played cards then.
+/// \param table Actual state of the game
+/// \param player Player making the move
+/// \param pile Reserve pile to play from
+/// \param fails Flag, if the card is expected to be a hidden, invalid one;
+///     else it must be valid
+/// \param options Special cards
+/// \returns PlayError Reason why the move is not allowed (or NONE)
+//-----------------------------------------------------------------------------
+PlayError checkReserveCard(const Table& table, unsigned int player, unsigned int pile, bool fails, const Options& options) {
+    Check1(player < NUM_PLAYERS);
+    const Player& actPlayer(table.players[player]);
+    if ((pile >= NUM_RESERVE) || actPlayer.reserve[pile].empty())
+        return PlayError::INVALID_MOVE;
+
+    const bool visible(actPlayer.topVisible(pile));
+    const Move move{Move::RESERVE, visible ? firstPileToPlay(actPlayer, pile) : pile, pile};
+    if (const PlayError error(checkMove(table, player, move, options)); error != PlayError::NONE)
+        return error;
+
+    // checkMove accepts hidden cards with any number
+    const PlayError error(checkCard(actPlayer.reserve[pile].back().number(), table.played, options));
+    if (fails)
+        return (visible || (error == PlayError::NONE)) ? PlayError::INVALID_MOVE : PlayError::NONE;
+    return error;
+}
+
+//-----------------------------------------------------------------------------
 /// Returns the number of equal cards on top of the played pile
 /// \param played Played cards
 /// \returns unsigned int Number of equal cards

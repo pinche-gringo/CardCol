@@ -28,6 +28,7 @@
 #include <memory>
 #include <ranges>
 #include <sstream>
+#include <utility>
 
 #include <gtk/gtk.h>
 
@@ -380,6 +381,9 @@ void Buraco::endTurn(unsigned int player, unsigned int card2Dump) {
 
     gStatus.startTurn = 1;
     undo.valid = 0;
+#ifdef WITH_NETWORK
+    resetRemoteTurn();
+#endif
     animateCard(dumped, playerPile, card2Dump).sigAnimation.connect(mem_fun(*this, &Buraco::turnEnded));
 
     ++player &= 0x3;
@@ -491,6 +495,7 @@ void Buraco::start() {
 
 #ifdef WITH_NETWORK
         movedPile = -1U;
+        resetRemoteTurn();
 
         // A client waits for the server to send the startplayer (see handleMessage)
         if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT) {
@@ -668,6 +673,9 @@ void Buraco::cardSelected(unsigned int iCard) {
 
     gStatus.startTurn = 1;
     undo.valid = 0;
+#ifdef WITH_NETWORK
+    resetRemoteTurn();
+#endif
     setNextPlayer(1);
     displayTurn(1);
 }
@@ -1507,9 +1515,12 @@ Card::IPile* Buraco::getPileOfPlayer(unsigned int player, unsigned int pile) {
 ///   - <tt>Undo</tt>: Undoes the last card the (human) player in turn played
 ///     to the table.
 ///
-/// The server passes the moves of a client on to all clients. Implicit
-/// consequences of moves (removing a cerrado, getting the dumped cards or the
-/// reserve, ending the game) are performed by every partner itself.
+/// The server checks the moves of a client against the rules (see
+/// checkRemotePlay) and passes them on to all clients; a received
+/// <tt>Move</tt> is executed (and passed on) together with the following
+/// <tt>Play</tt> to its pile. Implicit consequences of moves (removing a
+/// cerrado, getting the dumped cards or the reserve, ending the game) are
+/// performed by every partner itself.
 /// \param player ID of the player sending the message
 /// \param message Message received from the partner
 /// \returns bool True, if message has been processed completey
@@ -1603,10 +1614,8 @@ bool Buraco::playRemoteCards(unsigned int sender, const std::string& message) {
         else if (ids.size() != 1)
             throw YGP::ParseError(N_("Invalid card specification!"));
 
-        // Move the cards to play to the end of the hand (sets pos1Play/pos2Play)
         if (ids.empty() || (ids.size() > hand.size()))
             throw YGP::ParseError(N_("Card not found!"));
-        flipCards2Play(hand, fields[0].value);
     }
     else {
         // The top card of the staple/the dumped cards is taken (the cards are
@@ -1616,9 +1625,33 @@ bool Buraco::playRemoteCards(unsigned int sender, const std::string& message) {
             throw YGP::ParseError(N_("Card not found!"));
     }
 
-    // Inform the other clients (the sender ignores the echo)
-    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+    bool pickUpPile(false); // Flag, if the card taken from the dumped cards starts a new pile
+    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
+        // The server checks the move of its client against the rules (before
+        // changing anything). A received move of a joker is executed (and
+        // passed on) together with the card played to its pile.
+        const PendingMove moved(std::exchange(pendingMove, PendingMove()));
+        checkRemotePlay(player, static_cast<unsigned int>(dest),
+                        (src == &hand) ? findCards(hand, fields[0].value) : std::vector<unsigned int>(), moved);
+
+        if (moved.pile != -1U) {
+            broadcastMessage(moved.message);
+            tablePiles[team][moved.pile]->move(moved.to, moved.from);
+            movedPile = moved.pile;
+            movedFrom = moved.from;
+        }
+
+        // After picking up the dumped cards the taken card must start a new pile
+        pickUpPile = (dest > 3) && (pickedUp != -1U);
+        pickedUp = ((dest == 3) && !gStatus.startGame) ? src->getTopCard().id() : -1U;
+
+        // Inform the other clients (the sender ignores the echo)
         broadcastMessage(message);
+    }
+
+    // Move the cards to play to the end of the hand (sets pos1Play/pos2Play)
+    if (src == &hand)
+        flipCards2Play(hand, fields[0].value);
 
     const unsigned int first(pos1Play), last(pos2Play);
     pos1Play = pos2Play = -1U;
@@ -1655,7 +1688,8 @@ bool Buraco::playRemoteCards(unsigned int sender, const std::string& message) {
                           : ((pile.size() == 1) && BuracoRules::isJoker(pile.getTopCard()))))
             ++unfinishedMonoPiles[team];
 
-        if (first == last) {
+        // Remark: The human can't undo the taken card (and the server doesn't accept it)
+        if ((first == last) && !pickUpPile) {
             undo.assign(iPile, pos, first);
             if (movedPile == iPile)
                 undo.monoPos = movedFrom;
@@ -1696,9 +1730,17 @@ bool Buraco::moveRemoteCard(unsigned int sender, const std::string& message) {
     if ((from >= pile.size()) || (to >= pile.size()))
         throw YGP::ParseError(N_("Invalid card!"));
 
-    // Inform the other clients (the sender ignores the echo)
-    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
-        broadcastMessage(message);
+    // The server accepts (after taking a card) only moving the joker of a
+    // pile; the move is checked, executed and passed on to the other clients
+    // together with the card played to the pile (see playRemoteCards)
+    if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
+        if (gStatus.startTurn || (pickedUp != -1U) || (pendingMove.pile != -1U) || !pile.get_visible() ||
+            (from != pile.getPosJoker()))
+            throw YGP::ParseError(N_("Invalid move!"));
+
+        pendingMove = {static_cast<unsigned int>(iPile), static_cast<unsigned int>(from), static_cast<unsigned int>(to), message};
+        return true;
+    }
 
     pile.move(static_cast<unsigned int>(to), static_cast<unsigned int>(from));
     movedPile = static_cast<unsigned int>(iPile);
@@ -1716,7 +1758,8 @@ bool Buraco::moveRemoteCard(unsigned int sender, const std::string& message) {
 bool Buraco::undoRemoteMove(unsigned int sender) {
     const unsigned int player(getRemotePlayer(sender));
     const auto& piles(tablePiles[player & 1]);
-    if (!undo.valid || (undo.destPile >= piles.size()) || (undo.destPos >= piles[undo.destPile]->size()) ||
+    if (!undo.valid || (pendingMove.pile != -1U) || (pickedUp != -1U) || (undo.destPile >= piles.size()) ||
+        (undo.destPos >= piles[undo.destPile]->size()) ||
         (undo.pickUp && ((hands[player].size() < CARDS2DEAL) || !reserve[player & 1].empty())) ||
         (undo.srcPos > (hands[player].size() - (undo.pickUp ? CARDS2DEAL : 0))))
         throw YGP::ParseError(N_("Nothing to undo!"));
@@ -1727,6 +1770,77 @@ bool Buraco::undoRemoteMove(unsigned int sender) {
 
     undoLast(player);
     return true;
+}
+
+//----------------------------------------------------------------------------
+/// Checks (on the server) if the received move of the remote player in turn
+/// follows the rules (like they are checked for the human player)
+/// \param player Player in turn
+/// \param dest Target of the move (see handleMessage)
+/// \param cards Positions of the played cards in the hand of the player
+///     (empty, if a card is taken from the staple or the dumped cards)
+/// \param moved Received move of a joker in a pile to play the card to (if
+///     any)
+/// \throw YGP::ParseError If the move is not allowed
+/// \remarks The (local) computer players and the human don't need this
+///     check; their moves are never received
+//----------------------------------------------------------------------------
+void Buraco::checkRemotePlay(unsigned int player, unsigned int dest, const std::vector<unsigned int>& cards,
+                             const PendingMove& moved) const {
+    TRACE5("Buraco::checkRemotePlay(2x unsigned int, const std::vector<unsigned int>&, const PendingMove&) - " << player << ": "
+                                                                                                               << dest);
+    // A joker is moved only to play a card to the pile; the card taken from
+    // the dumped cards must be played first.
+    if ((moved.pile != -1U) && ((dest < 100) || (((dest - 100) >> 16) != moved.pile) || (pickedUp != -1U)))
+        throw YGP::ParseError(N_("Invalid move!"));
+
+    // A player takes exactly one card (at the start of his turn), before he
+    // plays to the table or dumps a card
+    if ((gStatus.startTurn != 0) != ((dest == 2) || (dest == 3)))
+        throw YGP::ParseError(N_("Invalid move!"));
+
+    const BuracoRules::Table table(makeTable());
+    BuracoRules::PlayError error(BuracoRules::PlayError::NONE);
+    switch (dest) {
+    case 1:
+        if (pickedUp != -1U)
+            throw YGP::ParseError(N_("Invalid move!"));
+        error = BuracoRules::checkDump(table, player);
+        break;
+
+    case 2:
+        break;
+
+    case 3:
+        error = BuracoRules::checkPickUp(table, player, dumped.getTopCard());
+        break;
+
+    default: {
+        Check3(dest >= 100);
+        const unsigned int iPile((dest - 100) >> 16);
+        const unsigned int pos((dest - 100) & 0xffff);
+        if (pickedUp != -1U) {
+            // The taken card (alone) starts a new pile
+            if ((cards.size() != 1) || (hands[player][cards.front()]->id() != pickedUp) ||
+                (iPile != table.piles[player & 1].size()) || pos)
+                throw YGP::ParseError(N_("Invalid move!"));
+        }
+        else
+            error = BuracoRules::checkPlayToPile(table, player, cards, iPile, pos, (moved.pile != -1U) ? moved.to : -1U);
+    }
+    }
+
+    if (error != BuracoRules::PlayError::NONE)
+        throw YGP::ParseError(BuracoRules::describe(error));
+}
+
+//----------------------------------------------------------------------------
+/// Resets the information about the turn of a remote player (on a change of
+/// the player in turn)
+//----------------------------------------------------------------------------
+void Buraco::resetRemoteTurn() {
+    pendingMove = PendingMove();
+    pickedUp = -1U;
 }
 
 //----------------------------------------------------------------------------

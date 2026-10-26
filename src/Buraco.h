@@ -98,12 +98,24 @@ class Buraco : public Card::Game {
     void turnEnded();
 
 #ifdef WITH_NETWORK
+    /// Move of a joker received by the server; it is executed (and passed on)
+    /// together with the card played to its pile, after checking both
+    struct PendingMove {
+        unsigned int pile{-1U}; ///< Pile in which the joker is moved (-1U: none)
+        unsigned int from{0};   ///< Actual position of the joker
+        unsigned int to{0};     ///< New position of the joker
+        std::string message;    ///< Received message (to pass on)
+    };
+
     //@Section network handling
     unsigned int getRemotePlayer(unsigned int sender) const;
     bool playRemoteCards(unsigned int sender, const std::string& message);
     bool moveRemoteCard(unsigned int sender, const std::string& message);
     bool undoRemoteMove(unsigned int sender);
+    void checkRemotePlay(unsigned int player, unsigned int dest, const std::vector<unsigned int>& cards,
+                         const PendingMove& moved) const;
     void startRemoteTurn(unsigned int player);
+    void resetRemoteTurn();
     void remoteMoveDone(unsigned int pile);
 #endif
 
@@ -225,6 +237,10 @@ class Buraco : public Card::Game {
 #ifdef WITH_NETWORK
     unsigned int movedPile{-1U}; ///< Pile in which a remote player moved a joker (for undo; -1U: none)
     unsigned int movedFrom{0};   ///< Position from which the joker was moved
+
+    PendingMove pendingMove;    ///< Move of a joker waiting for the card played to its pile (server only)
+    unsigned int pickedUp{-1U}; ///< ID of the card the remote player in turn took from the dumped cards,
+                                ///< which he must play to a new pile next (server only; -1U: none)
 #endif
 
     // Scroll-ctrls for table (holding boxTeam). Declared last, so they are

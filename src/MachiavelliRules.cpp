@@ -912,6 +912,36 @@ MoveError checkMove(const Card::Cards& hand, const Table& table, unsigned int sr
     return MoveError::NONE;
 }
 
+//-----------------------------------------------------------------------------
+/// Checks if the passed move is one the human player can make by dropping a
+/// card (see checkMove); that is the dropped card is either the first or the
+/// last one of the (single) transfer and the move is exactly the one checkMove
+/// calculates for it.
+/// \param hand Cards in the hand of the player
+/// \param table Piles on the table
+/// \param move Move to check (might be out of range)
+/// \returns bool True, if the move is valid
+//-----------------------------------------------------------------------------
+bool isHumanMove(const Card::Cards& hand, const Table& table, const Move& move) {
+    if (move.transfers.size() != 1)
+        return false;
+
+    const Transfer& transfer(move.transfers[0]);
+    if ((move.dest > table.size()) || ((move.dest < table.size()) && table[move.dest].empty()) ||
+        (transfer.pile == move.dest) || ((transfer.pile != HAND) && (transfer.pile >= table.size())) ||
+        (transfer.first > transfer.last) ||
+        (transfer.last >= ((transfer.pile == HAND) ? hand.size() : table[transfer.pile].size())))
+        return false;
+
+    for (unsigned int pos : {transfer.first, transfer.last}) {
+        Move calculated;
+        if ((checkMove(hand, table, transfer.pile, pos, move.dest, calculated) == MoveError::NONE) &&
+            (calculated.dest == move.dest) && (calculated.transfers == move.transfers))
+            return true;
+    }
+    return false;
+}
+
 //----------------------------------------------------------------------------
 /// Finds the next player still having cards
 /// \param handSizes Number of cards in the hands of the players

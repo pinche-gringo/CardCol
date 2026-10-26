@@ -158,10 +158,13 @@ class Machiavelli : public Card::Game {
 #ifdef WITH_NETWORK
     /// \name Execution of received moves
     //@{
+    void checkRemoteMove(unsigned int player, const Card::IPile& pile, unsigned int target,
+                         const std::vector<unsigned int>& positions) const override;
     void playRemoteCards(unsigned int player);
     bool reorderRemote(const std::string& message);
     void endRemoteReorder(MachiPile* src);
     void moveRemote(const std::string& message);
+    void takeBackRemoteMoves();
     //@}
 #endif
 
@@ -211,6 +214,11 @@ class Machiavelli : public Card::Game {
     };
 
     std::stack<undoValue> undo;
+
+    /// Moves of the (remote) player in turn, recorded by the server; to check
+    /// the moves he takes back (or to take them back, if he's replaced during
+    /// his turn). Like undo, but the position in his hand is not known.
+    std::stack<undoValue> remoteMoves;
 
     std::unique_ptr<XGP::MessageDlg> undoDlg;
 

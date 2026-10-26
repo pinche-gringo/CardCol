@@ -151,6 +151,8 @@ class Game : public Gtk::Grid {
 
   protected:
     virtual IPile* getPileOfPlayer(unsigned int player, unsigned int pile) = 0;
+    virtual void checkRemoteMove(unsigned int player, const IPile& pile, unsigned int target,
+                                 const std::vector<unsigned int>& positions) const;
     virtual bool executeRemoteMove(IPile& pile, unsigned int target);
     virtual unsigned int getActTarget() const;
 
@@ -168,6 +170,7 @@ class Game : public Gtk::Grid {
 
     void flipCards2Play(IPile& pile, unsigned int& start, unsigned int& end);
     void flipCards2Play(IPile& pile, const std::string& cards);
+    static std::vector<unsigned int> findCards(const IPile& pile, const std::string& cards);
     void displayTurn(unsigned int player);
     void displayTurn(unsigned int player, const Glib::ustring& preText);
     void makeNextMoves();

@@ -364,45 +364,39 @@ void Hearts::cardSelected(unsigned int iCard) {
 #endif
         showWonCards(false);
 
-    if (moveSelectedCardToPlayed(0, iCard)) {
-        if (gameStatus() == PLAYING) {
-            if (getConnectionMgr().getMode() != YGP::ConnectionMgr::NONE) {
-                // Send played card to all clients (if any)
-                std::ostringstream msg;
-                msg << "Play=" << played[played.size() - 1]->id() << ";Target=0";
-                sendMove(msg.str());
-            }
-        }
-        else {
-            Check3(gameStatus() == EXCHANGE);
-            if (played.size() == 3) {
-                // Exchange the cards in pre-play
-                TRACE7("Hearts::cardSelected(unsigned int) - Finished exchange");
+    // Remark: The card reaches the played pile only after its animation
+    const unsigned int idCard((*players[0].hand)[iCard]->id());
+    if (moveSelectedCardToPlayed(0, iCard) && (gameStatus() == PLAYING) &&
+        (getConnectionMgr().getMode() != YGP::ConnectionMgr::NONE)) {
+        // Send played card to all clients (if any)
+        std::ostringstream msg;
+        msg << "Play=" << idCard << ";Target=0";
+        sendMove(msg.str());
+    }
+}
 
-                if (getConnectionMgr().getMode() == YGP::ConnectionMgr::NONE) {
-                    exchangeCards();
-                    return;
-                }
-                else {
-                    std::ostringstream msg;
-                    msg << "Exchange=" << played[0]->id() << ' ' << played[1]->id() << ' ' << played[2]->id()
-                        << ";Player=" << posServer;
-                    broadcastMessage(msg.str());
+//-----------------------------------------------------------------------------
+/// Actions after the human has selected (and moved) all cards to exchange:
+/// Exchanges the cards, after informing the partners (if any) and if they have
+/// already selected theirs
+//-----------------------------------------------------------------------------
+void Hearts::exchangeSelected() {
+    TRACE7("Hearts::exchangeSelected() - Finished exchange");
+    Check3(gameStatus() == EXCHANGE);
+    Check3(played.size() == HeartsRules::CARDS_TO_EXCHANGE);
 
-                    if (allCardsExchanged()) {
-                        exchangeCards();
-                        return;
-                    }
-                    else {
-                        status.pop();
-                        status.push(_("Waiting for other player to exchange their cards ..."));
-                    }
-                }
-                disableHuman();
-                return;
-            }
+    if (getConnectionMgr().getMode() != YGP::ConnectionMgr::NONE) {
+        std::ostringstream msg;
+        msg << "Exchange=" << played[0]->id() << ' ' << played[1]->id() << ' ' << played[2]->id() << ";Player=" << posServer;
+        broadcastMessage(msg.str());
+
+        if (!allCardsExchanged()) {
+            status.pop();
+            status.push(_("Waiting for other player to exchange their cards ..."));
+            return;
         }
     }
+    exchangeCards();
 }
 
 //-----------------------------------------------------------------------------
@@ -529,11 +523,11 @@ bool Hearts::moveSelectedCardToPlayed(unsigned int player, unsigned int card) {
     }
     else {
         // If there are already two cards exchanged (and thus the 3rd is going
-        // to be exchanged) start exchanging of cards for the computer players
+        // to be exchanged) start exchanging of cards
         disableHuman();
         Card::Window& win(animateCard(played, *players[player].hand, card));
         win.sigAnimation.connect((played.size() != 2) ? mem_fun(*this, &Hearts::makeNextMoves)
-                                                      : mem_fun(*this, &Hearts::exchangeCards));
+                                                      : mem_fun(*this, &Hearts::exchangeSelected));
     }
     return true;
 }
@@ -679,6 +673,32 @@ Card::IPile* Hearts::getPileOfPlayer(unsigned int player, unsigned int pile) {
 }
 
 //----------------------------------------------------------------------------
+/// Checks (on the server) if a move received from a client is valid: While
+/// playing (not exchanging) exactly one card, which the rules allow
+/// \param player Player in turn (who made the move)
+/// \param pile Pile the card is played from (the hand of the player)
+/// \param target ID of the target (ignored; checked by getPileOfPlayer())
+/// \param positions Positions of the played cards in \c pile
+/// \throw YGP::ParseError If the move violates the rules of the game
+//----------------------------------------------------------------------------
+void Hearts::checkRemoteMove([[maybe_unused]] unsigned int player, const Card::IPile& pile, unsigned int /*target*/,
+                             const std::vector<unsigned int>& positions) const {
+    TRACE8("Hearts::checkRemoteMove(unsigned int, const IPile&, unsigned int, const std::vector<unsigned int>&) - Player "
+           << player << ": " << positions.size() << " cards");
+    Check3(&pile == players[player].hand.get());
+
+    // A complete trick is taken by the winner before he continues
+    if ((gameStatus() != PLAYING) || (played.size() >= NUM_PLAYERS))
+        throw YGP::ParseError(N_("Unexpected move!"));
+    if (positions.size() != 1)
+        throw YGP::ParseError(N_("Invalid cards!"));
+
+    const HeartsRules::PlayError error(HeartsRules::checkPlay(pile.values(), positions[0], currentTable()));
+    if (error != HeartsRules::PlayError::NONE)
+        throw YGP::ParseError(HeartsRules::describe(error));
+}
+
+//----------------------------------------------------------------------------
 /// Handles the messages the server might send for the hearts cardgame
 /// \param player ID of player sending the message
 /// \param message Message received from the server
@@ -695,10 +715,19 @@ bool Hearts::handleMessage(unsigned int player, const std::string& message) {
         if ((fields.size() >= 2) && (fields[1].key == "Player") && !stringToNumber(lPlayer, fields[1].value.c_str()) &&
             (lPlayer < NUM_PLAYERS)) {
             // The server receives the exchanges of the clients directly; a client all over the server
-            Check3((getConnectionMgr().getMode() != YGP::ConnectionMgr::SERVER) || (lPlayer == player));
-
             const unsigned int sender(lPlayer);
             lPlayer = (lPlayer - posServer) & 0x3;
+
+            // The server accepts only the own exchange of a client, which must
+            // not have exchanged yet, with the cards to exchange (out of his hand)
+            if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
+                if (sender != player)
+                    throw YGP::ParseError(N_("Invalid player!"));
+                if (aExchange[lPlayer].size())
+                    throw YGP::ParseError(N_("Unexpected exchange of cards!"));
+                if (findCards(*players[lPlayer].hand, fields[0].value).size() != HeartsRules::CARDS_TO_EXCHANGE)
+                    throw YGP::ParseError(N_("Invalid cards!"));
+            }
 
             // Don't exchange already exchanged cards (the own ones, echoed by the server)
             if (sender != posServer) {
@@ -739,11 +768,14 @@ bool Hearts::handleMessage(unsigned int player, const std::string& message) {
 bool Hearts::cardsExchanged(unsigned int cards) {
     Check1(gameStatus() == EXCHANGE);
 
+    // Remark: Sum up the exchanged cards (instead of subtracting them from the
+    // passed value), to not wrap around if (unexpectedly) too many are exchanged
+    std::size_t exchanged(played.size());
     for (const auto& i : aExchange)
-        cards -= i.size();
+        exchanged += i.size();
 
-    TRACE9("Hearts::cardsExchanged(unsigned int) - Remaining: " << cards);
-    return !(cards - played.size());
+    TRACE9("Hearts::cardsExchanged(unsigned int) - Exchanged: " << exchanged << " of " << cards);
+    return exchanged == cards;
 }
 
 //----------------------------------------------------------------------------

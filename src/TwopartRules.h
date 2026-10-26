@@ -135,6 +135,8 @@ enum class PlayError { NONE, NOT_BIGGER, NO_SERIE, ONLY_ONE_CARD };
 const char* describe(PlayError error, bool plural = false);
 
 PlayError checkPlay(const Card::Cards& hand, unsigned int start, unsigned int end, const Card::Cards& played, const Table& table);
+PlayError checkPlay(const Card::Cards& hand, const std::vector<unsigned int>& positions, const Card::Cards& played,
+                    const Table& table);
 
 unsigned int playersInBitfield(unsigned int bfPlayers);
 int findNextPlayerWithCards(const HandSizes& hands, unsigned int player);

@@ -561,6 +561,38 @@ bool Twopart::handleMessage(unsigned int player, const std::string& message) {
 }
 
 //----------------------------------------------------------------------------
+/// Checks (on the server) if a move received from a client is valid
+/// \param player Player in turn (who made the move)
+/// \param pile Pile the cards are played from (see getPileOfPlayer())
+/// \param target ID of the target, as sent by the client: 0: Play cards from
+///     the hand; 1: Pick up the played cards (part 2)
+/// \param positions Positions of the played cards in \c pile
+/// \throw YGP::ParseError If the move violates the rules of the game
+//----------------------------------------------------------------------------
+void Twopart::checkRemoteMove(unsigned int player, const Card::IPile& pile, unsigned int target,
+                              const std::vector<unsigned int>& positions) const {
+    TRACE8("Twopart::checkRemoteMove(2x unsigned int, ...) - Player " << player << "; Target " << target << "; Cards "
+                                                                       << positions.size());
+    Check1(player < NUM_PLAYERS);
+    if (!table.isInRound(player))
+        throw YGP::ParseError(N_("Received a move of a player not in turn!"));
+
+    if (target) {
+        // Picking up the played cards is specified by the first card of the
+        // last play (see playedSelected); getPileOfPlayer ensures it exists
+        Check3(table.offPos);
+        if ((positions.size() != 1) || (positions[0] != table.startPos[table.offPos - 1]))
+            throw YGP::ParseError(N_("Invalid card specification!"));
+    }
+    else {
+        // The cards are played like by the human (see cardSelected)
+        const TwopartRules::PlayError error(TwopartRules::checkPlay(pile.values(), positions, played.values(), table));
+        if (error != TwopartRules::PlayError::NONE)
+            throw YGP::ParseError(TwopartRules::describe(error));
+    }
+}
+
+//----------------------------------------------------------------------------
 /// Executes the remote move locally
 /// \param pile Pile to move to/from
 /// \param target ID of target as send by the partner

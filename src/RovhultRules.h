@@ -17,6 +17,7 @@
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <array>
+#include <vector>
 
 #include <card/Value.h>
 
@@ -100,6 +101,9 @@ bool isSpecialCard(Card::Value::NUMBERS nr);
 PlayError checkCard(Card::Value::NUMBERS nr, const Card::Cards& played, const Options& options);
 PlayError checkReserve(const Player& player, unsigned int pile);
 PlayError checkMove(const Table& table, unsigned int player, const Move& move, const Options& options);
+PlayError checkHandCards(const Table& table, unsigned int player, const std::vector<unsigned int>& positions,
+                         const Options& options);
+PlayError checkReserveCard(const Table& table, unsigned int player, unsigned int pile, bool fails, const Options& options);
 unsigned int firstPileToPlay(const Player& player, unsigned int pile);
 
 unsigned int numberOfEqualTopCards(const Card::Cards& played);

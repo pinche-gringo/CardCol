@@ -143,6 +143,8 @@ PlayError checkPickUp(const Table& table, unsigned int player, const Card::Value
 PlayError checkNewPile(const Table& table, unsigned int player, unsigned int card);
 PlayError checkAddToPile(const Table& table, unsigned int player, unsigned int card, unsigned int pile);
 PlayError checkDump(const Table& table, unsigned int player);
+PlayError checkPlayToPile(const Table& table, unsigned int player, const std::vector<unsigned int>& cards, unsigned int pile,
+                          unsigned int pos, unsigned int jokerTo = -1U);
 
 /// \name Game flow and scoring
 //@{

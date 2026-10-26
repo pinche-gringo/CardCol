@@ -928,6 +928,80 @@ PlayError checkDump(const Table& table, unsigned int player) {
 }
 
 //-----------------------------------------------------------------------------
+/// Checks if the player can play the passed cards to the passed position of a
+/// pile (e.g. a move received from a remote player):
+///   - A single card is played like a human player does it: It must be
+///     allowed (see checkNewPile/checkAddToPile) and played to the position
+///     getPosition4Card determines (after moving the joker of the pile, if
+///     getPosition4Card requests that).
+///   - Several cards (like the computer player plays them) must result in a
+///     valid pile (a new pile must have at least 3 cards).
+/// \param table Actual game
+/// \param player Player playing the cards
+/// \param cards Positions of the cards in the hand of the player (in the
+///     order they are inserted into the pile)
+/// \param pile Pile (of the team of the player) to play to; the number of
+///     piles for a new pile
+/// \param pos Position in the pile to insert the cards
+/// \param jokerTo Position the joker of the pile is moved to before the card
+///     is played (like the move of getPosition4Card); -1U if not moved
+/// \returns PlayError Reason why the cards can't be played (or NONE)
+//-----------------------------------------------------------------------------
+PlayError checkPlayToPile(const Table& table, unsigned int player, const std::vector<unsigned int>& cards, unsigned int pile,
+                          unsigned int pos, unsigned int jokerTo) {
+    Check1(player < NUM_PLAYERS);
+    const Card::Cards& hand(table.hands[player]);
+    const unsigned int team(player & 1);
+    const auto& piles(table.piles[team]);
+    Check1(pile <= piles.size());
+    Check1(!cards.empty());
+    Check1(std::ranges::all_of(cards, [&hand](unsigned int c) { return c < hand.size(); }));
+
+    const bool newPile(pile == piles.size());
+    if (cards.size() == 1) {
+        const unsigned int card(cards.front());
+        if (newPile) {
+            const PlayError error(checkNewPile(table, player, card));
+            return ((error == PlayError::NONE) && (pos || (jokerTo != -1U))) ? PlayError::CARD_DOES_NOT_FIT : error;
+        }
+
+        if (const PlayError error(checkAddToPile(table, player, card, pile)); error != PlayError::NONE)
+            return error;
+        unsigned int posCard(0), move(-1U);
+        return (getPosition4Card(piles[pile], hand[card], posCard, move) && (posCard == pos) && (move == jokerTo))
+                   ? PlayError::NONE
+                   : PlayError::CARD_DOES_NOT_FIT;
+    }
+
+    // Several cards are played without moving a joker (like the computer player does it)
+    if (jokerTo != -1U)
+        return PlayError::CARD_DOES_NOT_FIT;
+    if (!pilesComplete(piles, pile))
+        return PlayError::FILL_OTHER_PILES;
+
+    Card::Cards result(newPile ? Card::Cards() : piles[pile]);
+    if ((pos > result.size()) || ((result.size() + cards.size()) > CERRADO) || (cards.size() > hand.size()))
+        return PlayError::CARD_DOES_NOT_FIT;
+
+    Card::Cards played;
+    for (unsigned int c : cards)
+        played.push_back(hand[c]);
+    // Can't use the new pile (with the picked up card) with a joker
+    if (table.pickUpPlayed && !containsNoJoker(played))
+        return PlayError::NO_JOKER_ON_NEW_PILE;
+
+    result.insert(result.begin() + pos, played.begin(), played.end());
+    if (newPile && (result.size() < 3))
+        return PlayError::NOT_ENOUGH_CARDS;
+    if (!isValidPile(result))
+        return newPile ? PlayError::NO_VALID_NEW_PILE : PlayError::CARD_DOES_NOT_FIT;
+
+    if (!canPlayCards(table, player, cards.size(), newPile ? -1U : pile))
+        return table.unfinishedMonoPiles[team] ? PlayError::MONO_PILE_UNFINISHED : PlayError::NO_CERRADO;
+    return PlayError::NONE;
+}
+
+//-----------------------------------------------------------------------------
 /// Returns the number of cards a player gets
 /// \param cardsToDeal Number of cards to deal (as configured; the size of the reserve)
 /// \returns unsigned int Number of cards in the hand

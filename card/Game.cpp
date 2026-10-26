@@ -24,6 +24,7 @@
 
 #include <cardgames-cfg.h>
 
+#include <algorithm>
 #include <cerrno>
 #include <cstdlib>
 
@@ -427,6 +428,37 @@ void Game::setGameStatus(unsigned int newStatus) {
 }
 
 //-----------------------------------------------------------------------------
+/// Returns the positions of the cards with the passed IDs within a pile
+/// (without changing it). Every card is used only once, so (with several
+/// decks) equal IDs refer to different cards.
+/// \param pile Pile to search
+/// \param cards String containing the (blank-separated) IDs of the cards
+/// \returns std::vector<unsigned int> Positions of the cards (in the order of
+///     the IDs)
+/// \throw YGP::ParseError If the string is not a non-empty list of IDs of
+///     cards in the pile
+//-----------------------------------------------------------------------------
+std::vector<unsigned int> Game::findCards(const IPile& pile, const std::string& cards) {
+    std::vector<unsigned int> positions;
+    for (const auto& act : words(cards)) {
+        unsigned long id(0);
+        if (stringToNumber(id, act.c_str()))
+            throw YGP::ParseError(N_("Invalid card specification!"));
+
+        unsigned int pos(0);
+        while ((pos < pile.size()) &&
+               ((pile[pos]->id() != id) || (std::ranges::find(positions, pos) != positions.end())))
+            ++pos;
+        if (pos == pile.size())
+            throw YGP::ParseError(N_("Card not found!"));
+        positions.push_back(pos);
+    }
+    if (positions.empty())
+        throw YGP::ParseError(N_("Invalid card specification!"));
+    return positions;
+}
+
+//-----------------------------------------------------------------------------
 /// Flips the cards the user is about to play
 /// \param pile Pile to manipulate
 /// \param cards String containing the (comma-separated) IDs of the cards to
@@ -766,8 +798,11 @@ bool Game::performCommand([[maybe_unused]] unsigned int player, [[maybe_unused]]
     // A server accepts from a client only moves of the player in turn; the
     // course of the game (turns, end) is controlled by the server alone
     const bool server(getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER);
-    if (server && (cmd != "Play"))
-        throw YGP::ParseError(N_("Unexpected command!"));
+    if (server && (cmd != "Play")) {
+        std::string error(_("Unexpected command `%1'"));
+        error.replace(error.find("%1"), 2, cmd);
+        throw YGP::ParseError(error);
+    }
 
     if (cmd == "Play") {
         if (server && (!isRunning() || (player != static_cast<unsigned int>(actPlayer))))
@@ -782,6 +817,9 @@ bool Game::performCommand([[maybe_unused]] unsigned int player, [[maybe_unused]]
         IPile* pile(getPileOfPlayer(actPlayer, target));
         if (!pile)
             throw YGP::ParseError(N_("Invalid target!"));
+        // The server checks the moves of its clients against the rules of the game
+        if (server)
+            checkRemoteMove(actPlayer, *pile, target, findCards(*pile, fields[0].value));
         flipCards2Play(*pile, fields[0].value);
 
         // Inform clients about cards to play
@@ -827,6 +865,19 @@ bool Game::stringToNumber(unsigned long& number, const char* text) {
     number = std::strtoul(text, &pTail, 0);
     return (errno || (pTail && *pTail));
 }
+
+//----------------------------------------------------------------------------
+/// Checks (on the server) if a move received from a client is valid; called
+/// before the move is executed (and before the cards are flipped)
+/// \param player Player in turn (who made the move)
+/// \param pile Pile the cards are played from (see getPileOfPlayer())
+/// \param target ID of the target, as sent by the client
+/// \param positions Positions of the played cards in \c pile (in the order
+///     sent; at least one, no duplicates)
+/// \throw YGP::ParseError If the move violates the rules of the game
+//----------------------------------------------------------------------------
+void Game::checkRemoteMove(unsigned int /*player*/, const IPile& /*pile*/, unsigned int /*target*/,
+                           const std::vector<unsigned int>& /*positions*/) const {}
 
 //----------------------------------------------------------------------------
 /// Executes the remote move locally

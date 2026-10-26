@@ -62,6 +62,10 @@ class SgtMayor : public Card::Game {
 
   protected:
     Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;
+#ifdef WITH_NETWORK
+    void checkRemoteMove(unsigned int player, const Card::IPile& pile, unsigned int target,
+                         const std::vector<unsigned int>& positions) const override;
+#endif
 
   private:
     // Protected manager functions

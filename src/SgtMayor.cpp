@@ -516,6 +516,25 @@ bool SgtMayor::handleMessage(unsigned int player, const std::string& message) {
         if ((pos1 == -1) || (pos2 == -1))
             throw YGP::ParseError(N_("Card not found!"));
 
+        // The server accepts only the next exchange, if the sending client is
+        // giving away the bad card and receives the good card the other player
+        // gives away
+        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
+            if (convertPlayer(player2) != player)
+                throw YGP::ParseError(N_("Invalid player!"));
+
+            const auto exchange(SgtMayorRules::nextExchange(diffTricks, startPlayer));
+            if ((gameStatus() != PLAYING) || !exchange || (exchange->playerBad != player2) ||
+                (exchange->playerGood != player1))
+                throw YGP::ParseError(N_("Unexpected exchange of cards!"));
+
+            const Card::Cards handGood(players[player1].hand.values());
+            const Card::Widget& bad(*players[player2].hand[pos2]);
+            if (!SgtMayorRules::isValidExchange(handGood, pos1, bad) ||
+                (SgtMayorRules::selectGoodCard(handGood, bad) != static_cast<unsigned int>(pos1)))
+                throw YGP::ParseError(N_("Invalid exchange of cards!"));
+        }
+
         // The server informs the (other) clients about the exchange
         if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
             doExchangeCards(player2, pos2, player1, pos1);
@@ -533,6 +552,11 @@ bool SgtMayor::handleMessage(unsigned int player, const std::string& message) {
         if (stringToNumber(trumpColour, fields.at(0).value.c_str()) || (trumpColour > Card::Widget::HEARTS) || pTrump ||
             diffTricks[0] || diffTricks[1] || diffTricks[2])
             throw YGP::ParseError(N_("Invalid special colour!"));
+
+        // The server accepts the special colour only from the client selecting it
+        if ((getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) &&
+            ((gameStatus() != PLAYING) || (convertPlayer(SgtMayorRules::trumpPlayer(startPlayer)) != player)))
+            throw YGP::ParseError(N_("Move of a player not in turn!"));
 
         // The server informs the (other) clients about the special colour
         if (getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT)
@@ -553,6 +577,32 @@ bool SgtMayor::handleMessage(unsigned int player, const std::string& message) {
         makeExchange();
     }
     return rc;
+}
+
+//----------------------------------------------------------------------------
+/// Checks (on the server) if a move received from a client is valid: After
+/// selecting the special colour exactly one card, which the rules allow
+/// \param player Player in turn (who made the move; index in the players)
+/// \param pile Pile the card is played from (the hand of the player)
+/// \param target ID of the target (ignored; checked by getPileOfPlayer())
+/// \param positions Positions of the played cards in \c pile
+/// \throw YGP::ParseError If the move violates the rules of the game
+//----------------------------------------------------------------------------
+void SgtMayor::checkRemoteMove([[maybe_unused]] unsigned int player, const Card::IPile& pile, unsigned int /*target*/,
+                               const std::vector<unsigned int>& positions) const {
+    TRACE8("SgtMayor::checkRemoteMove(unsigned int, const IPile&, unsigned int, const std::vector<unsigned int>&) - Player "
+           << player << ": " << positions.size() << " cards");
+    Check3(&pile == &players[localPlayer(player)].hand);
+
+    // The trick is cleared, before the winner is in turn
+    if ((gameStatus() != PLAYING) || !pTrump || exchanging || (table.trick.size() >= NUM_PLAYERS))
+        throw YGP::ParseError(N_("Unexpected move!"));
+    if (positions.size() != 1)
+        throw YGP::ParseError(N_("Invalid cards!"));
+
+    const SgtMayorRules::PlayError error(SgtMayorRules::checkPlay(pile.values(), positions[0], table));
+    if (error != SgtMayorRules::PlayError::NONE)
+        throw YGP::ParseError(SgtMayorRules::describe(error));
 }
 
 //----------------------------------------------------------------------------

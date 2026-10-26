@@ -358,6 +358,62 @@ BOOST_AUTO_TEST_CASE(checking_adding_card) {
     BOOST_TEST(std::string(describe(PlayError::PILES_INCOMPLETE)) == "Every pile on the table must have at least 3 cards!");
 }
 
+BOOST_AUTO_TEST_CASE(checking_played_cards) {
+    // A single card must be played to the position the rules determine
+    Table table(tableWith("H7 H3 H3 C9 Jo H5", {"H4 H5 H6", "C8 D8 S8"}));
+    BOOST_TEST(checkPlayToPile(table, 0, {0}, 0, 3) == PlayError::NONE);
+    BOOST_TEST(checkPlayToPile(table, 0, {0}, 0, 0) == PlayError::CARD_DOES_NOT_FIT);
+    BOOST_TEST(checkPlayToPile(table, 0, {0}, 0, 3, 0) == PlayError::CARD_DOES_NOT_FIT, "No joker to move");
+    BOOST_TEST(checkPlayToPile(table, 0, {0}, 1, 3) == PlayError::CARD_DOES_NOT_FIT);
+    BOOST_TEST(checkPlayToPile(table, 0, {4}, 1, 1) == PlayError::NONE);
+
+    // A single card starting a new pile
+    BOOST_TEST(checkPlayToPile(table, 0, {1}, 2, 0) == PlayError::NONE);
+    BOOST_TEST(checkPlayToPile(table, 0, {1}, 2, 1) == PlayError::CARD_DOES_NOT_FIT);
+    BOOST_TEST(checkPlayToPile(table, 0, {3}, 2, 0) == PlayError::NO_VALID_NEW_PILE);
+
+    // A card replacing the joker needs the joker moved (like getPosition4Card says)
+    table.piles[0][0] = cards("H4 Jo H6");
+    BOOST_TEST(checkPlayToPile(table, 0, {5}, 0, 2, 0) == PlayError::NONE);
+    BOOST_TEST(checkPlayToPile(table, 0, {5}, 0, 2) == PlayError::CARD_DOES_NOT_FIT);
+    BOOST_TEST(checkPlayToPile(table, 0, {5}, 0, 2, 2) == PlayError::CARD_DOES_NOT_FIT);
+    BOOST_TEST(checkPlayToPile(table, 0, {5}, 0, 1, 0) == PlayError::CARD_DOES_NOT_FIT);
+
+    // Other piles must be filled up first
+    table.piles[0][1].pop_back();
+    BOOST_TEST(checkPlayToPile(table, 0, {0}, 0, 3) == PlayError::FILL_OTHER_PILES);
+    BOOST_TEST(checkPlayToPile(table, 0, {1}, 2, 0) == PlayError::FILL_OTHER_PILES);
+
+    // Several cards must form a valid pile
+    table = tableWith("H3 C3 S3 C9 C10 Jo SK", {"H4 H5 H6"});
+    BOOST_TEST(checkPlayToPile(table, 0, {0, 1, 2}, 1, 0) == PlayError::NONE);
+    BOOST_TEST(checkPlayToPile(table, 0, {3, 4, 5}, 1, 0) == PlayError::NONE);
+    BOOST_TEST(checkPlayToPile(table, 0, {0, 1, 2}, 1, 1) == PlayError::CARD_DOES_NOT_FIT);
+    BOOST_TEST(checkPlayToPile(table, 0, {0, 1}, 1, 0) == PlayError::NOT_ENOUGH_CARDS);
+    BOOST_TEST(checkPlayToPile(table, 0, {0, 1, 3}, 1, 0) == PlayError::NO_VALID_NEW_PILE);
+    BOOST_TEST(checkPlayToPile(table, 0, {3, 5, 4}, 1, 0) == PlayError::NO_VALID_NEW_PILE, "Wrong order");
+    BOOST_TEST(checkPlayToPile(table, 0, {0, 1, 2}, 1, 0, 0) == PlayError::CARD_DOES_NOT_FIT);
+
+    // ... also when added to a pile
+    table.hands[0] = cards("H7 H8 H3 C9");
+    BOOST_TEST(checkPlayToPile(table, 0, {0, 1}, 0, 3) == PlayError::NONE);
+    BOOST_TEST(checkPlayToPile(table, 0, {0, 1}, 0, 0) == PlayError::CARD_DOES_NOT_FIT);
+    BOOST_TEST(checkPlayToPile(table, 0, {1, 0}, 0, 3) == PlayError::CARD_DOES_NOT_FIT);
+
+    // Playing the last cards needs a cerrado
+    table.hands[0] = cards("H7 H8 H9");
+    table.reserve[0] = false;
+    BOOST_TEST(checkPlayToPile(table, 0, {0, 1}, 0, 3) == PlayError::NO_CERRADO);
+    table.points[0] = 200;
+    BOOST_TEST(checkPlayToPile(table, 0, {0, 1}, 0, 3) == PlayError::NONE);
+
+    // No joker to the pile with the picked up card
+    table = tableWith("H5 Jo C9 C10", {"H4"});
+    table.pickUpPlayed = true;
+    BOOST_TEST(checkPlayToPile(table, 0, {0, 1}, 0, 1) == PlayError::NO_JOKER_ON_NEW_PILE);
+    BOOST_TEST(checkPlayToPile(table, 0, {1}, 0, 0) == PlayError::NO_JOKER_ON_NEW_PILE);
+}
+
 BOOST_AUTO_TEST_CASE(dealing) {
     const Card::Cards deck(Test::shuffledDeck(1, NUM_DECKS, NUM_JOKERS));
     BOOST_TEST(deck.size() == 220u);

@@ -618,6 +618,25 @@ PlayError checkPlay(const Card::Cards& hand, unsigned int start, unsigned int en
 }
 
 //-----------------------------------------------------------------------------
+/// Checks if the cards at the passed positions can be played (see above). The
+/// positions must be consecutive and ascending (like the cards are played from
+/// the hand).
+/// \param hand Cards of the player (sorted)
+/// \param positions Positions of the cards to play (not empty)
+/// \param played Played cards
+/// \param table Actual state of the game
+/// \returns PlayError Reason why the cards must not be played (or NONE)
+//-----------------------------------------------------------------------------
+PlayError checkPlay(const Card::Cards& hand, const std::vector<unsigned int>& positions, const Card::Cards& played,
+                    const Table& table) {
+    Check1(positions.size());
+    for (unsigned int i(1); i < positions.size(); ++i)
+        if (positions[i] != (positions[0] + i))
+            return table.partTwo ? PlayError::NO_SERIE : PlayError::ONLY_ONE_CARD;
+    return checkPlay(hand, positions.front(), positions.back(), played, table);
+}
+
+//-----------------------------------------------------------------------------
 /// Counts the players in the passed bitfield
 /// \param bfPlayers Bitfield of players
 /// \returns unsigned int Number of players

@@ -64,6 +64,8 @@ class Jabberwocky : public Card::Game {
 
   protected:
     Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;
+    void checkRemoteMove(unsigned int player, const Card::IPile& pile, unsigned int target,
+                         const std::vector<unsigned int>& positions) const override;
 
   private:
     Jabberwocky() = delete;
@@ -88,6 +90,7 @@ class Jabberwocky : public Card::Game {
     int playCard(unsigned int player);
     void finishMove();
     unsigned int sumOtherBids(unsigned int player) const;
+    unsigned int nextBidder() const;
     void takeWonCards(unsigned int player);
     JabberwockyRules::Table& currentTable();
 

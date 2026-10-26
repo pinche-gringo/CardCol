@@ -327,6 +327,35 @@ Card::IPile* Jabberwocky::getPileOfPlayer(unsigned int player, unsigned int pile
     return &players[player].hand;
 }
 
+//----------------------------------------------------------------------------
+/// Checks (on the server) if a move received from a client is valid: After
+/// bidding exactly one card, which the rules allow
+/// \param player Player in turn (who made the move)
+/// \param pile Pile the card is played from (the hand of the player)
+/// \param target ID of the target (ignored; checked by getPileOfPlayer())
+/// \param positions Positions of the played cards in \c pile
+/// \throw YGP::ParseError If the move violates the rules of the game
+//----------------------------------------------------------------------------
+void Jabberwocky::checkRemoteMove([[maybe_unused]] unsigned int player, const Card::IPile& pile, unsigned int /*target*/,
+                                  const std::vector<unsigned int>& positions) const {
+    TRACE8("Jabberwocky::checkRemoteMove(unsigned int, const IPile&, unsigned int, const std::vector<unsigned int>&) - Player "
+           << player << ": " << positions.size() << " cards");
+    Check3(&pile == &players[player].hand);
+
+    if ((gameStatus() != PLAYING) || !table || (nextBidder() != -1U))
+        throw YGP::ParseError(N_("Unexpected move!"));
+    if (positions.size() != 1)
+        throw YGP::ParseError(N_("Invalid cards!"));
+
+    // Remark: The winner of a trick might continue, before the (complete) trick
+    // has been taken; it's taken before his card is played
+    JabberwockyRules::Table actTable(*table);
+    actTable.trick = (played.size() < NUM_PLAYERS) ? played.values() : Card::Cards();
+    const JabberwockyRules::PlayError error(JabberwockyRules::checkPlay(pile.values(), positions[0], actTable));
+    if (error != JabberwockyRules::PlayError::NONE)
+        throw YGP::ParseError(JabberwockyRules::describe(error));
+}
+
 //-----------------------------------------------------------------------------
 /// Adds game-specific menus
 /// \param menu Top-level menu to add the game's submenu to
@@ -491,6 +520,20 @@ unsigned int Jabberwocky::sumOtherBids(unsigned int player) const {
         if ((i != player) && players[i].bid.isDefined())
             sum += static_cast<unsigned int>(players[i].bid);
     return sum;
+}
+
+//-----------------------------------------------------------------------------
+/// Returns the player who has to bid next (the bids are made in turn, starting
+/// with the start player)
+/// \returns unsigned int Player to bid or -1U, if all players have bid
+//-----------------------------------------------------------------------------
+unsigned int Jabberwocky::nextBidder() const {
+    for (unsigned int i(0); i < NUM_PLAYERS; ++i) {
+        const unsigned int player((startPlayer + i) % NUM_PLAYERS);
+        if (!players[player].bid.isDefined())
+            return player;
+    }
+    return -1U;
 }
 
 //-----------------------------------------------------------------------------
@@ -683,9 +726,23 @@ bool Jabberwocky::handleMessage(unsigned int player, const std::string& message)
             (bid > JabberwockyRules::tricksOfRound(turn)))
             throw YGP::ParseError(N_("Invalid bid!"));
 
-        // Inform the other clients
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER) {
+            // The server accepts only the own bid of a client, if it's his turn
+            // to bid and the bid is allowed (the server's view is the own one)
+            if (sender != player)
+                throw YGP::ParseError(N_("Invalid player!"));
+            if ((gameStatus() != PLAYING) || !table || (nextBidder() != sender))
+                throw YGP::ParseError(N_("Move of a player not in turn!"));
+
+            const JabberwockyRules::BidError error(
+                JabberwockyRules::checkBid(static_cast<unsigned int>(bid), sumOtherBids(sender),
+                                           sender == ((startPlayer + NUM_PLAYERS - 1) % NUM_PLAYERS), turn));
+            if (error != JabberwockyRules::BidError::NONE)
+                throw YGP::ParseError(JabberwockyRules::describe(error));
+
+            // Inform the other clients
             broadcastMessage(message);
+        }
 
         // Ignore the own bid (echoed by the server)
         if (sender != posServer) {

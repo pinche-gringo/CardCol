@@ -59,6 +59,8 @@ class Hearts : public Card::Game {
 
   protected:
     Card::IPile* getPileOfPlayer(unsigned int player, unsigned int pile) override;
+    void checkRemoteMove(unsigned int player, const Card::IPile& pile, unsigned int target,
+                         const std::vector<unsigned int>& positions) const override;
 
   private:
     enum Status { EXCHANGE = Game::LAST };
@@ -80,6 +82,7 @@ class Hearts : public Card::Game {
     bool moveSelectedCardToPlayed(unsigned int player, unsigned int card);
     unsigned int calcNextPlayer(unsigned int player);
     HeartsRules::Table currentTable() const;
+    void exchangeSelected();
     void exchangeCards();
     void exchangeStep(unsigned int giver);
     void takeExchangedCards();

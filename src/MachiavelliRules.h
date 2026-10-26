@@ -132,6 +132,7 @@ const char* describe(MoveError error);
 
 MoveError checkMove(const Card::Cards& hand, const Table& table, unsigned int srcPile, unsigned int pos, unsigned int destPile,
                     Move& move);
+bool isHumanMove(const Card::Cards& hand, const Table& table, const Move& move);
 
 unsigned int findNextPlayer(const std::array<unsigned int, NUM_PLAYERS>& handSizes, unsigned int player);
 bool isGameOver(const std::array<unsigned int, NUM_PLAYERS>& handSizes, unsigned int nextPlayer);
