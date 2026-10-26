@@ -468,6 +468,9 @@ void Game::flipCards2Play(IPile& pile, const std::string& cards) {
             throw YGP::ParseError(error);
         }
     } // end-while string has data
+    if (!cCards)
+        throw YGP::ParseError(N_("Invalid card specification!"));
+
     pos2Play = pile.size() - 1;
     pos1Play = pos2Play - cCards + 1;
     Check3(pos1Play <= pos2Play);
@@ -760,7 +763,16 @@ bool Game::performCommand([[maybe_unused]] unsigned int player, [[maybe_unused]]
     const std::string& cmd(fields.at(0).key);
     TRACE2("Game::performCommand(unsigned int player, const std::string&) - " << cmd);
 
+    // A server accepts from a client only moves of the player in turn; the
+    // course of the game (turns, end) is controlled by the server alone
+    const bool server(getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER);
+    if (server && (cmd != "Play"))
+        throw YGP::ParseError(N_("Unexpected command!"));
+
     if (cmd == "Play") {
+        if (server && (!isRunning() || (player != static_cast<unsigned int>(actPlayer))))
+            throw YGP::ParseError(N_("Received a move of a player not in turn!"));
+
         // Play=<IDs of cards>;Target=<target>
         unsigned long target(-1UL);
         if ((fields.size() < 2) || (fields[1].key != "Target") || stringToNumber(target, fields[1].value.c_str()))
@@ -773,7 +785,7 @@ bool Game::performCommand([[maybe_unused]] unsigned int player, [[maybe_unused]]
         flipCards2Play(*pile, fields[0].value);
 
         // Inform clients about cards to play
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
+        if (server)
             broadcastMessage(msg);
 
         if (executeRemoteMove(*pile, target)) {
@@ -794,11 +806,8 @@ bool Game::performCommand([[maybe_unused]] unsigned int player, [[maybe_unused]]
         if (statGame == PLAYING)
             displayTurn(next);
     }
-    else if (cmd == "End") {
+    else if (cmd == "End")
         end(false);
-        if (getConnectionMgr().getMode() == YGP::ConnectionMgr::SERVER)
-            broadcastMessage("End");
-    }
     else
         throw YGP::ParseError(N_("Unknown command!"));
 #endif
