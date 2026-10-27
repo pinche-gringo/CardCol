@@ -8,8 +8,8 @@ The following packages are needed:
   - gtkmm-4.0 (which itself needs GTK 4); available at https://www.gtkmm.org/
   - My YGP library (libYGP and libXGP, >= 0.9.50); also available as a
     Github project (https://github.com/pinche-gringo/libYGP)
-  - Card decks; e.g. the KDE card games provide a huge collection. See also
-    the README.
+  - Card decks; e.g. the GNOME and/or KDE card games provide a huge collection. See
+    also the README.
 
 Optional:
 
