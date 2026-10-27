@@ -482,11 +482,14 @@ int CardgameAppl::perform(int, const char**) {
 /// Shows a description of the program
 //-----------------------------------------------------------------------------
 const char* CardgameAppl::description() const {
-    static std::string version(PACKAGE " V" VERSION " - " + std::string(_("Compiled on")) +
-                               std::string(" " __DATE__ " - " __TIME__ "\n\n") +
-                               std::string(_("Copyright (C) 2002 - 2026 Markus Schwab; e-mail: pelotudo.gringo@gmail.com"
-                                             "\nDistributed under the terms of the GNU General "
-                                             "Public License")));
+    static std::string version;
+    if (version.empty()) {
+        std::string copyright(_("Copyright (C) 2002 - 2026 Markus Schwab; e-mail: %1"
+                                "\nDistributed under the terms of the GNU General "
+                                "Public License"));
+        copyright.replace(copyright.find("%1"), 2, PACKAGE_BUGREPORT);
+        version = PACKAGE " V" VERSION " - " + std::string(_("Compiled on")) + " " __DATE__ " - " __TIME__ "\n\n" + copyright;
+    }
     return version.c_str();
 }
 

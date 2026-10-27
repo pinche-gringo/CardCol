@@ -820,9 +820,10 @@ const char* CardgameCollection::getHelpfile() {
 /// Shows the about box for the program
 //-----------------------------------------------------------------------------
 void CardgameCollection::showAboutbox() {
-    std::string ver(_("Copyright(C) 2002 - 2026 Markus Schwab\ne-mail: pelotudo.gringo@gmail.com\n\nCompiled on %1 at %2"));
+    std::string ver(_("Copyright(C) 2002 - 2026 Markus Schwab\ne-mail: %3\n\nCompiled on %1 at %2"));
     ver.replace(ver.find("%1"), 2, __DATE__);
     ver.replace(ver.find("%2"), 2, __TIME__);
+    ver.replace(ver.find("%3"), 2, PACKAGE_BUGREPORT);
 
     XGP::XAbout* about(XGP::XAbout::create(ver, PACKAGE " V" VERSION));
     about->setIconProgram(picGame, sizeof(picGame));
