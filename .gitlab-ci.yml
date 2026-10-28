@@ -42,6 +42,12 @@ default:
 # Installs the RPMs of libYGP/libXGP in the version required by meson.build
 .ygp:
   before_script:
+    # GitLab uses a certificate of a private CA; trust it (provided by the runner)
+    - |
+      if [ -n "$CI_SERVER_TLS_CA_FILE" ]; then
+        cp "$CI_SERVER_TLS_CA_FILE" /etc/pki/ca-trust/source/anchors/gitlab-ca.crt
+        update-ca-trust
+      fi
     - |
       YGP_VERSION=$(sed -n "s/^ *ygp_version *= *'\([0-9][0-9.]*\)'.*/\1/p" meson.build | head -n 1)
       if [ -z "$YGP_VERSION" ]; then
@@ -220,6 +226,9 @@ rpm:
 release:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
+  variables:
+    # Trust the private CA of GitLab
+    ADDITIONAL_CA_CERT_BUNDLE: $CI_SERVER_TLS_CA_FILE
   needs:
     - job: dist
       artifacts: true
