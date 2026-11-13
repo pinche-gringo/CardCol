@@ -452,7 +452,8 @@ void Jabberwocky::makeBids(unsigned int start) {
         TRACE8("Jabberwocky::makeBids(unsigned int) - PlayerID: " << actPlayer);
 
         if (actPlayer) {
-            if (typeid(*actPlayers[actPlayer]) == typeid(Card::ComputerPlayer)) {
+            const Card::Player& bidder(*actPlayers[actPlayer]);
+            if (typeid(bidder) == typeid(Card::ComputerPlayer)) {
                 // Estimate the tricks for the player; take care the last player
                 // does not place a bid which sums all bids up to the number of tricks
                 Check3(pTrump);
@@ -468,9 +469,9 @@ void Jabberwocky::makeBids(unsigned int start) {
                 }
             }
             else {
-                Check3(typeid(*actPlayers[actPlayer]) == typeid(Card::RemotePlayer));
+                Check3(typeid(bidder) == typeid(Card::RemotePlayer));
                 Glib::ustring msg(_("Waiting for %1 to bid ..."));
-                msg.replace(msg.find("%1"), 2, actPlayers[actPlayer]->getName());
+                msg.replace(msg.find("%1"), 2, bidder.getName());
                 status.push(msg);
                 return;
             }

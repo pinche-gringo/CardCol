@@ -380,7 +380,7 @@ bool reorderTableToFit2(const Card::Cards& hand, const Table& table, Missing& mi
                             if ((diffTable + 2) == static_cast<int>(other.size()))
                                 c = other.size() - 1;
                         }
-                        else if ((diffTable == 1))
+                        else if (diffTable == 1)
                             c = 0;
                     }
 

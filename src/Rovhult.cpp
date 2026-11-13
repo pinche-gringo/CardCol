@@ -531,7 +531,7 @@ void Rovhult::executeMove(unsigned int player) {
 
     // Start counting the moves (to prevent endless games), when the last
     // (local or remote) human finished
-    if (turn.finished && !cEndgame && (typeid(*actPlayers[player]) != typeid(Card::ComputerPlayer)) && noMoreHumans())
+    if (turn.finished && !cEndgame && !isComputerPlayer(player) && noMoreHumans())
         cEndgame = 1;
 
     if (turn.loser != -1) {
@@ -1364,7 +1364,7 @@ bool Rovhult::noMoreHumans() const {
     int first(nextAvailablePlayer(0));
     int i(first);
     do {
-        if (typeid(*actPlayers[i]) != typeid(Card::ComputerPlayer))
+        if (!isComputerPlayer(i))
             return false;
         i = nextAvailablePlayer(i);
     }

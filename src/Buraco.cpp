@@ -287,8 +287,12 @@ void Buraco::playCards() {
     Check1(gameStatus() == PLAYING);
     Check1(!hands[player].empty());
 
-    if (gStatus.startTurn && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) == (player >> 1)))
-        ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = 0x3;
+    if (gStatus.startTurn && (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) == (player >> 1))) {
+        if (player & 1)
+            gStatus.team2Buraco = 0x3;
+        else
+            gStatus.team1Buraco = 0x3;
+    }
 
     Card::IPile& playerPile(hands[player]);
 #ifdef WITH_NETWORK
@@ -1198,7 +1202,10 @@ void Buraco::addBuraco(unsigned int player) {
     unsigned int cJokers(hands[player].size());
 
     // Storing player picking up the buraco
-    ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = (player >> 1);
+    if (player & 1)
+        gStatus.team2Buraco = (player >> 1);
+    else
+        gStatus.team1Buraco = (player >> 1);
 
     // Add reserve
     std::ranges::sort(reserve[player & 1], compByNumberWithJokers);
@@ -1882,8 +1889,12 @@ void Buraco::startRemoteTurn(unsigned int player) {
         TRACE5("Buraco::startRemoteTurn(unsigned int) - " << player);
         gStatus.startTurn = 0;
 
-        if (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) == (player >> 1))
-            ((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) = 0x3;
+        if (((player & 1) ? gStatus.team2Buraco : gStatus.team1Buraco) == (player >> 1)) {
+            if (player & 1)
+                gStatus.team2Buraco = 0x3;
+            else
+                gStatus.team1Buraco = 0x3;
+        }
     }
 }
 

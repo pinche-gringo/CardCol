@@ -792,11 +792,12 @@ void SgtMayor::makeExchange() {
         const unsigned int playerBad(exchange->playerBad);
         TRACE9("SgtMayor::makeExchange() - " << playerBad << " with " << exchange->playerGood);
         if (playerBad) {
+            const Card::Player& exchanger(*actPlayers[convertPlayer(playerBad)]);
             if ((getConnectionMgr().getMode() == YGP::ConnectionMgr::CLIENT) ||
-                (typeid(*actPlayers[convertPlayer(playerBad)]) == typeid(Card::RemotePlayer))) {
+                (typeid(exchanger) == typeid(Card::RemotePlayer))) {
                 // Wait for the Exchange-message (see handleMessage)
                 Glib::ustring msg(_("Waiting for %1 to exchange cards ..."));
-                msg.replace(msg.find("%1"), 2, actPlayers[convertPlayer(playerBad)]->getName());
+                msg.replace(msg.find("%1"), 2, exchanger.getName());
                 status.pop();
                 status.push(msg);
             }

@@ -362,7 +362,8 @@ bool Game::enableHuman() {
 //-----------------------------------------------------------------------------
 bool Game::isComputerPlayer(unsigned int player) const {
     Check1(player < actPlayers.size());
-    return typeid(*actPlayers[player]) == typeid(ComputerPlayer);
+    const Player& actPlayer(*actPlayers[player]);
+    return typeid(actPlayer) == typeid(ComputerPlayer);
 }
 
 //-----------------------------------------------------------------------------
