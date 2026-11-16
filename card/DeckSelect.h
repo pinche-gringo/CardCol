@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <map>
 #include <mutex>
 #include <stop_token>
 #include <string>
@@ -84,7 +85,8 @@ class DeckSelectDlg : public XGP::XDialog {
     // Remark: The following methods are executed by the thread loading the
     //     images; they must not access the widgets of the dialog
     void loadImages(const std::stop_token& stop);
-    Glib::RefPtr<Gdk::Pixbuf> getImage(const std::string& file, bool scale = true);
+    void preloadSelected();
+    Glib::RefPtr<Gdk::Pixbuf> getImage(const std::string& file, bool scale = true, bool reportError = true);
     void addFileInDirectories(const std::stop_token& stop, const std::string& dir, const std::string& file,
                               unsigned int offName = 0);
     void addFile(const std::string& path, const std::string& name, const std::string& display);
@@ -93,7 +95,7 @@ class DeckSelectDlg : public XGP::XDialog {
   private:
     /// An image loaded in the background (or the error occured while trying so)
     struct LoadedImage {
-        enum Type { DECK, BACK, ERROR };
+        enum Type { DECK, BACK, PREVIEW_DECK, PREVIEW_BACK, ERROR };
 
         Type type;
         std::string path; ///< Path of deck/back; or the error-message
@@ -141,7 +143,9 @@ class DeckSelectDlg : public XGP::XDialog {
 
     std::mutex mxLoaded;             ///< Protects the loaded images
     std::vector<LoadedImage> loaded; ///< Images loaded, but not yet displayed
-    Glib::Dispatcher imagesLoaded;   ///< Informs the GUI thread about loaded images
+    /// Images of the preselected deck/back, which are loaded ahead of all others; only used by the loading thread
+    std::map<std::string, Glib::RefPtr<Gdk::Pixbuf>> preloaded;
+    Glib::Dispatcher imagesLoaded; ///< Informs the GUI thread about loaded images
     // Remark: Must be the last member, so it is stopped before the others are destroyed
     std::jthread loader; ///< Thread loading the images
 };

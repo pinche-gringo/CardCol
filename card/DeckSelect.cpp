@@ -51,6 +51,35 @@
 
 namespace Card {
 
+#ifdef GNOMECARDS_DIR
+namespace {
+
+//-----------------------------------------------------------------------------
+/// Checks if the passed deck (or back) is a GNOME carddeck (a single file
+/// containing all cards)
+/// \param deck Deck to check
+/// \returns bool True, if the deck is a GNOME carddeck
+//-----------------------------------------------------------------------------
+bool isGnomeDeck(const std::string& deck) { return deck.starts_with(GNOMECARDS_DIR) && (deck.back() != YGP::File::DIRSEPARATOR); }
+
+//-----------------------------------------------------------------------------
+/// Extracts a single card out of a GNOME carddeck (having 13 columns in 5
+/// rows; the last row holding the jokers and the back)
+/// \param deck Image of all cards
+/// \param col Column of card to extract
+/// \param row Row of card to extract
+/// \returns Glib::RefPtr<Gdk::Pixbuf> Card, scaled to the size of the cards
+//-----------------------------------------------------------------------------
+Glib::RefPtr<Gdk::Pixbuf> extractCard(const Glib::RefPtr<Gdk::Pixbuf>& deck, int col, int row) {
+    const int width(deck->get_width() / 13);
+    const int height(deck->get_height() / 5);
+    return Gdk::Pixbuf::create_subpixbuf(deck, width * col, height * row, width, height)
+        ->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR);
+}
+
+} // namespace
+#endif
+
 //-----------------------------------------------------------------------------
 /// Constructor; adds all controls to the dialog
 /// \param deck Name of deck to preselect
@@ -60,7 +89,7 @@ DeckSelectDlg::DeckSelectDlg(std::string deck, std::string back)
     : XGP::XDialog(_("Select carddeck"), OKCANCEL), setDecks(), cols(), mDecks(), mBacks(), boxDecks(),
       txtDecks(_("Available decks")), selDeck(), decks(), rendererDecks(), selBack(), boxBack(),
       txtBack(_("Available backgrounds")), backs(), rendererBacks(), apply(nullptr), defDeck(std::move(deck)),
-      defBack(std::move(back)), mxLoaded(), loaded(), imagesLoaded(), loader() {
+      defBack(std::move(back)), mxLoaded(), loaded(), preloaded(), imagesLoaded(), loader() {
     TRACE3("DeckSelectDlg::DeckSelectDlg(2x std::string) - " << defDeck << " - " << defBack);
 
     // Remark: Without an explicit default size, the window would grow to the
@@ -191,6 +220,10 @@ DeckSelectDlg::~DeckSelectDlg() {
 void DeckSelectDlg::loadImages([[maybe_unused]] const std::stop_token& stop) {
     TRACE3("DeckSelectDlg::loadImages(const std::stop_token&)");
 
+    // Show the preselected deck and back as soon as possible, without waiting
+    // till it's their turn in the lists
+    preloadSelected();
+
 #ifdef KDECARDS_DIR
     // First try to load cards stored KDE-3 style(as separate PNGs)
     std::string cardDirs(KDECARDS_DIR);
@@ -239,24 +272,62 @@ void DeckSelectDlg::loadImages([[maybe_unused]] const std::stop_token& stop) {
         file += gfile->name();
         Glib::RefPtr<Gdk::Pixbuf> actImg(getImage(file, false));
         if (actImg) {
-            // The file contains all cards (13 columns in 5 rows); use the
-            // jack of hearts for the deck and the back for the back
-            unsigned int widthImg(actImg->get_width() / 13);
-            unsigned int heightImg(actImg->get_height() / 5);
-
-            Glib::RefPtr<Gdk::Pixbuf> dest(
-                Gdk::Pixbuf::create_subpixbuf(actImg, widthImg * 11, heightImg * 2, widthImg, heightImg));
             queue(LoadedImage::DECK, file,
                   file.substr(std::strlen(GNOMECARDS_DIR), file.rfind('.') - std::strlen(GNOMECARDS_DIR)),
-                  dest->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR));
-
-            dest = Gdk::Pixbuf::create_subpixbuf(actImg, widthImg << 1, heightImg << 2, widthImg, heightImg);
-            queue(LoadedImage::BACK, file, {}, dest->scale_simple(Images::WIDTH, Images::HEIGHT, Gdk::InterpType::BILINEAR));
+                  extractCard(actImg, 11, 2));
+            queue(LoadedImage::BACK, file, {}, extractCard(actImg, 2, 4));
         }
 
         gfile = gs.next();
     }
 #endif
+
+    preloaded.clear();
+}
+
+//-----------------------------------------------------------------------------
+/// Loads the images of the preselected deck and back ahead of all others, so
+/// they can be displayed at once; executed by the loading thread
+//-----------------------------------------------------------------------------
+void DeckSelectDlg::preloadSelected() {
+    TRACE8("DeckSelectDlg::preloadSelected() - " << defDeck << " - " << defBack);
+
+    // Remark: The images are also stored in preloaded, so they are not
+    //     loaded again when filling the lists. Errors are not reported, as
+    //     the selected deck/back might not exist (anymore)
+    Glib::RefPtr<Gdk::Pixbuf> img;
+    if (defDeck.size()) {
+#ifdef GNOMECARDS_DIR
+        if (isGnomeDeck(defDeck)) {
+            if ((img = getImage(defDeck, false, false)))
+                img = extractCard(img, 11, 2);
+        }
+        else
+#endif
+#ifdef CARDPICS_DIR
+            if (defDeck == CARDPICS_DIR)
+            img = getImage(defDeck + "40.png", true, false);
+        else
+#endif
+            img = getImage(defDeck + "11.png", true, false);
+
+        if (img)
+            queue(LoadedImage::PREVIEW_DECK, defDeck, {}, img);
+    }
+
+    if (defBack.size()) {
+#ifdef GNOMECARDS_DIR
+        if (isGnomeDeck(defBack)) {
+            if ((img = getImage(defBack, false, false)))
+                img = extractCard(img, 2, 4);
+        }
+        else
+#endif
+            img = getImage(defBack, true, false);
+
+        if (img)
+            queue(LoadedImage::PREVIEW_BACK, defBack, {}, img);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -293,6 +364,18 @@ void DeckSelectDlg::showLoadedImages() {
     for (const LoadedImage& image : images) {
         if (image.type == LoadedImage::ERROR) {
             showError(image.path);
+            continue;
+        }
+
+        // The preselected images are shown ahead; unless the user was faster
+        if (image.type == LoadedImage::PREVIEW_DECK) {
+            if (decks.get_selected_items().empty())
+                selDeck.set_pixbuf(image.icon);
+            continue;
+        }
+        if (image.type == LoadedImage::PREVIEW_BACK) {
+            if (backs.get_selected_items().empty())
+                selBack.set_pixbuf(image.icon);
             continue;
         }
 
@@ -431,10 +514,17 @@ void DeckSelectDlg::okEvent() {
 /// the GUI thread
 /// \param file File containing the image
 /// \param scale Flag, if image should be scaled
+/// \param reportError Flag, if errors should be reported; if not the image is
+///     also remembered to be re-used when loading the same file again
 /// \returns Glib::RefPtr<Gdk::Pixbuf> Created image
 //-----------------------------------------------------------------------------
-Glib::RefPtr<Gdk::Pixbuf> DeckSelectDlg::getImage(const std::string& file, bool scale) {
-    TRACE9("DeckSelectDlg::getImage(const std::string&, bool) - " << file);
+Glib::RefPtr<Gdk::Pixbuf> DeckSelectDlg::getImage(const std::string& file, bool scale, bool reportError) {
+    TRACE9("DeckSelectDlg::getImage(const std::string&, 2x bool) - " << file);
+
+    const auto cached(preloaded.find(file));
+    if (cached != preloaded.end())
+        return cached->second;
+
     Glib::RefPtr<Gdk::Pixbuf> imgBuf;
     std::string err;
 
@@ -453,7 +543,13 @@ Glib::RefPtr<Gdk::Pixbuf> DeckSelectDlg::getImage(const std::string& file, bool 
     catch (...) {
         err = _("Unknown error");
     }
-    if (err.size()) {
+    if (err.empty()) {
+        if (!reportError)
+            preloaded[file] = imgBuf;
+    }
+    else if (!reportError)
+        imgBuf.reset();
+    else {
         std::string msg(_("Error loading image from file `%1'!\n\nReason: %2"));
         msg.replace(msg.find("%1"), 2, file);
         msg.replace(msg.find("%2"), 2, err);
