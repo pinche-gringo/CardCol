@@ -24,7 +24,8 @@ card_headers = files('Widget.h', 'Images.h', 'Pile.h', 'Set.h', 'Window.h',
 libcard = shared_library('Card-' + release, card_sources,
                          include_directories: top_inc,
                          link_whole: cardvalue_lib,
-                         dependencies: deps + [rsvg_dep],
+                         # DeckSelect loads the images of the decks in an own thread
+                         dependencies: deps + [rsvg_dep, dependency('threads')],
                          install: true)
 
 install_headers(card_headers, subdir: 'card')

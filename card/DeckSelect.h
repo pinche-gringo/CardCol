@@ -16,8 +16,15 @@
 // You should have received a copy of the GNU General Public License
 // along with CardCol.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <mutex>
+#include <stop_token>
 #include <string>
+#include <thread>
+#include <vector>
 
+#include <glibmm/dispatcher.h>
+
+#include <gdkmm/pixbuf.h>
 #include <gdkmm/texture.h>
 
 #include <gtkmm/box.h>
@@ -30,10 +37,6 @@
 #include <XGP/XDialog.h>
 
 #include <card/Pile.h>
-
-namespace YGP {
-class DirectorySearch;
-}
 
 namespace Card {
 
@@ -58,7 +61,7 @@ class DeckSelectDlg : public XGP::XDialog {
     };
 
   public:
-    DeckSelectDlg(const std::string& deck, const std::string& back);
+    DeckSelectDlg(std::string deck, std::string back);
     ~DeckSelectDlg() override;
 
     /// Creates a DeckSelect-dialog on the heap
@@ -78,15 +81,35 @@ class DeckSelectDlg : public XGP::XDialog {
     void okEvent() override;
     void command(int action) override;
 
+    // Remark: The following methods are executed by the thread loading the
+    //     images; they must not access the widgets of the dialog
+    void loadImages(const std::stop_token& stop);
     Glib::RefPtr<Gdk::Pixbuf> getImage(const std::string& file, bool scale = true);
-    void addFileInDirectories(const std::string& dir, const std::string& file, const std::string& defaultDeck,
+    void addFileInDirectories(const std::stop_token& stop, const std::string& dir, const std::string& file,
                               unsigned int offName = 0);
-    void addFile(const std::string& path, const std::string& name, const std::string& display, const std::string& defaultDeck);
+    void addFile(const std::string& path, const std::string& name, const std::string& display);
+    void addBack(const std::string& file);
 
   private:
+    /// An image loaded in the background (or the error occured while trying so)
+    struct LoadedImage {
+        enum Type { DECK, BACK, ERROR };
+
+        Type type;
+        std::string path; ///< Path of deck/back; or the error-message
+        Glib::ustring name;
+        Glib::RefPtr<Gdk::Pixbuf> icon;
+        Glib::RefPtr<Gdk::Texture> texture;
+    };
+
     // Prohibited manager-functions
     DeckSelectDlg() = delete;
     DeckSelectDlg(const DeckSelectDlg&) = delete;
+
+    void queue(LoadedImage::Type type, const std::string& path, const Glib::ustring& name, const Glib::RefPtr<Gdk::Pixbuf>& icon);
+    void showLoadedImages();
+    void showError(const std::string& msg);
+    static void resize(Gtk::IconView& view, size_t images);
 
     void deckSelected();
     void backSelected();
@@ -111,6 +134,16 @@ class DeckSelectDlg : public XGP::XDialog {
     Gtk::Label txtBack;
     Gtk::IconView backs;
     Gtk::CellRendererPixbuf rendererBacks;
+    Gtk::Button* apply;
+
+    std::string defDeck; ///< Deck to preselect
+    std::string defBack; ///< Back to preselect
+
+    std::mutex mxLoaded;             ///< Protects the loaded images
+    std::vector<LoadedImage> loaded; ///< Images loaded, but not yet displayed
+    Glib::Dispatcher imagesLoaded;   ///< Informs the GUI thread about loaded images
+    // Remark: Must be the last member, so it is stopped before the others are destroyed
+    std::jthread loader; ///< Thread loading the images
 };
 
 } // namespace Card
