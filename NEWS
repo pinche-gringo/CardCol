@@ -1,3 +1,8 @@
+Overview of changes in version 1.0.10:
+
+  - DeckSelect: Load card images in the background, while the dialog is already shown
+
+
 Overview of changes in version 1.0.00:
 
   - Use YGP 1.0 with passwort salting
