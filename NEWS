@@ -1,6 +1,7 @@
 Overview of changes in version 1.0.10:
 
   - DeckSelect: Load card images in the background, while the dialog is already shown
+  - Minor GUI improvements (sizing of elements, don't translate e-mail)
 
 
 Overview of changes in version 1.0.00:

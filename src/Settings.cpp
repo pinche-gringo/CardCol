@@ -148,6 +148,8 @@ Settings::Settings(Options& options)
 
 #ifdef WITH_HEARTS
     Gtk::Box& pagHearts(*Gtk::make_managed<Card::HBox>());
+    // Keep the line at its natural height (instead of filling the whole page)
+    pagHearts.set_valign(Gtk::Align::START);
     lbl = Gtk::make_managed<Gtk::Label>(_("_Points to end game:"), true);
     lbl->set_mnemonic_widget(maxHeartsPoints);
     lbl->set_margin(5);
@@ -192,6 +194,7 @@ Settings::Settings(Options& options)
 
 #ifdef WITH_SGTMAYOR
     Gtk::Box& pagSgtMayor(*Gtk::make_managed<Card::HBox>());
+    pagSgtMayor.set_valign(Gtk::Align::START);
     lbl = Gtk::make_managed<Gtk::Label>(_("_Tricks to win game:"), true);
     lbl->set_mnemonic_widget(tricksSgtMayor);
     lbl->set_margin(5);
