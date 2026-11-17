@@ -39,14 +39,13 @@ class MachiPile : public Card::HPile {
     ~MachiPile() override;
 
     void setTopCard(Card::Widget& newCard) override;
-    void setTopCard(Card::Widget& newCard, bool visible) { Card::HPile::setTopCard(newCard, visible); }
+    using Card::HPile::setTopCard;
 
     unsigned int insert(Card::Widget& card, unsigned int pos) override;
 
     Card::Widget& remove(Card::Widget& card) override;
-    Card::Widget& remove(Card::Widget& card, bool visible);
     Card::Widget& remove(unsigned int pos) override;
-    Card::Widget& remove(unsigned int pos, bool visible);
+    using Card::HPile::remove;
 
     TYPE getType() const { return type; }
     /// Returns the pile without display (for the rules)

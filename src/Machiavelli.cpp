@@ -150,7 +150,7 @@ Machiavelli::Machiavelli(Gtk::Box& parent, Gtk::Statusbar& statusbar, Card::Set&
     // added to the widget tree by the caller.
     nextTurn.set_receives_default();
     nextTurn.set_sensitive(false);
-    nextTurn.signal_clicked().connect(mem_fun(*this, (&Machiavelli::endTurn)));
+    nextTurn.signal_clicked().connect(mem_fun(*this, (&Machiavelli::userEndTurn)));
 
     resizeCards();
 }
@@ -293,7 +293,7 @@ bool Machiavelli::enableHuman() {
     Check3(activeCards.empty());
 
     if (staple.size())
-        activeCards.push_back(staple.getTopCard().signal_clicked().connect(mem_fun(*this, (&Machiavelli::endTurn))));
+        activeCards.push_back(staple.getTopCard().signal_clicked().connect(mem_fun(*this, (&Machiavelli::userEndTurn))));
 
     for (unsigned int i(0); i < hands[0].size(); ++i)
         registerHandDND(i);
@@ -385,8 +385,8 @@ bool Machiavelli::setStartPlayer() {
 //-----------------------------------------------------------------------------
 /// Callback to end a turn. Checks if the piles are OK
 //-----------------------------------------------------------------------------
-void Machiavelli::endTurn() {
-    TRACE5("Machiavelli::endTurn()");
+void Machiavelli::userEndTurn() {
+    TRACE5("Machiavelli::userEndTurn()");
     Check1(gameStatus() == PLAYING);
     Check3(staple.size());
     Check3(activeCards.size());
@@ -1513,7 +1513,7 @@ void Machiavelli::addMenus(const Glib::RefPtr<Gio::Menu>& menu, const Glib::RefP
     menuMachi->append_section(secSort);
 
     Glib::RefPtr<Gio::Menu> secEnd(Gio::Menu::create());
-    nxtTurn = actions->add_action("MachiEndTurn", mem_fun(*this, (&Machiavelli::endTurn)));
+    nxtTurn = actions->add_action("MachiEndTurn", mem_fun(*this, (&Machiavelli::userEndTurn)));
     secEnd->append(_("_End turn"), "game.MachiEndTurn");
     menuMachi->append_section(secEnd);
 

@@ -97,7 +97,7 @@ class DeckSelectDlg : public XGP::XDialog {
     struct LoadedImage {
         enum Type { DECK, BACK, PREVIEW_DECK, PREVIEW_BACK, ERROR };
 
-        Type type;
+        Type type{};
         std::string path; ///< Path of deck/back; or the error-message
         Glib::ustring name;
         Glib::RefPtr<Gdk::Pixbuf> icon;

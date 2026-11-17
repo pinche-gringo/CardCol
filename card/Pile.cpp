@@ -108,7 +108,7 @@ void IPile::showTopCardFace(bool visible) {
 /// \note Usefull when a bunch of cards is added to the pile
 //-----------------------------------------------------------------------------
 void IPile::insertCardFast(Widget& card, unsigned int offset) {
-    TRACE3("IPile::insertCardFast(Widget&, unsigned int) " << offset)
+    TRACE3("IPile::insertCardFast(Widget&, unsigned int) " << offset);
     cards.insert(begin() + offset, &card);
     Check3(operator[](size() - 1));
 

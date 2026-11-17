@@ -28,14 +28,13 @@ class BuracoPile : public Card::VPile {
     ~BuracoPile() override;
 
     void setTopCard(Card::Widget& newCard) override;
-    void setTopCard(Card::Widget& newCard, bool visible) { Card::VPile::setTopCard(newCard, visible); }
+    using Card::VPile::setTopCard;
 
     unsigned int insert(Card::Widget& card, unsigned int pos) override;
 
     Card::Widget& remove(Card::Widget& card) override;
-    Card::Widget& remove(Card::Widget& card, bool visible);
     Card::Widget& remove(unsigned int pos) override;
-    Card::Widget& remove(unsigned int pos, bool visible);
+    using Card::VPile::remove;
 
     unsigned int getCardPoints() const { return BuracoRules::pointsOf(values()); }
     unsigned int getPotentialPoints() const { return status.points; }

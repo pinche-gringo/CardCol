@@ -145,7 +145,7 @@ class Machiavelli : public Card::Game {
     /// \name Callback from events
     //@{
     void unmarkAndEnd(MachiPile* pile);
-    void endTurn();
+    void userEndTurn();
     void doEndTurn();
     void undoMove(unsigned int number);
     void removeUndoDlg(int);

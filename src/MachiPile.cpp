@@ -83,33 +83,9 @@ Card::Widget& MachiPile::remove(Card::Widget& card) {
 /// \param pos Zero-based offset of where to insert the card
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
-Card::Widget& MachiPile::remove(Card::Widget& card, bool visible) {
-    Card::Widget& rcard(Card::HPile::remove(card, visible));
-    analysePile();
-    return rcard;
-}
-
-//----------------------------------------------------------------------------
-/// Removes the passed card from the pile.
-/// \param card Card to remove from the pile
-/// \param pos Zero-based offset of where to insert the card
-/// \pre \c newCard must be a valid card
-//----------------------------------------------------------------------------
 Card::Widget& MachiPile::remove(unsigned int pos) {
     TRACE9("MachiPile::remove(unsigned int) - " << pos);
     Card::Widget& card(Card::HPile::remove(pos));
-    analysePile();
-    return card;
-}
-
-//----------------------------------------------------------------------------
-/// Removes the passed card from the pile.
-/// \param card Card to remove from the pile
-/// \param pos Zero-based offset of where to insert the card
-/// \pre \c newCard must be a valid card
-//----------------------------------------------------------------------------
-Card::Widget& MachiPile::remove(unsigned int pos, bool visible) {
-    Card::Widget& card(Card::HPile::remove(pos, visible));
     analysePile();
     return card;
 }

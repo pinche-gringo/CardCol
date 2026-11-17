@@ -35,7 +35,7 @@ constexpr unsigned int MAX_EXCHANGES = 2 * CARDS_PER_PLAYER;
 
 /// State of a game, as held by the GUI (see SgtMayor)
 struct Game {
-    unsigned int startPlayer;
+    unsigned int startPlayer{};
     std::array<int, NUM_PLAYERS> diffTricks{}; ///< Result of the last round
     std::array<int, NUM_PLAYERS> points{};     ///< Points of the game
 };

@@ -245,7 +245,7 @@ template <class T> class Pile : public T, public IPile {
         IPile::setTopCard(newCard);
         T::append(newCard);
     }
-    void setTopCard(Widget& newCard, bool visible) { IPile::setTopCard(newCard, visible); }
+    using IPile::setTopCard;
 
     Widget& removeTopCard() override {
         Widget& card(IPile::removeTopCard());
@@ -358,7 +358,7 @@ template <class T> class InfoPile : public Pile<T> {
         Pile<T>::setTopCard(newCard);
         setTooltips();
     }
-    void setTopCard(Widget& newCard, bool visible) { Pile<T>::setTopCard(newCard, visible); }
+    using Pile<T>::setTopCard;
 
     Widget& removeTopCard() override {
         Widget& card(Pile<T>::removeTopCard());
@@ -379,17 +379,13 @@ template <class T> class InfoPile : public Pile<T> {
         setTooltips();
         return card;
     }
-    Widget& remove(Widget& card, bool visible) {
-        Pile<T>::remove(card, visible);
-        return card;
-    }
     Widget& remove(unsigned int pos) override {
         Widget& card(Pile<T>::remove(pos));
         card.set_has_tooltip(false);
         setTooltips();
         return card;
     }
-    virtual Widget& remove(unsigned int pos, bool visible) { return Pile<T>::remove(pos, visible); }
+    using Pile<T>::remove;
 
     void move(unsigned int dest, unsigned int source) override {
         Pile<T>::move(dest, source);

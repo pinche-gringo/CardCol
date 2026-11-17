@@ -77,36 +77,12 @@ Card::Widget& BuracoPile::remove(Card::Widget& card) {
 
 //----------------------------------------------------------------------------
 /// Removes the passed card from the pile.
-/// \param card Card to remove from the pile
-/// \param pos Zero-based offset of where to insert the card
-/// \pre \c newCard must be a valid card
-//----------------------------------------------------------------------------
-Card::Widget& BuracoPile::remove(Card::Widget& card, bool visible) {
-    Card::Widget& rcard(Card::VPile::remove(card, visible));
-    analysePile();
-    return rcard;
-}
-
-//----------------------------------------------------------------------------
-/// Removes the passed card from the pile.
 /// \param pos Zero-based offset of card to remove
 /// \pre \c newCard must be a valid card
 //----------------------------------------------------------------------------
 Card::Widget& BuracoPile::remove(unsigned int pos) {
     TRACE9("BuracoPile::remove(unsigned int) - " << pos);
     Card::Widget& card(Card::VPile::remove(pos));
-    analysePile();
-    return card;
-}
-
-//----------------------------------------------------------------------------
-/// Removes the passed card from the pile.
-/// \param pos Zero-based offset of card to remove
-/// \param visible Flag if the card face should be shown
-/// \pre \c newCard must be a valid card
-//----------------------------------------------------------------------------
-Card::Widget& BuracoPile::remove(unsigned int pos, bool visible) {
-    Card::Widget& card(Card::VPile::remove(pos, visible));
     analysePile();
     return card;
 }

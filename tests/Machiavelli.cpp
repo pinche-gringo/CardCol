@@ -52,12 +52,12 @@ Table table(std::initializer_list<std::string_view> piles) {
 
 /// Result of getSeries (and optionally sortColourSerie)
 struct Serie {
-    unsigned int nrs;
+    unsigned int nrs{};
     std::map<unsigned int, unsigned int> aPos;
     std::vector<unsigned int> aOrder;
     Card::Cards cards;
-    unsigned int posCard;
-    unsigned int start;
+    unsigned int posCard{};
+    unsigned int start{};
 };
 
 Serie series(std::string_view text, unsigned int pos, bool doubles, bool sort) {

@@ -537,7 +537,9 @@ Card::IPile* Twopart::getPileOfPlayer(unsigned int player, unsigned int pile) {
     if (pile && ((gameStatus() != PLAYING2) || !table.offPos || (table.startPos[table.offPos - 1] >= played.size())))
         return nullptr;
 
-    return &(pile ? played : players[player].hand);
+    if (pile)
+        return &played;
+    return &players[player].hand;
 }
 
 //----------------------------------------------------------------------------

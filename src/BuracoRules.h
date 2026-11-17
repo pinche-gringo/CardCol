@@ -75,7 +75,7 @@ void moveCard(Card::Cards& cards, unsigned int dest, unsigned int source, unsign
 struct Series {
     std::map<unsigned int, unsigned int> positions; ///< Positions of the cards of the same colour (key: distance + 2)
     std::vector<unsigned int> order;                ///< Order in which the cards of the same colour have been found
-    unsigned int equal;                             ///< Number of cards with the same number (incl. the card itself)
+    unsigned int equal{};                           ///< Number of cards with the same number (incl. the card itself)
 };
 Series getSeries(const Card::Cards& cards, unsigned int pos);
 unsigned int sortColourSerie(Card::Cards& cards, const Series& series, unsigned int* tracked = nullptr);

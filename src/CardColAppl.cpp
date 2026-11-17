@@ -314,10 +314,10 @@ void CardgameAppl::readINIFile(const char* pFile) {
     Check3(pFile);
 
     if (options.names.empty()) {
-        options.names.push_back(_("Human"));
-        options.names.push_back(_("Player 1"));
-        options.names.push_back(_("Player 2"));
-        options.names.push_back(_("Player 3"));
+        options.names.emplace_back(_("Human"));
+        options.names.emplace_back(_("Player 1"));
+        options.names.emplace_back(_("Player 2"));
+        options.names.emplace_back(_("Player 3"));
         options.pNameINIFile = pFile;
     }
 

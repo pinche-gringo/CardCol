@@ -157,8 +157,8 @@ class CardgameCollection : public XGP::XApplication {
 #ifdef WITH_NETWORK
     /// Partner the communication thread receives messages from
     struct CommPartner {
-        YGP::Connection* conn; ///< Connection to the partner (owned by cmgr)
-        unsigned int player;   ///< Index of the partner in aPlayer
+        YGP::Connection* conn{}; ///< Connection to the partner (owned by cmgr)
+        unsigned int player{};   ///< Index of the partner in aPlayer
         std::string buffer;    ///< Received, but not yet processed data
     };
     std::vector<std::unique_ptr<CommPartner>> aCommPartners; ///< Partners handled by commThread
